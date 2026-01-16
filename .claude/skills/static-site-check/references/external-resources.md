@@ -1,6 +1,6 @@
-# 外部リソース管理
+# 外部リソースチェック
 
-外部CDN・サードパーティスクリプトのリスク管理と対応方法。
+外部CDN・サードパーティスクリプトの使用状況を検出・報告する。
 
 ## 検出パターン
 
@@ -16,72 +16,74 @@
 - サプライチェーン攻撃（外部スクリプト改ざん）
 - プライバシー漏洩（外部サービスへのデータ送信）
 
-## 対応方法
+## チェック項目
 
-### 1. 外部CDNの使用が検出された場合
+### 1. 外部CDN
 
-**問題**: jQuery、Bootstrap などを外部CDNから読み込んでいる
+検出対象:
+- jQuery、Bootstrap などのライブラリ
+- フォント（Google Fonts など）
+- CSS フレームワーク
 
-**対応（推奨順）**:
+報告内容:
+- 読み込み元ドメイン
+- SRI（Subresource Integrity）の有無
+- 読み込むリソースの種類（JS/CSS/フォント）
 
-1. **ローカルホスト**: ファイルをダウンロードして自サイトに配置
-   ```html
-   <!-- NG: 外部CDN -->
-   <script src="https://cdn.example.com/jquery.min.js"></script>
+### 2. サードパーティスクリプト
 
-   <!-- OK: ローカル配置 -->
-   <script src="/js/jquery.min.js"></script>
-   ```
+検出対象:
+- アナリティクス（Google Analytics, GTM など）
+- 広告スクリプト
+- チャットウィジェット
+- SNS 埋め込み
 
-2. **SRI（Subresource Integrity）を追加**: 外部CDN使用時の改ざん検知
-   ```html
-   <script
-     src="https://cdn.example.com/jquery.min.js"
-     integrity="sha384-xxxx..."
-     crossorigin="anonymous">
-   </script>
-   ```
+報告内容:
+- サービス名・プロバイダ
+- 読み込み方法（同期/非同期）
+- 読み込み元ドメイン
 
-3. **フォールバック設定**: CDN障害時のローカルファイル読み込み
-   ```html
-   <script src="https://cdn.example.com/jquery.min.js"></script>
-   <script>
-     window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>');
-   </script>
-   ```
+### 3. iframe 埋め込み
 
-### 2. サードパーティスクリプトが検出された場合
+検出対象:
+- YouTube / Vimeo 動画
+- Google Maps
+- 外部フォーム
+- その他の埋め込みコンテンツ
 
-**問題**: アナリティクス、広告、ウィジェットなどの外部スクリプト
+報告内容:
+- 埋め込み元ドメイン
+- sandbox 属性の有無
+- コンテンツの種類
 
-**対応**:
-- 必要性を再検討（本当に必要か？）
-- 信頼できるプロバイダのみ使用
-- 遅延読み込みで初期表示に影響させない
+## チェック結果の記載例
 
-```html
-<!-- 遅延読み込み -->
-<script async src="https://www.googletagmanager.com/gtag/js"></script>
+```markdown
+## 外部リソース
+
+### 検出結果
+- 外部CDN: 3件
+- サードパーティスクリプト: 2件
+- iframe: 1件
+
+### 外部CDN
+
+| リソース | ドメイン | SRI |
+|----------|----------|-----|
+| jQuery 3.6.0 | cdn.jsdelivr.net | なし |
+| Bootstrap 5.0 | cdn.jsdelivr.net | あり |
+| Google Fonts | fonts.googleapis.com | - |
+
+### サードパーティスクリプト
+
+| サービス | ドメイン | 読み込み |
+|----------|----------|----------|
+| Google Analytics | googletagmanager.com | async |
+| Intercom | widget.intercom.io | defer |
+
+### iframe
+
+| コンテンツ | ドメイン | sandbox |
+|------------|----------|---------|
+| YouTube動画 | youtube.com | なし |
 ```
-
-### 3. iframe 埋め込みが検出された場合
-
-**問題**: 外部サイトのiframe埋め込み
-
-**対応**:
-- 信頼できるサービスのみ許可（YouTube、Google Maps など）
-- `sandbox` 属性で権限制限
-
-```html
-<!-- sandbox で権限制限 -->
-<iframe
-  src="https://www.youtube.com/embed/xxx"
-  sandbox="allow-scripts allow-same-origin">
-</iframe>
-```
-
-## 予防策
-
-- 外部依存は最小限に
-- 使用する外部リソースのリストを管理
-- 定期的に不要な外部リソースを棚卸し

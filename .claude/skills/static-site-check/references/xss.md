@@ -1,6 +1,6 @@
-# XSS（クロスサイトスクリプティング）対策
+# XSS（クロスサイトスクリプティング）チェック
 
-ユーザ入力やURLパラメータを通じた悪意あるスクリプト実行を防ぐための対応方法。
+ユーザ入力やURLパラメータを通じた悪意あるスクリプト実行の可能性を検出・報告する。
 
 ## 検出パターン
 
@@ -11,84 +11,97 @@ new\s+Function\s*\(
 document\.write\s*\(
 ```
 
-## 対応方法
+## リスク
 
-### 1. innerHTML の使用が検出された場合
+- 悪意あるスクリプトの実行
+- セッションハイジャック（Cookie窃取）
+- フィッシング（偽コンテンツ表示）
+- マルウェア配布
 
-**問題**: `innerHTML` でユーザ入力やURLパラメータを直接挿入している
+## チェック項目
 
-**対応**:
+### 1. innerHTML の使用
 
-```javascript
-// NG - XSS脆弱性あり
-element.innerHTML = userInput;
+検出対象:
+- `element.innerHTML = ...`
+- `element.outerHTML = ...`
+- `insertAdjacentHTML()`
 
-// OK - textContent を使用
-element.textContent = userInput;
+報告内容:
+- 検出箇所（ファイル名:行番号）
+- 代入される値の出所（ユーザ入力/URLパラメータ/固定値）
+- サニタイズ処理の有無
 
-// OK - DOMを構築して追加
-const text = document.createTextNode(userInput);
-element.appendChild(text);
+### 2. eval() の使用
+
+検出対象:
+- `eval(...)`
+- `setTimeout(string, ...)`
+- `setInterval(string, ...)`
+
+報告内容:
+- 検出箇所（ファイル名:行番号）
+- 実行される文字列の出所
+
+### 3. new Function() の使用
+
+検出対象:
+- `new Function(...)`
+
+報告内容:
+- 検出箇所（ファイル名:行番号）
+- 関数本体の出所
+
+### 4. document.write の使用
+
+検出対象:
+- `document.write(...)`
+- `document.writeln(...)`
+
+報告内容:
+- 検出箇所（ファイル名:行番号）
+- 書き込まれる内容の出所
+
+### 5. URLパラメータの直接使用
+
+検出対象:
+- `location.search` の値を DOM に挿入
+- `location.hash` の値を DOM に挿入
+- `URLSearchParams` で取得した値を innerHTML に挿入
+
+報告内容:
+- 検出箇所（ファイル名:行番号）
+- パラメータ名
+- 挿入方法（innerHTML/textContent）
+
+## チェック結果の記載例
+
+```markdown
+## XSS脆弱性
+
+### 検出結果
+- innerHTML: 2件
+- eval(): 0件
+- new Function(): 0件
+- document.write: 1件
+- URLパラメータ直接使用: 1件
+
+### innerHTML
+
+| ファイル | 行 | 値の出所 | サニタイズ |
+|----------|-----|----------|------------|
+| app.js | 42 | URLパラメータ | なし |
+| render.js | 15 | 固定値 | - |
+
+### document.write
+
+| ファイル | 行 | 内容の出所 |
+|----------|-----|------------|
+| legacy.js | 8 | 外部スクリプト読み込み |
+
+### URLパラメータ直接使用
+
+| ファイル | 行 | パラメータ | 挿入方法 |
+|----------|-----|------------|----------|
+| app.js | 42 | name | innerHTML |
 ```
-
-**innerHTML が必要な場合**:
-- サニタイズライブラリ（DOMPurify）を使用
-
-```javascript
-// DOMPurify でサニタイズ
-element.innerHTML = DOMPurify.sanitize(userInput);
-```
-
-### 2. eval() の使用が検出された場合
-
-**問題**: `eval()` で動的コード実行している
-
-**対応**:
-1. `eval()` を削除し、別の方法で実装
-2. JSONパースなら `JSON.parse()` を使用
-
-```javascript
-// NG
-const data = eval('(' + jsonString + ')');
-
-// OK
-const data = JSON.parse(jsonString);
-```
-
-### 3. new Function() の使用が検出された場合
-
-**問題**: `new Function()` で動的に関数を生成している
-
-**対応**:
-1. 静的な関数定義に置き換え
-2. テンプレートリテラルや条件分岐で代替
-
-```javascript
-// NG
-const fn = new Function('a', 'b', 'return a + b');
-
-// OK
-const fn = (a, b) => a + b;
-```
-
-### 4. URLパラメータの直接使用が検出された場合
-
-**問題**: `location.search` や `location.hash` をそのまま表示している
-
-**対応**:
-
-```javascript
-// NG
-const params = new URLSearchParams(location.search);
-document.getElementById('name').innerHTML = params.get('name');
-
-// OK
-const params = new URLSearchParams(location.search);
-document.getElementById('name').textContent = params.get('name');
-```
-
-## 予防策
-
-- ユーザ入力は常に `textContent` で表示
-- 動的HTML生成が必要な場合は DOMPurify を導入
-- Content Security Policy (CSP) ヘッダを設定（ホスティング側）
