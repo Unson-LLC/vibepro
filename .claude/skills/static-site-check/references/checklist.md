@@ -39,3 +39,11 @@
 
 - [ ] 外部CDN / サードパーティJSの利用を最小限にしている
 - [ ] iframe 等の埋め込みは信頼できるもののみ
+
+### 1.4 npm パッケージ脆弱性（package.json がある場合）
+
+→ 対応方法: [npm-vulnerabilities.md](npm-vulnerabilities.md)
+
+- [ ] `npm audit` で高・重大な脆弱性がない
+- [ ] 未使用パッケージを削除済み
+- [ ] 配信物に `package.json` / `node_modules` を含めない
