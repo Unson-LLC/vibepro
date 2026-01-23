@@ -1,11 +1,29 @@
-# VibePro ⚡
+# VibePro - 静的サイト診断
 
-VibeCording商用化支援プロジェクト
+Vibe Coding で作成された静的サイトの公開前チェックを支援する
 
-## 概要
+## 対象
 
-VibeCordingの商用化を支援するプロジェクトです。
+- HTML/CSS/JS のみで構成された静的サイト
+- サーバサイド・DB・ビルド不要の静的アセット配信
 
-## 関連リンク
+## 診断コマンドの使い方
 
-- [Project Documentation](../../shared/_codex/projects/vibepro/)
+### 1. 診断対象コードの配置
+
+`target/` ディレクトリに診断対象の静的サイトを配置してください。
+
+```bash
+# 方法1: 既存プロジェクトをコピー
+cp -r /path/to/your/site/* target/
+
+# 方法2: git cloneで配置
+git clone https://github.com/your/repo.git target/
+
+# 方法3: シンボリックリンク（元のコードを直接参照）
+ln -s /path/to/your/site target
+```
+
+### 2. 診断の実行
+
+see [STATICSITE_FLOW.md](./STATICSITE_FLOW.md)
