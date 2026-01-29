@@ -26,4 +26,18 @@ ln -s /path/to/your/site target
 
 ### 2. 診断の実行
 
+```txt
+pre-analysis-runner agentを使って ./target ディレクトリを調べて
+```
+
+#### 静的サイトの場合
+
 see [STATICSITE_FLOW.md](./STATICSITE_FLOW.md)
+
+#### Next.js + supabase サイトの場合
+
+WIP
+
+#### その他の構成
+
+WIP

@@ -14,7 +14,7 @@ step2 ウェブアプリ診断
 claude code 起動
 
 ```txt
-/diagnose
+/diagnose-static-site targetディレクトリを調べて
 ```
 
 結果を `results/summary.md` で確認
