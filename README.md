@@ -1,17 +1,16 @@
-# VibePro - 静的サイト診断
+# VibePro - サイト診断
 
-Vibe Coding で作成された静的サイトの公開前チェックを支援する
+Vibe Coding で作成されたサイトの公開前チェックを支援する
 
 ## 対象
 
-- HTML/CSS/JS のみで構成された静的サイト
-- サーバサイド・DB・ビルド不要の静的アセット配信
+- Vibe Coding で作成されたサイト
 
 ## 診断コマンドの使い方
 
 ### 1. 診断対象コードの配置
 
-`target/` ディレクトリに診断対象の静的サイトを配置してください。
+`target/` ディレクトリに診断対象のサイトを配置してください。
 
 ```bash
 # 方法1: 既存プロジェクトをコピー
@@ -26,4 +25,18 @@ ln -s /path/to/your/site target
 
 ### 2. 診断の実行
 
+```txt
+pre-analysis-runner agentを使って ./target ディレクトリを調べて
+```
+
+#### 静的サイトの場合
+
 see [STATICSITE_FLOW.md](./STATICSITE_FLOW.md)
+
+#### Next.js + supabase サイトの場合
+
+see [NEXTJSSITE_FLOW](./NEXTJSSITE_FLOW.md)
+
+#### その他の構成
+
+WIP

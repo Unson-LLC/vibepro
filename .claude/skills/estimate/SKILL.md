@@ -1,3 +1,8 @@
+---
+name: estimate
+description: 診断結果ファイル（results/*.md）をもとに、お客様提出用の見積書を作成する。規模判定（ライト/スタンダード/エンタープライズ）と価格算出を行い、診断・商用化・運用保守の費用を提示。
+---
+
 # 見積もり作成
 
 診断結果ファイル（`results/*.md`）をもとに、お客様提出用の見積書を作成する。
@@ -5,7 +10,7 @@
 ## 入力
 
 - `results/` ディレクトリ内の診断結果ファイル
-  - `static-site-check-result.md`
+  - `*-site-check-result.md`
   - `deploy-plan.md`
   - `risk-register.md`
 
