@@ -1,195 +1,74 @@
-# Next.js アプリ公開チェックリスト（App Router）
+# Next.js アプリ診断チェックリスト
 
-対象: Next.js + Supabase + better-auth 構成のウェブアプリケーション
-技術スタック: Next.js / React / TypeScript / Supabase / better-auth / Tailwind CSS
-
----
-
-## 0. 技術スタック確認
-
-- [ ] Next.js（App Router）を使用
-- [ ] TypeScript を使用
-- [ ] Supabase をデータベースとして使用
-- [ ] better-auth を認証に使用
+対象: Next.js（App Router）+ Supabase + better-auth 構成
 
 ---
 
-## 1. 最優先（Critical）: 情報漏洩・データ破壊のリスク
+## 評価軸と配点
 
-### 1.1 環境変数管理
-
-→ 対応方法: [env-variables.md](env-variables.md)
-→ 出力先: `results/nextjs-check-env-variables.md`
-
-- [ ] `NEXT_PUBLIC_` 変数に秘密情報（SECRET/KEY/TOKEN/PASSWORD）が含まれていない
-- [ ] `.env*` ファイルが `.gitignore` に含まれている
-- [ ] コード内にハードコードされた認証情報がない
-- [ ] 本番用の環境変数が適切に管理されている（Vercel等）
-- [ ] `BETTER_AUTH_SECRET` が十分な強度のランダム文字列である
-
-検出パターン:
-```
-NEXT_PUBLIC_.*(SECRET|KEY|TOKEN|PASSWORD|PRIVATE)
-\.env$|\.env\.|\.env\.local
-(api[_-]?key|api[_-]?secret|access[_-]?token|auth[_-]?token)\s*[:=]
-sk-[a-zA-Z0-9]{20,}
-BETTER_AUTH_SECRET=.{1,20}$
-```
-
-### 1.2 Server Components 秘密漏洩
-
-→ 対応方法: [server-components-leak.md](server-components-leak.md)
-→ 出力先: `results/nextjs-check-server-components.md`
-
-- [ ] Server Components から Client Components への props に秘密情報を渡していない
-- [ ] `console.log` で機密情報（キー/トークン/パスワード）を出力していない
-- [ ] Server Actions で秘密情報をクライアントに返していない
-- [ ] レスポンスに不要な内部情報を含めていない
-
-検出パターン:
-```
-export\s+default\s+(?:async\s+)?function.*\{[\s\S]*?(apiKey|secret|token|password)[\s\S]*?return.*<.*Client
-console\.log\(.*(?:key|secret|token|password)
-```
-
-### 1.3 Supabase RLS
-
-→ 対応方法: [supabase-rls.md](supabase-rls.md)
-→ 出力先: `results/nextjs-check-supabase-rls.md`
-
-- [ ] Service Role キーがクライアントコードに露出していない
-- [ ] `NEXT_PUBLIC_SUPABASE_*` に Service Role キーを設定していない
-- [ ] RLSポリシーが全テーブルに設定されている（要手動確認）
-- [ ] anon key 使用時は適切なRLSポリシーで保護されている
-
-検出パターン:
-```
-NEXT_PUBLIC_SUPABASE.*SERVICE.*ROLE
-supabaseServiceRole.*createClient
-\.rls_enabled\s*=\s*false
-```
-
-### 1.4 SQLインジェクション
-
-→ 対応方法: [sql-injection.md](sql-injection.md)
-→ 出力先: `results/nextjs-check-sql-injection.md`
-
-- [ ] 文字列連結によるSQL構築をしていない
-- [ ] パラメータ化クエリ / Prepared Statements を使用
-- [ ] Supabase のクエリビルダーを正しく使用
-- [ ] ユーザー入力をSQL文に直接埋め込んでいない
-
-検出パターン:
-```
-\$\{.*\}.*(?:SELECT|INSERT|UPDATE|DELETE|FROM|WHERE)
-`.*\$\{.*\}.*`.*(?:sql|query|execute)
-```
+| 評価軸 | 対象カテゴリ | 満点 |
+|--------|-------------|------|
+| セキュリティ | 環境変数〜XSS（7カテゴリ） | 100点 |
+| 設定品質 | npm〜next.config（3カテゴリ） | 100点 |
 
 ---
 
-## 2. 高優先（High）: 認証バイパス・XSSのリスク
+## カテゴリ別配点
 
-### 2.1 API Routes セキュリティ
+### セキュリティ（100点満点）
 
-→ 対応方法: [api-routes-security.md](api-routes-security.md)
-→ 出力先: `results/nextjs-check-api-routes.md`
+| カテゴリ | 深刻度 | 配点 | リファレンス |
+|----------|--------|------|--------------|
+| 環境変数管理 | Critical | 20点 | [env-variables.md](env-variables.md) |
+| Server Components秘密漏洩 | Critical | 15点 | [server-components-leak.md](server-components-leak.md) |
+| Supabase RLS | Critical | 20点 | [supabase-rls.md](supabase-rls.md) |
+| SQLインジェクション | Critical | 15点 | [sql-injection.md](sql-injection.md) |
+| API Routes認証 | High | 15点 | [api-routes-security.md](api-routes-security.md) |
+| better-auth実装 | High | 10点 | [better-auth.md](better-auth.md) |
+| XSS対策 | High | 5点 | [xss.md](xss.md) |
 
-- [ ] 保護が必要なエンドポイントに認証チェックが実装されている
-- [ ] 入力バリデーション（Zod等）が実装されている
-- [ ] CORS設定が適切（必要な場合）
-- [ ] Rate limiting が考慮されている
-- [ ] エラーレスポンスに内部情報を含めていない
+### 設定品質（100点満点）
 
-検出パターン:
-```
-app/api/.*route\.(ts|js)
-# 各ファイルで以下を確認:
-# - getServerSession / auth() の呼び出し有無
-# - 入力バリデーション（Zod等）の有無
-```
-
-### 2.2 better-auth 実装
-
-→ 対応方法: [better-auth.md](better-auth.md)
-→ 出力先: `results/nextjs-check-better-auth.md`
-
-- [ ] セッション設定が適切（有効期限等）
-- [ ] Cookie設定が安全（secure, httpOnly, sameSite）
-- [ ] 保護ルートに適切な認証チェックがある
-- [ ] ログイン/ログアウト処理が正しく実装されている
-- [ ] パスワードリセット機能がある場合、適切に保護されている
-
-検出パターン:
-```
-secure:\s*false
-httpOnly:\s*false
-sameSite:\s*['"]none['"]
-session:.*expires
-```
-
-### 2.3 XSS対策
-
-→ 対応方法: [xss.md](xss.md)
-→ 出力先: `results/nextjs-check-xss.md`
-
-- [ ] `dangerouslySetInnerHTML` の使用箇所がサニタイズされている
-- [ ] `eval()` / `new Function()` を使用していない
-- [ ] ユーザー入力を直接DOMに挿入していない
-- [ ] URLパラメータを安全に処理している
-
-検出パターン:
-```
-dangerouslySetInnerHTML\s*=
-eval\s*\(
-new\s+Function\s*\(
-```
+| カテゴリ | 深刻度 | 配点 | リファレンス |
+|----------|--------|------|--------------|
+| npm脆弱性 | Medium〜Critical | 40点 | [npm-vulnerabilities.md](npm-vulnerabilities.md) |
+| TypeScript設定 | Medium | 30点 | [typescript-config.md](typescript-config.md) |
+| next.config設定 | Medium | 30点 | [nextjs-config.md](nextjs-config.md) |
 
 ---
 
-## 3. 中優先（Medium）: 品質・メンテナンス性
+## 点数計算ルール
 
-### 3.1 npm パッケージ脆弱性
+### 減点方式
+- 各カテゴリは満点からスタート
+- 問題検出ごとに重みに応じて減点
+- 最低0点（マイナスにはならない）
 
-→ 対応方法: [npm-vulnerabilities.md](npm-vulnerabilities.md)
-→ 出力先: `results/nextjs-check-npm.md`
+### 減点の重み（各リファレンス内で定義）
+- 重大な問題: 配点の50〜100%減点
+- 中程度の問題: 配点の20〜50%減点
+- 軽微な問題: 配点の10〜20%減点
 
-- [ ] `npm audit` で high/critical の脆弱性がない
-- [ ] 未使用パッケージを削除済み
-- [ ] 依存パッケージが定期的に更新されている
+---
 
-検出方法: `package.json` が存在する場合、`npm audit --json` を実行
+## 総合判定基準
 
-### 3.2 TypeScript 設定
+| 判定 | セキュリティ | 設定品質 | 意味 |
+|------|-------------|----------|------|
+| A | 90-100 | 90-100 | 商用リリース可能 |
+| B | 70-89 | 70-89 | 軽微な修正で商用化可能 |
+| C | 50-69 | 50-69 | 重要な修正が必要 |
+| D | 0-49 | 0-49 | 根本的な見直しが必要 |
 
-→ 対応方法: [typescript-config.md](typescript-config.md)
-→ 出力先: `results/nextjs-check-typescript.md`
+**総合判定**: 両軸の低い方の判定を採用
 
-- [ ] `strict: true` が設定されている
-- [ ] `noImplicitAny: true` が有効
-- [ ] 型安全性が確保されている
+---
 
-検出パターン:
-```
-"strict":\s*false
-# または strict 未設定
-```
+## 診断フロー
 
-### 3.3 next.config セキュリティ
-
-→ 対応方法: [nextjs-config.md](nextjs-config.md)
-→ 出力先: `results/nextjs-check-nextjs-config.md`
-
-- [ ] セキュリティヘッダーが設定されている
-  - [ ] X-Content-Type-Options
-  - [ ] X-Frame-Options
-  - [ ] Content-Security-Policy（または適切なCSP）
-- [ ] `images.remotePatterns` が適切に制限されている
-- [ ] 不要なリダイレクトやリライトがない
-
-検出パターン:
-```
-headers\(\).*\[
-X-Content-Type-Options
-X-Frame-Options
-Content-Security-Policy
-```
+1. 各カテゴリのリファレンスを参照し検査
+2. 検出された問題に応じて減点を計算
+3. カテゴリ別スコアを集計
+4. 評価軸ごとのスコアを算出
+5. 総合判定を決定
+6. 結果を `results/nextjs-site-check-result.md` に出力
