@@ -91,6 +91,22 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `vibepro-manifest.json` には最新の実行ID、ゲート状態、成果物パスを記録する。Brainbase はこの管理目録を読む。
 
+### 4. Brainbase 取り込み状態の生成
+
+```bash
+node bin/vibepro.js brainbase /path/to/repo
+```
+
+生成される主な成果物:
+
+```text
+.vibepro/brainbase/
+├── import-state.json
+└── import-summary.md
+```
+
+`import-state.json` は Brainbase が読むための構造化状態であり、最新run、ゲート状態、診断シグナル、検出事項、成果物パスを含む。Brainbase は Markdown ではなく、このJSONを取り込み口として扱う。
+
 ## 対象
 
 - HTML/CSS/JS のみで構成された静的サイト

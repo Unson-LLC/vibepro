@@ -1,6 +1,7 @@
 import { initWorkspace } from './workspace.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
+import { createBrainbaseImport } from './brainbase-importer.js';
 
 const HELP = `VibePro CLI
 
@@ -8,6 +9,7 @@ Usage:
   vibepro init [repo]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro brainbase [repo]
 `;
 
 export async function runCli(argv, io = {}) {
@@ -45,6 +47,13 @@ export async function runCli(argv, io = {}) {
       const runId = getOption(rest, '--run-id');
       const result = await runDiagnosis(repoRoot, { runId });
       write(stdout, `diagnosis created: ${result.runDir}\n`);
+      return { exitCode: 0, command, result };
+    }
+
+    if (command === 'brainbase') {
+      const repoRoot = rest[0] ?? process.cwd();
+      const result = await createBrainbaseImport(repoRoot);
+      write(stdout, `Brainbase import state created: ${result.importStatePath}\n`);
       return { exitCode: 0, command, result };
     }
 

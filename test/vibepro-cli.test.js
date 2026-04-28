@@ -182,3 +182,40 @@ eval("1+1");
     '.vibepro/diagnostics/2026-04-28T130000Z/static-site-check-result.md'
   );
 });
+
+test('brainbase creates an import state from the latest VibePro manifest run', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'app.js'), 'document.body.innerHTML = location.hash;\n');
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'page' }],
+    edges: [
+      { source: 'app', target: 'page', relation: 'renders', confidence: 'AMBIGUOUS' }
+    ]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T150000Z']);
+
+  const result = await runCli(['brainbase', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.command, 'brainbase');
+  const importStatePath = path.join(repo, '.vibepro', 'brainbase', 'import-state.json');
+  const importSummaryPath = path.join(repo, '.vibepro', 'brainbase', 'import-summary.md');
+  await stat(importSummaryPath);
+  const importState = await readJson(importStatePath);
+  assert.equal(importState.schema_version, '0.1.0');
+  assert.equal(importState.story.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.equal(importState.latest_run.run_id, '2026-04-28T150000Z');
+  assert.equal(importState.latest_run.gate_status, 'needs_review');
+  assert.equal(importState.signals.graphify.node_count, 2);
+  assert.equal(importState.signals.graphify.ambiguous_edges_count, 1);
+  assert.equal(importState.signals.static_site.xss_risk_hits_count, 1);
+  assert.equal(importState.findings.some((finding) => finding.id === 'VP-STATIC-003'), true);
+  assert.match(await readFile(importSummaryPath, 'utf8'), /Brainbase 取り込み状態/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.artifacts.brainbase_import_state, '.vibepro/brainbase/import-state.json');
+});
