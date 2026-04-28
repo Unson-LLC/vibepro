@@ -50,7 +50,7 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
 }
 
 async function runGraphify(repoRoot, outputArg, env) {
-  const args = ['.', '--out', outputArg];
+  const args = ['update', '.'];
   const command = `graphify ${args.join(' ')}`;
   const startedAt = new Date().toISOString();
 
@@ -67,6 +67,9 @@ async function runGraphify(repoRoot, outputArg, env) {
   if (result.exitCode !== 0) {
     throw new Error(`graphify failed with exit code ${result.exitCode}: ${result.stderr.trim()}`);
   }
+  if (outputArg !== 'graphify-out') {
+    await mirrorGraphifyOutput(repoRoot, outputArg);
+  }
 
   return {
     command,
@@ -74,6 +77,22 @@ async function runGraphify(repoRoot, outputArg, env) {
     finished_at: new Date().toISOString(),
     exit_code: result.exitCode
   };
+}
+
+async function mirrorGraphifyOutput(repoRoot, outputArg) {
+  const defaultOutputDir = path.join(repoRoot, 'graphify-out');
+  const requestedOutputDir = path.resolve(repoRoot, outputArg);
+  await mkdir(requestedOutputDir, { recursive: true });
+  await ensureFile(path.join(defaultOutputDir, 'graph.json'));
+  await ensureFile(path.join(defaultOutputDir, 'GRAPH_REPORT.md'));
+  for (const fileName of GRAPHIFY_FILES) {
+    const sourceFile = path.join(defaultOutputDir, fileName);
+    try {
+      await copyFile(sourceFile, path.join(requestedOutputDir, fileName));
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
 }
 
 function runProcess(command, args, options) {

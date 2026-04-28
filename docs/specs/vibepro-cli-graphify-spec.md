@@ -38,10 +38,10 @@ graphify の成果物を `.vibepro/graphify/` に取り込む。
 `--run-graphify` がある場合は、取り込み前に対象リポジトリで次を実行する。
 
 ```bash
-graphify . --out graphify-out
+graphify update .
 ```
 
-`--from <path>` と併用する場合は、`graphify . --out <path>` を実行してから取り込む。
+`--from <path>` と併用する場合は、`graphify update .` が生成した `graphify-out/` の成果物を `<path>` に複製してから取り込む。
 
 graphify が見つからない場合は、`uv tool install graphifyy` を案内して失敗する。
 

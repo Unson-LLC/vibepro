@@ -68,12 +68,15 @@ test('graph can run graphify before importing artifacts', async () => {
   const repo = await makeRepo();
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-bin-'));
   const graphifyBin = path.join(binDir, 'graphify');
-  await writeFile(graphifyBin, `#!/usr/bin/env node
+await writeFile(graphifyBin, `#!/usr/bin/env node
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-const outIndex = process.argv.indexOf('--out');
-const outDir = outIndex === -1 ? 'graphify-out' : process.argv[outIndex + 1];
+if (process.argv[2] !== 'update' || process.argv[3] !== '.') {
+  console.error('unexpected graphify args: ' + process.argv.slice(2).join(' '));
+  process.exit(1);
+}
+const outDir = 'graphify-out';
 mkdirSync(outDir, { recursive: true });
 writeFileSync(path.join(outDir, 'graph.json'), JSON.stringify({
   nodes: [{ id: 'from-graphify' }],
@@ -91,7 +94,7 @@ writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n
   assert.equal(result.result.graphifyExecuted, true);
   assert.equal((await readJson(path.join(repo, '.vibepro', 'graphify', 'graph.json'))).nodes[0].id, 'from-graphify');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
-  assert.equal(manifest.graphify.last_execution.command, 'graphify . --out graphify-out');
+  assert.equal(manifest.graphify.last_execution.command, 'graphify update .');
 });
 
 test('graph reports install guidance when graphify is missing', async () => {

@@ -37,6 +37,8 @@ VibePro から graphify を起動して取り込む場合:
 node bin/vibepro.js graph /path/to/repo --run-graphify
 ```
 
+内部では対象リポジトリで `graphify update .` を実行し、生成された `graphify-out/` を `.vibepro/graphify/` に取り込む。
+
 graphify が未インストールの場合は、先にインストールする。
 
 ```bash
