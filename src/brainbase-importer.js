@@ -125,14 +125,11 @@ function normalizeStories(stories) {
     story_id: story.story_id,
     title: story.title,
     ssot: story.ssot ?? 'NocoDB',
-    view: {
-      view_id: story.view?.view_id ?? story.view_id ?? null,
-      view_name: story.view?.view_name ?? story.view_name ?? null
-    },
-    period: {
-      from: story.period?.from ?? null,
-      to: story.period?.to ?? null
-    }
+    horizon: story.horizon ?? null,
+    view: typeof story.view === 'string' ? story.view : null,
+    period: typeof story.period === 'string' ? story.period : null,
+    started_at: story.started_at ?? null,
+    due_at: story.due_at ?? null
   }));
 }
 
@@ -159,7 +156,7 @@ ${Object.entries(importState.latest_run.artifacts).map(([key, value]) => `- ${ke
 
 ## 対象Story
 
-${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / ${story.view.view_name ?? '-'} / ${story.period.from ?? '-'} - ${story.period.to ?? '-'}`).join('\n')}
+${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / Horizon: ${story.horizon ?? '-'} / View: ${story.view ?? '-'} / Period: ${story.period ?? '-'} / ${story.started_at ?? '-'} - ${story.due_at ?? '-'}`).join('\n')}
 
 ## 検出事項
 

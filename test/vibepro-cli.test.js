@@ -220,7 +220,7 @@ test('brainbase creates an import state from the latest VibePro manifest run', a
   assert.equal(manifest.artifacts.brainbase_import_state, '.vibepro/brainbase/import-state.json');
 });
 
-test('brainbase import state supports multiple stories, views, and reporting periods', async () => {
+test('brainbase import state supports multiple stories with NocoDB horizon, view, period, and dates', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -230,16 +230,20 @@ test('brainbase import state supports multiple stories, views, and reporting per
       {
         story_id: 'story-vibepro-diagnosis-commercialization-roadmap',
         title: 'M1: VibePro 診断→商用化ロードマップ',
-        view_id: 'vw5ur5jwyhhwgsyf',
-        view_name: 'ストーリー-マイルストーン',
-        period: { from: '2026-04-01', to: '2026-04-30' }
+        horizon: 'month',
+        view: 'dev',
+        period: '2026-04',
+        started_at: '2026-04-01',
+        due_at: '2026-04-30'
       },
       {
         story_id: 'story-vibepro-brainbase-rollup',
         title: 'Brainbase 横断取り込み',
-        view_id: 'brainbase-rollup',
-        view_name: 'Brainbase 横断ビュー',
-        period: { from: '2026-05-01', to: '2026-05-31' }
+        horizon: 'quarter',
+        view: 'business',
+        period: '2026Q2',
+        started_at: '2026-04-01',
+        due_at: '2026-06-30'
       }
     ]
   };
@@ -260,9 +264,13 @@ test('brainbase import state supports multiple stories, views, and reporting per
     'story-vibepro-diagnosis-commercialization-roadmap',
     'story-vibepro-brainbase-rollup'
   ]);
-  assert.equal(importState.stories[0].view.view_id, 'vw5ur5jwyhhwgsyf');
-  assert.equal(importState.stories[0].period.from, '2026-04-01');
-  assert.equal(importState.stories[1].period.to, '2026-05-31');
+  assert.equal(importState.stories[0].horizon, 'month');
+  assert.equal(importState.stories[0].view, 'dev');
+  assert.equal(importState.stories[0].period, '2026-04');
+  assert.equal(importState.stories[0].started_at, '2026-04-01');
+  assert.equal(importState.stories[0].due_at, '2026-04-30');
+  assert.equal(importState.stories[1].horizon, 'quarter');
+  assert.equal(importState.stories[1].period, '2026Q2');
   assert.equal(importState.story.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
-  assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8'), /Brainbase 横断ビュー/);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8'), /2026Q2/);
 });

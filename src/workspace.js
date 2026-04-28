@@ -8,12 +8,11 @@ export const DEFAULT_BRAINBASE_STORIES = [{
   story_id: 'story-vibepro-diagnosis-commercialization-roadmap',
   title: 'M1: VibePro 診断→商用化ロードマップ',
   ssot: 'NocoDB',
-  view_id: 'vw5ur5jwyhhwgsyf',
-  view_name: 'ストーリー-マイルストーン',
-  period: {
-    from: null,
-    to: null
-  }
+  horizon: null,
+  view: null,
+  period: null,
+  started_at: null,
+  due_at: null
 }];
 
 export async function initWorkspace(repoRoot) {

@@ -107,7 +107,7 @@ node bin/vibepro.js brainbase /path/to/repo
 
 `import-state.json` は Brainbase が読むための構造化状態であり、最新run、ゲート状態、診断シグナル、検出事項、成果物パスを含む。Brainbase は Markdown ではなく、このJSONを取り込み口として扱う。
 
-対象Story、NocoDB view、集計期間は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には `stories[]` と互換用の先頭 `story` が出力される。
+対象Story、NocoDB の `Horizon` / `View` / `Period` / `開始日` / `期限日` は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には `stories[]` と互換用の先頭 `story` が出力される。
 
 ```json
 {
@@ -117,9 +117,11 @@ node bin/vibepro.js brainbase /path/to/repo
         "story_id": "story-vibepro-diagnosis-commercialization-roadmap",
         "title": "M1: VibePro 診断→商用化ロードマップ",
         "ssot": "NocoDB",
-        "view_id": "vw5ur5jwyhhwgsyf",
-        "view_name": "ストーリー-マイルストーン",
-        "period": { "from": "2026-04-01", "to": "2026-04-30" }
+        "horizon": "month",
+        "view": "dev",
+        "period": "2026-04",
+        "started_at": "2026-04-01",
+        "due_at": "2026-04-30"
       }
     ]
   }
