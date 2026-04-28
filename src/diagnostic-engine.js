@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { scanStaticSite } from './static-site-scanner.js';
+import { resolveStoryContext } from './story-manager.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
@@ -13,7 +14,9 @@ export async function runDiagnosis(repoRoot, options = {}) {
 
   const graphPath = path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
   const graph = JSON.parse(await readFile(graphPath, 'utf8'));
-  const evidence = await buildEvidence(root, graph, runId);
+  const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
+  const { currentStory } = resolveStoryContext(config);
+  const evidence = await buildEvidence(root, graph, runId, currentStory);
   const findings = buildFindings(evidence);
   evidence.findings = findings;
   evidence.gates = buildGates(findings);
@@ -31,6 +34,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const manifest = await readManifest(root);
   const run = {
     run_id: runId,
+    story_id: currentStory.story_id,
+    story: currentStory,
     created_at: new Date().toISOString(),
     gate_status: evidence.gates[0]?.status ?? 'unknown',
     artifacts: {
@@ -41,18 +46,24 @@ export async function runDiagnosis(repoRoot, options = {}) {
     }
   };
   manifest.latest_run = runId;
+  manifest.latest_run_by_story = {
+    ...(manifest.latest_run_by_story ?? {}),
+    [currentStory.story_id]: runId
+  };
   manifest.runs = [run, ...(manifest.runs ?? []).filter((item) => item.run_id !== runId)];
   await writeManifest(root, manifest);
 
   return { runDir, run };
 }
 
-async function buildEvidence(repoRoot, graph, runId) {
+async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const edges = Array.isArray(graph.edges) ? graph.edges : [];
   return {
     schema_version: '0.1.0',
     run_id: runId,
+    story_id: story.story_id,
+    story,
     graphify: {
       node_count: nodes.length,
       edge_count: edges.length,
@@ -161,6 +172,8 @@ function renderSummary({ runId, evidence, findings }) {
 | 項目 | 内容 |
 |------|------|
 | Run ID | ${runId} |
+| Story | ${evidence.story.title} |
+| Story ID | ${evidence.story_id} |
 | graphify nodes | ${evidence.graphify.node_count} |
 | graphify edges | ${evidence.graphify.edge_count} |
 | 静的サイト scanned files | ${evidence.static_site.scanned_files} |

@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace } from './workspace.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -87,6 +87,32 @@ export function renderStoryList(result) {
     const period = story.period ?? '-';
     return `${marker} ${story.story_id} | ${story.title} | ${status} | view:${view} | period:${period}`;
   }).join('\n')}\n`;
+}
+
+export function resolveStoryContext(config) {
+  const stories = normalizeActiveStories(config.brainbase?.stories);
+  const currentStoryId = config.brainbase?.current_story_id ?? null;
+  const currentStory = stories.find((story) => story.story_id === currentStoryId) ?? stories[0];
+  return { stories, currentStory };
+}
+
+export function normalizeActiveStories(stories) {
+  const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
+  const activeStories = sourceStories.filter((story) => !isArchived(story));
+  if (activeStories.length === 0) {
+    throw new Error('At least one active story is required');
+  }
+  return activeStories.map((story) => ({
+    story_id: story.story_id,
+    title: story.title,
+    ssot: story.ssot ?? 'NocoDB',
+    status: story.status ?? 'active',
+    horizon: story.horizon ?? null,
+    view: typeof story.view === 'string' ? story.view : null,
+    period: typeof story.period === 'string' ? story.period : null,
+    started_at: story.started_at ?? null,
+    due_at: story.due_at ?? null
+  }));
 }
 
 async function readConfig(repoRoot) {

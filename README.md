@@ -81,6 +81,8 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `evidence.json` が診断内容の機械可読な正本になる。Markdown は人間が確認するための投影として生成する。
 
+`story select` で選択中Storyがある場合、診断runはそのStoryに紐づく。`evidence.json` と `vibepro-manifest.json` の `runs[]` には `story_id` とStory情報を記録する。
+
 静的サイト診断では、次の観点を `.vibepro/diagnostics/<run-id>/` 配下に記録する。
 
 - ルート `index.html` の有無
@@ -110,7 +112,7 @@ node bin/vibepro.js story list /path/to/repo
 node bin/vibepro.js story archive /path/to/repo --id story-local-hardening
 ```
 
-`story select` は `brainbase.current_story_id` を更新する。`brainbase` コマンドは選択中Storyを代表Storyとして `import-state.json` に出力する。`archived` のStoryは通常の `story list` と `import-state.json` から除外される。確認したい場合は `story list --all` を使う。
+`story select` は `brainbase.current_story_id` を更新する。`diagnose` は選択中Storyをrunに記録し、`brainbase` コマンドは選択中Storyを代表Storyとして `import-state.json` に出力する。`archived` のStoryは通常の `story list` と `import-state.json` から除外される。確認したい場合は `story list --all` を使う。
 
 ### 5. Brainbase 取り込み状態の生成
 
@@ -127,6 +129,8 @@ node bin/vibepro.js brainbase /path/to/repo
 ```
 
 `import-state.json` は Brainbase が読むための構造化状態であり、最新run、ゲート状態、診断シグナル、検出事項、成果物パスを含む。Brainbase は Markdown ではなく、このJSONを取り込み口として扱う。
+
+選択中Storyに紐づく診断runがある場合、`brainbase` はリポジトリ全体の最新runよりも、そのStoryの最新runを優先して `import-state.json` に出力する。
 
 NocoDB のストーリー正本から対象Storyを同期する場合:
 

@@ -186,6 +186,40 @@ test('brainbase import uses selected local story and excludes archived stories',
   assert.equal(importState.stories.some((story) => story.story_id === 'story-archived-local'), false);
 });
 
+test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-alpha', '--title', 'Alpha', '--view', 'dev']);
+  await runCli(['story', 'add', repo, '--id', 'story-beta', '--title', 'Beta', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['story', 'select', repo, '--id', 'story-alpha']);
+  await runCli(['diagnose', repo, '--run-id', 'run-alpha']);
+  await runCli(['story', 'select', repo, '--id', 'story-beta']);
+  await runCli(['diagnose', repo, '--run-id', 'run-beta']);
+  await runCli(['story', 'select', repo, '--id', 'story-alpha']);
+
+  const result = await runCli(['brainbase', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const alphaEvidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', 'run-alpha', 'evidence.json'));
+  assert.equal(alphaEvidence.story_id, 'story-alpha');
+  assert.equal(alphaEvidence.story.story_id, 'story-alpha');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.latest_run, 'run-beta');
+  assert.equal(manifest.runs[0].story_id, 'story-beta');
+  assert.equal(manifest.runs[1].story_id, 'story-alpha');
+  const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(importState.story.story_id, 'story-alpha');
+  assert.equal(importState.latest_run.run_id, 'run-alpha');
+  assert.equal(importState.latest_run.story_id, 'story-alpha');
+  assert.equal(manifest.brainbase.last_export.story_id, 'story-alpha');
+  assert.equal(manifest.brainbase.last_export.latest_run_story_id, 'story-alpha');
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
