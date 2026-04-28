@@ -451,11 +451,11 @@ test('brainbase publish-status writes backup and result artifacts after verified
     }
     if (method === 'PATCH') {
       description = body.説明;
-      return jsonResponse({ Id: 42 });
+      return jsonResponse({ '番号': 2 });
     }
     return jsonResponse({
       list: [{
-        Id: 42,
+        '番号': 2,
         'Story ID': 'story-vibepro-diagnosis-commercialization-roadmap',
         '説明': description
       }],
@@ -474,9 +474,12 @@ test('brainbase publish-status writes backup and result artifacts after verified
   });
 
   assert.equal(result.exitCode, 0);
-  assert.equal(requests.filter((request) => request.method === 'PATCH').length, 1);
+  const patch = requests.find((request) => request.method === 'PATCH');
+  assert.ok(patch);
+  assert.match(patch.url, /\/2$/);
   const backup = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-backup.json'));
   assert.equal(backup.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.equal(backup.record_id, 2);
   assert.match(backup.existing_description, /手書きメモ/);
   const publishResult = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-result.json'));
   assert.equal(publishResult.verified, true);
@@ -536,6 +539,7 @@ test('brainbase publish-status dry-run writes preview artifacts without patching
   const preview = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-preview.json'));
   assert.equal(preview.dry_run, true);
   assert.equal(preview.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.equal(preview.latest_run_id, '2026-04-28T231500Z');
   assert.match(preview.next_description, /Gate: needs_review/);
   assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'publish-preview.md'), 'utf8'), /PATCHは実行していない/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));

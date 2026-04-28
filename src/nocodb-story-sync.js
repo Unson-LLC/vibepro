@@ -215,7 +215,7 @@ async function patchStoryDescription(source, fetchFn, record, description) {
 }
 
 function getRecordId(record) {
-  return record.Id ?? record.id ?? record.ID ?? null;
+  return record.Id ?? record.id ?? record.ID ?? record['番号'] ?? null;
 }
 
 function replaceDiagnosisSection(description, section) {
@@ -295,6 +295,7 @@ async function writePublishPreview(repoRoot, { importState, story, record, exist
     generated_at: new Date().toISOString(),
     story_id: story.story_id,
     record_id: getRecordId(record),
+    latest_run_id: importState.latest_run.run_id,
     gate_status: importState.latest_run.gate_status,
     existing_description: existingDescription,
     next_description: nextDescription
