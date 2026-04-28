@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest } from './workspace.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -69,6 +69,32 @@ export async function archiveStory(repoRoot, storyId) {
   return story;
 }
 
+export async function getStoryRuns(repoRoot, storyId = null) {
+  const root = path.resolve(repoRoot);
+  const config = await readConfig(root);
+  const manifest = await readManifest(root);
+  const story = resolveStory(config, storyId);
+  const runs = getRunsForStory(manifest, story.story_id);
+  return { story, runs };
+}
+
+export async function getStoryStatus(repoRoot, storyId = null) {
+  const root = path.resolve(repoRoot);
+  const config = await readConfig(root);
+  const manifest = await readManifest(root);
+  const story = resolveStory(config, storyId);
+  const runs = getRunsForStory(manifest, story.story_id);
+  const latestRun = findLatestStoryRun(manifest, story.story_id, runs);
+  const evidence = latestRun ? await readRunEvidence(root, latestRun) : null;
+  return {
+    story,
+    latestRun,
+    runs,
+    findingCount: evidence?.findings?.length ?? 0,
+    artifacts: latestRun?.artifacts ?? {}
+  };
+}
+
 export function parseStoryOptions(args) {
   const options = {};
   for (const [flag, key] of STORY_FIELDS) {
@@ -89,11 +115,74 @@ export function renderStoryList(result) {
   }).join('\n')}\n`;
 }
 
+export function renderStoryRuns(result) {
+  if (result.runs.length === 0) {
+    return `# Story Runs\n\n| Story ID | ${result.story.story_id} |\n| Latest run | - |\n\nNo diagnosis runs.\n`;
+  }
+  return `# Story Runs
+
+| Story ID | ${result.story.story_id} |
+| Story | ${result.story.title} |
+
+| Run ID | Created At | Gate | Evidence |
+|--------|------------|------|----------|
+${result.runs.map((run) => `| ${run.run_id} | ${run.created_at ?? '-'} | ${run.gate_status ?? '-'} | ${run.artifacts?.evidence ?? '-'} |`).join('\n')}
+`;
+}
+
+export function renderStoryStatus(result) {
+  const latestRun = result.latestRun;
+  return `# Story Status
+
+| 項目 | 内容 |
+|------|------|
+| Story ID | ${result.story.story_id} |
+| Story | ${result.story.title} |
+| Status | ${result.story.status ?? 'active'} |
+| View | ${result.story.view ?? '-'} |
+| Period | ${result.story.period ?? '-'} |
+| Latest run | ${latestRun?.run_id ?? '-'} |
+| Gate | ${latestRun?.gate_status ?? '-'} |
+| Findings | ${result.findingCount} |
+| Runs | ${result.runs.length} |
+
+## Artifacts
+
+${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(result.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+`;
+}
+
 export function resolveStoryContext(config) {
   const stories = normalizeActiveStories(config.brainbase?.stories);
   const currentStoryId = config.brainbase?.current_story_id ?? null;
   const currentStory = stories.find((story) => story.story_id === currentStoryId) ?? stories[0];
   return { stories, currentStory };
+}
+
+function resolveStory(config, storyId = null) {
+  const stories = normalizeActiveStories(config.brainbase?.stories);
+  const targetStoryId = storyId ?? config.brainbase?.current_story_id ?? null;
+  const story = targetStoryId
+    ? stories.find((item) => item.story_id === targetStoryId)
+    : stories[0];
+  if (!story) throw new Error(`Story not found: ${targetStoryId}`);
+  return story;
+}
+
+function getRunsForStory(manifest, storyId) {
+  const runs = Array.isArray(manifest.runs) ? manifest.runs : [];
+  return runs.filter((run) => run.story_id === storyId);
+}
+
+function findLatestStoryRun(manifest, storyId, runs) {
+  const latestRunId = manifest.latest_run_by_story?.[storyId] ?? null;
+  return runs.find((run) => run.run_id === latestRunId) ?? runs[0] ?? null;
+}
+
+async function readRunEvidence(repoRoot, run) {
+  const evidencePath = run.artifacts?.evidence;
+  if (!evidencePath) return null;
+  return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
 }
 
 export function normalizeActiveStories(stories) {

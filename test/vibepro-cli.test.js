@@ -220,6 +220,49 @@ test('diagnose binds runs to selected story and brainbase prefers the selected s
   assert.equal(manifest.brainbase.last_export.latest_run_story_id, 'story-alpha');
 });
 
+test('story runs and status show selected story diagnosis history', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-alpha', '--title', 'Alpha', '--view', 'dev']);
+  await runCli(['story', 'add', repo, '--id', 'story-beta', '--title', 'Beta', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['story', 'select', repo, '--id', 'story-alpha']);
+  await runCli(['diagnose', repo, '--run-id', 'run-alpha']);
+  await runCli(['story', 'select', repo, '--id', 'story-beta']);
+  await runCli(['diagnose', repo, '--run-id', 'run-beta']);
+  await runCli(['story', 'select', repo, '--id', 'story-alpha']);
+
+  let runsOutput = '';
+  const runsResult = await runCli(['story', 'runs', repo], {
+    stdout: { write: (text) => { runsOutput += text; } }
+  });
+
+  assert.equal(runsResult.exitCode, 0);
+  assert.equal(runsResult.result.story.story_id, 'story-alpha');
+  assert.equal(runsResult.result.runs.length, 1);
+  assert.match(runsOutput, /run-alpha/);
+  assert.doesNotMatch(runsOutput, /run-beta/);
+
+  let statusOutput = '';
+  const statusResult = await runCli(['story', 'status', repo], {
+    stdout: { write: (text) => { statusOutput += text; } }
+  });
+
+  assert.equal(statusResult.exitCode, 0);
+  assert.equal(statusResult.result.story.story_id, 'story-alpha');
+  assert.equal(statusResult.result.latestRun.run_id, 'run-alpha');
+  assert.equal(statusResult.result.findingCount, 0);
+  assert.match(statusOutput, /Story ID \| story-alpha/);
+  assert.match(statusOutput, /Latest run \| run-alpha/);
+  assert.match(statusOutput, /Gate \| pass/);
+  assert.match(statusOutput, /Findings \| 0/);
+  assert.match(statusOutput, /\.vibepro\/diagnostics\/run-alpha\/evidence.json/);
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

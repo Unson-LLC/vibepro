@@ -3,7 +3,18 @@ import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
-import { addStory, archiveStory, listStories, parseStoryOptions, renderStoryList, selectStory } from './story-manager.js';
+import {
+  addStory,
+  archiveStory,
+  getStoryRuns,
+  getStoryStatus,
+  listStories,
+  parseStoryOptions,
+  renderStoryList,
+  renderStoryRuns,
+  renderStoryStatus,
+  selectStory
+} from './story-manager.js';
 
 const HELP = `VibePro CLI
 
@@ -15,6 +26,8 @@ Usage:
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
   vibepro story archive [repo] --id <id>
+  vibepro story runs [repo] [--id <id>]
+  vibepro story status [repo] [--id <id>]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -78,6 +91,16 @@ export async function runCli(argv, io = {}) {
         const story = await archiveStory(repoRoot, getOption(rest, '--id'));
         write(stdout, `Story archived: ${story.story_id}\n`);
         return { exitCode: 0, command, subcommand, story };
+      }
+      if (subcommand === 'runs') {
+        const result = await getStoryRuns(repoRoot, getOption(rest, '--id'));
+        write(stdout, renderStoryRuns(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await getStoryStatus(repoRoot, getOption(rest, '--id'));
+        write(stdout, renderStoryStatus(result));
+        return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };
