@@ -363,6 +363,64 @@ test('brainbase sync-stories updates config stories from NocoDB Story records be
   assert.equal(importState.stories[1].period, '2026Q2');
 });
 
+test('brainbase publish-status replaces the VibePro diagnosis section in the NocoDB Story description', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }],
+    edges: [{ source: 'app', target: 'unknown', relation: 'depends_on', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T230000Z']);
+  const requests = [];
+  const fakeFetch = async (url, options) => {
+    requests.push({ url, method: options.method ?? 'GET', body: options.body ? JSON.parse(options.body) : null });
+    if (url.includes('/api/v1/db/meta/tables/')) {
+      return jsonResponse({
+        columns: [
+          { title: 'Story ID', column_name: 'story_id' },
+          { title: '説明', column_name: 'description' }
+        ]
+      });
+    }
+    if ((options.method ?? 'GET') === 'PATCH') {
+      return jsonResponse({ Id: 42 });
+    }
+    return jsonResponse({
+      list: [{
+        Id: 42,
+        'Story ID': 'story-vibepro-diagnosis-commercialization-roadmap',
+        '説明': '既存説明\n\n<!-- vibepro:diagnosis-sync:start -->\n古い診断\n<!-- vibepro:diagnosis-sync:end -->\n\n手書きメモ'
+      }],
+      pageInfo: { isLastPage: true }
+    });
+  };
+
+  const result = await runCli(['brainbase', repo, '--publish-status'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: fakeFetch
+  });
+
+  assert.equal(result.exitCode, 0);
+  const patch = requests.find((request) => request.method === 'PATCH');
+  assert.ok(patch);
+  assert.match(patch.url, /\/api\/v1\/db\/data\/noco\/base-1\/table-1\/42$/);
+  assert.equal(patch.body.ステータス, undefined);
+  assert.match(patch.body.説明, /既存説明/);
+  assert.match(patch.body.説明, /手書きメモ/);
+  assert.match(patch.body.説明, /VibePro診断同期/);
+  assert.match(patch.body.説明, /Gate: needs_review/);
+  assert.doesNotMatch(patch.body.説明, /古い診断/);
+});
+
 function jsonResponse(body) {
   return {
     ok: true,

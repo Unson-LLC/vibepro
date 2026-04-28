@@ -113,6 +113,12 @@ NocoDB のストーリー正本から対象Storyを同期する場合:
 node bin/vibepro.js brainbase /path/to/repo --sync-stories
 ```
 
+診断結果をNocoDB Storyの `説明` に書き戻す場合:
+
+```bash
+node bin/vibepro.js brainbase /path/to/repo --publish-status
+```
+
 必要な環境変数:
 
 - `NOCODB_URL`
@@ -121,6 +127,8 @@ node bin/vibepro.js brainbase /path/to/repo --sync-stories
 - `NOCODB_STORY_TABLE_ID`（省略時は既定のストーリーテーブル）
 
 `--sync-stories` は NocoDB のストーリーテーブルから `archived` 以外のStoryを読み、`.vibepro/config.json` の `brainbase.stories[]` を更新してから `import-state.json` を生成する。
+
+`--publish-status` は代表Storyの `説明` に `VibePro診断同期` セクションを追記または置換する。Storyの `ステータス` は変更しない。
 
 対象Story、NocoDB の `Horizon` / `View` / `Period` / `開始日` / `期限日` は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には `stories[]` と互換用の先頭 `story` が出力される。
 

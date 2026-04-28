@@ -2,7 +2,7 @@ import { initWorkspace } from './workspace.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
-import { syncStoriesFromNocoDB } from './nocodb-story-sync.js';
+import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 
 const HELP = `VibePro CLI
 
@@ -10,7 +10,7 @@ Usage:
   vibepro init [repo]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro brainbase [repo] [--sync-stories]
+  vibepro brainbase [repo] [--sync-stories] [--publish-status]
 `;
 
 export async function runCli(argv, io = {}) {
@@ -62,6 +62,13 @@ export async function runCli(argv, io = {}) {
       }
       const result = await createBrainbaseImport(repoRoot);
       write(stdout, `Brainbase import state created: ${result.importStatePath}\n`);
+      if (hasFlag(rest, '--publish-status')) {
+        const publishResult = await publishStatusToNocoDB(repoRoot, {
+          env: io.env,
+          fetch: io.fetch
+        });
+        write(stdout, `Brainbase story status published: ${publishResult.storyId}\n`);
+      }
       return { exitCode: 0, command, result };
     }
 
