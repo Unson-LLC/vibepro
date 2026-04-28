@@ -31,6 +31,42 @@ test('init creates a repo-local VibePro workspace and ignore file', async () => 
   assert.match(gitignore, /\.vibepro\/raw\//);
 });
 
+test('init can bootstrap and select a local story', async () => {
+  const repo = await makeRepo();
+
+  const result = await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-hardening',
+    '--title',
+    '公開前診断',
+    '--view',
+    'dev',
+    '--period',
+    '2026-W18'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.brainbase.current_story_id, 'story-hardening');
+  const story = config.brainbase.stories.find((item) => item.story_id === 'story-hardening');
+  assert.equal(story.title, '公開前診断');
+  assert.equal(story.ssot, 'local');
+  assert.equal(story.status, 'active');
+  assert.equal(story.view, 'dev');
+  assert.equal(story.period, '2026-W18');
+});
+
+test('init fails when bootstrapped story already exists', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-hardening', '--title', '公開前診断']);
+
+  const result = await runCli(['init', repo, '--story-id', 'story-hardening', '--title', '公開前診断']);
+
+  assert.equal(result.exitCode, 1);
+});
+
 test('graph imports existing graphify artifacts into the workspace', async () => {
   const repo = await makeRepo();
   const graphSource = path.join(repo, 'graphify-out');

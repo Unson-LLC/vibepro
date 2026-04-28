@@ -15,7 +15,7 @@ VibePro CLI は、対象リポジトリに `.vibepro/` 作業領域を作り、g
 
 ## コマンド
 
-### `vibepro init [repo]`
+### `vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]`
 
 対象リポジトリに VibePro 作業領域を作る。
 
@@ -28,6 +28,22 @@ VibePro CLI は、対象リポジトリに `.vibepro/` 作業領域を作り、g
 - `.vibepro/raw/`
 - `.vibeproignore`
 - `.gitignore` の VibePro 生証跡除外
+
+`--story-id` を指定した場合は、同じ初期化の中でローカルStoryも作成し、`.vibepro/config.json` の `brainbase.current_story_id` に選択状態として保存する。
+
+作成するStory:
+
+- `story_id`
+- `title`
+- `ssot: local`
+- `status: active`
+- `horizon`
+- `view`
+- `period`
+- `started_at`
+- `due_at`
+
+`--story-id` 指定時は `--title` を必須とする。同じ `story_id` がすでに存在する場合は失敗する。
 
 ### `vibepro graph [repo] [--from <graphify-out>] [--run-graphify]`
 
@@ -303,6 +319,8 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 ## 受け入れ条件
 
 - `init` で `.vibepro/` と除外設定が作られる。
+- `init --story-id` でNocoDBなしにローカルStoryを作り、選択中Storyにできる。
+- `init --story-id` で同じStory IDがすでに存在する場合は失敗する。
 - `graph` で graphify 成果物が `.vibepro/graphify/` に入る。
 - `graph` で管理目録に graphify 成果物のパスが記録される。
 - `diagnose` で `summary.md`、`risk-register.md`、`static-site-check-result.md`、`evidence.json` が作られる。

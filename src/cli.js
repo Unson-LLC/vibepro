@@ -20,7 +20,7 @@ import {
 const HELP = `VibePro CLI
 
 Usage:
-  vibepro init [repo]
+  vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro story list [repo] [--all]
@@ -49,6 +49,18 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[0] ?? process.cwd();
       const workspace = await initWorkspace(repoRoot);
       write(stdout, `VibePro workspace initialized: ${workspace.workspaceDir}\n`);
+      const storyId = getOption(rest, '--story-id');
+      if (storyId) {
+        const storyOptions = {
+          ...parseStoryOptions(rest),
+          story_id: storyId
+        };
+        const story = await addStory(repoRoot, storyOptions);
+        await selectStory(repoRoot, story.story_id);
+        write(stdout, `Story added: ${story.story_id}\n`);
+        write(stdout, `Story selected: ${story.story_id}\n`);
+        return { exitCode: 0, command, workspace, story };
+      }
       return { exitCode: 0, command, workspace };
     }
 

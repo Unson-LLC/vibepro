@@ -13,6 +13,18 @@ npm install
 node bin/vibepro.js init /path/to/repo
 ```
 
+NocoDBなしで最初のStoryまで作る場合:
+
+```bash
+node bin/vibepro.js init /path/to/repo \
+  --story-id story-local-hardening \
+  --title "ローカル診断強化" \
+  --view dev \
+  --period 2026-W18
+```
+
+`--story-id` を指定すると、`ssot: local` のStoryを `.vibepro/config.json` に追加し、そのStoryを選択中にする。同じStory IDがすでにある場合は失敗する。
+
 生成される主なファイル:
 
 ```text
@@ -98,6 +110,20 @@ node bin/vibepro.js diagnose /path/to/repo
 ### 4. ローカルStory管理
 
 NocoDBを使わず、対象リポジトリの `.vibepro/config.json` だけでStoryを管理できる。
+
+初回から診断までの最短手順:
+
+```bash
+node bin/vibepro.js init /path/to/repo \
+  --story-id story-local-hardening \
+  --title "ローカル診断強化" \
+  --view dev \
+  --period 2026-W18
+
+node bin/vibepro.js story diagnose /path/to/repo --id story-local-hardening --run-graphify
+```
+
+Storyを後から追加する場合:
 
 ```bash
 node bin/vibepro.js story add /path/to/repo \
