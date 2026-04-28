@@ -1,0 +1,15 @@
+{
+  "name": "vibepro",
+  "version": "0.1.0",
+  "description": "VibePro CLI for production-readiness diagnostics",
+  "type": "module",
+  "bin": {
+    "vibepro": "./bin/vibepro.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
