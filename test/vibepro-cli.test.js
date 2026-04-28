@@ -376,6 +376,7 @@ test('brainbase publish-status replaces the VibePro diagnosis section in the Noc
   await runCli(['graph', repo, '--from', graphDir]);
   await runCli(['diagnose', repo, '--run-id', '2026-04-28T230000Z']);
   const requests = [];
+  let description = '既存説明\n\n<!-- vibepro:diagnosis-sync:start -->\n古い診断\n<!-- vibepro:diagnosis-sync:end -->\n\n手書きメモ';
   const fakeFetch = async (url, options) => {
     requests.push({ url, method: options.method ?? 'GET', body: options.body ? JSON.parse(options.body) : null });
     if (url.includes('/api/v1/db/meta/tables/')) {
@@ -387,13 +388,14 @@ test('brainbase publish-status replaces the VibePro diagnosis section in the Noc
       });
     }
     if ((options.method ?? 'GET') === 'PATCH') {
+      description = JSON.parse(options.body).説明;
       return jsonResponse({ Id: 42 });
     }
     return jsonResponse({
       list: [{
         Id: 42,
         'Story ID': 'story-vibepro-diagnosis-commercialization-roadmap',
-        '説明': '既存説明\n\n<!-- vibepro:diagnosis-sync:start -->\n古い診断\n<!-- vibepro:diagnosis-sync:end -->\n\n手書きメモ'
+        '説明': description
       }],
       pageInfo: { isLastPage: true }
     });
@@ -419,6 +421,71 @@ test('brainbase publish-status replaces the VibePro diagnosis section in the Noc
   assert.match(patch.body.説明, /VibePro診断同期/);
   assert.match(patch.body.説明, /Gate: needs_review/);
   assert.doesNotMatch(patch.body.説明, /古い診断/);
+});
+
+test('brainbase publish-status writes backup and result artifacts after verified NocoDB update', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }],
+    edges: [{ source: 'app', target: 'unknown', relation: 'depends_on', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T230500Z']);
+  let description = '既存説明\n\n手書きメモ';
+  const requests = [];
+  const fakeFetch = async (url, options) => {
+    const method = options.method ?? 'GET';
+    const body = options.body ? JSON.parse(options.body) : null;
+    requests.push({ url, method, body });
+    if (url.includes('/api/v1/db/meta/tables/')) {
+      return jsonResponse({
+        columns: [
+          { title: 'Story ID', column_name: 'story_id' },
+          { title: '説明', column_name: 'description' }
+        ]
+      });
+    }
+    if (method === 'PATCH') {
+      description = body.説明;
+      return jsonResponse({ Id: 42 });
+    }
+    return jsonResponse({
+      list: [{
+        Id: 42,
+        'Story ID': 'story-vibepro-diagnosis-commercialization-roadmap',
+        '説明': description
+      }],
+      pageInfo: { isLastPage: true }
+    });
+  };
+
+  const result = await runCli(['brainbase', repo, '--publish-status'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: fakeFetch
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(requests.filter((request) => request.method === 'PATCH').length, 1);
+  const backup = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-backup.json'));
+  assert.equal(backup.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.match(backup.existing_description, /手書きメモ/);
+  const publishResult = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-result.json'));
+  assert.equal(publishResult.verified, true);
+  assert.equal(publishResult.description_matches_expected, true);
+  assert.equal(publishResult.updated_fields.length, 1);
+  assert.equal(publishResult.updated_fields[0], '説明');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.brainbase.last_publish_result.backup_json, '.vibepro/brainbase/publish-backup.json');
+  assert.equal(manifest.brainbase.last_publish_result.result_json, '.vibepro/brainbase/publish-result.json');
 });
 
 test('brainbase publish-status dry-run writes preview artifacts without patching NocoDB', async () => {

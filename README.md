@@ -144,6 +144,8 @@ node bin/vibepro.js brainbase /path/to/repo --publish-status --dry-run --story-i
 
 `--publish-status --dry-run` は NocoDB へPATCHせず、`.vibepro/brainbase/publish-preview.json` と `.vibepro/brainbase/publish-preview.md` を生成する。管理目録には `brainbase.last_publish_preview` を記録する。
 
+`--publish-status` を実行した場合は、更新前の説明と更新予定内容を `.vibepro/brainbase/publish-backup.json` に保存してから NocoDB へPATCHする。PATCH後は対象Storyを再取得し、`説明` が生成した更新後説明と一致することを検証する。検証結果は `.vibepro/brainbase/publish-result.json` に保存し、管理目録には `brainbase.last_publish_result` を記録する。
+
 `--story-id` は `import-state.json` の `stories[]` から対象Storyを選ぶ。未指定時は互換用の先頭 `story` を使う。
 
 対象Story、NocoDB の `Horizon` / `View` / `Period` / `開始日` / `期限日` は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には `stories[]` と互換用の先頭 `story` が出力される。

@@ -86,8 +86,31 @@ export async function publishStatusToNocoDB(repoRoot, options = {}) {
     };
   }
 
+  const backup = await writePublishBackup(root, {
+    importState,
+    story,
+    record,
+    existingDescription,
+    nextDescription
+  });
   await patchStoryDescription(source, fetchFn, record, nextDescription);
-  return { storyId: story.story_id, recordId: getRecordId(record) };
+  const verifiedRecord = await findStoryRecord(source, fetchFn, story.story_id);
+  const verifiedDescription = pick(verifiedRecord, '説明', 'description') ?? '';
+  const publishResult = await writePublishResult(root, {
+    importState,
+    story,
+    record: verifiedRecord,
+    backup,
+    nextDescription,
+    verifiedDescription
+  });
+  await recordPublishResult(root, backup, publishResult, importState);
+  return {
+    storyId: story.story_id,
+    recordId: getRecordId(record),
+    backup,
+    publishResult
+  };
 }
 
 function selectPublishStory(importState, storyId) {
@@ -203,6 +226,64 @@ function replaceDiagnosisSection(description, section) {
   }
   const prefix = description.trimEnd();
   return `${prefix}${prefix ? '\n\n' : ''}${nextBlock}\n`;
+}
+
+async function writePublishBackup(repoRoot, { importState, story, record, existingDescription, nextDescription }) {
+  const brainbaseDir = path.join(getWorkspaceDir(repoRoot), 'brainbase');
+  await mkdir(brainbaseDir, { recursive: true });
+  const backup = {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    story_id: story.story_id,
+    record_id: getRecordId(record),
+    latest_run_id: importState.latest_run.run_id,
+    existing_description: existingDescription,
+    next_description: nextDescription
+  };
+  const backupJsonPath = path.join(brainbaseDir, 'publish-backup.json');
+  await writeFile(backupJsonPath, `${JSON.stringify(backup, null, 2)}\n`);
+  return { ...backup, backupJsonPath };
+}
+
+async function writePublishResult(repoRoot, { importState, story, record, backup, nextDescription, verifiedDescription }) {
+  const brainbaseDir = path.join(getWorkspaceDir(repoRoot), 'brainbase');
+  await mkdir(brainbaseDir, { recursive: true });
+  const descriptionMatchesExpected = verifiedDescription === nextDescription;
+  if (!descriptionMatchesExpected) {
+    throw new Error(`NocoDB Story description verification failed: ${story.story_id}`);
+  }
+  const publishResult = {
+    schema_version: '0.1.0',
+    published_at: new Date().toISOString(),
+    story_id: story.story_id,
+    record_id: getRecordId(record),
+    latest_run_id: importState.latest_run.run_id,
+    gate_status: importState.latest_run.gate_status,
+    verified: true,
+    description_matches_expected: descriptionMatchesExpected,
+    updated_fields: ['説明'],
+    status_changed: false,
+    backup_json: toWorkspaceRelative(repoRoot, backup.backupJsonPath)
+  };
+  const resultJsonPath = path.join(brainbaseDir, 'publish-result.json');
+  await writeFile(resultJsonPath, `${JSON.stringify(publishResult, null, 2)}\n`);
+  return { ...publishResult, resultJsonPath };
+}
+
+async function recordPublishResult(repoRoot, backup, publishResult, importState) {
+  const manifest = await readManifest(repoRoot);
+  manifest.brainbase = {
+    ...(manifest.brainbase ?? {}),
+    last_publish_result: {
+      published_at: publishResult.published_at,
+      latest_run_id: importState.latest_run.run_id,
+      story_id: publishResult.story_id,
+      verified: publishResult.verified,
+      backup_json: toWorkspaceRelative(repoRoot, backup.backupJsonPath),
+      result_json: toWorkspaceRelative(repoRoot, publishResult.resultJsonPath)
+    }
+  };
+  await writeManifest(repoRoot, manifest);
 }
 
 async function writePublishPreview(repoRoot, { importState, story, record, existingDescription, nextDescription }) {
