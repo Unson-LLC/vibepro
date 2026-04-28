@@ -134,3 +134,51 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   assert.equal(manifest.latest_run, '2026-04-28T120000Z');
   assert.equal(manifest.runs[0].artifacts.summary, '.vibepro/diagnostics/2026-04-28T120000Z/summary.md');
 });
+
+test('diagnose creates static site evidence and a static site report under the run directory', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'index.html'), `<!doctype html>
+<html>
+  <head>
+    <script src="https://cdn.example.com/app.js"></script>
+  </head>
+  <body>
+    <script src="./app.js"></script>
+  </body>
+</html>
+`);
+  await writeFile(path.join(repo, 'app.js'), `
+const apiKey = "sk-123456789012345678901234";
+document.body.innerHTML = location.hash;
+eval("1+1");
+`);
+  await writeFile(path.join(repo, 'server.py'), 'print("not a static asset")\n');
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }],
+    edges: []
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-04-28T130000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T130000Z');
+  await stat(path.join(runDir, 'static-site-check-result.md'));
+  const evidence = await readJson(path.join(runDir, 'evidence.json'));
+  assert.equal(evidence.static_site.has_index_html, true);
+  assert.equal(evidence.static_site.secret_hits.length > 0, true);
+  assert.equal(evidence.static_site.xss_risk_hits.length > 0, true);
+  assert.equal(evidence.static_site.external_resources.length > 0, true);
+  assert.equal(evidence.static_site.non_static_files.some((item) => item.file === 'server.py'), true);
+  assert.equal(evidence.gates[0].status, 'block');
+  assert.match(await readFile(path.join(runDir, 'risk-register.md'), 'utf8'), /秘密情報/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.runs[0].artifacts.static_site_check,
+    '.vibepro/diagnostics/2026-04-28T130000Z/static-site-check-result.md'
+  );
+});

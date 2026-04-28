@@ -73,8 +73,21 @@ node bin/vibepro.js diagnose /path/to/repo
 .vibepro/diagnostics/<run-id>/
 ├── summary.md
 ├── risk-register.md
+├── static-site-check-result.md
 └── evidence.json
 ```
+
+`evidence.json` が診断内容の機械可読な正本になる。Markdown は人間が確認するための投影として生成する。
+
+静的サイト診断では、次の観点を `.vibepro/diagnostics/<run-id>/` 配下に記録する。
+
+- ルート `index.html` の有無
+- 秘密情報候補
+- XSS につながり得る DOM 操作
+- 外部リソース参照
+- 静的配信対象外のファイル候補
+
+秘密情報候補がある場合、`production-readiness` ゲートは `block` になる。高または中の確認事項がある場合は `needs_review` になる。
 
 `vibepro-manifest.json` には最新の実行ID、ゲート状態、成果物パスを記録する。Brainbase はこの管理目録を読む。
 
