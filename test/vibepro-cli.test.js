@@ -421,6 +421,60 @@ test('brainbase publish-status replaces the VibePro diagnosis section in the Noc
   assert.doesNotMatch(patch.body.説明, /古い診断/);
 });
 
+test('brainbase publish-status dry-run writes preview artifacts without patching NocoDB', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }],
+    edges: [{ source: 'app', target: 'unknown', relation: 'depends_on', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T231500Z']);
+  const requests = [];
+  const fakeFetch = async (url, options) => {
+    requests.push({ url, method: options.method ?? 'GET' });
+    if (url.includes('/api/v1/db/meta/tables/')) {
+      return jsonResponse({
+        columns: [
+          { title: 'Story ID', column_name: 'story_id' },
+          { title: '説明', column_name: 'description' }
+        ]
+      });
+    }
+    return jsonResponse({
+      list: [{
+        Id: 42,
+        'Story ID': 'story-vibepro-diagnosis-commercialization-roadmap',
+        '説明': '既存説明'
+      }],
+      pageInfo: { isLastPage: true }
+    });
+  };
+
+  const result = await runCli(['brainbase', repo, '--publish-status', '--dry-run'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: fakeFetch
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(requests.some((request) => request.method === 'PATCH'), false);
+  const preview = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-preview.json'));
+  assert.equal(preview.dry_run, true);
+  assert.equal(preview.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.match(preview.next_description, /Gate: needs_review/);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'publish-preview.md'), 'utf8'), /PATCHは実行していない/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.brainbase.last_publish_preview.preview_json, '.vibepro/brainbase/publish-preview.json');
+});
+
 function jsonResponse(body) {
   return {
     ok: true,

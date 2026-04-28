@@ -1,7 +1,7 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const DEFAULT_BASE_ID = 'pfgza5aei6wboaq';
 const DEFAULT_TABLE_ID = 'mjpg80jobkjo8lz';
@@ -69,6 +69,22 @@ export async function publishStatusToNocoDB(repoRoot, options = {}) {
   const record = await findStoryRecord(source, fetchFn, story.story_id);
   const existingDescription = pick(record, '説明', 'description') ?? '';
   const nextDescription = replaceDiagnosisSection(existingDescription, renderDiagnosisSection(importState));
+
+  if (options.dryRun) {
+    const preview = await writePublishPreview(root, {
+      importState,
+      record,
+      existingDescription,
+      nextDescription
+    });
+    await recordPublishPreview(root, preview, importState);
+    return {
+      storyId: story.story_id,
+      recordId: getRecordId(record),
+      dryRun: true,
+      preview
+    };
+  }
 
   await patchStoryDescription(source, fetchFn, record, nextDescription);
   return { storyId: story.story_id, recordId: getRecordId(record) };
@@ -175,6 +191,61 @@ function replaceDiagnosisSection(description, section) {
   }
   const prefix = description.trimEnd();
   return `${prefix}${prefix ? '\n\n' : ''}${nextBlock}\n`;
+}
+
+async function writePublishPreview(repoRoot, { importState, record, existingDescription, nextDescription }) {
+  const brainbaseDir = path.join(getWorkspaceDir(repoRoot), 'brainbase');
+  await mkdir(brainbaseDir, { recursive: true });
+  const preview = {
+    schema_version: '0.1.0',
+    dry_run: true,
+    generated_at: new Date().toISOString(),
+    story_id: importState.story.story_id,
+    record_id: getRecordId(record),
+    gate_status: importState.latest_run.gate_status,
+    existing_description: existingDescription,
+    next_description: nextDescription
+  };
+  const previewJsonPath = path.join(brainbaseDir, 'publish-preview.json');
+  const previewMarkdownPath = path.join(brainbaseDir, 'publish-preview.md');
+  await writeFile(previewJsonPath, `${JSON.stringify(preview, null, 2)}\n`);
+  await writeFile(previewMarkdownPath, renderPublishPreview(preview));
+  return { ...preview, previewJsonPath, previewMarkdownPath };
+}
+
+async function recordPublishPreview(repoRoot, preview, importState) {
+  const manifest = await readManifest(repoRoot);
+  manifest.brainbase = {
+    ...(manifest.brainbase ?? {}),
+    last_publish_preview: {
+      generated_at: preview.generated_at,
+      latest_run_id: importState.latest_run.run_id,
+      story_id: preview.story_id,
+      preview_json: toWorkspaceRelative(repoRoot, preview.previewJsonPath),
+      preview_markdown: toWorkspaceRelative(repoRoot, preview.previewMarkdownPath)
+    }
+  };
+  await writeManifest(repoRoot, manifest);
+}
+
+function renderPublishPreview(preview) {
+  return `# VibePro診断同期プレビュー
+
+| 項目 | 内容 |
+|------|------|
+| Story ID | ${preview.story_id} |
+| Record ID | ${preview.record_id} |
+| Gate | ${preview.gate_status} |
+| Dry Run | true |
+
+PATCHは実行していない。
+
+## 更新後の説明
+
+\`\`\`md
+${preview.next_description}
+\`\`\`
+`;
 }
 
 function renderDiagnosisSection(importState) {
