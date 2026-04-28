@@ -30,6 +30,7 @@ Usage:
   vibepro story runs [repo] [--id <id>]
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
+  vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -108,6 +109,23 @@ export async function runCli(argv, io = {}) {
         const result = await createStoryReport(repoRoot, getOption(rest, '--id'));
         write(stdout, `Story report created: ${result.reportPath}\n`);
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'diagnose') {
+        const story = await selectStory(repoRoot, getOption(rest, '--id'));
+        write(stdout, `Story selected: ${story.story_id}\n`);
+        const graph = await importGraphifyArtifacts(repoRoot, {
+          sourceDir: getOption(rest, '--from'),
+          runGraphify: hasFlag(rest, '--run-graphify'),
+          env: io.env
+        });
+        write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
+        const diagnosis = await runDiagnosis(repoRoot, { runId: getOption(rest, '--run-id') });
+        write(stdout, `diagnosis created: ${diagnosis.runDir}\n`);
+        const report = await createStoryReport(repoRoot, story.story_id);
+        write(stdout, `Story report created: ${report.reportPath}\n`);
+        const status = await getStoryStatus(repoRoot, story.story_id);
+        write(stdout, renderStoryStatus(status));
+        return { exitCode: 0, command, subcommand, result: { story, graph, diagnosis, report, status } };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };

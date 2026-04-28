@@ -294,6 +294,38 @@ test('story report creates a Story diagnosis report artifact', async () => {
   assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
 });
 
+test('story diagnose runs the local story workflow in one command', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-alpha', '--title', 'Alpha', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'api' }],
+    edges: [{ source: 'app', target: 'api', relation: 'calls', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  let output = '';
+
+  const result = await runCli(['story', 'diagnose', repo, '--id', 'story-alpha', '--run-id', 'run-alpha'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story.story_id, 'story-alpha');
+  assert.equal(result.result.diagnosis.run.run_id, 'run-alpha');
+  assert.match(output, /Story selected: story-alpha/);
+  assert.match(output, /graphify artifacts imported/);
+  assert.match(output, /diagnosis created/);
+  assert.match(output, /Story report created/);
+  assert.match(output, /# Story Status/);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.brainbase.current_story_id, 'story-alpha');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.latest_run_by_story['story-alpha'], 'run-alpha');
+  assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
