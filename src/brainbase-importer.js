@@ -74,7 +74,8 @@ function buildImportState({ manifest, config, latestRun, evidence }) {
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const stories = normalizeStories(config.brainbase?.stories);
-  const primaryStory = stories[0];
+  const currentStoryId = config.brainbase?.current_story_id ?? null;
+  const primaryStory = stories.find((story) => story.story_id === currentStoryId) ?? stories[0];
 
   return {
     schema_version: '0.1.0',
@@ -121,10 +122,15 @@ function buildImportState({ manifest, config, latestRun, evidence }) {
 
 function normalizeStories(stories) {
   const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
-  return sourceStories.map((story) => ({
+  const activeStories = sourceStories.filter((story) => !isArchived(story));
+  if (activeStories.length === 0) {
+    throw new Error('Brainbase import requires at least one active story');
+  }
+  return activeStories.map((story) => ({
     story_id: story.story_id,
     title: story.title,
     ssot: story.ssot ?? 'NocoDB',
+    status: story.status ?? 'active',
     horizon: story.horizon ?? null,
     view: typeof story.view === 'string' ? story.view : null,
     period: typeof story.period === 'string' ? story.period : null,
@@ -162,4 +168,8 @@ ${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / Hor
 
 ${importState.findings.length === 0 ? '- なし' : importState.findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 `;
+}
+
+function isArchived(story) {
+  return story.status === 'archived' || story.status === 'アーカイブ';
 }

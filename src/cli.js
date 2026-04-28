@@ -3,6 +3,7 @@ import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
+import { addStory, archiveStory, listStories, parseStoryOptions, renderStoryList, selectStory } from './story-manager.js';
 
 const HELP = `VibePro CLI
 
@@ -10,6 +11,10 @@ Usage:
   vibepro init [repo]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro story list [repo] [--all]
+  vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
+  vibepro story select [repo] --id <id>
+  vibepro story archive [repo] --id <id>
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -49,6 +54,33 @@ export async function runCli(argv, io = {}) {
       const result = await runDiagnosis(repoRoot, { runId });
       write(stdout, `diagnosis created: ${result.runDir}\n`);
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'story') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'list') {
+        const result = await listStories(repoRoot, { includeArchived: hasFlag(rest, '--all') });
+        write(stdout, renderStoryList(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'add') {
+        const story = await addStory(repoRoot, parseStoryOptions(rest));
+        write(stdout, `Story added: ${story.story_id}\n`);
+        return { exitCode: 0, command, subcommand, story };
+      }
+      if (subcommand === 'select') {
+        const story = await selectStory(repoRoot, getOption(rest, '--id'));
+        write(stdout, `Story selected: ${story.story_id}\n`);
+        return { exitCode: 0, command, subcommand, story };
+      }
+      if (subcommand === 'archive') {
+        const story = await archiveStory(repoRoot, getOption(rest, '--id'));
+        write(stdout, `Story archived: ${story.story_id}\n`);
+        return { exitCode: 0, command, subcommand, story };
+      }
+      write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'brainbase') {

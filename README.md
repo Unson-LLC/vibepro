@@ -93,7 +93,26 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `vibepro-manifest.json` には最新の実行ID、ゲート状態、成果物パスを記録する。Brainbase はこの管理目録を読む。
 
-### 4. Brainbase 取り込み状態の生成
+### 4. ローカルStory管理
+
+NocoDBを使わず、対象リポジトリの `.vibepro/config.json` だけでStoryを管理できる。
+
+```bash
+node bin/vibepro.js story add /path/to/repo \
+  --id story-local-hardening \
+  --title "ローカル診断強化" \
+  --horizon sprint \
+  --view dev \
+  --period 2026-W18
+
+node bin/vibepro.js story select /path/to/repo --id story-local-hardening
+node bin/vibepro.js story list /path/to/repo
+node bin/vibepro.js story archive /path/to/repo --id story-local-hardening
+```
+
+`story select` は `brainbase.current_story_id` を更新する。`brainbase` コマンドは選択中Storyを代表Storyとして `import-state.json` に出力する。`archived` のStoryは通常の `story list` と `import-state.json` から除外される。確認したい場合は `story list --all` を使う。
+
+### 5. Brainbase 取り込み状態の生成
 
 ```bash
 node bin/vibepro.js brainbase /path/to/repo
@@ -148,23 +167,25 @@ node bin/vibepro.js brainbase /path/to/repo --publish-status --dry-run --story-i
 
 `--publish-status` を実行した場合は、更新前の説明と更新予定内容を `.vibepro/brainbase/publish-backup.json` に保存してから NocoDB へPATCHする。PATCH後は対象Storyを再取得し、`説明` が生成した更新後説明と一致することを検証する。検証結果は `.vibepro/brainbase/publish-result.json` に保存し、管理目録には `brainbase.last_publish_result` を記録する。
 
-`--story-id` は `import-state.json` の `stories[]` から対象Storyを選ぶ。未指定時は互換用の先頭 `story` を使う。
+`--story-id` は `import-state.json` の `stories[]` から対象Storyを選ぶ。未指定時は代表 `story` を使う。
 
-対象Story、NocoDB の `Horizon` / `View` / `Period` / `開始日` / `期限日` は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には `stories[]` と互換用の先頭 `story` が出力される。
+対象Story、`Horizon` / `View` / `Period` / `開始日` / `期限日` は `.vibepro/config.json` の `brainbase.stories[]` で管理する。複数Storyを設定でき、`import-state.json` には active な `stories[]` と代表 `story` が出力される。NocoDBを使う場合は `--sync-stories` で正本から同期できる。
 
 ```json
 {
   "brainbase": {
+    "current_story_id": "story-local-hardening",
     "stories": [
       {
-        "story_id": "story-vibepro-diagnosis-commercialization-roadmap",
-        "title": "M1: VibePro 診断→商用化ロードマップ",
-        "ssot": "NocoDB",
-        "horizon": "month",
+        "story_id": "story-local-hardening",
+        "title": "ローカル診断強化",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "sprint",
         "view": "dev",
-        "period": "2026-04",
-        "started_at": "2026-04-01",
-        "due_at": "2026-04-30"
+        "period": "2026-W18",
+        "started_at": null,
+        "due_at": null
       }
     ]
   }

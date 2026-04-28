@@ -108,6 +108,84 @@ test('graph reports install guidance when graphify is missing', async () => {
   assert.equal(result.command, 'graph');
 });
 
+test('story add list select and archive manage local stories without NocoDB', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const addResult = await runCli([
+    'story',
+    'add',
+    repo,
+    '--id',
+    'story-local-hardening',
+    '--title',
+    'ローカル診断強化',
+    '--horizon',
+    'sprint',
+    '--view',
+    'dev',
+    '--period',
+    '2026-W18',
+    '--started-at',
+    '2026-04-28',
+    '--due-at',
+    '2026-05-05'
+  ]);
+
+  assert.equal(addResult.exitCode, 0);
+  const afterAdd = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  const localStory = afterAdd.brainbase.stories.find((story) => story.story_id === 'story-local-hardening');
+  assert.equal(localStory.title, 'ローカル診断強化');
+  assert.equal(localStory.ssot, 'local');
+  assert.equal(localStory.status, 'active');
+  assert.equal(localStory.period, '2026-W18');
+
+  const selectResult = await runCli(['story', 'select', repo, '--id', 'story-local-hardening']);
+
+  assert.equal(selectResult.exitCode, 0);
+  const afterSelect = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(afterSelect.brainbase.current_story_id, 'story-local-hardening');
+
+  let output = '';
+  const listResult = await runCli(['story', 'list', repo], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(listResult.exitCode, 0);
+  assert.match(output, /\* story-local-hardening/);
+
+  const archiveResult = await runCli(['story', 'archive', repo, '--id', 'story-local-hardening']);
+
+  assert.equal(archiveResult.exitCode, 0);
+  const afterArchive = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  const archivedStory = afterArchive.brainbase.stories.find((story) => story.story_id === 'story-local-hardening');
+  assert.equal(archivedStory.status, 'archived');
+  assert.equal(afterArchive.brainbase.current_story_id, null);
+});
+
+test('brainbase import uses selected local story and excludes archived stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-active-local', '--title', 'Active Local', '--view', 'dev']);
+  await runCli(['story', 'add', repo, '--id', 'story-archived-local', '--title', 'Archived Local', '--view', 'dev']);
+  await runCli(['story', 'select', repo, '--id', 'story-active-local']);
+  await runCli(['story', 'archive', repo, '--id', 'story-archived-local']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T235900Z']);
+
+  const result = await runCli(['brainbase', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(importState.story.story_id, 'story-active-local');
+  assert.equal(importState.story.ssot, 'local');
+  assert.equal(importState.stories.some((story) => story.story_id === 'story-archived-local'), false);
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
