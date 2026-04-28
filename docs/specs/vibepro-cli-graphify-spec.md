@@ -136,6 +136,27 @@ archived Storyは通常の `story list` と `import-state.json` の `stories[]` 
 - run数
 - artifactパス
 
+### `vibepro story report [repo] [--id <id>]`
+
+選択中Storyまたは `--id` 指定Storyの診断レポートを生成する。
+
+出力:
+
+- `.vibepro/stories/<story-id>/story-report.md`
+
+レポートには次を含める。
+
+- Story基本情報
+- 最新run
+- ゲート状態
+- graphify集計
+- 静的サイト診断集計
+- 検出事項一覧
+- artifactパス
+- 次に見るファイル
+
+管理目録の `stories.<story-id>.latest_report` に最新レポートのパスを記録する。
+
 ### `vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]`
 
 最新の診断runを Brainbase が読める形に正規化する。
@@ -280,6 +301,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `story archive` でStoryをarchivedにできる。
 - `story runs` でStoryに紐づく診断run一覧を表示できる。
 - `story status` でStoryの最新run、ゲート状態、検出事項数、artifactパスを表示できる。
+- `story report` でStory単位の診断レポートartifactを生成できる。
 - `brainbase` で `import-state.json` と `import-summary.md` が作られる。
 - `brainbase` で選択中Storyが代表 `story` に記録される。
 - `brainbase` で選択中Storyに紐づく最新runが優先される。

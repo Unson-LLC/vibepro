@@ -6,6 +6,7 @@ import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-syn
 import {
   addStory,
   archiveStory,
+  createStoryReport,
   getStoryRuns,
   getStoryStatus,
   listStories,
@@ -28,6 +29,7 @@ Usage:
   vibepro story archive [repo] --id <id>
   vibepro story runs [repo] [--id <id>]
   vibepro story status [repo] [--id <id>]
+  vibepro story report [repo] [--id <id>]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -100,6 +102,11 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'status') {
         const result = await getStoryStatus(repoRoot, getOption(rest, '--id'));
         write(stdout, renderStoryStatus(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'report') {
+        const result = await createStoryReport(repoRoot, getOption(rest, '--id'));
+        write(stdout, `Story report created: ${result.reportPath}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);

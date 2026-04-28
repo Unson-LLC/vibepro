@@ -263,6 +263,37 @@ test('story runs and status show selected story diagnosis history', async () => 
   assert.match(statusOutput, /\.vibepro\/diagnostics\/run-alpha\/evidence.json/);
 });
 
+test('story report creates a Story diagnosis report artifact', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-alpha', '--title', 'Alpha', '--view', 'dev', '--period', '2026-W18']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'api' }],
+    edges: [{ source: 'app', target: 'api', relation: 'calls', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['story', 'select', repo, '--id', 'story-alpha']);
+  await runCli(['diagnose', repo, '--run-id', 'run-alpha']);
+
+  const result = await runCli(['story', 'report', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story.story_id, 'story-alpha');
+  assert.equal(result.result.reportPath.endsWith(path.join('.vibepro', 'stories', 'story-alpha', 'story-report.md')), true);
+  const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-alpha', 'story-report.md'), 'utf8');
+  assert.match(report, /# Story診断レポート/);
+  assert.match(report, /Story ID \| story-alpha/);
+  assert.match(report, /Run ID \| run-alpha/);
+  assert.match(report, /Gate \| needs_review/);
+  assert.match(report, /graphify nodes \| 2/);
+  assert.match(report, /VP-GRAPH-001/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

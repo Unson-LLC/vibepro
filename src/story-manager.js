@@ -1,7 +1,7 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -95,6 +95,32 @@ export async function getStoryStatus(repoRoot, storyId = null) {
   };
 }
 
+export async function createStoryReport(repoRoot, storyId = null) {
+  const root = path.resolve(repoRoot);
+  const config = await readConfig(root);
+  const manifest = await readManifest(root);
+  const story = resolveStory(config, storyId);
+  const runs = getRunsForStory(manifest, story.story_id);
+  const latestRun = findLatestStoryRun(manifest, story.story_id, runs);
+  if (!latestRun) throw new Error(`Story diagnosis run not found: ${story.story_id}`);
+  const evidence = await readRunEvidence(root, latestRun);
+  const storyDir = path.join(getWorkspaceDir(root), 'stories', story.story_id);
+  await mkdir(storyDir, { recursive: true });
+  const reportPath = path.join(storyDir, 'story-report.md');
+  await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence }));
+  manifest.stories = {
+    ...(manifest.stories ?? {}),
+    [story.story_id]: {
+      ...(manifest.stories?.[story.story_id] ?? {}),
+      latest_report: toWorkspaceRelative(root, reportPath),
+      latest_report_run_id: latestRun.run_id,
+      latest_report_generated_at: new Date().toISOString()
+    }
+  };
+  await writeManifest(root, manifest);
+  return { story, latestRun, reportPath };
+}
+
 export function parseStoryOptions(args) {
   const options = {};
   for (const [flag, key] of STORY_FIELDS) {
@@ -149,6 +175,69 @@ export function renderStoryStatus(result) {
 ## Artifacts
 
 ${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(result.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+`;
+}
+
+export function renderStoryReport({ story, latestRun, runs, evidence }) {
+  const graphify = evidence?.graphify ?? {};
+  const staticSite = evidence?.static_site ?? {};
+  const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const artifacts = latestRun.artifacts ?? {};
+  return `# Story診断レポート
+
+## Story
+
+| 項目 | 内容 |
+|------|------|
+| Story ID | ${story.story_id} |
+| Story | ${story.title} |
+| Status | ${story.status ?? 'active'} |
+| View | ${story.view ?? '-'} |
+| Period | ${story.period ?? '-'} |
+
+## 最新run
+
+| 項目 | 内容 |
+|------|------|
+| Run ID | ${latestRun.run_id} |
+| Gate | ${latestRun.gate_status ?? '-'} |
+| Created At | ${latestRun.created_at ?? '-'} |
+| Story run数 | ${runs.length} |
+
+## graphify集計
+
+| 項目 | 内容 |
+|------|------|
+| graphify nodes | ${graphify.node_count ?? 0} |
+| graphify edges | ${graphify.edge_count ?? 0} |
+| extracted edges | ${graphify.extracted_edges?.length ?? 0} |
+| inferred edges | ${graphify.inferred_edges?.length ?? 0} |
+| ambiguous edges | ${graphify.ambiguous_edges?.length ?? 0} |
+
+## 静的サイト診断
+
+| 項目 | 内容 |
+|------|------|
+| index.html | ${staticSite.has_index_html ? 'あり' : 'なし'} |
+| scanned files | ${staticSite.scanned_files ?? 0} |
+| secret hits | ${staticSite.secret_hits?.length ?? 0} |
+| XSS risk hits | ${staticSite.xss_risk_hits?.length ?? 0} |
+| external resources | ${staticSite.external_resources?.length ?? 0} |
+| non static files | ${staticSite.non_static_files?.length ?? 0} |
+
+## 検出事項
+
+${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
+
+## Artifacts
+
+${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+## 次に見るファイル
+
+- ${artifacts.summary ?? '-'}
+- ${artifacts.risk_register ?? '-'}
+- ${artifacts.evidence ?? '-'}
 `;
 }
 

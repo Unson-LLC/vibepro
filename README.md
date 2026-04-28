@@ -111,12 +111,13 @@ node bin/vibepro.js story select /path/to/repo --id story-local-hardening
 node bin/vibepro.js story list /path/to/repo
 node bin/vibepro.js story runs /path/to/repo
 node bin/vibepro.js story status /path/to/repo
+node bin/vibepro.js story report /path/to/repo
 node bin/vibepro.js story archive /path/to/repo --id story-local-hardening
 ```
 
 `story select` は `brainbase.current_story_id` を更新する。`diagnose` は選択中Storyをrunに記録し、`brainbase` コマンドは選択中Storyを代表Storyとして `import-state.json` に出力する。`archived` のStoryは通常の `story list` と `import-state.json` から除外される。確認したい場合は `story list --all` を使う。
 
-`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。どちらもNocoDBなしにローカルの `.vibepro/` だけで動く。
+`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。`story report` は `.vibepro/stories/<story-id>/story-report.md` にStory単位の診断レポートを生成する。いずれもNocoDBなしにローカルの `.vibepro/` だけで動く。
 
 ### 5. Brainbase 取り込み状態の生成
 
