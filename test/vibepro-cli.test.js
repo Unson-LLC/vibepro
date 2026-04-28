@@ -274,3 +274,101 @@ test('brainbase import state supports multiple stories with NocoDB horizon, view
   assert.equal(importState.story.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
   assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8'), /2026Q2/);
 });
+
+test('brainbase sync-stories updates config stories from NocoDB Story records before import', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T210000Z']);
+  const requests = [];
+  const fakeFetch = async (url, options) => {
+    requests.push({ url, token: options.headers['xc-token'] });
+    if (url.includes('/api/v1/db/meta/tables/')) {
+      return jsonResponse({
+        columns: [
+          { title: 'Story ID', column_name: 'story_id' },
+          { title: '名前', column_name: 'name' },
+          { title: 'ステータス', column_name: 'status' },
+          { title: 'Horizon', column_name: 'horizon' },
+          { title: 'View', column_name: 'view' },
+          { title: 'Period', column_name: 'period' },
+          { title: '開始日', column_name: 'started_at' },
+          { title: '期限日', column_name: 'due_at' }
+        ]
+      });
+    }
+    return jsonResponse({
+      list: [
+        {
+          'Story ID': 'story-active-dev',
+          '名前': 'Dev Story',
+          'ステータス': 'active',
+          Horizon: 'sprint',
+          View: 'dev',
+          Period: '2026-W18',
+          '開始日': '2026-04-27',
+          '期限日': '2026-05-01'
+        },
+        {
+          'Story ID': 'story-archived',
+          '名前': 'Archived Story',
+          'ステータス': 'archived',
+          Horizon: 'month',
+          View: 'business',
+          Period: '2026-04',
+          '開始日': '2026-04-01',
+          '期限日': '2026-04-30'
+        },
+        {
+          'Story ID': 'story-active-business',
+          '名前': 'Business Story',
+          'ステータス': 'active',
+          Horizon: 'quarter',
+          View: 'business',
+          Period: '2026Q2',
+          '開始日': '2026-04-01',
+          '期限日': '2026-06-30'
+        }
+      ],
+      pageInfo: { isLastPage: true }
+    });
+  };
+
+  const result = await runCli(['brainbase', repo, '--sync-stories'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: fakeFetch
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(requests.length, 2);
+  assert.equal(requests.every((request) => request.token === 'test-token'), true);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.deepEqual(config.brainbase.stories.map((story) => story.story_id), [
+    'story-active-dev',
+    'story-active-business'
+  ]);
+  assert.equal(config.brainbase.story_source.table_id, 'table-1');
+  const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(importState.stories.length, 2);
+  assert.equal(importState.stories[0].horizon, 'sprint');
+  assert.equal(importState.stories[1].period, '2026Q2');
+});
+
+function jsonResponse(body) {
+  return {
+    ok: true,
+    status: 200,
+    async json() {
+      return body;
+    }
+  };
+}
