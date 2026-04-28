@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -62,6 +62,47 @@ test('graph uses graphify-out by default', async () => {
 
   assert.equal(result.exitCode, 0);
   assert.equal((await readJson(path.join(repo, '.vibepro', 'graphify', 'graph.json'))).nodes.length, 0);
+});
+
+test('graph can run graphify before importing artifacts', async () => {
+  const repo = await makeRepo();
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-bin-'));
+  const graphifyBin = path.join(binDir, 'graphify');
+  await writeFile(graphifyBin, `#!/usr/bin/env node
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+const outIndex = process.argv.indexOf('--out');
+const outDir = outIndex === -1 ? 'graphify-out' : process.argv[outIndex + 1];
+mkdirSync(outDir, { recursive: true });
+writeFileSync(path.join(outDir, 'graph.json'), JSON.stringify({
+  nodes: [{ id: 'from-graphify' }],
+  edges: []
+}));
+writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n');
+`);
+  await chmod(graphifyBin, 0o755);
+
+  const result = await runCli(['graph', repo, '--run-graphify'], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.graphifyExecuted, true);
+  assert.equal((await readJson(path.join(repo, '.vibepro', 'graphify', 'graph.json'))).nodes[0].id, 'from-graphify');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.graphify.last_execution.command, 'graphify . --out graphify-out');
+});
+
+test('graph reports install guidance when graphify is missing', async () => {
+  const repo = await makeRepo();
+
+  const result = await runCli(['graph', repo, '--run-graphify'], {
+    env: { ...process.env, PATH: '' }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.command, 'graph');
 });
 
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {

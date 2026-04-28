@@ -29,11 +29,21 @@ VibePro CLI は、対象リポジトリに `.vibepro/` 作業領域を作り、g
 - `.vibeproignore`
 - `.gitignore` の VibePro 生証跡除外
 
-### `vibepro graph [repo] [--from <graphify-out>]`
+### `vibepro graph [repo] [--from <graphify-out>] [--run-graphify]`
 
 graphify の成果物を `.vibepro/graphify/` に取り込む。
 
 `--from` がない場合は、対象リポジトリ直下の `graphify-out/` を読む。
+
+`--run-graphify` がある場合は、取り込み前に対象リポジトリで次を実行する。
+
+```bash
+graphify . --out graphify-out
+```
+
+`--from <path>` と併用する場合は、`graphify . --out <path>` を実行してから取り込む。
+
+graphify が見つからない場合は、`uv tool install graphifyy` を案内して失敗する。
 
 必須入力:
 
@@ -76,6 +86,8 @@ graphify の成果物を `.vibepro/graphify/` に取り込む。
 ```
 
 `graph` 実行後、`artifacts.graphify_json` と `artifacts.graphify_report` を更新する。
+
+`--run-graphify` 付きで実行した場合は、`graphify.last_execution` に実行コマンド、開始時刻、終了時刻、終了コードを記録する。
 
 `diagnose` 実行後、`latest_run` と `runs[0]` を更新する。
 

@@ -6,7 +6,7 @@ const HELP = `VibePro CLI
 
 Usage:
   vibepro init [repo]
-  vibepro graph [repo] --from <graphify-out>
+  vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
 `;
 
@@ -31,7 +31,11 @@ export async function runCli(argv, io = {}) {
     if (command === 'graph') {
       const repoRoot = rest[0] ?? process.cwd();
       const sourceDir = getOption(rest, '--from');
-      const result = await importGraphifyArtifacts(repoRoot, { sourceDir });
+      const result = await importGraphifyArtifacts(repoRoot, {
+        sourceDir,
+        runGraphify: hasFlag(rest, '--run-graphify'),
+        env: io.env
+      });
       write(stdout, `graphify artifacts imported: ${result.graphifyDir}\n`);
       return { exitCode: 0, command, result };
     }
@@ -56,6 +60,10 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
+}
+
+function hasFlag(args, name) {
+  return args.includes(name);
 }
 
 function write(stream, text) {

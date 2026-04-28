@@ -31,6 +31,18 @@ node bin/vibepro.js init /path/to/repo
 
 ### 2. graphify 成果物の取り込み
 
+VibePro から graphify を起動して取り込む場合:
+
+```bash
+node bin/vibepro.js graph /path/to/repo --run-graphify
+```
+
+graphify が未インストールの場合は、先にインストールする。
+
+```bash
+uv tool install graphifyy
+```
+
 対象リポジトリで graphify を実行し、`graphify-out/` がある場合:
 
 ```bash
