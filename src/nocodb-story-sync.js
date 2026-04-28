@@ -64,8 +64,7 @@ export async function publishStatusToNocoDB(repoRoot, options = {}) {
 
   const schema = await fetchTableSchema(source, fetchFn);
   validatePublishSchema(schema);
-  const story = importState.story ?? importState.stories?.[0];
-  if (!story?.story_id) throw new Error('Brainbase import state does not contain a publishable story');
+  const story = selectPublishStory(importState, options.storyId);
   const record = await findStoryRecord(source, fetchFn, story.story_id);
   const existingDescription = pick(record, '説明', 'description') ?? '';
   const nextDescription = replaceDiagnosisSection(existingDescription, renderDiagnosisSection(importState));
@@ -73,6 +72,7 @@ export async function publishStatusToNocoDB(repoRoot, options = {}) {
   if (options.dryRun) {
     const preview = await writePublishPreview(root, {
       importState,
+      story,
       record,
       existingDescription,
       nextDescription
@@ -88,6 +88,18 @@ export async function publishStatusToNocoDB(repoRoot, options = {}) {
 
   await patchStoryDescription(source, fetchFn, record, nextDescription);
   return { storyId: story.story_id, recordId: getRecordId(record) };
+}
+
+function selectPublishStory(importState, storyId) {
+  const stories = Array.isArray(importState.stories) ? importState.stories : [];
+  if (storyId) {
+    const story = stories.find((item) => item.story_id === storyId);
+    if (!story) throw new Error(`Story ID is not included in Brainbase import state: ${storyId}`);
+    return story;
+  }
+  const story = importState.story ?? stories[0];
+  if (!story?.story_id) throw new Error('Brainbase import state does not contain a publishable story');
+  return story;
 }
 
 function resolveNocoDBSource(config, env) {
@@ -193,14 +205,14 @@ function replaceDiagnosisSection(description, section) {
   return `${prefix}${prefix ? '\n\n' : ''}${nextBlock}\n`;
 }
 
-async function writePublishPreview(repoRoot, { importState, record, existingDescription, nextDescription }) {
+async function writePublishPreview(repoRoot, { importState, story, record, existingDescription, nextDescription }) {
   const brainbaseDir = path.join(getWorkspaceDir(repoRoot), 'brainbase');
   await mkdir(brainbaseDir, { recursive: true });
   const preview = {
     schema_version: '0.1.0',
     dry_run: true,
     generated_at: new Date().toISOString(),
-    story_id: importState.story.story_id,
+    story_id: story.story_id,
     record_id: getRecordId(record),
     gate_status: importState.latest_run.gate_status,
     existing_description: existingDescription,

@@ -10,7 +10,7 @@ Usage:
   vibepro init [repo]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run]
+  vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
 export async function runCli(argv, io = {}) {
@@ -66,7 +66,8 @@ export async function runCli(argv, io = {}) {
         const publishResult = await publishStatusToNocoDB(repoRoot, {
           env: io.env,
           fetch: io.fetch,
-          dryRun: hasFlag(rest, '--dry-run')
+          dryRun: hasFlag(rest, '--dry-run'),
+          storyId: getOption(rest, '--story-id')
         });
         write(stdout, publishResult.dryRun
           ? `Brainbase story status preview created: ${publishResult.storyId}\n`

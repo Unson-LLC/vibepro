@@ -475,6 +475,81 @@ test('brainbase publish-status dry-run writes preview artifacts without patching
   assert.equal(manifest.brainbase.last_publish_preview.preview_json, '.vibepro/brainbase/publish-preview.json');
 });
 
+test('brainbase publish-status dry-run can target an explicit story id', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase.stories = [
+    { story_id: 'story-first', title: 'First', ssot: 'NocoDB' },
+    { story_id: 'story-target', title: 'Target', ssot: 'NocoDB' }
+  ];
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T234000Z']);
+  const requestedUrls = [];
+  const fakeFetch = async (url) => {
+    requestedUrls.push(url);
+    if (url.includes('/api/v1/db/meta/tables/')) {
+      return jsonResponse({
+        columns: [
+          { title: 'Story ID', column_name: 'story_id' },
+          { title: '説明', column_name: 'description' }
+        ]
+      });
+    }
+    return jsonResponse({
+      list: [{ Id: 99, 'Story ID': 'story-target', '説明': 'target description' }],
+      pageInfo: { isLastPage: true }
+    });
+  };
+
+  const result = await runCli(['brainbase', repo, '--publish-status', '--dry-run', '--story-id', 'story-target'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: fakeFetch
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(requestedUrls.some((url) => url.includes('story-target')), true);
+  assert.equal(requestedUrls.some((url) => url.includes('story-first')), false);
+  const preview = await readJson(path.join(repo, '.vibepro', 'brainbase', 'publish-preview.json'));
+  assert.equal(preview.story_id, 'story-target');
+});
+
+test('brainbase publish-status fails when explicit story id is not in import state', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T234500Z']);
+
+  const result = await runCli(['brainbase', repo, '--publish-status', '--dry-run', '--story-id', 'missing-story'], {
+    env: {
+      NOCODB_URL: 'https://noco.example.test',
+      NOCODB_TOKEN: 'test-token',
+      NOCODB_STORY_BASE_ID: 'base-1',
+      NOCODB_STORY_TABLE_ID: 'table-1'
+    },
+    fetch: async () => {
+      throw new Error('fetch should not be called');
+    }
+  });
+
+  assert.equal(result.exitCode, 1);
+});
+
 function jsonResponse(body) {
   return {
     ok: true,
