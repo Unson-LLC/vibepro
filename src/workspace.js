@@ -4,6 +4,17 @@ import path from 'node:path';
 export const SCHEMA_VERSION = '0.1.0';
 export const WORKSPACE_DIR = '.vibepro';
 export const MANIFEST_FILE = 'vibepro-manifest.json';
+export const DEFAULT_BRAINBASE_STORIES = [{
+  story_id: 'story-vibepro-diagnosis-commercialization-roadmap',
+  title: 'M1: VibePro 診断→商用化ロードマップ',
+  ssot: 'NocoDB',
+  view_id: 'vw5ur5jwyhhwgsyf',
+  view_name: 'ストーリー-マイルストーン',
+  period: {
+    from: null,
+    to: null
+  }
+}];
 
 export async function initWorkspace(repoRoot) {
   const root = path.resolve(repoRoot);
@@ -16,7 +27,10 @@ export async function initWorkspace(repoRoot) {
   await writeJsonIfMissing(path.join(workspaceDir, 'config.json'), {
     schema_version: SCHEMA_VERSION,
     tool: 'vibepro',
-    workspace: WORKSPACE_DIR
+    workspace: WORKSPACE_DIR,
+    brainbase: {
+      stories: DEFAULT_BRAINBASE_STORIES
+    }
   });
 
   await writeJsonIfMissing(path.join(workspaceDir, MANIFEST_FILE), createManifest(root));

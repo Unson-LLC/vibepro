@@ -1,22 +1,27 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
-
-const STORY_ID = 'story-vibepro-diagnosis-commercialization-roadmap';
-const STORY_TITLE = 'M1: VibePro 診断→商用化ロードマップ';
+import {
+  DEFAULT_BRAINBASE_STORIES,
+  getWorkspaceDir,
+  initWorkspace,
+  readManifest,
+  toWorkspaceRelative,
+  writeManifest
+} from './workspace.js';
 
 export async function createBrainbaseImport(repoRoot) {
   await initWorkspace(repoRoot);
   const root = path.resolve(repoRoot);
   const manifest = await readManifest(root);
+  const config = await readConfig(root);
   const latestRun = findLatestRun(manifest);
   const evidence = await readLatestEvidence(root, latestRun);
 
   const brainbaseDir = path.join(getWorkspaceDir(root), 'brainbase');
   await mkdir(brainbaseDir, { recursive: true });
 
-  const importState = buildImportState({ manifest, latestRun, evidence });
+  const importState = buildImportState({ manifest, config, latestRun, evidence });
   const importStatePath = path.join(brainbaseDir, 'import-state.json');
   const importSummaryPath = path.join(brainbaseDir, 'import-summary.md');
 
@@ -60,10 +65,16 @@ async function readLatestEvidence(repoRoot, latestRun) {
   return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
 }
 
-function buildImportState({ manifest, latestRun, evidence }) {
+async function readConfig(repoRoot) {
+  return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+}
+
+function buildImportState({ manifest, config, latestRun, evidence }) {
   const graphify = evidence.graphify ?? {};
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
+  const stories = normalizeStories(config.brainbase?.stories);
+  const primaryStory = stories[0];
 
   return {
     schema_version: '0.1.0',
@@ -73,11 +84,8 @@ function buildImportState({ manifest, latestRun, evidence }) {
       manifest: '.vibepro/vibepro-manifest.json',
       repo: manifest.repo ?? { root: '.' }
     },
-    story: {
-      story_id: STORY_ID,
-      title: STORY_TITLE,
-      ssot: 'NocoDB'
-    },
+    story: primaryStory,
+    stories,
     latest_run: {
       run_id: latestRun.run_id,
       created_at: latestRun.created_at ?? null,
@@ -111,6 +119,23 @@ function buildImportState({ manifest, latestRun, evidence }) {
   };
 }
 
+function normalizeStories(stories) {
+  const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
+  return sourceStories.map((story) => ({
+    story_id: story.story_id,
+    title: story.title,
+    ssot: story.ssot ?? 'NocoDB',
+    view: {
+      view_id: story.view?.view_id ?? story.view_id ?? null,
+      view_name: story.view?.view_name ?? story.view_name ?? null
+    },
+    period: {
+      from: story.period?.from ?? null,
+      to: story.period?.to ?? null
+    }
+  }));
+}
+
 function renderImportSummary(importState) {
   return `# Brainbase 取り込み状態
 
@@ -118,6 +143,7 @@ function renderImportSummary(importState) {
 |------|------|
 | Story | ${importState.story.title} |
 | Story ID | ${importState.story.story_id} |
+| Story数 | ${importState.stories.length} |
 | Run ID | ${importState.latest_run.run_id} |
 | Gate | ${importState.latest_run.gate_status} |
 | graphify nodes | ${importState.signals.graphify.node_count} |
@@ -130,6 +156,10 @@ function renderImportSummary(importState) {
 ## 成果物
 
 ${Object.entries(importState.latest_run.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+## 対象Story
+
+${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / ${story.view.view_name ?? '-'} / ${story.period.from ?? '-'} - ${story.period.to ?? '-'}`).join('\n')}
 
 ## 検出事項
 

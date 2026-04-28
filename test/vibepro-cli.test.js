@@ -219,3 +219,50 @@ test('brainbase creates an import state from the latest VibePro manifest run', a
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.brainbase_import_state, '.vibepro/brainbase/import-state.json');
 });
+
+test('brainbase import state supports multiple stories, views, and reporting periods', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase = {
+    stories: [
+      {
+        story_id: 'story-vibepro-diagnosis-commercialization-roadmap',
+        title: 'M1: VibePro 診断→商用化ロードマップ',
+        view_id: 'vw5ur5jwyhhwgsyf',
+        view_name: 'ストーリー-マイルストーン',
+        period: { from: '2026-04-01', to: '2026-04-30' }
+      },
+      {
+        story_id: 'story-vibepro-brainbase-rollup',
+        title: 'Brainbase 横断取り込み',
+        view_id: 'brainbase-rollup',
+        view_name: 'Brainbase 横断ビュー',
+        period: { from: '2026-05-01', to: '2026-05-31' }
+      }
+    ]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', '2026-04-28T180000Z']);
+
+  const result = await runCli(['brainbase', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(importState.stories.length, 2);
+  assert.deepEqual(importState.stories.map((story) => story.story_id), [
+    'story-vibepro-diagnosis-commercialization-roadmap',
+    'story-vibepro-brainbase-rollup'
+  ]);
+  assert.equal(importState.stories[0].view.view_id, 'vw5ur5jwyhhwgsyf');
+  assert.equal(importState.stories[0].period.from, '2026-04-01');
+  assert.equal(importState.stories[1].period.to, '2026-05-31');
+  assert.equal(importState.story.story_id, 'story-vibepro-diagnosis-commercialization-roadmap');
+  assert.match(await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8'), /Brainbase 横断ビュー/);
+});
