@@ -362,6 +362,84 @@ test('story diagnose runs the local story workflow in one command', async () => 
   assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
 });
 
+test('status reports an uninitialized repository without creating a workspace', async () => {
+  const repo = await makeRepo();
+  let output = '';
+
+  const result = await runCli(['status', repo], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.status.initialized, false);
+  assert.match(output, /# VibePro Status/);
+  assert.match(output, /Initialized \| no/);
+  assert.match(output, /vibepro init/);
+  await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+});
+
+test('status reports initialized repositories with no active stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'archive', repo, '--id', 'story-vibepro-diagnosis-commercialization-roadmap']);
+  let output = '';
+
+  const result = await runCli(['status', repo, '--json'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  const status = JSON.parse(output);
+  assert.equal(result.exitCode, 0);
+  assert.equal(status.initialized, true);
+  assert.equal(status.active_stories.length, 0);
+  assert.match(status.next_commands[0], /story add/);
+});
+
+test('status reports repository diagnosis state as text and json', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-alpha', '--title', 'Alpha', '--view', 'dev', '--period', '2026-W18']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'api' }],
+    edges: [{ source: 'app', target: 'api', relation: 'calls', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['story', 'diagnose', repo, '--id', 'story-alpha', '--run-id', 'run-alpha']);
+  let output = '';
+
+  const result = await runCli(['status', repo], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.status.initialized, true);
+  assert.equal(result.status.current_story_id, 'story-alpha');
+  assert.equal(result.status.latest_run.run_id, 'run-alpha');
+  assert.equal(result.status.selected_story_latest_run.run_id, 'run-alpha');
+  assert.equal(result.status.gate_status, 'needs_review');
+  assert.equal(result.status.finding_count, 1);
+  assert.match(output, /Selected Story \| story-alpha/);
+  assert.match(output, /Latest Run \| run-alpha/);
+  assert.match(output, /Selected Story Latest Run \| run-alpha/);
+  assert.match(output, /Gate \| needs_review/);
+  assert.match(output, /Findings \| 1/);
+  assert.match(output, /story report/);
+
+  let jsonOutput = '';
+  const jsonResult = await runCli(['status', repo, '--json'], {
+    stdout: { write: (text) => { jsonOutput += text; } }
+  });
+  const status = JSON.parse(jsonOutput);
+  assert.equal(jsonResult.exitCode, 0);
+  assert.equal(status.initialized, true);
+  assert.equal(status.current_story_id, 'story-alpha');
+  assert.equal(status.active_stories[0].story_id, 'story-alpha');
+  assert.equal(status.latest_run.run_id, 'run-alpha');
+  assert.equal(status.selected_story_latest_run.run_id, 'run-alpha');
+  assert.equal(status.artifacts.evidence, '.vibepro/diagnostics/run-alpha/evidence.json');
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
