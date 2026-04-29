@@ -455,6 +455,12 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `tasks[].target_count`
 - `tasks[].target_files[]`
 - `tasks[].target_routes[]`: `action_candidate` 由来タスクでは `pre_fix_briefing.target_routes[]` と同じ対象route全件
+- `tasks[].target_groups[]`: `target_routes[]` をpath prefix中心に分けた実装作業束
+- `tasks[].target_groups[].id`
+- `tasks[].target_groups[].route_count`
+- `tasks[].target_groups[].target_files[]`
+- `tasks[].target_groups[].routes[]`
+- `tasks[].target_groups[].recommended_strategy`
 - `tasks[].gate_effect`: finding由来タスクで `block` / `review` を分ける場合に記録する
 - `tasks[].read_first_files[]`
 - `tasks[].recommended_strategy`
@@ -466,6 +472,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 生成ルール:
 
 - `action_candidates[]` は1件ずつ `VP-TASK-*` に変換する。対象routeは `route_examples[]` ではなく `implementation_plan.pre_fix_briefing.target_routes[]` を正本にして全件を `target_routes[]` と `target_files[]` に入れる。
+- `action_candidate` 由来タスクでは `target_routes[]` を `target_groups[]` に分ける。`/api/admin/<domain>/...` は `<domain>`、`/api/batch-jobs/...` は `batch-jobs`、`/api/companies/...` は `companies` など、path prefix を優先する。
 - Critical/Highの `findings[]` のうち `action_candidates` に対応しないものは確認タスクに変換する。
 - `VP-STATIC-002` は `block` と `review` を別タスクに分ける。`block` は `VP-TASK-STATIC-002-BLOCK`、`review` は `VP-TASK-STATIC-002-REVIEW` とする。
 - 並び順は `VP-TASK-STATIC-002-BLOCK`、`VP-TASK-STATIC-002-REVIEW`、`VP-ACTION-API-002`、`VP-ACTION-API-003`、`VP-ACTION-API-001`、その他の順を優先する。

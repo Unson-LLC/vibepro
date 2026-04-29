@@ -261,9 +261,14 @@ ${renderImplementationPlans(candidates)}`;
 
 function renderGeneratedTasks(tasks) {
   if (!Array.isArray(tasks) || tasks.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 優先度 | 対象 | 方針 |
-|----|------------------|--------|------|------|
-${tasks.map((task) => `| ${task.id} | ${task.finding_id ?? '-'} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${task.recommended_strategy?.id ?? '-'} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 優先度 | 対象 | グループ | 方針 |
+|----|------------------|--------|------|----------|------|
+${tasks.map((task) => `| ${task.id} | ${task.finding_id ?? '-'} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${formatTargetGroups(task.target_groups)} | ${task.recommended_strategy?.id ?? '-'} |`).join('\n')}`;
+}
+
+function formatTargetGroups(groups = []) {
+  if (!Array.isArray(groups) || groups.length === 0) return '-';
+  return groups.map((group) => `${group.id}(${group.route_count})`).join(', ');
 }
 
 function emptyGraphContext() {

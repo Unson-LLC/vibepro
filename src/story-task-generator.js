@@ -88,6 +88,7 @@ function renderTaskDetail(task) {
 - Source: ${task.source_type} / ${task.source_id}
 - Execution: ${task.execution_policy} / mutates_repository=${task.mutates_repository}
 - Target files: ${task.target_files.length === 0 ? '-' : task.target_files.join(', ')}
+- Target groups: ${formatTargetGroups(task.target_groups)}
 - Read first: ${task.read_first_files.length === 0 ? '-' : task.read_first_files.map((item) => item.file).join(', ')}
 - Recommended strategy: ${task.recommended_strategy?.id ?? '-'}
 
@@ -101,6 +102,7 @@ function buildActionTask(candidate) {
   const targetFiles = uniqueFiles(targetRoutes.length > 0
     ? targetRoutes.map((route) => route.file)
     : (candidate.route_examples ?? []).map((route) => route.file));
+  const targetGroups = buildTargetGroups({ targetRoutes, candidate, plan });
   return {
     id: candidate.id.replace('VP-ACTION-', 'VP-TASK-'),
     source_type: 'action_candidate',
@@ -115,6 +117,7 @@ function buildActionTask(candidate) {
     target_count: targetRoutes.length > 0 ? targetRoutes.length : candidate.target_count ?? targetFiles.length,
     target_files: targetFiles,
     target_routes: targetRoutes,
+    target_groups: targetGroups,
     read_first_files: plan.read_first_files ?? [],
     recommended_strategy: plan.pre_fix_briefing?.recommended_strategy ?? null,
     implementation_steps: plan.steps ?? [],
@@ -177,6 +180,8 @@ function buildFindingTask({ finding, id = null, title = null, targetFiles = [], 
     mutates_repository: false,
     target_count: targetFiles.length,
     target_files: targetFiles,
+    target_routes: [],
+    target_groups: [],
     read_first_files: targetFiles.map((file) => ({
       file,
       reason: `検出事項 ${finding.id} の確認対象`
@@ -219,6 +224,66 @@ function resolveSecretTargetFiles(evidence, gateEffect) {
   return uniqueFiles((evidence.static_site?.secret_hits ?? [])
     .filter((hit) => hit.gate_effect === gateEffect)
     .map((hit) => hit.file));
+}
+
+function buildTargetGroups({ targetRoutes, candidate, plan }) {
+  if (!Array.isArray(targetRoutes) || targetRoutes.length === 0) return [];
+  const groups = new Map();
+  for (const route of targetRoutes) {
+    const id = resolveRouteGroupId(route);
+    const current = groups.get(id) ?? {
+      id,
+      title: resolveRouteGroupTitle(id),
+      classification: route.classification ?? 'unknown',
+      route_count: 0,
+      target_files: [],
+      routes: [],
+      recommended_strategy: plan.pre_fix_briefing?.recommended_strategy ?? null,
+      read_first_files: [],
+      acceptance_criteria: plan.acceptance_criteria ?? []
+    };
+    current.route_count += 1;
+    current.target_files = uniqueFiles([...current.target_files, route.file]);
+    current.routes.push(route);
+    groups.set(id, current);
+  }
+  return [...groups.values()].map((group) => ({
+    ...group,
+    read_first_files: selectGroupReadFirstFiles(group, plan.read_first_files ?? [])
+  }));
+}
+
+function resolveRouteGroupId(route) {
+  const segments = (route.route_path ?? '')
+    .split('/')
+    .filter(Boolean)
+    .filter((segment) => segment !== 'api' && !/^\[.+\]$/.test(segment));
+  if (segments[0] === 'admin') {
+    return segments[1] || 'admin';
+  }
+  if (segments[0] === 'batch-jobs') return 'batch-jobs';
+  if (segments[0] === 'companies') return 'companies';
+  if (segments[0] === 'pdf-compress') return 'pdf-compress';
+  if (segments[0] === 'v1' && segments[1]) return `v1-${segments[1]}`;
+  if (segments[0] === 'debug') return segments.slice(0, 2).join('-');
+  return segments.slice(0, 2).join('-') || route.classification || 'unknown';
+}
+
+function resolveRouteGroupTitle(id) {
+  return id
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function selectGroupReadFirstFiles(group, readFirstFiles) {
+  const files = new Set(group.target_files);
+  return (readFirstFiles ?? []).filter((item) => files.has(item.file));
+}
+
+function formatTargetGroups(groups = []) {
+  if (!Array.isArray(groups) || groups.length === 0) return '-';
+  return groups.map((group) => `${group.id}(${group.route_count})`).join(', ');
 }
 
 function compareTasks(a, b) {

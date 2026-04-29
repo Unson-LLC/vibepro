@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { runCli } from '../src/cli.js';
+import { buildStoryTaskState } from '../src/story-task-generator.js';
 
 async function makeRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-test-'));
@@ -220,6 +221,64 @@ test('brainbase import uses selected local story and excludes archived stories',
   assert.equal(importState.story.story_id, 'story-active-local');
   assert.equal(importState.story.ssot, 'local');
   assert.equal(importState.stories.some((story) => story.story_id === 'story-archived-local'), false);
+});
+
+test('story task generator groups admin API routes by domain', () => {
+  const taskState = buildStoryTaskState({
+    story: { story_id: 'story-admin-hardening', title: '管理API保護' },
+    runId: '2026-04-30Tadmin-groups',
+    gateStatus: 'block',
+    evidence: {
+      findings: [],
+      action_candidates: [{
+        id: 'VP-ACTION-API-001',
+        finding_id: 'VP-API-001',
+        title: '管理APIの保護境界を修正する',
+        severity: 'High',
+        execution_policy: 'proposal_only',
+        mutates_repository: false,
+        implementation_plan: {
+          priority: 'high',
+          read_first_files: [
+            { file: 'src/app/api/admin/queue/status/route.ts', reason: 'queue status' },
+            { file: 'src/app/api/admin/queue/obliterate/route.ts', reason: 'queue obliterate' },
+            { file: 'src/app/api/admin/users/route.ts', reason: 'users' }
+          ],
+          acceptance_criteria: ['対象グループごとに保護根拠を確認できる'],
+          pre_fix_briefing: {
+            recommended_strategy: { id: 'route-level-auth', reason: 'middleware除外の影響を抑える' },
+            target_routes: [
+              {
+                route_path: '/api/admin/queue/status',
+                file: 'src/app/api/admin/queue/status/route.ts',
+                methods: ['GET'],
+                classification: 'admin'
+              },
+              {
+                route_path: '/api/admin/queue/obliterate',
+                file: 'src/app/api/admin/queue/obliterate/route.ts',
+                methods: ['POST'],
+                classification: 'admin'
+              },
+              {
+                route_path: '/api/admin/users',
+                file: 'src/app/api/admin/users/route.ts',
+                methods: ['GET'],
+                classification: 'admin'
+              }
+            ]
+          }
+        }
+      }]
+    }
+  });
+
+  const task = taskState.tasks[0];
+  assert.equal(task.target_groups.length, 2);
+  assert.deepEqual(task.target_groups.map((group) => group.id), ['queue', 'users']);
+  assert.equal(task.target_groups.find((group) => group.id === 'queue').route_count, 2);
+  assert.equal(task.target_groups.find((group) => group.id === 'users').route_count, 1);
+  assert.equal(task.target_groups.find((group) => group.id === 'queue').read_first_files.length, 2);
 });
 
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {
@@ -732,6 +791,9 @@ export function middleware() {}
   assert.equal(tasks.tasks[4].read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
   assert.equal(tasks.tasks[4].target_count, tasks.tasks[4].pre_fix_briefing.target_routes.length);
   assert.equal(tasks.tasks[4].target_files.length, tasks.tasks[4].pre_fix_briefing.target_routes.length);
+  assert.equal(tasks.tasks[4].target_groups.length, 1);
+  assert.equal(tasks.tasks[4].target_groups[0].id, 'queue-status');
+  assert.equal(tasks.tasks[4].target_groups[0].route_count, 1);
   assert.equal(tasks.tasks[4].pre_fix_briefing.current_boundary.middleware.excludes_api, true);
   const apiAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-001');
   assert.equal(apiAction.finding_id, 'VP-API-001');
