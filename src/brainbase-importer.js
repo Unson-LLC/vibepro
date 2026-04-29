@@ -108,6 +108,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
       graphify: {
         node_count: graphify.node_count ?? 0,
         edge_count: graphify.edge_count ?? 0,
+        edge_source_key: graphify.edge_source_key ?? null,
         extracted_edges_count: graphify.extracted_edges?.length ?? 0,
         inferred_edges_count: graphify.inferred_edges?.length ?? 0,
         ambiguous_edges_count: graphify.ambiguous_edges?.length ?? 0

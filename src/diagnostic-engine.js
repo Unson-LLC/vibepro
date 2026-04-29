@@ -77,7 +77,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
 
 async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
-  const edges = Array.isArray(graph.edges) ? graph.edges : [];
+  const { edges, sourceKey: edgeSourceKey } = normalizeGraphEdges(graph);
   const architectureProfile = await profileArchitecture(repoRoot);
   const checkCatalog = {
     selected_views: architectureProfile.selected_views,
@@ -91,6 +91,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     graphify: {
       node_count: nodes.length,
       edge_count: edges.length,
+      edge_source_key: edgeSourceKey,
       extracted_edges: edges.filter((edge) => edge.confidence === 'EXTRACTED'),
       inferred_edges: edges.filter((edge) => edge.confidence === 'INFERRED'),
       ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
@@ -105,6 +106,12 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     findings: [],
     gates: []
   };
+}
+
+function normalizeGraphEdges(graph) {
+  if (Array.isArray(graph.edges)) return { edges: graph.edges, sourceKey: 'edges' };
+  if (Array.isArray(graph.links)) return { edges: graph.links, sourceKey: 'links' };
+  return { edges: [], sourceKey: null };
 }
 
 function buildFindings(evidence) {

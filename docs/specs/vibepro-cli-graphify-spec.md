@@ -335,6 +335,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 
 - `graphify.node_count`
 - `graphify.edge_count`
+- `graphify.edge_source_key`
 - `graphify.extracted_edges`
 - `graphify.inferred_edges`
 - `graphify.ambiguous_edges`

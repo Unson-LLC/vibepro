@@ -447,7 +447,7 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   await import('node:fs/promises').then(({ mkdir }) => mkdir(graphDir, { recursive: true }));
   await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
     nodes: [{ id: 'app' }, { id: 'api' }],
-    edges: [
+    links: [
       { source: 'app', target: 'api', relation: 'calls', confidence: 'EXTRACTED' },
       { source: 'api', target: 'unknown', relation: 'depends_on', confidence: 'AMBIGUOUS' }
     ]
@@ -464,6 +464,9 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   await stat(path.join(runDir, 'risk-register.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
   assert.equal(evidence.graphify.node_count, 2);
+  assert.equal(evidence.graphify.edge_count, 2);
+  assert.equal(evidence.graphify.edge_source_key, 'links');
+  assert.equal(evidence.graphify.extracted_edges.length, 1);
   assert.equal(evidence.graphify.ambiguous_edges.length, 1);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_run, '2026-04-28T120000Z');
