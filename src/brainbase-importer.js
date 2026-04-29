@@ -80,6 +80,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
   const graphify = evidence.graphify ?? {};
   const architectureProfile = evidence.architecture_profile ?? {};
   const checkCatalog = evidence.check_catalog ?? {};
+  const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const stories = storyContext.stories;
@@ -129,6 +130,13 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         selected_views: checkCatalog.selected_views ?? architectureProfile.selected_views ?? [],
         applicable_checks: checkCatalog.applicable_checks ?? architectureProfile.applicable_checks ?? []
       },
+      api_boundary: {
+        route_count: apiBoundary.route_count ?? 0,
+        summary: apiBoundary.summary ?? {},
+        risk_hint_count: Array.isArray(apiBoundary.routes)
+          ? apiBoundary.routes.reduce((count, route) => count + (route.risk_hints?.length ?? 0), 0)
+          : 0
+      },
       static_site: {
         has_index_html: Boolean(staticSite.has_index_html),
         scanned_files: staticSite.scanned_files ?? 0,
@@ -166,6 +174,8 @@ function renderImportSummary(importState) {
 | 適用チェック | ${importState.signals.check_catalog.applicable_checks.join(', ') || '-'} |
 | graphify nodes | ${importState.signals.graphify.node_count} |
 | graphify edges | ${importState.signals.graphify.edge_count} |
+| API route | ${importState.signals.api_boundary.route_count}件 |
+| API境界risk hints | ${importState.signals.api_boundary.risk_hint_count}件 |
 | 共通スキャン対象 | ${importState.signals.static_site.scanned_files}件 |
 | 秘密情報候補 | ${importState.signals.static_site.secret_hits_count}件 |
 | XSSリスク候補 | ${importState.signals.static_site.xss_risk_hits_count}件 |

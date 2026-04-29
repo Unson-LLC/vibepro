@@ -182,6 +182,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
   const graphify = evidence?.graphify ?? {};
   const architectureProfile = evidence?.architecture_profile ?? {};
   const applicableChecks = evidence?.check_catalog?.applicable_checks ?? architectureProfile.applicable_checks ?? [];
+  const apiBoundary = evidence?.api_boundary ?? null;
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const artifacts = latestRun.artifacts ?? {};
@@ -233,6 +234,10 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
 
 ${renderStoryArchitectureViews(architectureProfile.views ?? {})}
 
+## API境界
+
+${renderStoryApiBoundary(apiBoundary)}
+
 ## ${scanHeading}
 
 | 項目 | 内容 |
@@ -258,6 +263,16 @@ ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts
 - ${artifacts.risk_register ?? '-'}
 - ${artifacts.evidence ?? '-'}
 `;
+}
+
+function renderStoryApiBoundary(apiBoundary) {
+  if (!apiBoundary) return '- api-boundary は適用されていない';
+  const rows = Object.entries(apiBoundary.summary ?? {})
+    .map(([classification, count]) => `| ${classification} | ${count} |`)
+    .join('\n');
+  return `| 分類 | 件数 |
+|------|------|
+${rows || '| - | 0 |'}`;
 }
 
 function renderStoryArchitectureViews(views) {

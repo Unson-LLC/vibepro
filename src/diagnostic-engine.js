@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
@@ -72,6 +73,10 @@ async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const edges = Array.isArray(graph.edges) ? graph.edges : [];
   const architectureProfile = await profileArchitecture(repoRoot);
+  const checkCatalog = {
+    selected_views: architectureProfile.selected_views,
+    applicable_checks: architectureProfile.applicable_checks
+  };
   return {
     schema_version: '0.1.0',
     run_id: runId,
@@ -85,10 +90,10 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
     },
     architecture_profile: architectureProfile,
-    check_catalog: {
-      selected_views: architectureProfile.selected_views,
-      applicable_checks: architectureProfile.applicable_checks
-    },
+    check_catalog: checkCatalog,
+    api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
+      ? await scanApiBoundary(repoRoot, architectureProfile)
+      : null,
     static_site: await scanStaticSite(repoRoot),
     findings: [],
     gates: []
@@ -168,6 +173,44 @@ function buildFindings(evidence) {
       recommendation: '可用性、改ざん、CSP、ライセンスの観点で読み込み元を確認する。'
     });
   }
+  if (applicableChecks.has('api-boundary') && evidence.api_boundary) {
+    const privilegedUnprotected = evidence.api_boundary.routes
+      .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
+    if (privilegedUnprotected.length > 0) {
+      findings.push({
+        id: 'VP-API-001',
+        severity: 'High',
+        category: 'API境界',
+        title: '管理系または内部系APIの保護状態が確認できない',
+        detail: `${privilegedUnprotected.length} 件の管理系または内部系API候補で保護根拠が確認できない。`,
+        recommendation: 'middleware matcher、認証参照、署名検証などの保護根拠を確認する。'
+      });
+    }
+    const debugExposed = evidence.api_boundary.routes
+      .filter((route) => route.risk_hints.includes('debug_route_exposed'));
+    if (debugExposed.length > 0) {
+      findings.push({
+        id: 'VP-API-002',
+        severity: 'High',
+        category: 'API境界',
+        title: 'debug/test API候補が公開面に残っている',
+        detail: `${debugExposed.length} 件のdebug/test API候補で保護根拠が確認できない。`,
+        recommendation: '公開環境から削除するか、認証・環境制限・ルーティング制限を明示する。'
+      });
+    }
+    const webhooksWithoutSignature = evidence.api_boundary.routes
+      .filter((route) => route.risk_hints.includes('webhook_signature_not_detected'));
+    if (webhooksWithoutSignature.length > 0) {
+      findings.push({
+        id: 'VP-API-003',
+        severity: 'High',
+        category: 'API境界',
+        title: 'webhook APIの署名検証が確認できない',
+        detail: `${webhooksWithoutSignature.length} 件のwebhook API候補で署名検証らしき実装が確認できない。`,
+        recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。'
+      });
+    }
+  }
   return findings;
 }
 
@@ -203,11 +246,16 @@ function renderSummary({ runId, evidence, findings }) {
 | 共通スキャン対象 | ${evidence.static_site.scanned_files}件 |
 | 秘密情報候補 | ${evidence.static_site.secret_hits.length}件 |
 | XSSリスク候補 | ${evidence.static_site.xss_risk_hits.length}件 |
+| API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
 ## アーキテクチャView
 
 ${renderArchitectureViewTable(profile)}
+
+## API境界
+
+${renderApiBoundarySummary(evidence.api_boundary)}
 
 ## ゲート状態
 
@@ -217,6 +265,17 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 `;
+}
+
+function renderApiBoundarySummary(apiBoundary) {
+  if (!apiBoundary) return '- api-boundary は適用されていない';
+  const summary = apiBoundary.summary ?? {};
+  const rows = Object.entries(summary)
+    .map(([classification, count]) => `| ${classification} | ${count} |`)
+    .join('\n');
+  return `| 分類 | 件数 |
+|------|------|
+${rows || '| - | 0 |'}`;
 }
 
 function renderArchitectureViewTable(profile) {

@@ -124,6 +124,8 @@ node bin/vibepro.js diagnose /path/to/repo
 
 共通チェックでは秘密情報候補、XSSリスク候補、graphify上の曖昧な関係を確認する。静的サイトに該当する場合だけ、次の観点を静的サイト固有チェックとして扱う。
 
+`api-boundary` が適用される場合は、API routeを `public`、`authenticated`、`admin`、`internal`、`webhook`、`debug`、`cron_batch_queue` に分類し、middleware matcherやroute内の認証参照、webhook署名検証らしき実装を保護根拠として記録する。
+
 - ルート `index.html` の有無
 - 秘密情報候補
 - XSS につながり得る DOM 操作

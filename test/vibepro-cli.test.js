@@ -537,8 +537,21 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.test.ts'), 'import test from "node:test";\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'helper.ts'), 'export const helper = true;\n');
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'users'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'users', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'webhook-monitor'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'webhook-monitor', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'debug-env'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'debug-env', 'route.ts'), 'export async function GET() { return Response.json(process.env); }\n');
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'stripe'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhooks', 'stripe', 'route.ts'), 'export async function POST() { return Response.json({ ok: true }); }\n');
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
-  await writeFile(path.join(repo, 'src', 'middleware.ts'), 'export function middleware() {}\n');
+  await writeFile(path.join(repo, 'src', 'middleware.ts'), `
+export const config = {
+  matcher: ['/api/admin/:path*', '/api/companies/:path*']
+};
+export function middleware() {}
+`);
   await writeFile(path.join(repo, '.env.local'), 'NEXTAUTH_SECRET=secret_1234567890abcdef\n');
   await writeFile(path.join(repo, 'vercel.json'), JSON.stringify({ framework: 'nextjs' }));
   await runCli(['init', repo]);
@@ -591,6 +604,25 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
+  assert.equal(evidence.api_boundary.routes.length, 5);
+  const adminRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/users');
+  assert.equal(adminRoute.classification, 'admin');
+  assert.equal(adminRoute.protection.status, 'protected');
+  assert.equal(adminRoute.protection.evidence.includes('middleware_matcher'), true);
+  const adminWebhookMonitorRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/webhook-monitor');
+  assert.equal(adminWebhookMonitorRoute.classification, 'admin');
+  const publicRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/companies');
+  assert.equal(publicRoute.classification, 'public');
+  assert.equal(publicRoute.protection.status, 'protected');
+  const debugRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/debug-env');
+  assert.equal(debugRoute.classification, 'debug');
+  assert.equal(debugRoute.protection.status, 'unprotected');
+  assert.equal(debugRoute.risk_hints.includes('debug_route_exposed'), true);
+  const webhookRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/webhooks/stripe');
+  assert.equal(webhookRoute.classification, 'webhook');
+  assert.equal(webhookRoute.risk_hints.includes('webhook_signature_not_detected'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
   const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
@@ -603,6 +635,7 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'story-report.md'), 'utf8');
   assert.doesNotMatch(report, /## 静的サイト診断/);
   assert.match(report, /## 共通スキャン/);
+  assert.match(report, /## API境界/);
   await runCli(['brainbase', repo]);
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
@@ -611,6 +644,8 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
   assert.equal(importState.signals.check_catalog.selected_views.includes('runtime'), true);
+  assert.equal(importState.signals.api_boundary.route_count, 5);
+  assert.equal(importState.signals.api_boundary.summary.debug, 1);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,

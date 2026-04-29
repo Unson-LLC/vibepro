@@ -329,7 +329,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 
 ## 証跡
 
-`evidence.json` は、graphify 由来の文脈品質、構造プロファイル、共通スキャン、静的サイト固有チェックを構造化して保存する。Markdown レポートはこの構造化証跡から生成される投影とする。
+`evidence.json` は、graphify 由来の文脈品質、構造プロファイル、API境界、共通スキャン、静的サイト固有チェックを構造化して保存する。Markdown レポートはこの構造化証跡から生成される投影とする。
 
 最小項目:
 
@@ -354,6 +354,12 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `architecture_profile.has_auth`
 - `check_catalog.selected_views`
 - `check_catalog.applicable_checks`
+- `api_boundary.route_count`
+- `api_boundary.middleware.matchers`
+- `api_boundary.routes[].route_path`
+- `api_boundary.routes[].classification`
+- `api_boundary.routes[].protection`
+- `api_boundary.routes[].risk_hints`
 - 検出事項
 - ゲート結果
 
@@ -376,6 +382,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `graph` で管理目録に graphify 成果物のパスが記録される。
 - `diagnose` で `summary.md`、`risk-register.md`、`architecture-profile.md`、`static-site-check-result.md`、`evidence.json` が作られる。
 - `diagnose` で `evidence.architecture_profile` と `evidence.check_catalog.applicable_checks` が記録される。
+- `diagnose` で `api-boundary` が適用される場合、`evidence.api_boundary.routes[]` にAPI route分類、保護根拠、risk hintsが記録される。
 - `diagnose` で `evidence.static_site` に共通スキャン結果と静的サイト固有チェック結果が記録される。
 - `diagnose` でWebアプリを検出した場合、`index.html` 不在と非静的ファイル混在を静的サイトの検出事項として扱わない。
 - `diagnose` で `evidence.story_id` と `runs[].story_id` が選択中Storyに紐づく。
