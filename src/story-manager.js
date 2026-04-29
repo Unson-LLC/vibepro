@@ -222,11 +222,16 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
 | 項目 | 内容 |
 |------|------|
 | 種別 | ${architectureProfile.app_type ?? 'unknown'} |
+| System type | ${architectureProfile.system_type ?? 'unknown'} |
 | 描画方式 | ${architectureProfile.rendering ?? '-'} |
 | API route | ${architectureProfile.has_api_routes ? 'あり' : 'なし'} |
 | DB | ${architectureProfile.has_database ? (architectureProfile.database ?? []).join(', ') || 'あり' : 'なし'} |
 | 認証 | ${architectureProfile.has_auth ? (architectureProfile.auth ?? []).join(', ') || 'あり' : 'なし'} |
 | 適用チェック | ${applicableChecks.join(', ') || '-'} |
+
+### View
+
+${renderStoryArchitectureViews(architectureProfile.views ?? {})}
 
 ## ${scanHeading}
 
@@ -253,6 +258,33 @@ ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts
 - ${artifacts.risk_register ?? '-'}
 - ${artifacts.evidence ?? '-'}
 `;
+}
+
+function renderStoryArchitectureViews(views) {
+  return `| View | 判定 |
+|------|------|
+| Structure | ${[
+    ...(views.structure?.containers ?? []),
+    ...(views.structure?.components ?? []),
+    ...(views.structure?.frameworks ?? [])
+  ].join(', ') || '-'} |
+| Runtime | ${[
+    `${views.runtime?.entrypoints?.length ?? 0} entrypoints`,
+    ...(views.runtime?.server_boundaries ?? [])
+  ].join(', ')} |
+| Data | ${[
+    ...(views.data?.stores ?? []),
+    ...(views.data?.access_patterns ?? [])
+  ].join(', ') || '-'} |
+| Security | ${[
+    `${views.security?.auth_boundaries?.length ?? 0} auth boundaries`,
+    `${views.security?.secret_files?.length ?? 0} secret files`
+  ].join(', ')} |
+| Deployment | ${(views.deployment?.targets ?? []).join(', ') || '-'} |
+| Quality | ${[
+    ...(views.quality?.test_tools ?? []),
+    ...(views.quality?.ci ?? [])
+  ].join(', ') || '-'} |`;
 }
 
 export function resolveStoryContext(config) {

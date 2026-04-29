@@ -6,6 +6,7 @@ const IGNORED_DIRS = new Set([
   '.next',
   '.turbo',
   '.vibepro',
+  '.worktrees',
   'coverage',
   'node_modules',
   'graphify-out'
@@ -35,32 +36,47 @@ export async function profileArchitecture(repoRoot) {
   const packageJson = await readPackageJson(root, fileSet);
   const dependencies = collectDependencies(packageJson);
   const auth = detectAuth({ dependencies, fileSet });
+  const appType = detectAppType({ fileSet, dependencies });
+  const rendering = detectRendering({ dependencies });
+  const frameworks = detectFrameworks(dependencies);
+  const languages = detectLanguages(files);
+  const apiRoutes = listApiRoutes(fileSet);
+  const database = detectDatabase(dependencies);
+  const deployment = detectDeployment(fileSet);
+  const views = buildArchitectureViews({
+    appType,
+    rendering,
+    frameworks,
+    languages,
+    apiRoutes,
+    database,
+    auth,
+    deployment,
+    dependencies,
+    fileSet
+  });
   const profile = {
-    app_type: detectAppType({ fileSet, dependencies }),
-    rendering: detectRendering({ fileSet, dependencies }),
+    system_type: toSystemType(appType),
+    app_type: appType,
+    rendering,
+    frameworks,
     package_manager: detectPackageManager(fileSet),
-    languages: detectLanguages(files),
-    has_api_routes: hasApiRoutes(fileSet),
-    has_database: hasAnyDependency(dependencies, [
-      '@prisma/client',
-      '@supabase/supabase-js',
-      'drizzle-orm',
-      'kysely',
-      'mongoose',
-      'pg',
-      'prisma',
-      'sequelize'
-    ]),
-    database: detectDatabase(dependencies),
+    languages,
+    views,
+    has_api_routes: views.runtime.entrypoints.length > 0,
+    has_database: views.data.stores.length > 0 || views.data.access_patterns.length > 0,
+    database,
     has_auth: auth.length > 0,
     auth,
-    deployment: detectDeployment(fileSet),
+    deployment,
     evidence: buildProfileEvidence({ fileSet, packageJson, dependencies })
   };
+  const checkCatalog = selectCheckCatalog(profile);
 
   return {
     ...profile,
-    applicable_checks: selectApplicableChecks(profile)
+    applicable_checks: checkCatalog.applicable_checks,
+    selected_views: checkCatalog.selected_views
   };
 }
 
@@ -80,6 +96,18 @@ function detectRendering({ dependencies }) {
   return null;
 }
 
+function detectFrameworks(dependencies) {
+  return ['next', 'react', 'vue', 'svelte']
+    .filter((dependency) => dependencies.has(dependency))
+    .map((dependency) => dependency === 'next' ? 'nextjs' : dependency);
+}
+
+function toSystemType(appType) {
+  if (appType === 'web_app') return 'web_application';
+  if (appType === 'static_site') return 'static_site';
+  return 'unknown';
+}
+
 function detectPackageManager(fileSet) {
   const manager = PACKAGE_MANAGERS.find((candidate) => fileSet.has(candidate.file));
   if (manager) return manager.name;
@@ -94,12 +122,16 @@ function detectLanguages(files) {
 }
 
 function hasApiRoutes(fileSet) {
-  return [...fileSet].some((file) => (
-    /^app\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-    || /^src\/app\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
+  return listApiRoutes(fileSet).length > 0;
+}
+
+function listApiRoutes(fileSet) {
+  return [...fileSet].filter((file) => (
+    /^app\/api\/.+\/route\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/app\/api\/.+\/route\.(js|jsx|ts|tsx)$/.test(file)
     || /^pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
     || /^src\/pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-  ));
+  )).sort();
 }
 
 function detectDatabase(dependencies) {
@@ -153,18 +185,89 @@ function detectDeployment(fileSet) {
   return deployment;
 }
 
-function selectApplicableChecks(profile) {
+function buildArchitectureViews({
+  appType,
+  rendering,
+  frameworks,
+  languages,
+  apiRoutes,
+  database,
+  auth,
+  deployment,
+  dependencies,
+  fileSet
+}) {
+  const structureComponents = [];
+  if (apiRoutes.length > 0) structureComponents.push('api_routes');
+  if (hasNextMiddleware(fileSet)) structureComponents.push('middleware');
+  if (hasPages(fileSet)) structureComponents.push('pages');
+  if (fileSet.has('index.html')) structureComponents.push('static_entry');
+
+  return {
+    structure: {
+      containers: appType === 'unknown' ? [] : [appType],
+      components: structureComponents,
+      frameworks,
+      languages
+    },
+    runtime: {
+      entrypoints: [...apiRoutes, ...listMiddlewareFiles(fileSet)],
+      server_boundaries: [
+        ...(apiRoutes.length > 0 ? ['api_routes'] : []),
+        ...(hasServerActions(fileSet) ? ['server_actions'] : []),
+        ...(hasNextMiddleware(fileSet) ? ['middleware'] : [])
+      ],
+      rendering
+    },
+    data: {
+      stores: database.filter((item) => ['postgres', 'mongodb', 'supabase'].includes(item)),
+      access_patterns: database.filter((item) => !['postgres', 'mongodb', 'supabase'].includes(item))
+    },
+    security: {
+      auth_boundaries: buildAuthBoundaries(fileSet),
+      auth_mechanisms: auth,
+      secret_files: listEnvFiles(fileSet)
+    },
+    deployment: {
+      targets: deployment,
+      config_files: listDeploymentFiles(fileSet)
+    },
+    quality: {
+      test_tools: detectTestTools(dependencies),
+      ci: listCiFiles(fileSet)
+    }
+  };
+}
+
+function selectCheckCatalog(profile) {
   const checks = ['secrets', 'xss', 'dependency-graph'];
+  const selectedViews = ['structure'];
+  if (profile.views.runtime.entrypoints.length > 0 || profile.views.runtime.server_boundaries.length > 0) {
+    selectedViews.push('runtime');
+    checks.push('api-boundary');
+  }
   if (profile.app_type === 'static_site') {
     checks.push('static-entry', 'static-publish-surface', 'external-resources');
   }
-  if (profile.app_type === 'web_app' || profile.has_api_routes) {
-    checks.push('api-boundary');
+  if (profile.views.data.stores.length > 0 || profile.views.data.access_patterns.length > 0) {
+    selectedViews.push('data');
+    checks.push('database-access');
   }
-  if (profile.has_database) checks.push('database-access');
-  if (profile.has_auth) checks.push('auth-boundary');
-  if (profile.deployment.length > 0) checks.push('deployment-readiness');
-  return [...new Set(checks)];
+  if (profile.views.security.auth_boundaries.length > 0 || profile.views.security.auth_mechanisms.length > 0) {
+    selectedViews.push('security');
+    checks.push('auth-boundary');
+  }
+  if (profile.views.deployment.targets.length > 0) {
+    selectedViews.push('deployment');
+    checks.push('deployment-readiness');
+  }
+  if (profile.views.quality.test_tools.length > 0 || profile.views.quality.ci.length > 0) {
+    selectedViews.push('quality');
+  }
+  return {
+    selected_views: [...new Set(selectedViews)],
+    applicable_checks: [...new Set(checks)]
+  };
 }
 
 function buildProfileEvidence({ fileSet, packageJson, dependencies }) {
@@ -193,12 +296,7 @@ function buildProfileEvidence({ fileSet, packageJson, dependencies }) {
 }
 
 function findFirstApiRoute(fileSet) {
-  return [...fileSet].find((file) => (
-    /^app\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-    || /^src\/app\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-    || /^pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-    || /^src\/pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
-  )) ?? null;
+  return listApiRoutes(fileSet)[0] ?? null;
 }
 
 function findNextMiddleware(fileSet) {
@@ -213,6 +311,62 @@ function findFirstNextAuthRoute(fileSet) {
     || /^pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
     || /^src\/pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
   )) ?? null;
+}
+
+function buildAuthBoundaries(fileSet) {
+  return [
+    ...listMiddlewareFiles(fileSet).map((file) => ({ type: 'middleware', file })),
+    ...listNextAuthRoutes(fileSet).map((file) => ({ type: 'auth_route', file }))
+  ];
+}
+
+function listMiddlewareFiles(fileSet) {
+  return ['middleware.ts', 'middleware.js', 'src/middleware.ts', 'src/middleware.js']
+    .filter((file) => fileSet.has(file));
+}
+
+function listNextAuthRoutes(fileSet) {
+  return [...fileSet].filter((file) => (
+    /^app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+  )).sort();
+}
+
+function listEnvFiles(fileSet) {
+  return [...fileSet].filter((file) => {
+    const basename = path.basename(file);
+    return basename === '.env' || basename.startsWith('.env.');
+  }).sort();
+}
+
+function listDeploymentFiles(fileSet) {
+  return ['vercel.json', 'fly.toml', 'wrangler.toml', 'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml']
+    .filter((file) => fileSet.has(file));
+}
+
+function detectTestTools(dependencies) {
+  return [...new Set(['vitest', 'jest', 'playwright', '@playwright/test', 'cypress']
+    .filter((dependency) => dependencies.has(dependency))
+    .map((dependency) => dependency === '@playwright/test' ? 'playwright' : dependency))];
+}
+
+function listCiFiles(fileSet) {
+  return [...fileSet].filter((file) => file.startsWith('.github/workflows/') || file.startsWith('.circleci/')).sort();
+}
+
+function hasPages(fileSet) {
+  return [...fileSet].some((file) => (
+    /^app\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/app\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^pages\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/pages\/.+\.(js|jsx|ts|tsx)$/.test(file)
+  ));
+}
+
+function hasServerActions(fileSet) {
+  return [...fileSet].some((file) => /actions?\.(js|jsx|ts|tsx)$/.test(file));
 }
 
 function collectDependencies(packageJson) {

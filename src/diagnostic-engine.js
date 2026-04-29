@@ -86,6 +86,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     },
     architecture_profile: architectureProfile,
     check_catalog: {
+      selected_views: architectureProfile.selected_views,
       applicable_checks: architectureProfile.applicable_checks
     },
     static_site: await scanStaticSite(repoRoot),
@@ -204,6 +205,10 @@ function renderSummary({ runId, evidence, findings }) {
 | XSSリスク候補 | ${evidence.static_site.xss_risk_hits.length}件 |
 | 検出事項 | ${findings.length}件 |
 
+## アーキテクチャView
+
+${renderArchitectureViewTable(profile)}
+
 ## ゲート状態
 
 ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).join('\n')}
@@ -212,6 +217,34 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 `;
+}
+
+function renderArchitectureViewTable(profile) {
+  const views = profile.views ?? {};
+  return `| View | 判定 |
+|------|------|
+| Structure | ${[
+    ...(views.structure?.containers ?? []),
+    ...(views.structure?.components ?? []),
+    ...(views.structure?.frameworks ?? [])
+  ].join(', ') || '-'} |
+| Runtime | ${[
+    `${views.runtime?.entrypoints?.length ?? 0} entrypoints`,
+    ...(views.runtime?.server_boundaries ?? [])
+  ].join(', ')} |
+| Data | ${[
+    ...(views.data?.stores ?? []),
+    ...(views.data?.access_patterns ?? [])
+  ].join(', ') || '-'} |
+| Security | ${[
+    `${views.security?.auth_boundaries?.length ?? 0} auth boundaries`,
+    `${views.security?.secret_files?.length ?? 0} secret files`
+  ].join(', ')} |
+| Deployment | ${(views.deployment?.targets ?? []).join(', ') || '-'} |
+| Quality | ${[
+    ...(views.quality?.test_tools ?? []),
+    ...(views.quality?.ci ?? [])
+  ].join(', ') || '-'} |`;
 }
 
 function renderArchitectureProfile({ runId, profile, checkCatalog }) {
@@ -228,6 +261,10 @@ function renderArchitectureProfile({ runId, profile, checkCatalog }) {
 | DB | ${profile.has_database ? profile.database.join(', ') || 'あり' : 'なし'} |
 | 認証 | ${profile.has_auth ? profile.auth.join(', ') || 'あり' : 'なし'} |
 | 配信 | ${profile.deployment.length === 0 ? '-' : profile.deployment.join(', ')} |
+
+## View
+
+${renderArchitectureViewTable(profile)}
 
 ## 適用チェック
 

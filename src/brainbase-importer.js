@@ -112,9 +112,12 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
       },
       architecture_profile: {
         app_type: architectureProfile.app_type ?? 'unknown',
+        system_type: architectureProfile.system_type ?? 'unknown',
         rendering: architectureProfile.rendering ?? null,
+        frameworks: architectureProfile.frameworks ?? [],
         package_manager: architectureProfile.package_manager ?? null,
         languages: architectureProfile.languages ?? [],
+        views: architectureProfile.views ?? {},
         has_api_routes: Boolean(architectureProfile.has_api_routes),
         has_database: Boolean(architectureProfile.has_database),
         database: architectureProfile.database ?? [],
@@ -123,6 +126,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         deployment: architectureProfile.deployment ?? []
       },
       check_catalog: {
+        selected_views: checkCatalog.selected_views ?? architectureProfile.selected_views ?? [],
         applicable_checks: checkCatalog.applicable_checks ?? architectureProfile.applicable_checks ?? []
       },
       static_site: {
@@ -156,7 +160,9 @@ function renderImportSummary(importState) {
 | Run Story ID | ${importState.latest_run.story_id ?? '-'} |
 | Gate | ${importState.latest_run.gate_status} |
 | 種別 | ${importState.signals.architecture_profile.app_type} |
+| System type | ${importState.signals.architecture_profile.system_type} |
 | 描画方式 | ${importState.signals.architecture_profile.rendering ?? '-'} |
+| 選択View | ${importState.signals.check_catalog.selected_views.join(', ') || '-'} |
 | 適用チェック | ${importState.signals.check_catalog.applicable_checks.join(', ') || '-'} |
 | graphify nodes | ${importState.signals.graphify.node_count} |
 | graphify edges | ${importState.signals.graphify.edge_count} |

@@ -535,6 +535,8 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   }, null, 2));
   await mkdir(path.join(repo, 'src', 'app', 'api', 'companies'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.test.ts'), 'import test from "node:test";\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'helper.ts'), 'export const helper = true;\n');
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
   await writeFile(path.join(repo, 'src', 'middleware.ts'), 'export function middleware() {}\n');
   await writeFile(path.join(repo, '.env.local'), 'NEXTAUTH_SECRET=secret_1234567890abcdef\n');
@@ -556,11 +558,34 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   await stat(path.join(runDir, 'architecture-profile.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
   assert.equal(evidence.architecture_profile.app_type, 'web_app');
+  assert.equal(evidence.architecture_profile.system_type, 'web_application');
   assert.equal(evidence.architecture_profile.rendering, 'nextjs');
+  assert.equal(evidence.architecture_profile.frameworks.includes('nextjs'), true);
   assert.equal(evidence.architecture_profile.has_api_routes, true);
   assert.equal(evidence.architecture_profile.has_database, true);
   assert.equal(evidence.architecture_profile.has_auth, true);
   assert.equal(evidence.architecture_profile.auth.includes('next-middleware'), true);
+  assert.deepEqual(Object.keys(evidence.architecture_profile.views), [
+    'structure',
+    'runtime',
+    'data',
+    'security',
+    'deployment',
+    'quality'
+  ]);
+  assert.equal(evidence.architecture_profile.views.structure.components.includes('api_routes'), true);
+  assert.equal(evidence.architecture_profile.views.runtime.entrypoints.includes('src/app/api/companies/route.ts'), true);
+  assert.equal(evidence.architecture_profile.views.runtime.entrypoints.includes('src/app/api/companies/route.test.ts'), false);
+  assert.equal(evidence.architecture_profile.views.runtime.entrypoints.includes('src/app/api/companies/helper.ts'), false);
+  assert.equal(evidence.architecture_profile.views.runtime.server_boundaries.includes('api_routes'), true);
+  assert.equal(evidence.architecture_profile.views.data.stores.includes('postgres'), true);
+  assert.equal(evidence.architecture_profile.views.data.access_patterns.includes('prisma'), true);
+  assert.equal(evidence.architecture_profile.views.security.auth_boundaries.some((item) => item.file === 'src/middleware.ts'), true);
+  assert.equal(evidence.architecture_profile.views.security.secret_files.includes('.env.local'), true);
+  assert.equal(evidence.architecture_profile.views.deployment.targets.includes('vercel'), true);
+  assert.equal(evidence.architecture_profile.views.quality.test_tools.includes('vitest'), true);
+  assert.equal(evidence.check_catalog.selected_views.includes('security'), true);
+  assert.equal(evidence.check_catalog.selected_views.includes('data'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('api-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('database-access'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
@@ -569,6 +594,8 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
   const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
+  assert.match(summary, /## アーキテクチャView/);
+  assert.match(summary, /Security \|/);
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
   const storyReport = await runCli(['story', 'report', repo]);
@@ -580,6 +607,10 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
   assert.match(importSummary, /共通スキャン対象/);
+  const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
+  assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
+  assert.equal(importState.signals.check_catalog.selected_views.includes('runtime'), true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,

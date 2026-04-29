@@ -111,15 +111,18 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `story select` で選択中Storyがある場合、診断runはそのStoryに紐づく。`evidence.json` と `vibepro-manifest.json` の `runs[]` には `story_id` とStory情報を記録する。
 
-診断ではモードを増やさず、まず対象リポジトリの構造プロファイルを作る。`package.json`、API route、配信設定、主要依存を読み、静的サイト、Next.jsなどのWebアプリ、DB、認証、配信先を判定する。そのうえで適用するチェックを選ぶ。
+診断ではモードを増やさず、まず対象リポジトリの構造プロファイルを作る。`package.json`、API route、配信設定、主要依存、認証境界、環境ファイルを読み、Architecture Views を組み立てる。そのうえでViewから適用するチェックを選ぶ。
 
-例:
+最初のView:
 
-- 共通: 秘密情報候補、XSSリスク候補、graphify上の曖昧な関係
-- 静的サイト: ルート `index.html`、外部リソース、静的配信対象外ファイル
-- Webアプリ: API境界、DB接続、認証境界、配信設定
+- Structure: 種別、フレームワーク、構成要素
+- Runtime: API route、middleware、server actionなどの実行入口
+- Data: DB種別、アクセスパターン
+- Security: 認証境界、秘密情報の置き場
+- Deployment: Vercel、Fly、Dockerなどの配信先
+- Quality: テスト、CI
 
-静的サイトに該当する場合は、次の観点を `.vibepro/diagnostics/<run-id>/` 配下に記録する。
+共通チェックでは秘密情報候補、XSSリスク候補、graphify上の曖昧な関係を確認する。静的サイトに該当する場合だけ、次の観点を静的サイト固有チェックとして扱う。
 
 - ルート `index.html` の有無
 - 秘密情報候補
