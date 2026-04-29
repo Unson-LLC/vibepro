@@ -246,6 +246,7 @@ function buildActionCandidates(evidence, graphIndex) {
   const privilegedUnprotected = apiBoundary.routes
     .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
   if (privilegedUnprotected.length > 0) {
+    const graphContext = buildGraphContextForRoutes(privilegedUnprotected, graphIndex);
     candidates.push({
       id: 'VP-ACTION-API-001',
       finding_id: 'VP-API-001',
@@ -257,13 +258,20 @@ function buildActionCandidates(evidence, graphIndex) {
       confidence: privilegedUnprotected.some((route) => route.protection?.status === 'unknown') ? 'medium' : 'high',
       recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
       route_examples: buildRouteExamples(privilegedUnprotected),
-      graph_context: buildGraphContextForRoutes(privilegedUnprotected, graphIndex)
+      graph_context: graphContext,
+      implementation_plan: buildImplementationPlanForAction({
+        actionId: 'VP-ACTION-API-001',
+        routes: privilegedUnprotected,
+        apiBoundary,
+        graphContext
+      })
     });
   }
 
   const debugExposed = apiBoundary.routes
     .filter((route) => route.risk_hints.includes('debug_route_exposed'));
   if (debugExposed.length > 0) {
+    const graphContext = buildGraphContextForRoutes(debugExposed, graphIndex);
     candidates.push({
       id: 'VP-ACTION-API-002',
       finding_id: 'VP-API-002',
@@ -275,13 +283,20 @@ function buildActionCandidates(evidence, graphIndex) {
       confidence: 'high',
       recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
       route_examples: buildRouteExamples(debugExposed),
-      graph_context: buildGraphContextForRoutes(debugExposed, graphIndex)
+      graph_context: graphContext,
+      implementation_plan: buildImplementationPlanForAction({
+        actionId: 'VP-ACTION-API-002',
+        routes: debugExposed,
+        apiBoundary,
+        graphContext
+      })
     });
   }
 
   const webhooksWithoutSignature = apiBoundary.routes
     .filter((route) => route.risk_hints.includes('webhook_signature_not_detected'));
   if (webhooksWithoutSignature.length > 0) {
+    const graphContext = buildGraphContextForRoutes(webhooksWithoutSignature, graphIndex);
     candidates.push({
       id: 'VP-ACTION-API-003',
       finding_id: 'VP-API-003',
@@ -293,11 +308,144 @@ function buildActionCandidates(evidence, graphIndex) {
       confidence: 'high',
       recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
       route_examples: buildRouteExamples(webhooksWithoutSignature),
-      graph_context: buildGraphContextForRoutes(webhooksWithoutSignature, graphIndex)
+      graph_context: graphContext,
+      implementation_plan: buildImplementationPlanForAction({
+        actionId: 'VP-ACTION-API-003',
+        routes: webhooksWithoutSignature,
+        apiBoundary,
+        graphContext
+      })
     });
   }
 
   return candidates;
+}
+
+function buildImplementationPlanForAction({ actionId, routes, apiBoundary, graphContext }) {
+  return {
+    priority: resolveImplementationPriority({ actionId, routes, graphContext }),
+    rationale: buildImplementationRationale({ routes, graphContext }),
+    read_first_files: buildReadFirstFiles({ routes, apiBoundary, graphContext }),
+    steps: buildImplementationSteps(actionId),
+    acceptance_criteria: buildAcceptanceCriteria(actionId)
+  };
+}
+
+function resolveImplementationPriority({ routes, graphContext }) {
+  if (routes.length > 0) return 'high';
+  if ((graphContext?.related_edge_count ?? 0) > 0) return 'medium';
+  return 'low';
+}
+
+function buildImplementationRationale({ routes, graphContext }) {
+  const context = graphContext ?? emptyGraphContext();
+  const topCommunity = context.affected_communities[0];
+  const communityText = topCommunity
+    ? `最大community ${topCommunity.id} は ${topCommunity.route_count} route / ${topCommunity.node_count} node / ${topCommunity.edge_count} edge。`
+    : '対応するgraph communityは未特定。';
+  return `${routes.length}件のrouteが対象。graphifyでは ${context.matched_node_count} node / ${context.related_edge_count} edge に接続し、impactは ${context.impact_score}。${communityText}`;
+}
+
+function buildReadFirstFiles({ routes, apiBoundary, graphContext }) {
+  const files = [];
+  const seen = new Set();
+  const add = (file, reason) => {
+    const normalized = normalizeGraphPath(file ?? '');
+    if (!normalized || seen.has(normalized)) return;
+    seen.add(normalized);
+    files.push({ file: normalized, reason });
+  };
+
+  for (const route of routes.slice(0, 10)) {
+    add(route.file, `対象API route: ${route.route_path}`);
+  }
+  for (const evidence of apiBoundary.middleware?.evidence ?? []) {
+    add(evidence.file, 'API保護方針を確認するmiddleware');
+  }
+  for (const node of graphContext?.hub_nodes ?? []) {
+    add(node.source_file, `graphify hub: ${node.label} (degree ${node.degree})`);
+  }
+
+  return files.slice(0, 12);
+}
+
+function buildImplementationSteps(actionId) {
+  if (actionId === 'VP-ACTION-API-001') {
+    return [
+      {
+        id: 'confirm-protection-boundary',
+        title: '保護境界を決める',
+        detail: '対象routeをmiddleware matcherで守るか、route内認証で守るかを決める。middleware matcherを使う場合はAPI除外条件との整合を確認する。'
+      },
+      {
+        id: 'add-protection-evidence',
+        title: '保護根拠を追加する',
+        detail: '選んだ方式に沿って、対象routeごとに認証参照またはmatcher対象であることをコード上に明示する。'
+      },
+      {
+        id: 'rerun-diagnosis',
+        title: '診断を再実行する',
+        detail: 'VibePro診断を再実行し、対象routeの保護状態とrisk hintが改善したことを確認する。'
+      }
+    ];
+  }
+  if (actionId === 'VP-ACTION-API-002') {
+    return [
+      {
+        id: 'classify-debug-route',
+        title: '公開要否を判定する',
+        detail: 'debug/test APIが本番で不要なら削除する。必要な場合は用途、利用者、公開環境を限定する。'
+      },
+      {
+        id: 'restrict-debug-route',
+        title: '公開面を制限する',
+        detail: '削除しないrouteには認証、環境変数による本番停止、または内部経路限定を追加する。'
+      },
+      {
+        id: 'rerun-diagnosis',
+        title: '診断を再実行する',
+        detail: 'VibePro診断を再実行し、debug_route_exposedが残っていないことを確認する。'
+      }
+    ];
+  }
+  return [
+    {
+      id: 'confirm-webhook-provider',
+      title: 'Webhook送信元を確認する',
+      detail: '送信元ごとの署名ヘッダー、署名方式、許可イベント、再送仕様を確認する。'
+    },
+    {
+      id: 'add-signature-verification',
+      title: '署名検証を追加する',
+      detail: 'route内で署名検証、リプレイ対策、許可イベント検証を実装または既存実装へ接続する。'
+    },
+    {
+      id: 'rerun-diagnosis',
+      title: '診断を再実行する',
+      detail: 'VibePro診断を再実行し、webhook_signature_checkが保護根拠として検出されることを確認する。'
+    }
+  ];
+}
+
+function buildAcceptanceCriteria(actionId) {
+  if (actionId === 'VP-ACTION-API-001') {
+    return [
+      '対象routeごとにmiddleware matcherまたはroute内認証の保護根拠が確認できる。',
+      'VibePro診断でprivileged_route_unprotectedが対象routeから消える。'
+    ];
+  }
+  if (actionId === 'VP-ACTION-API-002') {
+    return [
+      '本番不要なdebug/test APIは削除されている。',
+      '残すdebug/test APIは認証または環境制限で公開面が限定されている。',
+      'VibePro診断でdebug_route_exposedが対象routeから消える。'
+    ];
+  }
+  return [
+    'Webhook routeで送信元の署名検証が実行される。',
+    'リプレイ対策と許可イベント検証の方針がコード上で確認できる。',
+    'VibePro診断でwebhook_signature_checkが保護根拠として検出される。'
+  ];
 }
 
 function attachFindingGraphContexts(findings, candidates) {
@@ -506,6 +654,7 @@ function normalizeGraphPath(filePath) {
 
 function buildRouteExamples(routes) {
   return routes.slice(0, 10).map((route) => ({
+    file: route.file,
     route_path: route.route_path,
     classification: route.classification,
     protection_status: route.protection?.status ?? 'unknown',
@@ -706,9 +855,11 @@ ${renderActionCandidates(actionCandidates)}
 function renderActionCandidates(candidates) {
   const items = Array.isArray(candidates) ? candidates : [];
   if (items.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 方針 |
-|----|------------------|------|------|--------|-----------|------|
-${items.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 読むファイル | 方針 |
+|----|------------------|------|------|--------|-----------|------------|------|
+${items.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${formatReadFirstFiles(candidate.implementation_plan)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}
+
+${renderImplementationPlans(items)}`;
 }
 
 function formatGraphImpact(graphContext) {
@@ -723,6 +874,49 @@ function formatGraphCommunities(graphContext) {
     .slice(0, 3)
     .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
     .join(', ');
+}
+
+function formatReadFirstFiles(implementationPlan) {
+  const files = implementationPlan?.read_first_files ?? [];
+  if (files.length === 0) return '-';
+  return selectRepresentativeReadFirstFiles(files).map((item) => item.file).join('<br>');
+}
+
+function selectRepresentativeReadFirstFiles(files) {
+  const selected = [];
+  const seen = new Set();
+  const add = (item) => {
+    if (!item || seen.has(item.file)) return;
+    seen.add(item.file);
+    selected.push(item);
+  };
+  add(files[0]);
+  add(files.find((item) => item.reason.includes('middleware')));
+  add(files.find((item) => item.reason.includes('graphify hub')));
+  for (const item of files) add(item);
+  return selected.slice(0, 3);
+}
+
+function renderImplementationPlans(candidates) {
+  const items = candidates.filter((candidate) => candidate.implementation_plan);
+  if (items.length === 0) return '';
+  return `### 実装手順
+
+${items.map((candidate) => renderImplementationPlan(candidate)).join('\n\n')}`;
+}
+
+function renderImplementationPlan(candidate) {
+  const plan = candidate.implementation_plan;
+  return `#### ${candidate.id}: ${candidate.title}
+
+- 優先度: ${plan.priority}
+- 理由: ${plan.rationale}
+- 読むファイル: ${plan.read_first_files.length === 0 ? '-' : plan.read_first_files.map((item) => `${item.file}（${item.reason}）`).join(', ')}
+
+${plan.steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
+
+完了条件:
+${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
 }
 
 function renderApiProtectionStateTable(apiBoundary) {

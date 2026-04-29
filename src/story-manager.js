@@ -293,9 +293,11 @@ ${protectionRows || '| - | 0 |'}`;
 
 function renderStoryActionCandidates(candidates) {
   if (candidates.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 方針 |
-|----|------------------|------|------|--------|-----------|------|
-${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 読むファイル | 方針 |
+|----|------------------|------|------|--------|-----------|------------|------|
+${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${formatReadFirstFiles(candidate.implementation_plan)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}
+
+${renderImplementationPlans(candidates)}`;
 }
 
 function formatRiskCount(count, summary = {}) {
@@ -314,6 +316,49 @@ function formatGraphCommunities(graphContext) {
     .slice(0, 3)
     .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
     .join(', ');
+}
+
+function formatReadFirstFiles(implementationPlan) {
+  const files = implementationPlan?.read_first_files ?? [];
+  if (files.length === 0) return '-';
+  return selectRepresentativeReadFirstFiles(files).map((item) => item.file).join('<br>');
+}
+
+function selectRepresentativeReadFirstFiles(files) {
+  const selected = [];
+  const seen = new Set();
+  const add = (item) => {
+    if (!item || seen.has(item.file)) return;
+    seen.add(item.file);
+    selected.push(item);
+  };
+  add(files[0]);
+  add(files.find((item) => item.reason.includes('middleware')));
+  add(files.find((item) => item.reason.includes('graphify hub')));
+  for (const item of files) add(item);
+  return selected.slice(0, 3);
+}
+
+function renderImplementationPlans(candidates) {
+  const items = candidates.filter((candidate) => candidate.implementation_plan);
+  if (items.length === 0) return '';
+  return `### 実装手順
+
+${items.map((candidate) => renderImplementationPlan(candidate)).join('\n\n')}`;
+}
+
+function renderImplementationPlan(candidate) {
+  const plan = candidate.implementation_plan;
+  return `#### ${candidate.id}: ${candidate.title}
+
+- 優先度: ${plan.priority}
+- 理由: ${plan.rationale}
+- 読むファイル: ${plan.read_first_files.length === 0 ? '-' : plan.read_first_files.map((item) => `${item.file}（${item.reason}）`).join(', ')}
+
+${plan.steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
+
+完了条件:
+${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
 }
 
 function renderStoryArchitectureViews(views) {

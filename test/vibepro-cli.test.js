@@ -695,18 +695,27 @@ export function middleware() {}
   assert.equal(apiAction.mutates_repository, false);
   assert.equal(apiAction.target_count, 1);
   assert.equal(apiAction.route_examples[0].route_path, '/api/queue/status');
+  assert.equal(apiAction.route_examples[0].file, 'src/app/api/queue/status/route.ts');
   assert.equal(apiAction.graph_context.matched_route_count, 1);
   assert.equal(apiAction.graph_context.matched_node_count, 2);
   assert.equal(apiAction.graph_context.related_edge_count, 2);
   assert.equal(apiAction.graph_context.affected_communities[0].id, 7);
   assert.equal(apiAction.graph_context.hub_nodes.some((node) => node.id === 'queue-service'), true);
   assert.equal(apiAction.graph_context.impact_score > 0, true);
+  assert.equal(apiAction.implementation_plan.priority, 'high');
+  assert.equal(apiAction.implementation_plan.read_first_files[0].file, 'src/app/api/queue/status/route.ts');
+  assert.equal(apiAction.implementation_plan.read_first_files.some((item) => item.file === 'src/middleware.ts'), true);
+  assert.equal(apiAction.implementation_plan.read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
+  assert.match(apiAction.implementation_plan.steps[0].detail, /middleware matcher/);
+  assert.match(apiAction.implementation_plan.acceptance_criteria.join('\n'), /保護根拠/);
   const debugAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-002');
   assert.equal(debugAction.target_count, 1);
   assert.equal(debugAction.graph_context.matched_route_count, 1);
+  assert.match(debugAction.implementation_plan.steps.map((step) => step.detail).join('\n'), /削除/);
   const webhookAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-003');
   assert.equal(webhookAction.target_count, 1);
   assert.equal(webhookAction.graph_context.matched_route_count, 1);
+  assert.match(webhookAction.implementation_plan.acceptance_criteria.join('\n'), /署名検証/);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
@@ -725,6 +734,8 @@ export function middleware() {}
   assert.match(summary, /## 次アクション候補/);
   assert.match(summary, /VP-ACTION-API-001/);
   assert.match(summary, /Impact/);
+  assert.match(summary, /読むファイル/);
+  assert.match(summary, /実装手順/);
   assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
   const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
   assert.match(riskRegister, /## API境界の保護状態/);
@@ -740,6 +751,7 @@ export function middleware() {}
   assert.match(report, /protected_by_route \| 1/);
   assert.match(report, /## 次アクション候補/);
   assert.match(report, /Impact/);
+  assert.match(report, /実装手順/);
   await runCli(['brainbase', repo]);
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
@@ -748,6 +760,7 @@ export function middleware() {}
   assert.match(importSummary, /excluded_by_middleware \| 3/);
   assert.match(importSummary, /## 次アクション候補/);
   assert.match(importSummary, /Impact/);
+  assert.match(importSummary, /読むファイル/);
   const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
@@ -758,6 +771,7 @@ export function middleware() {}
   assert.equal(importState.signals.action_candidates.length, 3);
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
   assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
+  assert.equal(importState.signals.action_candidates[0].implementation_plan.read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').graph_context.impact_score > 0, true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(

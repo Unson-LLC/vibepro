@@ -376,7 +376,9 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `action_candidates[].execution_policy`
 - `action_candidates[].mutates_repository`
 - `action_candidates[].route_examples`
+- `action_candidates[].route_examples[].file`
 - `action_candidates[].graph_context`
+- `action_candidates[].implementation_plan`
 - `findings[].graph_context`
 - 検出事項
 - ゲート結果
@@ -398,6 +400,19 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `hub_nodes[].degree`
 - `related_edge_count`: 一致nodeに接続するedge数
 - `impact_score`: graph全体のedge数に対する関連edge比率。0から1の数値。
+
+`implementation_plan` は graphify の影響範囲を使って、次に読むファイルと修正手順を提案する非破壊の計画である。初期実装では `execution_policy=proposal_only` と `mutates_repository=false` を維持し、対象リポジトリのコードは変更しない。
+
+- `priority`: `high`, `medium`, `low`
+- `rationale`: 対象route数、関連node/edge数、主要communityから作る判断理由
+- `read_first_files[]`: 実装前に読むべきファイル
+- `read_first_files[].file`
+- `read_first_files[].reason`
+- `steps[]`: 実装手順
+- `steps[].id`
+- `steps[].title`
+- `steps[].detail`
+- `acceptance_criteria[]`: 完了判定
 
 ## ゲート
 
