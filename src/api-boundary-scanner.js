@@ -66,25 +66,42 @@ function classifyProtection({ routePath, classification, middleware, content }) 
   if (classification === 'webhook' && hasWebhookSignatureCheck(code)) {
     evidence.push('webhook_signature_check');
   }
-  const unknown = middleware.matchers.some((matcher) => isComplexMatcher(matcher));
+  if (middleware.matchers.some((matcher) => matcherExcludesApi(matcher))) {
+    evidence.push('middleware_excludes_api');
+  }
   return {
-    status: evidence.length > 0 ? 'protected' : unknown ? 'unknown' : 'unprotected',
+    status: resolveProtectionStatus(evidence, middleware),
     evidence
   };
 }
 
 function collectRiskHints({ classification, protection, content }) {
   const hints = [];
-  if (['admin', 'internal', 'cron_batch_queue'].includes(classification) && protection.status !== 'protected') {
+  if (['admin', 'internal', 'cron_batch_queue'].includes(classification) && !isProtectedStatus(protection.status)) {
     hints.push('privileged_route_unprotected');
   }
-  if (classification === 'debug' && protection.status !== 'protected') {
+  if (classification === 'debug' && !isProtectedStatus(protection.status)) {
     hints.push('debug_route_exposed');
   }
   if (classification === 'webhook' && !hasWebhookSignatureCheck(stripComments(content))) {
     hints.push('webhook_signature_not_detected');
   }
   return hints;
+}
+
+function resolveProtectionStatus(evidence, middleware) {
+  if (evidence.includes('webhook_signature_check')) return 'protected_by_route';
+  if (evidence.includes('route_auth_reference')) return 'protected_by_route';
+  if (evidence.includes('middleware_matcher')) return 'protected_by_middleware';
+  if (evidence.includes('middleware_excludes_api')) return 'excluded_by_middleware';
+  if (middleware.matchers.some((matcher) => isComplexMatcher(matcher))) return 'unknown';
+  return 'unprotected';
+}
+
+function isProtectedStatus(status) {
+  return status === 'protected'
+    || status === 'protected_by_route'
+    || status === 'protected_by_middleware';
 }
 
 function detectMethods(content) {
@@ -167,6 +184,10 @@ function isComplexMatcher(matcher) {
     || matcher.includes('[')
     || matcher.includes(']')
     || matcher.includes('|');
+}
+
+function matcherExcludesApi(matcher) {
+  return matcher.includes('(?!api') || matcher.includes('(?!/api');
 }
 
 function summarizeRoutes(routes) {

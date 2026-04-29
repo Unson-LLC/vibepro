@@ -551,10 +551,21 @@ export async function GET() { return Response.json(process.env); }
 // TODO: verify signature before handling this webhook.
 export async function POST() { return Response.json({ ok: true }); }
 `);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'internal', 'health'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'internal', 'health', 'route.ts'), `
+import { auth } from '@/lib/auth';
+export async function GET(request) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) return Response.json({}, { status: 401 });
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'queue', 'status'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'queue', 'status', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
   await writeFile(path.join(repo, 'src', 'middleware.ts'), `
 export const config = {
-  matcher: ['/api/admin/:path*', '/api/companies/:path*']
+  matcher: ['/api/admin/:path*', '/api/companies/:path*', '/((?!api|_next/static).*)']
 };
 export function middleware() {}
 `);
@@ -610,25 +621,32 @@ export function middleware() {}
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
-  assert.equal(evidence.api_boundary.routes.length, 5);
+  assert.equal(evidence.api_boundary.routes.length, 7);
   const adminRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/users');
   assert.equal(adminRoute.classification, 'admin');
-  assert.equal(adminRoute.protection.status, 'protected');
+  assert.equal(adminRoute.protection.status, 'protected_by_middleware');
   assert.equal(adminRoute.protection.evidence.includes('middleware_matcher'), true);
   const adminWebhookMonitorRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/webhook-monitor');
   assert.equal(adminWebhookMonitorRoute.classification, 'admin');
   const publicRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/companies');
   assert.equal(publicRoute.classification, 'public');
-  assert.equal(publicRoute.protection.status, 'protected');
+  assert.equal(publicRoute.protection.status, 'protected_by_middleware');
   const debugRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/debug-env');
   assert.equal(debugRoute.classification, 'debug');
-  assert.equal(debugRoute.protection.status, 'unprotected');
+  assert.equal(debugRoute.protection.status, 'excluded_by_middleware');
   assert.equal(debugRoute.protection.evidence.includes('route_auth_reference'), false);
   assert.equal(debugRoute.risk_hints.includes('debug_route_exposed'), true);
   const webhookRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/webhooks/stripe');
   assert.equal(webhookRoute.classification, 'webhook');
   assert.equal(webhookRoute.protection.evidence.includes('webhook_signature_check'), false);
   assert.equal(webhookRoute.risk_hints.includes('webhook_signature_not_detected'), true);
+  const internalRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/internal/health');
+  assert.equal(internalRoute.protection.status, 'protected_by_route');
+  assert.equal(internalRoute.protection.evidence.includes('route_auth_reference'), true);
+  const queueRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/queue/status');
+  assert.equal(queueRoute.protection.status, 'excluded_by_middleware');
+  assert.equal(queueRoute.protection.evidence.includes('middleware_excludes_api'), true);
+  assert.equal(queueRoute.risk_hints.includes('privileged_route_unprotected'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
@@ -652,7 +670,7 @@ export function middleware() {}
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
   assert.equal(importState.signals.check_catalog.selected_views.includes('runtime'), true);
-  assert.equal(importState.signals.api_boundary.route_count, 5);
+  assert.equal(importState.signals.api_boundary.route_count, 7);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
