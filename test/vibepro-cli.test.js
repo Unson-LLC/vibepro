@@ -602,8 +602,19 @@ export function middleware() {}
   const graphDir = path.join(repo, 'graphify-out');
   await mkdir(graphDir, { recursive: true });
   await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
-    nodes: [{ id: 'app' }, { id: 'api' }],
-    edges: []
+    nodes: [
+      { id: 'queue-route', label: 'queue route', source_file: 'src/app/api/queue/status/route.ts', community: 7 },
+      { id: 'queue-handler', label: 'handleQueue()', source_file: 'src/app/api/queue/status/route.ts', community: 7 },
+      { id: 'queue-service', label: 'QueueService', source_file: 'src/lib/queue.ts', community: 7 },
+      { id: 'debug-route', label: 'debug route', source_file: 'src/app/api/debug-env/route.ts', community: 9 },
+      { id: 'webhook-route', label: 'stripe webhook', source_file: 'src/app/api/webhooks/stripe/route.ts', community: 10 }
+    ],
+    links: [
+      { source: 'queue-route', target: 'queue-handler', confidence: 'EXTRACTED', relation: 'contains' },
+      { source: 'queue-handler', target: 'queue-service', confidence: 'EXTRACTED', relation: 'calls' },
+      { source: 'debug-route', target: 'queue-service', confidence: 'INFERRED', relation: 'calls' },
+      { source: 'webhook-route', target: 'queue-service', confidence: 'INFERRED', relation: 'calls' }
+    ]
   }));
   await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
   await runCli(['graph', repo, '--from', graphDir]);
@@ -684,15 +695,24 @@ export function middleware() {}
   assert.equal(apiAction.mutates_repository, false);
   assert.equal(apiAction.target_count, 1);
   assert.equal(apiAction.route_examples[0].route_path, '/api/queue/status');
+  assert.equal(apiAction.graph_context.matched_route_count, 1);
+  assert.equal(apiAction.graph_context.matched_node_count, 2);
+  assert.equal(apiAction.graph_context.related_edge_count, 2);
+  assert.equal(apiAction.graph_context.affected_communities[0].id, 7);
+  assert.equal(apiAction.graph_context.hub_nodes.some((node) => node.id === 'queue-service'), true);
+  assert.equal(apiAction.graph_context.impact_score > 0, true);
   const debugAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-002');
   assert.equal(debugAction.target_count, 1);
+  assert.equal(debugAction.graph_context.matched_route_count, 1);
   const webhookAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-003');
   assert.equal(webhookAction.target_count, 1);
+  assert.equal(webhookAction.graph_context.matched_route_count, 1);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
   assert.match(apiFinding.detail, /excluded_by_middleware: 1件/);
   assert.match(apiFinding.recommendation, /APIを除外しているmiddleware matcher/);
+  assert.equal(apiFinding.graph_context.impact_score, apiAction.graph_context.impact_score);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
   const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
@@ -704,10 +724,13 @@ export function middleware() {}
   assert.match(summary, /excluded_by_middleware \| 3/);
   assert.match(summary, /## 次アクション候補/);
   assert.match(summary, /VP-ACTION-API-001/);
+  assert.match(summary, /Impact/);
+  assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
   const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
   assert.match(riskRegister, /## API境界の保護状態/);
   assert.match(riskRegister, /excluded_by_middleware \| 3/);
   assert.match(riskRegister, /proposal_only/);
+  assert.match(riskRegister, /Impact/);
   const storyReport = await runCli(['story', 'report', repo]);
   assert.equal(storyReport.exitCode, 0);
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'story-report.md'), 'utf8');
@@ -716,6 +739,7 @@ export function middleware() {}
   assert.match(report, /## API境界/);
   assert.match(report, /protected_by_route \| 1/);
   assert.match(report, /## 次アクション候補/);
+  assert.match(report, /Impact/);
   await runCli(['brainbase', repo]);
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
@@ -723,6 +747,7 @@ export function middleware() {}
   assert.match(importSummary, /## API境界/);
   assert.match(importSummary, /excluded_by_middleware \| 3/);
   assert.match(importSummary, /## 次アクション候補/);
+  assert.match(importSummary, /Impact/);
   const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
@@ -732,6 +757,8 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
   assert.equal(importState.signals.action_candidates.length, 3);
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
+  assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
+  assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').graph_context.impact_score > 0, true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,

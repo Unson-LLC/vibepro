@@ -18,10 +18,11 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const graph = JSON.parse(await readFile(graphPath, 'utf8'));
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   const { currentStory } = resolveStoryContext(config);
-  const evidence = await buildEvidence(root, graph, runId, currentStory);
+  const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory);
   const findings = buildFindings(evidence);
   evidence.findings = findings;
-  evidence.action_candidates = buildActionCandidates(evidence);
+  evidence.action_candidates = buildActionCandidates(evidence, graphIndex);
+  attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
   evidence.gates = buildGates(findings);
 
   const evidencePath = path.join(runDir, 'evidence.json');
@@ -78,33 +79,37 @@ export async function runDiagnosis(repoRoot, options = {}) {
 async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const { edges, sourceKey: edgeSourceKey } = normalizeGraphEdges(graph);
+  const graphIndex = buildGraphIndex({ nodes, edges });
   const architectureProfile = await profileArchitecture(repoRoot);
   const checkCatalog = {
     selected_views: architectureProfile.selected_views,
     applicable_checks: architectureProfile.applicable_checks
   };
   return {
-    schema_version: '0.1.0',
-    run_id: runId,
-    story_id: story.story_id,
-    story,
-    graphify: {
-      node_count: nodes.length,
-      edge_count: edges.length,
-      edge_source_key: edgeSourceKey,
-      extracted_edges: edges.filter((edge) => edge.confidence === 'EXTRACTED'),
-      inferred_edges: edges.filter((edge) => edge.confidence === 'INFERRED'),
-      ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
-    },
-    architecture_profile: architectureProfile,
-    check_catalog: checkCatalog,
-    api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
-      ? await scanApiBoundary(repoRoot, architectureProfile)
-      : null,
-    static_site: await scanStaticSite(repoRoot),
-    action_candidates: [],
-    findings: [],
-    gates: []
+    graphIndex,
+    evidence: {
+      schema_version: '0.1.0',
+      run_id: runId,
+      story_id: story.story_id,
+      story,
+      graphify: {
+        node_count: nodes.length,
+        edge_count: edges.length,
+        edge_source_key: edgeSourceKey,
+        extracted_edges: edges.filter((edge) => edge.confidence === 'EXTRACTED'),
+        inferred_edges: edges.filter((edge) => edge.confidence === 'INFERRED'),
+        ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
+      },
+      architecture_profile: architectureProfile,
+      check_catalog: checkCatalog,
+      api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
+        ? await scanApiBoundary(repoRoot, architectureProfile)
+        : null,
+      static_site: await scanStaticSite(repoRoot),
+      action_candidates: [],
+      findings: [],
+      gates: []
+    }
   };
 }
 
@@ -233,7 +238,7 @@ function buildFindings(evidence) {
   return findings;
 }
 
-function buildActionCandidates(evidence) {
+function buildActionCandidates(evidence, graphIndex) {
   const candidates = [];
   const apiBoundary = evidence.api_boundary;
   if (!apiBoundary) return candidates;
@@ -251,7 +256,8 @@ function buildActionCandidates(evidence) {
       mutates_repository: false,
       confidence: privilegedUnprotected.some((route) => route.protection?.status === 'unknown') ? 'medium' : 'high',
       recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
-      route_examples: buildRouteExamples(privilegedUnprotected)
+      route_examples: buildRouteExamples(privilegedUnprotected),
+      graph_context: buildGraphContextForRoutes(privilegedUnprotected, graphIndex)
     });
   }
 
@@ -268,7 +274,8 @@ function buildActionCandidates(evidence) {
       mutates_repository: false,
       confidence: 'high',
       recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
-      route_examples: buildRouteExamples(debugExposed)
+      route_examples: buildRouteExamples(debugExposed),
+      graph_context: buildGraphContextForRoutes(debugExposed, graphIndex)
     });
   }
 
@@ -285,11 +292,216 @@ function buildActionCandidates(evidence) {
       mutates_repository: false,
       confidence: 'high',
       recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
-      route_examples: buildRouteExamples(webhooksWithoutSignature)
+      route_examples: buildRouteExamples(webhooksWithoutSignature),
+      graph_context: buildGraphContextForRoutes(webhooksWithoutSignature, graphIndex)
     });
   }
 
   return candidates;
+}
+
+function attachFindingGraphContexts(findings, candidates) {
+  const contextByFindingId = new Map(
+    candidates
+      .filter((candidate) => candidate.finding_id && candidate.graph_context)
+      .map((candidate) => [candidate.finding_id, candidate.graph_context])
+  );
+  for (const finding of findings) {
+    if (contextByFindingId.has(finding.id)) {
+      finding.graph_context = contextByFindingId.get(finding.id);
+    }
+  }
+}
+
+function buildGraphIndex({ nodes, edges }) {
+  const nodesById = new Map();
+  const nodesBySourceFile = new Map();
+  const degreeByNodeId = new Map();
+  const edgesByNodeId = new Map();
+
+  for (const node of nodes) {
+    if (!node || typeof node !== 'object' || typeof node.id !== 'string') continue;
+    nodesById.set(node.id, node);
+    const sourceFile = extractGraphNodeSourceFile(node);
+    if (sourceFile) {
+      const key = normalizeGraphPath(sourceFile);
+      if (!nodesBySourceFile.has(key)) nodesBySourceFile.set(key, []);
+      nodesBySourceFile.get(key).push(node);
+    }
+  }
+
+  for (const edge of edges) {
+    const source = getEdgeEndpoint(edge, 'source');
+    const target = getEdgeEndpoint(edge, 'target');
+    if (!source || !target) continue;
+    degreeByNodeId.set(source, (degreeByNodeId.get(source) ?? 0) + 1);
+    degreeByNodeId.set(target, (degreeByNodeId.get(target) ?? 0) + 1);
+    if (!edgesByNodeId.has(source)) edgesByNodeId.set(source, []);
+    if (!edgesByNodeId.has(target)) edgesByNodeId.set(target, []);
+    edgesByNodeId.get(source).push(edge);
+    edgesByNodeId.get(target).push(edge);
+  }
+
+  return {
+    nodesById,
+    nodesBySourceFile,
+    degreeByNodeId,
+    edgesByNodeId,
+    edgeCount: edges.length
+  };
+}
+
+function buildGraphContextForRoutes(routes, graphIndex) {
+  const empty = emptyGraphContext();
+  if (!graphIndex || routes.length === 0) return empty;
+
+  const matchedRouteFiles = new Set();
+  const matchedNodesById = new Map();
+  const relatedEdges = new Set();
+
+  for (const route of routes) {
+    const routeFile = normalizeGraphPath(route.file ?? '');
+    const matchedNodes = graphIndex.nodesBySourceFile.get(routeFile) ?? [];
+    if (matchedNodes.length === 0) continue;
+    matchedRouteFiles.add(routeFile);
+    for (const node of matchedNodes) {
+      matchedNodesById.set(node.id, node);
+      for (const edge of graphIndex.edgesByNodeId.get(node.id) ?? []) {
+        relatedEdges.add(edge);
+      }
+    }
+  }
+
+  if (matchedNodesById.size === 0) return empty;
+
+  const touchedNodeIds = new Set(matchedNodesById.keys());
+  for (const edge of relatedEdges) {
+    const source = getEdgeEndpoint(edge, 'source');
+    const target = getEdgeEndpoint(edge, 'target');
+    if (source) touchedNodeIds.add(source);
+    if (target) touchedNodeIds.add(target);
+  }
+
+  const affectedCommunities = buildAffectedCommunities({
+    matchedNodes: [...matchedNodesById.values()],
+    matchedRouteFiles,
+    relatedEdges: [...relatedEdges],
+    graphIndex
+  });
+
+  return {
+    matched_route_count: matchedRouteFiles.size,
+    matched_node_count: matchedNodesById.size,
+    affected_communities: affectedCommunities,
+    hub_nodes: buildHubNodes({
+      touchedNodeIds,
+      matchedNodeIds: new Set(matchedNodesById.keys()),
+      affectedCommunityIds: new Set(affectedCommunities.map((community) => community.id)),
+      graphIndex
+    }),
+    related_edge_count: relatedEdges.size,
+    impact_score: calculateImpactScore(relatedEdges.size, graphIndex.edgeCount)
+  };
+}
+
+function buildAffectedCommunities({ matchedNodes, matchedRouteFiles, relatedEdges, graphIndex }) {
+  const communities = new Map();
+  for (const node of matchedNodes) {
+    const id = node.community ?? 'unknown';
+    if (!communities.has(id)) {
+      communities.set(id, {
+        id,
+        routeFiles: new Set(),
+        nodeIds: new Set(),
+        edgeCount: 0
+      });
+    }
+    const item = communities.get(id);
+    const sourceFile = extractGraphNodeSourceFile(node);
+    if (sourceFile && matchedRouteFiles.has(normalizeGraphPath(sourceFile))) {
+      item.routeFiles.add(normalizeGraphPath(sourceFile));
+    }
+    item.nodeIds.add(node.id);
+  }
+
+  for (const edge of relatedEdges) {
+    const communityIds = new Set([
+      graphIndex.nodesById.get(getEdgeEndpoint(edge, 'source'))?.community ?? null,
+      graphIndex.nodesById.get(getEdgeEndpoint(edge, 'target'))?.community ?? null
+    ].filter((id) => id !== null));
+    for (const id of communityIds) {
+      if (communities.has(id)) communities.get(id).edgeCount += 1;
+    }
+  }
+
+  return [...communities.values()]
+    .map((item) => ({
+      id: item.id,
+      route_count: item.routeFiles.size,
+      node_count: item.nodeIds.size,
+      edge_count: item.edgeCount
+    }))
+    .sort((a, b) => b.route_count - a.route_count || b.node_count - a.node_count || String(a.id).localeCompare(String(b.id)));
+}
+
+function buildHubNodes({ touchedNodeIds, matchedNodeIds, affectedCommunityIds, graphIndex }) {
+  return [...touchedNodeIds]
+    .map((id) => graphIndex.nodesById.get(id))
+    .filter(Boolean)
+    .filter((node) => isRelevantHubNode({ node, matchedNodeIds, affectedCommunityIds }))
+    .map((node) => ({
+      id: node.id,
+      label: node.label ?? node.name ?? node.id,
+      source_file: extractGraphNodeSourceFile(node) ?? null,
+      community: node.community ?? null,
+      degree: graphIndex.degreeByNodeId.get(node.id) ?? 0
+    }))
+    .sort((a, b) => b.degree - a.degree || a.id.localeCompare(b.id))
+    .slice(0, 5);
+}
+
+function isRelevantHubNode({ node, matchedNodeIds, affectedCommunityIds }) {
+  if (matchedNodeIds.has(node.id)) return true;
+  if (!affectedCommunityIds.has(node.community ?? 'unknown')) return false;
+  const sourceFile = extractGraphNodeSourceFile(node);
+  if (!sourceFile) return false;
+  return normalizeGraphPath(sourceFile).startsWith('src/');
+}
+
+function emptyGraphContext() {
+  return {
+    matched_route_count: 0,
+    matched_node_count: 0,
+    affected_communities: [],
+    hub_nodes: [],
+    related_edge_count: 0,
+    impact_score: 0
+  };
+}
+
+function calculateImpactScore(relatedEdgeCount, totalEdgeCount) {
+  if (!totalEdgeCount) return 0;
+  return Number(Math.min(1, relatedEdgeCount / totalEdgeCount).toFixed(4));
+}
+
+function extractGraphNodeSourceFile(node) {
+  return node.source_file
+    ?? node.sourceFile
+    ?? node.file
+    ?? node.path
+    ?? node.payload?.source_file
+    ?? node.payload?.sourceFile
+    ?? null;
+}
+
+function getEdgeEndpoint(edge, endpoint) {
+  if (!edge || typeof edge !== 'object') return null;
+  if (endpoint === 'source') return edge.source ?? edge.from ?? edge._src ?? edge.source_id ?? edge.sourceId ?? null;
+  return edge.target ?? edge.to ?? edge._dst ?? edge._tgt ?? edge.target_id ?? edge.targetId ?? null;
+}
+
+function normalizeGraphPath(filePath) {
+  return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
 function buildRouteExamples(routes) {
@@ -494,9 +706,23 @@ ${renderActionCandidates(actionCandidates)}
 function renderActionCandidates(candidates) {
   const items = Array.isArray(candidates) ? candidates : [];
   if (items.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
-|----|------------------|------|------|------|
-${items.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 方針 |
+|----|------------------|------|------|--------|-----------|------|
+${items.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+}
+
+function formatGraphImpact(graphContext) {
+  if (!graphContext) return '-';
+  return `${graphContext.impact_score ?? 0} (${graphContext.related_edge_count ?? 0} edges)`;
+}
+
+function formatGraphCommunities(graphContext) {
+  const communities = graphContext?.affected_communities ?? [];
+  if (communities.length === 0) return '-';
+  return communities
+    .slice(0, 3)
+    .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
+    .join(', ');
 }
 
 function renderApiProtectionStateTable(apiBoundary) {

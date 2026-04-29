@@ -376,8 +376,28 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `action_candidates[].execution_policy`
 - `action_candidates[].mutates_repository`
 - `action_candidates[].route_examples`
+- `action_candidates[].graph_context`
+- `findings[].graph_context`
 - 検出事項
 - ゲート結果
+
+`graph_context` は graphify の関係情報をAPI境界診断へ接続するための要約であり、生のedge一覧は持たない。
+
+- `matched_route_count`: API route と graphify node が一致したroute数
+- `matched_node_count`: 一致したgraphify node数
+- `affected_communities[]`: 影響communityの要約
+- `affected_communities[].id`
+- `affected_communities[].route_count`
+- `affected_communities[].node_count`
+- `affected_communities[].edge_count`
+- `hub_nodes[]`: 関連edge上で次数が高い代表node
+- `hub_nodes[].id`
+- `hub_nodes[].label`
+- `hub_nodes[].source_file`
+- `hub_nodes[].community`
+- `hub_nodes[].degree`
+- `related_edge_count`: 一致nodeに接続するedge数
+- `impact_score`: graph全体のedge数に対する関連edge比率。0から1の数値。
 
 ## ゲート
 

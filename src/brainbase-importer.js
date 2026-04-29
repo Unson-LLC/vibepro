@@ -160,7 +160,8 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         mutates_repository: candidate.mutates_repository,
         confidence: candidate.confidence,
         recommendation: candidate.recommendation,
-        route_examples: candidate.route_examples ?? []
+        route_examples: candidate.route_examples ?? [],
+        graph_context: candidate.graph_context ?? emptyGraphContext()
       }))
     },
     gates: evidence.gates ?? [],
@@ -168,7 +169,8 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
       id: finding.id,
       severity: finding.severity,
       category: finding.category,
-      title: finding.title
+      title: finding.title,
+      graph_context: finding.graph_context ?? null
     }))
   };
 }
@@ -242,9 +244,34 @@ ${protectionRows || '| - | 0 |'}`;
 
 function renderActionCandidates(candidates) {
   if (!Array.isArray(candidates) || candidates.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
-|----|------------------|------|------|------|
-${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 方針 |
+|----|------------------|------|------|--------|-----------|------|
+${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+}
+
+function emptyGraphContext() {
+  return {
+    matched_route_count: 0,
+    matched_node_count: 0,
+    affected_communities: [],
+    hub_nodes: [],
+    related_edge_count: 0,
+    impact_score: 0
+  };
+}
+
+function formatGraphImpact(graphContext) {
+  if (!graphContext) return '-';
+  return `${graphContext.impact_score ?? 0} (${graphContext.related_edge_count ?? 0} edges)`;
+}
+
+function formatGraphCommunities(graphContext) {
+  const communities = graphContext?.affected_communities ?? [];
+  if (communities.length === 0) return '-';
+  return communities
+    .slice(0, 3)
+    .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
+    .join(', ');
 }
 
 function summarizeGateEffects(hits = []) {

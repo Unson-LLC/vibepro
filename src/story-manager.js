@@ -293,13 +293,27 @@ ${protectionRows || '| - | 0 |'}`;
 
 function renderStoryActionCandidates(candidates) {
   if (candidates.length === 0) return '- なし';
-  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
-|----|------------------|------|------|------|
-${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+  return `| ID | 対応する検出事項 | 候補 | 対象 | Impact | Community | 方針 |
+|----|------------------|------|------|--------|-----------|------|
+${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
 }
 
 function formatRiskCount(count, summary = {}) {
   return `${count}件 (block: ${summary.block ?? 0}件, review: ${summary.review ?? 0}件, info: ${summary.info ?? 0}件)`;
+}
+
+function formatGraphImpact(graphContext) {
+  if (!graphContext) return '-';
+  return `${graphContext.impact_score ?? 0} (${graphContext.related_edge_count ?? 0} edges)`;
+}
+
+function formatGraphCommunities(graphContext) {
+  const communities = graphContext?.affected_communities ?? [];
+  if (communities.length === 0) return '-';
+  return communities
+    .slice(0, 3)
+    .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
+    .join(', ');
 }
 
 function renderStoryArchitectureViews(views) {
