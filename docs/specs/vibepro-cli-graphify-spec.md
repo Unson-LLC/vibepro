@@ -383,6 +383,13 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `action_candidates[].route_examples`
 - `action_candidates[].route_examples[].file`
 - `action_candidates[].graph_context`
+
+API route保護判定:
+
+- middleware matcherに一致するrouteは `protected_by_middleware` とする
+- route内でセッション取得、認証helper、cookie token確認をしている場合は `protected_by_route` とする
+- route内で `authorization` ヘッダーを読み、`process.env.*API_KEY`、`process.env.*TOKEN`、`process.env.*SECRET`、または `Bearer` と照合する場合も `protected_by_route` とする
+- middlewareがAPI全体を除外し、route内保護根拠がない場合は `excluded_by_middleware` とする
 - `action_candidates[].implementation_plan`
 - `findings[].graph_context`
 - 検出事項
@@ -585,6 +592,9 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `prohibited_actions[]`
 - `verification_commands[]`
 - `completion_report_template[]`
+- `current_protection`
+- `expected_fix_signals[]`
+- `environment_assumptions[]`
 - `guardrails[]`
 
 `task handoff` は非破壊であり、対象リポジトリのコードは変更しない。修正はhandoffを受けた人間またはAIエージェントが別操作で行う。
@@ -609,6 +619,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `diagnose` で `summary.md`、`risk-register.md`、`architecture-profile.md`、`static-site-check-result.md`、`evidence.json` が作られる。
 - `diagnose` で `evidence.architecture_profile` と `evidence.check_catalog.applicable_checks` が記録される。
 - `diagnose` で `api-boundary` が適用される場合、`evidence.api_boundary.routes[]` にAPI route分類、保護根拠、risk hintsが記録される。
+- `diagnose` は `authorization` ヘッダーと環境secretを照合するrouteを `protected_by_route` として扱う。
 - `task list` で選択中Storyの生成タスクを一覧できる。
 - `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
 - `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。
@@ -617,6 +628,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `task plan` は `execution.plan_allows_repository_changes=true` と `execution.cli_mutates_repository=false` を記録する。
 - `task handoff --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/handoff.json` と `handoff.md` が生成される。
 - `task handoff` は `references.briefing_json` と `references.plan_json` を記録し、`execution.vibepro_mutates_repository=false` と `execution.recipient_may_mutate_repository=true` を記録する。
+- `task handoff` は対象route、現在の保護判定、期待する修正後シグナル、実行環境前提を記録する。
 - `diagnose` で `evidence.static_site` に共通スキャン結果と静的サイト固有チェック結果が記録される。
 - `diagnose` でWebアプリを検出した場合、`index.html` 不在と非静的ファイル混在を静的サイトの検出事項として扱わない。
 - `diagnose` で `evidence.story_id` と `runs[].story_id` が選択中Storyに紐づく。

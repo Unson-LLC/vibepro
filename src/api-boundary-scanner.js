@@ -170,7 +170,17 @@ function hasWebhookSignatureCheck(content) {
 function hasRouteAuthReference(content) {
   return /\b(getServerSession|requireAuth|currentUser|getSession|auth\.api\.getSession|validateSession)\s*\(/i.test(content)
     || /\bcookies\s*\(\s*\)\.get\s*\(\s*['"`][^'"`]*(session|token)[^'"`]*['"`]\s*\)/i.test(content)
-    || /\.cookies\.get\s*\(\s*['"`][^'"`]*(session|token)[^'"`]*['"`]\s*\)/i.test(content);
+    || /\.cookies\.get\s*\(\s*['"`][^'"`]*(session|token)[^'"`]*['"`]\s*\)/i.test(content)
+    || hasAuthorizationHeaderGuard(content);
+}
+
+function hasAuthorizationHeaderGuard(content) {
+  const readsAuthorizationHeader = /\.headers\.get\s*\(\s*['"`]authorization['"`]\s*\)/i.test(content)
+    || /\bheaders\s*\(\s*\)\.get\s*\(\s*['"`]authorization['"`]\s*\)/i.test(content);
+  if (!readsAuthorizationHeader) return false;
+  const hasSecretSource = /\bprocess\.env\.[A-Z0-9_]*(API_KEY|TOKEN|SECRET|AUTH)[A-Z0-9_]*\b/.test(content);
+  const checksBearer = /\bBearer\b/i.test(content);
+  return hasSecretSource || checksBearer;
 }
 
 function stripComments(content) {

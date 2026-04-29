@@ -293,6 +293,23 @@ export function renderTaskHandoff(handoff) {
 
 ${formatList(handoff.target_files)}
 
+## 対象route
+
+${formatRoutesWithProtection(handoff.target_routes)}
+
+## 現在の保護判定
+
+- route_statuses: ${formatObjectSummary(handoff.current_protection.route_statuses)}
+- risk_hints: ${formatObjectSummary(handoff.current_protection.risk_hints)}
+
+## 期待する修正後シグナル
+
+${formatList(handoff.expected_fix_signals)}
+
+## 実行環境前提
+
+${formatList(handoff.environment_assumptions)}
+
 ## 先に読むファイル
 
 ${formatReadFirst(handoff.read_first_files)}
@@ -446,6 +463,17 @@ function buildTaskHandoff({ briefing, plan, briefingArtifacts, planArtifacts }) 
     target_routes: plan.target_routes,
     target_files: plan.target_files,
     read_first_files: plan.read_first_files,
+    current_protection: summarizeCurrentProtection(plan.target_routes),
+    expected_fix_signals: [
+      '対象routeのprotection_statusがprotected_by_routeまたはprotected_by_middlewareになる',
+      '対象routeからprivileged_route_unprotectedが消える',
+      'VibePro診断で対象タスクの完了条件を満たす'
+    ],
+    environment_assumptions: [
+      '対象リポジトリのルートで実行する',
+      'VibePro CLIがPATHにない場合は npx vibepro を使う',
+      'npm test と npm run lint は対象リポジトリのpackage.jsonに定義されている場合に実行する'
+    ],
     implementation_instructions: buildImplementationInstructions({ briefing, plan, planArtifacts }),
     prohibited_actions: [
       '対象グループ外のファイルを同じ作業で変更しない',
@@ -489,10 +517,34 @@ function buildVerificationCommands(suffix) {
       reason: 'lintが定義されている場合に静的チェックを確認する'
     },
     {
-      command: `vibepro diagnose . --run-id verify-${suffix}`,
+      command: `npx vibepro diagnose . --run-id verify-${suffix}`,
       reason: 'VibePro診断で対象タスクの検出事項が改善したか確認する'
     }
   ];
+}
+
+function summarizeCurrentProtection(routes = []) {
+  const routeStatuses = {};
+  const riskHints = {};
+  for (const route of routes) {
+    const status = route.protection_status ?? 'unknown';
+    routeStatuses[status] = (routeStatuses[status] ?? 0) + 1;
+    for (const hint of route.risk_hints ?? []) {
+      riskHints[hint] = (riskHints[hint] ?? 0) + 1;
+    }
+  }
+  return {
+    route_statuses: routeStatuses,
+    risk_hints: riskHints,
+    routes: routes.map((route) => ({
+      route_path: route.route_path,
+      file: route.file,
+      methods: route.methods ?? [],
+      protection_status: route.protection_status ?? 'unknown',
+      protection_evidence: route.protection_evidence ?? [],
+      risk_hints: route.risk_hints ?? []
+    }))
+  };
 }
 
 function resolveBriefReadFirstFiles({ targetFiles, group, task }) {
@@ -547,6 +599,14 @@ function formatRoutes(routes = []) {
   return routes.map((route) => `- ${route.route_path} (${route.methods?.join(', ') || '-'}) - ${route.file}`).join('\n');
 }
 
+function formatRoutesWithProtection(routes = []) {
+  if (!Array.isArray(routes) || routes.length === 0) return '- なし';
+  return routes.map((route) => [
+    `- ${route.route_path} (${route.methods?.join(', ') || '-'}) - ${route.file}`,
+    `  - protection=${route.protection_status ?? 'unknown'}, evidence=${route.protection_evidence?.join(', ') || '-'}, risk=${route.risk_hints?.join(', ') || '-'}`
+  ].join('\n')).join('\n');
+}
+
 function formatReadFirst(files = []) {
   if (!Array.isArray(files) || files.length === 0) return '- なし';
   return files.map((item) => `- ${item.file}${item.reason ? `: ${item.reason}` : ''}`).join('\n');
@@ -565,6 +625,12 @@ function formatCommunities(communities = []) {
 function formatHubNodes(nodes = []) {
   if (!Array.isArray(nodes) || nodes.length === 0) return '-';
   return nodes.map((node) => node.id ?? node.label ?? '-').join(', ');
+}
+
+function formatObjectSummary(value = {}) {
+  const entries = Object.entries(value);
+  if (entries.length === 0) return '-';
+  return entries.map(([key, count]) => `${key}:${count}`).join(', ');
 }
 
 function safeSegment(value) {

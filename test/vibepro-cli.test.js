@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { runCli } from '../src/cli.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
@@ -281,6 +282,36 @@ test('story task generator groups admin API routes by domain', () => {
   assert.equal(task.target_groups.find((group) => group.id === 'queue').read_first_files.length, 2);
 });
 
+test('api boundary treats authorization header with environment secret as route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'status'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'status', 'route.ts'), `
+export async function GET(request) {
+  const authHeader = request.headers.get('authorization');
+  const apiKey = process.env.SALESTAILOR_API_KEY;
+  if (!authHeader || authHeader !== \`Bearer \${apiKey}\`) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: ['src/app/api/admin/queue/status/route.ts']
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  assert.equal(result.routes[0].protection.status, 'protected_by_route');
+  assert.equal(result.routes[0].protection.evidence.includes('route_auth_reference'), true);
+  assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
+});
+
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -347,7 +378,7 @@ export function middleware() {}
   assert.equal(planResult.result.plan.target_files.length, 2);
   assert.equal(planResult.result.artifacts.markdown, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/plan.md');
   const planJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'plan.json'));
-  assert.equal(planJson.verification_commands.some((command) => command.command === 'vibepro diagnose . --run-id verify-VP-TASK-API-001-queue'), true);
+  assert.equal(planJson.verification_commands.some((command) => command.command === 'npx vibepro diagnose . --run-id verify-VP-TASK-API-001-queue'), true);
   assert.equal(planJson.rollback_considerations.some((item) => item.includes('対象ファイル単位')), true);
   const planMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'plan.md'), 'utf8');
   assert.match(planMarkdown, /# 実装修正計画/);
@@ -364,12 +395,20 @@ export function middleware() {}
   assert.equal(handoffResult.result.artifacts.markdown, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/handoff.md');
   const handoffJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'handoff.json'));
   assert.equal(handoffJson.target_files.length, 2);
+  assert.equal(handoffJson.target_routes[0].protection_status, 'excluded_by_middleware');
+  assert.equal(handoffJson.current_protection.route_statuses.excluded_by_middleware, 2);
+  assert.equal(handoffJson.expected_fix_signals.includes('対象routeのprotection_statusがprotected_by_routeまたはprotected_by_middlewareになる'), true);
+  assert.equal(handoffJson.environment_assumptions.some((item) => item.includes('npx vibepro')), true);
   assert.equal(handoffJson.implementation_instructions.some((item) => item.includes('plan.md')), true);
   assert.equal(handoffJson.prohibited_actions.some((item) => item.includes('対象グループ外')), true);
   const handoffMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'handoff.md'), 'utf8');
   assert.match(handoffMarkdown, /# 実装依頼パッケージ/);
   assert.match(handoffMarkdown, /VibeProは実装を実行しない/);
   assert.match(handoffMarkdown, /修正はhandoffを受けた人間\/AIが行う/);
+  assert.match(handoffMarkdown, /## 対象route/);
+  assert.match(handoffMarkdown, /protection=excluded_by_middleware/);
+  assert.match(handoffMarkdown, /## 期待する修正後シグナル/);
+  assert.match(handoffMarkdown, /npx vibepro/);
 });
 
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {
