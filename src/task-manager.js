@@ -79,6 +79,34 @@ export async function createTaskPlan(repoRoot, options = {}) {
   };
 }
 
+export async function createTaskHandoff(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const briefingResult = await createTaskBrief(root, options);
+  const planResult = await createTaskPlan(root, options);
+  const handoff = buildTaskHandoff({
+    briefing: briefingResult.briefing,
+    plan: planResult.plan,
+    briefingArtifacts: briefingResult.artifacts,
+    planArtifacts: planResult.artifacts
+  });
+  const handoffDir = getTaskArtifactDir(root, handoff.story.story_id, handoff.task.id, handoff.group?.id);
+  await mkdir(handoffDir, { recursive: true });
+  const jsonPath = path.join(handoffDir, 'handoff.json');
+  const markdownPath = path.join(handoffDir, 'handoff.md');
+  await writeFile(jsonPath, `${JSON.stringify(handoff, null, 2)}\n`);
+  await writeFile(markdownPath, renderTaskHandoff(handoff));
+  return {
+    story: briefingResult.story,
+    task: briefingResult.task,
+    group: briefingResult.group,
+    handoff,
+    artifacts: {
+      json: toWorkspaceRelative(root, jsonPath),
+      markdown: toWorkspaceRelative(root, markdownPath)
+    }
+  };
+}
+
 export function renderTaskList(result) {
   const tasks = Array.isArray(result.tasks) ? result.tasks : [];
   return `# Story Tasks
@@ -236,6 +264,57 @@ ${formatList(plan.guardrails)}
 `;
 }
 
+export function renderTaskHandoff(handoff) {
+  return `# 実装依頼パッケージ
+
+## 前提
+
+- Story: ${handoff.story.title} (${handoff.story.story_id})
+- Run ID: ${handoff.source_run?.run_id ?? '-'}
+- Task: ${handoff.task.id} - ${handoff.task.title}
+- Group: ${handoff.group?.id ?? '-'}
+- VibeProは実装を実行しない
+- 修正はhandoffを受けた人間/AIが行う
+
+## 参照成果物
+
+- briefing.json: ${handoff.references.briefing_json}
+- briefing.md: ${handoff.references.briefing_markdown}
+- plan.json: ${handoff.references.plan_json}
+- plan.md: ${handoff.references.plan_markdown}
+
+## plan要約
+
+- 方針: ${handoff.plan_summary.recommended_strategy?.id ?? '-'} - ${handoff.plan_summary.recommended_strategy?.reason ?? '-'}
+- 変更対象: ${handoff.plan_summary.target_file_count}ファイル
+- 検証コマンド: ${handoff.plan_summary.verification_command_count}件
+
+## 変更対象ファイル
+
+${formatList(handoff.target_files)}
+
+## 先に読むファイル
+
+${formatReadFirst(handoff.read_first_files)}
+
+## 実装者への指示
+
+${formatList(handoff.implementation_instructions)}
+
+## 禁止事項
+
+${formatList(handoff.prohibited_actions)}
+
+## 検証コマンド
+
+${handoff.verification_commands.map((item) => `- \`${item.command}\`: ${item.reason}`).join('\n')}
+
+## 完了報告テンプレート
+
+${handoff.completion_report_template.map((item) => `- ${item}`).join('\n')}
+`;
+}
+
 async function loadTaskContext(repoRoot, storyId = null) {
   const root = path.resolve(repoRoot);
   const status = await getStoryStatus(root, storyId);
@@ -336,6 +415,67 @@ function buildTaskPlan({ briefing }) {
       generated_at: briefing.generated_at
     }
   };
+}
+
+function buildTaskHandoff({ briefing, plan, briefingArtifacts, planArtifacts }) {
+  return {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    mode: 'implementation_handoff',
+    story: plan.story,
+    source_run: plan.source_run,
+    task: plan.task,
+    group: plan.group,
+    execution: {
+      vibepro_mutates_repository: false,
+      recipient_may_mutate_repository: true,
+      note: 'VibeProは実装を実行しない。修正はhandoffを受けた人間/AIが行う。'
+    },
+    references: {
+      briefing_json: briefingArtifacts.json,
+      briefing_markdown: briefingArtifacts.markdown,
+      plan_json: planArtifacts.json,
+      plan_markdown: planArtifacts.markdown
+    },
+    plan_summary: {
+      recommended_strategy: plan.recommended_strategy,
+      target_file_count: plan.target_files.length,
+      verification_command_count: plan.verification_commands.length,
+      acceptance_criteria_count: plan.acceptance_criteria.length
+    },
+    target_routes: plan.target_routes,
+    target_files: plan.target_files,
+    read_first_files: plan.read_first_files,
+    implementation_instructions: buildImplementationInstructions({ briefing, plan, planArtifacts }),
+    prohibited_actions: [
+      '対象グループ外のファイルを同じ作業で変更しない',
+      'VibeProの生成物を根拠なく手編集しない',
+      'public API と webhook API を巻き込む認証境界変更を行わない',
+      '検証コマンドを省略したまま完了扱いにしない'
+    ],
+    verification_commands: plan.verification_commands,
+    completion_report_template: [
+      '変更したファイル',
+      '採用した修正方針',
+      '実行した検証コマンドと結果',
+      '未解決のリスクまたは次に見るべき点'
+    ],
+    guardrails: [
+      'VibeProは実装を実行しない',
+      '修正はhandoffを受けた人間/AIが行う',
+      'handoffは実装前の依頼パッケージであり、対象コードの変更結果ではない'
+    ]
+  };
+}
+
+function buildImplementationInstructions({ briefing, plan, planArtifacts }) {
+  return [
+    `${planArtifacts.markdown} を読み、対象ファイルと完了条件を確認する`,
+    '先に読むファイルを確認し、既存の認証境界とgraphify文脈を把握する',
+    `${plan.recommended_strategy?.id ?? 'recommended strategy'} 方針に沿って対象ファイルを修正する`,
+    '修正後に検証コマンドを実行し、完了条件を満たすことを確認する',
+    `${briefing.task.id}${briefing.group?.id ? ` / ${briefing.group.id}` : ''} の範囲だけを完了報告する`
+  ];
 }
 
 function buildVerificationCommands(suffix) {

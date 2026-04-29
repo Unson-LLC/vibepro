@@ -19,6 +19,7 @@ import {
 } from './story-manager.js';
 import {
   createTaskBrief,
+  createTaskHandoff,
   createTaskPlan,
   listTasks,
   renderTaskList,
@@ -45,6 +46,7 @@ Usage:
   vibepro task show [repo] --task <task-id> [--id <story-id>]
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
+  vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -198,6 +200,15 @@ export async function runCli(argv, io = {}) {
           groupId: getOption(rest, '--group')
         });
         write(stdout, `Task plan created: ${result.artifacts.markdown}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'handoff') {
+        const result = await createTaskHandoff(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group')
+        });
+        write(stdout, `Task handoff created: ${result.artifacts.markdown}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${HELP}`);

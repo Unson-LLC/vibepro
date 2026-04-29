@@ -353,6 +353,23 @@ export function middleware() {}
   assert.match(planMarkdown, /# 実装修正計画/);
   assert.match(planMarkdown, /このplanは修正可能な作業計画/);
   assert.match(planMarkdown, /CLI自身は対象リポジトリのコードを変更しない/);
+
+  const handoffResult = await runCli(['task', 'handoff', repo, '--task', 'VP-TASK-API-001', '--group', 'queue']);
+  assert.equal(handoffResult.exitCode, 0);
+  assert.equal(handoffResult.result.handoff.mode, 'implementation_handoff');
+  assert.equal(handoffResult.result.handoff.execution.vibepro_mutates_repository, false);
+  assert.equal(handoffResult.result.handoff.execution.recipient_may_mutate_repository, true);
+  assert.equal(handoffResult.result.handoff.references.briefing_json, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/briefing.json');
+  assert.equal(handoffResult.result.handoff.references.plan_json, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/plan.json');
+  assert.equal(handoffResult.result.artifacts.markdown, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/handoff.md');
+  const handoffJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'handoff.json'));
+  assert.equal(handoffJson.target_files.length, 2);
+  assert.equal(handoffJson.implementation_instructions.some((item) => item.includes('plan.md')), true);
+  assert.equal(handoffJson.prohibited_actions.some((item) => item.includes('対象グループ外')), true);
+  const handoffMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'handoff.md'), 'utf8');
+  assert.match(handoffMarkdown, /# 実装依頼パッケージ/);
+  assert.match(handoffMarkdown, /VibeProは実装を実行しない/);
+  assert.match(handoffMarkdown, /修正はhandoffを受けた人間\/AIが行う/);
 });
 
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {

@@ -488,6 +488,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `vibepro task show [repo] --task <task-id> [--id <story-id>]`
 - `vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]`
 - `vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]`
+- `vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]`
 
 `task list` は選択中Storyまたは `--id` 指定Storyのタスク一覧を表示する。
 
@@ -496,6 +497,8 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 `task brief` は修正前ブリーフィングを生成する。`--group` が指定された場合は対象グループに絞り、指定がない場合はタスク全体を対象にする。
 
 `task plan` は修正前ブリーフィング相当の文脈から、実装修正に使える作業計画を生成する。`task plan` は「このplanは修正可能な作業計画。ただしCLI自身は対象リポジトリのコードを変更しない」ことを明記する。
+
+`task handoff` は `briefing` と `plan` を参照成果物として持つ実装依頼パッケージを生成する。未生成の場合は `briefing` と `plan` も自動生成する。`task handoff` は「VibeProは実装を実行しない。修正はhandoffを受けた人間/AIが行う」ことを明記する。
 
 生成物:
 
@@ -507,6 +510,10 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - タスク全体: `.vibepro/stories/<story-id>/tasks/<task-id>/plan.md`
 - グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/plan.json`
 - グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/plan.md`
+- タスク全体: `.vibepro/stories/<story-id>/tasks/<task-id>/handoff.json`
+- タスク全体: `.vibepro/stories/<story-id>/tasks/<task-id>/handoff.md`
+- グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/handoff.json`
+- グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/handoff.md`
 
 `briefing.json` の最小項目:
 
@@ -555,6 +562,33 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 
 `task plan` は非破壊であり、対象リポジトリのコードは変更しない。ただし生成される計画は、人間またはAIエージェントが別操作で対象リポジトリを修正する前提を持つ。
 
+`handoff.json` の最小項目:
+
+- `schema_version`
+- `generated_at`
+- `mode`: `implementation_handoff`
+- `story`
+- `source_run`
+- `task`
+- `group`
+- `execution.vibepro_mutates_repository`: 常に `false`
+- `execution.recipient_may_mutate_repository`: 常に `true`
+- `references.briefing_json`
+- `references.briefing_markdown`
+- `references.plan_json`
+- `references.plan_markdown`
+- `plan_summary`
+- `target_routes[]`
+- `target_files[]`
+- `read_first_files[]`
+- `implementation_instructions[]`
+- `prohibited_actions[]`
+- `verification_commands[]`
+- `completion_report_template[]`
+- `guardrails[]`
+
+`task handoff` は非破壊であり、対象リポジトリのコードは変更しない。修正はhandoffを受けた人間またはAIエージェントが別操作で行う。
+
 ## ゲート
 
 初期実装では `production-readiness` ゲートのみを持つ。
@@ -581,6 +615,8 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `task brief` は対象リポジトリのコードを変更せず、`mutates_repository=false` を記録する。
 - `task plan --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/plan.json` と `plan.md` が生成される。
 - `task plan` は `execution.plan_allows_repository_changes=true` と `execution.cli_mutates_repository=false` を記録する。
+- `task handoff --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/handoff.json` と `handoff.md` が生成される。
+- `task handoff` は `references.briefing_json` と `references.plan_json` を記録し、`execution.vibepro_mutates_repository=false` と `execution.recipient_may_mutate_repository=true` を記録する。
 - `diagnose` で `evidence.static_site` に共通スキャン結果と静的サイト固有チェック結果が記録される。
 - `diagnose` でWebアプリを検出した場合、`index.html` 不在と非静的ファイル混在を静的サイトの検出事項として扱わない。
 - `diagnose` で `evidence.story_id` と `runs[].story_id` が選択中Storyに紐づく。
