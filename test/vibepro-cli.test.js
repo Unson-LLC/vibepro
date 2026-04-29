@@ -355,6 +355,60 @@ export async function getUser() {
   assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
 });
 
+test('api boundary follows nested imported auth helper references for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'inquiries'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'inquiries', 'route.ts'), `
+import { verifyAdminAuth } from '@/lib/utils/admin-auth';
+
+export async function GET() {
+  const authResult = await verifyAdminAuth();
+  if (!authResult.success) {
+    return authResult.response;
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'utils'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'utils', 'admin-auth.ts'), `
+import { getUser } from '@/lib/get-user';
+
+export async function verifyAdminAuth() {
+  const sessionUser = await getUser();
+  if (!sessionUser || sessionUser.role !== 'ADMIN') {
+    return { success: false, response: Response.json({ error: 'Unauthorized' }, { status: 401 }) };
+  }
+  return { success: true, user: sessionUser };
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'get-user.ts'), `
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+
+export async function getUser() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  return session?.user;
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: ['src/app/api/admin/inquiries/route.ts']
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  assert.equal(result.routes[0].protection.status, 'protected_by_route');
+  assert.equal(result.routes[0].protection.evidence.includes('route_auth_reference'), true);
+  assert.equal(result.routes[0].protection.evidence.includes('imported_auth_helper'), true);
+  assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
+});
+
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

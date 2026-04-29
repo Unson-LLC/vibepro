@@ -188,14 +188,38 @@ function hasAuthorizationHeaderGuard(content) {
 }
 
 async function hasImportedAuthHelperReference({ repoRoot, file, code }) {
+  return hasImportedAuthHelperReferenceRecursive({
+    repoRoot,
+    file,
+    code,
+    visited: new Set([normalizeRelativeFile(file)]),
+    depth: 0
+  });
+}
+
+async function hasImportedAuthHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {
+  if (depth >= 4) return false;
   const imports = extractLocalImports(code);
   for (const item of imports) {
     if (!item.specifiers.some((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code))) {
       continue;
     }
-    const importedContent = await readImportedModule(repoRoot, file, item.source);
-    if (!importedContent) continue;
-    if (hasRouteAuthReference(stripComments(importedContent))) return true;
+    const importedModule = await readImportedModule(repoRoot, file, item.source);
+    if (!importedModule.content) continue;
+    if (visited.has(importedModule.file)) continue;
+    visited.add(importedModule.file);
+
+    const importedCode = stripComments(importedModule.content);
+    if (hasRouteAuthReference(importedCode)) return true;
+    if (await hasImportedAuthHelperReferenceRecursive({
+      repoRoot,
+      file: importedModule.file,
+      code: importedCode,
+      visited,
+      depth: depth + 1
+    })) {
+      return true;
+    }
   }
   return false;
 }
@@ -217,7 +241,7 @@ function extractLocalImports(content) {
 
 async function readImportedModule(repoRoot, importerFile, source) {
   const candidates = resolveImportCandidates(repoRoot, importerFile, source);
-  return readTextFromCandidates(candidates);
+  return readModuleFromCandidates(repoRoot, candidates);
 }
 
 function resolveImportCandidates(repoRoot, importerFile, source) {
@@ -237,12 +261,21 @@ function resolveImportCandidates(repoRoot, importerFile, source) {
   ];
 }
 
-async function readTextFromCandidates(candidates) {
+async function readModuleFromCandidates(repoRoot, candidates) {
   for (const candidate of candidates) {
     const content = await readTextIfExists(candidate);
-    if (content) return content;
+    if (content) {
+      return {
+        file: normalizeRelativeFile(path.relative(repoRoot, candidate)),
+        content
+      };
+    }
   }
-  return '';
+  return { file: '', content: '' };
+}
+
+function normalizeRelativeFile(file) {
+  return file.split(path.sep).join('/');
 }
 
 function escapeRegExp(value) {
