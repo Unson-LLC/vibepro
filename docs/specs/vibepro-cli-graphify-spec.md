@@ -454,6 +454,8 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `tasks[].mutates_repository`: 初期値は `false`
 - `tasks[].target_count`
 - `tasks[].target_files[]`
+- `tasks[].target_routes[]`: `action_candidate` 由来タスクでは `pre_fix_briefing.target_routes[]` と同じ対象route全件
+- `tasks[].gate_effect`: finding由来タスクで `block` / `review` を分ける場合に記録する
 - `tasks[].read_first_files[]`
 - `tasks[].recommended_strategy`
 - `tasks[].implementation_steps[]`
@@ -463,10 +465,10 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 
 生成ルール:
 
-- `action_candidates[]` は1件ずつ `VP-TASK-*` に変換する。
+- `action_candidates[]` は1件ずつ `VP-TASK-*` に変換する。対象routeは `route_examples[]` ではなく `implementation_plan.pre_fix_briefing.target_routes[]` を正本にして全件を `target_routes[]` と `target_files[]` に入れる。
 - Critical/Highの `findings[]` のうち `action_candidates` に対応しないものは確認タスクに変換する。
-- `VP-STATIC-002` は最優先の Critical タスクとして扱い、gate対象の秘密情報候補ファイルを `target_files[]` に入れる。
-- 並び順は `VP-STATIC-002`、`VP-ACTION-API-002`、`VP-ACTION-API-003`、`VP-ACTION-API-001`、その他の順を優先する。
+- `VP-STATIC-002` は `block` と `review` を別タスクに分ける。`block` は `VP-TASK-STATIC-002-BLOCK`、`review` は `VP-TASK-STATIC-002-REVIEW` とする。
+- 並び順は `VP-TASK-STATIC-002-BLOCK`、`VP-TASK-STATIC-002-REVIEW`、`VP-ACTION-API-002`、`VP-ACTION-API-003`、`VP-ACTION-API-001`、その他の順を優先する。
 - タスク生成は非破壊であり、対象リポジトリのコードは変更しない。
 
 ## ゲート

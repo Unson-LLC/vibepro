@@ -42,7 +42,7 @@ export function buildStoryTaskState({ story, evidence, runId, gateStatus }) {
     ...findings
       .filter((finding) => !actionFindingIds.has(finding.id))
       .filter((finding) => shouldCreateFindingTask(finding))
-      .map((finding) => buildFindingTask({ finding, evidence })),
+      .flatMap((finding) => buildFindingTasks({ finding, evidence })),
     ...actionCandidates.map((candidate) => buildActionTask(candidate))
   ]
     .sort(compareTasks)
@@ -97,6 +97,10 @@ ${task.acceptance_criteria.length === 0 ? '- 診断結果を確認する' : task
 
 function buildActionTask(candidate) {
   const plan = candidate.implementation_plan ?? {};
+  const targetRoutes = plan.pre_fix_briefing?.target_routes ?? [];
+  const targetFiles = uniqueFiles(targetRoutes.length > 0
+    ? targetRoutes.map((route) => route.file)
+    : (candidate.route_examples ?? []).map((route) => route.file));
   return {
     id: candidate.id.replace('VP-ACTION-', 'VP-TASK-'),
     source_type: 'action_candidate',
@@ -108,8 +112,9 @@ function buildActionTask(candidate) {
     order: resolveActionOrder(candidate),
     execution_policy: candidate.execution_policy ?? 'proposal_only',
     mutates_repository: Boolean(candidate.mutates_repository),
-    target_count: candidate.target_count ?? 0,
-    target_files: uniqueFiles((candidate.route_examples ?? []).map((route) => route.file)),
+    target_count: targetRoutes.length > 0 ? targetRoutes.length : candidate.target_count ?? targetFiles.length,
+    target_files: targetFiles,
+    target_routes: targetRoutes,
     read_first_files: plan.read_first_files ?? [],
     recommended_strategy: plan.pre_fix_briefing?.recommended_strategy ?? null,
     implementation_steps: plan.steps ?? [],
@@ -119,21 +124,60 @@ function buildActionTask(candidate) {
   };
 }
 
-function buildFindingTask({ finding, evidence }) {
+function buildFindingTasks({ finding, evidence }) {
+  if (finding.id === 'VP-STATIC-002') {
+    return buildSecretFindingTasks({ finding, evidence });
+  }
+  return [buildFindingTask({
+    finding,
+    targetFiles: resolveFindingTargetFiles(finding, evidence),
+    priority: severityToPriority(finding.severity),
+    order: resolveFindingOrder(finding),
+    gateEffect: null
+  })];
+}
+
+function buildSecretFindingTasks({ finding, evidence }) {
+  const blockFiles = resolveSecretTargetFiles(evidence, 'block');
+  const reviewFiles = resolveSecretTargetFiles(evidence, 'review');
+  return [
+    blockFiles.length > 0 ? buildFindingTask({
+      finding,
+      id: 'VP-TASK-STATIC-002-BLOCK',
+      title: `${finding.title}（即時対応）`,
+      targetFiles: blockFiles,
+      priority: 'critical',
+      order: 10,
+      gateEffect: 'block'
+    }) : null,
+    reviewFiles.length > 0 ? buildFindingTask({
+      finding,
+      id: 'VP-TASK-STATIC-002-REVIEW',
+      title: `${finding.title}（要確認）`,
+      targetFiles: reviewFiles,
+      priority: 'high',
+      order: 15,
+      gateEffect: 'review'
+    }) : null
+  ].filter(Boolean);
+}
+
+function buildFindingTask({ finding, id = null, title = null, targetFiles = [], priority, order, gateEffect }) {
   return {
-    id: finding.id.replace('VP-', 'VP-TASK-'),
+    id: id ?? finding.id.replace('VP-', 'VP-TASK-'),
     source_type: 'finding',
     source_id: finding.id,
     finding_id: finding.id,
-    title: finding.title,
-    priority: severityToPriority(finding.severity),
+    title: title ?? finding.title,
+    priority,
     status: 'todo',
-    order: resolveFindingOrder(finding),
+    order,
+    gate_effect: gateEffect,
     execution_policy: 'proposal_only',
     mutates_repository: false,
-    target_count: resolveFindingTargetFiles(finding, evidence).length,
-    target_files: resolveFindingTargetFiles(finding, evidence),
-    read_first_files: resolveFindingTargetFiles(finding, evidence).map((file) => ({
+    target_count: targetFiles.length,
+    target_files: targetFiles,
+    read_first_files: targetFiles.map((file) => ({
       file,
       reason: `検出事項 ${finding.id} の確認対象`
     })),
@@ -158,9 +202,10 @@ function shouldCreateFindingTask(finding) {
 
 function resolveFindingTargetFiles(finding, evidence) {
   if (finding.id === 'VP-STATIC-002') {
-    return uniqueFiles((evidence.static_site?.secret_hits ?? [])
-      .filter((hit) => hit.gate_effect !== 'info')
-      .map((hit) => hit.file));
+    return uniqueFiles([
+      ...resolveSecretTargetFiles(evidence, 'block'),
+      ...resolveSecretTargetFiles(evidence, 'review')
+    ]);
   }
   if (finding.id === 'VP-STATIC-003') {
     return uniqueFiles((evidence.static_site?.xss_risk_hits ?? [])
@@ -168,6 +213,12 @@ function resolveFindingTargetFiles(finding, evidence) {
       .map((hit) => hit.file));
   }
   return [];
+}
+
+function resolveSecretTargetFiles(evidence, gateEffect) {
+  return uniqueFiles((evidence.static_site?.secret_hits ?? [])
+    .filter((hit) => hit.gate_effect === gateEffect)
+    .map((hit) => hit.file));
 }
 
 function compareTasks(a, b) {
