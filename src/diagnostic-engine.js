@@ -31,7 +31,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
-  await writeFile(riskPath, renderRiskRegister({ runId, findings }));
+  await writeFile(riskPath, renderRiskRegister({ runId, findings, apiBoundary: evidence.api_boundary }));
   await writeFile(staticSitePath, renderStaticSiteCheck({
     runId,
     staticSite: evidence.static_site,
@@ -177,13 +177,14 @@ function buildFindings(evidence) {
     const privilegedUnprotected = evidence.api_boundary.routes
       .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
     if (privilegedUnprotected.length > 0) {
+      const statusSummary = summarizeProtectionForRoutes(privilegedUnprotected);
       findings.push({
         id: 'VP-API-001',
         severity: 'High',
         category: 'API境界',
-        title: '管理系または内部系APIの保護状態が確認できない',
-        detail: `${privilegedUnprotected.length} 件の管理系または内部系API候補で保護根拠が確認できない。`,
-        recommendation: 'middleware matcher、認証参照、署名検証などの保護根拠を確認する。'
+        title: '管理系または内部系APIの保護根拠が不足している',
+        detail: `${privilegedUnprotected.length} 件の管理系または内部系API候補で保護根拠が不足している。状態別: ${formatInlineSummary(statusSummary)}。`,
+        recommendation: 'APIを除外しているmiddleware matcher、route内の認証参照、署名検証のいずれで保護するかを明示する。'
       });
     }
     const debugExposed = evidence.api_boundary.routes
@@ -273,9 +274,20 @@ function renderApiBoundarySummary(apiBoundary) {
   const rows = Object.entries(summary)
     .map(([classification, count]) => `| ${classification} | ${count} |`)
     .join('\n');
-  return `| 分類 | 件数 |
+  const protectionRows = Object.entries(apiBoundary.protection_summary ?? {})
+    .map(([status, count]) => `| ${status} | ${count} |`)
+    .join('\n');
+  return `### 分類別
+
+| 分類 | 件数 |
 |------|------|
-${rows || '| - | 0 |'}`;
+${rows || '| - | 0 |'}
+
+### 保護状態別
+
+| 保護状態 | 件数 |
+|----------|------|
+${protectionRows || '| - | 0 |'}`;
 }
 
 function renderArchitectureViewTable(profile) {
@@ -367,7 +379,7 @@ ${staticSite.non_static_files.length === 0 ? '- なし' : staticSite.non_static_
 `;
 }
 
-function renderRiskRegister({ runId, findings }) {
+function renderRiskRegister({ runId, findings, apiBoundary }) {
   return `# VibePro リスク台帳
 
 | 項目 | 内容 |
@@ -378,5 +390,34 @@ function renderRiskRegister({ runId, findings }) {
 | ID | カテゴリ | リスク概要 | 深刻度 | 推奨対応 |
 |----|----------|------------|--------|----------|
 ${findings.length === 0 ? '| - | - | 検出なし | - | - |' : findings.map((finding) => `| ${finding.id} | ${finding.category} | ${finding.title} | ${finding.severity} | ${finding.recommendation} |`).join('\n')}
+
+## API境界の保護状態
+
+${renderApiProtectionStateTable(apiBoundary)}
 `;
+}
+
+function renderApiProtectionStateTable(apiBoundary) {
+  if (!apiBoundary) return '- api-boundary は適用されていない';
+  const rows = Object.entries(apiBoundary.protection_summary ?? {})
+    .map(([status, count]) => `| ${status} | ${count} |`)
+    .join('\n');
+  return `| 保護状態 | 件数 |
+|----------|------|
+${rows || '| - | 0 |'}`;
+}
+
+function summarizeProtectionForRoutes(routes) {
+  const summary = {};
+  for (const route of routes) {
+    const status = route.protection?.status ?? 'unknown';
+    summary[status] = (summary[status] ?? 0) + 1;
+  }
+  return summary;
+}
+
+function formatInlineSummary(summary) {
+  const entries = Object.entries(summary);
+  if (entries.length === 0) return '-';
+  return entries.map(([key, count]) => `${key}: ${count}件`).join(', ');
 }

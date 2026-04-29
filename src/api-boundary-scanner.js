@@ -31,7 +31,8 @@ export async function scanApiBoundary(repoRoot, architectureProfile) {
     route_count: routes.length,
     middleware,
     routes,
-    summary: summarizeRoutes(routes)
+    summary: summarizeRoutes(routes),
+    protection_summary: summarizeProtection(routes)
   };
 }
 
@@ -194,6 +195,15 @@ function summarizeRoutes(routes) {
   const summary = {};
   for (const route of routes) {
     summary[route.classification] = (summary[route.classification] ?? 0) + 1;
+  }
+  return summary;
+}
+
+function summarizeProtection(routes) {
+  const summary = {};
+  for (const route of routes) {
+    const status = route.protection?.status ?? 'unknown';
+    summary[status] = (summary[status] ?? 0) + 1;
   }
   return summary;
 }

@@ -133,6 +133,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
       api_boundary: {
         route_count: apiBoundary.route_count ?? 0,
         summary: apiBoundary.summary ?? {},
+        protection_summary: apiBoundary.protection_summary ?? {},
         risk_hint_count: Array.isArray(apiBoundary.routes)
           ? apiBoundary.routes.reduce((count, route) => count + (route.risk_hints?.length ?? 0), 0)
           : 0
@@ -181,6 +182,10 @@ function renderImportSummary(importState) {
 | XSSリスク候補 | ${importState.signals.static_site.xss_risk_hits_count}件 |
 | 検出事項 | ${importState.findings.length}件 |
 
+## API境界
+
+${renderApiBoundaryImportSummary(importState.signals.api_boundary)}
+
 ## 成果物
 
 ${Object.entries(importState.latest_run.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
@@ -193,4 +198,24 @@ ${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / Hor
 
 ${importState.findings.length === 0 ? '- なし' : importState.findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 `;
+}
+
+function renderApiBoundaryImportSummary(apiBoundary) {
+  const classificationRows = Object.entries(apiBoundary.summary ?? {})
+    .map(([classification, count]) => `| ${classification} | ${count} |`)
+    .join('\n');
+  const protectionRows = Object.entries(apiBoundary.protection_summary ?? {})
+    .map(([status, count]) => `| ${status} | ${count} |`)
+    .join('\n');
+  return `### 分類別
+
+| 分類 | 件数 |
+|------|------|
+${classificationRows || '| - | 0 |'}
+
+### 保護状態別
+
+| 保護状態 | 件数 |
+|----------|------|
+${protectionRows || '| - | 0 |'}`;
 }

@@ -356,6 +356,8 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `check_catalog.applicable_checks`
 - `api_boundary.route_count`
 - `api_boundary.middleware.matchers`
+- `api_boundary.summary`
+- `api_boundary.protection_summary`
 - `api_boundary.routes[].route_path`
 - `api_boundary.routes[].classification`
 - `api_boundary.routes[].protection`

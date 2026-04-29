@@ -622,6 +622,9 @@ export function middleware() {}
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
   assert.equal(evidence.api_boundary.routes.length, 7);
+  assert.equal(evidence.api_boundary.protection_summary.protected_by_middleware, 3);
+  assert.equal(evidence.api_boundary.protection_summary.protected_by_route, 1);
+  assert.equal(evidence.api_boundary.protection_summary.excluded_by_middleware, 3);
   const adminRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/users');
   assert.equal(adminRoute.classification, 'admin');
   assert.equal(adminRoute.protection.status, 'protected_by_middleware');
@@ -649,6 +652,9 @@ export function middleware() {}
   assert.equal(queueRoute.risk_hints.includes('privileged_route_unprotected'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
+  const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
+  assert.match(apiFinding.detail, /excluded_by_middleware: 1件/);
+  assert.match(apiFinding.recommendation, /APIを除外しているmiddleware matcher/);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
   const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
@@ -656,22 +662,31 @@ export function middleware() {}
   assert.match(summary, /Security \|/);
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
+  assert.match(summary, /保護状態別/);
+  assert.match(summary, /excluded_by_middleware \| 3/);
+  const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
+  assert.match(riskRegister, /## API境界の保護状態/);
+  assert.match(riskRegister, /excluded_by_middleware \| 3/);
   const storyReport = await runCli(['story', 'report', repo]);
   assert.equal(storyReport.exitCode, 0);
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'story-report.md'), 'utf8');
   assert.doesNotMatch(report, /## 静的サイト診断/);
   assert.match(report, /## 共通スキャン/);
   assert.match(report, /## API境界/);
+  assert.match(report, /protected_by_route \| 1/);
   await runCli(['brainbase', repo]);
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
   assert.match(importSummary, /共通スキャン対象/);
+  assert.match(importSummary, /## API境界/);
+  assert.match(importSummary, /excluded_by_middleware \| 3/);
   const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
   assert.equal(importState.signals.check_catalog.selected_views.includes('runtime'), true);
   assert.equal(importState.signals.api_boundary.route_count, 7);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
+  assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,

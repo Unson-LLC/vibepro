@@ -270,9 +270,20 @@ function renderStoryApiBoundary(apiBoundary) {
   const rows = Object.entries(apiBoundary.summary ?? {})
     .map(([classification, count]) => `| ${classification} | ${count} |`)
     .join('\n');
-  return `| 分類 | 件数 |
+  const protectionRows = Object.entries(apiBoundary.protection_summary ?? {})
+    .map(([status, count]) => `| ${status} | ${count} |`)
+    .join('\n');
+  return `### 分類別
+
+| 分類 | 件数 |
 |------|------|
-${rows || '| - | 0 |'}`;
+${rows || '| - | 0 |'}
+
+### 保護状態別
+
+| 保護状態 | 件数 |
+|----------|------|
+${protectionRows || '| - | 0 |'}`;
 }
 
 function renderStoryArchitectureViews(views) {
