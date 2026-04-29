@@ -105,9 +105,15 @@ node bin/vibepro.js diagnose /path/to/repo
 ├── architecture-profile.md
 ├── static-site-check-result.md
 └── evidence.json
+
+.vibepro/stories/<story-id>/tasks/
+├── tasks.json
+└── tasks.md
 ```
 
 `evidence.json` が診断内容の機械可読な正本になる。Markdown は人間が確認するための投影として生成する。
+
+`tasks.json` は診断結果から生成されたStory単位の作業分解であり、Critical/Highの未対応検出事項と `action_candidates[]` を実装前タスクへ正規化する。VibeProはv1ではタスク生成までを担当し、対象リポジトリの修正は行わない。
 
 `story select` で選択中Storyがある場合、診断runはそのStoryに紐づく。`evidence.json` と `vibepro-manifest.json` の `runs[]` には `story_id` とStory情報を記録する。
 
@@ -187,7 +193,7 @@ node bin/vibepro.js status /path/to/repo --json
 
 `story select` は `brainbase.current_story_id` を更新する。`diagnose` は選択中Storyをrunに記録し、`brainbase` コマンドは選択中Storyを代表Storyとして `import-state.json` に出力する。`archived` のStoryは通常の `story list` と `import-state.json` から除外される。確認したい場合は `story list --all` を使う。
 
-`story diagnose` はStory選択、graphify取り込み、診断、Storyレポート生成、status表示を一度に行う。`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。`story report` は `.vibepro/stories/<story-id>/story-report.md` にStory単位の診断レポートを生成する。いずれもNocoDBなしにローカルの `.vibepro/` だけで動く。
+`story diagnose` はStory選択、graphify取り込み、診断、Storyレポート生成、status表示を一度に行う。`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。`story report` は `.vibepro/stories/<story-id>/story-report.md` にStory単位の診断レポートを生成する。診断時には `.vibepro/stories/<story-id>/tasks/tasks.json` と `tasks.md` も自動生成し、Storyレポートには生成タスク一覧を投影する。いずれもNocoDBなしにローカルの `.vibepro/` だけで動く。
 
 ### 5. Brainbase 取り込み状態の生成
 
@@ -204,6 +210,8 @@ node bin/vibepro.js brainbase /path/to/repo
 ```
 
 `import-state.json` は Brainbase が読むための構造化状態であり、最新run、ゲート状態、診断シグナル、検出事項、成果物パスを含む。Brainbase は Markdown ではなく、このJSONを取り込み口として扱う。
+
+生成タスクは `signals.tasks[]` に含まれる。Brainbase側は `action_candidates[]` ではなく、作業分解済みの `signals.tasks[]` を次の実装単位として扱える。
 
 選択中Storyに紐づく診断runがある場合、`brainbase` はリポジトリ全体の最新runよりも、そのStoryの最新runを優先して `import-state.json` に出力する。
 

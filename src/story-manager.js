@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { readStoryTasks } from './story-task-generator.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -104,10 +105,11 @@ export async function createStoryReport(repoRoot, storyId = null) {
   const latestRun = findLatestStoryRun(manifest, story.story_id, runs);
   if (!latestRun) throw new Error(`Story diagnosis run not found: ${story.story_id}`);
   const evidence = await readRunEvidence(root, latestRun);
+  const taskState = await readStoryTasks(root, latestRun.artifacts?.story_tasks_json);
   const storyDir = path.join(getWorkspaceDir(root), 'stories', story.story_id);
   await mkdir(storyDir, { recursive: true });
   const reportPath = path.join(storyDir, 'story-report.md');
-  await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence }));
+  await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState }));
   manifest.stories = {
     ...(manifest.stories ?? {}),
     [story.story_id]: {
@@ -178,7 +180,7 @@ ${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(re
 `;
 }
 
-export function renderStoryReport({ story, latestRun, runs, evidence }) {
+export function renderStoryReport({ story, latestRun, runs, evidence, taskState = null }) {
   const graphify = evidence?.graphify ?? {};
   const architectureProfile = evidence?.architecture_profile ?? {};
   const applicableChecks = evidence?.check_catalog?.applicable_checks ?? architectureProfile.applicable_checks ?? [];
@@ -186,6 +188,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const actionCandidates = Array.isArray(evidence?.action_candidates) ? evidence.action_candidates : [];
+  const tasks = Array.isArray(taskState?.tasks) ? taskState.tasks : [];
   const artifacts = latestRun.artifacts ?? {};
   const scanHeading = architectureProfile.app_type === 'static_site' ? '静的サイト診断' : '共通スキャン';
   return `# Story診断レポート
@@ -258,6 +261,10 @@ ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id
 
 ${renderStoryActionCandidates(actionCandidates)}
 
+## 生成タスク
+
+${renderGeneratedTasks(tasks)}
+
 ## Artifacts
 
 ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
@@ -298,6 +305,13 @@ function renderStoryActionCandidates(candidates) {
 ${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${formatReadFirstFiles(candidate.implementation_plan)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}
 
 ${renderImplementationPlans(candidates)}`;
+}
+
+function renderGeneratedTasks(tasks) {
+  if (tasks.length === 0) return '- なし';
+  return `| ID | 対応する検出事項 | 優先度 | 対象 | 方針 |
+|----|------------------|--------|------|------|
+${tasks.map((task) => `| ${task.id} | ${task.finding_id ?? '-'} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${task.recommended_strategy?.id ?? '-'} |`).join('\n')}`;
 }
 
 function formatRiskCount(count, summary = {}) {

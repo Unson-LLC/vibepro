@@ -5,6 +5,7 @@ import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
+import { createStoryTasks } from './story-task-generator.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
@@ -24,6 +25,13 @@ export async function runDiagnosis(repoRoot, options = {}) {
   evidence.action_candidates = await buildActionCandidates(root, evidence, graphIndex);
   attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
   evidence.gates = buildGates(findings);
+  const gateStatus = evidence.gates[0]?.status ?? 'unknown';
+  const storyTasks = await createStoryTasks(root, {
+    story: currentStory,
+    evidence,
+    runId,
+    gateStatus
+  });
 
   const evidencePath = path.join(runDir, 'evidence.json');
   const summaryPath = path.join(runDir, 'summary.md');
@@ -56,13 +64,14 @@ export async function runDiagnosis(repoRoot, options = {}) {
     story_id: currentStory.story_id,
     story: currentStory,
     created_at: new Date().toISOString(),
-    gate_status: evidence.gates[0]?.status ?? 'unknown',
+    gate_status: gateStatus,
     artifacts: {
       summary: toWorkspaceRelative(root, summaryPath),
       risk_register: toWorkspaceRelative(root, riskPath),
       evidence: toWorkspaceRelative(root, evidencePath),
       static_site_check: toWorkspaceRelative(root, staticSitePath),
-      architecture_profile: toWorkspaceRelative(root, architectureProfilePath)
+      architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
+      ...storyTasks.artifacts
     }
   };
   manifest.latest_run = runId;

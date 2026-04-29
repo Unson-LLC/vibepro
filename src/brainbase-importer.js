@@ -9,6 +9,7 @@ import {
   writeManifest
 } from './workspace.js';
 import { resolveStoryContext } from './story-manager.js';
+import { readStoryTasks } from './story-task-generator.js';
 
 export async function createBrainbaseImport(repoRoot) {
   await initWorkspace(repoRoot);
@@ -18,11 +19,12 @@ export async function createBrainbaseImport(repoRoot) {
   const storyContext = resolveStoryContext(config);
   const latestRun = findLatestRun(manifest, storyContext.currentStory.story_id);
   const evidence = await readLatestEvidence(root, latestRun);
+  const taskState = await readStoryTasks(root, latestRun.artifacts?.story_tasks_json);
 
   const brainbaseDir = path.join(getWorkspaceDir(root), 'brainbase');
   await mkdir(brainbaseDir, { recursive: true });
 
-  const importState = buildImportState({ manifest, storyContext, latestRun, evidence });
+  const importState = buildImportState({ manifest, storyContext, latestRun, evidence, taskState });
   const importStatePath = path.join(brainbaseDir, 'import-state.json');
   const importSummaryPath = path.join(brainbaseDir, 'import-summary.md');
 
@@ -76,7 +78,7 @@ async function readConfig(repoRoot) {
   return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
 }
 
-function buildImportState({ manifest, storyContext, latestRun, evidence }) {
+function buildImportState({ manifest, storyContext, latestRun, evidence, taskState }) {
   const graphify = evidence.graphify ?? {};
   const architectureProfile = evidence.architecture_profile ?? {};
   const checkCatalog = evidence.check_catalog ?? {};
@@ -150,6 +152,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
       },
+      tasks: Array.isArray(taskState?.tasks) ? taskState.tasks : [],
       action_candidates: actionCandidates.map((candidate) => ({
         id: candidate.id,
         finding_id: candidate.finding_id,
@@ -220,6 +223,10 @@ ${importState.findings.length === 0 ? '- なし' : importState.findings.map((fin
 ## 次アクション候補
 
 ${renderActionCandidates(importState.signals.action_candidates)}
+
+## 生成タスク
+
+${renderGeneratedTasks(importState.signals.tasks)}
 `;
 }
 
@@ -250,6 +257,13 @@ function renderActionCandidates(candidates) {
 ${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${formatGraphImpact(candidate.graph_context)} | ${formatGraphCommunities(candidate.graph_context)} | ${formatReadFirstFiles(candidate.implementation_plan)} | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}
 
 ${renderImplementationPlans(candidates)}`;
+}
+
+function renderGeneratedTasks(tasks) {
+  if (!Array.isArray(tasks) || tasks.length === 0) return '- なし';
+  return `| ID | 対応する検出事項 | 優先度 | 対象 | 方針 |
+|----|------------------|--------|------|------|
+${tasks.map((task) => `| ${task.id} | ${task.finding_id ?? '-'} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${task.recommended_strategy?.id ?? '-'} |`).join('\n')}`;
 }
 
 function emptyGraphContext() {

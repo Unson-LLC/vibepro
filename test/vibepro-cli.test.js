@@ -536,12 +536,26 @@ element.innerHTML = userInput;
   assert.equal(evidence.static_site.external_resources.length > 0, true);
   assert.equal(evidence.static_site.non_static_files.some((item) => item.file === 'server.py'), true);
   assert.equal(evidence.gates[0].status, 'block');
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.json'));
+  assert.equal(tasks.source_run.run_id, '2026-04-28T130000Z');
+  assert.equal(tasks.source_run.gate_status, 'block');
+  const secretTask = tasks.tasks.find((task) => task.finding_id === 'VP-STATIC-002');
+  assert.equal(secretTask.priority, 'critical');
+  assert.equal(secretTask.source_type, 'finding');
+  assert.equal(secretTask.target_files.includes('app.js'), true);
+  assert.equal(secretTask.order, 10);
+  assert.equal(secretTask.mutates_repository, false);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.md'), 'utf8'), /VP-TASK-STATIC-002/);
   assert.match(await readFile(path.join(runDir, 'risk-register.md'), 'utf8'), /秘密情報/);
   assert.match(await readFile(path.join(runDir, 'static-site-check-result.md'), 'utf8'), /gate_effect/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.static_site_check,
     '.vibepro/diagnostics/2026-04-28T130000Z/static-site-check-result.md'
+  );
+  assert.equal(
+    manifest.runs[0].artifacts.story_tasks_json,
+    '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/tasks.json'
   );
 });
 
@@ -698,6 +712,15 @@ export function middleware() {}
   assert.equal(queueRoute.protection.evidence.includes('middleware_excludes_api'), true);
   assert.equal(queueRoute.risk_hints.includes('privileged_route_unprotected'), true);
   assert.equal(evidence.action_candidates.length, 3);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks[0].finding_id, 'VP-STATIC-002');
+  assert.equal(tasks.tasks[0].priority, 'critical');
+  assert.equal(tasks.tasks[1].source_id, 'VP-ACTION-API-002');
+  assert.equal(tasks.tasks[2].source_id, 'VP-ACTION-API-003');
+  assert.equal(tasks.tasks[3].source_id, 'VP-ACTION-API-001');
+  assert.equal(tasks.tasks[3].recommended_strategy.id, 'route-level-auth');
+  assert.equal(tasks.tasks[3].read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
+  assert.equal(tasks.tasks[3].pre_fix_briefing.current_boundary.middleware.excludes_api, true);
   const apiAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-001');
   assert.equal(apiAction.finding_id, 'VP-API-001');
   assert.equal(apiAction.execution_policy, 'proposal_only');
@@ -776,6 +799,8 @@ export function middleware() {}
   assert.match(report, /## API境界/);
   assert.match(report, /protected_by_route \| 1/);
   assert.match(report, /## 次アクション候補/);
+  assert.match(report, /## 生成タスク/);
+  assert.match(report, /VP-TASK-API-001/);
   assert.match(report, /Impact/);
   assert.match(report, /実装手順/);
   assert.match(report, /修正前ブリーフィング/);
@@ -786,6 +811,8 @@ export function middleware() {}
   assert.match(importSummary, /## API境界/);
   assert.match(importSummary, /excluded_by_middleware \| 3/);
   assert.match(importSummary, /## 次アクション候補/);
+  assert.match(importSummary, /## 生成タスク/);
+  assert.match(importSummary, /VP-TASK-API-001/);
   assert.match(importSummary, /Impact/);
   assert.match(importSummary, /読むファイル/);
   assert.match(importSummary, /修正前ブリーフィング/);
@@ -796,6 +823,9 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.route_count, 7);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
+  assert.equal(importState.signals.tasks.length, 4);
+  assert.equal(importState.signals.tasks[0].finding_id, 'VP-STATIC-002');
+  assert.equal(importState.signals.tasks[3].source_id, 'VP-ACTION-API-001');
   assert.equal(importState.signals.action_candidates.length, 3);
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
   assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
