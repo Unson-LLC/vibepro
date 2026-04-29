@@ -21,6 +21,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const evidence = await buildEvidence(root, graph, runId, currentStory);
   const findings = buildFindings(evidence);
   evidence.findings = findings;
+  evidence.action_candidates = buildActionCandidates(evidence);
   evidence.gates = buildGates(findings);
 
   const evidencePath = path.join(runDir, 'evidence.json');
@@ -31,7 +32,12 @@ export async function runDiagnosis(repoRoot, options = {}) {
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
-  await writeFile(riskPath, renderRiskRegister({ runId, findings, apiBoundary: evidence.api_boundary }));
+  await writeFile(riskPath, renderRiskRegister({
+    runId,
+    findings,
+    apiBoundary: evidence.api_boundary,
+    actionCandidates: evidence.action_candidates
+  }));
   await writeFile(staticSitePath, renderStaticSiteCheck({
     runId,
     staticSite: evidence.static_site,
@@ -95,6 +101,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       ? await scanApiBoundary(repoRoot, architectureProfile)
       : null,
     static_site: await scanStaticSite(repoRoot),
+    action_candidates: [],
     findings: [],
     gates: []
   };
@@ -215,6 +222,74 @@ function buildFindings(evidence) {
   return findings;
 }
 
+function buildActionCandidates(evidence) {
+  const candidates = [];
+  const apiBoundary = evidence.api_boundary;
+  if (!apiBoundary) return candidates;
+
+  const privilegedUnprotected = apiBoundary.routes
+    .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
+  if (privilegedUnprotected.length > 0) {
+    candidates.push({
+      id: 'VP-ACTION-API-001',
+      finding_id: 'VP-API-001',
+      scope: 'api_boundary',
+      title: '管理系または内部系APIの保護方針を決める',
+      target_count: privilegedUnprotected.length,
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      confidence: privilegedUnprotected.some((route) => route.protection?.status === 'unknown') ? 'medium' : 'high',
+      recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
+      route_examples: buildRouteExamples(privilegedUnprotected)
+    });
+  }
+
+  const debugExposed = apiBoundary.routes
+    .filter((route) => route.risk_hints.includes('debug_route_exposed'));
+  if (debugExposed.length > 0) {
+    candidates.push({
+      id: 'VP-ACTION-API-002',
+      finding_id: 'VP-API-002',
+      scope: 'api_boundary',
+      title: 'debug/test APIの公開可否を確認する',
+      target_count: debugExposed.length,
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      confidence: 'high',
+      recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
+      route_examples: buildRouteExamples(debugExposed)
+    });
+  }
+
+  const webhooksWithoutSignature = apiBoundary.routes
+    .filter((route) => route.risk_hints.includes('webhook_signature_not_detected'));
+  if (webhooksWithoutSignature.length > 0) {
+    candidates.push({
+      id: 'VP-ACTION-API-003',
+      finding_id: 'VP-API-003',
+      scope: 'api_boundary',
+      title: 'webhook APIの署名検証方針を確認する',
+      target_count: webhooksWithoutSignature.length,
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      confidence: 'high',
+      recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
+      route_examples: buildRouteExamples(webhooksWithoutSignature)
+    });
+  }
+
+  return candidates;
+}
+
+function buildRouteExamples(routes) {
+  return routes.slice(0, 10).map((route) => ({
+    route_path: route.route_path,
+    classification: route.classification,
+    protection_status: route.protection?.status ?? 'unknown',
+    risk_hints: route.risk_hints ?? []
+  }));
+}
+
 function buildGates(findings) {
   const hasCritical = findings.some((finding) => finding.severity === 'Critical');
   const hasMediumOrHigher = findings.some((finding) => ['Critical', 'High', 'Medium'].includes(finding.severity));
@@ -265,6 +340,10 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 ## 主な検出事項
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
+
+## 次アクション候補
+
+${renderActionCandidates(evidence.action_candidates)}
 `;
 }
 
@@ -379,7 +458,7 @@ ${staticSite.non_static_files.length === 0 ? '- なし' : staticSite.non_static_
 `;
 }
 
-function renderRiskRegister({ runId, findings, apiBoundary }) {
+function renderRiskRegister({ runId, findings, apiBoundary, actionCandidates }) {
   return `# VibePro リスク台帳
 
 | 項目 | 内容 |
@@ -394,7 +473,19 @@ ${findings.length === 0 ? '| - | - | 検出なし | - | - |' : findings.map((fin
 ## API境界の保護状態
 
 ${renderApiProtectionStateTable(apiBoundary)}
+
+## 次アクション候補
+
+${renderActionCandidates(actionCandidates)}
 `;
+}
+
+function renderActionCandidates(candidates) {
+  const items = Array.isArray(candidates) ? candidates : [];
+  if (items.length === 0) return '- なし';
+  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
+|----|------------------|------|------|------|
+${items.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
 }
 
 function renderApiProtectionStateTable(apiBoundary) {

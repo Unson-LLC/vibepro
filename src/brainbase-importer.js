@@ -83,6 +83,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
   const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
+  const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
   const stories = storyContext.stories;
   const primaryStory = storyContext.currentStory;
 
@@ -145,7 +146,19 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         xss_risk_hits_count: staticSite.xss_risk_hits?.length ?? 0,
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
-      }
+      },
+      action_candidates: actionCandidates.map((candidate) => ({
+        id: candidate.id,
+        finding_id: candidate.finding_id,
+        scope: candidate.scope,
+        title: candidate.title,
+        target_count: candidate.target_count,
+        execution_policy: candidate.execution_policy,
+        mutates_repository: candidate.mutates_repository,
+        confidence: candidate.confidence,
+        recommendation: candidate.recommendation,
+        route_examples: candidate.route_examples ?? []
+      }))
     },
     gates: evidence.gates ?? [],
     findings: findings.map((finding) => ({
@@ -197,6 +210,10 @@ ${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / Hor
 ## 検出事項
 
 ${importState.findings.length === 0 ? '- なし' : importState.findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
+
+## 次アクション候補
+
+${renderActionCandidates(importState.signals.action_candidates)}
 `;
 }
 
@@ -218,4 +235,11 @@ ${classificationRows || '| - | 0 |'}
 | 保護状態 | 件数 |
 |----------|------|
 ${protectionRows || '| - | 0 |'}`;
+}
+
+function renderActionCandidates(candidates) {
+  if (!Array.isArray(candidates) || candidates.length === 0) return '- なし';
+  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
+|----|------------------|------|------|------|
+${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
 }

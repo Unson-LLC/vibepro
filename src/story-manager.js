@@ -185,6 +185,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
   const apiBoundary = evidence?.api_boundary ?? null;
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const actionCandidates = Array.isArray(evidence?.action_candidates) ? evidence.action_candidates : [];
   const artifacts = latestRun.artifacts ?? {};
   const scanHeading = architectureProfile.app_type === 'static_site' ? '静的サイト診断' : '共通スキャン';
   return `# Story診断レポート
@@ -253,6 +254,10 @@ ${renderStoryApiBoundary(apiBoundary)}
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 
+## 次アクション候補
+
+${renderStoryActionCandidates(actionCandidates)}
+
 ## Artifacts
 
 ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
@@ -284,6 +289,13 @@ ${rows || '| - | 0 |'}
 | 保護状態 | 件数 |
 |----------|------|
 ${protectionRows || '| - | 0 |'}`;
+}
+
+function renderStoryActionCandidates(candidates) {
+  if (candidates.length === 0) return '- なし';
+  return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
+|----|------------------|------|------|------|
+${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
 }
 
 function renderStoryArchitectureViews(views) {
