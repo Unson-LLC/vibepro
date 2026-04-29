@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { profileArchitecture } from './architecture-profiler.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -25,11 +26,17 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const summaryPath = path.join(runDir, 'summary.md');
   const riskPath = path.join(runDir, 'risk-register.md');
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
+  const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
   await writeFile(riskPath, renderRiskRegister({ runId, findings }));
   await writeFile(staticSitePath, renderStaticSiteCheck({ runId, staticSite: evidence.static_site }));
+  await writeFile(architectureProfilePath, renderArchitectureProfile({
+    runId,
+    profile: evidence.architecture_profile,
+    checkCatalog: evidence.check_catalog
+  }));
 
   const manifest = await readManifest(root);
   const run = {
@@ -42,7 +49,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
       summary: toWorkspaceRelative(root, summaryPath),
       risk_register: toWorkspaceRelative(root, riskPath),
       evidence: toWorkspaceRelative(root, evidencePath),
-      static_site_check: toWorkspaceRelative(root, staticSitePath)
+      static_site_check: toWorkspaceRelative(root, staticSitePath),
+      architecture_profile: toWorkspaceRelative(root, architectureProfilePath)
     }
   };
   manifest.latest_run = runId;
@@ -59,6 +67,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
 async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const edges = Array.isArray(graph.edges) ? graph.edges : [];
+  const architectureProfile = await profileArchitecture(repoRoot);
   return {
     schema_version: '0.1.0',
     run_id: runId,
@@ -71,6 +80,10 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       inferred_edges: edges.filter((edge) => edge.confidence === 'INFERRED'),
       ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
     },
+    architecture_profile: architectureProfile,
+    check_catalog: {
+      applicable_checks: architectureProfile.applicable_checks
+    },
     static_site: await scanStaticSite(repoRoot),
     findings: [],
     gates: []
@@ -79,6 +92,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
 
 function buildFindings(evidence) {
   const findings = [];
+  const applicableChecks = new Set(evidence.check_catalog?.applicable_checks ?? []);
   if (evidence.graphify.ambiguous_edges.length > 0) {
     findings.push({
       id: 'VP-GRAPH-001',
@@ -99,7 +113,7 @@ function buildFindings(evidence) {
       recommendation: '推論関係は診断質問として扱い、検証済み事実として扱わない。'
     });
   }
-  if (!evidence.static_site.has_index_html) {
+  if (applicableChecks.has('static-entry') && !evidence.static_site.has_index_html) {
     findings.push({
       id: 'VP-STATIC-001',
       severity: 'High',
@@ -109,7 +123,7 @@ function buildFindings(evidence) {
       recommendation: '公開対象のルートに index.html を配置するか、配信設定の入口を明示する。'
     });
   }
-  if (evidence.static_site.secret_hits.length > 0) {
+  if (applicableChecks.has('secrets') && evidence.static_site.secret_hits.length > 0) {
     findings.push({
       id: 'VP-STATIC-002',
       severity: 'Critical',
@@ -119,7 +133,7 @@ function buildFindings(evidence) {
       recommendation: '公開前に該当値を削除し、必要な値はサーバー側または安全な環境変数管理へ移す。'
     });
   }
-  if (evidence.static_site.xss_risk_hits.length > 0) {
+  if (applicableChecks.has('xss') && evidence.static_site.xss_risk_hits.length > 0) {
     findings.push({
       id: 'VP-STATIC-003',
       severity: 'High',
@@ -129,7 +143,7 @@ function buildFindings(evidence) {
       recommendation: 'ユーザー入力をHTMLとして挿入しない。必要な場合はサニタイズし、textContentなど安全な代替を使う。'
     });
   }
-  if (evidence.static_site.non_static_files.length > 0) {
+  if (applicableChecks.has('static-publish-surface') && evidence.static_site.non_static_files.length > 0) {
     findings.push({
       id: 'VP-STATIC-004',
       severity: 'Medium',
@@ -139,7 +153,7 @@ function buildFindings(evidence) {
       recommendation: '公開ディレクトリにサーバーコード、設定ファイル、生成前ソースを含めない構成に分離する。'
     });
   }
-  if (evidence.static_site.external_resources.length > 0) {
+  if (applicableChecks.has('external-resources') && evidence.static_site.external_resources.length > 0) {
     findings.push({
       id: 'VP-STATIC-005',
       severity: 'Low',
@@ -161,12 +175,14 @@ function buildGates(findings) {
     reason: hasCritical
       ? '公開前に必ず解消すべき項目がある'
       : hasMediumOrHigher
-        ? '文脈品質または静的サイト構成に確認が必要な項目がある'
+        ? '文脈品質または適用チェックに確認が必要な項目がある'
         : '重大な確認項目は検出されていない'
   }];
 }
 
 function renderSummary({ runId, evidence, findings }) {
+  const profile = evidence.architecture_profile ?? {};
+  const applicableChecks = evidence.check_catalog?.applicable_checks ?? [];
   return `# VibePro 診断サマリー
 
 | 項目 | 内容 |
@@ -174,6 +190,9 @@ function renderSummary({ runId, evidence, findings }) {
 | Run ID | ${runId} |
 | Story | ${evidence.story.title} |
 | Story ID | ${evidence.story_id} |
+| 種別 | ${profile.app_type ?? 'unknown'} |
+| 描画方式 | ${profile.rendering ?? '-'} |
+| 適用チェック | ${applicableChecks.join(', ') || '-'} |
 | graphify nodes | ${evidence.graphify.node_count} |
 | graphify edges | ${evidence.graphify.edge_count} |
 | 静的サイト scanned files | ${evidence.static_site.scanned_files} |
@@ -188,6 +207,31 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 ## 主な検出事項
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
+`;
+}
+
+function renderArchitectureProfile({ runId, profile, checkCatalog }) {
+  return `# 構造プロファイル
+
+| 項目 | 内容 |
+|------|------|
+| Run ID | ${runId} |
+| 種別 | ${profile.app_type} |
+| 描画方式 | ${profile.rendering ?? '-'} |
+| パッケージ管理 | ${profile.package_manager ?? '-'} |
+| 言語 | ${profile.languages.length === 0 ? '-' : profile.languages.join(', ')} |
+| API route | ${profile.has_api_routes ? 'あり' : 'なし'} |
+| DB | ${profile.has_database ? profile.database.join(', ') || 'あり' : 'なし'} |
+| 認証 | ${profile.has_auth ? profile.auth.join(', ') || 'あり' : 'なし'} |
+| 配信 | ${profile.deployment.length === 0 ? '-' : profile.deployment.join(', ')} |
+
+## 適用チェック
+
+${checkCatalog.applicable_checks.map((check) => `- ${check}`).join('\n')}
+
+## 根拠
+
+${profile.evidence.length === 0 ? '- なし' : profile.evidence.map((item) => `- ${item.kind}: ${item.file ?? '-'} ${item.detail ?? ''}`.trim()).join('\n')}
 `;
 }
 

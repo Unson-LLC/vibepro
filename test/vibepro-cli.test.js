@@ -518,6 +518,59 @@ eval("1+1");
   );
 });
 
+test('diagnose profiles a Next.js repository and selects applicable checks without static site entry findings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-nextjs-test-'));
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: { dev: 'next dev', test: 'vitest' },
+    dependencies: {
+      next: '^15.0.0',
+      react: '^19.0.0',
+      '@supabase/supabase-js': '^2.0.0',
+      'next-auth': '^5.0.0'
+    },
+    devDependencies: {
+      typescript: '^5.0.0',
+      vitest: '^3.0.0'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'companies'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
+  await writeFile(path.join(repo, 'vercel.json'), JSON.stringify({ framework: 'nextjs' }));
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'api' }],
+    edges: []
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-04-28T140000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T140000Z');
+  await stat(path.join(runDir, 'architecture-profile.md'));
+  const evidence = await readJson(path.join(runDir, 'evidence.json'));
+  assert.equal(evidence.architecture_profile.app_type, 'web_app');
+  assert.equal(evidence.architecture_profile.rendering, 'nextjs');
+  assert.equal(evidence.architecture_profile.has_api_routes, true);
+  assert.equal(evidence.architecture_profile.has_database, true);
+  assert.equal(evidence.architecture_profile.has_auth, true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('api-boundary'), true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('database-access'), true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.runs[0].artifacts.architecture_profile,
+    '.vibepro/diagnostics/2026-04-28T140000Z/architecture-profile.md'
+  );
+});
+
 test('brainbase creates an import state from the latest VibePro manifest run', async () => {
   const repo = await makeRepo();
   await writeFile(path.join(repo, 'app.js'), 'document.body.innerHTML = location.hash;\n');
@@ -548,6 +601,8 @@ test('brainbase creates an import state from the latest VibePro manifest run', a
   assert.equal(importState.latest_run.gate_status, 'needs_review');
   assert.equal(importState.signals.graphify.node_count, 2);
   assert.equal(importState.signals.graphify.ambiguous_edges_count, 1);
+  assert.equal(importState.signals.architecture_profile.app_type, 'static_site');
+  assert.equal(importState.signals.check_catalog.applicable_checks.includes('static-entry'), true);
   assert.equal(importState.signals.static_site.xss_risk_hits_count, 1);
   assert.equal(importState.findings.some((finding) => finding.id === 'VP-STATIC-003'), true);
   assert.match(await readFile(importSummaryPath, 'utf8'), /Brainbase 取り込み状態/);

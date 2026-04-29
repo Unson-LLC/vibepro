@@ -180,6 +180,8 @@ ${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(re
 
 export function renderStoryReport({ story, latestRun, runs, evidence }) {
   const graphify = evidence?.graphify ?? {};
+  const architectureProfile = evidence?.architecture_profile ?? {};
+  const applicableChecks = evidence?.check_catalog?.applicable_checks ?? architectureProfile.applicable_checks ?? [];
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const artifacts = latestRun.artifacts ?? {};
@@ -213,6 +215,17 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
 | extracted edges | ${graphify.extracted_edges?.length ?? 0} |
 | inferred edges | ${graphify.inferred_edges?.length ?? 0} |
 | ambiguous edges | ${graphify.ambiguous_edges?.length ?? 0} |
+
+## 構造プロファイル
+
+| 項目 | 内容 |
+|------|------|
+| 種別 | ${architectureProfile.app_type ?? 'unknown'} |
+| 描画方式 | ${architectureProfile.rendering ?? '-'} |
+| API route | ${architectureProfile.has_api_routes ? 'あり' : 'なし'} |
+| DB | ${architectureProfile.has_database ? (architectureProfile.database ?? []).join(', ') || 'あり' : 'なし'} |
+| 認証 | ${architectureProfile.has_auth ? (architectureProfile.auth ?? []).join(', ') || 'あり' : 'なし'} |
+| 適用チェック | ${applicableChecks.join(', ') || '-'} |
 
 ## 静的サイト診断
 

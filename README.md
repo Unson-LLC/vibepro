@@ -102,6 +102,7 @@ node bin/vibepro.js diagnose /path/to/repo
 .vibepro/diagnostics/<run-id>/
 ├── summary.md
 ├── risk-register.md
+├── architecture-profile.md
 ├── static-site-check-result.md
 └── evidence.json
 ```
@@ -110,7 +111,15 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `story select` で選択中Storyがある場合、診断runはそのStoryに紐づく。`evidence.json` と `vibepro-manifest.json` の `runs[]` には `story_id` とStory情報を記録する。
 
-静的サイト診断では、次の観点を `.vibepro/diagnostics/<run-id>/` 配下に記録する。
+診断ではモードを増やさず、まず対象リポジトリの構造プロファイルを作る。`package.json`、API route、配信設定、主要依存を読み、静的サイト、Next.jsなどのWebアプリ、DB、認証、配信先を判定する。そのうえで適用するチェックを選ぶ。
+
+例:
+
+- 共通: 秘密情報候補、XSSリスク候補、graphify上の曖昧な関係
+- 静的サイト: ルート `index.html`、外部リソース、静的配信対象外ファイル
+- Webアプリ: API境界、DB接続、認証境界、配信設定
+
+静的サイトに該当する場合は、次の観点を `.vibepro/diagnostics/<run-id>/` 配下に記録する。
 
 - ルート `index.html` の有無
 - 秘密情報候補

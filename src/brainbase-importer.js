@@ -78,6 +78,8 @@ async function readConfig(repoRoot) {
 
 function buildImportState({ manifest, storyContext, latestRun, evidence }) {
   const graphify = evidence.graphify ?? {};
+  const architectureProfile = evidence.architecture_profile ?? {};
+  const checkCatalog = evidence.check_catalog ?? {};
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const stories = storyContext.stories;
@@ -107,6 +109,21 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         extracted_edges_count: graphify.extracted_edges?.length ?? 0,
         inferred_edges_count: graphify.inferred_edges?.length ?? 0,
         ambiguous_edges_count: graphify.ambiguous_edges?.length ?? 0
+      },
+      architecture_profile: {
+        app_type: architectureProfile.app_type ?? 'unknown',
+        rendering: architectureProfile.rendering ?? null,
+        package_manager: architectureProfile.package_manager ?? null,
+        languages: architectureProfile.languages ?? [],
+        has_api_routes: Boolean(architectureProfile.has_api_routes),
+        has_database: Boolean(architectureProfile.has_database),
+        database: architectureProfile.database ?? [],
+        has_auth: Boolean(architectureProfile.has_auth),
+        auth: architectureProfile.auth ?? [],
+        deployment: architectureProfile.deployment ?? []
+      },
+      check_catalog: {
+        applicable_checks: checkCatalog.applicable_checks ?? architectureProfile.applicable_checks ?? []
       },
       static_site: {
         has_index_html: Boolean(staticSite.has_index_html),
@@ -138,6 +155,9 @@ function renderImportSummary(importState) {
 | Run ID | ${importState.latest_run.run_id} |
 | Run Story ID | ${importState.latest_run.story_id ?? '-'} |
 | Gate | ${importState.latest_run.gate_status} |
+| 種別 | ${importState.signals.architecture_profile.app_type} |
+| 描画方式 | ${importState.signals.architecture_profile.rendering ?? '-'} |
+| 適用チェック | ${importState.signals.check_catalog.applicable_checks.join(', ') || '-'} |
 | graphify nodes | ${importState.signals.graphify.node_count} |
 | graphify edges | ${importState.signals.graphify.edge_count} |
 | 静的サイト走査ファイル | ${importState.signals.static_site.scanned_files}件 |

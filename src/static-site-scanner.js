@@ -1,7 +1,15 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORED_DIRS = new Set(['.git', '.vibepro', 'node_modules', 'graphify-out']);
+const IGNORED_DIRS = new Set([
+  '.git',
+  '.next',
+  '.turbo',
+  '.vibepro',
+  'coverage',
+  'node_modules',
+  'graphify-out'
+]);
 const IGNORED_FILES = new Set(['.gitignore', '.vibeproignore']);
 const TEXT_EXTENSIONS = new Set([
   '.css',
