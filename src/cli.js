@@ -17,6 +17,13 @@ import {
   renderStoryStatus,
   selectStory
 } from './story-manager.js';
+import {
+  createTaskBrief,
+  listTasks,
+  renderTaskList,
+  renderTaskShow,
+  showTask
+} from './task-manager.js';
 
 const HELP = `VibePro CLI
 
@@ -33,6 +40,9 @@ Usage:
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
+  vibepro task list [repo] [--id <story-id>]
+  vibepro task show [repo] --task <task-id> [--id <story-id>]
+  vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -151,6 +161,35 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result: { story, graph, diagnosis, report, status } };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'task') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'list') {
+        const result = await listTasks(repoRoot, { storyId: getOption(rest, '--id') });
+        write(stdout, renderTaskList(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'show') {
+        const result = await showTask(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          taskId: getOption(rest, '--task')
+        });
+        write(stdout, renderTaskShow(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'brief') {
+        const result = await createTaskBrief(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group')
+        });
+        write(stdout, `Task briefing created: ${result.artifacts.markdown}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };
     }
 

@@ -281,6 +281,65 @@ test('story task generator groups admin API routes by domain', () => {
   assert.equal(task.target_groups.find((group) => group.id === 'queue').read_first_files.length, 2);
 });
 
+test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'status'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'status', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'obliterate'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'obliterate', 'route.ts'), 'export async function POST() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, 'src', 'middleware.ts'), `
+export const config = {
+  matcher: ['/((?!api|_next/static).*)']
+};
+export function middleware() {}
+`);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'queue-status', source_file: 'src/app/api/admin/queue/status/route.ts', community: 1 },
+      { id: 'queue-obliterate', source_file: 'src/app/api/admin/queue/obliterate/route.ts', community: 1 }
+    ],
+    links: [{ source: 'queue-status', target: 'queue-obliterate', relation: 'same_domain', confidence: 'INFERRED' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', 'run-task-cli']);
+
+  let listOutput = '';
+  const listResult = await runCli(['task', 'list', repo], {
+    stdout: { write: (text) => { listOutput += text; } }
+  });
+  assert.equal(listResult.exitCode, 0);
+  assert.match(listOutput, /# Story Tasks/);
+  assert.match(listOutput, /VP-TASK-API-001/);
+  assert.match(listOutput, /queue\(2\)/);
+
+  let showOutput = '';
+  const showResult = await runCli(['task', 'show', repo, '--task', 'VP-TASK-API-001'], {
+    stdout: { write: (text) => { showOutput += text; } }
+  });
+  assert.equal(showResult.exitCode, 0);
+  assert.match(showOutput, /## Target Groups/);
+  assert.match(showOutput, /queue/);
+
+  const briefResult = await runCli(['task', 'brief', repo, '--task', 'VP-TASK-API-001', '--group', 'queue']);
+  assert.equal(briefResult.exitCode, 0);
+  assert.equal(briefResult.result.briefing.task.id, 'VP-TASK-API-001');
+  assert.equal(briefResult.result.briefing.group.id, 'queue');
+  assert.equal(briefResult.result.briefing.mutates_repository, false);
+  assert.equal(briefResult.result.artifacts.markdown, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/briefing.md');
+  const briefingJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'briefing.json'));
+  assert.equal(briefingJson.target_routes.length, 2);
+  assert.equal(briefingJson.read_first_files.some((item) => item.file === 'src/app/api/admin/queue/status/route.ts'), true);
+  assert.equal(briefingJson.guardrails.includes('このCLIは対象リポジトリのコードを修正しない'), true);
+  const briefingMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'briefing.md'), 'utf8');
+  assert.match(briefingMarkdown, /# 修正前ブリーフィング/);
+  assert.match(briefingMarkdown, /このCLIは対象リポジトリのコードを修正しない/);
+  assert.match(briefingMarkdown, /\/api\/admin\/queue\/status/);
+});
+
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

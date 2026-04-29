@@ -478,6 +478,52 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - 並び順は `VP-TASK-STATIC-002-BLOCK`、`VP-TASK-STATIC-002-REVIEW`、`VP-ACTION-API-002`、`VP-ACTION-API-003`、`VP-ACTION-API-001`、その他の順を優先する。
 - タスク生成は非破壊であり、対象リポジトリのコードは変更しない。
 
+## タスクCLI
+
+生成タスクはCLIから参照できる。正本は引き続き `.vibepro/stories/<story-id>/tasks/tasks.json` であり、CLI出力とブリーフィングは投影とする。
+
+コマンド:
+
+- `vibepro task list [repo] [--id <story-id>]`
+- `vibepro task show [repo] --task <task-id> [--id <story-id>]`
+- `vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]`
+
+`task list` は選択中Storyまたは `--id` 指定Storyのタスク一覧を表示する。
+
+`task show` は1つのタスクについて、対象ファイル、対象route、対象グループ、先に読むファイル、完了条件を表示する。
+
+`task brief` は修正前ブリーフィングを生成する。`--group` が指定された場合は対象グループに絞り、指定がない場合はタスク全体を対象にする。
+
+生成物:
+
+- タスク全体: `.vibepro/stories/<story-id>/tasks/<task-id>/briefing.json`
+- タスク全体: `.vibepro/stories/<story-id>/tasks/<task-id>/briefing.md`
+- グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json`
+- グループ指定: `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.md`
+
+`briefing.json` の最小項目:
+
+- `schema_version`
+- `generated_at`
+- `mode`: `pre_fix_briefing`
+- `story`
+- `source_run`
+- `task`
+- `group`
+- `execution_policy`
+- `mutates_repository`: 常に `false`
+- `guardrails[]`: CLIがコード修正を行わないことを明記する
+- `target_routes[]`
+- `target_files[]`
+- `read_first_files[]`
+- `graph_context`
+- `pre_fix_briefing`
+- `recommended_strategy`
+- `implementation_steps[]`
+- `acceptance_criteria[]`
+
+`task brief` は非破壊であり、対象リポジトリのコードは変更しない。
+
 ## ゲート
 
 初期実装では `production-readiness` ゲートのみを持つ。
@@ -498,6 +544,10 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `diagnose` で `summary.md`、`risk-register.md`、`architecture-profile.md`、`static-site-check-result.md`、`evidence.json` が作られる。
 - `diagnose` で `evidence.architecture_profile` と `evidence.check_catalog.applicable_checks` が記録される。
 - `diagnose` で `api-boundary` が適用される場合、`evidence.api_boundary.routes[]` にAPI route分類、保護根拠、risk hintsが記録される。
+- `task list` で選択中Storyの生成タスクを一覧できる。
+- `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
+- `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。
+- `task brief` は対象リポジトリのコードを変更せず、`mutates_repository=false` を記録する。
 - `diagnose` で `evidence.static_site` に共通スキャン結果と静的サイト固有チェック結果が記録される。
 - `diagnose` でWebアプリを検出した場合、`index.html` 不在と非静的ファイル混在を静的サイトの検出事項として扱わない。
 - `diagnose` で `evidence.story_id` と `runs[].story_id` が選択中Storyに紐づく。
