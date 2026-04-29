@@ -321,10 +321,10 @@ function formatGraphCommunities(graphContext) {
 function formatReadFirstFiles(implementationPlan) {
   const files = implementationPlan?.read_first_files ?? [];
   if (files.length === 0) return '-';
-  return selectRepresentativeReadFirstFiles(files).map((item) => item.file).join('<br>');
+  return selectRepresentativeReadFirstFiles(files, implementationPlan?.pre_fix_briefing).map((item) => item.file).join('<br>');
 }
 
-function selectRepresentativeReadFirstFiles(files) {
+function selectRepresentativeReadFirstFiles(files, briefing) {
   const selected = [];
   const seen = new Set();
   const add = (item) => {
@@ -332,9 +332,13 @@ function selectRepresentativeReadFirstFiles(files) {
     seen.add(item.file);
     selected.push(item);
   };
+  const helpers = briefing?.auth_helpers ?? [];
+  const helperFiles = new Set(helpers.map((helper) => helper.file));
+  const hasSignatureHelper = helpers.some((helper) => helper.category === 'signature');
   add(files[0]);
-  add(files.find((item) => item.reason.includes('middleware')));
-  add(files.find((item) => item.reason.includes('graphify hub')));
+  add(files.find((item) => helperFiles.has(item.file)));
+  add(files.find((item) => item.reason.includes('graphify hub') && helperFiles.has(item.file)));
+  if (!hasSignatureHelper) add(files.find((item) => item.reason.includes('middleware')));
   for (const item of files) add(item);
   return selected.slice(0, 3);
 }
@@ -377,8 +381,17 @@ function formatAuthHelpers(helpers = []) {
   if (helpers.length === 0) return '-';
   return helpers
     .slice(0, 5)
-    .map((helper) => `${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
+    .map((helper) => `${formatHelperCategory(helper.category)}${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
     .join(', ');
+}
+
+function formatHelperCategory(category) {
+  const labels = {
+    auth: '認証:',
+    signature: '署名:',
+    environment: '環境:'
+  };
+  return labels[category] ?? '';
 }
 
 function formatInlineSummary(summary = {}) {

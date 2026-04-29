@@ -346,9 +346,10 @@ async function buildImplementationPlanForAction({ repoRoot, actionId, routes, ap
 
 async function buildPreFixBriefingForAction({ repoRoot, actionId, routes, apiBoundary, graphContext, readFirstFiles }) {
   const codeSignals = await buildCodeSignalsForFiles(repoRoot, readFirstFiles.map((item) => item.file));
+  const authHelpers = buildAuthHelpers({ actionId, routes, codeSignals });
   return {
     current_boundary: buildCurrentBoundary({ apiBoundary, routes }),
-    auth_helpers: buildAuthHelpers(codeSignals),
+    auth_helpers: authHelpers,
     target_routes: routes.map((route) => ({
       file: route.file,
       route_path: route.route_path,
@@ -359,7 +360,7 @@ async function buildPreFixBriefingForAction({ repoRoot, actionId, routes, apiBou
       risk_hints: route.risk_hints ?? []
     })),
     code_signals: codeSignals,
-    strategy_options: buildStrategyOptions({ actionId, routes, graphContext, codeSignals }),
+    strategy_options: buildStrategyOptions({ actionId, routes, graphContext, codeSignals, authHelpers }),
     recommended_strategy: buildRecommendedStrategy({ actionId, routes, apiBoundary, codeSignals })
   };
 }
@@ -428,23 +429,81 @@ function extractMatches(content, patterns) {
   return [...new Set(values)].slice(0, 20);
 }
 
-function buildAuthHelpers(codeSignals) {
+const AUTH_HELPER_PATTERN = /auth|session|user|token/i;
+const SIGNATURE_HELPER_PATTERN = /verify|signature|webhook|constructEvent/i;
+const ENV_GUARD_PATTERN = /env|environment|nodeEnv|production/i;
+
+function buildAuthHelpers({ actionId, routes, codeSignals }) {
   return codeSignals
-    .map((signal) => ({
-      file: signal.file,
-      functions: signal.functions.filter((name) => /auth|session|user|token|verify|signature/i.test(name)).slice(0, 10),
-      imports: signal.imports,
-      auth_references: signal.auth_references,
-      signature_references: signal.signature_references
-    }))
-    .filter((helper) => helper.functions.length > 0 || helper.auth_references.length > 0 || helper.signature_references.length > 0);
+    .map((signal) => buildHelperForAction({ actionId, routes, signal }))
+    .filter(Boolean);
 }
 
-function buildStrategyOptions({ actionId, routes, graphContext, codeSignals }) {
+function buildHelperForAction({ actionId, routes, signal }) {
+  if (actionId === 'VP-ACTION-API-003') {
+    return buildSignatureHelper({ routes, signal });
+  }
+  if (actionId === 'VP-ACTION-API-002') {
+    return buildDebugGuardHelper(signal);
+  }
+  return buildRouteAuthHelper(signal);
+}
+
+function buildRouteAuthHelper(signal) {
+  const functions = signal.functions.filter((name) => AUTH_HELPER_PATTERN.test(name)).slice(0, 10);
+  if (functions.length === 0 && signal.auth_references.length === 0) return null;
+  return {
+    category: 'auth',
+    file: signal.file,
+    functions,
+    imports: signal.imports,
+    auth_references: signal.auth_references,
+    signature_references: [],
+    env_guard_references: []
+  };
+}
+
+function buildDebugGuardHelper(signal) {
+  const authFunctions = signal.functions.filter((name) => AUTH_HELPER_PATTERN.test(name));
+  const envFunctions = signal.functions.filter((name) => ENV_GUARD_PATTERN.test(name));
+  const hasAuthSignal = authFunctions.length > 0 || signal.auth_references.length > 0;
+  const hasEnvSignal = envFunctions.length > 0 || signal.env_guard_references.length > 0;
+  if (!hasAuthSignal && !hasEnvSignal) return null;
+  return {
+    category: hasAuthSignal ? 'auth' : 'environment',
+    file: signal.file,
+    functions: uniqueFiles([...authFunctions, ...envFunctions]).slice(0, 10),
+    imports: signal.imports,
+    auth_references: hasAuthSignal ? signal.auth_references : [],
+    signature_references: [],
+    env_guard_references: hasEnvSignal ? signal.env_guard_references : []
+  };
+}
+
+function buildSignatureHelper({ routes, signal }) {
+  const providers = getWebhookProviders(routes);
+  const targetRouteFiles = new Set(routes.map((route) => route.file));
+  const hasSignatureSignal = signal.functions.some((name) => SIGNATURE_HELPER_PATTERN.test(name))
+    || signal.signature_references.length > 0;
+  if (!hasSignatureSignal) return null;
+  if (providers.length > 0 && !matchesAnyProvider(signal, providers)) return null;
+  const functions = signal.functions.filter((name) => SIGNATURE_HELPER_PATTERN.test(name)).slice(0, 10);
+  if (targetRouteFiles.has(signal.file) && functions.length === 0) return null;
+  if (functions.length === 0 && signal.signature_references.length === 0) return null;
+  return {
+    category: 'signature',
+    file: signal.file,
+    functions,
+    imports: signal.imports,
+    auth_references: [],
+    signature_references: signal.signature_references,
+    env_guard_references: []
+  };
+}
+
+function buildStrategyOptions({ actionId, routes, graphContext, codeSignals, authHelpers }) {
   const routeFiles = routes.map((route) => route.file);
-  const helperFiles = codeSignals
-    .filter((signal) => signal.auth_references.length > 0 || signal.signature_references.length > 0)
-    .map((signal) => signal.file);
+  const helperFiles = (authHelpers ?? buildAuthHelpers({ actionId, routes, codeSignals })).map((helper) => helper.file);
   if (actionId === 'VP-ACTION-API-001') {
     return [
       {
@@ -526,21 +585,29 @@ function buildRecommendedStrategy({ actionId, routes, apiBoundary, codeSignals }
 }
 
 function hasProviderSignatureHelper(routes, codeSignals) {
-  const providers = routes
-    .map((route) => /\/api\/webhooks\/([^/]+)/.exec(route.route_path)?.[1])
-    .filter(Boolean);
+  const providers = getWebhookProviders(routes);
   if (providers.length === 0) {
     return codeSignals.some((signal) => signal.signature_references.length > 0);
   }
-  return codeSignals.some((signal) => {
-    const haystack = [
-      signal.file,
-      ...signal.functions,
-      ...signal.signature_references
-    ].join(' ').toLowerCase();
-    return signal.signature_references.length > 0
-      && providers.some((provider) => haystack.includes(provider.toLowerCase()));
-  });
+  return codeSignals.some((signal) => (
+    (signal.signature_references.length > 0 || signal.functions.some((name) => SIGNATURE_HELPER_PATTERN.test(name)))
+    && matchesAnyProvider(signal, providers)
+  ));
+}
+
+function getWebhookProviders(routes) {
+  return routes
+    .map((route) => /\/api\/webhooks\/([^/]+)/.exec(route.route_path)?.[1])
+    .filter(Boolean);
+}
+
+function matchesAnyProvider(signal, providers) {
+  const haystack = [
+    signal.file,
+    ...signal.functions,
+    ...signal.signature_references
+  ].join(' ').toLowerCase();
+  return providers.some((provider) => haystack.includes(provider.toLowerCase()));
 }
 
 function resolveImplementationPriority({ routes, graphContext }) {
@@ -1091,10 +1158,10 @@ function formatGraphCommunities(graphContext) {
 function formatReadFirstFiles(implementationPlan) {
   const files = implementationPlan?.read_first_files ?? [];
   if (files.length === 0) return '-';
-  return selectRepresentativeReadFirstFiles(files).map((item) => item.file).join('<br>');
+  return selectRepresentativeReadFirstFiles(files, implementationPlan?.pre_fix_briefing).map((item) => item.file).join('<br>');
 }
 
-function selectRepresentativeReadFirstFiles(files) {
+function selectRepresentativeReadFirstFiles(files, briefing) {
   const selected = [];
   const seen = new Set();
   const add = (item) => {
@@ -1102,9 +1169,13 @@ function selectRepresentativeReadFirstFiles(files) {
     seen.add(item.file);
     selected.push(item);
   };
+  const helpers = briefing?.auth_helpers ?? [];
+  const helperFiles = new Set(helpers.map((helper) => helper.file));
+  const hasSignatureHelper = helpers.some((helper) => helper.category === 'signature');
   add(files[0]);
-  add(files.find((item) => item.reason.includes('middleware')));
-  add(files.find((item) => item.reason.includes('graphify hub')));
+  add(files.find((item) => helperFiles.has(item.file)));
+  add(files.find((item) => item.reason.includes('graphify hub') && helperFiles.has(item.file)));
+  if (!hasSignatureHelper) add(files.find((item) => item.reason.includes('middleware')));
   for (const item of files) add(item);
   return selected.slice(0, 3);
 }
@@ -1147,8 +1218,17 @@ function formatAuthHelpers(helpers = []) {
   if (helpers.length === 0) return '-';
   return helpers
     .slice(0, 5)
-    .map((helper) => `${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
+    .map((helper) => `${formatHelperCategory(helper.category)}${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
     .join(', ');
+}
+
+function formatHelperCategory(category) {
+  const labels = {
+    auth: '認証:',
+    signature: '署名:',
+    environment: '環境:'
+  };
+  return labels[category] ?? '';
 }
 
 function renderApiProtectionStateTable(apiBoundary) {

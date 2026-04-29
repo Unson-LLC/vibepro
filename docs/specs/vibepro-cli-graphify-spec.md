@@ -415,7 +415,11 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `acceptance_criteria[]`: 完了判定
 - `pre_fix_briefing`: 修正前に読むべき現状整理。raw source code は保存しない
 - `pre_fix_briefing.current_boundary`: middleware matcher、API除外有無、route保護状態
-- `pre_fix_briefing.auth_helpers[]`: 認証・署名検証候補のfile、関数名、参照シグナル
+- `pre_fix_briefing.auth_helpers[]`: action種別に合う認証・署名検証・環境制限候補のfile、category、関数名、参照シグナル
+- `pre_fix_briefing.auth_helpers[].category`: `auth`, `signature`, `environment`
+- `VP-ACTION-API-001` の helper は認証・セッション系に絞る。署名検証のみのhelperは混ぜない
+- `VP-ACTION-API-002` の helper は認証・環境制限に絞る
+- `VP-ACTION-API-003` の helper はwebhook provider名に紐づく署名検証候補に絞る。通常セッション認証やprovider非依存の署名関数は混ぜない
 - `pre_fix_briefing.target_routes[]`: 対象routeのfile、path、methods、classification、protection、risk hints
 - `pre_fix_briefing.code_signals[]`: import、関数名、認証/署名/env guard参照の短いシグナル
 - `pre_fix_briefing.strategy_options[]`: 方針A/Bの候補、対象件数、変更候補ファイル、利点、注意点

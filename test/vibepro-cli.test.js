@@ -719,7 +719,9 @@ export function middleware() {}
   assert.match(apiAction.implementation_plan.acceptance_criteria.join('\n'), /保護根拠/);
   assert.equal(apiAction.implementation_plan.pre_fix_briefing.current_boundary.middleware.excludes_api, true);
   assert.equal(apiAction.implementation_plan.pre_fix_briefing.current_boundary.route_protection.excluded_by_middleware, 1);
-  assert.equal(apiAction.implementation_plan.pre_fix_briefing.auth_helpers.some((helper) => helper.file === 'src/lib/queue.ts' && helper.functions.includes('requireQueueAuth')), true);
+  const apiAuthHelper = apiAction.implementation_plan.pre_fix_briefing.auth_helpers.find((helper) => helper.file === 'src/lib/queue.ts');
+  assert.equal(apiAuthHelper?.functions.includes('requireQueueAuth'), true);
+  assert.equal(apiAuthHelper?.functions.includes('verifyQueueSignature'), false);
   assert.equal(apiAction.implementation_plan.pre_fix_briefing.target_routes[0].file, 'src/app/api/queue/status/route.ts');
   assert.equal(apiAction.implementation_plan.pre_fix_briefing.target_routes[0].methods.includes('GET'), true);
   assert.equal(apiAction.implementation_plan.pre_fix_briefing.strategy_options.length, 2);
@@ -734,6 +736,10 @@ export function middleware() {}
   assert.equal(webhookAction.graph_context.matched_route_count, 1);
   assert.match(webhookAction.implementation_plan.acceptance_criteria.join('\n'), /署名検証/);
   assert.equal(webhookAction.implementation_plan.pre_fix_briefing.recommended_strategy.id, 'provider-signature-verification');
+  assert.equal(
+    webhookAction.implementation_plan.pre_fix_briefing.auth_helpers.some((helper) => helper.file === 'src/lib/queue.ts'),
+    false
+  );
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
