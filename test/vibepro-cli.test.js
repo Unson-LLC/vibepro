@@ -338,6 +338,21 @@ export function middleware() {}
   assert.match(briefingMarkdown, /# 修正前ブリーフィング/);
   assert.match(briefingMarkdown, /このCLIは対象リポジトリのコードを修正しない/);
   assert.match(briefingMarkdown, /\/api\/admin\/queue\/status/);
+
+  const planResult = await runCli(['task', 'plan', repo, '--task', 'VP-TASK-API-001', '--group', 'queue']);
+  assert.equal(planResult.exitCode, 0);
+  assert.equal(planResult.result.plan.mode, 'implementation_plan');
+  assert.equal(planResult.result.plan.execution.cli_mutates_repository, false);
+  assert.equal(planResult.result.plan.execution.plan_allows_repository_changes, true);
+  assert.equal(planResult.result.plan.target_files.length, 2);
+  assert.equal(planResult.result.artifacts.markdown, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/plan.md');
+  const planJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'plan.json'));
+  assert.equal(planJson.verification_commands.some((command) => command.command === 'vibepro diagnose . --run-id verify-VP-TASK-API-001-queue'), true);
+  assert.equal(planJson.rollback_considerations.some((item) => item.includes('対象ファイル単位')), true);
+  const planMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'plan.md'), 'utf8');
+  assert.match(planMarkdown, /# 実装修正計画/);
+  assert.match(planMarkdown, /このplanは修正可能な作業計画/);
+  assert.match(planMarkdown, /CLI自身は対象リポジトリのコードを変更しない/);
 });
 
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {

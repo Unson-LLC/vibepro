@@ -26,18 +26,14 @@ export async function showTask(repoRoot, options = {}) {
 
 export async function createTaskBrief(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const context = await loadTaskContext(root, options.storyId);
-  const task = findTask(context.tasks, options.taskId);
-  const group = options.groupId ? findTargetGroup(task, options.groupId) : null;
+  const { context, task, group } = await resolveTaskSelection(root, options);
   const briefing = buildTaskBriefing({
     story: context.story,
     sourceRun: context.taskState.source_run,
     task,
     group
   });
-  const briefDir = group
-    ? path.join(getWorkspaceDir(root), 'stories', context.story.story_id, 'tasks', safeSegment(task.id), 'groups', safeSegment(group.id))
-    : path.join(getWorkspaceDir(root), 'stories', context.story.story_id, 'tasks', safeSegment(task.id));
+  const briefDir = getTaskArtifactDir(root, context.story.story_id, task.id, group?.id);
   await mkdir(briefDir, { recursive: true });
   const jsonPath = path.join(briefDir, 'briefing.json');
   const markdownPath = path.join(briefDir, 'briefing.md');
@@ -48,6 +44,34 @@ export async function createTaskBrief(repoRoot, options = {}) {
     task,
     group,
     briefing,
+    artifacts: {
+      json: toWorkspaceRelative(root, jsonPath),
+      markdown: toWorkspaceRelative(root, markdownPath)
+    }
+  };
+}
+
+export async function createTaskPlan(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const { context, task, group } = await resolveTaskSelection(root, options);
+  const briefing = buildTaskBriefing({
+    story: context.story,
+    sourceRun: context.taskState.source_run,
+    task,
+    group
+  });
+  const plan = buildTaskPlan({ briefing });
+  const planDir = getTaskArtifactDir(root, context.story.story_id, task.id, group?.id);
+  await mkdir(planDir, { recursive: true });
+  const jsonPath = path.join(planDir, 'plan.json');
+  const markdownPath = path.join(planDir, 'plan.md');
+  await writeFile(jsonPath, `${JSON.stringify(plan, null, 2)}\n`);
+  await writeFile(markdownPath, renderTaskPlan(plan));
+  return {
+    story: context.story,
+    task,
+    group,
+    plan,
     artifacts: {
       json: toWorkspaceRelative(root, jsonPath),
       markdown: toWorkspaceRelative(root, markdownPath)
@@ -161,6 +185,57 @@ ${formatList(briefing.acceptance_criteria)}
 `;
 }
 
+export function renderTaskPlan(plan) {
+  return `# 実装修正計画
+
+## 前提
+
+- Story: ${plan.story.title} (${plan.story.story_id})
+- Run ID: ${plan.source_run?.run_id ?? '-'}
+- Task: ${plan.task.id} - ${plan.task.title}
+- Group: ${plan.group?.id ?? '-'}
+- このplanは修正可能な作業計画
+- CLI自身は対象リポジトリのコードを変更しない
+
+## 実行境界
+
+- plan_allows_repository_changes: ${plan.execution.plan_allows_repository_changes}
+- cli_mutates_repository: ${plan.execution.cli_mutates_repository}
+
+## 変更対象ファイル
+
+${formatList(plan.target_files)}
+
+## 先に読むファイル
+
+${formatReadFirst(plan.read_first_files)}
+
+## 推奨修正方針
+
+- ${plan.recommended_strategy?.id ?? '-'}: ${plan.recommended_strategy?.reason ?? '-'}
+
+## 実装ステップ
+
+${plan.implementation_steps.length === 0 ? '- なし' : plan.implementation_steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
+
+## 検証コマンド候補
+
+${plan.verification_commands.map((item) => `- \`${item.command}\`: ${item.reason}`).join('\n')}
+
+## 完了条件
+
+${formatList(plan.acceptance_criteria)}
+
+## ロールバック観点
+
+${formatList(plan.rollback_considerations)}
+
+## ガードレール
+
+${formatList(plan.guardrails)}
+`;
+}
+
 async function loadTaskContext(repoRoot, storyId = null) {
   const root = path.resolve(repoRoot);
   const status = await getStoryStatus(root, storyId);
@@ -172,6 +247,13 @@ async function loadTaskContext(repoRoot, storyId = null) {
     taskState,
     tasks
   };
+}
+
+async function resolveTaskSelection(repoRoot, options = {}) {
+  const context = await loadTaskContext(repoRoot, options.storyId);
+  const task = findTask(context.tasks, options.taskId);
+  const group = options.groupId ? findTargetGroup(task, options.groupId) : null;
+  return { context, task, group };
 }
 
 function buildTaskBriefing({ story, sourceRun, task, group }) {
@@ -216,6 +298,63 @@ function buildTaskBriefing({ story, sourceRun, task, group }) {
   };
 }
 
+function buildTaskPlan({ briefing }) {
+  const suffix = briefing.group?.id ? `${briefing.task.id}-${briefing.group.id}` : briefing.task.id;
+  return {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    mode: 'implementation_plan',
+    story: briefing.story,
+    source_run: briefing.source_run,
+    task: briefing.task,
+    group: briefing.group,
+    execution: {
+      plan_allows_repository_changes: true,
+      cli_mutates_repository: false,
+      note: 'このplanは修正可能な作業計画。ただしCLI自身は対象リポジトリのコードを変更しない。'
+    },
+    target_routes: briefing.target_routes,
+    target_files: briefing.target_files,
+    read_first_files: briefing.read_first_files,
+    recommended_strategy: briefing.recommended_strategy,
+    implementation_steps: briefing.implementation_steps,
+    verification_commands: buildVerificationCommands(suffix),
+    acceptance_criteria: briefing.acceptance_criteria,
+    rollback_considerations: [
+      '対象ファイル単位で差分を確認し、対象グループ外の変更が混ざっていないか確認する',
+      '認証境界を変更する場合は、public API と webhook API を巻き込んでいないか確認する',
+      '診断再実行後に新しいCritical/Highが増えた場合は、変更を戻せる粒度でコミットを分ける'
+    ],
+    guardrails: [
+      'このplanは修正可能な作業計画',
+      'CLI自身は対象リポジトリのコードを変更しない',
+      '実装修正は人間またはAIエージェントが別操作として行う',
+      '修正後はVibePro診断を再実行して完了条件を確認する'
+    ],
+    source_briefing: {
+      mode: briefing.mode,
+      generated_at: briefing.generated_at
+    }
+  };
+}
+
+function buildVerificationCommands(suffix) {
+  return [
+    {
+      command: 'npm test',
+      reason: '対象リポジトリの既存テストを確認する'
+    },
+    {
+      command: 'npm run lint',
+      reason: 'lintが定義されている場合に静的チェックを確認する'
+    },
+    {
+      command: `vibepro diagnose . --run-id verify-${suffix}`,
+      reason: 'VibePro診断で対象タスクの検出事項が改善したか確認する'
+    }
+  ];
+}
+
 function resolveBriefReadFirstFiles({ targetFiles, group, task }) {
   const selected = [];
   const seen = new Set();
@@ -233,6 +372,11 @@ function resolveBriefReadFirstFiles({ targetFiles, group, task }) {
     add(item);
   }
   return selected;
+}
+
+function getTaskArtifactDir(repoRoot, storyId, taskId, groupId = null) {
+  const baseDir = path.join(getWorkspaceDir(repoRoot), 'stories', safeSegment(storyId), 'tasks', safeSegment(taskId));
+  return groupId ? path.join(baseDir, 'groups', safeSegment(groupId)) : baseDir;
 }
 
 function findTask(tasks, taskId) {
