@@ -140,23 +140,27 @@ function buildFindings(evidence) {
       recommendation: '公開対象のルートに index.html を配置するか、配信設定の入口を明示する。'
     });
   }
-  if (applicableChecks.has('secrets') && evidence.static_site.secret_hits.length > 0) {
+  const gateSecretHits = filterGateRelevant(evidence.static_site.secret_hits);
+  const gateXssHits = filterGateRelevant(evidence.static_site.xss_risk_hits);
+  if (applicableChecks.has('secrets') && gateSecretHits.length > 0) {
+    const secretSummary = summarizeGateEffects(evidence.static_site.secret_hits);
     findings.push({
       id: 'VP-STATIC-002',
-      severity: 'Critical',
+      severity: secretSummary.block > 0 ? 'Critical' : 'High',
       category: 'セキュリティ',
       title: '秘密情報の可能性がある値が含まれている',
-      detail: `${evidence.static_site.secret_hits.length} 件の秘密情報候補を検出した。`,
+      detail: `${gateSecretHits.length} 件のgate対象の秘密情報候補を検出した。内訳: ${formatGateSummary(secretSummary)}。`,
       recommendation: '公開前に該当値を削除し、必要な値はサーバー側または安全な環境変数管理へ移す。'
     });
   }
-  if (applicableChecks.has('xss') && evidence.static_site.xss_risk_hits.length > 0) {
+  if (applicableChecks.has('xss') && gateXssHits.length > 0) {
+    const xssSummary = summarizeGateEffects(evidence.static_site.xss_risk_hits);
     findings.push({
       id: 'VP-STATIC-003',
       severity: 'High',
       category: 'セキュリティ',
       title: 'XSS につながり得る DOM 操作がある',
-      detail: `${evidence.static_site.xss_risk_hits.length} 件の危険なDOM操作候補を検出した。`,
+      detail: `${gateXssHits.length} 件のgate対象の危険なDOM操作候補を検出した。内訳: ${formatGateSummary(xssSummary)}。`,
       recommendation: 'ユーザー入力をHTMLとして挿入しない。必要な場合はサニタイズし、textContentなど安全な代替を使う。'
     });
   }
@@ -320,8 +324,8 @@ function renderSummary({ runId, evidence, findings }) {
 | graphify nodes | ${evidence.graphify.node_count} |
 | graphify edges | ${evidence.graphify.edge_count} |
 | 共通スキャン対象 | ${evidence.static_site.scanned_files}件 |
-| 秘密情報候補 | ${evidence.static_site.secret_hits.length}件 |
-| XSSリスク候補 | ${evidence.static_site.xss_risk_hits.length}件 |
+| 秘密情報候補 | ${formatRiskCount(evidence.static_site.secret_hits, evidence.static_site.risk_summary?.secret_hits)} |
+| XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
@@ -435,18 +439,18 @@ function renderStaticSiteCheck({ runId, staticSite, profile }) {
 | Run ID | ${runId} |
 | index.html | ${staticSite.has_index_html ? 'あり' : 'なし'} |
 | 走査ファイル | ${staticSite.scanned_files}件 |
-| 秘密情報候補 | ${staticSite.secret_hits.length}件 |
-| XSSリスク候補 | ${staticSite.xss_risk_hits.length}件 |
+| 秘密情報候補 | ${formatRiskCount(staticSite.secret_hits, staticSite.risk_summary?.secret_hits)} |
+| XSSリスク候補 | ${formatRiskCount(staticSite.xss_risk_hits, staticSite.risk_summary?.xss_risk_hits)} |
 | 外部リソース | ${staticSite.external_resources.length}件 |
 | 非静的ファイル候補 | ${staticSite.non_static_files.length}件 |
 
 ## 秘密情報候補
 
-${staticSite.secret_hits.length === 0 ? '- なし' : staticSite.secret_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} \`${hit.excerpt}\``).join('\n')}
+${staticSite.secret_hits.length === 0 ? '- なし' : staticSite.secret_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} source_kind=${hit.source_kind ?? '-'} confidence=${hit.confidence ?? '-'} gate_effect=${hit.gate_effect ?? '-'} \`${hit.excerpt}\``).join('\n')}
 
 ## XSSリスク候補
 
-${staticSite.xss_risk_hits.length === 0 ? '- なし' : staticSite.xss_risk_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} \`${hit.excerpt}\``).join('\n')}
+${staticSite.xss_risk_hits.length === 0 ? '- なし' : staticSite.xss_risk_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} source_kind=${hit.source_kind ?? '-'} confidence=${hit.confidence ?? '-'} gate_effect=${hit.gate_effect ?? '-'} \`${hit.excerpt}\``).join('\n')}
 
 ## 外部リソース
 
@@ -511,4 +515,27 @@ function formatInlineSummary(summary) {
   const entries = Object.entries(summary);
   if (entries.length === 0) return '-';
   return entries.map(([key, count]) => `${key}: ${count}件`).join(', ');
+}
+
+function filterGateRelevant(hits = []) {
+  return hits.filter((hit) => hit.gate_effect === 'block' || hit.gate_effect === 'review');
+}
+
+function summarizeGateEffects(hits = []) {
+  const summary = { block: 0, review: 0, info: 0 };
+  for (const hit of hits) {
+    if (hit.gate_effect === 'block') summary.block += 1;
+    else if (hit.gate_effect === 'review') summary.review += 1;
+    else summary.info += 1;
+  }
+  return summary;
+}
+
+function formatGateSummary(summary = {}) {
+  return `block: ${summary.block ?? 0}件, review: ${summary.review ?? 0}件, info: ${summary.info ?? 0}件`;
+}
+
+function formatRiskCount(hits = [], summary = null) {
+  const effectiveSummary = summary ?? summarizeGateEffects(hits);
+  return `${hits.length}件 (${formatGateSummary(effectiveSummary)})`;
 }

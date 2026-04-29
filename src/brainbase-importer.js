@@ -143,7 +143,9 @@ function buildImportState({ manifest, storyContext, latestRun, evidence }) {
         has_index_html: Boolean(staticSite.has_index_html),
         scanned_files: staticSite.scanned_files ?? 0,
         secret_hits_count: staticSite.secret_hits?.length ?? 0,
+        secret_hits_gate_summary: staticSite.risk_summary?.secret_hits ?? summarizeGateEffects(staticSite.secret_hits),
         xss_risk_hits_count: staticSite.xss_risk_hits?.length ?? 0,
+        xss_risk_hits_gate_summary: staticSite.risk_summary?.xss_risk_hits ?? summarizeGateEffects(staticSite.xss_risk_hits),
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
       },
@@ -191,8 +193,8 @@ function renderImportSummary(importState) {
 | API route | ${importState.signals.api_boundary.route_count}件 |
 | API境界risk hints | ${importState.signals.api_boundary.risk_hint_count}件 |
 | 共通スキャン対象 | ${importState.signals.static_site.scanned_files}件 |
-| 秘密情報候補 | ${importState.signals.static_site.secret_hits_count}件 |
-| XSSリスク候補 | ${importState.signals.static_site.xss_risk_hits_count}件 |
+| 秘密情報候補 | ${formatRiskCount(importState.signals.static_site.secret_hits_count, importState.signals.static_site.secret_hits_gate_summary)} |
+| XSSリスク候補 | ${formatRiskCount(importState.signals.static_site.xss_risk_hits_count, importState.signals.static_site.xss_risk_hits_gate_summary)} |
 | 検出事項 | ${importState.findings.length}件 |
 
 ## API境界
@@ -242,4 +244,18 @@ function renderActionCandidates(candidates) {
   return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
 |----|------------------|------|------|------|
 ${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+}
+
+function summarizeGateEffects(hits = []) {
+  const summary = { block: 0, review: 0, info: 0 };
+  for (const hit of hits ?? []) {
+    if (hit.gate_effect === 'block') summary.block += 1;
+    else if (hit.gate_effect === 'review') summary.review += 1;
+    else summary.info += 1;
+  }
+  return summary;
+}
+
+function formatRiskCount(count, summary = {}) {
+  return `${count}件 (block: ${summary.block ?? 0}件, review: ${summary.review ?? 0}件, info: ${summary.info ?? 0}件)`;
 }

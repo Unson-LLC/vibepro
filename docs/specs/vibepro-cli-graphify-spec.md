@@ -341,7 +341,14 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `static_site.has_index_html`
 - `static_site.scanned_files`
 - `static_site.secret_hits`
+- `static_site.secret_hits[].source_kind`
+- `static_site.secret_hits[].confidence`
+- `static_site.secret_hits[].gate_effect`
 - `static_site.xss_risk_hits`
+- `static_site.xss_risk_hits[].source_kind`
+- `static_site.xss_risk_hits[].confidence`
+- `static_site.xss_risk_hits[].gate_effect`
+- `static_site.risk_summary`
 - `static_site.external_resources`
 - `static_site.non_static_files`
 - `architecture_profile.system_type`

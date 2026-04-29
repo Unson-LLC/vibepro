@@ -61,12 +61,13 @@ const SECRET_PATTERNS = [
 ];
 const XSS_PATTERNS = [
   { kind: 'inner_html_assignment', pattern: /\.innerHTML\s*=/ },
-  { kind: 'eval_call', pattern: /\beval\s*\(/ },
+  { kind: 'eval_call', pattern: /(?<![\w$])eval\s*\(/ },
   { kind: 'new_function', pattern: /\bnew\s+Function\s*\(/ },
   { kind: 'document_write', pattern: /\bdocument\.write\s*\(/ }
 ];
 const EXTERNAL_RESOURCE_PATTERN =
   /<(script|link|iframe)\b[^>]*(?:src|href)=["'](https?:\/\/[^"']+)["'][^>]*>/gi;
+const GATE_EFFECTS = ['block', 'review', 'info'];
 
 export async function scanStaticSite(repoRoot) {
   const root = path.resolve(repoRoot);
@@ -97,6 +98,10 @@ export async function scanStaticSite(repoRoot) {
     }
   }
 
+  result.risk_summary = {
+    secret_hits: summarizeGateEffects(result.secret_hits),
+    xss_risk_hits: summarizeGateEffects(result.xss_risk_hits)
+  };
   return result;
 }
 
@@ -126,22 +131,26 @@ async function collectFiles(root, current = root) {
 
 function collectSecretHits(hits, file, lineNumber, line) {
   if (isEnvFile(file) && line.trim() && !line.trim().startsWith('#')) {
+    const risk = classifySecretRisk(file, line, 'env_file_value');
     hits.push({
       file,
       line: lineNumber,
       kind: 'env_file_value',
-      excerpt: maskSensitiveLine(line)
+      excerpt: maskSensitiveLine(line),
+      ...risk
     });
     return;
   }
 
   for (const { kind, pattern } of SECRET_PATTERNS) {
     if (!pattern.test(line)) continue;
+    const risk = classifySecretRisk(file, line, kind);
     hits.push({
       file,
       line: lineNumber,
       kind,
-      excerpt: maskSensitiveLine(line)
+      excerpt: maskSensitiveLine(line),
+      ...risk
     });
     pattern.lastIndex = 0;
     return;
@@ -156,11 +165,13 @@ function isEnvFile(file) {
 function collectXssHits(hits, file, lineNumber, line) {
   for (const { kind, pattern } of XSS_PATTERNS) {
     if (!pattern.test(line)) continue;
+    const risk = classifyXssRisk(file, line, kind);
     hits.push({
       file,
       line: lineNumber,
       kind,
-      excerpt: line.trim().slice(0, 160)
+      excerpt: line.trim().slice(0, 160),
+      ...risk
     });
   }
 }
@@ -187,4 +198,62 @@ function maskSensitiveLine(line) {
       if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value)) return `${prefix}${value}${suffix}`;
       return `${prefix}${value.slice(0, 4)}...${value.slice(-4)}${suffix}`;
     });
+}
+
+function classifySecretRisk(file, line, kind) {
+  const sourceKind = classifySourceKind(file);
+  if (sourceKind !== 'runtime_code') {
+    return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
+  }
+  if (isPlaceholderSecret(line) || isEnvironmentReference(line)) {
+    return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
+  }
+  if (kind === 'env_file_value' || kind === 'openai_key_like' || /\bsk-[A-Za-z0-9]{20,}\b/.test(line)) {
+    return { source_kind: sourceKind, confidence: 'high', gate_effect: 'block' };
+  }
+  return { source_kind: sourceKind, confidence: 'medium', gate_effect: 'review' };
+}
+
+function classifyXssRisk(file, line, kind) {
+  const sourceKind = classifySourceKind(file);
+  if (sourceKind !== 'runtime_code') {
+    return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
+  }
+  if (kind === 'inner_html_assignment' && /DOMPurify\.sanitize|sanitize\(/.test(line)) {
+    return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
+  }
+  return { source_kind: sourceKind, confidence: 'medium', gate_effect: 'review' };
+}
+
+function classifySourceKind(file) {
+  const normalized = file.toLowerCase();
+  const basename = path.basename(normalized);
+  if (normalized.startsWith('.claude/')) return 'agent_skill';
+  if (basename === '.env.example' || basename === '.env.sample' || basename === '.env.template') return 'example';
+  if (normalized.startsWith('docs/') || normalized.endsWith('.md')) return 'docs';
+  if (/(^|\/)(__tests__|tests?|spec|fixtures?)(\/|$)/.test(normalized)
+    || /\.(test|spec)\.(js|jsx|ts|tsx)$/.test(normalized)) {
+    return 'test';
+  }
+  if (/(^|\/)(examples?|samples?)(\/|$)/.test(normalized)) return 'example';
+  return 'runtime_code';
+}
+
+function isPlaceholderSecret(line) {
+  return /\b(example|dummy|placeholder|your[_-]?|xxxx|xxxxx|test[_-]?key)\b/i.test(line)
+    || /[xX]{8,}/.test(line)
+    || /<[^>]*(key|token|secret)[^>]*>/i.test(line);
+}
+
+function isEnvironmentReference(line) {
+  return /\bprocess\.env\b|\bos\.environ\b|\bos\.getenv\s*\(|\benv\.[A-Z0-9_]+\b/i.test(line);
+}
+
+function summarizeGateEffects(hits) {
+  const summary = Object.fromEntries(GATE_EFFECTS.map((effect) => [effect, 0]));
+  for (const hit of hits) {
+    const effect = GATE_EFFECTS.includes(hit.gate_effect) ? hit.gate_effect : 'info';
+    summary[effect] += 1;
+  }
+  return summary;
 }

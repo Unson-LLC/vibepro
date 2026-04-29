@@ -487,6 +487,14 @@ const apiKey = "sk-123456789012345678901234";
 document.body.innerHTML = location.hash;
 eval("1+1");
 `);
+  await mkdir(path.join(repo, '.claude', 'skills', 'security-patterns'), { recursive: true });
+  await writeFile(path.join(repo, '.claude', 'skills', 'security-patterns', 'SKILL.md'), `
+Example:
+const apiKey = process.env.EXAMPLE_API_KEY;
+element.innerHTML = userInput;
+`);
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'security.md'), 'Use API_KEY="st_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" in examples only.\n');
   await writeFile(path.join(repo, 'server.py'), 'print("not a static asset")\n');
   await runCli(['init', repo]);
   const graphDir = path.join(repo, 'graphify-out');
@@ -507,10 +515,26 @@ eval("1+1");
   assert.equal(evidence.static_site.has_index_html, true);
   assert.equal(evidence.static_site.secret_hits.length > 0, true);
   assert.equal(evidence.static_site.xss_risk_hits.length > 0, true);
+  const runtimeSecret = evidence.static_site.secret_hits.find((hit) => hit.file === 'app.js');
+  assert.equal(runtimeSecret.confidence, 'high');
+  assert.equal(runtimeSecret.source_kind, 'runtime_code');
+  assert.equal(runtimeSecret.gate_effect, 'block');
+  const skillSecret = evidence.static_site.secret_hits.find((hit) => hit.file === '.claude/skills/security-patterns/SKILL.md');
+  assert.equal(skillSecret.confidence, 'low');
+  assert.equal(skillSecret.source_kind, 'agent_skill');
+  assert.equal(skillSecret.gate_effect, 'info');
+  const skillXss = evidence.static_site.xss_risk_hits.find((hit) => hit.file === '.claude/skills/security-patterns/SKILL.md');
+  assert.equal(skillXss.confidence, 'low');
+  assert.equal(skillXss.gate_effect, 'info');
+  assert.equal(evidence.static_site.risk_summary.secret_hits.block, 1);
+  assert.equal(evidence.static_site.risk_summary.secret_hits.info, 2);
+  assert.equal(evidence.static_site.risk_summary.xss_risk_hits.review, 2);
+  assert.equal(evidence.static_site.risk_summary.xss_risk_hits.info, 1);
   assert.equal(evidence.static_site.external_resources.length > 0, true);
   assert.equal(evidence.static_site.non_static_files.some((item) => item.file === 'server.py'), true);
   assert.equal(evidence.gates[0].status, 'block');
   assert.match(await readFile(path.join(runDir, 'risk-register.md'), 'utf8'), /秘密情報/);
+  assert.match(await readFile(path.join(runDir, 'static-site-check-result.md'), 'utf8'), /gate_effect/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.static_site_check,

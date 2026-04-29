@@ -245,8 +245,8 @@ ${renderStoryApiBoundary(apiBoundary)}
 |------|------|
 | index.html | ${staticSite.has_index_html ? 'あり' : 'なし'} |
 | scanned files | ${staticSite.scanned_files ?? 0} |
-| secret hits | ${staticSite.secret_hits?.length ?? 0} |
-| XSS risk hits | ${staticSite.xss_risk_hits?.length ?? 0} |
+| secret hits | ${formatRiskCount(staticSite.secret_hits?.length ?? 0, staticSite.risk_summary?.secret_hits)} |
+| XSS risk hits | ${formatRiskCount(staticSite.xss_risk_hits?.length ?? 0, staticSite.risk_summary?.xss_risk_hits)} |
 | external resources | ${staticSite.external_resources?.length ?? 0} |
 | non static files | ${staticSite.non_static_files?.length ?? 0} |
 
@@ -296,6 +296,10 @@ function renderStoryActionCandidates(candidates) {
   return `| ID | 対応する検出事項 | 候補 | 対象 | 方針 |
 |----|------------------|------|------|------|
 ${candidates.map((candidate) => `| ${candidate.id} | ${candidate.finding_id} | ${candidate.title} | ${candidate.target_count}件 | ${candidate.execution_policy} / mutates_repository=${candidate.mutates_repository} |`).join('\n')}`;
+}
+
+function formatRiskCount(count, summary = {}) {
+  return `${count}件 (block: ${summary.block ?? 0}件, review: ${summary.review ?? 0}件, info: ${summary.info ?? 0}件)`;
 }
 
 function renderStoryArchitectureViews(views) {
