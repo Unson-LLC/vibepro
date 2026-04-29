@@ -6,6 +6,16 @@
   "bin": {
     "vibepro": "./bin/vibepro.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "docs/architecture/vibepro-cli-graphify-architecture.md",
+    "docs/frames/vibepro-operating-philosophy.md",
+    "docs/frames/vibepro-repo-local-control-plane-frame.md",
+    "docs/specs/vibepro-cli-graphify-spec.md",
+    "docs/static_site",
+    "README.md"
+  ],
   "scripts": {
     "test": "node --test"
   },
