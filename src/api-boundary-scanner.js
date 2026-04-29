@@ -15,7 +15,7 @@ export async function scanApiBoundary(repoRoot, architectureProfile) {
     const routePath = routePathFromFile(file);
     const content = await readTextIfExists(path.join(root, file));
     const classification = classifyRoute(routePath);
-    const protection = classifyProtection({ routePath, classification, middleware, content });
+    const protection = await classifyProtection({ repoRoot: root, file, routePath, classification, middleware, content });
     const riskHints = collectRiskHints({ routePath, classification, protection, content });
     routes.push({
       file,
@@ -55,7 +55,7 @@ function classifyRoute(routePath) {
   return 'public';
 }
 
-function classifyProtection({ routePath, classification, middleware, content }) {
+async function classifyProtection({ repoRoot, file, routePath, classification, middleware, content }) {
   const evidence = [];
   const code = stripComments(content);
   if (middleware.matchers.some((matcher) => routeMatchesMatcher(routePath, matcher))) {
@@ -63,6 +63,10 @@ function classifyProtection({ routePath, classification, middleware, content }) 
   }
   if (hasRouteAuthReference(code)) {
     evidence.push('route_auth_reference');
+  }
+  if (await hasImportedAuthHelperReference({ repoRoot, file, code })) {
+    evidence.push('route_auth_reference');
+    evidence.push('imported_auth_helper');
   }
   if (classification === 'webhook' && hasWebhookSignatureCheck(code)) {
     evidence.push('webhook_signature_check');
@@ -183,6 +187,68 @@ function hasAuthorizationHeaderGuard(content) {
   return hasSecretSource || checksBearer;
 }
 
+async function hasImportedAuthHelperReference({ repoRoot, file, code }) {
+  const imports = extractLocalImports(code);
+  for (const item of imports) {
+    if (!item.specifiers.some((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code))) {
+      continue;
+    }
+    const importedContent = await readImportedModule(repoRoot, file, item.source);
+    if (!importedContent) continue;
+    if (hasRouteAuthReference(stripComments(importedContent))) return true;
+  }
+  return false;
+}
+
+function extractLocalImports(content) {
+  const imports = [];
+  const namedImportPattern = /import\s*\{([^}]+)\}\s*from\s*['"]([^'"]+)['"]/g;
+  for (const match of content.matchAll(namedImportPattern)) {
+    imports.push({
+      specifiers: match[1]
+        .split(',')
+        .map((item) => item.trim().split(/\s+as\s+/i).pop())
+        .filter(Boolean),
+      source: match[2]
+    });
+  }
+  return imports.filter((item) => item.source.startsWith('@/') || item.source.startsWith('.'));
+}
+
+async function readImportedModule(repoRoot, importerFile, source) {
+  const candidates = resolveImportCandidates(repoRoot, importerFile, source);
+  return readTextFromCandidates(candidates);
+}
+
+function resolveImportCandidates(repoRoot, importerFile, source) {
+  const base = source.startsWith('@/')
+    ? path.join(repoRoot, 'src', source.slice(2))
+    : path.resolve(path.dirname(path.join(repoRoot, importerFile)), source);
+  return [
+    base,
+    `${base}.ts`,
+    `${base}.tsx`,
+    `${base}.js`,
+    `${base}.jsx`,
+    path.join(base, 'index.ts'),
+    path.join(base, 'index.tsx'),
+    path.join(base, 'index.js'),
+    path.join(base, 'index.jsx')
+  ];
+}
+
+async function readTextFromCandidates(candidates) {
+  for (const candidate of candidates) {
+    const content = await readTextIfExists(candidate);
+    if (content) return content;
+  }
+  return '';
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function stripComments(content) {
   return content
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -222,7 +288,7 @@ async function readTextIfExists(filePath) {
   try {
     return await readFile(filePath, 'utf8');
   } catch (error) {
-    if (error.code === 'ENOENT') return '';
+    if (error.code === 'ENOENT' || error.code === 'EISDIR') return '';
     throw error;
   }
 }

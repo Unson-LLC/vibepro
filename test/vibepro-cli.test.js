@@ -312,6 +312,49 @@ export async function GET(request) {
   assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
 });
 
+test('api boundary follows imported auth helper references for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'deals'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'deals', 'route.ts'), `
+import { getUser } from '@/lib/get-user';
+
+export async function GET() {
+  const user = await getUser();
+  if (!user || user.role !== 'ADMIN') {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'get-user'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'get-user.ts'), `
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+
+export async function getUser() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  return session?.user;
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: ['src/app/api/admin/deals/route.ts']
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  assert.equal(result.routes[0].protection.status, 'protected_by_route');
+  assert.equal(result.routes[0].protection.evidence.includes('route_auth_reference'), true);
+  assert.equal(result.routes[0].protection.evidence.includes('imported_auth_helper'), true);
+  assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
+});
+
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
