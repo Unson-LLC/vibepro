@@ -21,7 +21,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory);
   const findings = buildFindings(evidence);
   evidence.findings = findings;
-  evidence.action_candidates = buildActionCandidates(evidence, graphIndex);
+  evidence.action_candidates = await buildActionCandidates(root, evidence, graphIndex);
   attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
   evidence.gates = buildGates(findings);
 
@@ -238,7 +238,7 @@ function buildFindings(evidence) {
   return findings;
 }
 
-function buildActionCandidates(evidence, graphIndex) {
+async function buildActionCandidates(repoRoot, evidence, graphIndex) {
   const candidates = [];
   const apiBoundary = evidence.api_boundary;
   if (!apiBoundary) return candidates;
@@ -259,7 +259,8 @@ function buildActionCandidates(evidence, graphIndex) {
       recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
       route_examples: buildRouteExamples(privilegedUnprotected),
       graph_context: graphContext,
-      implementation_plan: buildImplementationPlanForAction({
+      implementation_plan: await buildImplementationPlanForAction({
+        repoRoot,
         actionId: 'VP-ACTION-API-001',
         routes: privilegedUnprotected,
         apiBoundary,
@@ -284,7 +285,8 @@ function buildActionCandidates(evidence, graphIndex) {
       recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
       route_examples: buildRouteExamples(debugExposed),
       graph_context: graphContext,
-      implementation_plan: buildImplementationPlanForAction({
+      implementation_plan: await buildImplementationPlanForAction({
+        repoRoot,
         actionId: 'VP-ACTION-API-002',
         routes: debugExposed,
         apiBoundary,
@@ -309,7 +311,8 @@ function buildActionCandidates(evidence, graphIndex) {
       recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
       route_examples: buildRouteExamples(webhooksWithoutSignature),
       graph_context: graphContext,
-      implementation_plan: buildImplementationPlanForAction({
+      implementation_plan: await buildImplementationPlanForAction({
+        repoRoot,
         actionId: 'VP-ACTION-API-003',
         routes: webhooksWithoutSignature,
         apiBoundary,
@@ -321,14 +324,223 @@ function buildActionCandidates(evidence, graphIndex) {
   return candidates;
 }
 
-function buildImplementationPlanForAction({ actionId, routes, apiBoundary, graphContext }) {
+async function buildImplementationPlanForAction({ repoRoot, actionId, routes, apiBoundary, graphContext }) {
+  const readFirstFiles = buildReadFirstFiles({ routes, apiBoundary, graphContext });
+  const preFixBriefing = await buildPreFixBriefingForAction({
+    repoRoot,
+    actionId,
+    routes,
+    apiBoundary,
+    graphContext,
+    readFirstFiles
+  });
   return {
     priority: resolveImplementationPriority({ actionId, routes, graphContext }),
     rationale: buildImplementationRationale({ routes, graphContext }),
-    read_first_files: buildReadFirstFiles({ routes, apiBoundary, graphContext }),
+    read_first_files: readFirstFiles,
     steps: buildImplementationSteps(actionId),
-    acceptance_criteria: buildAcceptanceCriteria(actionId)
+    acceptance_criteria: buildAcceptanceCriteria(actionId),
+    pre_fix_briefing: preFixBriefing
   };
+}
+
+async function buildPreFixBriefingForAction({ repoRoot, actionId, routes, apiBoundary, graphContext, readFirstFiles }) {
+  const codeSignals = await buildCodeSignalsForFiles(repoRoot, readFirstFiles.map((item) => item.file));
+  return {
+    current_boundary: buildCurrentBoundary({ apiBoundary, routes }),
+    auth_helpers: buildAuthHelpers(codeSignals),
+    target_routes: routes.map((route) => ({
+      file: route.file,
+      route_path: route.route_path,
+      methods: route.methods ?? [],
+      classification: route.classification,
+      protection_status: route.protection?.status ?? 'unknown',
+      protection_evidence: route.protection?.evidence ?? [],
+      risk_hints: route.risk_hints ?? []
+    })),
+    code_signals: codeSignals,
+    strategy_options: buildStrategyOptions({ actionId, routes, graphContext, codeSignals }),
+    recommended_strategy: buildRecommendedStrategy({ actionId, routes, apiBoundary, codeSignals })
+  };
+}
+
+function buildCurrentBoundary({ apiBoundary, routes }) {
+  return {
+    middleware: {
+      matchers: apiBoundary.middleware?.matchers ?? [],
+      excludes_api: (apiBoundary.middleware?.matchers ?? []).some((matcher) => matcher.includes('(?!api') || matcher.includes('(?!/api')),
+      files: apiBoundary.middleware?.evidence ?? []
+    },
+    route_protection: summarizeProtectionForRoutes(routes)
+  };
+}
+
+async function buildCodeSignalsForFiles(repoRoot, files) {
+  const signals = [];
+  for (const file of files) {
+    const content = await readTextIfExists(path.join(repoRoot, file));
+    if (!content) continue;
+    signals.push(extractCodeSignals(file, content));
+  }
+  return signals;
+}
+
+function extractCodeSignals(file, content) {
+  const code = stripCodeComments(content);
+  const functionNames = [
+    ...code.matchAll(/export\s+(?:async\s+)?function\s+([A-Za-z0-9_$]+)/g),
+    ...code.matchAll(/function\s+([A-Za-z0-9_$]+)/g),
+    ...code.matchAll(/export\s+const\s+([A-Za-z0-9_$]+)\s*=/g)
+  ].map((match) => match[1]);
+  const imports = [...code.matchAll(/import\s+[^'"]*['"]([^'"]+)['"]/g)]
+    .map((match) => match[1])
+    .slice(0, 20);
+  return {
+    file,
+    functions: [...new Set(functionNames)],
+    imports: [...new Set(imports)],
+    auth_references: extractMatches(code, [
+      /\b(auth\.api\.getSession|getServerSession|requireAuth|currentUser|getSession|validateSession|authenticateApiKey)\b/g,
+      /\b(session|token|authorization|Bearer)\b/gi
+    ]),
+    signature_references: extractMatches(code, [
+      /\b(signature|stripe-signature|verifyWebhook|verifySignature|constructEvent|webhooks\.verify|verify)\b/gi
+    ]),
+    env_guard_references: extractMatches(code, [
+      /\b(process\.env\.[A-Z0-9_]+|NODE_ENV)\b/g
+    ])
+  };
+}
+
+function stripCodeComments(content) {
+  return content
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+function extractMatches(content, patterns) {
+  const values = [];
+  for (const pattern of patterns) {
+    for (const match of content.matchAll(pattern)) {
+      values.push(match[1] ?? match[0]);
+    }
+  }
+  return [...new Set(values)].slice(0, 20);
+}
+
+function buildAuthHelpers(codeSignals) {
+  return codeSignals
+    .map((signal) => ({
+      file: signal.file,
+      functions: signal.functions.filter((name) => /auth|session|user|token|verify|signature/i.test(name)).slice(0, 10),
+      imports: signal.imports,
+      auth_references: signal.auth_references,
+      signature_references: signal.signature_references
+    }))
+    .filter((helper) => helper.functions.length > 0 || helper.auth_references.length > 0 || helper.signature_references.length > 0);
+}
+
+function buildStrategyOptions({ actionId, routes, graphContext, codeSignals }) {
+  const routeFiles = routes.map((route) => route.file);
+  const helperFiles = codeSignals
+    .filter((signal) => signal.auth_references.length > 0 || signal.signature_references.length > 0)
+    .map((signal) => signal.file);
+  if (actionId === 'VP-ACTION-API-001') {
+    return [
+      {
+        id: 'middleware-matcher',
+        label: '方針A: middleware matcherで対象APIを保護する',
+        target_count: routes.length,
+        candidate_files: uniqueFiles(['src/middleware.ts', ...routeFiles]),
+        benefits: ['保護境界を一箇所で管理できる', '対象routeが多い場合に変更点を集約できる'],
+        cautions: ['public APIやwebhookを巻き込まないmatcher設計が必要', '現在API全体を除外している場合は設計変更の影響が大きい']
+      },
+      {
+        id: 'route-level-auth',
+        label: '方針B: route-level authを各APIに追加する',
+        target_count: routes.length,
+        candidate_files: uniqueFiles([...routeFiles, ...helperFiles]),
+        benefits: ['routeごとに保護根拠が明確になる', 'webhook/public APIを巻き込みにくい'],
+        cautions: ['対象route数が多い場合は重複実装を避けるhelper化が必要']
+      }
+    ];
+  }
+  if (actionId === 'VP-ACTION-API-002') {
+    return [
+      {
+        id: 'delete-debug-routes',
+        label: '方針A: 本番不要なdebug/test APIを削除する',
+        target_count: routes.length,
+        candidate_files: uniqueFiles(routeFiles),
+        benefits: ['公開面を最小化できる', '保護漏れの再発リスクを減らせる'],
+        cautions: ['開発・検証運用で使っていないか確認が必要']
+      },
+      {
+        id: 'restrict-debug-routes',
+        label: '方針B: 残すrouteへ認証または環境制限を追加する',
+        target_count: routes.length,
+        candidate_files: uniqueFiles([...routeFiles, ...helperFiles]),
+        benefits: ['必要な運用APIを残せる', '段階的に公開面を狭められる'],
+        cautions: ['本番環境で無効化されることを診断で確認する必要がある']
+      }
+    ];
+  }
+  return [
+    {
+      id: 'provider-signature-verification',
+      label: '方針A: providerごとの署名検証をroute内に追加する',
+      target_count: routes.length,
+      candidate_files: uniqueFiles(routeFiles),
+      benefits: ['送信元仕様に沿った検証をrouteで明示できる', 'VibeProの署名検証検出に乗りやすい'],
+      cautions: ['providerごとの署名ヘッダーと再送仕様の確認が必要']
+    },
+    {
+      id: 'connect-existing-helper',
+      label: '方針B: 既存helperへ接続する',
+      target_count: routes.length,
+      candidate_files: uniqueFiles([...routeFiles, ...helperFiles]),
+      benefits: ['既存の検証ロジックを再利用できる', '重複実装を避けられる'],
+      cautions: ['helperが署名検証、リプレイ対策、許可イベント検証を満たすか確認が必要']
+    }
+  ];
+}
+
+function uniqueFiles(files) {
+  return [...new Set(files.filter(Boolean))];
+}
+
+function buildRecommendedStrategy({ actionId, routes, apiBoundary, codeSignals }) {
+  const excludesApi = (apiBoundary.middleware?.matchers ?? []).some((matcher) => matcher.includes('(?!api') || matcher.includes('(?!/api'));
+  const hasSignatureHelper = hasProviderSignatureHelper(routes, codeSignals);
+  if (actionId === 'VP-ACTION-API-001') {
+    return excludesApi
+      ? { id: 'route-level-auth', reason: '現在middlewareがAPI全体を除外しているため、webhook/public APIを巻き込まないroute-level authを優先する。' }
+      : { id: 'middleware-matcher', reason: 'middlewareでAPI保護境界を管理できる状態なので、対象routeが多い場合はmatcher集約を優先する。' };
+  }
+  if (actionId === 'VP-ACTION-API-002') {
+    return { id: 'delete-debug-routes', reason: 'debug/test APIは本番公開面から消すのが最も単純で再発しにくい。' };
+  }
+  return hasSignatureHelper
+    ? { id: 'connect-existing-helper', reason: 'graphify hubまたは読取対象に署名検証候補があるため、既存helper接続を優先する。' }
+    : { id: 'provider-signature-verification', reason: '既存の署名検証helperが確認できないため、providerごとの検証をrouteに明示する。' };
+}
+
+function hasProviderSignatureHelper(routes, codeSignals) {
+  const providers = routes
+    .map((route) => /\/api\/webhooks\/([^/]+)/.exec(route.route_path)?.[1])
+    .filter(Boolean);
+  if (providers.length === 0) {
+    return codeSignals.some((signal) => signal.signature_references.length > 0);
+  }
+  return codeSignals.some((signal) => {
+    const haystack = [
+      signal.file,
+      ...signal.functions,
+      ...signal.signature_references
+    ].join(' ').toLowerCase();
+    return signal.signature_references.length > 0
+      && providers.some((provider) => haystack.includes(provider.toLowerCase()));
+  });
 }
 
 function resolveImplementationPriority({ routes, graphContext }) {
@@ -913,10 +1125,30 @@ function renderImplementationPlan(candidate) {
 - 理由: ${plan.rationale}
 - 読むファイル: ${plan.read_first_files.length === 0 ? '-' : plan.read_first_files.map((item) => `${item.file}（${item.reason}）`).join(', ')}
 
+${renderPreFixBriefing(plan.pre_fix_briefing)}
+
 ${plan.steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
 
 完了条件:
 ${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
+}
+
+function renderPreFixBriefing(briefing) {
+  if (!briefing) return '';
+  return `修正前ブリーフィング:
+- 現在の境界: middleware excludes_api=${briefing.current_boundary?.middleware?.excludes_api ?? false}, route protection=${formatInlineSummary(briefing.current_boundary?.route_protection ?? {})}
+- 認証/署名候補: ${formatAuthHelpers(briefing.auth_helpers)}
+- 対象route: ${briefing.target_routes?.slice(0, 5).map((route) => `${route.route_path} (${route.methods.join(', ') || '-'})`).join(', ') || '-'}
+- 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
+- 方針: ${briefing.strategy_options?.map((option) => option.label).join(' / ') || '-'}`;
+}
+
+function formatAuthHelpers(helpers = []) {
+  if (helpers.length === 0) return '-';
+  return helpers
+    .slice(0, 5)
+    .map((helper) => `${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
+    .join(', ');
 }
 
 function renderApiProtectionStateTable(apiBoundary) {
@@ -965,4 +1197,13 @@ function formatGateSummary(summary = {}) {
 function formatRiskCount(hits = [], summary = null) {
   const effectiveSummary = summary ?? summarizeGateEffects(hits);
   return `${hits.length}件 (${formatGateSummary(effectiveSummary)})`;
+}
+
+async function readTextIfExists(filePath) {
+  try {
+    return await readFile(filePath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return '';
+    throw error;
+  }
 }

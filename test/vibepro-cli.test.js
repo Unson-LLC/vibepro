@@ -589,6 +589,15 @@ export async function GET(request) {
 `);
   await mkdir(path.join(repo, 'src', 'app', 'api', 'queue', 'status'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'queue', 'status', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
+  await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'queue.ts'), `
+export function requireQueueAuth(request) {
+  return request.headers.get('authorization');
+}
+export function verifyQueueSignature(signature) {
+  return Boolean(signature);
+}
+`);
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
   await writeFile(path.join(repo, 'src', 'middleware.ts'), `
 export const config = {
@@ -708,14 +717,23 @@ export function middleware() {}
   assert.equal(apiAction.implementation_plan.read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
   assert.match(apiAction.implementation_plan.steps[0].detail, /middleware matcher/);
   assert.match(apiAction.implementation_plan.acceptance_criteria.join('\n'), /保護根拠/);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.current_boundary.middleware.excludes_api, true);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.current_boundary.route_protection.excluded_by_middleware, 1);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.auth_helpers.some((helper) => helper.file === 'src/lib/queue.ts' && helper.functions.includes('requireQueueAuth')), true);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.target_routes[0].file, 'src/app/api/queue/status/route.ts');
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.target_routes[0].methods.includes('GET'), true);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.strategy_options.length, 2);
+  assert.equal(apiAction.implementation_plan.pre_fix_briefing.recommended_strategy.id, 'route-level-auth');
   const debugAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-002');
   assert.equal(debugAction.target_count, 1);
   assert.equal(debugAction.graph_context.matched_route_count, 1);
   assert.match(debugAction.implementation_plan.steps.map((step) => step.detail).join('\n'), /削除/);
+  assert.equal(debugAction.implementation_plan.pre_fix_briefing.recommended_strategy.id, 'delete-debug-routes');
   const webhookAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-003');
   assert.equal(webhookAction.target_count, 1);
   assert.equal(webhookAction.graph_context.matched_route_count, 1);
   assert.match(webhookAction.implementation_plan.acceptance_criteria.join('\n'), /署名検証/);
+  assert.equal(webhookAction.implementation_plan.pre_fix_briefing.recommended_strategy.id, 'provider-signature-verification');
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
@@ -736,6 +754,8 @@ export function middleware() {}
   assert.match(summary, /Impact/);
   assert.match(summary, /読むファイル/);
   assert.match(summary, /実装手順/);
+  assert.match(summary, /修正前ブリーフィング/);
+  assert.match(summary, /方針A/);
   assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
   const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
   assert.match(riskRegister, /## API境界の保護状態/);
@@ -752,6 +772,7 @@ export function middleware() {}
   assert.match(report, /## 次アクション候補/);
   assert.match(report, /Impact/);
   assert.match(report, /実装手順/);
+  assert.match(report, /修正前ブリーフィング/);
   await runCli(['brainbase', repo]);
   const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
@@ -761,6 +782,7 @@ export function middleware() {}
   assert.match(importSummary, /## 次アクション候補/);
   assert.match(importSummary, /Impact/);
   assert.match(importSummary, /読むファイル/);
+  assert.match(importSummary, /修正前ブリーフィング/);
   const importState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
@@ -772,6 +794,7 @@ export function middleware() {}
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
   assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
   assert.equal(importState.signals.action_candidates[0].implementation_plan.read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
+  assert.equal(importState.signals.action_candidates[0].implementation_plan.pre_fix_briefing.recommended_strategy.id, 'route-level-auth');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').graph_context.impact_score > 0, true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(

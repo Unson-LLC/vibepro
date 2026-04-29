@@ -269,7 +269,8 @@ function emptyImplementationPlan() {
     rationale: '',
     read_first_files: [],
     steps: [],
-    acceptance_criteria: []
+    acceptance_criteria: [],
+    pre_fix_briefing: null
   };
 }
 
@@ -324,10 +325,36 @@ function renderImplementationPlan(candidate) {
 - 理由: ${plan.rationale}
 - 読むファイル: ${plan.read_first_files.length === 0 ? '-' : plan.read_first_files.map((item) => `${item.file}（${item.reason}）`).join(', ')}
 
+${renderPreFixBriefing(plan.pre_fix_briefing)}
+
 ${plan.steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
 
 完了条件:
 ${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
+}
+
+function renderPreFixBriefing(briefing) {
+  if (!briefing) return '';
+  return `修正前ブリーフィング:
+- 現在の境界: middleware excludes_api=${briefing.current_boundary?.middleware?.excludes_api ?? false}, route protection=${formatInlineSummary(briefing.current_boundary?.route_protection ?? {})}
+- 認証/署名候補: ${formatAuthHelpers(briefing.auth_helpers)}
+- 対象route: ${briefing.target_routes?.slice(0, 5).map((route) => `${route.route_path} (${route.methods.join(', ') || '-'})`).join(', ') || '-'}
+- 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
+- 方針: ${briefing.strategy_options?.map((option) => option.label).join(' / ') || '-'}`;
+}
+
+function formatAuthHelpers(helpers = []) {
+  if (helpers.length === 0) return '-';
+  return helpers
+    .slice(0, 5)
+    .map((helper) => `${helper.file}${helper.functions.length > 0 ? `:${helper.functions.slice(0, 3).join(',')}` : ''}`)
+    .join(', ');
+}
+
+function formatInlineSummary(summary = {}) {
+  const entries = Object.entries(summary);
+  if (entries.length === 0) return '-';
+  return entries.map(([key, count]) => `${key}: ${count}件`).join(', ');
 }
 
 function summarizeGateEffects(hits = []) {

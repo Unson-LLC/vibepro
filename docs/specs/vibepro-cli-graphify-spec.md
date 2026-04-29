@@ -413,6 +413,13 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `steps[].title`
 - `steps[].detail`
 - `acceptance_criteria[]`: 完了判定
+- `pre_fix_briefing`: 修正前に読むべき現状整理。raw source code は保存しない
+- `pre_fix_briefing.current_boundary`: middleware matcher、API除外有無、route保護状態
+- `pre_fix_briefing.auth_helpers[]`: 認証・署名検証候補のfile、関数名、参照シグナル
+- `pre_fix_briefing.target_routes[]`: 対象routeのfile、path、methods、classification、protection、risk hints
+- `pre_fix_briefing.code_signals[]`: import、関数名、認証/署名/env guard参照の短いシグナル
+- `pre_fix_briefing.strategy_options[]`: 方針A/Bの候補、対象件数、変更候補ファイル、利点、注意点
+- `pre_fix_briefing.recommended_strategy`: 推奨方針IDと理由
 
 ## ゲート
 
