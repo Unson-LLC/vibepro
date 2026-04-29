@@ -56,30 +56,32 @@ function classifyRoute(routePath) {
 
 function classifyProtection({ routePath, classification, middleware, content }) {
   const evidence = [];
+  const code = stripComments(content);
   if (middleware.matchers.some((matcher) => routeMatchesMatcher(routePath, matcher))) {
     evidence.push('middleware_matcher');
   }
-  if (/\b(auth|session|currentUser|getServerSession|requireAuth)\b/i.test(content)) {
+  if (hasRouteAuthReference(code)) {
     evidence.push('route_auth_reference');
   }
-  if (classification === 'webhook' && hasWebhookSignatureCheck(content)) {
+  if (classification === 'webhook' && hasWebhookSignatureCheck(code)) {
     evidence.push('webhook_signature_check');
   }
+  const unknown = middleware.matchers.some((matcher) => isComplexMatcher(matcher));
   return {
-    status: evidence.length > 0 ? 'protected' : 'unprotected',
+    status: evidence.length > 0 ? 'protected' : unknown ? 'unknown' : 'unprotected',
     evidence
   };
 }
 
 function collectRiskHints({ classification, protection, content }) {
   const hints = [];
-  if (['admin', 'internal', 'cron_batch_queue'].includes(classification) && protection.status === 'unprotected') {
+  if (['admin', 'internal', 'cron_batch_queue'].includes(classification) && protection.status !== 'protected') {
     hints.push('privileged_route_unprotected');
   }
-  if (classification === 'debug' && protection.status === 'unprotected') {
+  if (classification === 'debug' && protection.status !== 'protected') {
     hints.push('debug_route_exposed');
   }
-  if (classification === 'webhook' && !hasWebhookSignatureCheck(content)) {
+  if (classification === 'webhook' && !hasWebhookSignatureCheck(stripComments(content))) {
     hints.push('webhook_signature_not_detected');
   }
   return hints;
@@ -131,16 +133,40 @@ function extractMatchers(content) {
 }
 
 function routeMatchesMatcher(routePath, matcher) {
+  if (isComplexMatcher(matcher)) return false;
   const normalized = matcher
     .replace(/\/:path\*$/, '')
-    .replace(/\(\.\*\)$/, '')
     .replace(/\/$/, '');
   if (!normalized) return false;
   return routePath === normalized || routePath.startsWith(`${normalized}/`);
 }
 
 function hasWebhookSignatureCheck(content) {
-  return /\b(signature|svix|stripe-signature|webhookSecret|verify)\b/i.test(content);
+  const readsSignatureHeader = /headers\s*\(\s*\)\.get\s*\(\s*['"`][^'"`]*signature[^'"`]*['"`]\s*\)/i.test(content)
+    || /\.headers\.get\s*\(\s*['"`][^'"`]*signature[^'"`]*['"`]\s*\)/i.test(content)
+    || /\bstripe-signature\b/i.test(content);
+  const verifiesSignature = /\b(constructEvent|webhooks\.verify|verifyWebhook|verifySignature|verify)\s*\(/i.test(content);
+  return readsSignatureHeader && verifiesSignature;
+}
+
+function hasRouteAuthReference(content) {
+  return /\b(getServerSession|requireAuth|currentUser|getSession|auth\.api\.getSession|validateSession)\s*\(/i.test(content)
+    || /\bcookies\s*\(\s*\)\.get\s*\(\s*['"`][^'"`]*(session|token)[^'"`]*['"`]\s*\)/i.test(content)
+    || /\.cookies\.get\s*\(\s*['"`][^'"`]*(session|token)[^'"`]*['"`]\s*\)/i.test(content);
+}
+
+function stripComments(content) {
+  return content
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+function isComplexMatcher(matcher) {
+  return matcher.includes('(?')
+    || matcher.includes('.*')
+    || matcher.includes('[')
+    || matcher.includes(']')
+    || matcher.includes('|');
 }
 
 function summarizeRoutes(routes) {

@@ -542,9 +542,15 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'webhook-monitor'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'webhook-monitor', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
   await mkdir(path.join(repo, 'src', 'app', 'api', 'debug-env'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'app', 'api', 'debug-env', 'route.ts'), 'export async function GET() { return Response.json(process.env); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'debug-env', 'route.ts'), `
+// auth debug endpoint: the word auth alone must not count as protection.
+export async function GET() { return Response.json(process.env); }
+`);
   await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'stripe'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhooks', 'stripe', 'route.ts'), 'export async function POST() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhooks', 'stripe', 'route.ts'), `
+// TODO: verify signature before handling this webhook.
+export async function POST() { return Response.json({ ok: true }); }
+`);
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
   await writeFile(path.join(repo, 'src', 'middleware.ts'), `
 export const config = {
@@ -617,9 +623,11 @@ export function middleware() {}
   const debugRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/debug-env');
   assert.equal(debugRoute.classification, 'debug');
   assert.equal(debugRoute.protection.status, 'unprotected');
+  assert.equal(debugRoute.protection.evidence.includes('route_auth_reference'), false);
   assert.equal(debugRoute.risk_hints.includes('debug_route_exposed'), true);
   const webhookRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/webhooks/stripe');
   assert.equal(webhookRoute.classification, 'webhook');
+  assert.equal(webhookRoute.protection.evidence.includes('webhook_signature_check'), false);
   assert.equal(webhookRoute.risk_hints.includes('webhook_signature_not_detected'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
