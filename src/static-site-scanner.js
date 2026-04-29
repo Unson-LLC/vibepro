@@ -86,7 +86,7 @@ export async function scanStaticSite(repoRoot) {
       result.non_static_files.push({ file: file.relativePath, extension: ext || '(none)' });
     }
 
-    if (!TEXT_EXTENSIONS.has(ext) && path.basename(file.relativePath) !== '.env') continue;
+    if (!TEXT_EXTENSIONS.has(ext) && !isEnvFile(file.relativePath)) continue;
 
     const content = await readFile(file.absolutePath, 'utf8');
     const lines = content.split(/\r?\n/);
@@ -125,7 +125,7 @@ async function collectFiles(root, current = root) {
 }
 
 function collectSecretHits(hits, file, lineNumber, line) {
-  if (path.basename(file) === '.env' && line.trim() && !line.trim().startsWith('#')) {
+  if (isEnvFile(file) && line.trim() && !line.trim().startsWith('#')) {
     hits.push({
       file,
       line: lineNumber,
@@ -146,6 +146,11 @@ function collectSecretHits(hits, file, lineNumber, line) {
     pattern.lastIndex = 0;
     return;
   }
+}
+
+function isEnvFile(file) {
+  const basename = path.basename(file);
+  return basename === '.env' || basename.startsWith('.env.');
 }
 
 function collectXssHits(hits, file, lineNumber, line) {

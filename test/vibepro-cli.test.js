@@ -525,8 +525,8 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
     dependencies: {
       next: '^15.0.0',
       react: '^19.0.0',
-      '@supabase/supabase-js': '^2.0.0',
-      'next-auth': '^5.0.0'
+      '@prisma/client': '^6.0.0',
+      pg: '^8.0.0'
     },
     devDependencies: {
       typescript: '^5.0.0',
@@ -536,6 +536,8 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   await mkdir(path.join(repo, 'src', 'app', 'api', 'companies'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>SalesTailor</main>; }\n');
+  await writeFile(path.join(repo, 'src', 'middleware.ts'), 'export function middleware() {}\n');
+  await writeFile(path.join(repo, '.env.local'), 'NEXTAUTH_SECRET=secret_1234567890abcdef\n');
   await writeFile(path.join(repo, 'vercel.json'), JSON.stringify({ framework: 'nextjs' }));
   await runCli(['init', repo]);
   const graphDir = path.join(repo, 'graphify-out');
@@ -558,12 +560,26 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
   assert.equal(evidence.architecture_profile.has_api_routes, true);
   assert.equal(evidence.architecture_profile.has_database, true);
   assert.equal(evidence.architecture_profile.has_auth, true);
+  assert.equal(evidence.architecture_profile.auth.includes('next-middleware'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('api-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('database-access'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
+  assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-001'), false);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-STATIC-004'), false);
+  const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
+  assert.doesNotMatch(summary, /静的サイト scanned files/);
+  assert.match(summary, /共通スキャン対象/);
+  const storyReport = await runCli(['story', 'report', repo]);
+  assert.equal(storyReport.exitCode, 0);
+  const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'story-report.md'), 'utf8');
+  assert.doesNotMatch(report, /## 静的サイト診断/);
+  assert.match(report, /## 共通スキャン/);
+  await runCli(['brainbase', repo]);
+  const importSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
+  assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
+  assert.match(importSummary, /共通スキャン対象/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,

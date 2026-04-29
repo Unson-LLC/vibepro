@@ -1,6 +1,6 @@
-# VibePro - 静的サイト診断
+# VibePro - リポジトリ診断CLI
 
-Vibe Coding で作成された静的サイトの公開前チェックを支援する
+Vibe Coding で作成されたリポジトリの公開前チェックを支援する
 
 ## VibePro CLI
 

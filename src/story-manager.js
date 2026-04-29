@@ -185,6 +185,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const artifacts = latestRun.artifacts ?? {};
+  const scanHeading = architectureProfile.app_type === 'static_site' ? '静的サイト診断' : '共通スキャン';
   return `# Story診断レポート
 
 ## Story
@@ -227,7 +228,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence }) {
 | 認証 | ${architectureProfile.has_auth ? (architectureProfile.auth ?? []).join(', ') || 'あり' : 'なし'} |
 | 適用チェック | ${applicableChecks.join(', ') || '-'} |
 
-## 静的サイト診断
+## ${scanHeading}
 
 | 項目 | 内容 |
 |------|------|

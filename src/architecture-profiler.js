@@ -34,6 +34,7 @@ export async function profileArchitecture(repoRoot) {
   const fileSet = new Set(files.map((file) => file.relativePath));
   const packageJson = await readPackageJson(root, fileSet);
   const dependencies = collectDependencies(packageJson);
+  const auth = detectAuth({ dependencies, fileSet });
   const profile = {
     app_type: detectAppType({ fileSet, dependencies }),
     rendering: detectRendering({ fileSet, dependencies }),
@@ -51,14 +52,8 @@ export async function profileArchitecture(repoRoot) {
       'sequelize'
     ]),
     database: detectDatabase(dependencies),
-    has_auth: hasAnyDependency(dependencies, [
-      '@auth/core',
-      '@clerk/nextjs',
-      '@supabase/supabase-js',
-      'next-auth',
-      'passport'
-    ]),
-    auth: detectAuth(dependencies),
+    has_auth: auth.length > 0,
+    auth,
     deployment: detectDeployment(fileSet),
     evidence: buildProfileEvidence({ fileSet, packageJson, dependencies })
   };
@@ -119,14 +114,32 @@ function detectDatabase(dependencies) {
   return database;
 }
 
-function detectAuth(dependencies) {
+function detectAuth({ dependencies, fileSet }) {
   const auth = [];
   if (dependencies.has('next-auth')) auth.push('next-auth');
   if (dependencies.has('@auth/core')) auth.push('authjs');
   if (dependencies.has('@clerk/nextjs')) auth.push('clerk');
   if (dependencies.has('@supabase/supabase-js')) auth.push('supabase-auth');
   if (dependencies.has('passport')) auth.push('passport');
+  if (hasNextMiddleware(fileSet)) auth.push('next-middleware');
+  if (hasNextAuthRoute(fileSet)) auth.push('next-auth-route');
   return auth;
+}
+
+function hasNextMiddleware(fileSet) {
+  return fileSet.has('middleware.ts')
+    || fileSet.has('middleware.js')
+    || fileSet.has('src/middleware.ts')
+    || fileSet.has('src/middleware.js');
+}
+
+function hasNextAuthRoute(fileSet) {
+  return [...fileSet].some((file) => (
+    /^app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+  ));
 }
 
 function detectDeployment(fileSet) {
@@ -165,6 +178,12 @@ function buildProfileEvidence({ fileSet, packageJson, dependencies }) {
   if (hasApiRoutes(fileSet)) {
     evidence.push({ kind: 'api_routes', file: findFirstApiRoute(fileSet), detail: 'API route detected' });
   }
+  if (hasNextMiddleware(fileSet)) {
+    evidence.push({ kind: 'auth_boundary', file: findNextMiddleware(fileSet), detail: 'Next.js middleware detected' });
+  }
+  if (hasNextAuthRoute(fileSet)) {
+    evidence.push({ kind: 'auth_boundary', file: findFirstNextAuthRoute(fileSet), detail: 'Auth route detected' });
+  }
   for (const deploymentFile of ['vercel.json', 'fly.toml', 'wrangler.toml', 'Dockerfile']) {
     if (fileSet.has(deploymentFile)) {
       evidence.push({ kind: 'deployment', file: deploymentFile, detail: deploymentFile });
@@ -179,6 +198,20 @@ function findFirstApiRoute(fileSet) {
     || /^src\/app\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
     || /^pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
     || /^src\/pages\/api\/.+\.(js|jsx|ts|tsx)$/.test(file)
+  )) ?? null;
+}
+
+function findNextMiddleware(fileSet) {
+  return ['middleware.ts', 'middleware.js', 'src/middleware.ts', 'src/middleware.js']
+    .find((file) => fileSet.has(file)) ?? null;
+}
+
+function findFirstNextAuthRoute(fileSet) {
+  return [...fileSet].find((file) => (
+    /^app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/app\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
+    || /^src\/pages\/api\/auth\/.+\.(js|jsx|ts|tsx)$/.test(file)
   )) ?? null;
 }
 

@@ -31,7 +31,11 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
   await writeFile(riskPath, renderRiskRegister({ runId, findings }));
-  await writeFile(staticSitePath, renderStaticSiteCheck({ runId, staticSite: evidence.static_site }));
+  await writeFile(staticSitePath, renderStaticSiteCheck({
+    runId,
+    staticSite: evidence.static_site,
+    profile: evidence.architecture_profile
+  }));
   await writeFile(architectureProfilePath, renderArchitectureProfile({
     runId,
     profile: evidence.architecture_profile,
@@ -195,7 +199,7 @@ function renderSummary({ runId, evidence, findings }) {
 | 適用チェック | ${applicableChecks.join(', ') || '-'} |
 | graphify nodes | ${evidence.graphify.node_count} |
 | graphify edges | ${evidence.graphify.edge_count} |
-| 静的サイト scanned files | ${evidence.static_site.scanned_files} |
+| 共通スキャン対象 | ${evidence.static_site.scanned_files}件 |
 | 秘密情報候補 | ${evidence.static_site.secret_hits.length}件 |
 | XSSリスク候補 | ${evidence.static_site.xss_risk_hits.length}件 |
 | 検出事項 | ${findings.length}件 |
@@ -235,8 +239,9 @@ ${profile.evidence.length === 0 ? '- なし' : profile.evidence.map((item) => `-
 `;
 }
 
-function renderStaticSiteCheck({ runId, staticSite }) {
-  return `# 静的サイト診断結果
+function renderStaticSiteCheck({ runId, staticSite, profile }) {
+  const title = profile?.app_type === 'static_site' ? '静的サイト診断結果' : '共通スキャン結果';
+  return `# ${title}
 
 | 項目 | 内容 |
 |------|------|

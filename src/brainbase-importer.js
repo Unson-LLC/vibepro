@@ -160,7 +160,7 @@ function renderImportSummary(importState) {
 | 適用チェック | ${importState.signals.check_catalog.applicable_checks.join(', ') || '-'} |
 | graphify nodes | ${importState.signals.graphify.node_count} |
 | graphify edges | ${importState.signals.graphify.edge_count} |
-| 静的サイト走査ファイル | ${importState.signals.static_site.scanned_files}件 |
+| 共通スキャン対象 | ${importState.signals.static_site.scanned_files}件 |
 | 秘密情報候補 | ${importState.signals.static_site.secret_hits_count}件 |
 | XSSリスク候補 | ${importState.signals.static_site.xss_risk_hits_count}件 |
 | 検出事項 | ${importState.findings.length}件 |
