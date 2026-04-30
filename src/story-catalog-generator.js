@@ -829,7 +829,7 @@ function codeStoryDefinitionFor(storyId, paths, docs = []) {
       source_synthesis: sourceSynthesis
     }
   };
-  return definitions[storyId] ?? storyDefinitionFor('unknown');
+  return applyStoryDocDefinition(definitions[storyId] ?? storyDefinitionFor('unknown', docs), docs, sourceSynthesis);
 }
 
 function storyDefinitionFor(storyId, docs = []) {
@@ -983,7 +983,7 @@ function storyDefinitionFor(storyId, docs = []) {
       source_synthesis: sourceSynthesis
     }
   };
-  return definitions[storyId] ?? {
+  const fallback = {
     who: '関係者',
     problem: '対象Storyの課題が文書から十分に特定できていない。',
     want: '根拠文書を読み直して、利用者、課題、成果を分けて定義したい。',
@@ -992,6 +992,7 @@ function storyDefinitionFor(storyId, docs = []) {
     acceptance_focus: ['利用者が明確である', '成果が明確である', '根拠文書と不明点が分かれている'],
     source_synthesis: sourceSynthesis
   };
+  return applyStoryDocDefinition(definitions[storyId] ?? fallback, docs, sourceSynthesis);
 }
 
 function normalizeStoryDefinition(definition, docs) {
@@ -1005,6 +1006,22 @@ function normalizeStoryDefinition(definition, docs) {
     business_value: normalized.business_value ?? fallback.business_value,
     acceptance_focus: Array.isArray(normalized.acceptance_focus) ? normalized.acceptance_focus : fallback.acceptance_focus,
     source_synthesis: Array.isArray(normalized.source_synthesis) ? normalized.source_synthesis : synthesizeSources(docs)
+  };
+}
+
+function applyStoryDocDefinition(baseDefinition, docs, sourceSynthesis) {
+  const storyDocDefinition = docs
+    .map((doc) => doc.story_definition)
+    .find((definition) => definition && Object.values(definition).some((value) => Array.isArray(value) ? value.length > 0 : Boolean(value)));
+  if (!storyDocDefinition) return baseDefinition;
+  return {
+    ...baseDefinition,
+    ...Object.fromEntries(Object.entries(storyDocDefinition)
+      .filter(([, value]) => !Array.isArray(value) && Boolean(value))),
+    acceptance_focus: storyDocDefinition.acceptance_focus?.length > 0
+      ? storyDocDefinition.acceptance_focus
+      : baseDefinition.acceptance_focus,
+    source_synthesis: sourceSynthesis
   };
 }
 
@@ -1353,10 +1370,15 @@ async function analyzeDocument(repoRoot, relativePath) {
     status: frontMatter.status ?? null,
     view: frontMatter.view ?? null,
     horizon: frontMatter.horizon ?? null,
+    period: frontMatter.period ?? null,
+    has_period: Object.prototype.hasOwnProperty.call(frontMatter, 'period'),
     priority: frontMatter.priority ?? null,
     points: frontMatter.points ?? null,
     created_at: frontMatter.created_at ?? null,
     updated_at: frontMatter.updated_at ?? null,
+    story_definition: relativePath.startsWith('docs/management/stories/')
+      ? parseStoryDocumentDefinition(content)
+      : null,
     business_signals: extractBusinessSignals(content),
     timeline_signals: extractTimelineSignals(content),
     has_acceptance_criteria: /受け入れ基準|Acceptance Criteria/i.test(content),
@@ -1366,9 +1388,10 @@ async function analyzeDocument(repoRoot, relativePath) {
 
 function inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived }) {
   const businessContext = summarizeBusinessContext(docs, codeDerived);
-  const viewPrediction = inferView(category, businessContext);
-  const horizonPrediction = inferHorizon(category, diagnosisBased);
-  const periodPrediction = inferPeriod({ horizon: horizonPrediction.value, docs, defaults, diagnosisBased });
+  const storyDocPlanning = findStoryDocPlanning(docs);
+  const viewPrediction = inferView(category, businessContext, storyDocPlanning);
+  const horizonPrediction = inferHorizon(category, diagnosisBased, storyDocPlanning);
+  const periodPrediction = inferPeriod({ horizon: horizonPrediction.value, docs, defaults, diagnosisBased, storyDocPlanning });
   const openQuestions = [];
 
   if (!periodPrediction.value) {
@@ -1417,7 +1440,14 @@ function inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived }
   };
 }
 
-function inferView(category, businessContext) {
+function inferView(category, businessContext, storyDocPlanning = {}) {
+  if (storyDocPlanning.view) {
+    return {
+      value: storyDocPlanning.view,
+      confidence: 'high',
+      rationale: 'Story正本frontmatterのviewを優先するため'
+    };
+  }
   if (category === 'product') {
     return {
       value: 'business',
@@ -1434,7 +1464,14 @@ function inferView(category, businessContext) {
   };
 }
 
-function inferHorizon(category, diagnosisBased) {
+function inferHorizon(category, diagnosisBased, storyDocPlanning = {}) {
+  if (storyDocPlanning.horizon) {
+    return {
+      value: storyDocPlanning.horizon,
+      confidence: 'high',
+      rationale: 'Story正本frontmatterのhorizonを優先するため'
+    };
+  }
   if (diagnosisBased) {
     return { value: 'sprint', confidence: 'medium', rationale: '診断Finding由来で短期修正候補のため' };
   }
@@ -1444,7 +1481,23 @@ function inferHorizon(category, diagnosisBased) {
   return { value: 'month', confidence: 'medium', rationale: '開発基盤・設計整理のStoryとして月次管理が妥当なため' };
 }
 
-function inferPeriod({ horizon, docs, defaults, diagnosisBased }) {
+function inferPeriod({ horizon, docs, defaults, diagnosisBased, storyDocPlanning = {} }) {
+  if (storyDocPlanning.hasPeriod && storyDocPlanning.period) {
+    return {
+      value: storyDocPlanning.period,
+      candidate: storyDocPlanning.period,
+      confidence: 'high',
+      rationale: 'Story正本frontmatterのperiodを優先するため'
+    };
+  }
+  if (storyDocPlanning.hasPeriod && !storyDocPlanning.period) {
+    return {
+      value: null,
+      candidate: null,
+      confidence: 'unknown',
+      rationale: 'Story正本frontmatterでperiodが未定義のため'
+    };
+  }
   if (diagnosisBased && defaults.period) {
     return {
       value: defaults.period,
@@ -1499,6 +1552,98 @@ function extractBusinessSignals(content) {
   return signals;
 }
 
+function parseStoryDocumentDefinition(content) {
+  const body = stripFrontMatter(content);
+  const sections = extractMarkdownSections(body);
+  const labeled = extractLabeledStoryFields(body);
+  const sectionValue = (...keys) => firstText(keys.map((key) => sections[key]));
+  const acceptanceSection = sectionValue('acceptance', 'completion');
+  return {
+    who: labeled.who ?? sectionValue('who'),
+    problem: labeled.problem ?? sectionValue('problem'),
+    want: labeled.want ?? sectionValue('want'),
+    outcome: labeled.outcome ?? sectionValue('outcome'),
+    business_value: labeled.business_value ?? sectionValue('business_value'),
+    acceptance_focus: labeled.acceptance_focus?.length > 0
+      ? labeled.acceptance_focus
+      : extractBulletItems(acceptanceSection)
+  };
+}
+
+function stripFrontMatter(content) {
+  return content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+}
+
+function extractMarkdownSections(content) {
+  const sections = {};
+  let currentKey = null;
+  let currentLines = [];
+  const flush = () => {
+    if (!currentKey) return;
+    sections[currentKey] = [...(sections[currentKey] ? [sections[currentKey]] : []), currentLines.join('\n').trim()]
+      .filter(Boolean)
+      .join('\n\n');
+  };
+  for (const line of content.split(/\r?\n/)) {
+    const heading = line.match(/^#{2,4}\s+(.+?)\s*$/);
+    if (heading) {
+      flush();
+      currentKey = normalizeStoryHeading(heading[1]);
+      currentLines = [];
+      continue;
+    }
+    if (currentKey) currentLines.push(line);
+  }
+  flush();
+  return sections;
+}
+
+function normalizeStoryHeading(heading) {
+  const normalized = heading.trim().toLowerCase();
+  if (/誰のため|だれのため|対象ユーザー|利用者|who|actor|user/.test(normalized)) return 'who';
+  if (/課題|問題|現状|problem|pain/.test(normalized)) return 'problem';
+  if (/望む変化|やりたいこと|したいこと|want|need/.test(normalized)) return 'want';
+  if (/成果|成功状態|outcome|goal/.test(normalized)) return 'outcome';
+  if (/事業価値|価値|効果|kpi|business/.test(normalized)) return 'business_value';
+  if (/受け入れ基準|受入基準|acceptance/.test(normalized)) return 'acceptance';
+  if (/完了条件|completion|done/.test(normalized)) return 'completion';
+  return null;
+}
+
+function extractLabeledStoryFields(content) {
+  const result = {};
+  for (const line of content.split(/\r?\n/)) {
+    const match = line.match(/^\s*(?:[-*]\s*)?(who|problem|want|outcome|business[_ ]value|acceptance|誰のため|課題|望む変化|成果|事業価値|受け入れ基準)\s*[:：]\s*(.+)$/i);
+    if (!match) continue;
+    const key = normalizeStoryHeading(match[1]);
+    if (!key) continue;
+    if (key === 'acceptance') {
+      result.acceptance_focus = [...(result.acceptance_focus ?? []), match[2].trim()];
+      continue;
+    }
+    result[key] = match[2].trim();
+  }
+  return result;
+}
+
+function firstText(items) {
+  const value = items.find((item) => typeof item === 'string' && item.trim().length > 0);
+  if (!value) return null;
+  return value
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .find((block) => block && !block.startsWith('- ') && !block.startsWith('* '))
+    ?? value.trim();
+}
+
+function extractBulletItems(text) {
+  if (!text) return [];
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim())
+    .filter(Boolean);
+}
+
 function extractTimelineSignals(content) {
   const signals = [];
   const dateMatches = content.match(/\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{4}年\d{1,2}月\d{1,2}日/g) ?? [];
@@ -1514,6 +1659,17 @@ function findExplicitManagementPeriod(docs) {
   const month = text.match(/\d{4}-\d{2}(?!-\d{2})/);
   if (month) return month[0];
   return null;
+}
+
+function findStoryDocPlanning(docs) {
+  const storyDoc = docs.find((doc) => doc.path?.startsWith('docs/management/stories/'));
+  if (!storyDoc) return {};
+  return {
+    view: storyDoc.view,
+    horizon: storyDoc.horizon,
+    period: storyDoc.period,
+    hasPeriod: storyDoc.has_period
+  };
 }
 
 function collectOpenQuestions(stories) {
@@ -1535,6 +1691,9 @@ function parseFrontMatter(content) {
 
 function normalizeFrontMatterValue(value) {
   const trimmed = value.trim();
+  if (trimmed === 'null') return null;
+  if (trimmed === 'true') return true;
+  if (trimmed === 'false') return false;
   if (/^\d+$/.test(trimmed)) return Number(trimmed);
   return trimmed.replace(/^["']|["']$/g, '');
 }

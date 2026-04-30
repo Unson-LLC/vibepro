@@ -441,13 +441,33 @@ story_id: story-product-hotel-detail-actions
 title: ホテル詳細と予約前アクションを成立させる
 status: active
 view: business
-horizon: quarter
-period: null
+horizon: month
+period: 2026Q2
 ---
 
 # ホテル詳細と予約前アクションを成立させる
 
 ホテル候補を比較して次の行動を決めたいユーザーが、詳細、プラン、問い合わせを同じ流れで判断できるようにする。
+
+## 誰のため
+
+宿泊先を比較しながら、予約前に問い合わせやプラン確認まで進みたい旅行者。
+
+## 課題
+
+ホテル詳細、料金、問い合わせ先が分断されると、旅行者は判断材料を集め直す必要があり予約前に離脱する。
+
+## 望む変化
+
+詳細画面からプラン確認、問い合わせ、外部遷移へ迷わず進める。
+
+## 成果
+
+ホテル詳細が予約前の比較判断と次アクションの中心になる。
+
+## 事業価値
+
+予約導線到達率と問い合わせ発生率の改善につながる。
 
 ## 受け入れ基準
 
@@ -465,9 +485,18 @@ period: null
 
   assert.equal(Boolean(story), true);
   assert.equal(story.source.paths.includes('docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
+  assert.equal(story.view, 'business');
+  assert.equal(story.horizon, 'month');
+  assert.equal(story.period, '2026Q2');
   assert.equal(story.derived.open_questions.some((item) => item.field === 'missing_spec'), false);
   assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
   assert.equal(story.derived.meaning.user_actor.confidence, 'high');
+  assert.equal(story.derived.story_definition.who, '宿泊先を比較しながら、予約前に問い合わせやプラン確認まで進みたい旅行者。');
+  assert.match(story.derived.story_definition.problem, /予約前に離脱/);
+  assert.match(story.derived.story_definition.want, /迷わず進める/);
+  assert.match(story.derived.story_definition.outcome, /次アクションの中心/);
+  assert.match(story.derived.story_definition.business_value, /問い合わせ発生率/);
+  assert.equal(story.derived.story_definition.acceptance_focus.includes('問い合わせや外部遷移の失敗時の扱いが決まる'), true);
   assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
 });
 
