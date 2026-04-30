@@ -270,6 +270,44 @@ test('pr prepare writes PR artifacts for the selected story', async () => {
   assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8'), /story-pr-prepare/);
 });
 
+test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: initial app']);
+  await git(repo, ['switch', '-c', 'fix/form-zero-cta']);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const fixed = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'fix: hide zero cta']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-bug-147']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.workspace.initialized, false);
+  assert.equal(result.result.preparation.workspace.artifact_location, 'temporary');
+  assert.equal(result.result.preparation.story.story_id, 'story-bug-147');
+  assert.equal(result.result.preparation.scope.status, 'reviewable');
+  assert.equal(result.result.artifacts.json.startsWith(repo), false);
+  await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+  await assert.rejects(stat(path.join(repo, '.vibeproignore')), { code: 'ENOENT' });
+  const status = await git(repo, ['status', '--porcelain']);
+  assert.equal(status.stdout, '');
+});
+
+test('pr prepare help does not run diagnostics or initialize the repository', async () => {
+  const repo = await makeRepo();
+
+  const result = await runCli(['pr', 'prepare', repo, '--help'], {
+    stdout: { write: () => {} }
+  });
+
+  assert.equal(result.exitCode, 0);
+  await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+});
+
 test('pr prepare recommends a clean branch for broad session diffs', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, '.claude', 'commands'), { recursive: true });

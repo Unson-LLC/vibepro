@@ -220,6 +220,10 @@ export async function runCli(argv, io = {}) {
     if (command === 'pr') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
       if (subcommand === 'prepare') {
         const result = await preparePullRequest(repoRoot, {
           storyId: getOption(rest, '--story-id'),

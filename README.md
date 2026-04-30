@@ -215,6 +215,8 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 └── pr-body.md
 ```
 
+対象リポジトリが未初期化の場合、成果物は一時ディレクトリに出力されます。この場合、`pr prepare` は対象リポジトリに `.vibepro/` や ignore 設定を作らないため、PR用のクリーンブランチを汚さずに差分診断だけを実行できます。
+
 `pr prepare` は以下を確認する。
 
 - 選択中Story

@@ -1,22 +1,25 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { normalizeActiveStories } from './story-manager.js';
-import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
 
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  await initWorkspace(root);
-
-  const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
-  const manifest = await readManifest(root);
-  const story = resolveStory(config, options.storyId);
   const git = await collectGitState(root, options);
+  const workspace = await readWorkspaceState(root);
+  const story = resolveStory(workspace.config, options.storyId, {
+    allowTransient: !workspace.initialized
+  });
+  const manifest = workspace.initialized
+    ? await readManifest(root)
+    : createTransientManifest();
   const fileGroups = groupChangedFiles(git.changed_files);
   const scope = assessScope({
     changedFiles: git.changed_files,
@@ -45,6 +48,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     schema_version: '0.1.0',
     story,
     created_at: new Date().toISOString(),
+    workspace: {
+      initialized: workspace.initialized,
+      artifact_location: workspace.initialized ? 'repo' : 'temporary'
+    },
     git,
     file_groups: fileGroups,
     scope,
@@ -53,7 +60,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     next_commands: nextCommands
   };
 
-  const prDir = path.join(getWorkspaceDir(root), 'pr', story.story_id);
+  const prRoot = workspace.initialized
+    ? getWorkspaceDir(root)
+    : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
+  const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.md');
@@ -65,16 +75,18 @@ export async function preparePullRequest(repoRoot, options = {}) {
     bodyPath: toWorkspaceRelative(root, bodyPath)
   }));
 
-  manifest.pr_preparations = {
-    ...(manifest.pr_preparations ?? {}),
-    [story.story_id]: {
-      latest_prepare: toWorkspaceRelative(root, jsonPath),
-      latest_report: toWorkspaceRelative(root, reportPath),
-      latest_pr_body: toWorkspaceRelative(root, bodyPath),
-      latest_prepare_generated_at: preparation.created_at
-    }
-  };
-  await writeManifest(root, manifest);
+  if (workspace.initialized) {
+    manifest.pr_preparations = {
+      ...(manifest.pr_preparations ?? {}),
+      [story.story_id]: {
+        latest_prepare: toWorkspaceRelative(root, jsonPath),
+        latest_report: toWorkspaceRelative(root, reportPath),
+        latest_pr_body: toWorkspaceRelative(root, bodyPath),
+        latest_prepare_generated_at: preparation.created_at
+      }
+    };
+    await writeManifest(root, manifest);
+  }
 
   return {
     story,
@@ -101,6 +113,7 @@ export function renderPrPrepareSummary(result) {
 | Commits | ${preparation.git.commits.length} |
 | Scope | ${preparation.scope.status} |
 | Recommended strategy | ${preparation.scope.recommended_strategy} |
+| Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
 
 ## Artifacts
 
@@ -108,6 +121,33 @@ export function renderPrPrepareSummary(result) {
 - pr_body: ${toDisplayPath(result.artifacts.pr_body)}
 - json: ${toDisplayPath(result.artifacts.json)}
 `;
+}
+
+async function readWorkspaceState(repoRoot) {
+  try {
+    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    return {
+      initialized: true,
+      config
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return {
+      initialized: false,
+      config: {
+        brainbase: {
+          stories: DEFAULT_BRAINBASE_STORIES
+        }
+      }
+    };
+  }
+}
+
+function createTransientManifest() {
+  return {
+    runs: [],
+    latest_run_by_story: {}
+  };
 }
 
 async function collectGitState(repoRoot, options) {
@@ -282,6 +322,7 @@ function renderPrepareReport({ preparation, bodyPath }) {
 | Changed files | ${preparation.git.changed_files.length} |
 | Commits | ${preparation.git.commits.length} |
 | Dirty files | ${preparation.git.dirty_files.length} |
+| Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
 
 ## Scope判定
 
@@ -338,12 +379,25 @@ ${Object.entries(fileGroups)
 `;
 }
 
-function resolveStory(config, storyId) {
+function resolveStory(config, storyId, options = {}) {
   const stories = normalizeActiveStories(config.brainbase?.stories);
   const targetStoryId = storyId ?? config.brainbase?.current_story_id ?? null;
   const story = targetStoryId
     ? stories.find((item) => item.story_id === targetStoryId)
     : stories[0];
+  if (!story && options.allowTransient && targetStoryId) {
+    return {
+      story_id: targetStoryId,
+      title: targetStoryId,
+      ssot: 'transient',
+      status: 'active',
+      horizon: null,
+      view: null,
+      period: null,
+      started_at: null,
+      due_at: null
+    };
+  }
   if (!story) throw new Error(`Story not found: ${targetStoryId}`);
   return story;
 }
