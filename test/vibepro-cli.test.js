@@ -221,6 +221,290 @@ test('story add list select and archive manage local stories without NocoDB', as
   assert.equal(afterArchive.brainbase.current_story_id, null);
 });
 
+test('story derive creates a repo-wide story catalog and local stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-existing', '--title', '既存Story', '--view', 'dev', '--period', '2026-W18']);
+  await mkdir(path.join(repo, 'docs', 'user_stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'webhook', 'stripe'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'map'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: {
+      next: '15.0.0',
+      react: '19.0.0',
+      'next-auth': '5.0.0',
+      '@prisma/client': '6.0.0'
+    },
+    devDependencies: {
+      '@playwright/test': '1.0.0',
+      vitest: '3.0.0'
+    }
+  }));
+  await writeFile(path.join(repo, 'docs', 'user_stories', 'active', 'US-001_map_search_display.md'), '# 地図検索でホテルを探せる\n');
+  await writeFile(path.join(repo, 'docs', 'features', 'shadow-call-system.md'), '# AI電話代行\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhook', 'stripe', 'route.ts'), 'export function POST() {}\n');
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'map', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'hotel', 'search.ts'), 'export function searchHotels() {}\n');
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.added_count > 0, true);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-us-001-map-search-display'), false);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-shadow-call-system'), false);
+  assert.equal(catalog.stories.some((story) => story.title.includes('仕様書')), false);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-hotel-map-search'), true);
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').source.paths.includes('docs/user_stories/active/US-001_map_search_display.md'), true);
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').view, 'business');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').category, 'product');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').horizon, 'quarter');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').period, null);
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.predictions.period.confidence, 'unknown');
+  assert.match(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.story_definition.who, /ホテルを探しているユーザー/);
+  assert.match(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.story_definition.problem, /画面の行き来/);
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.story_definition.acceptance_focus.some((item) => item.includes('検索条件に一致したホテルのみ')), true);
+  assert.match(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.meaning.value_hypothesis, /予約候補/);
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.meaning.user_actor.confidence, 'high');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.meaning.business_goal.confidence, 'low');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.meaning.workflow_position.stage, 'discovery');
+  assert.equal(catalog.stories.find((story) => story.story_id === 'story-product-hotel-map-search').derived.meaning.workflow_position.after.includes('story-product-hotel-detail-actions'), true);
+  assert.equal(catalog.open_questions.some((item) => item.story_id === 'story-product-hotel-map-search' && item.field === 'period'), true);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-shadow-call'), true);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-architecture-api-surface'), true);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-security-auth-boundary'), true);
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /# Story Map/);
+  assert.match(map, /## サマリー/);
+  assert.match(map, /## まず確認すること/);
+  assert.match(map, /## Story構造/);
+  assert.match(map, /## Storyカード/);
+  assert.match(map, /誰のため: ホテルを探しているユーザー/);
+  assert.match(map, /成果: ユーザーが場所、価格、ホテルの候補を同じ文脈で比較/);
+  assert.match(map, /意味づけ:/);
+  assert.match(map, /位置づけ: discovery/);
+  assert.match(map, /付録: 不明点/);
+  assert.match(map, /ホテル検索と地図体験を安定化する/);
+  assert.doesNotMatch(map, /AI電話代行 \| product/);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.brainbase.stories.some((story) => story.story_id === 'story-product-hotel-map-search'), true);
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-hotel-map-search').view, 'business');
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-hotel-map-search').category, 'product');
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-hotel-map-search').period, null);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.artifacts.story_catalog, '.vibepro/stories/story-catalog.json');
+  assert.equal(manifest.artifacts.story_map, '.vibepro/stories/story-map.md');
+});
+
+test('story map renders the generated catalog as markdown and json', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'features', 'article-cms-requirements.md'), '# 記事CMSを整える\n');
+  await runCli(['story', 'derive', repo]);
+  let markdown = '';
+  const markdownResult = await runCli(['story', 'map', repo], {
+    stdout: { write: (text) => { markdown += text; } }
+  });
+  let json = '';
+  const jsonResult = await runCli(['story', 'map', repo, '--json'], {
+    stdout: { write: (text) => { json += text; } }
+  });
+
+  assert.equal(markdownResult.exitCode, 0);
+  assert.match(markdown, /Story構造/);
+  assert.match(markdown, /Storyカード/);
+  assert.match(markdown, /記事とCMS運用を整理する/);
+  assert.match(markdown, /SEO流入/);
+  assert.match(markdown, /docs\/features\/article-cms-requirements\.md/);
+  assert.equal(jsonResult.exitCode, 0);
+  assert.equal(JSON.parse(json).stories.some((story) => story.story_id === 'story-product-article-cms-requirements'), false);
+  assert.equal(JSON.parse(json).stories.some((story) => story.story_id === 'story-product-content-cms'), true);
+  assert.match(JSON.parse(json).stories.find((story) => story.story_id === 'story-product-content-cms').derived.story_definition.business_value, /SEO流入/);
+});
+
+test('story plan creates execution priorities from the generated story map', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  await runCli(['story', 'derive', repo]);
+
+  let output = '';
+  const result = await runCli(['story', 'plan', repo, '--limit', '3'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+  let json = '';
+  const jsonResult = await runCli(['story', 'plan', repo, '--limit', '2', '--json'], {
+    stdout: { write: (text) => { json += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.match(output, /# Story Plan/);
+  assert.match(output, /Story実行計画/);
+  assert.match(output, /まず確認する質問/);
+  assert.match(output, /仕様\/Story根拠を復元する/);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  assert.equal(plan.priority_stories.length <= 2, true);
+  assert.equal(plan.questions.some((question) => question.field === 'missing_spec'), true);
+  assert.equal(plan.task_candidates.some((task) => task.id.endsWith('spec-recovery')), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.artifacts.story_plan, '.vibepro/stories/story-plan.json');
+  assert.equal(manifest.artifacts.story_plan_markdown, '.vibepro/stories/story-plan.md');
+  assert.equal(jsonResult.exitCode, 0);
+  assert.equal(JSON.parse(json).priority_stories.length > 0, true);
+  assert.equal(JSON.parse(json).priority_stories.length <= 2, true);
+
+  const createResult = await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-product-hotel-detail-actions']);
+  assert.equal(createResult.exitCode, 0);
+  assert.equal(createResult.result.created_story_count, 1);
+  assert.equal(createResult.result.created_task_count > 0, true);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_type, 'story_plan_candidate');
+  const listResult = await runCli(['task', 'list', repo, '--id', 'story-product-hotel-detail-actions']);
+  assert.equal(listResult.exitCode, 0);
+  assert.equal(listResult.result.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
+  const briefResult = await runCli(['task', 'brief', repo, '--id', 'story-product-hotel-detail-actions', '--task', 'story-product-hotel-detail-actions-spec-recovery']);
+  assert.equal(briefResult.exitCode, 0);
+  assert.equal(briefResult.result.artifacts.markdown, '.vibepro/stories/story-product-hotel-detail-actions/tasks/story-product-hotel-detail-actions-spec-recovery/briefing.md');
+});
+
+test('story derive creates stories for code surfaces that have no spec documents', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'settings'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'actions'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'crawlers'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'health'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'manager'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'settings', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'actions', 'hotel_actions.ts'), 'export async function getHotel() {}\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'crawlers', 'orchestrator.ts'), 'export async function crawl() {}\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'health', 'route.ts'), 'export function GET() {}\n');
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'manager', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'hotel_detail_file', source_file: 'src/components/hotel/HotelDetail.tsx', label: 'HotelDetail.tsx' },
+      { id: 'hotel_detail_component', source_file: 'src/components/hotel/HotelDetail.tsx', label: 'HotelDetail()' },
+      { id: 'manager_page_file', source_file: 'src/app/(app)/manager/page.tsx', label: 'page.tsx' },
+      { id: 'settings_page_file', source_file: 'src/app/(app)/settings/page.tsx', label: 'page.tsx' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const hotelDetailStory = catalog.stories.find((story) => story.story_id === 'story-product-hotel-detail-actions');
+  const crawlerStory = catalog.stories.find((story) => story.story_id === 'story-ops-hotel-data-ingestion');
+
+  assert.equal(Boolean(hotelDetailStory), true);
+  assert.equal(hotelDetailStory.source.type, 'code_surface');
+  assert.equal(hotelDetailStory.source.paths.includes('src/components/hotel/HotelDetail.tsx'), true);
+  assert.equal(hotelDetailStory.derived.open_questions.some((item) => item.field === 'missing_spec'), true);
+  assert.match(hotelDetailStory.derived.story_definition.problem, /ホテル詳細/);
+  assert.equal(hotelDetailStory.derived.meaning.user_actor.confidence, 'medium');
+  assert.equal(hotelDetailStory.derived.meaning.counter_evidence.some((item) => item.includes('コードからの逆算')), true);
+  assert.equal(hotelDetailStory.derived.meaning.evidence_by_type.code_evidence.includes('src/components/hotel/HotelDetail.tsx'), true);
+  assert.equal(Boolean(crawlerStory), true);
+  assert.equal(crawlerStory.source.type, 'code_surface');
+  assert.match(crawlerStory.derived.story_definition.business_value, /検索品質/);
+  assert.equal(catalog.coverage.status, 'warn');
+  assert.equal(catalog.coverage.uncovered.some((item) => item.path === 'src/app/(app)/manager/page.tsx'), false);
+  assert.equal(catalog.coverage.uncovered.some((item) => item.path === 'src/app/(app)/settings/page.tsx'), true);
+  assert.equal(catalog.coverage.uncovered.some((item) => item.path === 'src/components/hotel/HotelDetail.tsx'), false);
+
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /ホテル詳細と予約前アクションを成立させる/);
+  assert.match(map, /付録: Graph Coverage/);
+  assert.match(map, /src\/app\/\(app\)\/settings\/page\.tsx/);
+  assert.match(map, /コード上は機能面が確認できるが、対応するStory、要求、仕様書が見つからない/);
+});
+
+test('story derive does not create map search story from hotel detail code alone', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-hotel-detail-actions'), true);
+  assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-hotel-map-search'), false);
+});
+
+test('story coverage keeps all uncovered graph files in the catalog', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'unmapped'), { recursive: true });
+  const nodes = [];
+  for (let index = 0; index < 55; index += 1) {
+    await mkdir(path.join(repo, 'src', 'app', '(app)', 'unmapped', String(index)), { recursive: true });
+    const filePath = `src/app/(app)/unmapped/${index}/page.tsx`;
+    await writeFile(path.join(repo, filePath), 'export default function Page() { return null; }\n');
+    nodes.push({ id: `unmapped_${index}`, source_file: filePath, label: 'page.tsx' });
+  }
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.coverage.totals.uncovered_files, 55);
+  assert.equal(catalog.coverage.uncovered.length, 55);
+});
+
+test('story derive does not overwrite existing story ids', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-product-hotel-map-search', '--title', '既存の地図検索Story']);
+  await mkdir(path.join(repo, 'docs', 'user_stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'user_stories', 'active', 'US-001_map_search_display.md'), '# 新しいタイトル\n');
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.skipped_count >= 1, true);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-hotel-map-search').title, '既存の地図検索Story');
+});
+
+test('story derive archives obsolete document-index stories from previous derive runs', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-product-api-specification', '--title', 'Shadow Call API 仕様書']);
+  await runCli(['story', 'add', repo, '--id', 'story-product-us-001-map-search-display', '--title', 'US-001: MAP画面での詳細検索結果表示']);
+  await mkdir(path.join(repo, '.vibepro', 'stories'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'), JSON.stringify({
+    stories: [
+      { story_id: 'story-product-api-specification', title: 'Shadow Call API 仕様書' },
+      { story_id: 'story-product-us-001-map-search-display', title: 'US-001: MAP画面での詳細検索結果表示' }
+    ]
+  }));
+  await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'features', 'shadow-call-system.md'), '# Shadow Call システム仕様書\n');
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.archived_count, 2);
+  const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-api-specification').status, 'archived');
+  assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-us-001-map-search-display').status, 'archived');
+  assert.equal(config.brainbase.stories.some((story) => story.story_id === 'story-product-shadow-call' && story.status === 'active'), true);
+});
+
 test('brainbase import uses selected local story and excludes archived stories', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -280,14 +564,55 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.test.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'tests', 'unit', 'pr-prepare.test.js'), 'export const ok = true;\n');
+  await mkdir(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'tasks.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    generated_at: '2026-04-30T00:00:00.000Z',
+    story: {
+      story_id: 'story-pr-prepare',
+      title: 'PR準備'
+    },
+    source_run: {
+      run_id: 'story-plan',
+      gate_status: 'pass'
+    },
+    tasks: [{
+      id: 'TASK-001',
+      source_type: 'story_plan_candidate',
+      source_id: 'TASK-001',
+      title: 'PR準備Task',
+      priority: 'high',
+      status: 'todo',
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      target_count: 1,
+      target_files: ['src/feature/pr-prepare.js'],
+      target_routes: [],
+      target_groups: [],
+      read_first_files: [{ file: 'src/feature/pr-prepare.js', reason: '対象実装' }],
+      recommended_strategy: { id: 'task-driven-pr', reason: 'Task/HandoffとPRを接続する' },
+      implementation_steps: [],
+      acceptance_criteria: ['Task/HandoffがPR本文に入る'],
+      graph_context: null,
+      pre_fix_briefing: null
+    }]
+  }));
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'briefing.json'), JSON.stringify({ mode: 'pre_fix_briefing' }));
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'briefing.md'), '# briefing');
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'plan.json'), JSON.stringify({ mode: 'implementation_plan' }));
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'plan.md'), '# plan');
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'handoff.json'), JSON.stringify({ mode: 'implementation_handoff' }));
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'handoff.md'), '# handoff');
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001']);
 
   assert.equal(result.exitCode, 0);
   const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
+  assert.equal(prepare.task_context.task.id, 'TASK-001');
+  assert.equal(prepare.task_context.artifacts.handoff_json, '.vibepro/stories/story-pr-prepare/tasks/TASK-001/handoff.json');
   assert.equal(prepare.scope.status, 'reviewable');
   assert.equal(prepare.file_groups.story_docs.count, 1);
   assert.equal(prepare.file_groups.architecture_docs.count, 1);
@@ -302,16 +627,56 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
   assert.match(prBody, /## Gate DAG/);
+  assert.match(prBody, /## Task \/ Handoff/);
+  assert.match(prBody, /TASK-001 PR準備Task/);
+  assert.match(prBody, /Task\/HandoffがPR本文に入る/);
   assert.match(prBody, /E2E Gate: needs_setup \(required\) - `npx playwright test`/);
   assert.equal(prepare.pr_context.story_source.requirement_id, 'BUG-001');
   assert.equal(prepare.pr_context.verification_commands.length, 2);
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
   assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
+  assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
   assert.equal(gateDag.model, 'story-acceptance-verification-dag');
   assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
   assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.md'), 'utf8'), /VibePro Gate DAG/);
+
+  const createResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run']);
+  assert.equal(createResult.exitCode, 0);
+  assert.equal(createResult.result.execution.dry_run, true);
+  assert.equal(createResult.result.execution.task_context.task.id, 'TASK-001');
+  assert.equal(createResult.result.execution.base, 'main');
+  assert.equal(createResult.result.execution.head, 'feature/test-story');
+  assert.equal(createResult.result.execution.commands.some((command) => command.includes('git push -u origin feature/test-story')), true);
+  assert.equal(createResult.result.execution.commands.some((command) => command.includes('gh pr create')), true);
+  const prCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(prCreate.mode, 'pr_create');
+  assert.equal(prCreate.dry_run, true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
+
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-'));
+  const ghBin = path.join(binDir, 'gh');
+  await writeFile(ghBin, `#!/usr/bin/env node
+if (process.argv[2] !== 'pr' || process.argv[3] !== 'create') {
+  console.error('unexpected gh args: ' + process.argv.slice(2).join(' '));
+  process.exit(1);
+}
+console.log('https://github.example.test/unson/vibepro/pull/123');
+`);
+  await chmod(ghBin, 0o755);
+  const actualCreateResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--title', 'Test PR'], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(actualCreateResult.exitCode, 0);
+  assert.equal(actualCreateResult.result.execution.dry_run, false);
+  assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
+  assert.equal(actualCreateResult.result.execution.results.length, 2);
 });
 
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
@@ -710,6 +1075,20 @@ export function middleware() {}
   assert.match(handoffMarkdown, /protection=excluded_by_middleware/);
   assert.match(handoffMarkdown, /## 期待する修正後シグナル/);
   assert.match(handoffMarkdown, /npx vibepro/);
+
+  const executionResult = await runCli(['task', 'execute', repo, '--task', 'VP-TASK-API-001', '--group', 'queue', '--base', 'origin/develop']);
+  assert.equal(executionResult.exitCode, 0);
+  assert.equal(executionResult.result.execution.mode, 'task_execution_session');
+  assert.equal(executionResult.result.execution.execution.vibepro_mutates_repository, false);
+  assert.equal(executionResult.result.execution.execution.implementation_agent_may_mutate_repository, true);
+  assert.equal(executionResult.result.execution.commands.pr_prepare, 'npx vibepro pr prepare . --story-id story-vibepro-diagnosis-commercialization-roadmap --task VP-TASK-API-001 --group queue --base origin/develop');
+  assert.equal(executionResult.result.execution.commands.pr_create, 'npx vibepro pr create . --story-id story-vibepro-diagnosis-commercialization-roadmap --task VP-TASK-API-001 --group queue --base origin/develop');
+  assert.equal(executionResult.result.execution.phases.some((phase) => phase.id === 'prepare_pr'), true);
+  const executionJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'execution.json'));
+  assert.equal(executionJson.references.handoff_json, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/handoff.json');
+  const executionMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'execution.md'), 'utf8');
+  assert.match(executionMarkdown, /# 実行セッション/);
+  assert.match(executionMarkdown, /PR接続/);
 });
 
 test('diagnose binds runs to selected story and brainbase prefers the selected story run', async () => {

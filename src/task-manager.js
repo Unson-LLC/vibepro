@@ -1,9 +1,9 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getStoryStatus } from './story-manager.js';
-import { readStoryTasks } from './story-task-generator.js';
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { readStoryTasks, renderStoryTasks } from './story-task-generator.js';
+import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 export async function listTasks(repoRoot, options = {}) {
   const context = await loadTaskContext(repoRoot, options.storyId);
@@ -21,6 +21,53 @@ export async function showTask(repoRoot, options = {}) {
     story: context.story,
     source_run: context.taskState.source_run,
     task
+  };
+}
+
+export async function createTasksFromPlan(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const manifest = await readManifest(root);
+  const plan = await readStoryPlan(root);
+  const selectedCandidates = selectPlanTaskCandidates(plan, options);
+  if (selectedCandidates.length === 0) {
+    throw new Error('No task candidates found in story plan. Run `vibepro story plan` first.');
+  }
+  const byStory = groupBy(selectedCandidates, (candidate) => candidate.story_id);
+  const results = [];
+  for (const [storyId, candidates] of Object.entries(byStory)) {
+    const story = resolvePlanStory(plan, storyId);
+    const taskState = buildPlanTaskState({ story, plan, candidates });
+    const tasksDir = path.join(getWorkspaceDir(root), 'stories', storyId, 'tasks');
+    await mkdir(tasksDir, { recursive: true });
+    const jsonPath = path.join(tasksDir, 'tasks.json');
+    const markdownPath = path.join(tasksDir, 'tasks.md');
+    await writeFile(jsonPath, `${JSON.stringify(taskState, null, 2)}\n`);
+    await writeFile(markdownPath, renderStoryTasks(taskState));
+    manifest.stories = {
+      ...(manifest.stories ?? {}),
+      [storyId]: {
+        ...(manifest.stories?.[storyId] ?? {}),
+        plan_tasks_json: toWorkspaceRelative(root, jsonPath),
+        plan_tasks_markdown: toWorkspaceRelative(root, markdownPath),
+        plan_tasks_generated_at: taskState.generated_at,
+        plan_tasks_source: '.vibepro/stories/story-plan.json'
+      }
+    };
+    results.push({
+      story,
+      taskState,
+      artifacts: {
+        json: toWorkspaceRelative(root, jsonPath),
+        markdown: toWorkspaceRelative(root, markdownPath)
+      }
+    });
+  }
+  await writeManifest(root, manifest);
+  return {
+    source_plan: '.vibepro/stories/story-plan.json',
+    created_story_count: results.length,
+    created_task_count: results.reduce((sum, result) => sum + result.taskState.tasks.length, 0),
+    results
   };
 }
 
@@ -107,6 +154,108 @@ export async function createTaskHandoff(repoRoot, options = {}) {
   };
 }
 
+export async function createTaskExecution(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const handoffResult = await createTaskHandoff(root, options);
+  const task = handoffResult.task;
+  const group = handoffResult.group;
+  const story = handoffResult.story;
+  const suffix = group?.id ? `${task.id}-${group.id}` : task.id;
+  const prPrepareCommand = buildPrPrepareCommand({ story, task, group, baseRef: options.baseRef });
+  const prCreateCommand = buildPrCreateCommand({ story, task, group, baseRef: options.baseRef, dryRun: options.dryRunPrCreate });
+  const execution = {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    mode: 'task_execution_session',
+    story,
+    source_run: handoffResult.handoff.source_run,
+    task,
+    group,
+    execution: {
+      vibepro_mutates_repository: false,
+      implementation_agent_may_mutate_repository: true,
+      note: 'VibeProは実装の入口と証跡を管理する。対象コードの修正は人間またはAIエージェントが行う。'
+    },
+    references: {
+      handoff_json: handoffResult.artifacts.json,
+      handoff_markdown: handoffResult.artifacts.markdown,
+      plan_json: handoffResult.handoff.references.plan_json,
+      plan_markdown: handoffResult.handoff.references.plan_markdown,
+      briefing_json: handoffResult.handoff.references.briefing_json,
+      briefing_markdown: handoffResult.handoff.references.briefing_markdown
+    },
+    phases: [
+      {
+        id: 'read_context',
+        title: 'Handoffを読む',
+        required: true,
+        artifacts: [
+          handoffResult.artifacts.markdown,
+          handoffResult.handoff.references.plan_markdown,
+          handoffResult.handoff.references.briefing_markdown
+        ]
+      },
+      {
+        id: 'implement',
+        title: '対象範囲を実装する',
+        required: true,
+        target_files: handoffResult.handoff.target_files,
+        instructions: handoffResult.handoff.implementation_instructions,
+        prohibited_actions: handoffResult.handoff.prohibited_actions
+      },
+      {
+        id: 'verify',
+        title: '検証する',
+        required: true,
+        commands: handoffResult.handoff.verification_commands
+      },
+      {
+        id: 'prepare_pr',
+        title: 'PR準備物を生成する',
+        required: true,
+        command: prPrepareCommand
+      },
+      {
+        id: 'create_pr',
+        title: 'PRを作成する',
+        required: false,
+        command: prCreateCommand
+      }
+    ],
+    commands: {
+      pr_prepare: prPrepareCommand,
+      pr_create: prCreateCommand,
+      verify_diagnosis: `npx vibepro diagnose . --run-id verify-${suffix}`
+    },
+    completion_report_template: [
+      '変更したファイル',
+      '実行した検証コマンドと結果',
+      'vibepro pr prepare の成果物',
+      '作成したPR URL',
+      '未解決リスク'
+    ]
+  };
+  const executionDir = getTaskArtifactDir(root, story.story_id, task.id, group?.id);
+  await mkdir(executionDir, { recursive: true });
+  const jsonPath = path.join(executionDir, 'execution.json');
+  const markdownPath = path.join(executionDir, 'execution.md');
+  await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
+  await writeFile(markdownPath, renderTaskExecution(execution));
+  return {
+    story,
+    task,
+    group,
+    handoff: handoffResult.handoff,
+    execution,
+    artifacts: {
+      json: toWorkspaceRelative(root, jsonPath),
+      markdown: toWorkspaceRelative(root, markdownPath),
+      handoff_json: handoffResult.artifacts.json,
+      handoff_markdown: handoffResult.artifacts.markdown
+    }
+  };
+}
+
 export function renderTaskList(result) {
   const tasks = Array.isArray(result.tasks) ? result.tasks : [];
   return `# Story Tasks
@@ -122,6 +271,22 @@ export function renderTaskList(result) {
 | ID | 優先度 | 対象 | グループ | 状態 | タイトル |
 |----|--------|------|----------|------|----------|
 ${tasks.length === 0 ? '| - | - | - | - | - | - |' : tasks.map((task) => `| ${task.id} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${formatTargetGroups(task.target_groups)} | ${task.status} | ${task.title} |`).join('\n')}
+`;
+}
+
+export function renderTaskCreateSummary(result) {
+  const rows = result.results.flatMap((item) => item.taskState.tasks.map((task) => `| ${item.story.story_id} | ${task.id} | ${task.priority} | ${task.title} | ${item.artifacts.markdown} |`));
+  return `# Task Create
+
+| 項目 | 内容 |
+|------|------|
+| Source plan | ${result.source_plan} |
+| Story数 | ${result.created_story_count} |
+| Task数 | ${result.created_task_count} |
+
+| Story | Task | Priority | Title | Artifact |
+|-------|------|----------|-------|----------|
+${rows.length === 0 ? '| - | - | - | - | - |' : rows.join('\n')}
 `;
 }
 
@@ -332,15 +497,134 @@ ${handoff.completion_report_template.map((item) => `- ${item}`).join('\n')}
 `;
 }
 
+export function renderTaskExecution(execution) {
+  return `# 実行セッション
+
+## 前提
+
+- Story: ${execution.story.title} (${execution.story.story_id})
+- Task: ${execution.task.id} - ${execution.task.title}
+- Group: ${execution.group?.id ?? '-'}
+- VibeProは実装の入口と証跡を管理する
+- 対象コードの修正は人間またはAIエージェントが行う
+
+## 参照成果物
+
+- handoff.md: ${execution.references.handoff_markdown}
+- plan.md: ${execution.references.plan_markdown}
+- briefing.md: ${execution.references.briefing_markdown}
+
+## 実行フェーズ
+
+${execution.phases.map((phase, index) => `${index + 1}. ${phase.title}${phase.required ? ' (required)' : ' (optional)'}`).join('\n')}
+
+## 実装対象
+
+${formatList(execution.phases.find((phase) => phase.id === 'implement')?.target_files)}
+
+## 検証コマンド
+
+${execution.phases.find((phase) => phase.id === 'verify')?.commands.map((item) => `- \`${item.command}\`: ${item.reason}`).join('\n') ?? '- なし'}
+
+## PR接続
+
+- prepare: \`${execution.commands.pr_prepare}\`
+- create: \`${execution.commands.pr_create}\`
+
+## 完了報告テンプレート
+
+${formatList(execution.completion_report_template)}
+`;
+}
+
 async function loadTaskContext(repoRoot, storyId = null) {
   const root = path.resolve(repoRoot);
   const status = await getStoryStatus(root, storyId);
-  const taskState = await readStoryTasks(root, status.artifacts?.story_tasks_json);
+  const manifest = await readManifest(root);
+  const taskArtifact = status.artifacts?.story_tasks_json
+    ?? manifest.stories?.[status.story.story_id]?.plan_tasks_json
+    ?? toWorkspaceRelative(root, path.join(getWorkspaceDir(root), 'stories', status.story.story_id, 'tasks', 'tasks.json'));
+  const taskState = await readStoryTasks(root, taskArtifact);
   const tasks = Array.isArray(taskState.tasks) ? taskState.tasks : [];
   return {
     story: status.story,
     latestRun: status.latestRun,
     taskState,
+    tasks
+  };
+}
+
+async function readStoryPlan(repoRoot) {
+  const planPath = path.join(getWorkspaceDir(repoRoot), 'stories', 'story-plan.json');
+  try {
+    return JSON.parse(await readFile(planPath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error('Story plan not found. Run `vibepro story plan` first.');
+    }
+    throw error;
+  }
+}
+
+function selectPlanTaskCandidates(plan, options = {}) {
+  const storyId = options.storyId ?? null;
+  const taskId = options.taskId ?? null;
+  const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : null;
+  let candidates = Array.isArray(plan.task_candidates) ? plan.task_candidates : [];
+  if (storyId) candidates = candidates.filter((candidate) => candidate.story_id === storyId);
+  if (taskId) candidates = candidates.filter((candidate) => candidate.id === taskId);
+  return limit ? candidates.slice(0, limit) : candidates;
+}
+
+function resolvePlanStory(plan, storyId) {
+  const story = (plan.priority_stories ?? []).find((item) => item.story_id === storyId);
+  return {
+    story_id: storyId,
+    title: story?.title ?? storyId,
+    ssot: 'local',
+    status: 'active',
+    horizon: story?.horizon ?? null,
+    view: story?.view ?? null,
+    period: story?.period ?? null,
+    category: story?.category ?? null
+  };
+}
+
+function buildPlanTaskState({ story, plan, candidates }) {
+  const tasks = candidates.map((candidate, index) => ({
+    id: candidate.id,
+    source_type: candidate.source_type ?? 'story_plan_candidate',
+    source_id: candidate.id,
+    finding_id: null,
+    title: candidate.title,
+    priority: candidate.priority ?? 'medium',
+    status: 'todo',
+    order: (index + 1) * 10,
+    execution_policy: 'proposal_only',
+    mutates_repository: false,
+    target_count: Array.isArray(candidate.target_files) ? candidate.target_files.length : 0,
+    target_files: candidate.target_files ?? [],
+    target_routes: [],
+    target_groups: [],
+    read_first_files: candidate.read_first_files ?? [],
+    recommended_strategy: candidate.recommended_strategy ?? {
+      id: 'story-plan',
+      reason: candidate.purpose
+    },
+    implementation_steps: candidate.implementation_steps ?? [],
+    acceptance_criteria: candidate.acceptance ?? [],
+    graph_context: null,
+    pre_fix_briefing: null
+  }));
+  return {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    story,
+    source_run: {
+      run_id: plan.source?.run_id ?? 'story-plan',
+      gate_status: plan.summary?.coverage_status ?? 'unknown',
+      source_plan_generated_at: plan.generated_at
+    },
     tasks
   };
 }
@@ -523,6 +807,32 @@ function buildVerificationCommands(suffix) {
   ];
 }
 
+function buildPrPrepareCommand({ story, task, group, baseRef }) {
+  return [
+    'npx vibepro pr prepare .',
+    `--story-id ${shellQuote(story.story_id)}`,
+    `--task ${shellQuote(task.id)}`,
+    group?.id ? `--group ${shellQuote(group.id)}` : null,
+    baseRef ? `--base ${shellQuote(baseRef)}` : null
+  ].filter(Boolean).join(' ');
+}
+
+function buildPrCreateCommand({ story, task, group, baseRef, dryRun }) {
+  return [
+    'npx vibepro pr create .',
+    `--story-id ${shellQuote(story.story_id)}`,
+    `--task ${shellQuote(task.id)}`,
+    group?.id ? `--group ${shellQuote(group.id)}` : null,
+    baseRef ? `--base ${shellQuote(baseRef)}` : null,
+    dryRun ? '--dry-run' : null
+  ].filter(Boolean).join(' ');
+}
+
+function shellQuote(value) {
+  if (/^[a-zA-Z0-9_./:=@+-]+$/.test(value)) return value;
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
 function summarizeCurrentProtection(routes = []) {
   const routeStatuses = {};
   const riskHints = {};
@@ -631,6 +941,14 @@ function formatObjectSummary(value = {}) {
   const entries = Object.entries(value);
   if (entries.length === 0) return '-';
   return entries.map(([key, count]) => `${key}:${count}`).join(', ');
+}
+
+function groupBy(items, getKey) {
+  return items.reduce((groups, item) => {
+    const key = getKey(item);
+    groups[key] = [...(groups[key] ?? []), item];
+    return groups;
+  }, {});
 }
 
 function safeSegment(value) {

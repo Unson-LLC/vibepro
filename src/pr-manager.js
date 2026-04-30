@@ -20,6 +20,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const manifest = workspace.initialized
     ? await readManifest(root)
     : createTransientManifest();
+  const taskContext = workspace.initialized && options.taskId
+    ? await loadPrTaskContext(root, story.story_id, options.taskId, options.groupId)
+    : null;
   const fileGroups = groupChangedFiles(git.changed_files);
   const scope = assessScope({
     changedFiles: git.changed_files,
@@ -31,6 +34,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
   const prContext = await buildPrContext(root, {
     story,
+    taskContext,
     git,
     fileGroups,
     latestStoryRun
@@ -45,6 +49,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   });
   const prBody = renderPrBody({
     story,
+    taskContext,
     git,
     fileGroups,
     latestStoryRun,
@@ -63,6 +68,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     file_groups: fileGroups,
     scope,
     pr_context: prContext,
+    task_context: taskContext,
     latest_story_run: latestStoryRun,
     suggested_branch: suggestedBranch,
     next_commands: nextCommands
@@ -100,6 +106,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_prepare_generated_at: preparation.created_at
       }
     };
+    if (taskContext) {
+      manifest.pr_preparations[story.story_id].latest_task_id = taskContext.task.id;
+      manifest.pr_preparations[story.story_id].latest_task_handoff = taskContext.artifacts.handoff_json;
+    }
     await writeManifest(root, manifest);
   }
 
@@ -112,6 +122,82 @@ export async function preparePullRequest(repoRoot, options = {}) {
       pr_body: bodyPath,
       gate_dag: gateDagJsonPath,
       gate_dag_report: gateDagReportPath
+    }
+  };
+}
+
+export async function createPullRequest(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const prepareResult = await preparePullRequest(root, options);
+  const { preparation } = prepareResult;
+  const currentBranch = preparation.git.current_branch;
+  if (!currentBranch && !options.headBranch) {
+    throw new Error('Current branch could not be resolved. Specify --head or run on a named branch.');
+  }
+
+  const baseBranch = stripRemote(options.prBase ?? preparation.git.base_ref);
+  const headBranch = options.headBranch ?? currentBranch;
+  const title = options.title ?? buildPrTitle(preparation);
+  const bodyFile = prepareResult.artifacts.pr_body;
+  const warnings = [];
+  if (headBranch === baseBranch) {
+    warnings.push(`head branch equals base branch: ${headBranch}`);
+    if (!options.dryRun) {
+      throw new Error(`Cannot create PR because head branch equals base branch: ${headBranch}. Switch to a feature branch or specify --head.`);
+    }
+  }
+  const pushCommand = ['git', ['push', '-u', 'origin', headBranch]];
+  const ghCommand = ['gh', [
+    'pr',
+    'create',
+    '--base',
+    baseBranch,
+    '--head',
+    headBranch,
+    '--title',
+    title,
+    '--body-file',
+    bodyFile
+  ]];
+  const dryRun = options.dryRun === true;
+  const createdAt = new Date().toISOString();
+  const execution = {
+    schema_version: '0.1.0',
+    created_at: createdAt,
+    mode: 'pr_create',
+    dry_run: dryRun,
+    workspace_initialized: preparation.workspace.initialized,
+    story: preparation.story,
+    task_context: preparation.task_context,
+    base: baseBranch,
+    head: headBranch,
+    title,
+    body_file: toWorkspaceRelative(root, bodyFile),
+    prepare_artifacts: mapArtifactPaths(root, prepareResult.artifacts),
+    warnings,
+    commands: [
+      formatCommand(pushCommand),
+      formatCommand(ghCommand)
+    ],
+    results: []
+  };
+
+  if (!dryRun) {
+    const pushResult = await runCommand(root, pushCommand, options);
+    execution.results.push(pushResult);
+    const ghResult = await runCommand(root, ghCommand, options);
+    execution.results.push(ghResult);
+    execution.pr_url = extractPrUrl(ghResult.stdout);
+  }
+
+  const artifacts = await writePrCreateArtifacts(root, prepareResult, execution);
+  return {
+    story: preparation.story,
+    preparation,
+    execution,
+    artifacts: {
+      ...prepareResult.artifacts,
+      ...artifacts
     }
   };
 }
@@ -130,6 +216,7 @@ export function renderPrPrepareSummary(result) {
 | Commits | ${preparation.git.commits.length} |
 | Scope | ${preparation.scope.status} |
 | Recommended strategy | ${preparation.scope.recommended_strategy} |
+| Task | ${preparation.task_context?.task?.id ?? '-'} |
 | Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
 
 ## Artifacts
@@ -138,6 +225,46 @@ export function renderPrPrepareSummary(result) {
 - pr_body: ${toDisplayPath(result.artifacts.pr_body)}
 - gate_dag: ${toDisplayPath(result.artifacts.gate_dag)}
 - json: ${toDisplayPath(result.artifacts.json)}
+`;
+}
+
+export function renderPrCreateSummary(result) {
+  const { execution } = result;
+  const commandRows = execution.commands.map((command) => `- \`${command}\``).join('\n');
+  const resultRows = execution.results.length === 0
+    ? '- dry-run'
+    : execution.results.map((item) => `- ${item.command}: exit=${item.exit_code}`).join('\n');
+  const warnings = execution.warnings.length === 0
+    ? '- なし'
+    : execution.warnings.map((item) => `- ${item}`).join('\n');
+  return `# PR Create
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${execution.story.story_id} |
+| Task | ${execution.task_context?.task?.id ?? '-'} |
+| Base | ${execution.base} |
+| Head | ${execution.head} |
+| Title | ${execution.title} |
+| Dry run | ${execution.dry_run} |
+| PR URL | ${execution.pr_url ?? '-'} |
+
+## Commands
+
+${commandRows}
+
+## Results
+
+${resultRows}
+
+## Warnings
+
+${warnings}
+
+## Artifacts
+
+- pr_body: ${toDisplayPath(result.artifacts.pr_body)}
+- pr_create: ${toDisplayPath(result.artifacts.pr_create_json)}
 `;
 }
 
@@ -363,6 +490,10 @@ ${groups || '| - | 0 | - |'}
 
 ${preparation.git.commits.length === 0 ? '- なし' : preparation.git.commits.map((commit) => `- ${commit.sha} ${commit.message}`).join('\n')}
 
+## Task / Handoff
+
+${renderTaskContextReport(preparation.task_context)}
+
 ## PR本文ドラフト
 
 - ${bodyPath}
@@ -380,7 +511,20 @@ ${preparation.next_commands.map((command) => `- \`${command}\``).join('\n')}
 `;
 }
 
-function renderPrBody({ story, git, fileGroups, latestStoryRun, scope, prContext }) {
+function renderTaskContextReport(taskContext) {
+  if (!taskContext) return '- task指定なし';
+  return `| 項目 | 内容 |
+|------|------|
+| Task ID | ${taskContext.task.id} |
+| Task | ${taskContext.task.title} |
+| Priority | ${taskContext.task.priority ?? '-'} |
+| Source | ${taskContext.task.source_type ?? '-'} |
+| Handoff | ${taskContext.artifacts.handoff_json ?? '-'} |
+| Plan | ${taskContext.artifacts.plan_json ?? '-'} |
+| Briefing | ${taskContext.artifacts.briefing_json ?? '-'} |`;
+}
+
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext }) {
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
     ? '- 差分なし'
@@ -396,6 +540,7 @@ function renderPrBody({ story, git, fileGroups, latestStoryRun, scope, prContext
     ? '- 特記事項なし'
     : prContext.risks.map((item) => `- ${item}`).join('\n');
   const gateSummary = renderPrGateSummary(prContext.gate_dag);
+  const taskSection = renderPrTaskSection(taskContext);
 
   return `## 概要
 - Story: ${story.story_id} ${story.title}
@@ -414,6 +559,8 @@ ${source.background ? `- 背景: ${source.background}` : '- 背景: Story文書�
 - ADR: ${prContext.architecture_decision}
 - Scope: ${scope.status}
 ${scope.reasons.length === 0 ? '- Scope理由: current branchのままPR化可能' : scope.reasons.map((reason) => `- Scope理由: ${reason}`).join('\n')}
+
+${taskSection}
 
 ## 変更内容
 ${changeSummary}
@@ -446,7 +593,29 @@ ${risks}
 `;
 }
 
-async function buildPrContext(repoRoot, { story, git, fileGroups, latestStoryRun }) {
+function renderPrTaskSection(taskContext) {
+  if (!taskContext) return '## Task / Handoff\n- Task指定なし';
+  const acceptance = taskContext.task.acceptance_criteria?.length > 0
+    ? taskContext.task.acceptance_criteria.map((item) => `- ${item}`).join('\n')
+    : '- Task完了条件なし';
+  const references = Object.entries(taskContext.artifacts)
+    .filter(([, value]) => value)
+    .map(([key, value]) => `- ${key}: ${value}`)
+    .join('\n');
+  return `## Task / Handoff
+- Task: ${taskContext.task.id} ${taskContext.task.title}
+- Priority: ${taskContext.task.priority ?? '-'}
+- Source: ${taskContext.task.source_type ?? '-'}
+- Handoff: ${taskContext.artifacts.handoff_json ?? '-'}
+
+### Task完了条件
+${acceptance}
+
+### Task成果物
+${references || '- なし'}`;
+}
+
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   const primaryStory = pickPrimaryStory(storyDocs, story);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
@@ -457,7 +626,7 @@ async function buildPrContext(repoRoot, { story, git, fileGroups, latestStoryRun
     architecture_decision: architectureDecision,
     change_summary: buildChangeSummary(fileGroups),
     verification_commands: verificationCommands,
-    review_points: buildReviewPoints(fileGroups),
+    review_points: buildReviewPoints(fileGroups, taskContext),
     risks: []
   };
   context.gate_dag = buildGateDag({
@@ -468,7 +637,7 @@ async function buildPrContext(repoRoot, { story, git, fileGroups, latestStoryRun
     verificationCommands,
     e2eCommand
   });
-  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag });
+  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext });
   return context;
 }
 
@@ -819,8 +988,9 @@ async function detectPlaywrightCommand(repoRoot) {
   };
 }
 
-function buildReviewPoints(fileGroups) {
+function buildReviewPoints(fileGroups, taskContext = null) {
   const points = [];
+  if (taskContext) points.push(`Task/Handoffの完了条件と差分が対応しているか: ${taskContext.task.id}`);
   if (fileGroups.story_docs.count > 0) points.push('Storyの受け入れ基準と実装差分が対応しているか');
   if (fileGroups.architecture_docs.count === 0) points.push('ADRなしで既存設計の範囲に収まっているか');
   if (fileGroups.source.count > 0) points.push(`主要ソース差分: ${formatFileList(fileGroups.source.files)}`);
@@ -828,8 +998,11 @@ function buildReviewPoints(fileGroups) {
   return points;
 }
 
-function buildRisks({ git, fileGroups, latestStoryRun, gateDag }) {
+function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null }) {
   const risks = [];
+  if (taskContext && !taskContext.artifacts.handoff_json) {
+    risks.push('Task指定はあるがhandoff.jsonが見つからない');
+  }
   if (fileGroups.tests.count === 0 && fileGroups.source.count > 0) {
     risks.push('ソース差分に対するテスト差分がない');
   }
@@ -860,6 +1033,184 @@ function renderPrGateSummary(gateDag) {
     })
   ];
   return lines.join('\n');
+}
+
+async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
+  const taskState = await readTaskState(repoRoot, storyId);
+  const task = (taskState.tasks ?? []).find((item) => item.id === taskId);
+  if (!task) throw new Error(`Task not found for PR prepare: ${taskId}`);
+  const group = groupId ? (task.target_groups ?? []).find((item) => item.id === groupId) : null;
+  if (groupId && !group) throw new Error(`Target group not found for PR prepare: ${groupId}`);
+  const artifacts = resolveTaskArtifacts(repoRoot, storyId, taskId, groupId);
+  return {
+    story_id: storyId,
+    task,
+    group,
+    source_run: taskState.source_run ?? null,
+    artifacts: await filterExistingArtifacts(repoRoot, artifacts)
+  };
+}
+
+async function readTaskState(repoRoot, storyId) {
+  const taskPath = path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+  try {
+    return JSON.parse(await readFile(taskPath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error(`Task state not found for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}`);
+    }
+    throw error;
+  }
+}
+
+function resolveTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {
+  const baseDir = groupId
+    ? path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', taskId, 'groups', groupId)
+    : path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', taskId);
+  return {
+    briefing_json: toWorkspaceRelative(repoRoot, path.join(baseDir, 'briefing.json')),
+    briefing_markdown: toWorkspaceRelative(repoRoot, path.join(baseDir, 'briefing.md')),
+    plan_json: toWorkspaceRelative(repoRoot, path.join(baseDir, 'plan.json')),
+    plan_markdown: toWorkspaceRelative(repoRoot, path.join(baseDir, 'plan.md')),
+    handoff_json: toWorkspaceRelative(repoRoot, path.join(baseDir, 'handoff.json')),
+    handoff_markdown: toWorkspaceRelative(repoRoot, path.join(baseDir, 'handoff.md'))
+  };
+}
+
+async function filterExistingArtifacts(repoRoot, artifacts) {
+  const result = {};
+  for (const [key, value] of Object.entries(artifacts)) {
+    try {
+      await readFile(path.join(repoRoot, value), 'utf8');
+      result[key] = value;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      result[key] = null;
+    }
+  }
+  return result;
+}
+
+function buildPrTitle(preparation) {
+  const task = preparation.task_context?.task;
+  if (task) return `${task.id} ${task.title}`;
+  return `${preparation.story.story_id} ${preparation.story.title}`;
+}
+
+function mapArtifactPaths(repoRoot, artifacts) {
+  return Object.fromEntries(
+    Object.entries(artifacts).map(([key, value]) => [key, toWorkspaceRelative(repoRoot, value)])
+  );
+}
+
+function formatCommand(command) {
+  const [bin, args] = command;
+  return [bin, ...args.map(shellQuote)].join(' ');
+}
+
+function shellQuote(value) {
+  if (/^[a-zA-Z0-9_./:=@+-]+$/.test(value)) return value;
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+async function runCommand(repoRoot, command, options = {}) {
+  const [bin, args] = command;
+  const startedAt = new Date().toISOString();
+  const result = await execFileAsync(bin, args, {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: options.env
+  });
+  return {
+    command: formatCommand(command),
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+    exit_code: 0,
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim()
+  };
+}
+
+function extractPrUrl(stdout) {
+  const match = stdout.match(/https?:\/\/\S+/);
+  return match?.[0] ?? null;
+}
+
+async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
+  const prDir = path.dirname(prepareResult.artifacts.json);
+  const jsonPath = path.join(prDir, 'pr-create.json');
+  const reportPath = path.join(prDir, 'pr-create.md');
+  await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
+  await writeFile(reportPath, renderPrCreateReport(execution));
+
+  if (!execution.workspace_initialized) {
+    return {
+      pr_create_json: jsonPath,
+      pr_create_report: reportPath
+    };
+  }
+
+  try {
+    const manifest = await readManifest(repoRoot);
+    manifest.pr_creations = {
+      ...(manifest.pr_creations ?? {}),
+      [execution.story.story_id]: {
+        latest_create: toWorkspaceRelative(repoRoot, jsonPath),
+        latest_report: toWorkspaceRelative(repoRoot, reportPath),
+        latest_pr_url: execution.pr_url ?? null,
+        latest_created_at: execution.created_at,
+        latest_dry_run: execution.dry_run
+      }
+    };
+    await writeManifest(repoRoot, manifest);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+
+  return {
+    pr_create_json: jsonPath,
+    pr_create_report: reportPath
+  };
+}
+
+function renderPrCreateReport(execution) {
+  const commands = execution.commands.map((command) => `- \`${command}\``).join('\n');
+  const results = execution.results.length === 0
+    ? '- dry-run'
+    : execution.results.map((item) => [
+      `- \`${item.command}\`: exit=${item.exit_code}`,
+      item.stdout ? `  - stdout: ${item.stdout}` : null,
+      item.stderr ? `  - stderr: ${item.stderr}` : null
+    ].filter(Boolean).join('\n')).join('\n');
+  const warnings = execution.warnings.length === 0
+    ? '- なし'
+    : execution.warnings.map((item) => `- ${item}`).join('\n');
+  return `# VibePro PR Create
+
+## Summary
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${execution.story.story_id} |
+| Task | ${execution.task_context?.task?.id ?? '-'} |
+| Base | ${execution.base} |
+| Head | ${execution.head} |
+| Title | ${execution.title} |
+| Dry run | ${execution.dry_run} |
+| PR URL | ${execution.pr_url ?? '-'} |
+
+## Commands
+
+${commands}
+
+## Results
+
+${results}
+
+## Warnings
+
+${warnings}
+`;
 }
 
 function renderGateDagReport(gateDag) {

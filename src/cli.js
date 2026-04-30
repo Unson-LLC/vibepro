@@ -4,25 +4,34 @@ import { runDiagnosis } from './diagnostic-engine.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
-import { preparePullRequest, renderPrPrepareSummary } from './pr-manager.js';
+import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import {
   addStory,
   archiveStory,
+  createStoryPlan,
   createStoryReport,
+  deriveStories,
   getStoryRuns,
   getStoryStatus,
   listStories,
   parseStoryOptions,
+  readStoryMap,
+  renderStoryDeriveSummary,
   renderStoryList,
+  renderStoryMap,
+  renderStoryPlanSummary,
   renderStoryRuns,
   renderStoryStatus,
   selectStory
 } from './story-manager.js';
 import {
+  createTasksFromPlan,
   createTaskBrief,
+  createTaskExecution,
   createTaskHandoff,
   createTaskPlan,
   listTasks,
+  renderTaskCreateSummary,
   renderTaskList,
   renderTaskShow,
   showTask
@@ -43,12 +52,18 @@ Usage:
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
+  vibepro story derive [repo] [--from-run <run-id>] [--json]
+  vibepro story map [repo] [--json]
+  vibepro story plan [repo] [--limit <n>] [--json]
   vibepro task list [repo] [--id <story-id>]
+  vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
   vibepro task show [repo] --task <task-id> [--id <story-id>]
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro pr prepare [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--json]
+  vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -166,6 +181,27 @@ export async function runCli(argv, io = {}) {
         write(stdout, renderStoryStatus(status));
         return { exitCode: 0, command, subcommand, result: { story, graph, diagnosis, report, status } };
       }
+      if (subcommand === 'derive') {
+        const result = await deriveStories(repoRoot, { fromRunId: getOption(rest, '--from-run') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.catalog, null, 2)}\n`
+          : renderStoryDeriveSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'map') {
+        const result = await readStoryMap(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.catalog, null, 2)}\n`
+          : renderStoryMap(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'plan') {
+        const result = await createStoryPlan(repoRoot, { limit: parseNumberOption(rest, '--limit') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.plan, null, 2)}\n`
+          : renderStoryPlanSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };
     }
@@ -173,6 +209,18 @@ export async function runCli(argv, io = {}) {
     if (command === 'task') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'create') {
+        if (!hasFlag(rest, '--from-plan')) throw new Error('task create currently requires --from-plan');
+        const result = await createTasksFromPlan(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          taskId: getOption(rest, '--task'),
+          limit: parseNumberOption(rest, '--limit')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderTaskCreateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'list') {
         const result = await listTasks(repoRoot, { storyId: getOption(rest, '--id') });
         write(stdout, renderTaskList(result));
@@ -213,6 +261,19 @@ export async function runCli(argv, io = {}) {
         write(stdout, `Task handoff created: ${result.artifacts.markdown}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'execute') {
+        const result = await createTaskExecution(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
+          baseRef: getOption(rest, '--base'),
+          dryRunPrCreate: hasFlag(rest, '--dry-run-pr')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.execution, null, 2)}\n`
+          : `Task execution session created: ${result.artifacts.markdown}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };
     }
@@ -227,6 +288,8 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'prepare') {
         const result = await preparePullRequest(repoRoot, {
           storyId: getOption(rest, '--story-id'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
           baseRef: getOption(rest, '--base'),
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
@@ -235,6 +298,26 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
           : renderPrPrepareSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'create') {
+        const result = await createPullRequest(repoRoot, {
+          storyId: getOption(rest, '--story-id'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
+          baseRef: getOption(rest, '--base'),
+          prBase: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head-ref'),
+          headBranch: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          title: getOption(rest, '--title'),
+          dryRun: hasFlag(rest, '--dry-run'),
+          env: io.env
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.execution, null, 2)}\n`
+          : renderPrCreateSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown pr command: ${subcommand ?? ''}\n\n${HELP}`);

@@ -1,0 +1,2057 @@
+import { readdir, readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
+
+import { profileArchitecture } from './architecture-profiler.js';
+import { getWorkspaceDir } from './workspace.js';
+
+const IGNORED_DIRS = new Set([
+  '.git',
+  '.next',
+  '.turbo',
+  '.vibepro',
+  'coverage',
+  'dist',
+  'graphify-out',
+  'node_modules'
+]);
+
+const DOCUMENT_SIGNAL_GROUPS = [
+  { key: 'hotelMapSearch', pattern: /(map[_-]search|map[_-]marker|search-results|REQ-001_map_search_integration|US-001_map_search_display|\/map\/)/i },
+  { key: 'shadowCall', pattern: /(shadow-call|premium-ai-phone-feature)/i },
+  { key: 'premiumBilling', pattern: /(stripe|premium|subscription|billing|webhook-secret)/i },
+  { key: 'contentCms', pattern: /(article|cms|sanity)/i },
+  { key: 'onboarding', pattern: /(onboarding|profile|preferences)/i },
+  { key: 'notification', pattern: /notification/i },
+  { key: 'architecture', pattern: /^docs\/architecture\// },
+  { key: 'requirements', pattern: /^docs\/requirements\// },
+  { key: 'userStories', pattern: /^docs\/user_stories\// },
+  { key: 'features', pattern: /^docs\/features\// }
+];
+
+const CODE_SURFACE_SIGNATURES = [
+  {
+    id: 'story-product-hotel-detail-actions',
+    title: 'ホテル詳細と予約前アクションを成立させる',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/detail\//,
+      /^src\/components\/hotel\//,
+      /^src\/components\/common\/hotel_card\//,
+      /^src\/lib\/services\/hotel\//,
+      /^src\/lib\/services\/search\/detailSearchService\.ts$/,
+      /^src\/lib\/actions\/hotel_actions\.ts$/,
+      /^src\/lib\/actions\/lead_actions\.ts$/,
+      /^src\/lib\/actions\/post_actions\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-auth-account-access',
+    title: '認証とアカウント利用開始を成立させる',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(auth\)\//,
+      /^src\/components\/auth\//,
+      /^src\/lib\/auth/,
+      /^src\/lib\/services\/user\//,
+      /^src\/lib\/actions\/user_actions\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-profile-personalization',
+    title: 'プロフィール情報で体験を個人化する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/profile\//,
+      /^src\/components\/modals\/HotelSelectModal\.tsx$/,
+      /^src\/lib\/services\/profile\//,
+      /^src\/lib\/actions\/profile_action\.ts$/,
+      /^src\/lib\/constants\/profile-errors\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-match-recommendation',
+    title: 'ユーザーに合うホテル候補を提案する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/match\//,
+      /^src\/lib\/services\/search\/matchSearchService\.ts$/,
+      /^src\/lib\/constants\/search\.ts$/,
+      /^src\/lib\/actions\/search_actions\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-timeline-posts',
+    title: '投稿とタイムラインでホテル体験を共有する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/timeline\//,
+      /^src\/lib\/services\/timeline\//,
+      /^src\/lib\/services\/post\//,
+      /^src\/lib\/services\/reply\//,
+      /^src\/lib\/services\/image\//,
+      /^src\/lib\/actions\/timeline_actions\.ts$/,
+      /^src\/lib\/actions\/post_actions\.ts$/,
+      /^src\/lib\/constants\/post\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-public-discovery-seo',
+    title: '公開検索とSEO導線で新規流入を受け止める',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(public\)\/search-results\//,
+      /^src\/app\/\(public\)\/articles\//,
+      /^src\/app\/\(public\)\/sitemap/,
+      /^src\/app\/robots\.ts$/,
+      /^src\/app\/sitemap\.ts$/,
+      /^src\/lib\/services\/analytics\//,
+      /^src\/components\/common\/StructuredData\.tsx$/
+    ]
+  },
+  {
+    id: 'story-product-waiting-list-contact',
+    title: '問い合わせと待機リストで利用意向を受け取る',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(public\)\/contact\//,
+      /^src\/app\/\(public\)\/waiting-list\//,
+      /^src\/lib\/constants\/contact\.ts$/
+    ]
+  },
+  {
+    id: 'story-product-qr-offline-access',
+    title: 'QRとオフライン状態でも利用接点を維持する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/_components\/QRCodeScanner\.tsx$/,
+      /^src\/app\/\(public\)\/offline\//,
+      /^src\/components\/common\/ModernServiceWorkerManager\.tsx$/,
+      /^src\/components\/ui\/UpdateNotification\.tsx$/
+    ]
+  },
+  {
+    id: 'story-product-app-navigation-shell',
+    title: 'アプリの起点とナビゲーションを成立させる',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/home\//,
+      /^src\/components\/layout\//
+    ]
+  },
+  {
+    id: 'story-ops-hotel-data-ingestion',
+    title: 'ホテル情報の収集と更新を運用可能にする',
+    category: 'ops',
+    patterns: [
+      /^src\/lib\/crawlers\//,
+      /^src\/lib\/api\/backend\.ts$/,
+      /^src\/lib\/services\/vercel-blob-service\.ts$/,
+      /^src\/app\/\(app\)\/manager\/crawl-result\//,
+      /^src\/app\/\(app\)\/manager\//,
+      /^src\/app\/api\/hotels\/register\/route\.ts$/,
+      /^src\/app\/api\/regenerate-sitemap\/route\.ts$/
+    ]
+  },
+  {
+    id: 'story-ops-observability-health',
+    title: '稼働状態と運用確認を見える化する',
+    category: 'ops',
+    patterns: [
+      /^src\/app\/api\/health\/route\.ts$/,
+      /^src\/app\/api\/heartbeat\/route\.ts$/,
+      /^src\/app\/api\/vercel\/route\.ts$/,
+      /^src\/app\/log_viewer\//,
+      /^src\/components\/common\/ConsoleLogger\.tsx$/
+    ]
+  },
+  {
+    id: 'story-product-legal-trust-pages',
+    title: '公開ページで利用前の信頼と規約確認を支える',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(public\)\/privacy/,
+      /^src\/app\/\(public\)\/terms\//,
+      /^src\/app\/\(public\)\/tos\//,
+      /^src\/app\/\(public\)\/tokusho\//,
+      /^src\/app\/\(public\)\/guidelines\//
+    ]
+  }
+];
+
+const STORY_COVERAGE_PATTERNS = {
+  'story-product-hotel-map-search': [
+    /^src\/app\/\(app\)\/map\//,
+    /^src\/app\/\(app\)\/_components\/GoogleMapsScript\.tsx$/,
+    /^src\/app\/\(app\)\/_components\/search\//,
+    /^src\/app\/\(app\)\/_components\/PlanDisplay\.tsx$/,
+    /^src\/app\/\(public\)\/search-results\//,
+    /^src\/app\/api\/map-search\//,
+    /^src\/app\/api\/hotels\/search\//,
+    /^src\/lib\/services\/search\/mapSearchService\.ts$/,
+    /^src\/lib\/actions\/search_actions\.ts$/,
+    /^src\/lib\/constants\/map\.ts$/,
+    /^src\/lib\/constants\/search\.ts$/
+  ],
+  'story-product-shadow-call': [
+    /^src\/app\/\(app\)\/_components\/shadow_call\//,
+    /^src\/app\/shadow-call\//,
+    /^src\/app\/api\/twilio/,
+    /^src\/app\/api\/openai\/webhook\/response\/route\.ts$/,
+    /^src\/app\/api\/shadow-call\//,
+    /^src\/lib\/services\/shadow-call\//,
+    /^src\/components\/hotel\/HotelDetailWithShadowCall\.tsx$/,
+    /^src\/components\/hotel\/PhoneMethodDialog\.tsx$/
+  ],
+  'story-product-premium-billing': [
+    /^src\/app\/\(public\)\/premium\//,
+    /^src\/app\/api\/stripe\//,
+    /^src\/app\/api\/webhook\/stripe\/route\.ts$/,
+    /^src\/components\/ui\/button\/ButtonCheckout\.tsx$/,
+    /^src\/components\/ui\/button\/CheckoutErrorModal\.tsx$/,
+    /^src\/components\/ui\/modal\/PremiumRequiredModal\.tsx$/,
+    /^src\/lib\/constants\/stripe\.ts$/
+  ],
+  'story-product-content-cms': [
+    /^src\/app\/\(public\)\/articles\//,
+    /^src\/app\/api\/articles\//,
+    /^src\/lib\/article/,
+    /^src\/lib\/article-utils\.ts$/,
+    /^src\/lib\/actions\/sanity_hotel_search\.ts$/
+  ],
+  'story-product-onboarding': [
+    /^src\/app\/onboarding\//,
+    /^src\/app\/api\/onboarding\//,
+    /^src\/lib\/auth\/onboarding\.ts$/
+  ],
+  'story-product-notification': [
+    /^src\/app\/\(app\)\/notification\//,
+    /^src\/components\/ui\/UpdateNotification\.tsx$/
+  ],
+  'story-product-hotel-detail-actions': [
+    /^src\/app\/\(app\)\/detail\//,
+    /^src\/app\/\(public\)\/hotel\/\[hotel_id\]\//,
+    /^src\/app\/api\/hotels\/(\[hotelId\]|detail|list-tokyo)\//,
+    /^src\/components\/hotel\//,
+    /^src\/components\/common\/hotel_card\//,
+    /^src\/lib\/services\/hotel\//,
+    /^src\/lib\/services\/search\/detailSearchService\.ts$/,
+    /^src\/lib\/actions\/hotel_actions\.ts$/,
+    /^src\/lib\/actions\/lead_actions\.ts$/,
+    /^src\/lib\/actions\/post_actions\.ts$/
+  ],
+  'story-product-auth-account-access': [
+    /^src\/app\/\(auth\)\//,
+    /^src\/app\/\(app\)\/auth\//,
+    /^src\/components\/auth\//,
+    /^src\/app\/api\/auth\//,
+    /^src\/app\/api\/user\//,
+    /^src\/app\/api\/users\//,
+    /^src\/lib\/auth/,
+    /^src\/lib\/services\/user\//,
+    /^src\/lib\/actions\/user_actions\.ts$/
+  ],
+  'story-product-profile-personalization': [
+    /^src\/app\/\(app\)\/profile\//,
+    /^src\/components\/modals\/HotelSelectModal\.tsx$/,
+    /^src\/lib\/services\/profile\//,
+    /^src\/lib\/services\/user\/user(Read|Write|Entry)Service\.ts$/,
+    /^src\/lib\/actions\/profile_action\.ts$/
+  ],
+  'story-product-match-recommendation': [
+    /^src\/app\/\(app\)\/match\//,
+    /^src\/lib\/services\/search\/matchSearchService\.ts$/
+  ],
+  'story-product-timeline-posts': [
+    /^src\/app\/\(app\)\/timeline\//,
+    /^src\/app\/\(app\)\/_components\/post\//,
+    /^src\/components\/modals\/PostCompleteModal\.tsx$/,
+    /^src\/lib\/services\/timeline\//,
+    /^src\/lib\/services\/post\//,
+    /^src\/lib\/services\/reply\//,
+    /^src\/lib\/services\/image\//,
+    /^src\/lib\/actions\/timeline_actions\.ts$/,
+    /^src\/lib\/constants\/post\.ts$/
+  ],
+  'story-product-public-discovery-seo': [
+    /^src\/app\/\(public\)\/search-results\//,
+    /^src\/app\/\(public\)\/articles\//,
+    /^src\/app\/\(public\)\/_components\/landing\//,
+    /^src\/app\/\(public\)\/sitemap/,
+    /^src\/app\/robots\.ts$/,
+    /^src\/app\/sitemap\.ts$/,
+    /^src\/lib\/services\/analytics\//,
+    /^src\/components\/common\/StructuredData\.tsx$/
+  ],
+  'story-product-waiting-list-contact': [
+    /^src\/app\/\(public\)\/contact\//,
+    /^src\/app\/\(public\)\/waiting-list\//
+  ],
+  'story-product-qr-offline-access': [
+    /^src\/app\/\(app\)\/_components\/QRCodeScanner\.tsx$/,
+    /^src\/app\/\(public\)\/offline\//,
+    /^src\/components\/common\/ModernServiceWorkerManager\.tsx$/,
+    /^src\/components\/ui\/UpdateNotification\.tsx$/
+  ],
+  'story-product-app-navigation-shell': [
+    /^src\/app\/\(app\)\/home\//,
+    /^src\/components\/layout\//
+  ],
+  'story-ops-hotel-data-ingestion': [
+    /^src\/lib\/crawlers\//,
+    /^src\/app\/api\/crawl\//,
+    /^src\/app\/api\/hotels\/register\//,
+    /^src\/app\/api\/regenerate-sitemap\//,
+    /^src\/app\/\(app\)\/manager\//,
+    /^src\/lib\/services\/vercel-blob-service\.ts$/,
+    /^src\/lib\/api\/backend\.ts$/
+  ],
+  'story-ops-observability-health': [
+    /^src\/app\/api\/health\//,
+    /^src\/app\/api\/heartbeat\//,
+    /^src\/app\/api\/vercel\//,
+    /^src\/app\/log_viewer\//,
+    /^src\/components\/common\/ConsoleLogger\.tsx$/
+  ],
+  'story-product-legal-trust-pages': [
+    /^src\/app\/\(public\)\/privacy/,
+    /^src\/app\/\(public\)\/terms\//,
+    /^src\/app\/\(public\)\/tos\//,
+    /^src\/app\/\(public\)\/tokusho\//,
+    /^src\/app\/\(public\)\/guidelines\//
+  ],
+  'story-security-api-trust-boundary': [
+    /^src\/app\/api\/debug\//,
+    /^src\/app\/api\/test\//,
+    /^src\/app\/api\/admin\//
+  ]
+};
+
+export async function generateStoryCatalog(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const files = await collectRepoFiles(root);
+  const fileSet = new Set(files.map((file) => file.relativePath));
+  const evidence = await readEvidence(root, options.manifest, options.fromRunId);
+  const architectureProfile = evidence?.architecture_profile ?? await profileArchitecture(root);
+  const currentStory = findCurrentStory(options.config);
+  const defaults = buildDefaultStoryFields(currentStory);
+  const graph = await readGraph(root);
+  const graphSummary = summarizeGraph(graph);
+  const documentSignals = await collectDocumentSignals(root, files);
+
+  const stories = dedupeStories([
+    ...deriveProductSurfaceStories(fileSet, defaults, documentSignals),
+    ...deriveCodeSurfaceStories(fileSet, defaults),
+    ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
+    ...deriveDocumentationStories(fileSet, documentSignals, defaults)
+  ]);
+  const coverage = buildGraphStoryCoverage(graph, stories);
+  const openQuestions = collectOpenQuestions(stories);
+
+  return {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    source: {
+      tool: 'vibepro',
+      repo: '.',
+      run_id: evidence?.run_id ?? null,
+      evidence: evidence ? evidencePathForRun(options.manifest, evidence.run_id) : null,
+      graphify: graphSummary
+    },
+    story_count: stories.length,
+    coverage,
+    open_questions: openQuestions,
+    stories
+  };
+}
+
+export function renderStoryCatalogMap(catalog) {
+  const stories = Array.isArray(catalog?.stories) ? catalog.stories : [];
+  const portfolio = renderStoryPortfolio(stories);
+  const storyCards = stories.map((story) => renderStoryCard(story)).join('\n\n');
+
+  return `# Story Map
+
+## サマリー
+
+${renderExecutiveSummary(catalog, stories)}
+
+## まず確認すること
+
+${renderReviewQueue(catalog, stories)}
+
+## Story構造
+
+${portfolio}
+
+## Storyカード
+
+${storyCards || '-'}
+
+## 付録: Graph Coverage
+
+${renderCoverageAppendix(catalog.coverage)}
+
+## 付録: 不明点
+
+${renderOpenQuestionsAppendix(catalog.open_questions ?? [])}
+`;
+}
+
+function deriveArchitectureStories(profile, evidence, defaults, documentSignals) {
+  const stories = [];
+  const views = profile?.views ?? {};
+  const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const actionCandidates = Array.isArray(evidence?.action_candidates) ? evidence.action_candidates : [];
+  const architectureDocs = documentSignals.architecture ?? [];
+  const architecturePaths = docPaths(documentSignals, 'architecture');
+
+  if (profile?.has_api_routes || views.runtime?.entrypoints?.length > 0) {
+    stories.push(buildDerivedStory({
+      id: 'story-architecture-api-surface',
+      title: 'API公開面と実行境界を整理する',
+      category: 'architecture',
+      sourceType: 'architecture_profile',
+      paths: architecturePaths.slice(0, 5),
+      evidence: [
+        `${views.runtime?.entrypoints?.length ?? 0} entrypoints`,
+        ...(views.runtime?.server_boundaries ?? []),
+        ...architecturePaths.slice(0, 2)
+      ],
+      storyDefinition: storyDefinitionFor('story-architecture-api-surface', selectDocs(documentSignals, 'architecture')),
+      relatedFindings: findings
+        .filter((finding) => String(finding.id).startsWith('VP-API-'))
+        .map((finding) => finding.id),
+      docs: selectDocs(documentSignals, 'architecture'),
+      defaults
+    }));
+  }
+
+  if (profile?.has_database || views.data?.stores?.length > 0 || views.data?.access_patterns?.length > 0) {
+    stories.push(buildDerivedStory({
+      id: 'story-architecture-data-access',
+      title: 'データアクセスと永続化境界を整理する',
+      category: 'architecture',
+      sourceType: 'architecture_profile',
+      paths: architecturePaths.slice(0, 5),
+      evidence: [...(views.data?.stores ?? []), ...(views.data?.access_patterns ?? []), ...architecturePaths.slice(0, 2)],
+      storyDefinition: storyDefinitionFor('story-architecture-data-access', selectDocs(documentSignals, 'architecture')),
+      docs: selectDocs(documentSignals, 'architecture'),
+      defaults
+    }));
+  }
+
+  if (profile?.has_auth || views.security?.auth_boundaries?.length > 0) {
+    stories.push(buildDerivedStory({
+      id: 'story-security-auth-boundary',
+      title: '認証とユーザー境界を固める',
+      category: 'security',
+      sourceType: 'architecture_profile',
+      evidence: profile.auth ?? views.security?.auth_mechanisms ?? [],
+      storyDefinition: storyDefinitionFor('story-security-auth-boundary'),
+      defaults
+    }));
+  }
+
+  if (findings.some((finding) => ['VP-API-002', 'VP-API-003', 'VP-STATIC-002', 'VP-STATIC-003'].includes(finding.id))) {
+    stories.push(buildDerivedStory({
+      id: 'story-security-api-trust-boundary',
+      title: 'APIと外部連携の信頼境界を固める',
+      category: 'security',
+      sourceType: 'diagnosis',
+      evidence: actionCandidates.map((candidate) => candidate.title).filter(Boolean),
+      storyDefinition: storyDefinitionFor('story-security-api-trust-boundary'),
+      relatedFindings: findings
+        .filter((finding) => ['VP-API-002', 'VP-API-003', 'VP-STATIC-002', 'VP-STATIC-003'].includes(finding.id))
+        .map((finding) => finding.id),
+      diagnosisBased: true,
+      defaults
+    }));
+  }
+
+  if (views.deployment?.targets?.length > 0 || profile?.deployment?.length > 0) {
+    stories.push(buildDerivedStory({
+      id: 'story-ops-deployment-runtime',
+      title: 'デプロイと実行基盤を運用可能にする',
+      category: 'ops',
+      sourceType: 'architecture_profile',
+      evidence: views.deployment?.targets ?? profile.deployment ?? [],
+      storyDefinition: storyDefinitionFor('story-ops-deployment-runtime'),
+      defaults
+    }));
+  }
+
+  if (views.quality?.test_tools?.length > 0 || views.quality?.ci?.length > 0) {
+    stories.push(buildDerivedStory({
+      id: 'story-quality-test-ci-readiness',
+      title: 'テストとCIを開発ゲートとして整える',
+      category: 'quality',
+      sourceType: 'architecture_profile',
+      evidence: [...(views.quality?.test_tools ?? []), ...(views.quality?.ci ?? []).slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-quality-test-ci-readiness'),
+      defaults
+    }));
+  }
+
+  return stories;
+}
+
+function deriveProductSurfaceStories(fileSet, defaults, documentSignals) {
+  const stories = [];
+  const has = (pattern) => [...fileSet].some((file) => pattern.test(file));
+  const hasDocs = (key) => (documentSignals[key] ?? []).length > 0;
+
+  if (has(/(^src\/app\/.+\/map|api\/map-search|api\/hotels\/search|search-results|mapSearchService|GoogleMapsScript|_components\/search)/) || hasDocs('hotelMapSearch')) {
+    const paths = docPaths(documentSignals, 'hotelMapSearch');
+    stories.push(buildDerivedStory({
+      id: 'story-product-hotel-map-search',
+      title: 'ホテル検索と地図体験を安定化する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['map', 'hotels', 'hotel services', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-hotel-map-search', selectDocs(documentSignals, 'hotelMapSearch')),
+      docs: selectDocs(documentSignals, 'hotelMapSearch'),
+      defaults
+    }));
+  }
+
+  if (has(/shadow-call/) || hasDocs('shadowCall')) {
+    const paths = docPaths(documentSignals, 'shadowCall');
+    stories.push(buildDerivedStory({
+      id: 'story-product-shadow-call',
+      title: 'AI電話代行体験を安定化する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['shadow-call', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-shadow-call', selectDocs(documentSignals, 'shadowCall')),
+      docs: selectDocs(documentSignals, 'shadowCall'),
+      defaults
+    }));
+  }
+
+  if (has(/stripe|premium|subscription/) || hasDocs('premiumBilling')) {
+    const paths = docPaths(documentSignals, 'premiumBilling');
+    stories.push(buildDerivedStory({
+      id: 'story-product-premium-billing',
+      title: 'プレミアム課金導線を安定化する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['stripe', 'premium', 'subscription', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-premium-billing', selectDocs(documentSignals, 'premiumBilling')),
+      docs: selectDocs(documentSignals, 'premiumBilling'),
+      defaults
+    }));
+  }
+
+  if (has(/articles|sanity|cms/) || hasDocs('contentCms')) {
+    const paths = docPaths(documentSignals, 'contentCms');
+    stories.push(buildDerivedStory({
+      id: 'story-product-content-cms',
+      title: '記事とCMS運用を整理する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['articles', 'sanity', 'cms', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-content-cms', selectDocs(documentSignals, 'contentCms')),
+      docs: selectDocs(documentSignals, 'contentCms'),
+      defaults
+    }));
+  }
+
+  if (has(/onboarding|profile-step|preferences-step/) || hasDocs('onboarding')) {
+    const paths = docPaths(documentSignals, 'onboarding');
+    stories.push(buildDerivedStory({
+      id: 'story-product-onboarding',
+      title: 'オンボーディング体験を安定化する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['onboarding', 'profile', 'preferences', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-onboarding', selectDocs(documentSignals, 'onboarding')),
+      docs: selectDocs(documentSignals, 'onboarding'),
+      defaults
+    }));
+  }
+
+  if (has(/notification/) || hasDocs('notification')) {
+    const paths = docPaths(documentSignals, 'notification');
+    stories.push(buildDerivedStory({
+      id: 'story-product-notification',
+      title: '通知体験を安定化する',
+      category: 'product',
+      sourceType: 'story_cluster',
+      paths,
+      evidence: ['notification', ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor('story-product-notification', selectDocs(documentSignals, 'notification')),
+      docs: selectDocs(documentSignals, 'notification'),
+      defaults
+    }));
+  }
+
+  return stories;
+}
+
+function deriveCodeSurfaceStories(fileSet, defaults) {
+  const files = [...fileSet];
+  return CODE_SURFACE_SIGNATURES
+    .map((signature) => {
+      const paths = files
+        .filter((file) => signature.patterns.some((pattern) => pattern.test(file)))
+        .sort((a, b) => rankStoryCodePath(signature.id, a) - rankStoryCodePath(signature.id, b) || a.localeCompare(b))
+        .slice(0, 8);
+      if (paths.length === 0) return null;
+      return buildDerivedStory({
+        id: signature.id,
+        title: signature.title,
+        category: signature.category,
+        sourceType: 'code_surface',
+        paths,
+        evidence: paths,
+        storyDefinition: codeStoryDefinitionFor(signature.id, paths),
+        codeDerived: true,
+        defaults
+      });
+    })
+    .filter(Boolean);
+}
+
+function deriveDocumentationStories(fileSet, documentSignals, defaults) {
+  const hasDocs = [...fileSet].some((file) => file.startsWith('docs/'));
+  if (!hasDocs) return [];
+  return [buildDerivedStory({
+    id: 'story-docs-story-ssot-recovery',
+    title: '要求とStoryの正本を復元する',
+    category: 'docs',
+    sourceType: 'repo_surface',
+    paths: [
+      ...docPaths(documentSignals, 'requirements').slice(0, 3),
+      ...docPaths(documentSignals, 'userStories').slice(0, 3),
+      ...docPaths(documentSignals, 'features').slice(0, 3)
+    ],
+    evidence: [
+      `${documentSignals.requirements?.length ?? 0} requirement docs`,
+      `${documentSignals.userStories?.length ?? 0} user story docs`,
+      `${documentSignals.features?.length ?? 0} feature docs`
+    ],
+    storyDefinition: storyDefinitionFor('story-docs-story-ssot-recovery', [
+      ...selectDocs(documentSignals, 'requirements'),
+      ...selectDocs(documentSignals, 'userStories'),
+      ...selectDocs(documentSignals, 'features')
+    ]),
+    docs: [
+      ...selectDocs(documentSignals, 'requirements'),
+      ...selectDocs(documentSignals, 'userStories'),
+      ...selectDocs(documentSignals, 'features')
+    ],
+    defaults
+  })];
+}
+
+function buildDerivedStory({
+  id,
+  title,
+  category,
+  sourceType,
+  paths = [],
+  evidence = [],
+  relatedFindings = [],
+  docs = [],
+  storyDefinition = null,
+  diagnosisBased = false,
+  codeDerived = false,
+  defaults
+}) {
+  const planning = inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived });
+  const normalizedDefinition = normalizeStoryDefinition(storyDefinition, docs);
+  const businessContext = summarizeBusinessContext(docs, codeDerived);
+  const openQuestions = planning.open_questions;
+  const meaning = buildStoryMeaning({
+    id,
+    category,
+    sourceType,
+    paths,
+    evidence,
+    docs,
+    relatedFindings,
+    definition: normalizedDefinition,
+    planning,
+    businessContext,
+    openQuestions,
+    diagnosisBased,
+    codeDerived
+  });
+  return {
+    story_id: id,
+    title,
+    ssot: 'local',
+    status: 'active',
+    horizon: planning.horizon,
+    view: planning.view,
+    period: planning.period,
+    started_at: planning.started_at,
+    due_at: planning.due_at,
+    category,
+    source: {
+      type: sourceType,
+      paths
+    },
+    derived: {
+      evidence: evidence.filter(Boolean),
+      related_findings: relatedFindings,
+      confidence: paths.length > 0 || evidence.length > 0 ? 'medium' : 'low',
+      story_definition: normalizedDefinition,
+      meaning,
+      predictions: planning.predictions,
+      business_context: businessContext,
+      open_questions: openQuestions
+    }
+  };
+}
+
+function codeStoryDefinitionFor(storyId, paths) {
+  const sourceSynthesis = synthesizeCodeSources(paths);
+  const definitions = {
+    'story-product-hotel-detail-actions': {
+      who: 'ホテル候補を比較して次の行動を決めたいユーザー',
+      problem: 'ホテル詳細、空き状況、プラン、電話、投稿などの行動が分散すると、予約前の意思決定が途中で途切れる。',
+      want: 'ホテル詳細を見ながら、プラン確認、外部遷移、問い合わせ、訪問・投稿などの行動へ自然に進みたい。',
+      outcome: 'ホテル詳細ページが予約前の意思決定と行動の中心になる。',
+      business_value: '予約導線、問い合わせ、投稿などの主要コンバージョンに近い領域。仕様書とKPIは未確認。',
+      acceptance_focus: ['ホテル情報とプランが一貫して表示される', '主要アクションが状態に応じて利用できる', '外部遷移や電話導線の失敗時の扱いが決まる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-auth-account-access': {
+      who: 'Aitleを継続利用したいユーザー',
+      problem: '認証、アカウント切替、退会、OAuth連携が不安定だと、個人化や有料機能の前提が崩れる。',
+      want: '安全にログインし、必要に応じてアカウント操作ができ、利用開始後の状態が保たれてほしい。',
+      outcome: 'ユーザーが安心してアカウントを作成し、継続利用できる。',
+      business_value: '継続利用、個人化、有料機能の土台。認証完了率や離脱率は未確認。',
+      acceptance_focus: ['主要OAuthログインが動く', 'セッション同期とユーザー情報更新が一貫する', 'エラー、退会、アカウント切替の扱いが明確である'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-profile-personalization': {
+      who: '自分に合うホテル候補を見つけたいユーザー',
+      problem: 'プロフィールや嗜好が体験に反映されないと、検索・推薦・投稿が汎用的になり、自分向けの価値が弱くなる。',
+      want: 'プロフィール、好み、選択したホテルなどが体験全体に反映されてほしい。',
+      outcome: '検索、推薦、表示、投稿の文脈がユーザーごとに近づく。',
+      business_value: '個人化による活性化と再訪向上が期待できる。具体KPIは未確認。',
+      acceptance_focus: ['プロフィール編集が保存される', '保存情報が関連画面で使われる', '未入力やエラー時の体験が決まる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-match-recommendation': {
+      who: '条件に合うホテルを短時間で見つけたいユーザー',
+      problem: '候補が多すぎると、ユーザーは比較疲れを起こし、予約候補を絞り込めない。',
+      want: '条件や嗜好に合うホテル候補を提案してほしい。',
+      outcome: 'ユーザーが探す負担を減らし、次に見るべき候補へ進める。',
+      business_value: '検索から候補選定への転換率改善が期待できる。推薦精度の評価軸は未確認。',
+      acceptance_focus: ['推薦条件が説明できる', '候補がない場合の代替導線がある', '検索条件との関係が崩れない'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-timeline-posts': {
+      who: 'ホテル体験を記録・共有したいユーザー',
+      problem: '投稿やタイムラインが弱いと、利用後の体験が蓄積されず、他ユーザーの判断材料にもなりにくい。',
+      want: 'ホテルに関する投稿を残し、タイムラインで見返したり共有したい。',
+      outcome: 'ユーザー生成情報がホテル選びの補助情報として蓄積される。',
+      business_value: '再訪、UGC、ホテル選定支援の価値が期待できる。モデレーションや品質基準は未確認。',
+      acceptance_focus: ['投稿作成と表示がつながる', 'ホテルやユーザーとの関連が保たれる', '不適切投稿や失敗時の扱いが決まる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-public-discovery-seo': {
+      who: '検索エンジンや公開ページから初めて訪れるユーザー',
+      problem: '公開検索、記事、サイトマップ、構造化データが弱いと、アプリの価値がログイン前に伝わらず新規流入も取りこぼす。',
+      want: '検索結果や公開ページからホテル情報や記事に入り、自然にアプリ内導線へ進みたい。',
+      outcome: '未ログインユーザーがAitleの価値を理解し、検索・詳細・登録へ進める。',
+      business_value: 'SEO流入と新規獲得の土台。流入数、登録率、予約導線到達率は未確認。',
+      acceptance_focus: ['公開検索結果が成立する', 'sitemapとrobotsが意図通り出る', '構造化データと記事導線が壊れない'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-waiting-list-contact': {
+      who: '問い合わせや利用希望を伝えたいユーザーまたは事業者',
+      problem: '問い合わせや待機リストの受け皿が弱いと、利用意向や連絡機会を失う。',
+      want: '公開ページから迷わず問い合わせ、待機リスト登録、連絡ができてほしい。',
+      outcome: 'プロダクト外部からの関心を運営が拾える。',
+      business_value: 'リード獲得と顧客接点の維持。登録後の運用フローは未確認。',
+      acceptance_focus: ['フォーム入力と送信が成立する', '送信後の状態が明確である', '運営側の受け取り先が定義される'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-qr-offline-access': {
+      who: '現地や通信状態が不安定な場面でAitleを使うユーザー',
+      problem: 'QR読み取りやオフライン時の案内が弱いと、現地接点や再訪のタイミングで利用が途切れる。',
+      want: 'QRから必要な情報へ進み、通信が不安定でも状態が分かる案内を受けたい。',
+      outcome: 'オンライン外の接点でもAitle利用を継続しやすくなる。',
+      business_value: '現地接点、再訪、PWA的利用の下支え。利用場面とKPIは未確認。',
+      acceptance_focus: ['QR読み取りの成功・失敗状態がある', 'オフライン時の導線がある', '更新通知がユーザー操作を妨げない'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-app-navigation-shell': {
+      who: 'Aitleの主要機能を行き来するユーザー',
+      problem: 'ホーム、下部ナビ、共通レイアウトがStoryに紐づかないと、ユーザーがどこから検索、推薦、投稿、設定へ進むのかを引き継げない。',
+      want: 'アプリの起点と主要導線が一貫し、画面間を迷わず移動できてほしい。',
+      outcome: 'ユーザーがログイン後に目的の機能へ自然に進める。',
+      business_value: '初回活性化、再訪、主要機能への到達率を支える。具体KPIは未確認。',
+      acceptance_focus: ['ホームから主要機能へ到達できる', '下部ナビとレイアウトが画面状態に応じて破綻しない', 'ログイン状態やプラン状態と導線が矛盾しない'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-ops-hotel-data-ingestion': {
+      who: 'ホテル情報の鮮度を維持したい運用者と開発チーム',
+      problem: 'ホテル情報の収集、抽出、変換、保存が運用できないと、検索や詳細表示の価値が古くなる。',
+      want: '外部情報の収集から保存、更新、失敗時の扱いまでを運用可能にしたい。',
+      outcome: 'ホテルデータの更新が継続でき、検索・詳細・SEOの土台が保たれる。',
+      business_value: '検索品質と掲載情報の信頼性を支える。更新頻度、対象サイト、失敗許容は未確認。',
+      acceptance_focus: ['収集対象と更新頻度が定義される', '抽出失敗やレート制限の扱いがある', '保存形式と重複更新のルールがある'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-ops-observability-health': {
+      who: '本番稼働を確認する運用者と開発チーム',
+      problem: 'health、heartbeat、ログ確認の入口があっても運用Storyがないと、障害時に何を見るべきか分からない。',
+      want: '稼働確認とログ確認の入口を運用手順に接続したい。',
+      outcome: '本番状態の確認と初動判断がしやすくなる。',
+      business_value: '障害検知と復旧時間短縮につながる。監視基準は未確認。',
+      acceptance_focus: ['health/heartbeatの意味が定義される', 'ログ確認権限が整理される', '異常時の次アクションが残る'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-legal-trust-pages': {
+      who: '利用前にサービスの条件や安全性を確認したいユーザー',
+      problem: '規約、プライバシー、特商法、ガイドラインが整っていないと、公開サービスとしての信頼や法務確認が弱くなる。',
+      want: '利用前に必要な条件、個人情報の扱い、禁止事項を確認したい。',
+      outcome: 'ユーザーと運営の前提が明確になり、公開利用に耐えやすくなる。',
+      business_value: '公開サービスとしての信頼とリスク低減。法務レビュー状態は未確認。',
+      acceptance_focus: ['各公開ページが到達可能である', '内容の正本と更新責任が決まる', '主要導線から確認できる'],
+      source_synthesis: sourceSynthesis
+    }
+  };
+  return definitions[storyId] ?? storyDefinitionFor('unknown');
+}
+
+function storyDefinitionFor(storyId, docs = []) {
+  const sourceSynthesis = synthesizeSources(docs);
+  const definitions = {
+    'story-product-hotel-map-search': {
+      who: 'ホテルを探しているユーザー',
+      problem: '検索結果と地図上の位置関係が分断されると、候補の比較に画面の行き来が必要になり、宿泊先を選ぶ判断が遅くなる。',
+      want: '詳細検索の条件に一致したホテルを地図上のピンと下部スライダーで同時に確認したい。',
+      outcome: 'ユーザーが場所、価格、ホテルの候補を同じ文脈で比較し、予約候補を短時間で絞り込める。',
+      business_value: 'ホテル予約導線の意思決定効率とコンバージョン改善が期待できる。具体KPIは未確定。',
+      acceptance_focus: [
+        '検索条件に一致したホテルのみが地図と一覧に出る',
+        'ピン選択とカード表示が相互に同期する',
+        '0件、読み込み中、エラー時にユーザーが次の行動を取れる',
+        'モバイルで地図とスライダーを自然に操作できる'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-shadow-call': {
+      who: 'ホテルへの問い合わせを任せたいユーザー',
+      problem: 'AI電話代行の価値があっても、利用条件、実行状態、結果通知が曖昧だと有料機能として信頼されない。',
+      want: 'プレミアムユーザーがShadow Callを使い、非対象ユーザーには自然にアップグレード導線が出てほしい。',
+      outcome: '電話代行の実行から結果確認までが一貫し、有料機能として期待値を満たせる。',
+      business_value: '月額課金の中核機能として収益化を支える。利用率、継続率、問い合わせ成功率は確認が必要。',
+      acceptance_focus: [
+        'プラン権限に応じてShadow Callの利用可否が変わる',
+        '電話代行の受付、実行、結果確認の状態が追跡できる',
+        '非プレミアムユーザーには課金導線が提示される',
+        '月次レポートなど継続利用につながる結果が残る'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-premium-billing': {
+      who: 'プレミアム機能を利用したいユーザーと運営者',
+      problem: '課金、プラン変更、webhook反映が不安定だと、使えるはずの機能が使えない、または使えてはいけない機能が使える状態になる。',
+      want: 'Stripeを通じて加入、解約、ダウングレードが正しく反映され、機能権限と請求状態が一致してほしい。',
+      outcome: '有料機能の提供状態と請求状態が同期し、ユーザーと運営の双方が安心して運用できる。',
+      business_value: 'プレミアム収益の土台。MRR、解約率、決済失敗率は別途定義が必要。',
+      acceptance_focus: [
+        'Checkout完了後にプレミアム権限が付与される',
+        'webhookで加入、解約、ダウングレードが反映される',
+        '権限と請求状態の不整合が検知できる',
+        '決済失敗時のユーザー体験が定義される'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-content-cms': {
+      who: 'ホテル予約につながるコンテンツを運用したい担当者と、検索流入から来るユーザー',
+      problem: 'コンテンツマーケティングとホテル予約導線がつながっていないと、SEO流入を獲得しても予約行動へ接続できない。',
+      want: '非エンジニアでも記事、特集、ホテルカード、CTAを作成し、検索流入から予約導線へ誘導したい。',
+      outcome: '記事コンテンツがホテル検索、詳細、予約導線へ接続され、運用者が継続的に改善できる。',
+      business_value: 'SEO流入、ホテル予約コンバージョン、コンテンツ運用効率の改善が期待できる。優先KPIは未確定。',
+      acceptance_focus: [
+        '記事内にホテルカードや予約導線を配置できる',
+        '非エンジニアがCMSで作成、編集、公開できる',
+        'SEOに必要なメタ情報と構造を持つ',
+        '記事からホテル詳細または検索結果へ遷移できる'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-onboarding': {
+      who: '初めてAitleを使うユーザー',
+      problem: '利用目的、予算、好みが分からないままだと、検索や推薦が一般的になり、初回体験で自分向けの価値を感じにくい。',
+      want: '初回利用時に必要な嗜好を短く入力し、ホテル探しや提案に反映してほしい。',
+      outcome: 'ユーザーが最初から自分に合う候補へ近づけ、継続利用の理由が生まれる。',
+      business_value: '初回活性化と個人化精度の改善が期待できる。オンボーディング完了率と初回予約導線到達率は確認が必要。',
+      acceptance_focus: [
+        '目的、予算、優先条件など必要最小限の嗜好を取得する',
+        '取得した嗜好が検索または推薦に反映される',
+        '途中離脱しても再開できる',
+        '入力負荷が高すぎない'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-product-notification': {
+      who: '旅行やホテル検討の更新を逃したくないユーザー',
+      problem: '予約候補、問い合わせ、重要な更新が分散すると、ユーザーが必要なタイミングで戻ってこられない。',
+      want: '必要な通知をアプリ、メール、Pushなど適切な経路で受け取り、設定も管理したい。',
+      outcome: '重要な更新が届き、ユーザーが検討を再開しやすくなる。',
+      business_value: '再訪、継続利用、予約導線への復帰が期待できる。通知許諾率と再訪率は確認が必要。',
+      acceptance_focus: [
+        '通知対象イベントが整理されている',
+        'ユーザーが通知設定を管理できる',
+        '未読、既読、再通知の扱いが定義されている',
+        '過剰通知を避ける制御がある'
+      ],
+      source_synthesis: sourceSynthesis
+    },
+    'story-architecture-api-surface': {
+      who: '開発チームとレビュアー',
+      problem: 'API公開面と実行境界が曖昧だと、どのrouteが外部入力を受け、どこで保護されるべきか判断しづらい。',
+      want: 'entrypoint、server boundary、公開APIを把握し、実装とレビューの単位を揃えたい。',
+      outcome: 'API変更の影響範囲と保護責務が追跡できる。',
+      business_value: '機能追加速度を落とさず、本番事故やレビュー漏れを減らす。',
+      acceptance_focus: ['公開API一覧が把握できる', 'routeごとの責務と保護境界が説明できる', '診断Findingと修正タスクがつながる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-architecture-data-access': {
+      who: '開発チーム',
+      problem: 'データモデルとアクセス経路が散らばると、機能追加時に整合性や権限の見落としが起きやすい。',
+      want: '永続化境界、主要モデル、アクセスパターンをStory単位で見える化したい。',
+      outcome: 'データ変更の影響範囲を判断しやすくなる。',
+      business_value: '機能追加時の手戻りとデータ不整合リスクを減らす。',
+      acceptance_focus: ['主要storeとaccess patternが整理される', '重要モデルの利用箇所が追跡できる', '権限とデータアクセスの接点が見える'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-security-auth-boundary': {
+      who: 'ユーザー情報や有料機能を扱う開発チーム',
+      problem: '認証境界が曖昧だと、本人だけが見られるべき情報や有料機能の保護が崩れる。',
+      want: '認証方式、保護対象、例外を明確にしたい。',
+      outcome: 'ユーザー境界を前提に実装とレビューができる。',
+      business_value: '信頼性と課金機能の正当性を守る。',
+      acceptance_focus: ['保護対象routeが識別される', '認証なしで触れるrouteの理由が説明できる', '権限チェックの根拠が残る'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-security-api-trust-boundary': {
+      who: '外部連携や管理APIを扱う開発チーム',
+      problem: 'webhook、debug、test、admin系APIの信頼境界が弱いと、本番で不正実行や情報漏えいが起きうる。',
+      want: 'APIごとの信頼境界、認証、実行可否を診断結果から修正可能な形にしたい。',
+      outcome: '本番に出してよいAPIと修正が必要なAPIを区別できる。',
+      business_value: '外部連携を使う機能の安全性を上げ、公開前のリスクを減らす。',
+      acceptance_focus: ['未保護APIの分類がある', 'webhook検証の有無が分かる', 'debug/test routeの公開可否が判断できる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-ops-deployment-runtime': {
+      who: '運用担当と開発チーム',
+      problem: 'デプロイ先、環境変数、実行プロセスが不明確だと、機能は作れても安定運用に移れない。',
+      want: '実行基盤とデプロイ条件をStoryとして管理したい。',
+      outcome: 'リリース前に運用上の不足を確認できる。',
+      business_value: '本番反映の失敗と復旧コストを減らす。',
+      acceptance_focus: ['デプロイ対象が分かる', '環境変数とsecretの扱いが整理される', '運用時の確認手順が残る'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-quality-test-ci-readiness': {
+      who: '開発チームとレビュアー',
+      problem: 'テストとCIがStoryの受け入れ基準に接続していないと、PRで何を担保したか説明できない。',
+      want: 'Unit、Integration、E2EのGateをStoryの受け入れ基準から追跡したい。',
+      outcome: '実装完了の判断がテスト証跡と結びつく。',
+      business_value: 'レビュー品質を上げ、回帰バグを減らす。',
+      acceptance_focus: ['受け入れ基準とテストGateが対応する', 'Playwrightが必要な箇所を判定できる', 'CIで見るべきコマンドが分かる'],
+      source_synthesis: sourceSynthesis
+    },
+    'story-docs-story-ssot-recovery': {
+      who: 'プロダクト判断を引き継ぐメンバー',
+      problem: '仕様書、要求、User Storyが分散し、Storyの正本構造が見えないと、次に何を作るべきか判断できない。',
+      want: '仕様書をそのままStoryにせず、Story、根拠文書、不明点を分けて管理したい。',
+      outcome: 'Story Mapから全体の開発意図と不足情報が読める。',
+      business_value: '引き継ぎ、優先順位付け、NocoDB同期の品質を上げる。',
+      acceptance_focus: ['Storyと仕様書が1対1になっていない', '複数文書がStoryの根拠として紐づく', 'periodやKPIの不明点が明示される'],
+      source_synthesis: sourceSynthesis
+    }
+  };
+  return definitions[storyId] ?? {
+    who: '関係者',
+    problem: '対象Storyの課題が文書から十分に特定できていない。',
+    want: '根拠文書を読み直して、利用者、課題、成果を分けて定義したい。',
+    outcome: '実装対象が仕様書名ではなく価値単位で判断できる。',
+    business_value: '価値と検証観点の不明確さを減らす。',
+    acceptance_focus: ['利用者が明確である', '成果が明確である', '根拠文書と不明点が分かれている'],
+    source_synthesis: sourceSynthesis
+  };
+}
+
+function normalizeStoryDefinition(definition, docs) {
+  const fallback = storyDefinitionFor('unknown', docs);
+  const normalized = definition ?? fallback;
+  return {
+    who: normalized.who ?? fallback.who,
+    problem: normalized.problem ?? fallback.problem,
+    want: normalized.want ?? fallback.want,
+    outcome: normalized.outcome ?? fallback.outcome,
+    business_value: normalized.business_value ?? fallback.business_value,
+    acceptance_focus: Array.isArray(normalized.acceptance_focus) ? normalized.acceptance_focus : fallback.acceptance_focus,
+    source_synthesis: Array.isArray(normalized.source_synthesis) ? normalized.source_synthesis : synthesizeSources(docs)
+  };
+}
+
+function buildStoryMeaning({
+  id,
+  category,
+  sourceType,
+  paths,
+  evidence,
+  docs,
+  relatedFindings,
+  definition,
+  planning,
+  businessContext,
+  openQuestions,
+  diagnosisBased,
+  codeDerived
+}) {
+  const confidence = inferMeaningConfidence({ docs, paths, businessContext, openQuestions, diagnosisBased });
+  const workflow = workflowPositionFor(id);
+  const codePaths = paths.filter(isCodePath);
+  return {
+    value_hypothesis: `${definition.outcome} ${definition.business_value}`,
+    user_actor: {
+      value: definition.who,
+      confidence: docs.length > 0 ? 'high' : codeDerived ? 'medium' : 'low',
+      evidence: meaningEvidencePaths({ docs, paths, relatedFindings }).slice(0, 5)
+    },
+    business_goal: {
+      value: definition.business_value,
+      confidence: businessContext.signals.length > 0 ? 'high' : category === 'product' ? 'low' : 'medium',
+      evidence: businessContext.evidence_paths,
+      missing: openQuestions.find((item) => item.field === 'business_metric')?.question ?? null
+    },
+    code_scope: {
+      value: summarizeCodeScope(paths, sourceType),
+      confidence: codePaths.length > 0 ? 'high' : sourceType === 'architecture_profile' ? 'medium' : 'low',
+      evidence: codePaths.slice(0, 8)
+    },
+    workflow_position: workflow,
+    evidence_by_type: {
+      docs_evidence: docs.map((doc) => doc.path),
+      code_evidence: paths.filter(isCodePath),
+      diagnosis_evidence: relatedFindings,
+      inferred_evidence: evidence.filter((item) => typeof item === 'string' && !item.startsWith('src/') && !item.startsWith('docs/')).slice(0, 8),
+      missing_evidence: openQuestions.map((item) => ({ field: item.field, question: item.question }))
+    },
+    counter_evidence: buildCounterEvidence({ docs, paths, openQuestions, planning, codeDerived }),
+    confidence
+  };
+}
+
+function inferMeaningConfidence({ docs, paths, businessContext, openQuestions, diagnosisBased }) {
+  const hasMissingSpec = openQuestions.some((item) => item.field === 'missing_spec');
+  const hasBusinessGap = openQuestions.some((item) => item.field === 'business_context' || item.field === 'business_metric');
+  if (diagnosisBased) return 'medium';
+  if (docs.length > 0 && businessContext.signals.length > 0 && !hasBusinessGap) return 'high';
+  if (docs.length > 0 || paths.length > 0) return hasMissingSpec || hasBusinessGap ? 'medium' : 'high';
+  return 'low';
+}
+
+function meaningEvidencePaths({ docs, paths, relatedFindings }) {
+  return [
+    ...docs.map((doc) => doc.path),
+    ...paths,
+    ...relatedFindings.map((id) => `finding:${id}`)
+  ].filter(Boolean);
+}
+
+function summarizeCodeScope(paths, sourceType) {
+  if (paths.length === 0) return sourceType === 'architecture_profile' ? 'architecture profileから推定' : '直接のコード根拠なし';
+  const roles = [...new Set(paths.filter(isCodePath).map(inferCodeRole))];
+  return roles.length > 0 ? roles.join('、') : '直接のコード根拠なし';
+}
+
+function buildCounterEvidence({ docs, paths, openQuestions, planning, codeDerived }) {
+  const items = [];
+  if (codeDerived && docs.length === 0) {
+    items.push('仕様書、要求、既存Storyではなくコードからの逆算である。');
+  }
+  if (paths.length === 0) {
+    items.push('Storyに直接紐づくコード根拠がまだ少ない。');
+  }
+  if (openQuestions.some((item) => item.field === 'business_metric')) {
+    items.push('KPIまたは効果測定指標が未確認である。');
+  }
+  if (!planning.period) {
+    items.push('NocoDB Periodとして確定できる実行期が未確認である。');
+  }
+  return items;
+}
+
+function workflowPositionFor(storyId) {
+  const positions = {
+    'story-product-app-navigation-shell': {
+      stage: 'entry',
+      before: [],
+      after: ['story-product-hotel-map-search', 'story-product-match-recommendation', 'story-product-profile-personalization'],
+      confidence: 'medium',
+      rationale: 'ホームと共通ナビはログイン後の主要機能への入口になるため'
+    },
+    'story-product-public-discovery-seo': {
+      stage: 'acquisition',
+      before: [],
+      after: ['story-product-hotel-map-search', 'story-product-content-cms', 'story-product-auth-account-access'],
+      confidence: 'medium',
+      rationale: '公開検索、記事、SEOは未ログイン流入からアプリ利用へ接続するため'
+    },
+    'story-product-content-cms': {
+      stage: 'acquisition',
+      before: ['story-product-public-discovery-seo'],
+      after: ['story-product-hotel-detail-actions', 'story-product-hotel-map-search'],
+      confidence: 'medium',
+      rationale: '記事とCMSは公開流入をホテル詳細や検索導線へ送るため'
+    },
+    'story-product-auth-account-access': {
+      stage: 'activation',
+      before: ['story-product-public-discovery-seo', 'story-product-app-navigation-shell'],
+      after: ['story-product-onboarding', 'story-product-premium-billing', 'story-product-profile-personalization'],
+      confidence: 'medium',
+      rationale: '認証は個人化、課金、継続利用の前提になるため'
+    },
+    'story-product-onboarding': {
+      stage: 'activation',
+      before: ['story-product-auth-account-access'],
+      after: ['story-product-profile-personalization', 'story-product-match-recommendation'],
+      confidence: 'medium',
+      rationale: '初回入力はプロフィールと推薦の材料になるため'
+    },
+    'story-product-profile-personalization': {
+      stage: 'personalization',
+      before: ['story-product-auth-account-access', 'story-product-onboarding'],
+      after: ['story-product-match-recommendation', 'story-product-hotel-map-search'],
+      confidence: 'medium',
+      rationale: '保存された嗜好は検索や推薦の文脈になるため'
+    },
+    'story-product-hotel-map-search': {
+      stage: 'discovery',
+      before: ['story-product-public-discovery-seo', 'story-product-profile-personalization'],
+      after: ['story-product-hotel-detail-actions', 'story-product-match-recommendation'],
+      confidence: 'medium',
+      rationale: '検索と地図は候補発見から詳細比較へ進む中心導線になるため'
+    },
+    'story-product-match-recommendation': {
+      stage: 'discovery',
+      before: ['story-product-profile-personalization', 'story-product-hotel-map-search'],
+      after: ['story-product-hotel-detail-actions'],
+      confidence: 'medium',
+      rationale: '推薦は候補選定を短縮し、詳細確認へ送るため'
+    },
+    'story-product-hotel-detail-actions': {
+      stage: 'decision',
+      before: ['story-product-hotel-map-search', 'story-product-match-recommendation', 'story-product-content-cms'],
+      after: ['story-product-shadow-call', 'story-product-premium-billing', 'story-product-timeline-posts'],
+      confidence: 'medium',
+      rationale: 'ホテル詳細は予約前の意思決定と次アクションの中心になるため'
+    },
+    'story-product-premium-billing': {
+      stage: 'monetization',
+      before: ['story-product-auth-account-access', 'story-product-hotel-detail-actions'],
+      after: ['story-product-shadow-call'],
+      confidence: 'medium',
+      rationale: '課金状態は有料機能の利用可否を決めるため'
+    },
+    'story-product-shadow-call': {
+      stage: 'conversion_support',
+      before: ['story-product-hotel-detail-actions', 'story-product-premium-billing'],
+      after: ['story-product-notification'],
+      confidence: 'medium',
+      rationale: 'AI電話代行はホテル詳細後の問い合わせ行動を支援するため'
+    },
+    'story-product-timeline-posts': {
+      stage: 'retention',
+      before: ['story-product-hotel-detail-actions'],
+      after: ['story-product-notification'],
+      confidence: 'medium',
+      rationale: '投稿とタイムラインは利用後の記録と再訪に接続するため'
+    },
+    'story-product-notification': {
+      stage: 'retention',
+      before: ['story-product-shadow-call', 'story-product-timeline-posts'],
+      after: [],
+      confidence: 'medium',
+      rationale: '通知は結果確認や再訪を促すため'
+    }
+  };
+  return positions[storyId] ?? {
+    stage: defaultWorkflowStage(storyId),
+    before: [],
+    after: [],
+    confidence: 'low',
+    rationale: 'Story間の前後関係はコードと文書だけでは十分に確定できないため'
+  };
+}
+
+function defaultWorkflowStage(storyId) {
+  if (storyId.startsWith('story-architecture-')) return 'architecture';
+  if (storyId.startsWith('story-security-')) return 'risk_control';
+  if (storyId.startsWith('story-ops-')) return 'operations';
+  if (storyId.startsWith('story-quality-')) return 'quality_gate';
+  if (storyId.startsWith('story-docs-')) return 'knowledge_recovery';
+  return 'unknown';
+}
+
+function synthesizeSources(docs) {
+  if (!Array.isArray(docs) || docs.length === 0) return [];
+  return docs.slice(0, 6).map((doc) => ({
+    path: doc.path,
+    role: inferDocumentRole(doc),
+    title: doc.title
+  }));
+}
+
+function inferDocumentRole(doc) {
+  if (doc.path.startsWith('docs/user_stories/')) return 'ユーザー課題と受け入れ観点';
+  if (doc.path.startsWith('docs/requirements/')) return '機能要求と制約';
+  if (doc.path.startsWith('docs/features/')) return '機能構想とビジネス背景';
+  if (doc.path.startsWith('docs/architecture/')) return '設計判断と構造';
+  return '補助根拠';
+}
+
+function synthesizeCodeSources(paths) {
+  return [...paths]
+    .sort((a, b) => rankCodePath(a) - rankCodePath(b) || a.localeCompare(b))
+    .slice(0, 8)
+    .map((filePath) => ({
+    path: filePath,
+    role: inferCodeRole(filePath),
+    title: humanizeFileName(filePath)
+  }));
+}
+
+function rankStoryCodePath(storyId, filePath) {
+  const storySpecificRank = {
+    'story-product-auth-account-access': [
+      [/^src\/lib\/auth\//, -10],
+      [/^src\/app\/api\/auth\//, -9],
+      [/sign-in|nextauth|session|userSync|providers/, -8],
+      [/account-deleted|error\/page|layout\.tsx$/, 20]
+    ],
+    'story-product-hotel-detail-actions': [
+      [/hotelDetailService|HotelDetail|detail\/page|hotel_actions/, -10],
+      [/phone-lookup|lead_actions/, -8]
+    ],
+    'story-product-profile-personalization': [
+      [/profileService|profile_action|profile\/page|ProfileHeader|ProfileInfo/, -10]
+    ],
+    'story-product-match-recommendation': [
+      [/matchSearchService|MatchSearch|comparison-report/, -10]
+    ],
+    'story-product-timeline-posts': [
+      [/timelineService|postService|timeline_actions|post_actions|PostCard/, -10]
+    ],
+    'story-product-public-discovery-seo': [
+      [/search-results\/page|articles\/\[slug\]\/page|sitemap|robots|StructuredData|analytics/, -10],
+      [/landing/, -6]
+    ],
+    'story-ops-hotel-data-ingestion': [
+      [/orchestrator|crawler|regenerate-sitemap|backend\.ts$/, -10]
+    ]
+  };
+  const adjustment = (storySpecificRank[storyId] ?? [])
+    .filter(([pattern]) => pattern.test(filePath))
+    .reduce((min, [, value]) => Math.min(min, value), 0);
+  return rankCodePath(filePath) + adjustment;
+}
+
+function rankCodePath(filePath) {
+  if (/\.(test|spec)\.[jt]sx?$/.test(filePath)) return 200;
+  if (/\/types\/|\.types\.|\/index\.[jt]s$|\/constants\//.test(filePath)) return 80;
+  if (/\/(error|loading|not-found|layout)\.[jt]sx?$/.test(filePath)) return 70;
+  if (/^src\/lib\/services\//.test(filePath)) return 0;
+  if (/^src\/lib\/auth/.test(filePath)) return 2;
+  if (/^src\/lib\/actions\//.test(filePath)) return 4;
+  if (/^src\/app\/api\/.+\/route\.[jt]s$/.test(filePath)) return 6;
+  if (/^src\/app\/.+\/page\.[jt]sx?$/.test(filePath)) return 8;
+  if (/^src\/app\/.+\/client\.[jt]sx?$/.test(filePath)) return 10;
+  if (/^src\/app\/.+\/_components\//.test(filePath)) return 12;
+  if (/^src\/components\//.test(filePath)) return 14;
+  if (/^src\/lib\/crawlers\//.test(filePath)) return 16;
+  if (/^src\/lib\/api\//.test(filePath)) return 18;
+  if (/^src\/lib\//.test(filePath)) return 20;
+  return 50;
+}
+
+function inferCodeRole(filePath) {
+  if (filePath.startsWith('src/app/') && filePath.includes('/api/')) return 'API route';
+  if (filePath.startsWith('src/app/')) return '画面・ルーティング';
+  if (filePath.startsWith('src/components/')) return 'UIコンポーネント';
+  if (filePath.startsWith('src/lib/actions/')) return 'ユーザー操作・サーバーアクション';
+  if (filePath.startsWith('src/lib/crawlers/')) return 'データ収集処理';
+  if (filePath.startsWith('src/lib/auth')) return '認証・セッション処理';
+  if (filePath.startsWith('src/lib/')) return 'ドメインロジック';
+  return 'コード根拠';
+}
+
+async function collectRepoFiles(repoRoot, currentRelative = '') {
+  const dir = path.join(repoRoot, currentRelative);
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
+    const relativePath = path.posix.join(currentRelative.split(path.sep).join('/'), entry.name);
+    const fullPath = path.join(repoRoot, relativePath);
+    if (entry.isDirectory()) {
+      files.push(...await collectRepoFiles(repoRoot, relativePath));
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    const fileStat = await stat(fullPath);
+    files.push({ relativePath, size: fileStat.size });
+  }
+  return files;
+}
+
+async function collectDocumentSignals(repoRoot, files) {
+  const signals = {};
+  const docFiles = files
+    .map((file) => file.relativePath)
+    .filter((file) => file.endsWith('.md') && file.startsWith('docs/') && !/dummy|template/i.test(file));
+  for (const filePath of docFiles) {
+    const doc = await analyzeDocument(repoRoot, filePath);
+    for (const group of DOCUMENT_SIGNAL_GROUPS) {
+      if (!group.pattern.test(filePath)) continue;
+      signals[group.key] = [...(signals[group.key] ?? []), doc];
+    }
+  }
+  return Object.fromEntries(Object.entries(signals).map(([key, values]) => [key, dedupeDocs(values)]));
+}
+
+async function analyzeDocument(repoRoot, relativePath) {
+  const content = await readFile(path.join(repoRoot, relativePath), 'utf8');
+  const frontMatter = parseFrontMatter(content);
+  const title = frontMatter.title ?? extractMarkdownTitle(content) ?? humanizeFileName(relativePath);
+  return {
+    path: relativePath,
+    title,
+    status: frontMatter.status ?? null,
+    priority: frontMatter.priority ?? null,
+    points: frontMatter.points ?? null,
+    created_at: frontMatter.created_at ?? null,
+    updated_at: frontMatter.updated_at ?? null,
+    business_signals: extractBusinessSignals(content),
+    timeline_signals: extractTimelineSignals(content),
+    has_acceptance_criteria: /受け入れ基準|Acceptance Criteria/i.test(content),
+    has_kpi: /KPI|成功指標|期待効果|効果|コンバージョン|SEO|収益|売上/.test(content)
+  };
+}
+
+function inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived }) {
+  const businessContext = summarizeBusinessContext(docs, codeDerived);
+  const viewPrediction = inferView(category, businessContext);
+  const horizonPrediction = inferHorizon(category, diagnosisBased);
+  const periodPrediction = inferPeriod({ horizon: horizonPrediction.value, docs, defaults, diagnosisBased });
+  const openQuestions = [];
+
+  if (!periodPrediction.value) {
+    openQuestions.push({
+      field: 'period',
+      question: codeDerived
+        ? `NocoDB Period に置く実行期がコードから確定できない。候補は ${periodPrediction.candidate ?? '-'}。`
+        : `NocoDB Period に置く実行期が仕様書から確定できない。候補は ${periodPrediction.candidate ?? '-'}。`
+    });
+  }
+  if (codeDerived && docs.length === 0) {
+    openQuestions.push({
+      field: 'missing_spec',
+      question: 'コード上は機能面が確認できるが、対応するStory、要求、仕様書が見つからない。'
+    });
+  }
+  if (category === 'product' && businessContext.signals.length === 0) {
+    openQuestions.push({
+      field: 'business_context',
+      question: codeDerived
+        ? 'biz視点の成功指標、顧客価値、優先順位がコードからは十分に読めない。'
+        : 'biz視点の成功指標、顧客価値、優先順位が仕様書本文から十分に読めない。'
+    });
+  }
+  if (category === 'product' && !docs.some((doc) => doc.has_kpi)) {
+    openQuestions.push({
+      field: 'business_metric',
+      question: codeDerived
+        ? 'KPIまたは効果測定指標がコードからは確定できない。'
+        : 'KPIまたは効果測定指標が仕様書から確定できない。'
+    });
+  }
+
+  return {
+    view: viewPrediction.value,
+    horizon: horizonPrediction.value,
+    period: periodPrediction.value,
+    started_at: periodPrediction.value ? defaults.started_at : null,
+    due_at: null,
+    predictions: {
+      view: viewPrediction,
+      horizon: horizonPrediction,
+      period: periodPrediction
+    },
+    open_questions: openQuestions
+  };
+}
+
+function inferView(category, businessContext) {
+  if (category === 'product') {
+    return {
+      value: 'business',
+      confidence: businessContext.signals.length > 0 ? 'high' : 'medium',
+      rationale: businessContext.signals.length > 0
+        ? `仕様書から ${businessContext.signals.slice(0, 3).join(', ')} が読めるため`
+        : 'ユーザー体験Storyだがbiz効果は未確定のため'
+    };
+  }
+  return {
+    value: 'dev',
+    confidence: 'high',
+    rationale: `${category} は開発・運用品質の管理ビューで扱うため`
+  };
+}
+
+function inferHorizon(category, diagnosisBased) {
+  if (diagnosisBased) {
+    return { value: 'sprint', confidence: 'medium', rationale: '診断Finding由来で短期修正候補のため' };
+  }
+  if (category === 'product') {
+    return { value: 'quarter', confidence: 'medium', rationale: '仕様書本文は機能価値の塊で、週次タスクではなく四半期テーマに近いため' };
+  }
+  return { value: 'month', confidence: 'medium', rationale: '開発基盤・設計整理のStoryとして月次管理が妥当なため' };
+}
+
+function inferPeriod({ horizon, docs, defaults, diagnosisBased }) {
+  if (diagnosisBased && defaults.period) {
+    return {
+      value: defaults.period,
+      candidate: defaults.period,
+      confidence: 'medium',
+      rationale: '診断runに紐づく現在のStory periodを引き継ぐため'
+    };
+  }
+  const explicitPeriod = findExplicitManagementPeriod(docs);
+  if (explicitPeriod) {
+    return {
+      value: explicitPeriod,
+      candidate: explicitPeriod,
+      confidence: 'high',
+      rationale: '仕様書本文に管理期間らしき記述があるため'
+    };
+  }
+  return {
+    value: null,
+    candidate: horizon === 'quarter' ? currentQuarter() : horizon === 'month' ? currentMonth() : defaults.period,
+    confidence: 'unknown',
+    rationale: '作成日・実装完了日は読めるが、NocoDB Periodとして確定できる計画期間は仕様書から読めないため'
+  };
+}
+
+function summarizeBusinessContext(docs, codeDerived = false) {
+  const signals = [...new Set(docs.flatMap((doc) => doc.business_signals ?? []))];
+  return {
+    signals,
+    source: codeDerived ? 'code_surface' : 'documents',
+    evidence_paths: docs
+      .filter((doc) => (doc.business_signals ?? []).length > 0)
+      .map((doc) => doc.path)
+      .slice(0, 5)
+  };
+}
+
+function extractBusinessSignals(content) {
+  const signals = [];
+  const checks = [
+    [/SEO|オーガニック検索|検索流入/, 'SEO流入'],
+    [/コンバージョン|予約への誘導|ホテル予約|CVR/i, 'コンバージョン'],
+    [/収益|月額|課金|サブスクリプション|プレミアム|売上/, '収益化'],
+    [/効率|効率化|意思決定|選択できる|視覚的に把握/, 'ユーザー効率'],
+    [/パーソナライズ|嗜好|マッチング|個人化/, '個人化'],
+    [/通知|再訪|既読|メール|Push|プッシュ/, '継続利用'],
+    [/非エンジニア|運用効率|コンテンツ作成/, '運用効率']
+  ];
+  for (const [pattern, label] of checks) {
+    if (pattern.test(content)) signals.push(label);
+  }
+  return signals;
+}
+
+function extractTimelineSignals(content) {
+  const signals = [];
+  const dateMatches = content.match(/\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{4}年\d{1,2}月\d{1,2}日/g) ?? [];
+  const durationMatches = content.match(/\d+(?:\.\d+)?\s*(?:日|週間|ヶ月|か月|月)/g) ?? [];
+  signals.push(...dateMatches.slice(0, 5), ...durationMatches.slice(0, 5));
+  return [...new Set(signals)];
+}
+
+function findExplicitManagementPeriod(docs) {
+  const text = docs.flatMap((doc) => doc.timeline_signals ?? []).join(' ');
+  const quarter = text.match(/\d{4}Q[1-4]/);
+  if (quarter) return quarter[0];
+  const month = text.match(/\d{4}-\d{2}(?!-\d{2})/);
+  if (month) return month[0];
+  return null;
+}
+
+function collectOpenQuestions(stories) {
+  return stories.flatMap((story) => (story.derived?.open_questions ?? []).map((item) => ({
+    story_id: story.story_id,
+    field: item.field,
+    question: item.question
+  })));
+}
+
+function parseFrontMatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  return Object.fromEntries(match[1].split(/\r?\n/)
+    .map((line) => line.match(/^([A-Za-z0-9_-]+):\s*(.+)$/))
+    .filter(Boolean)
+    .map((matchLine) => [matchLine[1], normalizeFrontMatterValue(matchLine[2])]));
+}
+
+function normalizeFrontMatterValue(value) {
+  const trimmed = value.trim();
+  if (/^\d+$/.test(trimmed)) return Number(trimmed);
+  return trimmed.replace(/^["']|["']$/g, '');
+}
+
+function dedupeDocs(docs) {
+  const seen = new Set();
+  const result = [];
+  for (const doc of docs) {
+    if (seen.has(doc.path)) continue;
+    seen.add(doc.path);
+    result.push(doc);
+  }
+  return result.sort((a, b) => documentRank(a.path) - documentRank(b.path) || a.path.localeCompare(b.path));
+}
+
+function documentRank(filePath) {
+  if (filePath.startsWith('docs/user_stories/')) return 0;
+  if (filePath.startsWith('docs/requirements/')) return 1;
+  if (filePath.startsWith('docs/features/')) return 2;
+  if (filePath.startsWith('docs/shadow-call/')) return 3;
+  if (filePath.startsWith('docs/architecture/')) return 4;
+  if (filePath.startsWith('docs/cms/')) return 5;
+  if (filePath.startsWith('docs/dev/')) return 6;
+  return 9;
+}
+
+function selectDocs(documentSignals, key) {
+  return documentSignals[key] ?? [];
+}
+
+function docPaths(documentSignals, key) {
+  return selectDocs(documentSignals, key).map((doc) => doc.path);
+}
+
+async function readEvidence(repoRoot, manifest, fromRunId) {
+  const runs = Array.isArray(manifest?.runs) ? manifest.runs : [];
+  const targetRun = fromRunId
+    ? runs.find((run) => run.run_id === fromRunId)
+    : runs.find((run) => run.run_id === manifest?.latest_run) ?? runs[0];
+  if (!targetRun?.artifacts?.evidence) return null;
+  return JSON.parse(await readFile(path.resolve(repoRoot, targetRun.artifacts.evidence), 'utf8'));
+}
+
+async function readGraph(repoRoot) {
+  try {
+    return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json'), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function summarizeGraph(graph) {
+  const edges = Array.isArray(graph?.edges) ? graph.edges : Array.isArray(graph?.links) ? graph.links : [];
+  return {
+    node_count: Array.isArray(graph?.nodes) ? graph.nodes.length : 0,
+    edge_count: edges.length
+  };
+}
+
+function buildGraphStoryCoverage(graph, stories) {
+  if (!Array.isArray(graph?.nodes)) {
+    return {
+      model: 'graphify-story-coverage-v1',
+      status: 'unavailable',
+      reason: 'graphify graph.json が見つからないためCoverage Gateを実行できない。',
+      totals: {
+        graph_story_relevant_files: 0,
+        covered_files: 0,
+        uncovered_files: 0,
+        coverage_ratio: null
+      },
+      by_role: [],
+      uncovered: []
+    };
+  }
+
+  const graphFiles = summarizeGraphFiles(graph.nodes);
+  const relevantFiles = graphFiles.filter((item) => isStoryRelevantGraphFile(item.path));
+  const coverageMatchers = buildStoryCoverageMatchers(stories);
+  const uncovered = relevantFiles
+    .filter((item) => !isCoveredByStory(item.path, coverageMatchers))
+    .map((item) => ({
+      path: item.path,
+      role: classifyStoryRelevantFile(item.path),
+      node_count: item.node_count,
+      reason: 'graphify上は主要な画面/API/ドメインコードだが、Story根拠に紐づいていない。'
+    }))
+    .sort((a, b) => b.node_count - a.node_count || a.path.localeCompare(b.path));
+  const coveredCount = relevantFiles.length - uncovered.length;
+  const byRole = summarizeCoverageByRole(relevantFiles, uncovered);
+
+  return {
+    model: 'graphify-story-coverage-v1',
+    status: uncovered.length > 0 ? 'warn' : 'pass',
+    totals: {
+      graph_story_relevant_files: relevantFiles.length,
+      covered_files: coveredCount,
+      uncovered_files: uncovered.length,
+      coverage_ratio: relevantFiles.length === 0 ? null : Number((coveredCount / relevantFiles.length).toFixed(4))
+    },
+    by_role: byRole,
+    uncovered
+  };
+}
+
+function summarizeGraphFiles(nodes) {
+  const counts = new Map();
+  for (const node of nodes) {
+    const sourceFile = normalizeGraphSourceFile(node.source_file);
+    if (!sourceFile) continue;
+    counts.set(sourceFile, (counts.get(sourceFile) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([pathName, nodeCount]) => ({
+    path: pathName,
+    node_count: nodeCount
+  }));
+}
+
+function buildStoryCoverageMatchers(stories) {
+  const paths = new Set();
+  const patterns = [];
+  for (const story of stories) {
+    for (const pathName of story.source?.paths ?? []) {
+      if (isCodePath(pathName)) paths.add(normalizeGraphSourceFile(pathName));
+    }
+    for (const item of story.derived?.story_definition?.source_synthesis ?? []) {
+      if (isCodePath(item.path)) paths.add(normalizeGraphSourceFile(item.path));
+    }
+    patterns.push(...(STORY_COVERAGE_PATTERNS[story.story_id] ?? []));
+  }
+  return { paths, patterns };
+}
+
+function isCoveredByStory(pathName, coverageMatchers) {
+  if (coverageMatchers.paths.has(pathName)) return true;
+  if ([...coverageMatchers.paths].some((coveredPath) => pathName.startsWith(`${coveredPath}/`) || coveredPath.startsWith(`${pathName}/`))) return true;
+  return coverageMatchers.patterns.some((pattern) => pattern.test(pathName));
+}
+
+function summarizeCoverageByRole(relevantFiles, uncovered) {
+  const uncoveredByPath = new Set(uncovered.map((item) => item.path));
+  const groups = groupBy(relevantFiles, (item) => classifyStoryRelevantFile(item.path));
+  return Object.entries(groups)
+    .map(([role, items]) => {
+      const uncoveredCount = items.filter((item) => uncoveredByPath.has(item.path)).length;
+      return {
+        role,
+        total: items.length,
+        covered: items.length - uncoveredCount,
+        uncovered: uncoveredCount
+      };
+    })
+    .sort((a, b) => b.uncovered - a.uncovered || a.role.localeCompare(b.role));
+}
+
+function isStoryRelevantGraphFile(filePath) {
+  if (!isCodePath(filePath)) return false;
+  if (/\.(test|spec)\.[jt]sx?$/.test(filePath)) return false;
+  if (/\/(__tests__|test|tests)\//.test(filePath)) return false;
+  if (/\/(ui|magicui)\//.test(filePath)) return false;
+  if (/\/fonts\//.test(filePath)) return false;
+  if (/\.types\.[jt]s$/.test(filePath)) return false;
+  if (/(^|\/)(index|types|styles|constants)\.[jt]sx?$/.test(filePath)) return false;
+  return [
+    /^src\/app\/.+\/(page|route|client)\.[jt]sx?$/,
+    /^src\/app\/.+\/_components\/.+\.[jt]sx?$/,
+    /^src\/components\/(auth|hotel|layout|modals|common\/hotel_card)\/.+\.[jt]sx?$/,
+    /^src\/lib\/actions\/.+\.[jt]s$/,
+    /^src\/lib\/auth\/.+\.[jt]s$/,
+    /^src\/lib\/article\/.+\.[jt]s$/,
+    /^src\/lib\/crawlers\/.+\.[jt]s$/,
+    /^src\/lib\/services\/.+\.[jt]s$/,
+    /^src\/lib\/api\/.+\.[jt]s$/
+  ].some((pattern) => pattern.test(filePath));
+}
+
+function classifyStoryRelevantFile(filePath) {
+  if (/^src\/app\/.+\/route\.[jt]s$/.test(filePath)) return 'api_route';
+  if (/^src\/app\//.test(filePath)) return 'app_route';
+  if (/^src\/components\//.test(filePath)) return 'component';
+  if (/^src\/lib\/actions\//.test(filePath)) return 'server_action';
+  if (/^src\/lib\/crawlers\//.test(filePath)) return 'crawler';
+  if (/^src\/lib\/auth\//.test(filePath)) return 'auth';
+  if (/^src\/lib\/article\//.test(filePath)) return 'article_logic';
+  if (/^src\/lib\/api\//.test(filePath)) return 'api_client';
+  return 'domain_code';
+}
+
+function isCodePath(filePath) {
+  return typeof filePath === 'string' && filePath.startsWith('src/');
+}
+
+function normalizeGraphSourceFile(filePath) {
+  if (typeof filePath !== 'string' || filePath.length === 0) return null;
+  return filePath.replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+function findCurrentStory(config) {
+  const stories = Array.isArray(config?.brainbase?.stories) ? config.brainbase.stories : [];
+  return stories.find((story) => story.story_id === config?.brainbase?.current_story_id)
+    ?? stories.find((story) => !['archived', 'アーカイブ'].includes(story.status))
+    ?? null;
+}
+
+function buildDefaultStoryFields(currentStory) {
+  const today = new Date();
+  return {
+    view: currentStory?.view ?? 'dev',
+    period: currentStory?.period ?? formatIsoWeek(today),
+    started_at: currentStory?.started_at ?? formatLocalDate(today),
+    due_at: null
+  };
+}
+
+function dedupeStories(stories) {
+  const seen = new Set();
+  const result = [];
+  for (const story of stories) {
+    if (seen.has(story.story_id)) continue;
+    seen.add(story.story_id);
+    result.push(story);
+  }
+  return result.sort((a, b) => {
+    const categoryOrder = ['product', 'architecture', 'security', 'ops', 'quality', 'docs'];
+    return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category) || a.story_id.localeCompare(b.story_id);
+  });
+}
+
+function formatIsoWeek(date) {
+  const target = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = target.getUTCDay() || 7;
+  target.setUTCDate(target.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(target.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+  return `${target.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function formatLocalDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function currentMonth(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function currentQuarter(date = new Date()) {
+  return `${date.getFullYear()}Q${Math.floor(date.getMonth() / 3) + 1}`;
+}
+
+function evidencePathForRun(manifest, runId) {
+  const run = (manifest?.runs ?? []).find((item) => item.run_id === runId);
+  return run?.artifacts?.evidence ?? null;
+}
+
+function groupBy(items, getKey) {
+  return items.reduce((groups, item) => {
+    const key = getKey(item);
+    groups[key] = [...(groups[key] ?? []), item];
+    return groups;
+  }, {});
+}
+
+function renderExecutiveSummary(catalog, stories) {
+  const viewCounts = countBy(stories, (story) => story.view ?? 'unknown');
+  const categoryCounts = countBy(stories, (story) => story.category ?? 'unknown');
+  const sourceCounts = countBy(stories, (story) => story.source?.type ?? 'unknown');
+  const questionCounts = countBy(catalog.open_questions ?? [], (item) => item.field ?? 'unknown');
+  const coverage = catalog.coverage;
+
+  return [
+    `- 生成日時: ${catalog.generated_at ?? '-'}`,
+    `- 診断run: ${catalog.source?.run_id ?? '-'}`,
+    `- Story数: ${stories.length}`,
+    `- View: ${formatCounts(viewCounts)}`,
+    `- Category: ${formatCounts(categoryCounts)}`,
+    `- Source: ${formatCounts(sourceCounts)}`,
+    `- Graph: nodes ${catalog.source?.graphify?.node_count ?? 0}, edges ${catalog.source?.graphify?.edge_count ?? 0}`,
+    `- Coverage Gate: ${coverage?.status ?? 'unavailable'} (${formatCoverageRatio(coverage?.totals?.coverage_ratio)})`,
+    `- 主な不明点: ${formatCounts(questionCounts) || '-'}`
+  ].join('\n');
+}
+
+function renderReviewQueue(catalog, stories) {
+  const items = [];
+  const coverage = catalog.coverage;
+  if (coverage?.status === 'warn') {
+    items.push(`- Graph Coverage が warn。未カバー ${coverage.totals?.uncovered_files ?? 0} / ${coverage.totals?.graph_story_relevant_files ?? 0} files。まず未カバー上位を既存Storyへ吸収するか、新Storyにするか判断する。`);
+  } else if (coverage?.status === 'pass') {
+    items.push('- Graph Coverage は pass。コード面の主要ファイルはStory根拠に紐づいている。');
+  } else {
+    items.push('- Graph Coverage は unavailable。graphify成果物を取り込んでから再生成する。');
+  }
+
+  const missingSpecStories = stories.filter((story) => hasOpenQuestion(story, 'missing_spec'));
+  if (missingSpecStories.length > 0) {
+    items.push(`- 仕様/Storyがないコード由来Storyが ${missingSpecStories.length} 件ある。優先確認: ${missingSpecStories.slice(0, 5).map((story) => story.story_id).join(', ')}`);
+  }
+
+  const periodUnknownCount = (catalog.open_questions ?? []).filter((item) => item.field === 'period').length;
+  if (periodUnknownCount > 0) {
+    items.push(`- Period未確定が ${periodUnknownCount} 件ある。NocoDB同期前に実行期を確定するか、未定として扱う方針を決める。`);
+  }
+
+  const topUncovered = (coverage?.uncovered ?? []).slice(0, 8);
+  if (topUncovered.length > 0) {
+    items.push('- Coverage未カバー上位:');
+    items.push(...topUncovered.map((item) => `  - ${item.path} (${item.role}, nodes:${item.node_count})`));
+  }
+
+  return items.join('\n');
+}
+
+function renderStoryPortfolio(stories) {
+  const groups = groupBy(stories, (story) => story.category ?? 'unknown');
+  return Object.entries(groups)
+    .sort(([a], [b]) => {
+      const order = ['product', 'architecture', 'security', 'ops', 'quality', 'docs'];
+      return order.indexOf(a) - order.indexOf(b) || a.localeCompare(b);
+    })
+    .map(([category, items]) => {
+      const rows = items.map((story) => {
+        const flags = storyFlags(story);
+        const source = story.source?.type ?? '-';
+        const period = story.period ?? '-';
+        return `- \`${story.story_id}\` ${story.title} — ${story.view ?? '-'} / ${story.horizon ?? '-'} / period:${period} / source:${source}${flags ? ` / ${flags}` : ''}`;
+      }).join('\n');
+      return `### ${category} (${items.length})\n\n${rows}`;
+    })
+    .join('\n\n');
+}
+
+function renderStoryCard(story) {
+  const definition = story.derived?.story_definition ?? {};
+  const meaning = story.derived?.meaning ?? {};
+  const evidence = sourceSynthesisLines(definition.source_synthesis ?? [], 4);
+  const questions = story.derived?.open_questions ?? [];
+  const importantQuestions = questions
+    .filter((item) => item.field !== 'period')
+    .slice(0, 4);
+  const periodQuestion = questions.find((item) => item.field === 'period');
+  const questionLines = importantQuestions.length > 0
+    ? importantQuestions.map((item) => `  - ${item.field}: ${item.question}`).join('\n')
+    : '  - -';
+  const acceptance = Array.isArray(definition.acceptance_focus) && definition.acceptance_focus.length > 0
+    ? definition.acceptance_focus.slice(0, 4).map((item) => `  - ${item}`).join('\n')
+    : '  - -';
+  const meaningLines = renderMeaningLines(meaning);
+
+  return `### ${story.title}
+
+- Story ID: \`${story.story_id}\`
+- 管理: view:${story.view ?? '-'} / category:${story.category ?? '-'} / horizon:${story.horizon ?? '-'} / period:${story.period ?? '-'}
+- 根拠: ${story.source?.type ?? '-'}${story.source?.paths?.length ? ` (${story.source.paths.length} paths)` : ''}
+- 誰のため: ${definition.who ?? '-'}
+- 課題: ${definition.problem ?? '-'}
+- 望む変化: ${definition.want ?? '-'}
+- 成果: ${definition.outcome ?? '-'}
+- 事業価値: ${definition.business_value ?? '-'}
+- 意味づけ:
+${meaningLines}
+- 受け入れ観点:
+${acceptance}
+- 主要根拠:
+${evidence}
+- 未決事項:
+${questionLines}
+${periodQuestion ? `- Period: ${periodQuestion.question}` : '- Period: -'}`;
+}
+
+function renderMeaningLines(meaning) {
+  if (!meaning || Object.keys(meaning).length === 0) return '  - -';
+  const workflow = meaning.workflow_position ?? {};
+  const counterEvidence = Array.isArray(meaning.counter_evidence) && meaning.counter_evidence.length > 0
+    ? meaning.counter_evidence.slice(0, 2).join(' / ')
+    : '-';
+  return [
+    `  - 価値仮説: ${meaning.value_hypothesis ?? '-'}`,
+    `  - 信頼度: actor:${meaning.user_actor?.confidence ?? '-'} / biz:${meaning.business_goal?.confidence ?? '-'} / code:${meaning.code_scope?.confidence ?? '-'} / overall:${meaning.confidence ?? '-'}`,
+    `  - 位置づけ: ${workflow.stage ?? '-'} / before:${formatStoryRefs(workflow.before)} / after:${formatStoryRefs(workflow.after)}`,
+    `  - 反証・不足: ${counterEvidence}`
+  ].join('\n');
+}
+
+function renderCoverageAppendix(coverage) {
+  const roleRows = (coverage?.by_role ?? [])
+    .map((item) => `| ${item.role} | ${item.total} | ${item.covered} | ${item.uncovered} |`)
+    .join('\n');
+  const uncoveredRows = (coverage?.uncovered ?? [])
+    .slice(0, 50)
+    .map((item) => `| ${item.path} | ${item.role} | ${item.node_count} |`)
+    .join('\n');
+
+  return `| 項目 | 内容 |
+|------|------|
+| Status | ${coverage?.status ?? 'unavailable'} |
+| 対象ファイル | ${coverage?.totals?.graph_story_relevant_files ?? 0} |
+| Covered | ${coverage?.totals?.covered_files ?? 0} |
+| Uncovered | ${coverage?.totals?.uncovered_files ?? 0} |
+| Coverage | ${formatCoverageRatio(coverage?.totals?.coverage_ratio)} |
+
+### Role別
+
+| Role | Total | Covered | Uncovered |
+|------|-------|---------|-----------|
+${roleRows || '| - | 0 | 0 | 0 |'}
+
+### 未カバー上位
+
+| Path | Role | Nodes |
+|------|------|-------|
+${uncoveredRows || '| - | - | 0 |'}`;
+}
+
+function renderOpenQuestionsAppendix(openQuestions) {
+  if (openQuestions.length === 0) return '-';
+  const groups = groupBy(openQuestions, (item) => item.field ?? 'unknown');
+  return Object.entries(groups)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([field, items]) => {
+      const rows = items
+        .map((item) => `- \`${item.story_id}\`: ${item.question}`)
+        .join('\n');
+      return `### ${field} (${items.length})\n\n${rows}`;
+    })
+    .join('\n\n');
+}
+
+function countBy(items, getKey) {
+  return Object.entries(groupBy(items, getKey))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, values]) => ({ key, count: values.length }));
+}
+
+function formatCounts(counts) {
+  return counts.map((item) => `${item.key}:${item.count}`).join(', ');
+}
+
+function storyFlags(story) {
+  const fields = (story.derived?.open_questions ?? []).map((item) => item.field);
+  const flags = [];
+  if (fields.includes('missing_spec')) flags.push('missing_spec');
+  if (fields.includes('business_metric')) flags.push('metric_unknown');
+  if (fields.includes('period')) flags.push('period_unknown');
+  return flags.join(', ');
+}
+
+function hasOpenQuestion(story, field) {
+  return (story.derived?.open_questions ?? []).some((item) => item.field === field);
+}
+
+function sourceSynthesisLines(items, limit) {
+  if (!Array.isArray(items) || items.length === 0) return '  - -';
+  return items.slice(0, limit).map((item) => `  - ${item.path}: ${item.role}${item.title ? ` (${item.title})` : ''}`).join('\n');
+}
+
+function formatStoryRefs(items) {
+  return Array.isArray(items) && items.length > 0 ? items.join(', ') : '-';
+}
+
+function formatSource(story) {
+  const source = story.source ?? {};
+  const paths = source.paths?.length ? `:${source.paths.slice(0, 2).join('<br>')}` : '';
+  return `${source.type ?? '-'}${paths}`;
+}
+
+function formatPrediction(story) {
+  const predictions = story.derived?.predictions ?? {};
+  return [
+    formatPredictionItem('view', predictions.view),
+    formatPredictionItem('horizon', predictions.horizon),
+    formatPredictionItem('period', predictions.period)
+  ].filter(Boolean).join('<br>') || '-';
+}
+
+function formatPredictionItem(label, prediction) {
+  if (!prediction) return null;
+  const value = prediction.value ?? prediction.candidate ?? '-';
+  return `${label}:${value}(${prediction.confidence ?? 'unknown'})`;
+}
+
+function formatOpenQuestions(story) {
+  const questions = story.derived?.open_questions ?? [];
+  if (questions.length === 0) return '-';
+  return questions.map((item) => `${item.field}: ${item.question}`).join('<br>');
+}
+
+function formatCoverageRatio(value) {
+  if (typeof value !== 'number') return '-';
+  return `${Math.round(value * 1000) / 10}%`;
+}
+
+function renderStoryDetail(story) {
+  const definition = story.derived?.story_definition ?? {};
+  const meaning = story.derived?.meaning ?? {};
+  const acceptance = Array.isArray(definition.acceptance_focus) && definition.acceptance_focus.length > 0
+    ? definition.acceptance_focus.map((item) => `  - ${item}`).join('\n')
+    : '  - -';
+  const sources = Array.isArray(definition.source_synthesis) && definition.source_synthesis.length > 0
+    ? definition.source_synthesis.map((item) => `  - ${item.path}: ${item.role}${item.title ? ` (${item.title})` : ''}`).join('\n')
+    : '  - -';
+  const openQuestions = (story.derived?.open_questions ?? []).length > 0
+    ? story.derived.open_questions.map((item) => `  - ${item.field}: ${item.question}`).join('\n')
+    : '  - -';
+
+  return `### ${story.title} (${story.story_id})
+
+- View: ${story.view ?? '-'}
+- Category: ${story.category ?? '-'}
+- Horizon: ${story.horizon ?? '-'}
+- Period: ${story.period ?? '-'}
+- Who: ${definition.who ?? '-'}
+- Problem: ${definition.problem ?? '-'}
+- Want: ${definition.want ?? '-'}
+- Outcome: ${definition.outcome ?? '-'}
+- Business value: ${definition.business_value ?? '-'}
+- Meaning:
+${renderMeaningLines(meaning)}
+- Acceptance focus:
+${acceptance}
+- Evidence synthesis:
+${sources}
+- Open questions:
+${openQuestions}`;
+}
+
+function extractMarkdownTitle(content) {
+  const line = content.split(/\r?\n/).find((item) => item.startsWith('# '));
+  return line ? line.replace(/^#\s+/, '').trim() : null;
+}
+
+function humanizeFileName(filePath) {
+  return path.basename(filePath, path.extname(filePath))
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
