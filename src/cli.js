@@ -4,6 +4,7 @@ import { runDiagnosis } from './diagnostic-engine.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
+import { preparePullRequest, renderPrPrepareSummary } from './pr-manager.js';
 import {
   addStory,
   archiveStory,
@@ -47,6 +48,7 @@ Usage:
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
+  vibepro pr prepare [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -215,6 +217,26 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'pr') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'prepare') {
+        const result = await preparePullRequest(repoRoot, {
+          storyId: getOption(rest, '--story-id'),
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          maxReviewableFiles: parseNumberOption(rest, '--max-files')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.preparation, null, 2)}\n`
+          : renderPrPrepareSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown pr command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
     if (command === 'brainbase') {
       const repoRoot = rest[0] ?? process.cwd();
       if (hasFlag(rest, '--sync-stories')) {
@@ -256,6 +278,14 @@ function getOption(args, name) {
 
 function hasFlag(args, name) {
   return args.includes(name);
+}
+
+function parseNumberOption(args, name) {
+  const value = getOption(args, name);
+  if (value === null) return null;
+  const number = Number(value);
+  if (!Number.isFinite(number)) throw new Error(`${name} must be a number`);
+  return number;
 }
 
 function write(stream, text) {

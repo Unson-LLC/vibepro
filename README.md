@@ -198,7 +198,50 @@ node bin/vibepro.js status /path/to/repo --json
 
 `story diagnose` はStory選択、graphify取り込み、診断、Storyレポート生成、status表示を一度に行う。`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。`story report` は `.vibepro/stories/<story-id>/story-report.md` にStory単位の診断レポートを生成する。診断時には `.vibepro/stories/<story-id>/tasks/tasks.json` と `tasks.md` も自動生成し、Storyレポートには生成タスク一覧を投影する。いずれもNocoDBなしにローカルの `.vibepro/` だけで動く。
 
-### 5. Brainbase 取り込み状態の生成
+### 5. PR準備
+
+Story実装後、PRを作る前に差分範囲を確認し、PR本文ドラフトを生成する。
+
+```bash
+node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
+```
+
+生成される主な成果物:
+
+```text
+.vibepro/pr/<story-id>/
+├── pr-prepare.json
+├── pr-prepare.md
+└── pr-body.md
+```
+
+`pr prepare` は以下を確認する。
+
+- 選択中Story
+- baseからHEADまでの変更ファイル
+- Story / Architecture / Spec / Source / Test / repo制御ファイルの差分分類
+- baseからのcommit数
+- 未コミット差分
+- 現在ブランチでPR化してよいか、クリーンブランチへ切り出すべきか
+
+差分が大きい、`.claude/` や `AGENTS.md` などのrepo制御ファイルが混ざる、複数commitが混在する、未コミット差分が残る場合は `needs_clean_branch` と判定する。この場合、VibePro は自動でPRを作らず、クリーンブランチ作成と cherry-pick の次コマンドを提示する。
+
+例:
+
+```bash
+node bin/vibepro.js pr prepare /path/to/repo \
+  --story-id story-local-hardening \
+  --base origin/develop \
+  --branch feat/local-hardening
+```
+
+機械可読な結果だけを見る場合:
+
+```bash
+node bin/vibepro.js pr prepare /path/to/repo --base origin/develop --json
+```
+
+### 6. Brainbase 取り込み状態の生成
 
 ```bash
 node bin/vibepro.js brainbase /path/to/repo

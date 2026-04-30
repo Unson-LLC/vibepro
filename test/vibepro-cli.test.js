@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { runCli } from '../src/cli.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
+
+const execFileAsync = promisify(execFile);
 
 async function makeRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-test-'));
@@ -16,6 +20,22 @@ async function makeRepo() {
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
+}
+
+async function git(repo, args) {
+  return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function makeGitRepoWithStory() {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-pr-prepare', '--title', 'PR準備', '--view', 'dev', '--period', '2026-W18']);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: init test repo']);
+  await git(repo, ['switch', '-c', 'feature/test-story']);
+  return repo;
 }
 
 test('init creates a repo-local VibePro workspace and ignore file', async () => {
@@ -222,6 +242,52 @@ test('brainbase import uses selected local story and excludes archived stories',
   assert.equal(importState.story.story_id, 'story-active-local');
   assert.equal(importState.story.ssot, 'local');
   assert.equal(importState.stories.some((story) => story.story_id === 'story-archived-local'), false);
+});
+
+test('pr prepare writes PR artifacts for the selected story', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'management', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await mkdir(path.join(repo, 'tests', 'unit'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-001-pr-prepare.md'), '# Story');
+  await writeFile(path.join(repo, 'docs', 'management', 'architecture', 'ADR-001-pr-prepare.md'), '# ADR');
+  await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = true;\n');
+  await writeFile(path.join(repo, 'tests', 'unit', 'pr-prepare.test.js'), 'export const ok = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  assert.equal(prepare.story.story_id, 'story-pr-prepare');
+  assert.equal(prepare.scope.status, 'reviewable');
+  assert.equal(prepare.file_groups.story_docs.count, 1);
+  assert.equal(prepare.file_groups.architecture_docs.count, 1);
+  assert.equal(prepare.file_groups.source.count, 1);
+  assert.equal(prepare.file_groups.tests.count, 1);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8'), /story-pr-prepare/);
+});
+
+test('pr prepare recommends a clean branch for broad session diffs', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, '.claude', 'commands'), { recursive: true });
+  await writeFile(path.join(repo, '.claude', 'commands', 'commit.md'), '# command');
+  for (let index = 0; index < 5; index += 1) {
+    await mkdir(path.join(repo, 'src', `feature-${index}`), { recursive: true });
+    await writeFile(path.join(repo, 'src', `feature-${index}`, 'index.js'), `export const value = ${index};\n`);
+  }
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: broad session work']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.scope.status, 'needs_clean_branch');
+  assert.equal(result.result.preparation.scope.recommended_strategy, 'clean_branch_or_split_pr');
+  assert.equal(result.result.preparation.file_groups.repo_control.count, 1);
+  assert.match(result.result.preparation.next_commands.join('\n'), /git switch -c feat\/pr-prepare main/);
 });
 
 test('story task generator groups admin API routes by domain', () => {
