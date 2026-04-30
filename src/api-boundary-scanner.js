@@ -168,7 +168,12 @@ function hasWebhookSignatureCheck(content) {
     || /\.headers\.get\s*\(\s*['"`][^'"`]*signature[^'"`]*['"`]\s*\)/i.test(content)
     || /\bstripe-signature\b/i.test(content);
   const verifiesSignature = /\b(constructEvent|webhooks\.verify|verifyWebhook|verifySignature|verify)\s*\(/i.test(content);
-  return readsSignatureHeader && verifiesSignature;
+  const readsWebhookTokenHeader = /\.headers\.get\s*\([^)]*(webhookHeaderName|authorization|token|signature)[^)]*\)/i.test(content)
+    || /\bheaders\s*\(\s*\)\.get\s*\([^)]*(webhookHeaderName|authorization|token|signature)[^)]*\)/i.test(content);
+  const hasWebhookTokenSecret = /\b(expectedWebhookToken|webhookAuthToken|webhookSecret|WEBHOOK[A-Z0-9_]*(TOKEN|SECRET|AUTH)|resolve[A-Za-z0-9_]*Webhook[A-Za-z0-9_]*Token)\b/.test(content);
+  const verifiesWebhookToken = /\b(verify[A-Za-z0-9_]*(Webhook|Signature|Token)[A-Za-z0-9_]*|timingSafeEqual|safeSignatureEquals)\s*\(/.test(content);
+  return (readsSignatureHeader && verifiesSignature)
+    || (readsWebhookTokenHeader && hasWebhookTokenSecret && verifiesWebhookToken);
 }
 
 function hasRouteAuthReference(content) {

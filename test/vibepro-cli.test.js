@@ -409,6 +409,62 @@ export async function getUser() {
   assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
 });
 
+test('api boundary detects webhook signature checks for Svix and token based routes', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'resend'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhooks', 'resend', 'route.ts'), `
+import { Webhook } from 'svix';
+
+export async function POST(request) {
+  const webhook = new Webhook(process.env.RESEND_WEBHOOK_SECRET);
+  const payload = await request.text();
+  const svixId = request.headers.get('svix-id');
+  const svixTimestamp = request.headers.get('svix-timestamp');
+  const svixSignature = request.headers.get('svix-signature');
+  webhook.verify(payload, {
+    'svix-id': svixId ?? '',
+    'svix-timestamp': svixTimestamp ?? '',
+    'svix-signature': svixSignature ?? ''
+  });
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'timerex'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'webhooks', 'timerex', 'route.ts'), `
+import { verifyTimerexWebhookSignature } from '@/lib/services/timerex';
+
+export async function POST(request) {
+  const webhookHeaderName = 'x-timerex-authorization';
+  const expectedWebhookToken = process.env.TIMEREX_WEBHOOK_DEFAULT_TOKEN;
+  const actualWebhookToken = request.headers.get(webhookHeaderName);
+  if (!verifyTimerexWebhookSignature({ actualToken: actualWebhookToken, expectedToken: expectedWebhookToken })) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: [
+          'src/app/api/webhooks/resend/route.ts',
+          'src/app/api/webhooks/timerex/route.ts'
+        ]
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  for (const route of result.routes) {
+    assert.equal(route.protection.status, 'protected_by_route');
+    assert.equal(route.protection.evidence.includes('webhook_signature_check'), true);
+    assert.equal(route.risk_hints.includes('webhook_signature_not_detected'), false);
+  }
+});
+
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
