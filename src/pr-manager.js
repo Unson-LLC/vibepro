@@ -76,11 +76,16 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.md');
   const bodyPath = path.join(prDir, 'pr-body.md');
+  const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
+  const gateDagReportPath = path.join(prDir, 'gate-dag.md');
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`);
   await writeFile(bodyPath, prBody);
+  await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`);
+  await writeFile(gateDagReportPath, renderGateDagReport(prContext.gate_dag));
   await writeFile(reportPath, renderPrepareReport({
     preparation,
-    bodyPath: toWorkspaceRelative(root, bodyPath)
+    bodyPath: toWorkspaceRelative(root, bodyPath),
+    gateDagPath: toWorkspaceRelative(root, gateDagReportPath)
   }));
 
   if (workspace.initialized) {
@@ -90,6 +95,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_prepare: toWorkspaceRelative(root, jsonPath),
         latest_report: toWorkspaceRelative(root, reportPath),
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
+        latest_gate_dag: toWorkspaceRelative(root, gateDagJsonPath),
+        latest_gate_dag_report: toWorkspaceRelative(root, gateDagReportPath),
         latest_prepare_generated_at: preparation.created_at
       }
     };
@@ -102,7 +109,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
     artifacts: {
       json: jsonPath,
       report: reportPath,
-      pr_body: bodyPath
+      pr_body: bodyPath,
+      gate_dag: gateDagJsonPath,
+      gate_dag_report: gateDagReportPath
     }
   };
 }
@@ -127,6 +136,7 @@ export function renderPrPrepareSummary(result) {
 
 - report: ${toDisplayPath(result.artifacts.report)}
 - pr_body: ${toDisplayPath(result.artifacts.pr_body)}
+- gate_dag: ${toDisplayPath(result.artifacts.gate_dag)}
 - json: ${toDisplayPath(result.artifacts.json)}
 `;
 }
@@ -301,7 +311,7 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
   ];
 }
 
-function renderPrepareReport({ preparation, bodyPath }) {
+function renderPrepareReport({ preparation, bodyPath, gateDagPath }) {
   const groups = Object.entries(preparation.file_groups)
     .filter(([, value]) => value.count > 0)
     .map(([key, value]) => `| ${key} | ${value.count} | ${value.files.slice(0, 8).join('<br>')}${value.files.length > 8 ? '<br>...' : ''} |`)
@@ -357,6 +367,13 @@ ${preparation.git.commits.length === 0 ? '- なし' : preparation.git.commits.ma
 
 - ${bodyPath}
 
+## Gate DAG
+
+- ${gateDagPath}
+- overall: ${preparation.pr_context.gate_dag.overall_status}
+- required gates: ${preparation.pr_context.gate_dag.summary.required_gate_count}
+- gates needing evidence: ${preparation.pr_context.gate_dag.summary.needs_evidence_count}
+
 ## 次コマンド
 
 ${preparation.next_commands.map((command) => `- \`${command}\``).join('\n')}
@@ -378,6 +395,7 @@ function renderPrBody({ story, git, fileGroups, latestStoryRun, scope, prContext
   const risks = prContext.risks.length === 0
     ? '- 特記事項なし'
     : prContext.risks.map((item) => `- ${item}`).join('\n');
+  const gateSummary = renderPrGateSummary(prContext.gate_dag);
 
   return `## 概要
 - Story: ${story.story_id} ${story.title}
@@ -412,6 +430,9 @@ ${acceptance}
 ## 検証
 ${verification}
 
+## Gate DAG
+${gateSummary}
+
 ## レビュー観点
 ${reviewPoints || '- Story / ADR / Spec と実装差分が対応しているか'}
 
@@ -429,14 +450,26 @@ async function buildPrContext(repoRoot, { story, git, fileGroups, latestStoryRun
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   const primaryStory = pickPrimaryStory(storyDocs, story);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
-  return {
+  const verificationCommands = buildVerificationCommands(fileGroups);
+  const e2eCommand = await detectPlaywrightCommand(repoRoot);
+  const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
     change_summary: buildChangeSummary(fileGroups),
-    verification_commands: buildVerificationCommands(fileGroups),
+    verification_commands: verificationCommands,
     review_points: buildReviewPoints(fileGroups),
-    risks: buildRisks({ git, fileGroups, latestStoryRun })
+    risks: []
   };
+  context.gate_dag = buildGateDag({
+    story,
+    storySource: primaryStory,
+    architectureDecision,
+    fileGroups,
+    verificationCommands,
+    e2eCommand
+  });
+  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag });
+  return context;
 }
 
 async function readStoryDocs(repoRoot, files) {
@@ -612,6 +645,180 @@ function buildVerificationCommands(fileGroups) {
   return commands;
 }
 
+function buildGateDag({ story, storySource, architectureDecision, fileGroups, verificationCommands, e2eCommand }) {
+  const acceptanceCriteria = storySource.acceptance_criteria.length > 0
+    ? storySource.acceptance_criteria
+    : ['Storyの受け入れ基準を明文化する'];
+  const gates = buildVerificationGates({ fileGroups, verificationCommands, e2eCommand });
+  const nodes = [
+    {
+      id: 'story',
+      type: 'story',
+      label: `${story.story_id} ${story.title}`,
+      status: storySource.path ? 'present' : 'transient',
+      artifact: storySource.path
+    },
+    {
+      id: 'architecture',
+      type: 'architecture_gate',
+      label: 'Architecture Gate',
+      status: architectureDecision.startsWith('ADRあり') || architectureDecision.startsWith('ADR不要') ? 'satisfied' : 'needs_review',
+      reason: architectureDecision
+    },
+    {
+      id: 'spec',
+      type: 'spec_gate',
+      label: 'Spec Gate',
+      status: fileGroups.specifications.count > 0 ? 'present' : 'implicit',
+      reason: fileGroups.specifications.count > 0
+        ? '仕様差分がある'
+        : 'Story受け入れ基準を仕様として扱う'
+    },
+    {
+      id: 'code',
+      type: 'code_gate',
+      label: 'Code Gate',
+      status: fileGroups.source.count > 0 ? 'present' : 'not_required',
+      files: fileGroups.source.files
+    },
+    ...gates,
+    {
+      id: 'pr',
+      type: 'pr_gate',
+      label: 'PR Gate',
+      status: 'pending',
+      reason: 'Unit / Integration / E2E Gateの証跡をPR本文で確認する'
+    }
+  ];
+
+  const acceptanceNodes = acceptanceCriteria.map((criterion, index) => ({
+    id: `ac:${index + 1}`,
+    type: 'acceptance_criterion',
+    label: criterion,
+    status: storySource.acceptance_criteria.length > 0 ? 'present' : 'missing'
+  }));
+
+  const edges = [
+    { from: 'story', to: 'architecture' },
+    { from: 'story', to: 'spec' },
+    { from: 'architecture', to: 'code' },
+    { from: 'spec', to: 'code' },
+    ...acceptanceNodes.flatMap((node) => [
+      { from: 'story', to: node.id },
+      { from: node.id, to: 'gate:unit' },
+      { from: node.id, to: 'gate:integration' },
+      { from: node.id, to: 'gate:e2e' }
+    ]),
+    { from: 'code', to: 'gate:unit' },
+    { from: 'gate:unit', to: 'gate:integration' },
+    { from: 'gate:integration', to: 'gate:e2e' },
+    { from: 'gate:e2e', to: 'pr' }
+  ];
+
+  const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
+  const requiredGates = gates.filter((gate) => gate.required);
+  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup'].includes(gate.status));
+  return {
+    schema_version: '0.1.0',
+    model: 'story-acceptance-verification-dag',
+    overall_status: needsEvidence.length > 0 ? 'needs_verification' : 'ready_for_review',
+    story_id: story.story_id,
+    summary: {
+      acceptance_criteria_count: acceptanceCriteria.length,
+      required_gate_count: requiredGates.length,
+      needs_evidence_count: needsEvidence.length
+    },
+    nodes: allNodes,
+    edges
+  };
+}
+
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }) {
+  const unitCommand = verificationCommands.find((item) => item.command.startsWith('npm test')) ?? null;
+  const typecheckCommand = verificationCommands.find((item) => item.command === 'npm run typecheck') ?? null;
+  return [
+    {
+      id: 'gate:unit',
+      type: 'verification_gate',
+      label: 'Unit Gate',
+      status: unitCommand ? 'candidate' : 'missing',
+      required: fileGroups.source.count > 0 || fileGroups.tests.count > 0,
+      command: unitCommand?.command ?? 'npm test',
+      reason: unitCommand?.reason ?? '受け入れ基準に対応するUnitテストを追加・実行する'
+    },
+    {
+      id: 'gate:integration',
+      type: 'verification_gate',
+      label: 'Integration Gate',
+      status: typecheckCommand || fileGroups.tests.count > 0 ? 'needs_evidence' : 'missing',
+      required: fileGroups.source.count > 0,
+      command: typecheckCommand?.command ?? 'npm test',
+      reason: '最終出力経路や型境界を含む統合確認を実行する'
+    },
+    {
+      id: 'gate:e2e',
+      type: 'verification_gate',
+      label: 'E2E Gate',
+      status: e2eCommand.detected ? 'needs_evidence' : 'needs_setup',
+      required: fileGroups.source.count > 0,
+      command: e2eCommand.command,
+      reason: e2eCommand.reason,
+      artifact_expectation: '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す'
+    }
+  ];
+}
+
+async function detectPlaywrightCommand(repoRoot) {
+  let packageJson = null;
+  try {
+    packageJson = JSON.parse(await readFile(path.join(repoRoot, 'package.json'), 'utf8'));
+  } catch {
+    return {
+      detected: false,
+      command: 'npx playwright test',
+      reason: 'package.jsonが見つからないため、Playwright CLIでE2E確認を追加する'
+    };
+  }
+
+  const scripts = packageJson.scripts ?? {};
+  const preferredNames = ['test:e2e', 'e2e', 'test:playwright', 'playwright'];
+  const preferred = preferredNames.find((name) => scripts[name]);
+  if (preferred) {
+    return {
+      detected: true,
+      command: `npm run ${preferred}`,
+      reason: `package.json の ${preferred} scriptでPlaywright E2Eを実行する`
+    };
+  }
+
+  const scriptEntry = Object.entries(scripts).find(([, command]) => /\bplaywright\b/.test(command));
+  if (scriptEntry) {
+    return {
+      detected: true,
+      command: `npm run ${scriptEntry[0]}`,
+      reason: `package.json の ${scriptEntry[0]} scriptでPlaywright E2Eを実行する`
+    };
+  }
+
+  const deps = {
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {})
+  };
+  if (deps['@playwright/test'] || deps.playwright) {
+    return {
+      detected: true,
+      command: 'npx playwright test',
+      reason: 'Playwright依存があるためCLIでE2Eを実行する'
+    };
+  }
+
+  return {
+    detected: false,
+    command: 'npx playwright test',
+    reason: 'Playwright scriptが未検出のため、対象フローのE2Eを追加してCLIで確認する'
+  };
+}
+
 function buildReviewPoints(fileGroups) {
   const points = [];
   if (fileGroups.story_docs.count > 0) points.push('Storyの受け入れ基準と実装差分が対応しているか');
@@ -621,7 +828,7 @@ function buildReviewPoints(fileGroups) {
   return points;
 }
 
-function buildRisks({ git, fileGroups, latestStoryRun }) {
+function buildRisks({ git, fileGroups, latestStoryRun, gateDag }) {
   const risks = [];
   if (fileGroups.tests.count === 0 && fileGroups.source.count > 0) {
     risks.push('ソース差分に対するテスト差分がない');
@@ -635,7 +842,54 @@ function buildRisks({ git, fileGroups, latestStoryRun }) {
   if (latestStoryRun?.gate_status && !['pass', 'ok'].includes(latestStoryRun.gate_status)) {
     risks.push(`最新診断gateが ${latestStoryRun.gate_status}`);
   }
+  const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e');
+  if (e2eGate?.required && ['needs_evidence', 'needs_setup'].includes(e2eGate.status)) {
+    risks.push('E2E GateのPlaywright CLI証跡が未記録');
+  }
   return risks;
+}
+
+function renderPrGateSummary(gateDag) {
+  const gates = gateDag.nodes.filter((node) => node.type === 'verification_gate');
+  const lines = [
+    `- overall: ${gateDag.overall_status}`,
+    `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
+    ...gates.map((gate) => {
+      const required = gate.required ? 'required' : 'optional';
+      return `- ${gate.label}: ${gate.status} (${required}) - \`${gate.command}\``;
+    })
+  ];
+  return lines.join('\n');
+}
+
+function renderGateDagReport(gateDag) {
+  const nodes = gateDag.nodes
+    .map((node) => `| ${node.id} | ${node.type} | ${node.status ?? '-'} | ${node.label ?? node.reason ?? '-'} |`)
+    .join('\n');
+  const edges = gateDag.edges
+    .map((edge) => `- ${edge.from} -> ${edge.to}`)
+    .join('\n');
+  return `# VibePro Gate DAG
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${gateDag.story_id} |
+| Model | ${gateDag.model} |
+| Overall | ${gateDag.overall_status} |
+| Acceptance Criteria | ${gateDag.summary.acceptance_criteria_count} |
+| Required Gates | ${gateDag.summary.required_gate_count} |
+| Needs Evidence | ${gateDag.summary.needs_evidence_count} |
+
+## Nodes
+
+| ID | Type | Status | Label |
+|----|------|--------|-------|
+${nodes}
+
+## Edges
+
+${edges}
+`;
 }
 
 function formatFileList(files) {

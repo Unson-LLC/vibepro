@@ -301,8 +301,17 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /PR本文に背景が入る/);
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
+  assert.match(prBody, /## Gate DAG/);
+  assert.match(prBody, /E2E Gate: needs_setup \(required\) - `npx playwright test`/);
   assert.equal(prepare.pr_context.story_source.requirement_id, 'BUG-001');
   assert.equal(prepare.pr_context.verification_commands.length, 2);
+  assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
+  assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
+  const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
+  assert.equal(gateDag.model, 'story-acceptance-verification-dag');
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.md'), 'utf8'), /VibePro Gate DAG/);
 });
 
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
