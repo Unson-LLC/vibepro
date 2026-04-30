@@ -236,7 +236,15 @@ export function renderStoryDeriveSummary(result) {
 | Catalog | ${toWorkspaceRelativeFromAny(result.catalogPath)} |
 | Map | ${toWorkspaceRelativeFromAny(result.mapPath)} |
 
+${renderStoryDeriveWarnings(result.catalog)}
+
 ${renderStoryMapCatalog(result.catalog)}`;
+}
+
+function renderStoryDeriveWarnings(catalog) {
+  const warnings = catalog.source?.warnings ?? [];
+  if (warnings.length === 0) return 'Warnings: なし';
+  return `Warnings:\n${warnings.map((warning) => `- ${warning.message ?? warning.code}`).join('\n')}`;
 }
 
 export function renderStoryMap(result) {

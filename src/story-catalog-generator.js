@@ -331,7 +331,8 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const files = await collectRepoFiles(root);
   const fileSet = new Set(files.map((file) => file.relativePath));
-  const evidence = await readEvidence(root, options.manifest, options.fromRunId);
+  const evidenceResult = await readEvidence(root, options.manifest, options.fromRunId);
+  const evidence = evidenceResult.evidence;
   const architectureProfile = evidence?.architecture_profile ?? await profileArchitecture(root);
   const currentStory = findCurrentStory(options.config);
   const defaults = buildDefaultStoryFields(currentStory);
@@ -356,7 +357,8 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
       repo: '.',
       run_id: evidence?.run_id ?? null,
       evidence: evidence ? evidencePathForRun(options.manifest, evidence.run_id) : null,
-      graphify: graphSummary
+      graphify: graphSummary,
+      warnings: evidenceResult.warnings
     },
     story_count: stories.length,
     coverage,
@@ -1738,12 +1740,27 @@ function uniqueList(items) {
 }
 
 async function readEvidence(repoRoot, manifest, fromRunId) {
+  const warnings = [];
   const runs = Array.isArray(manifest?.runs) ? manifest.runs : [];
   const targetRun = fromRunId
     ? runs.find((run) => run.run_id === fromRunId)
     : runs.find((run) => run.run_id === manifest?.latest_run) ?? runs[0];
-  if (!targetRun?.artifacts?.evidence) return null;
-  return JSON.parse(await readFile(path.resolve(repoRoot, targetRun.artifacts.evidence), 'utf8'));
+  if (!targetRun?.artifacts?.evidence) return { evidence: null, warnings };
+  try {
+    return {
+      evidence: JSON.parse(await readFile(path.resolve(repoRoot, targetRun.artifacts.evidence), 'utf8')),
+      warnings
+    };
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    warnings.push({
+      code: 'missing_evidence',
+      run_id: targetRun.run_id,
+      path: targetRun.artifacts.evidence,
+      message: `manifestが参照する診断evidenceが見つからないため、診断runなしでStory Mapを生成した: ${targetRun.artifacts.evidence}`
+    });
+    return { evidence: null, warnings };
+  }
 }
 
 async function readGraph(repoRoot) {
@@ -1972,10 +1989,12 @@ function renderExecutiveSummary(catalog, stories) {
   const sourceCounts = countBy(stories, (story) => story.source?.type ?? 'unknown');
   const questionCounts = countBy(catalog.open_questions ?? [], (item) => item.field ?? 'unknown');
   const coverage = catalog.coverage;
+  const warnings = catalog.source?.warnings ?? [];
 
   return [
     `- 生成日時: ${catalog.generated_at ?? '-'}`,
     `- 診断run: ${catalog.source?.run_id ?? '-'}`,
+    `- 警告: ${warnings.length > 0 ? warnings.map((warning) => warning.code).join(', ') : '-'}`,
     `- Story数: ${stories.length}`,
     `- View: ${formatCounts(viewCounts)}`,
     `- Category: ${formatCounts(categoryCounts)}`,

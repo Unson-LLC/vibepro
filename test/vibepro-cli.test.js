@@ -297,6 +297,39 @@ test('story derive creates a repo-wide story catalog and local stories', async (
   assert.equal(manifest.artifacts.story_map, '.vibepro/stories/story-map.md');
 });
 
+test('story derive continues when manifest evidence artifact is missing', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_run = 'missing-run';
+  manifest.runs = [{
+    run_id: 'missing-run',
+    story_id: 'story-vibepro-diagnosis-commercialization-roadmap',
+    artifacts: {
+      evidence: '.vibepro/diagnostics/missing-run/evidence.json'
+    }
+  }];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  let output = '';
+
+  const result = await runCli(['story', 'derive', repo], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.match(output, /Warnings:/);
+  assert.match(output, /診断evidenceが見つからない/);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.run_id, null);
+  assert.equal(catalog.source.warnings[0].code, 'missing_evidence');
+  assert.equal(catalog.source.warnings[0].run_id, 'missing-run');
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /警告: missing_evidence/);
+});
+
 test('story map renders the generated catalog as markdown and json', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
