@@ -998,6 +998,7 @@ export function middleware() {}
   assert.equal(result.exitCode, 0);
   const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T140000Z');
   await stat(path.join(runDir, 'architecture-profile.md'));
+  await stat(path.join(runDir, 'finding-review.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
   assert.equal(evidence.architecture_profile.app_type, 'web_app');
   assert.equal(evidence.architecture_profile.system_type, 'web_application');
@@ -1122,6 +1123,12 @@ export function middleware() {}
   );
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
+  assert.equal(evidence.finding_review.status, 'needs_review');
+  assert.equal(evidence.finding_review.summary.total, evidence.findings.length);
+  assert.equal(evidence.finding_review.summary.unreviewed, evidence.findings.length);
+  assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').suggested_classification, 'implementation_gap');
+  assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-GRAPH-002').suggested_classification, 'detector_gap');
+  assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').allowed_classifications.includes('false_negative'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
   assert.match(apiFinding.detail, /excluded_by_middleware: 1件/);
   assert.match(apiFinding.recommendation, /APIを除外しているmiddleware matcher/);
@@ -1141,13 +1148,24 @@ export function middleware() {}
   assert.match(summary, /読むファイル/);
   assert.match(summary, /実装手順/);
   assert.match(summary, /修正前ブリーフィング/);
+  assert.match(summary, /## 診断レビュー/);
+  assert.match(summary, /suggested implementation_gap/);
   assert.match(summary, /方針A/);
   assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
   const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
   assert.match(riskRegister, /## API境界の保護状態/);
+  assert.match(riskRegister, /## 診断レビュー分類/);
+  assert.match(riskRegister, /VP-API-001 \| unreviewed \| implementation_gap/);
   assert.match(riskRegister, /excluded_by_middleware \| 3/);
   assert.match(riskRegister, /proposal_only/);
   assert.match(riskRegister, /Impact/);
+  const findingReview = await readFile(path.join(runDir, 'finding-review.md'), 'utf8');
+  assert.match(findingReview, /# VibePro 診断レビュー/);
+  assert.match(findingReview, /true_positive/);
+  assert.match(findingReview, /false_positive/);
+  assert.match(findingReview, /false_negative/);
+  assert.match(findingReview, /detector_gap/);
+  assert.match(findingReview, /implementation_gap/);
   const storyReport = await runCli(['story', 'report', repo]);
   assert.equal(storyReport.exitCode, 0);
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'story-report.md'), 'utf8');
@@ -1155,6 +1173,8 @@ export function middleware() {}
   assert.match(report, /## 共通スキャン/);
   assert.match(report, /## API境界/);
   assert.match(report, /protected_by_route \| 1/);
+  assert.match(report, /## 診断レビュー/);
+  assert.match(report, /implementation_gap/);
   assert.match(report, /## 次アクション候補/);
   assert.match(report, /## 生成タスク/);
   assert.match(report, /VP-TASK-API-001/);
@@ -1167,6 +1187,8 @@ export function middleware() {}
   assert.match(importSummary, /共通スキャン対象/);
   assert.match(importSummary, /## API境界/);
   assert.match(importSummary, /excluded_by_middleware \| 3/);
+  assert.match(importSummary, /## 診断レビュー/);
+  assert.match(importSummary, /suggested detector_gap/);
   assert.match(importSummary, /## 次アクション候補/);
   assert.match(importSummary, /## 生成タスク/);
   assert.match(importSummary, /VP-TASK-API-001/);
@@ -1180,6 +1202,8 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.route_count, 7);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
+  assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
+  assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
   assert.equal(importState.signals.tasks.length, 5);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');
   assert.equal(importState.signals.tasks[4].source_id, 'VP-ACTION-API-001');
@@ -1193,6 +1217,10 @@ export function middleware() {}
   assert.equal(
     manifest.runs[0].artifacts.architecture_profile,
     '.vibepro/diagnostics/2026-04-28T140000Z/architecture-profile.md'
+  );
+  assert.equal(
+    manifest.runs[0].artifacts.finding_review,
+    '.vibepro/diagnostics/2026-04-28T140000Z/finding-review.md'
   );
 });
 

@@ -85,6 +85,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
+  const findingReview = evidence.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
   const stories = storyContext.stories;
   const primaryStory = storyContext.currentStory;
@@ -152,6 +153,11 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
       },
+      finding_review: {
+        status: findingReview.status ?? 'unknown',
+        summary: findingReview.summary ?? {},
+        items: Array.isArray(findingReview.items) ? findingReview.items : []
+      },
       tasks: Array.isArray(taskState?.tasks) ? taskState.tasks : [],
       action_candidates: actionCandidates.map((candidate) => ({
         id: candidate.id,
@@ -174,6 +180,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
       severity: finding.severity,
       category: finding.category,
       title: finding.title,
+      review: findReviewItem(findingReview, finding.id),
       graph_context: finding.graph_context ?? null
     }))
   };
@@ -220,6 +227,10 @@ ${importState.stories.map((story) => `- ${story.title} (${story.story_id}) / Hor
 
 ${importState.findings.length === 0 ? '- なし' : importState.findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 
+## 診断レビュー
+
+${renderFindingReviewSummary(importState.signals.finding_review)}
+
 ## 次アクション候補
 
 ${renderActionCandidates(importState.signals.action_candidates)}
@@ -228,6 +239,19 @@ ${renderActionCandidates(importState.signals.action_candidates)}
 
 ${renderGeneratedTasks(importState.signals.tasks)}
 `;
+}
+
+function findReviewItem(findingReview, findingId) {
+  const items = Array.isArray(findingReview?.items) ? findingReview.items : [];
+  return items.find((item) => item.finding_id === findingId) ?? null;
+}
+
+function renderFindingReviewSummary(findingReview) {
+  const summary = findingReview?.summary ?? {};
+  return `- Status: ${findingReview?.status ?? 'unknown'}
+- 未レビュー: ${summary.unreviewed ?? 0}件
+- suggested implementation_gap: ${summary.implementation_gap ?? 0}件
+- suggested detector_gap: ${summary.detector_gap ?? 0}件`;
 }
 
 function renderApiBoundaryImportSummary(apiBoundary) {

@@ -102,6 +102,7 @@ node bin/vibepro.js diagnose /path/to/repo
 .vibepro/diagnostics/<run-id>/
 ├── summary.md
 ├── risk-register.md
+├── finding-review.md
 ├── architecture-profile.md
 ├── static-site-check-result.md
 └── evidence.json
@@ -112,6 +113,8 @@ node bin/vibepro.js diagnose /path/to/repo
 ```
 
 `evidence.json` が診断内容の機械可読な正本になる。Markdown は人間が確認するための投影として生成する。
+
+`finding-review.md` は検出事項ごとのレビュー票であり、`true_positive`、`false_positive`、`false_negative`、`detector_gap`、`implementation_gap` の分類で確認できるようにする。初期状態では VibePro が `suggested_classification` を付けるが、確定分類ではなく `unreviewed` として扱う。これにより「実装が弱い」のか「診断器が拾えていない」のかを、修正前に切り分けられる。
 
 `tasks.json` は診断結果から生成されたStory単位の作業分解であり、Critical/Highの未対応検出事項と `action_candidates[]` を実装前タスクへ正規化する。VibeProはv1ではタスク生成までを担当し、対象リポジトリの修正は行わない。
 

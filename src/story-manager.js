@@ -187,6 +187,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
   const apiBoundary = evidence?.api_boundary ?? null;
   const staticSite = evidence?.static_site ?? {};
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const findingReview = evidence?.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence?.action_candidates) ? evidence.action_candidates : [];
   const tasks = Array.isArray(taskState?.tasks) ? taskState.tasks : [];
   const artifacts = latestRun.artifacts ?? {};
@@ -257,6 +258,10 @@ ${renderStoryApiBoundary(apiBoundary)}
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 
+## 診断レビュー
+
+${renderStoryFindingReview(findingReview)}
+
 ## 次アクション候補
 
 ${renderStoryActionCandidates(actionCandidates)}
@@ -275,6 +280,19 @@ ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts
 - ${artifacts.risk_register ?? '-'}
 - ${artifacts.evidence ?? '-'}
 `;
+}
+
+function renderStoryFindingReview(findingReview) {
+  const summary = findingReview?.summary ?? {};
+  const items = Array.isArray(findingReview?.items) ? findingReview.items : [];
+  return `- Status: ${findingReview?.status ?? 'unknown'}
+- 未レビュー: ${summary.unreviewed ?? 0}件
+- suggested implementation_gap: ${summary.implementation_gap ?? 0}件
+- suggested detector_gap: ${summary.detector_gap ?? 0}件
+
+| Finding | Status | Suggested |
+|---------|--------|-----------|
+${items.length === 0 ? '| - | - | - |' : items.map((item) => `| ${item.finding_id} | ${item.review_status} | ${item.suggested_classification} |`).join('\n')}`;
 }
 
 function renderStoryApiBoundary(apiBoundary) {

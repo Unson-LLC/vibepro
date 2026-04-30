@@ -24,6 +24,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   evidence.findings = findings;
   evidence.action_candidates = await buildActionCandidates(root, evidence, graphIndex);
   attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
+  evidence.finding_review = buildFindingReview({ findings, actionCandidates: evidence.action_candidates });
   evidence.gates = buildGates(findings);
   const gateStatus = evidence.gates[0]?.status ?? 'unknown';
   const storyTasks = await createStoryTasks(root, {
@@ -38,6 +39,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const riskPath = path.join(runDir, 'risk-register.md');
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
+  const findingReviewPath = path.join(runDir, 'finding-review.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
@@ -45,7 +47,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
     runId,
     findings,
     apiBoundary: evidence.api_boundary,
-    actionCandidates: evidence.action_candidates
+    actionCandidates: evidence.action_candidates,
+    findingReview: evidence.finding_review
   }));
   await writeFile(staticSitePath, renderStaticSiteCheck({
     runId,
@@ -56,6 +59,10 @@ export async function runDiagnosis(repoRoot, options = {}) {
     runId,
     profile: evidence.architecture_profile,
     checkCatalog: evidence.check_catalog
+  }));
+  await writeFile(findingReviewPath, renderFindingReview({
+    runId,
+    findingReview: evidence.finding_review
   }));
 
   const manifest = await readManifest(root);
@@ -71,6 +78,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       evidence: toWorkspaceRelative(root, evidencePath),
       static_site_check: toWorkspaceRelative(root, staticSitePath),
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
+      finding_review: toWorkspaceRelative(root, findingReviewPath),
       ...storyTasks.artifacts
     }
   };
@@ -117,6 +125,12 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       static_site: await scanStaticSite(repoRoot),
       action_candidates: [],
       findings: [],
+      finding_review: {
+        schema_version: '0.1.0',
+        status: 'not_generated',
+        items: [],
+        summary: {}
+      },
       gates: []
     }
   };
@@ -749,6 +763,103 @@ function attachFindingGraphContexts(findings, candidates) {
   }
 }
 
+function buildFindingReview({ findings, actionCandidates }) {
+  const candidatesByFindingId = new Map(
+    actionCandidates
+      .filter((candidate) => candidate.finding_id)
+      .map((candidate) => [candidate.finding_id, candidate])
+  );
+  const items = findings.map((finding) => {
+    const suggestedClassification = suggestFindingReviewClassification(finding);
+    const candidate = candidatesByFindingId.get(finding.id);
+    return {
+      finding_id: finding.id,
+      review_status: 'unreviewed',
+      suggested_classification: suggestedClassification,
+      allowed_classifications: [
+        'true_positive',
+        'false_positive',
+        'false_negative',
+        'detector_gap',
+        'implementation_gap'
+      ],
+      rationale: buildFindingReviewRationale(finding, suggestedClassification),
+      review_questions: buildFindingReviewQuestions(finding, suggestedClassification),
+      evidence_refs: buildFindingEvidenceRefs(finding, candidate),
+      action_candidate_id: candidate?.id ?? null,
+      reviewer_notes: ''
+    };
+  });
+
+  return {
+    schema_version: '0.1.0',
+    status: findings.length === 0 ? 'no_findings' : 'needs_review',
+    policy: 'この分類は初期レビュー票であり、true_positive/false_positive は人間の確認後に確定する。',
+    summary: summarizeFindingReview(items),
+    items
+  };
+}
+
+function suggestFindingReviewClassification(finding) {
+  if (finding.id?.startsWith('VP-GRAPH-')) return 'detector_gap';
+  return 'implementation_gap';
+}
+
+function buildFindingReviewRationale(finding, classification) {
+  if (classification === 'detector_gap') {
+    return `${finding.id} は診断に使う依存関係や文脈の確度に関する検出であり、実装修正より先に検出根拠の確認が必要。`;
+  }
+  return `${finding.id} は対象リポジトリ内の公開面、API境界、または配信設計に対する実装不足候補として検出された。`;
+}
+
+function buildFindingReviewQuestions(finding, classification) {
+  const common = [
+    '検出根拠は対象リポジトリの現在のコードと一致しているか。',
+    '同種の未検出リスクが周辺ファイルに残っていないか。',
+    '再診断でこのfindingが消える完了条件を具体化できるか。'
+  ];
+  if (classification === 'detector_gap') {
+    return [
+      'graphifyまたはVibePro検出器の根拠は実際の依存関係を表しているか。',
+      '検出器のfalse positiveまたはfalse negativeとして修正すべきか。',
+      ...common
+    ];
+  }
+  return [
+    '実装不足として修正すべきtrue positiveか、既存実装を検出できていないdetector gapか。',
+    '本番運用上の例外として受け入れるなら、その根拠をコードまたは設定に残せるか。',
+    ...common
+  ];
+}
+
+function buildFindingEvidenceRefs(finding, candidate) {
+  return {
+    finding_detail: finding.detail,
+    recommendation: finding.recommendation,
+    graph_context: finding.graph_context ?? null,
+    target_files: candidate?.target_files ?? [],
+    route_examples: candidate?.route_examples ?? [],
+    implementation_plan: candidate?.implementation_plan ?? null
+  };
+}
+
+function summarizeFindingReview(items) {
+  const summary = {
+    total: items.length,
+    unreviewed: 0,
+    true_positive: 0,
+    false_positive: 0,
+    false_negative: 0,
+    detector_gap: 0,
+    implementation_gap: 0
+  };
+  for (const item of items) {
+    summary[item.review_status] = (summary[item.review_status] ?? 0) + 1;
+    summary[item.suggested_classification] = (summary[item.suggested_classification] ?? 0) + 1;
+  }
+  return summary;
+}
+
 function buildGraphIndex({ nodes, edges }) {
   const nodesById = new Map();
   const nodesBySourceFile = new Map();
@@ -1001,6 +1112,10 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 
+## 診断レビュー
+
+${renderFindingReviewSummary(evidence.finding_review)}
+
 ## 次アクション候補
 
 ${renderActionCandidates(evidence.action_candidates)}
@@ -1118,7 +1233,7 @@ ${staticSite.non_static_files.length === 0 ? '- なし' : staticSite.non_static_
 `;
 }
 
-function renderRiskRegister({ runId, findings, apiBoundary, actionCandidates }) {
+function renderRiskRegister({ runId, findings, apiBoundary, actionCandidates, findingReview }) {
   return `# VibePro リスク台帳
 
 | 項目 | 内容 |
@@ -1134,10 +1249,65 @@ ${findings.length === 0 ? '| - | - | 検出なし | - | - |' : findings.map((fin
 
 ${renderApiProtectionStateTable(apiBoundary)}
 
+## 診断レビュー分類
+
+${renderFindingReviewTable(findingReview)}
+
 ## 次アクション候補
 
 ${renderActionCandidates(actionCandidates)}
 `;
+}
+
+function renderFindingReview({ runId, findingReview }) {
+  return `# VibePro 診断レビュー
+
+| 項目 | 内容 |
+|------|------|
+| Run ID | ${runId} |
+| Status | ${findingReview?.status ?? 'unknown'} |
+| Total | ${findingReview?.summary?.total ?? 0}件 |
+| Unreviewed | ${findingReview?.summary?.unreviewed ?? 0}件 |
+| Suggested implementation_gap | ${findingReview?.summary?.implementation_gap ?? 0}件 |
+| Suggested detector_gap | ${findingReview?.summary?.detector_gap ?? 0}件 |
+
+${findingReview?.policy ?? ''}
+
+Allowed classifications: true_positive, false_positive, false_negative, detector_gap, implementation_gap
+
+## 分類表
+
+${renderFindingReviewTable(findingReview)}
+
+## 確認観点
+
+${renderFindingReviewQuestions(findingReview)}
+`;
+}
+
+function renderFindingReviewSummary(findingReview) {
+  const summary = findingReview?.summary ?? {};
+  return `- Status: ${findingReview?.status ?? 'unknown'}
+- 未レビュー: ${summary.unreviewed ?? 0}件
+- suggested implementation_gap: ${summary.implementation_gap ?? 0}件
+- suggested detector_gap: ${summary.detector_gap ?? 0}件
+- 正本: finding-review.md と evidence.json の finding_review`;
+}
+
+function renderFindingReviewTable(findingReview) {
+  const items = Array.isArray(findingReview?.items) ? findingReview.items : [];
+  if (items.length === 0) return '| Finding | Status | Suggested | Action | Rationale |\n|---------|--------|-----------|--------|-----------|\n| - | - | - | - | - |';
+  return `| Finding | Status | Suggested | Action | Rationale |
+|---------|--------|-----------|--------|-----------|
+${items.map((item) => `| ${item.finding_id} | ${item.review_status} | ${item.suggested_classification} | ${item.action_candidate_id ?? '-'} | ${item.rationale} |`).join('\n')}`;
+}
+
+function renderFindingReviewQuestions(findingReview) {
+  const items = Array.isArray(findingReview?.items) ? findingReview.items : [];
+  if (items.length === 0) return '- なし';
+  return items.map((item) => `### ${item.finding_id}
+
+${item.review_questions.map((question) => `- ${question}`).join('\n')}`).join('\n\n');
 }
 
 function renderActionCandidates(candidates) {
