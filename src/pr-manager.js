@@ -29,6 +29,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
+  const prContext = await buildPrContext(root, {
+    story,
+    git,
+    fileGroups,
+    latestStoryRun
+  });
   const suggestedBranch = options.branchName ?? buildBranchName(story);
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
@@ -42,7 +48,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     git,
     fileGroups,
     latestStoryRun,
-    scope
+    scope,
+    prContext
   });
   const preparation = {
     schema_version: '0.1.0',
@@ -55,6 +62,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     git,
     file_groups: fileGroups,
     scope,
+    pr_context: prContext,
     latest_story_run: latestStoryRun,
     suggested_branch: suggestedBranch,
     next_commands: nextCommands
@@ -235,8 +243,8 @@ function groupChangedFiles(files) {
     if (target.startsWith('docs/management/stories/')) groups.story_docs.push(file);
     else if (target.startsWith('docs/management/architecture/')) groups.architecture_docs.push(file);
     else if (target.startsWith('docs/features/specifications/')) groups.specifications.push(file);
-    else if (target.startsWith('src/') && !target.includes('/__tests__/')) groups.source.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
+    else if (target.startsWith('src/')) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
     else if (target.startsWith('.claude/') || ['AGENTS.md', 'CLAUDE.md', '.github/', 'package.json', 'package-lock.json'].some((prefix) => target === prefix || target.startsWith(prefix))) groups.repo_control.push(file);
     else groups.other.push(file);
@@ -355,28 +363,288 @@ ${preparation.next_commands.map((command) => `- \`${command}\``).join('\n')}
 `;
 }
 
-function renderPrBody({ story, git, fileGroups, latestStoryRun, scope }) {
+function renderPrBody({ story, git, fileGroups, latestStoryRun, scope, prContext }) {
+  const source = prContext.story_source;
+  const changeSummary = prContext.change_summary.length === 0
+    ? '- 差分なし'
+    : prContext.change_summary.map((item) => `- ${item}`).join('\n');
+  const acceptance = source.acceptance_criteria.length === 0
+    ? '- Story文書から受け入れ基準を抽出できませんでした'
+    : source.acceptance_criteria.map((item) => `- ${item}`).join('\n');
+  const verification = prContext.verification_commands.length === 0
+    ? '- [ ] 手動確認または対象テストを追記する'
+    : prContext.verification_commands.map((item) => `- [ ] \`${item.command}\` - ${item.reason}`).join('\n');
+  const reviewPoints = prContext.review_points.map((item) => `- ${item}`).join('\n');
+  const risks = prContext.risks.length === 0
+    ? '- 特記事項なし'
+    : prContext.risks.map((item) => `- ${item}`).join('\n');
+
   return `## 概要
 - Story: ${story.story_id} ${story.title}
 - VibePro scope: ${scope.status}
+- PR strategy: ${scope.recommended_strategy}
 - 変更ファイル: ${git.changed_files.length} files
 
-## 変更範囲
+## 背景・要求
+- 正本: ${source.path ?? 'Story未検出'}
+- 要求: ${source.requirement_title ?? source.title ?? story.title}
+${source.requirement_id ? `- 要求ID: ${source.requirement_id}` : ''}
+${source.requirement_url ? `- 要求URL: ${source.requirement_url}` : ''}
+${source.background ? `- 背景: ${source.background}` : '- 背景: Story文書から抽出できませんでした'}
+
+## 実装判断
+- ADR: ${prContext.architecture_decision}
+- Scope: ${scope.status}
+${scope.reasons.length === 0 ? '- Scope理由: current branchのままPR化可能' : scope.reasons.map((reason) => `- Scope理由: ${reason}`).join('\n')}
+
+## 変更内容
+${changeSummary}
+
+## 差分分類
 ${Object.entries(fileGroups)
     .filter(([, value]) => value.count > 0)
     .map(([key, value]) => `- ${key}: ${value.count}`)
     .join('\n') || '- なし'}
 
+## 受け入れ基準
+${acceptance}
+
+## 検証
+${verification}
+
+## レビュー観点
+${reviewPoints || '- Story / ADR / Spec と実装差分が対応しているか'}
+
+## リスク・確認事項
+${risks}
+
 ## VibePro
 - latest story run: ${latestStoryRun?.run_id ?? '-'}
 - gate: ${latestStoryRun?.gate_status ?? '-'}
 - PR strategy: ${scope.recommended_strategy}
-
-## 検証
-- [ ] Story / ADR / Spec と実装差分が対応している
-- [ ] 対象テストが成功している
-- [ ] 型検査またはbuildが成功している
 `;
+}
+
+async function buildPrContext(repoRoot, { story, git, fileGroups, latestStoryRun }) {
+  const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
+  const primaryStory = pickPrimaryStory(storyDocs, story);
+  const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
+  return {
+    story_source: primaryStory,
+    architecture_decision: architectureDecision,
+    change_summary: buildChangeSummary(fileGroups),
+    verification_commands: buildVerificationCommands(fileGroups),
+    review_points: buildReviewPoints(fileGroups),
+    risks: buildRisks({ git, fileGroups, latestStoryRun })
+  };
+}
+
+async function readStoryDocs(repoRoot, files) {
+  const docs = [];
+  for (const file of files) {
+    try {
+      const content = await readFile(path.join(repoRoot, file), 'utf8');
+      docs.push(parseStoryDoc(file, content));
+    } catch {
+      docs.push({ path: file, title: null, background: null, acceptance_criteria: [] });
+    }
+  }
+  return docs;
+}
+
+function parseStoryDoc(file, content) {
+  const frontmatter = parseFrontmatter(content);
+  const title = frontmatter.title ?? findMarkdownTitle(content);
+  return {
+    path: file,
+    title,
+    requirement_id: frontmatter.id ?? frontmatter.requirement_id ?? null,
+    requirement_title: frontmatter.requirement_title ?? frontmatter.title ?? title,
+    requirement_url: frontmatter.url ?? null,
+    background: extractSectionText(content, ['背景', '現状', '課題']),
+    policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
+    acceptance_criteria: extractAcceptanceCriteria(content),
+    architecture_reason: frontmatter.reason ?? extractFrontmatterBlockReason(content, 'architecture_docs')
+  };
+}
+
+function parseFrontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  const result = {};
+  for (const line of match[1].split('\n')) {
+    const item = line.match(/^\s*([A-Za-z0-9_-]+):\s*(.+?)\s*$/);
+    if (!item) continue;
+    result[item[1]] = item[2].replace(/^['"]|['"]$/g, '');
+  }
+  return result;
+}
+
+function findMarkdownTitle(content) {
+  const match = content.match(/^#\s+(.+)$/m);
+  return match?.[1]?.trim() ?? null;
+}
+
+function extractSectionText(content, headings) {
+  for (const heading of headings) {
+    const escaped = escapeRegExp(heading);
+    const match = content.match(new RegExp(`^##+\\s+.*${escaped}.*\\n([\\s\\S]*?)(?=^##+\\s+|(?![\\s\\S]))`, 'm'));
+    if (!match) continue;
+    const paragraph = match[1]
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('|') && !line.startsWith('---'))
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .slice(0, 320);
+    if (paragraph) return paragraph;
+  }
+  return null;
+}
+
+function extractAcceptanceCriteria(content) {
+  const section = extractRawSection(content, ['受け入れ基準', '完了定義', 'Acceptance Criteria']);
+  const source = section ?? content;
+  return source
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^-\s+\[[ xX]\]\s+/.test(line))
+    .map((line) => line.replace(/^-\s+\[[ xX]\]\s+/, '').trim())
+    .slice(0, 8);
+}
+
+function extractRawSection(content, headings) {
+  for (const heading of headings) {
+    const escaped = escapeRegExp(heading);
+    const match = content.match(new RegExp(`^##+\\s+.*${escaped}.*\\n([\\s\\S]*?)(?=^##+\\s+|(?![\\s\\S]))`, 'm'));
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function extractFrontmatterBlockReason(content, blockName) {
+  const lines = content.split('\n');
+  const start = lines.findIndex((line) => line.trim() === `${blockName}:`);
+  if (start === -1) return null;
+  for (let index = start + 1; index < Math.min(lines.length, start + 12); index += 1) {
+    const match = lines[index].match(/^\s+reason:\s*(.+?)\s*$/);
+    if (match) return match[1].replace(/^['"]|['"]$/g, '');
+  }
+  return null;
+}
+
+function pickPrimaryStory(storyDocs, story) {
+  return storyDocs.find((doc) => doc.path.includes(story.story_id))
+    ?? storyDocs[0]
+    ?? {
+      path: null,
+      title: story.title,
+      requirement_id: null,
+      requirement_title: story.title,
+      requirement_url: null,
+      background: null,
+      policy: null,
+      acceptance_criteria: [],
+      architecture_reason: null
+    };
+}
+
+function resolveArchitectureDecision(storyDoc, fileGroups) {
+  if (fileGroups.architecture_docs.count > 0) {
+    return `ADRあり (${fileGroups.architecture_docs.files.join(', ')})`;
+  }
+  if (storyDoc.architecture_reason) {
+    return `ADR不要: ${storyDoc.architecture_reason}`;
+  }
+  return 'ADR差分なし。既存アーキテクチャ内の変更として扱う';
+}
+
+function buildChangeSummary(fileGroups) {
+  const items = [];
+  if (fileGroups.story_docs.count > 0) {
+    items.push(`Story文書を更新: ${formatFileList(fileGroups.story_docs.files)}`);
+  }
+  if (fileGroups.architecture_docs.count > 0) {
+    items.push(`アーキテクチャ判断を追加: ${formatFileList(fileGroups.architecture_docs.files)}`);
+  }
+  if (fileGroups.specifications.count > 0) {
+    items.push(`仕様文書を更新: ${formatFileList(fileGroups.specifications.files)}`);
+  }
+  if (fileGroups.source.count > 0) {
+    items.push(`実装を変更: ${formatFileList(fileGroups.source.files)}`);
+  }
+  if (fileGroups.tests.count > 0) {
+    items.push(`テストを追加・更新: ${formatFileList(fileGroups.tests.files)}`);
+  }
+  if (fileGroups.repo_control.count > 0) {
+    items.push(`repo制御ファイルを変更: ${formatFileList(fileGroups.repo_control.files)}`);
+  }
+  if (fileGroups.other.count > 0) {
+    items.push(`その他の差分: ${formatFileList(fileGroups.other.files)}`);
+  }
+  return items;
+}
+
+function buildVerificationCommands(fileGroups) {
+  const commands = [];
+  if (fileGroups.tests.count > 0) {
+    const testFiles = fileGroups.tests.files
+      .filter((file) => /\.(test|spec)\.[jt]sx?$/.test(file))
+      .slice(0, 6);
+    if (testFiles.length > 0) {
+      commands.push({
+        command: `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`,
+        reason: '変更に対応する対象テスト'
+      });
+    } else {
+      commands.push({
+        command: 'npm test',
+        reason: 'テスト差分があるため'
+      });
+    }
+  }
+  if (fileGroups.source.count > 0) {
+    commands.push({
+      command: 'npm run typecheck',
+      reason: 'TypeScript/型境界の確認'
+    });
+  }
+  return commands;
+}
+
+function buildReviewPoints(fileGroups) {
+  const points = [];
+  if (fileGroups.story_docs.count > 0) points.push('Storyの受け入れ基準と実装差分が対応しているか');
+  if (fileGroups.architecture_docs.count === 0) points.push('ADRなしで既存設計の範囲に収まっているか');
+  if (fileGroups.source.count > 0) points.push(`主要ソース差分: ${formatFileList(fileGroups.source.files)}`);
+  if (fileGroups.tests.count > 0) points.push(`テスト差分: ${formatFileList(fileGroups.tests.files)}`);
+  return points;
+}
+
+function buildRisks({ git, fileGroups, latestStoryRun }) {
+  const risks = [];
+  if (fileGroups.tests.count === 0 && fileGroups.source.count > 0) {
+    risks.push('ソース差分に対するテスト差分がない');
+  }
+  if (git.dirty_files.length > 0) {
+    risks.push(`未コミット差分が ${git.dirty_files.length} files ある`);
+  }
+  if (fileGroups.repo_control.count > 0) {
+    risks.push('repo制御ファイルが差分に含まれるため、アプリ変更と分けてレビューする');
+  }
+  if (latestStoryRun?.gate_status && !['pass', 'ok'].includes(latestStoryRun.gate_status)) {
+    risks.push(`最新診断gateが ${latestStoryRun.gate_status}`);
+  }
+  return risks;
+}
+
+function formatFileList(files) {
+  const visible = files.slice(0, 4).join(', ');
+  return files.length > 4 ? `${visible}, ...` : visible;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function resolveStory(config, storyId, options = {}) {

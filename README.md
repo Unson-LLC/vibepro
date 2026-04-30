@@ -220,11 +220,23 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 `pr prepare` は以下を確認する。
 
 - 選択中Story
+- Story文書から抽出した要求、背景、受け入れ基準
+- ADR差分またはStory内のADR不要理由
 - baseからHEADまでの変更ファイル
 - Story / Architecture / Spec / Source / Test / repo制御ファイルの差分分類
 - baseからのcommit数
 - 未コミット差分
 - 現在ブランチでPR化してよいか、クリーンブランチへ切り出すべきか
+
+`pr-body.md` は、レビュアーが最初に確認したい情報を含む。
+
+- 背景・要求
+- 実装判断
+- 変更内容
+- 受け入れ基準
+- 検証候補コマンド
+- レビュー観点
+- リスク・確認事項
 
 差分が大きい、`.claude/` や `AGENTS.md` などのrepo制御ファイルが混ざる、複数commitが混在する、未コミット差分が残る場合は `needs_clean_branch` と判定する。この場合、VibePro は自動でPRを作らず、クリーンブランチ作成と cherry-pick の次コマンドを提示する。
 
