@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">VibePro artifacts</title>
+  <desc id="desc">Repository local artifacts under dot vibepro.</desc>
+  <rect width="1200" height="680" fill="#f8fafc"/>
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="80" y="90" font-size="36" font-weight="800" fill="#111827">成果物はリポジトリに残る</text>
+    <text x="80" y="128" font-size="19" fill="#475569">Markdownは人間向け、JSONは機械可読な正本として扱う</text>
+  </g>
+  <g transform="translate(90 180)" font-family="JetBrains Mono, SFMono-Regular, Menlo, monospace">
+    <rect width="470" height="340" rx="20" fill="#111827"/>
+    <text x="34" y="54" font-size="20" fill="#a7f3d0">target-repo/</text>
+    <text x="68" y="94" font-size="18" fill="#e5e7eb">.vibepro/</text>
+    <text x="102" y="134" font-size="18" fill="#c7d2fe">config.json</text>
+    <text x="102" y="174" font-size="18" fill="#c7d2fe">vibepro-manifest.json</text>
+    <text x="102" y="214" font-size="18" fill="#fca5a5">diagnostics/&lt;run-id&gt;/</text>
+    <text x="136" y="254" font-size="18" fill="#fde68a">evidence.json</text>
+    <text x="136" y="294" font-size="18" fill="#fde68a">summary.md</text>
+  </g>
+  <g transform="translate(640 178)" font-family="Inter, Arial, sans-serif">
+    <rect width="450" height="86" rx="16" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="44" cy="43" r="16" fill="#2563eb"/>
+    <text x="78" y="38" font-size="20" font-weight="800" fill="#0f172a">診断</text>
+    <text x="78" y="64" font-size="15" fill="#475569">構造、API境界、リスクを記録</text>
+
+    <rect y="118" width="450" height="86" rx="16" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="44" cy="161" r="16" fill="#0f766e"/>
+    <text x="78" y="156" font-size="20" font-weight="800" fill="#0f172a">Story単位のタスク</text>
+    <text x="78" y="182" font-size="15" fill="#475569">次に何を直すかを分解</text>
+
+    <rect y="236" width="450" height="86" rx="16" fill="#ffffff" stroke="#cbd5e1"/>
+    <circle cx="44" cy="279" r="16" fill="#be123c"/>
+    <text x="78" y="274" font-size="20" font-weight="800" fill="#0f172a">PR準備</text>
+    <text x="78" y="300" font-size="15" fill="#475569">背景、判断、検証をPR本文へ</text>
+  </g>
+  <rect x="170" y="570" width="860" height="58" rx="16" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <text x="600" y="607" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" fill="#075985">次の担当者は「何を見ればよいか」から迷わない</text>
+</svg>
