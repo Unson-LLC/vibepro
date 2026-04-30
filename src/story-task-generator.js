@@ -6,11 +6,17 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 export async function createStoryTasks(repoRoot, { story, evidence, runId, gateStatus }) {
   const root = path.resolve(repoRoot);
   const tasksDir = path.join(getWorkspaceDir(root), 'stories', story.story_id, 'tasks');
-  await mkdir(tasksDir, { recursive: true });
 
   const taskState = buildStoryTaskState({ story, evidence, runId, gateStatus });
-  const tasksJsonPath = path.join(tasksDir, 'tasks.json');
-  const tasksMarkdownPath = path.join(tasksDir, 'tasks.md');
+  const canonicalTasksJsonPath = path.join(tasksDir, 'tasks.json');
+  const existingTaskState = await readTaskStateIfExists(canonicalTasksJsonPath);
+  const outputDir = shouldPreserveCanonicalTasks(existingTaskState)
+    ? path.join(getWorkspaceDir(root), 'stories', story.story_id, 'diagnostics', safeRunId(runId))
+    : tasksDir;
+  await mkdir(outputDir, { recursive: true });
+
+  const tasksJsonPath = path.join(outputDir, 'tasks.json');
+  const tasksMarkdownPath = path.join(outputDir, 'tasks.md');
 
   await writeFile(tasksJsonPath, `${JSON.stringify(taskState, null, 2)}\n`);
   await writeFile(tasksMarkdownPath, renderStoryTasks(taskState));
@@ -22,6 +28,25 @@ export async function createStoryTasks(repoRoot, { story, evidence, runId, gateS
       story_tasks_markdown: toWorkspaceRelative(root, tasksMarkdownPath)
     }
   };
+}
+
+async function readTaskStateIfExists(tasksJsonPath) {
+  try {
+    return JSON.parse(await readFile(tasksJsonPath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function shouldPreserveCanonicalTasks(taskState) {
+  if (!taskState) return false;
+  if (taskState.source_run?.run_id === 'story-plan') return true;
+  return (taskState.tasks ?? []).some((task) => task.source_type === 'story_plan_candidate');
+}
+
+function safeRunId(runId) {
+  return String(runId ?? 'diagnosis-run').replace(/[\\/]/g, '_');
 }
 
 export async function readStoryTasks(repoRoot, artifactPath) {

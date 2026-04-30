@@ -23,6 +23,7 @@ const DOCUMENT_SIGNAL_GROUPS = [
   { key: 'onboarding', pattern: /(onboarding|profile|preferences)/i },
   { key: 'notification', pattern: /notification/i },
   { key: 'architecture', pattern: /^docs\/architecture\// },
+  { key: 'managementStories', pattern: /^docs\/management\/stories\// },
   { key: 'requirements', pattern: /^docs\/requirements\// },
   { key: 'userStories', pattern: /^docs\/user_stories\// },
   { key: 'features', pattern: /^docs\/features\// }
@@ -340,7 +341,7 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
 
   const stories = dedupeStories([
     ...deriveProductSurfaceStories(fileSet, defaults, documentSignals),
-    ...deriveCodeSurfaceStories(fileSet, defaults),
+    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
   ]);
@@ -593,15 +594,17 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals) {
   return stories;
 }
 
-function deriveCodeSurfaceStories(fileSet, defaults) {
+function deriveCodeSurfaceStories(fileSet, defaults, documentSignals) {
   const files = [...fileSet];
   return CODE_SURFACE_SIGNATURES
     .map((signature) => {
-      const paths = files
+      const codePaths = files
         .filter((file) => signature.patterns.some((pattern) => pattern.test(file)))
         .sort((a, b) => rankStoryCodePath(signature.id, a) - rankStoryCodePath(signature.id, b) || a.localeCompare(b))
         .slice(0, 8);
-      if (paths.length === 0) return null;
+      const docs = selectDocsForStory(documentSignals, signature.id);
+      if (codePaths.length === 0 && docs.length === 0) return null;
+      const paths = uniqueList([...docs.map((doc) => doc.path), ...codePaths]);
       return buildDerivedStory({
         id: signature.id,
         title: signature.title,
@@ -609,7 +612,8 @@ function deriveCodeSurfaceStories(fileSet, defaults) {
         sourceType: 'code_surface',
         paths,
         evidence: paths,
-        storyDefinition: codeStoryDefinitionFor(signature.id, paths),
+        storyDefinition: codeStoryDefinitionFor(signature.id, codePaths, docs),
+        docs,
         codeDerived: true,
         defaults
       });
@@ -710,8 +714,11 @@ function buildDerivedStory({
   };
 }
 
-function codeStoryDefinitionFor(storyId, paths) {
-  const sourceSynthesis = synthesizeCodeSources(paths);
+function codeStoryDefinitionFor(storyId, paths, docs = []) {
+  const sourceSynthesis = [
+    ...synthesizeSources(docs),
+    ...synthesizeCodeSources(paths)
+  ];
   const definitions = {
     'story-product-hotel-detail-actions': {
       who: 'ホテル候補を比較して次の行動を決めたいユーザー',
@@ -1212,6 +1219,7 @@ function synthesizeSources(docs) {
 }
 
 function inferDocumentRole(doc) {
+  if (doc.path.startsWith('docs/management/stories/')) return 'Story正本';
   if (doc.path.startsWith('docs/user_stories/')) return 'ユーザー課題と受け入れ観点';
   if (doc.path.startsWith('docs/requirements/')) return '機能要求と制約';
   if (doc.path.startsWith('docs/features/')) return '機能構想とビジネス背景';
@@ -1315,17 +1323,23 @@ async function collectRepoFiles(repoRoot, currentRelative = '') {
 
 async function collectDocumentSignals(repoRoot, files) {
   const signals = {};
+  const byStoryId = {};
   const docFiles = files
     .map((file) => file.relativePath)
     .filter((file) => file.endsWith('.md') && file.startsWith('docs/') && !/dummy|template/i.test(file));
   for (const filePath of docFiles) {
     const doc = await analyzeDocument(repoRoot, filePath);
+    if (doc.story_id && filePath.startsWith('docs/management/stories/')) {
+      byStoryId[doc.story_id] = [...(byStoryId[doc.story_id] ?? []), doc];
+    }
     for (const group of DOCUMENT_SIGNAL_GROUPS) {
       if (!group.pattern.test(filePath)) continue;
       signals[group.key] = [...(signals[group.key] ?? []), doc];
     }
   }
-  return Object.fromEntries(Object.entries(signals).map(([key, values]) => [key, dedupeDocs(values)]));
+  const normalized = Object.fromEntries(Object.entries(signals).map(([key, values]) => [key, dedupeDocs(values)]));
+  normalized._byStoryId = Object.fromEntries(Object.entries(byStoryId).map(([storyId, values]) => [storyId, dedupeDocs(values)]));
+  return normalized;
 }
 
 async function analyzeDocument(repoRoot, relativePath) {
@@ -1334,8 +1348,11 @@ async function analyzeDocument(repoRoot, relativePath) {
   const title = frontMatter.title ?? extractMarkdownTitle(content) ?? humanizeFileName(relativePath);
   return {
     path: relativePath,
+    story_id: frontMatter.story_id ?? null,
     title,
     status: frontMatter.status ?? null,
+    view: frontMatter.view ?? null,
+    horizon: frontMatter.horizon ?? null,
     priority: frontMatter.priority ?? null,
     points: frontMatter.points ?? null,
     created_at: frontMatter.created_at ?? null,
@@ -1535,6 +1552,7 @@ function dedupeDocs(docs) {
 
 function documentRank(filePath) {
   if (filePath.startsWith('docs/user_stories/')) return 0;
+  if (filePath.startsWith('docs/management/stories/')) return 0;
   if (filePath.startsWith('docs/requirements/')) return 1;
   if (filePath.startsWith('docs/features/')) return 2;
   if (filePath.startsWith('docs/shadow-call/')) return 3;
@@ -1548,8 +1566,16 @@ function selectDocs(documentSignals, key) {
   return documentSignals[key] ?? [];
 }
 
+function selectDocsForStory(documentSignals, storyId) {
+  return documentSignals._byStoryId?.[storyId] ?? [];
+}
+
 function docPaths(documentSignals, key) {
   return selectDocs(documentSignals, key).map((doc) => doc.path);
+}
+
+function uniqueList(items) {
+  return [...new Set(items.filter(Boolean))];
 }
 
 async function readEvidence(repoRoot, manifest, fromRunId) {

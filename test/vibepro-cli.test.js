@@ -430,6 +430,47 @@ test('story derive creates stories for code surfaces that have no spec documents
   assert.match(map, /コード上は機能面が確認できるが、対応するStory、要求、仕様書が見つからない/);
 });
 
+test('story derive links local management story docs to code surface stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-product-hotel-detail-actions.md'), `---
+story_id: story-product-hotel-detail-actions
+title: ホテル詳細と予約前アクションを成立させる
+status: active
+view: business
+horizon: quarter
+period: null
+---
+
+# ホテル詳細と予約前アクションを成立させる
+
+ホテル候補を比較して次の行動を決めたいユーザーが、詳細、プラン、問い合わせを同じ流れで判断できるようにする。
+
+## 受け入れ基準
+
+- ホテル情報とプランが一貫して表示される
+- 問い合わせや外部遷移の失敗時の扱いが決まる
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+
+  const result = await runCli(['story', 'derive', repo]);
+
+  assert.equal(result.exitCode, 0);
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const story = catalog.stories.find((item) => item.story_id === 'story-product-hotel-detail-actions');
+
+  assert.equal(Boolean(story), true);
+  assert.equal(story.source.paths.includes('docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.open_questions.some((item) => item.field === 'missing_spec'), false);
+  assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.meaning.user_actor.confidence, 'high');
+  assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
+});
+
 test('story derive does not create map search story from hotel detail code alone', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -1229,6 +1270,39 @@ test('story diagnose runs the local story workflow in one command', async () => 
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_run_by_story['story-alpha'], 'run-alpha');
   assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
+});
+
+test('diagnose preserves plan-derived story tasks and writes run tasks separately', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'detail', source_file: 'src/components/hotel/HotelDetail.tsx' }],
+    edges: [{ source: 'detail', target: 'unknown', relation: 'depends_on', confidence: 'AMBIGUOUS' }]
+  }));
+  await runCli(['story', 'derive', repo]);
+  await runCli(['story', 'plan', repo]);
+  await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-product-hotel-detail-actions']);
+  const canonicalTasksPath = path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'tasks.json');
+  const beforeTasks = await readJson(canonicalTasksPath);
+  assert.equal(beforeTasks.source_run.run_id, 'story-plan');
+  assert.equal(beforeTasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
+
+  await runCli(['story', 'select', repo, '--id', 'story-product-hotel-detail-actions']);
+  await runCli(['diagnose', repo, '--run-id', 'run-detail']);
+
+  const afterTasks = await readJson(canonicalTasksPath);
+  assert.equal(afterTasks.source_run.run_id, 'story-plan');
+  assert.equal(afterTasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.runs[0].artifacts.story_tasks_json, '.vibepro/stories/story-product-hotel-detail-actions/diagnostics/run-detail/tasks.json');
+  const runTasks = await readJson(path.join(repo, manifest.runs[0].artifacts.story_tasks_json));
+  assert.equal(runTasks.source_run.run_id, 'run-detail');
+  assert.equal(runTasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), false);
 });
 
 test('status reports an uninitialized repository without creating a workspace', async () => {
