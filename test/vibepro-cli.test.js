@@ -328,6 +328,17 @@ test('story derive continues when manifest evidence artifact is missing', async 
   assert.equal(catalog.source.warnings[0].run_id, 'missing-run');
   const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
   assert.match(map, /警告: missing_evidence/);
+
+  await runCli(['story', 'plan', repo]);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const cleanupTask = plan.task_candidates.find((task) => task.id === 'story-docs-story-ssot-recovery-missing-evidence-cleanup');
+  assert.equal(plan.questions.some((question) => question.field === 'missing_evidence'), true);
+  assert.equal(Boolean(cleanupTask), true);
+  assert.equal(cleanupTask.story_id, 'story-docs-story-ssot-recovery');
+  assert.match(cleanupTask.purpose, /診断evidence/);
+  await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-docs-story-ssot-recovery', '--task', 'story-docs-story-ssot-recovery-missing-evidence-cleanup']);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-docs-story-ssot-recovery', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks.some((task) => task.id === 'story-docs-story-ssot-recovery-missing-evidence-cleanup'), true);
 });
 
 test('story map renders the generated catalog as markdown and json', async () => {

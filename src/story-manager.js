@@ -579,21 +579,27 @@ function buildStoryExecutionPlan(catalog, options = {}) {
     .sort((a, b) => b.score - a.score || a.story_id.localeCompare(b.story_id));
   const priorityStories = scoredStories.slice(0, options.limit ?? 5);
   const questions = buildPlanQuestions(catalog, priorityStories);
-  const taskCandidates = priorityStories.flatMap((story) => buildTaskCandidatesForStory(story));
+  const taskCandidates = [
+    ...buildWarningTaskCandidates(catalog),
+    ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story))
+  ];
+  const warnings = catalog.source?.warnings ?? [];
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
     source: {
       tool: 'vibepro',
       catalog_generated_at: catalog.generated_at ?? null,
-      run_id: catalog.source?.run_id ?? null
+      run_id: catalog.source?.run_id ?? null,
+      warnings
     },
     summary: {
       story_count: stories.length,
       coverage_status: catalog.coverage?.status ?? 'unavailable',
       coverage_ratio: catalog.coverage?.totals?.coverage_ratio ?? null,
       uncovered_files: catalog.coverage?.totals?.uncovered_files ?? 0,
-      open_question_count: Array.isArray(catalog.open_questions) ? catalog.open_questions.length : 0
+      open_question_count: Array.isArray(catalog.open_questions) ? catalog.open_questions.length : 0,
+      warning_count: warnings.length
     },
     questions,
     priority_stories: priorityStories,
@@ -686,6 +692,12 @@ function workflowStageWeight(stage) {
 function buildPlanQuestions(catalog, priorityStories) {
   const priorityIds = new Set(priorityStories.map((story) => story.story_id));
   const rawQuestions = Array.isArray(catalog.open_questions) ? catalog.open_questions : [];
+  const warningQuestions = (catalog.source?.warnings ?? []).map((warning) => ({
+    story_id: 'story-docs-story-ssot-recovery',
+    field: warning.code ?? 'warning',
+    question: warning.message ?? `Story Map生成時の警告を確認する: ${warning.code ?? 'warning'}`,
+    priority: 'high'
+  }));
   const coverageQuestions = (catalog.coverage?.uncovered ?? []).slice(0, 10).map((item) => ({
     story_id: null,
     field: 'coverage',
@@ -698,13 +710,13 @@ function buildPlanQuestions(catalog, priorityStories) {
     question: item.question,
     priority: priorityIds.has(item.story_id) ? questionPriority(item.field) : 'medium'
   }));
-  return [...coverageQuestions, ...questions]
+  return [...warningQuestions, ...coverageQuestions, ...questions]
     .sort((a, b) => questionPriorityRank(a.priority) - questionPriorityRank(b.priority) || String(a.story_id ?? '').localeCompare(String(b.story_id ?? '')))
     .slice(0, 20);
 }
 
 function questionPriority(field) {
-  if (field === 'coverage' || field === 'missing_spec') return 'high';
+  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence') return 'high';
   if (field === 'business_metric' || field === 'business_context') return 'medium';
   return 'low';
 }
@@ -766,6 +778,36 @@ function buildTaskCandidatesForStory(story) {
   return candidates;
 }
 
+function buildWarningTaskCandidates(catalog) {
+  return (catalog.source?.warnings ?? [])
+    .filter((warning) => warning.code === 'missing_evidence')
+    .map((warning) => ({
+      id: 'story-docs-story-ssot-recovery-missing-evidence-cleanup',
+      story_id: 'story-docs-story-ssot-recovery',
+      title: '欠けた診断evidence参照を整理する',
+      purpose: 'manifestが参照する診断evidenceの欠落を確認し、run成果物を復元するか不要なrun参照を整理する',
+      acceptance: [
+        '欠けているevidence参照のrun_idとpathが特定されている',
+        'run成果物を復元するか、不要なrun参照を整理する判断が残っている',
+        'story deriveを再実行してmissing_evidence警告が消えるか、残す理由が説明されている'
+      ],
+      priority: 'high',
+      source_type: 'story_plan_warning',
+      warning,
+      target_files: ['.vibepro/vibepro-manifest.json'],
+      read_first_files: [{
+        file: '.vibepro/vibepro-manifest.json',
+        reason: `欠けた診断evidence参照を確認する: ${warning.path ?? '-'}`
+      }],
+      recommended_strategy: {
+        id: 'missing-evidence-cleanup',
+        reason: warning.message ?? 'manifestが参照する診断evidenceが見つからないため'
+      },
+      implementation_steps: buildPlanCandidateSteps('missing-evidence-cleanup'),
+      suggested_command: 'vibepro story plan .'
+    }));
+}
+
 function buildPlanCandidateSteps(suffix) {
   const common = {
     'spec-recovery': [
@@ -784,6 +826,11 @@ function buildPlanCandidateSteps(suffix) {
     ],
     review: [
       { id: 'review-story', title: 'Story仮説をレビューする', detail: 'meaning confidenceとcounter_evidenceを確認して次アクションを決める' }
+    ],
+    'missing-evidence-cleanup': [
+      { id: 'inspect-manifest', title: 'manifest参照を確認する', detail: 'missing_evidence warningのrun_idとpathを .vibepro/vibepro-manifest.json で確認する' },
+      { id: 'choose-policy', title: '復元か整理かを決める', detail: '診断runを残す必要があればevidenceを復元し、不要ならmanifestのrun参照を整理する' },
+      { id: 'rerun-derive', title: 'Story Mapを再生成する', detail: 'vibepro story derive を再実行し、warningが消えたか、残す理由が説明できるか確認する' }
     ]
   };
   return common[suffix] ?? common.review;
@@ -830,6 +877,7 @@ ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${tas
 | Story数 | ${plan.summary.story_count} |
 | Coverage | ${plan.summary.coverage_status} (${formatPercent(plan.summary.coverage_ratio)}) |
 | 未カバー | ${plan.summary.uncovered_files} |
+| 警告 | ${plan.summary.warning_count ?? 0} |
 | 未決事項 | ${plan.summary.open_question_count} |
 
 ## まず確認する質問
