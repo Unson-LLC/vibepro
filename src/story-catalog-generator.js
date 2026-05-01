@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { profileArchitecture } from './architecture-profiler.js';
 import { getPreset, resolvePresetId } from './presets.js';
+import { generateStoryCandidates } from './story-candidate-generator.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const IGNORED_DIRS = new Set([
@@ -188,6 +189,7 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
   ]);
   const coverage = buildGraphStoryCoverage(graph, stories, activePreset);
   const openQuestions = collectOpenQuestions(stories);
+  const storyCandidates = generateStoryCandidates(coverage);
 
   return {
     schema_version: '0.1.0',
@@ -204,7 +206,8 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
     story_count: stories.length,
     coverage,
     open_questions: openQuestions,
-    stories
+    stories,
+    story_candidates: storyCandidates
   };
 }
 
@@ -231,6 +234,10 @@ ${portfolio}
 
 ${storyCards || '-'}
 
+## Story候補（uncovered cluster）
+
+${renderStoryCandidatesAppendix(catalog.story_candidates ?? [])}
+
 ## 付録: Graph Coverage
 
 ${renderCoverageAppendix(catalog.coverage)}
@@ -239,6 +246,28 @@ ${renderCoverageAppendix(catalog.coverage)}
 
 ${renderOpenQuestionsAppendix(catalog.open_questions ?? [])}
 `;
+}
+
+function renderStoryCandidatesAppendix(candidates) {
+  if (!Array.isArray(candidates) || candidates.length === 0) {
+    return 'uncovered cluster は検出されませんでした。';
+  }
+  return candidates.map((candidate) => {
+    const evidence = (candidate.evidence ?? []).map((line) => `  - ${line}`).join('\n') || '  - -';
+    const questions = (candidate.open_questions ?? []).map((line) => `  - ${line}`).join('\n') || '  - -';
+    const title = candidate.suggested_story_titles?.[0] ?? candidate.candidate_id;
+    return `### ${title}
+
+- 候補ID: \`${candidate.candidate_id}\`
+- Role: ${candidate.role}
+- 共通パス: ${candidate.common_path}
+- ファイル数: ${candidate.file_count}
+- 確度: ${candidate.confidence}
+- 主な根拠:
+${evidence}
+- 未決事項:
+${questions}`;
+  }).join('\n\n');
 }
 
 function deriveArchitectureStories(profile, evidence, defaults, documentSignals) {

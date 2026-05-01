@@ -2651,6 +2651,84 @@ test('story derive does not leak next-app product stories into modular-web prese
     `next-app product stories must not leak into modular-web preset, found ${JSON.stringify(leaked.map((s) => s.story_id))}`);
 });
 
+test('story derive emits story_candidates clustering uncovered files', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  // lib/auth/* and lib/legacy/* match modular-web relevant patterns but NOT
+  // codeSurfaceSignatures, so they end up in coverage.uncovered.
+  await mkdir(path.join(repo, 'lib', 'auth'), { recursive: true });
+  await mkdir(path.join(repo, 'lib', 'legacy'), { recursive: true });
+  for (let i = 0; i < 5; i += 1) {
+    await writeFile(path.join(repo, 'lib', 'auth', `auth${i}.js`), 'export {}\n');
+  }
+  for (let i = 0; i < 6; i += 1) {
+    await writeFile(path.join(repo, 'lib', 'legacy', `legacy${i}.js`), 'export {}\n');
+  }
+
+  const nodes = [];
+  for (let i = 0; i < 5; i += 1) nodes.push({ id: `auth_${i}`, source_file: `lib/auth/auth${i}.js`, label: `auth${i}` });
+  for (let i = 0; i < 6; i += 1) nodes.push({ id: `legacy_${i}`, source_file: `lib/legacy/legacy${i}.js`, label: `legacy${i}` });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.ok(Array.isArray(catalog.story_candidates),
+    `catalog.story_candidates must be an array, got ${typeof catalog.story_candidates}`);
+  assert.ok(catalog.story_candidates.length >= 2,
+    `expected >= 2 candidates from uncovered clusters, got ${catalog.story_candidates.length} (uncovered=${catalog.coverage.totals.uncovered_files})`);
+
+  const authCandidate = catalog.story_candidates.find((c) => c.common_path === 'lib/auth');
+  assert.ok(authCandidate, `expected candidate for lib/auth, got ${JSON.stringify(catalog.story_candidates.map((c) => c.common_path))}`);
+  assert.equal(authCandidate.role, 'auth');
+  assert.equal(authCandidate.file_count, 5);
+  assert.equal(authCandidate.confidence, 'medium');
+  assert.match(authCandidate.candidate_id, /^candidate-auth-/);
+  assert.ok(authCandidate.evidence.length > 0);
+  assert.ok(authCandidate.open_questions.length > 0);
+
+  const legacyCandidate = catalog.story_candidates.find((c) => c.common_path === 'lib/legacy');
+  assert.ok(legacyCandidate);
+  assert.equal(legacyCandidate.role, 'lib_module');
+  assert.equal(legacyCandidate.file_count, 6);
+
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /## Story候補（uncovered cluster）/);
+  assert.match(map, /candidate-auth-lib-auth/);
+});
+
+test('story derive omits singletons from story_candidates', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  await mkdir(path.join(repo, 'cli'), { recursive: true });
+  await writeFile(path.join(repo, 'cli', 'lonely.js'), 'export {}\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'lonely', source_file: 'cli/lonely.js', label: 'lonely' }],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const cliCandidates = catalog.story_candidates.filter((c) => c.role === 'cli');
+  assert.equal(cliCandidates.length, 0,
+    `singletons must not be emitted as candidates, got ${JSON.stringify(cliCandidates)}`);
+});
+
 test('story derive keeps next-app preset behavior when preset is unset', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
