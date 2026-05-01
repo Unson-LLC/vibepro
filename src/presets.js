@@ -113,6 +113,6 @@ export function getPreset(name) {
   return PRESETS[DEFAULT_PRESET_ID];
 }
 
-export function resolvePresetId(config) {
-  return config?.story_catalog?.preset ?? DEFAULT_PRESET_ID;
+export function resolvePresetId(config, explicitPreset = null) {
+  return explicitPreset ?? config?.story_catalog?.preset ?? DEFAULT_PRESET_ID;
 }

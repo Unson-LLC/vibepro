@@ -64,6 +64,7 @@ test('help command prints discoverable usage', async () => {
   assert.equal(result.command, 'help');
   assert.match(output, /vibepro help \[command\]/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
+  assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
 });
 
 test('init can bootstrap and select a local story', async () => {
@@ -2568,11 +2569,6 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
   const repo = await makeRepo();
   await runCli(['init', repo]);
 
-  const configPath = path.join(repo, '.vibepro', 'config.json');
-  const config = await readJson(configPath);
-  config.story_catalog = { preset: 'modular-web' };
-  await writeFile(configPath, JSON.stringify(config, null, 2));
-
   await mkdir(path.join(repo, 'cli'), { recursive: true });
   await mkdir(path.join(repo, 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'mcp', 'server'), { recursive: true });
@@ -2598,10 +2594,11 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
     links: []
   }));
 
-  const result = await runCli(['story', 'derive', repo]);
+  const result = await runCli(['story', 'derive', repo, '--preset', 'modular-web']);
   assert.equal(result.exitCode, 0);
 
   const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.preset, 'modular-web');
   assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
     `expected coverage.relevant_files > 0, got ${catalog.coverage.totals.graph_story_relevant_files}`);
   assert.ok(catalog.coverage.by_role.length > 0,
@@ -2636,6 +2633,7 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
   assert.equal(result.exitCode, 0);
 
   const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.preset, 'next-app');
   assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
     `default preset must keep classifying src/ files as relevant`);
   const roles = catalog.coverage.by_role.map((entry) => entry.role);
