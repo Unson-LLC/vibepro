@@ -2651,6 +2651,49 @@ test('story derive does not leak next-app product stories into modular-web prese
     `next-app product stories must not leak into modular-web preset, found ${JSON.stringify(leaked.map((s) => s.story_id))}`);
 });
 
+test('story derive uses salestailor preset without Aitle product story leakage', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'sample-review'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'projects', '[projectId]', 'sample-review', 'regenerate'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services', 'prompt-improvement'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services', 'formSubmission'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'sample-review', 'page.tsx'),
+    'export default function Page() { return <main>SalesTailor</main>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'projects', '[projectId]', 'sample-review', 'regenerate', 'route.ts'),
+    'export async function POST() {}\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'prompt-improvement', 'promptFeedbackService.ts'),
+    'export class PromptFeedbackService {}\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'formSubmission', 'formSubmissionOrchestrator.ts'),
+    'export class FormSubmissionOrchestrator {}\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'review_page', source_file: 'src/app/projects/[projectId]/sample-review/page.tsx', label: 'SampleReview' },
+      { id: 'regen_route', source_file: 'src/app/api/projects/[projectId]/sample-review/regenerate/route.ts', label: 'regenerate' },
+      { id: 'feedback', source_file: 'src/lib/services/prompt-improvement/promptFeedbackService.ts', label: 'PromptFeedbackService' },
+      { id: 'form', source_file: 'src/lib/services/formSubmission/formSubmissionOrchestrator.ts', label: 'FormSubmissionOrchestrator' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo, '--preset', 'salestailor']);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.preset, 'salestailor');
+  const storyIds = catalog.stories.map((story) => story.story_id);
+  assert.ok(storyIds.includes('story-salestailor-letter-generation-review'));
+  assert.ok(storyIds.includes('story-salestailor-prompt-improvement-loop'));
+  assert.ok(storyIds.includes('story-salestailor-contact-form-automation'));
+  assert.equal(storyIds.some((id) => id.includes('hotel') || id.includes('shadow-call')), false,
+    `salestailor preset must not emit Aitle story ids, got ${JSON.stringify(storyIds)}`);
+
+  const serialized = JSON.stringify(catalog);
+  assert.doesNotMatch(serialized, /Aitle|ホテル|旅行|予約/);
+});
+
 test('story derive emits story_candidates clustering uncovered files', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

@@ -324,9 +324,248 @@ const MODULAR_WEB_PRESET = {
   coveragePatterns: {}
 };
 
+const SALES_TAILOR_CODE_SURFACE_SIGNATURES = [
+  {
+    id: 'story-salestailor-project-planning',
+    title: '営業プロジェクトとターゲット戦略を設計する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/projects\//,
+      /^src\/app\/api\/projects\//,
+      /^src\/app\/api\/plans\//,
+      /^src\/lib\/services\/.*project/i,
+      /^src\/lib\/services\/.*plan/i
+    ]
+  },
+  {
+    id: 'story-salestailor-letter-generation-review',
+    title: '営業レター生成とレビューを成立させる',
+    category: 'product',
+    patterns: [
+      /sample-review/i,
+      /sample-generation/i,
+      /letter/i,
+      /prompt-generation/i,
+      /^src\/app\/api\/.*generate/i
+    ]
+  },
+  {
+    id: 'story-salestailor-prompt-improvement-loop',
+    title: 'プロンプト改善フィードバックを運用する',
+    category: 'product',
+    patterns: [
+      /prompt-improvement/i,
+      /improvement/i,
+      /feedback/i
+    ]
+  },
+  {
+    id: 'story-salestailor-contact-form-automation',
+    title: '問い合わせフォーム送信を自動化する',
+    category: 'product',
+    patterns: [
+      /formSubmission/i,
+      /form-automation/i,
+      /contactForm/i,
+      /captcha/i
+    ]
+  },
+  {
+    id: 'story-salestailor-company-product-data',
+    title: '企業・商材データを営業文脈で管理する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/companies\//,
+      /^src\/app\/products\//,
+      /^src\/app\/api\/companies\//,
+      /^src\/app\/api\/products\//,
+      /companyService/i,
+      /product/i
+    ]
+  },
+  {
+    id: 'story-salestailor-delivery-tracking',
+    title: '送信結果と反応を追跡する',
+    category: 'product',
+    patterns: [
+      /email-tracking/i,
+      /click-tracking/i,
+      /tracking/i,
+      /^src\/app\/api\/webhooks\/resend\//
+    ]
+  },
+  {
+    id: 'story-salestailor-admin-operations',
+    title: '管理者がテンプレート・ユーザー・LLM運用を管理する',
+    category: 'ops',
+    patterns: [
+      /^src\/app\/admin\//,
+      /^src\/app\/api\/admin\//,
+      /^src\/app\/api\/templates\//,
+      /^src\/lib\/services\/admin\//,
+      /template/i,
+      /llmJudge/i
+    ]
+  },
+  {
+    id: 'story-salestailor-integrations-scheduling',
+    title: '外部連携と面談日程を接続する',
+    category: 'product',
+    patterns: [
+      /timerex/i,
+      /^src\/app\/api\/integrations\//,
+      /^src\/app\/api\/webhooks\/timerex\//
+    ]
+  }
+];
+
+const SALES_TAILOR_STORY_DEFINITIONS = {
+  'story-salestailor-project-planning': {
+    who: '営業施策を設計するユーザー',
+    problem: 'ターゲット、商材、訴求、実行条件が分散すると、営業プロジェクトごとの狙いと実行単位が曖昧になる。',
+    want: 'プロジェクト単位でターゲット戦略と実行条件を整理し、生成・送信・分析へつなげたい。',
+    outcome: '営業プロジェクトの目的、対象、進め方が一貫して管理される。',
+    business_value: '営業施策の立ち上げ速度と再現性を高める。案件化率やプロジェクト作成から実行までの時間は未確認。',
+    acceptance_focus: ['プロジェクトの対象企業と条件が追跡できる', 'ターゲット戦略が生成や送信に反映される', '状態遷移と権限が破綻しない']
+  },
+  'story-salestailor-letter-generation-review': {
+    who: '営業レターを作成・確認するユーザー',
+    problem: '生成結果、レビュー、再生成、承認が一貫しないと、送信前の品質担保と改善が属人的になる。',
+    want: '対象企業ごとの文脈を踏まえたレターを生成し、レビューで修正してから送信に進めたい。',
+    outcome: 'レター生成から承認までの品質管理がStoryとして追跡できる。',
+    business_value: '商談化につながる文面品質と運用速度を支える。承認率、再生成率、返信率は未確認。',
+    acceptance_focus: ['生成結果と対象企業の対応が崩れない', 'レビュー・再生成・承認の状態が追跡できる', '改善フィードバックが次の生成に接続できる']
+  },
+  'story-salestailor-prompt-improvement-loop': {
+    who: '営業レター品質を改善する運用者',
+    problem: '改善フィードバックが1件単位や全体単位に閉じると、対象パートごとの改善やプロンプト版管理に接続しづらい。',
+    want: 'レビューで得た改善点をパート、重要度、適用範囲ごとに蓄積し、プロンプト改善へ反映したい。',
+    outcome: 'レター品質改善が単発修正ではなく、検証可能な改善ループとして残る。',
+    business_value: '生成品質の継続改善と運用品質の平準化に効く。改善反映後の品質指標は未確認。',
+    acceptance_focus: ['複数改善点を同一レターに紐づけられる', '対象パートと適用範囲で分類できる', 'プロンプト版と改善結果の対応が追跡できる']
+  },
+  'story-salestailor-contact-form-automation': {
+    who: '問い合わせフォーム送信を自動化したい営業担当者',
+    problem: 'フォーム探索、入力、CAPTCHA、送信結果の扱いが不安定だと、手作業削減と送信品質を両立できない。',
+    want: '企業サイトのフォームを検出し、必要項目を安全に入力して、結果を確認できる形で送信したい。',
+    outcome: 'フォーム送信の自動化が運用可能な業務フローになる。',
+    business_value: '営業接触数の拡張と作業時間削減につながる。成功率、失敗分類、再試行基準は未確認。',
+    acceptance_focus: ['フォーム検出から送信までの状態が追跡できる', '失敗理由と再試行可否が分かる', 'CAPTCHAや外部ブラウザ依存の扱いが明確である']
+  },
+  'story-salestailor-company-product-data': {
+    who: '営業対象企業と商材情報を管理するユーザー',
+    problem: '企業情報、商材情報、インポート、更新が散らばると、生成文面やターゲティングの根拠が弱くなる。',
+    want: '企業と商材の情報を営業文脈で整え、プロジェクトやレター生成に利用したい。',
+    outcome: '営業文面の根拠になる企業・商材データが管理される。',
+    business_value: 'パーソナライズ精度と運用効率を支える。データ鮮度と利用率は未確認。',
+    acceptance_focus: ['企業・商材情報の作成、更新、取り込みが成立する', 'プロジェクトや生成処理から参照できる', '重複や不足情報の扱いが決まる']
+  },
+  'story-salestailor-delivery-tracking': {
+    who: '送信後の反応を確認したい営業担当者と運用者',
+    problem: '送信結果、開封、クリック、返信などの反応が追えないと、施策改善と次アクションにつながらない。',
+    want: '送信後の状態と反応を確認し、プロジェクトや改善判断へ戻したい。',
+    outcome: '営業接触の結果が可視化され、次の改善に使える。',
+    business_value: '営業施策の学習速度を高める。返信率、クリック率、商談化率は未確認。',
+    acceptance_focus: ['送信結果と反応イベントが保存される', '対象企業・レター・プロジェクトへ紐づく', 'webhookや外部イベントの信頼境界が明確である']
+  },
+  'story-salestailor-admin-operations': {
+    who: 'SalesTailorを運用する管理者',
+    problem: 'テンプレート、ユーザー、LLM判定、利用状況の管理が弱いと、プロダクト全体の品質と安全な運用を保てない。',
+    want: '管理者がテンプレート、ユーザー、評価、利用状況を確認・調整できるようにしたい。',
+    outcome: '営業生成システムを管理者が継続運用できる。',
+    business_value: '運用品質、権限管理、生成品質の統制に効く。管理者作業の頻度と基準は未確認。',
+    acceptance_focus: ['管理画面と管理APIの責務が整理される', '管理者権限が一貫している', 'テンプレートやLLM評価の変更履歴を追える']
+  },
+  'story-salestailor-integrations-scheduling': {
+    who: '営業接点を面談や外部ツールへつなげたいユーザー',
+    problem: '日程調整や外部連携が営業フローと分断されると、返信後の面談化や結果追跡が弱くなる。',
+    want: 'Timerexなどの外部連携を通じて、営業接触から日程調整・結果確認までつなげたい。',
+    outcome: '営業接触後の次アクションが外部サービスと連携して管理される。',
+    business_value: '商談化までの摩擦を減らす。面談設定率や連携失敗率は未確認。',
+    acceptance_focus: ['外部認証とcallbackが安全に処理される', 'tracking URLやwebhookがプロジェクトに紐づく', '失敗時の再接続や通知が決まる']
+  }
+};
+
+const SALES_TAILOR_WORKFLOW_POSITIONS = {
+  'story-salestailor-company-product-data': {
+    stage: 'foundation',
+    before: [],
+    after: ['story-salestailor-project-planning', 'story-salestailor-letter-generation-review'],
+    confidence: 'medium',
+    rationale: '企業・商材情報はターゲット設計とレター生成の根拠になるため'
+  },
+  'story-salestailor-project-planning': {
+    stage: 'planning',
+    before: ['story-salestailor-company-product-data'],
+    after: ['story-salestailor-letter-generation-review', 'story-salestailor-contact-form-automation'],
+    confidence: 'medium',
+    rationale: 'プロジェクト設計は生成・送信の実行単位になるため'
+  },
+  'story-salestailor-letter-generation-review': {
+    stage: 'creation',
+    before: ['story-salestailor-project-planning'],
+    after: ['story-salestailor-prompt-improvement-loop', 'story-salestailor-contact-form-automation'],
+    confidence: 'medium',
+    rationale: '送信前に文面生成とレビューで品質を担保するため'
+  },
+  'story-salestailor-prompt-improvement-loop': {
+    stage: 'quality_improvement',
+    before: ['story-salestailor-letter-generation-review'],
+    after: ['story-salestailor-letter-generation-review'],
+    confidence: 'medium',
+    rationale: 'レビュー結果を次の生成品質へ戻す改善ループのため'
+  },
+  'story-salestailor-contact-form-automation': {
+    stage: 'execution',
+    before: ['story-salestailor-project-planning', 'story-salestailor-letter-generation-review'],
+    after: ['story-salestailor-delivery-tracking', 'story-salestailor-integrations-scheduling'],
+    confidence: 'medium',
+    rationale: '生成した文面を企業接点へ届ける実行段階のため'
+  },
+  'story-salestailor-delivery-tracking': {
+    stage: 'measurement',
+    before: ['story-salestailor-contact-form-automation'],
+    after: ['story-salestailor-prompt-improvement-loop'],
+    confidence: 'medium',
+    rationale: '送信結果と反応が改善判断に戻るため'
+  },
+  'story-salestailor-admin-operations': {
+    stage: 'operations',
+    before: [],
+    after: [],
+    confidence: 'medium',
+    rationale: '管理者運用は全体の品質と権限を支える横断機能のため'
+  },
+  'story-salestailor-integrations-scheduling': {
+    stage: 'conversion_support',
+    before: ['story-salestailor-contact-form-automation'],
+    after: ['story-salestailor-delivery-tracking'],
+    confidence: 'medium',
+    rationale: '営業接触後の面談化や外部結果を追跡するため'
+  }
+};
+
+const SALES_TAILOR_COVERAGE_PATTERNS = Object.fromEntries(
+  SALES_TAILOR_CODE_SURFACE_SIGNATURES.map((signature) => [signature.id, signature.patterns])
+);
+
+const SALES_TAILOR_PRESET = {
+  id: 'salestailor',
+  isCodePath: (filePath) => typeof filePath === 'string' && filePath.startsWith('src/'),
+  storyRelevantPatterns: NEXT_APP_RELEVANT_PATTERNS,
+  classifyRole: classifyNextApp,
+  codeSurfaceSignatures: SALES_TAILOR_CODE_SURFACE_SIGNATURES,
+  productSurfaceSignals: [],
+  documentSignalGroups: [...COMMON_DOCUMENT_SIGNAL_GROUPS],
+  coveragePatterns: SALES_TAILOR_COVERAGE_PATTERNS,
+  storyDefinitions: SALES_TAILOR_STORY_DEFINITIONS,
+  workflowPositions: SALES_TAILOR_WORKFLOW_POSITIONS
+};
+
 const PRESETS = {
   'next-app': NEXT_APP_PRESET,
-  'modular-web': MODULAR_WEB_PRESET
+  'modular-web': MODULAR_WEB_PRESET,
+  salestailor: SALES_TAILOR_PRESET
 };
 
 export const DEFAULT_PRESET_ID = 'next-app';

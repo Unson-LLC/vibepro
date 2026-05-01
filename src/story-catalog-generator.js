@@ -389,7 +389,7 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset)
       sourceType: signal.sourceType ?? 'story_cluster',
       paths,
       evidence: [...(signal.evidenceTokens ?? []), ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor(signal.id, docs),
+      storyDefinition: storyDefinitionFor(signal.id, docs, preset),
       docs,
       defaults
     }));
@@ -417,7 +417,7 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
         sourceType: 'code_surface',
         paths,
         evidence: paths,
-        storyDefinition: codeStoryDefinitionFor(signature.id, codePaths, docs),
+        storyDefinition: codeStoryDefinitionFor(signature.id, codePaths, docs, preset),
         docs,
         codeDerived: true,
         defaults
@@ -448,7 +448,7 @@ function deriveDocumentationStories(fileSet, documentSignals, defaults) {
       ...selectDocs(documentSignals, 'requirements'),
       ...selectDocs(documentSignals, 'userStories'),
       ...selectDocs(documentSignals, 'features')
-    ]),
+    ], defaults.preset),
     docs: [
       ...selectDocs(documentSignals, 'requirements'),
       ...selectDocs(documentSignals, 'userStories'),
@@ -521,11 +521,15 @@ function buildDerivedStory({
   };
 }
 
-function codeStoryDefinitionFor(storyId, paths, docs = []) {
+function codeStoryDefinitionFor(storyId, paths, docs = [], preset = null) {
   const sourceSynthesis = [
     ...synthesizeSources(docs),
     ...synthesizeCodeSources(paths)
   ];
+  const presetDefinition = preset?.storyDefinitions?.[storyId];
+  if (presetDefinition) {
+    return applyStoryDocDefinition({ ...presetDefinition, source_synthesis: sourceSynthesis }, docs, sourceSynthesis);
+  }
   const definitions = {
     'story-product-hotel-detail-actions': {
       who: 'ホテル候補を比較して次の行動を決めたいユーザー',
@@ -636,11 +640,15 @@ function codeStoryDefinitionFor(storyId, paths, docs = []) {
       source_synthesis: sourceSynthesis
     }
   };
-  return applyStoryDocDefinition(definitions[storyId] ?? storyDefinitionFor('unknown', docs), docs, sourceSynthesis);
+  return applyStoryDocDefinition(definitions[storyId] ?? storyDefinitionFor('unknown', docs, preset), docs, sourceSynthesis);
 }
 
-function storyDefinitionFor(storyId, docs = []) {
+function storyDefinitionFor(storyId, docs = [], preset = null) {
   const sourceSynthesis = synthesizeSources(docs);
+  const presetDefinition = preset?.storyDefinitions?.[storyId];
+  if (presetDefinition) {
+    return applyStoryDocDefinition({ ...presetDefinition, source_synthesis: sourceSynthesis }, docs, sourceSynthesis);
+  }
   const definitions = {
     'story-product-hotel-map-search': {
       who: 'ホテルを探しているユーザー',
@@ -849,7 +857,7 @@ function buildStoryMeaning({
   preset
 }) {
   const confidence = inferMeaningConfidence({ docs, paths, businessContext, openQuestions, diagnosisBased });
-  const workflow = workflowPositionFor(id);
+  const workflow = workflowPositionFor(id, preset);
   const codePaths = paths.filter((item) => isCodePath(item, preset));
   return {
     value_hypothesis: `${definition.outcome} ${definition.business_value}`,
@@ -922,7 +930,8 @@ function buildCounterEvidence({ docs, paths, openQuestions, planning, codeDerive
   return items;
 }
 
-function workflowPositionFor(storyId) {
+function workflowPositionFor(storyId, preset = null) {
+  if (preset?.workflowPositions?.[storyId]) return preset.workflowPositions[storyId];
   const positions = {
     'story-product-app-navigation-shell': {
       stage: 'entry',
