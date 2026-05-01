@@ -2,7 +2,10 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { profileArchitecture } from './architecture-profiler.js';
+import { getPreset, resolvePresetId } from './presets.js';
 import { getWorkspaceDir } from './workspace.js';
+
+let activePreset = getPreset();
 
 const IGNORED_DIRS = new Set([
   '.git',
@@ -329,6 +332,7 @@ const STORY_COVERAGE_PATTERNS = {
 
 export async function generateStoryCatalog(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  activePreset = getPreset(resolvePresetId(options.config));
   const files = await collectRepoFiles(root);
   const fileSet = new Set(files.map((file) => file.relativePath));
   const evidenceResult = await readEvidence(root, options.manifest, options.fromRunId);
@@ -598,7 +602,8 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals) {
 
 function deriveCodeSurfaceStories(fileSet, defaults, documentSignals) {
   const files = [...fileSet];
-  return CODE_SURFACE_SIGNATURES
+  const signatures = activePreset.codeSurfaceSignatures ?? CODE_SURFACE_SIGNATURES;
+  return signatures
     .map((signature) => {
       const codePaths = files
         .filter((file) => signature.patterns.some((pattern) => pattern.test(file)))
@@ -1884,33 +1889,15 @@ function isStoryRelevantGraphFile(filePath) {
   if (/\/fonts\//.test(filePath)) return false;
   if (/\.types\.[jt]s$/.test(filePath)) return false;
   if (/(^|\/)(index|types|styles|constants)\.[jt]sx?$/.test(filePath)) return false;
-  return [
-    /^src\/app\/.+\/(page|route|client)\.[jt]sx?$/,
-    /^src\/app\/.+\/_components\/.+\.[jt]sx?$/,
-    /^src\/components\/(auth|hotel|layout|modals|common\/hotel_card)\/.+\.[jt]sx?$/,
-    /^src\/lib\/actions\/.+\.[jt]s$/,
-    /^src\/lib\/auth\/.+\.[jt]s$/,
-    /^src\/lib\/article\/.+\.[jt]s$/,
-    /^src\/lib\/crawlers\/.+\.[jt]s$/,
-    /^src\/lib\/services\/.+\.[jt]s$/,
-    /^src\/lib\/api\/.+\.[jt]s$/
-  ].some((pattern) => pattern.test(filePath));
+  return activePreset.storyRelevantPatterns.some((pattern) => pattern.test(filePath));
 }
 
 function classifyStoryRelevantFile(filePath) {
-  if (/^src\/app\/.+\/route\.[jt]s$/.test(filePath)) return 'api_route';
-  if (/^src\/app\//.test(filePath)) return 'app_route';
-  if (/^src\/components\//.test(filePath)) return 'component';
-  if (/^src\/lib\/actions\//.test(filePath)) return 'server_action';
-  if (/^src\/lib\/crawlers\//.test(filePath)) return 'crawler';
-  if (/^src\/lib\/auth\//.test(filePath)) return 'auth';
-  if (/^src\/lib\/article\//.test(filePath)) return 'article_logic';
-  if (/^src\/lib\/api\//.test(filePath)) return 'api_client';
-  return 'domain_code';
+  return activePreset.classifyRole(filePath);
 }
 
 function isCodePath(filePath) {
-  return typeof filePath === 'string' && filePath.startsWith('src/');
+  return activePreset.isCodePath(filePath);
 }
 
 function normalizeGraphSourceFile(filePath) {

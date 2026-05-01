@@ -2564,6 +2564,85 @@ test('brainbase publish-status fails when explicit story id is not in import sta
   assert.equal(result.exitCode, 1);
 });
 
+test('story derive supports modular-web preset for non Next.js layouts', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  await mkdir(path.join(repo, 'cli'), { recursive: true });
+  await mkdir(path.join(repo, 'lib', 'services'), { recursive: true });
+  await mkdir(path.join(repo, 'mcp', 'server'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'core'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'domain', 'task'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'routes'), { recursive: true });
+  await writeFile(path.join(repo, 'cli', 'index.js'), 'export function main() {}\n');
+  await writeFile(path.join(repo, 'lib', 'services', 'auth-service.js'), 'export class AuthService {}\n');
+  await writeFile(path.join(repo, 'mcp', 'server', 'index.js'), 'export function startServer() {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'core', 'event-bus.js'), 'export const eventBus = {};\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'domain', 'task', 'task-service.js'), 'export class TaskService {}\n');
+  await writeFile(path.join(repo, 'server', 'routes', 'api.js'), 'export default function api() {}\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'cli_index', source_file: 'cli/index.js', label: 'cli/index.js' },
+      { id: 'lib_auth', source_file: 'lib/services/auth-service.js', label: 'AuthService' },
+      { id: 'mcp_server', source_file: 'mcp/server/index.js', label: 'mcp server' },
+      { id: 'web_core', source_file: 'public/modules/core/event-bus.js', label: 'eventBus' },
+      { id: 'web_domain_task', source_file: 'public/modules/domain/task/task-service.js', label: 'TaskService' },
+      { id: 'server_route', source_file: 'server/routes/api.js', label: 'api route' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
+    `expected coverage.relevant_files > 0, got ${catalog.coverage.totals.graph_story_relevant_files}`);
+  assert.ok(catalog.coverage.by_role.length > 0,
+    `expected by_role to have entries, got ${JSON.stringify(catalog.coverage.by_role)}`);
+
+  const roles = catalog.coverage.by_role.map((entry) => entry.role);
+  const expectedAny = ['cli', 'mcp_server', 'web_core', 'web_module', 'domain_service', 'server_route'];
+  assert.ok(roles.some((role) => expectedAny.includes(role)),
+    `expected modular-web role in ${JSON.stringify(roles)}`);
+
+  const codeSurface = catalog.stories.filter((story) => story.source.type === 'code_surface');
+  assert.ok(codeSurface.length >= 1,
+    `expected at least 1 code_surface story for modular-web, got ${codeSurface.length}`);
+});
+
+test('story derive keeps next-app preset behavior when preset is unset', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'),
+    'export function HotelDetail() { return null; }\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'hotel_detail', source_file: 'src/components/hotel/HotelDetail.tsx', label: 'HotelDetail' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
+    `default preset must keep classifying src/ files as relevant`);
+  const roles = catalog.coverage.by_role.map((entry) => entry.role);
+  assert.ok(roles.includes('component'),
+    `default preset must classify src/components/** as 'component', got ${JSON.stringify(roles)}`);
+});
+
 function jsonResponse(body) {
   return {
     ok: true,
