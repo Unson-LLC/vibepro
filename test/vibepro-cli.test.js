@@ -143,6 +143,7 @@ test('doctor detects and fixes missing diagnosis evidence references', async () 
   assert.equal(dryRun.exitCode, 0);
   assert.equal(dryRun.result.overall_status, 'needs_maintenance');
   assert.equal(dryRun.result.checks[0].id, 'VP-DOCTOR-MISSING-EVIDENCE');
+  assert.equal(dryRun.result.next_commands.includes(`vibepro doctor ${repo} --fix`), true);
   assert.equal((await readJson(manifestPath)).runs.length, 2);
 
   const fixed = await runCli(['doctor', repo, '--fix', '--json']);
@@ -206,6 +207,7 @@ test('doctor fixes stale story, run, catalog, and graphify references', async ()
   assert.equal(checkIds.includes('VP-DOCTOR-STALE-LATEST-RUN-REFS'), true);
   assert.equal(checkIds.includes('VP-DOCTOR-MISSING-GRAPHIFY-ARTIFACTS'), true);
   assert.equal(checkIds.includes('VP-DOCTOR-STORY-CATALOG-DRIFT'), true);
+  assert.equal(dryRun.result.next_commands.includes(`vibepro story derive ${repo} --run-graphify`), true);
 
   const fixed = await runCli(['doctor', repo, '--fix']);
 
@@ -247,6 +249,8 @@ test('doctor reports missing task workflow references without modifying them', a
   const taskCheck = result.result.checks.find((check) => check.id === 'VP-DOCTOR-MISSING-TASK-WORKFLOW-REFS');
   assert.equal(taskCheck.status, 'manual');
   assert.equal(taskCheck.items.length, 2);
+  assert.equal(taskCheck.items[0].repair_command, `vibepro task handoff ${repo} --task TASK-001 --id story-live`);
+  assert.equal(result.result.next_commands.includes(`vibepro task handoff ${repo} --task TASK-001 --id story-live`), true);
 });
 
 test('graph imports existing graphify artifacts into the workspace', async () => {

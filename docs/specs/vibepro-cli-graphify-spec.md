@@ -375,6 +375,8 @@ Storyの `category` は次に分類する。
 
 - task workflow成果物内の欠けた参照は、対応する `vibepro task brief / plan / handoff / execute` の再実行を促す
 
+`doctor` の結果は `next_commands[]` を持つ。`next_commands[]` は、人間または次のAIセッションがそのまま実行できる保守コマンドである。task workflow成果物内の欠けた参照については、欠けた参照の `story_id`、`task_id`、`group_id`、artifact種別から `vibepro task handoff ...` または `vibepro task execute ...` を生成する。
+
 修復範囲:
 
 - 変更する: `.vibepro/vibepro-manifest.json`
@@ -945,6 +947,7 @@ API route保護判定:
 - `doctor` は存在しないcurrent Story、存在しないlatest run参照、欠けたgraphify artifact参照、Story catalogとconfigの差分を検出する。
 - `doctor --fix` は存在しないcurrent Story、存在しないlatest run参照、欠けたgraphify artifact参照、Story catalogとconfigの差分を管理情報上で整理する。
 - `doctor` は task workflow成果物内の欠けた briefing / plan / handoff 参照をmanual対応として検出する。
+- `doctor` は保守に使う `next_commands[]` を返し、task workflow欠損では具体的な `vibepro task handoff` または `vibepro task execute` コマンドを返す。
 - `doctor` は点検結果を `.vibepro/doctor/doctor-result.json` と `doctor-result.md` に出力する。
 - `status` はDoctor点検状態を表示し、保守が必要な場合は次コマンドに `vibepro doctor` を優先表示する。
 - `graph` で graphify 成果物が `.vibepro/graphify/` に入る。

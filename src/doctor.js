@@ -20,6 +20,7 @@ export async function runDoctor(repoRoot, options = {}) {
     overall_status: 'pass',
     checks: [],
     repairs: [],
+    next_commands: [],
     artifacts: {}
   };
 
@@ -32,8 +33,10 @@ export async function runDoctor(repoRoot, options = {}) {
       status: 'info',
       fixable: false,
       detail: '.vibepro workspaceが見つからない。',
-      recommendation: 'vibepro init を実行してworkspaceを作成する。'
+      recommendation: 'vibepro init を実行してworkspaceを作成する。',
+      next_commands: [`vibepro init ${root}`]
     });
+    result.next_commands = collectNextCommands(result);
     return result;
   }
 
@@ -49,7 +52,11 @@ export async function runDoctor(repoRoot, options = {}) {
       status: 'manual',
       fixable: false,
       detail: '.vibepro/config.json が見つからない。',
-      recommendation: 'vibepro init の初期化状態を確認し、必要ならconfigを復元する。'
+      recommendation: 'vibepro init の初期化状態を確認し、必要ならconfigを復元する。',
+      next_commands: [
+        `vibepro init ${root}`,
+        `vibepro doctor ${root}`
+      ]
     });
   }
 
@@ -62,6 +69,7 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${missingEvidence.length} 件の診断runが存在しないevidenceを参照している。`,
       recommendation: 'run成果物を復元するか、不要なrun参照をmanifestから整理する。',
+      next_commands: [`vibepro doctor ${root} --fix`],
       items: missingEvidence
     });
   }
@@ -82,6 +90,7 @@ export async function runDoctor(repoRoot, options = {}) {
         fixable: true,
         detail: `current_story_id が存在しないStoryを参照している: ${missingCurrentStory.story_id}`,
         recommendation: '存在するactive Storyを選択し直すか、不要なcurrent_story_idを解除する。',
+        next_commands: [`vibepro doctor ${root} --fix`],
         items: [missingCurrentStory]
       });
       if (options.fix) {
@@ -105,6 +114,7 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${staleLatestRunRefs.length} 件のlatest run参照が存在しないrunを指している。`,
       recommendation: '不要なlatest_run参照をmanifestから整理する。',
+      next_commands: [`vibepro doctor ${root} --fix`],
       items: staleLatestRunRefs
     });
     if (options.fix) {
@@ -125,6 +135,10 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${missingGraphifyArtifacts.length} 件のgraphify成果物参照が存在しないファイルを指している。`,
       recommendation: 'vibepro graph または vibepro story derive --run-graphify を実行してGraph成果物を作り直す。',
+      next_commands: [
+        `vibepro doctor ${root} --fix`,
+        `vibepro story derive ${root} --run-graphify`
+      ],
       items: missingGraphifyArtifacts
     });
     if (options.fix) {
@@ -142,6 +156,10 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `Story catalog と config stories に差分がある。missing=${storyCatalogDrift.missing_in_config.length}, stale=${storyCatalogDrift.stale_derived_config.length}`,
       recommendation: 'vibepro story derive を再実行するか、config storiesをcatalogに合わせて整理する。',
+      next_commands: [
+        `vibepro doctor ${root} --fix`,
+        `vibepro story derive ${root}`
+      ],
       items: storyCatalogDrift
     });
     if (options.fix) {
@@ -159,6 +177,7 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: false,
       detail: `${missingTaskRefs.length} 件のtask workflow成果物が存在しない参照を持っている。`,
       recommendation: '該当taskで vibepro task brief / plan / handoff / execute を再実行する。',
+      next_commands: buildTaskWorkflowRepairCommands(root, missingTaskRefs),
       items: missingTaskRefs
     });
   }
@@ -167,6 +186,7 @@ export async function runDoctor(repoRoot, options = {}) {
   if (manifestChanged) await writeManifest(root, manifest);
 
   result.overall_status = resolveDoctorStatus(result);
+  result.next_commands = collectNextCommands(result);
   if (options.writeArtifacts !== false) await writeDoctorArtifact(root, result);
   return result;
 }
@@ -178,6 +198,9 @@ export function renderDoctor(result) {
   const repairs = result.repairs.length === 0
     ? '- なし'
     : result.repairs.map((repair) => `- ${repair.id}: ${repair.detail}`).join('\n');
+  const nextCommands = result.next_commands.length === 0
+    ? '- なし'
+    : result.next_commands.map((command) => `- \`${command}\``).join('\n');
   return `# VibePro Doctor
 
 | 項目 | 内容 |
@@ -193,6 +216,10 @@ ${checks}
 ## Repairs
 
 ${repairs}
+
+## Next Commands
+
+${nextCommands}
 `;
 }
 
@@ -402,7 +429,8 @@ async function findMissingWorkflowRefsInDir(repoRoot, storyId, taskId, groupId, 
       story_id: storyId,
       task_id: taskId,
       group_id: groupId,
-      artifact: 'handoff'
+      artifact: 'handoff',
+      repair_command: buildTaskWorkflowRepairCommand(repoRoot, storyId, taskId, groupId, 'handoff')
     }));
   }
   const executionPath = path.join(workflowDir, 'execution.json');
@@ -413,7 +441,8 @@ async function findMissingWorkflowRefsInDir(repoRoot, storyId, taskId, groupId, 
       story_id: storyId,
       task_id: taskId,
       group_id: groupId,
-      artifact: 'execution'
+      artifact: 'execution',
+      repair_command: buildTaskWorkflowRepairCommand(repoRoot, storyId, taskId, groupId, 'execute')
     }));
   }
   return missing;
@@ -442,6 +471,45 @@ async function readDirectories(dirPath) {
 
 function safeSegment(value) {
   return String(value ?? '').replace(/[\\/]/g, '_');
+}
+
+function buildTaskWorkflowRepairCommand(repoRoot, storyId, taskId, groupId, artifact) {
+  const subcommand = artifact === 'execution' ? 'execute' : 'handoff';
+  return [
+    'vibepro task',
+    subcommand,
+    repoRoot,
+    '--task',
+    taskId,
+    '--id',
+    storyId,
+    groupId ? `--group ${groupId}` : null
+  ].filter(Boolean).join(' ');
+}
+
+function buildTaskWorkflowRepairCommands(repoRoot, missingTaskRefs) {
+  const commands = unique(missingTaskRefs.map((item) => item.repair_command).filter(Boolean));
+  if (commands.length > 0) return commands;
+  const fallback = missingTaskRefs[0];
+  if (!fallback) return [];
+  return [buildTaskWorkflowRepairCommand(repoRoot, fallback.story_id, fallback.task_id, fallback.group_id, fallback.artifact)];
+}
+
+function collectNextCommands(result) {
+  const commands = [];
+  for (const check of result.checks) {
+    for (const command of check.next_commands ?? []) {
+      commands.push(command);
+    }
+  }
+  if (result.workspace.initialized && result.overall_status === 'needs_maintenance' && commands.length === 0) {
+    commands.push('vibepro doctor <repo> --fix');
+  }
+  return unique(commands);
+}
+
+function unique(items) {
+  return [...new Set(items)];
 }
 
 function resolveDoctorStatus(result) {

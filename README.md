@@ -170,6 +170,8 @@ node bin/vibepro.js doctor /path/to/repo --json
 
 `status` は `doctor` の読み取り点検を内部で実行し、保守が必要な場合は次のコマンドとして `vibepro doctor` と `vibepro doctor --fix` を先に表示する。
 
+`doctor` の結果には `next_commands` が含まれる。task workflow成果物の欠けた参照については、該当する `vibepro task handoff ...` または `vibepro task execute ...` の再実行コマンドまで表示する。
+
 点検結果は以下に出力する。
 
 ```text
