@@ -41,6 +41,7 @@ import {
 const HELP = `VibePro CLI
 
 Usage:
+  vibepro help [command]
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
@@ -54,7 +55,7 @@ Usage:
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
-  vibepro story derive [repo] [--from-run <run-id>] [--json]
+  vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro task list [repo] [--id <story-id>]
@@ -75,7 +76,7 @@ export async function runCli(argv, io = {}) {
   const [command, ...rest] = argv;
 
   try {
-    if (!command || command === '--help' || command === '-h') {
+    if (!command || command === 'help' || command === '--help' || command === '-h') {
       write(stdout, HELP);
       return { exitCode: 0, command: 'help' };
     }
@@ -140,6 +141,10 @@ export async function runCli(argv, io = {}) {
     if (command === 'story') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
       if (subcommand === 'list') {
         const result = await listStories(repoRoot, { includeArchived: hasFlag(rest, '--all') });
         write(stdout, renderStoryList(result));
@@ -193,11 +198,21 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result: { story, graph, diagnosis, report, status } };
       }
       if (subcommand === 'derive') {
+        let graph = null;
+        if (hasFlag(rest, '--run-graphify') || getOption(rest, '--from')) {
+          graph = await importGraphifyArtifacts(repoRoot, {
+            sourceDir: getOption(rest, '--from'),
+            runGraphify: hasFlag(rest, '--run-graphify'),
+            env: io.env
+          });
+          if (!hasFlag(rest, '--json')) write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
+        }
         const result = await deriveStories(repoRoot, { fromRunId: getOption(rest, '--from-run') });
+        const outputResult = graph ? { ...result, graph } : result;
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.catalog, null, 2)}\n`
           : renderStoryDeriveSummary(result));
-        return { exitCode: 0, command, subcommand, result };
+        return { exitCode: 0, command, subcommand, result: outputResult };
       }
       if (subcommand === 'map') {
         const result = await readStoryMap(repoRoot);
@@ -220,6 +235,10 @@ export async function runCli(argv, io = {}) {
     if (command === 'task') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
       if (subcommand === 'create') {
         if (!hasFlag(rest, '--from-plan')) throw new Error('task create currently requires --from-plan');
         const result = await createTasksFromPlan(repoRoot, {

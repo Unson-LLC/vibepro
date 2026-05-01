@@ -53,6 +53,19 @@ test('init creates a repo-local VibePro workspace and ignore file', async () => 
   assert.match(gitignore, /\.vibepro\/raw\//);
 });
 
+test('help command prints discoverable usage', async () => {
+  let output = '';
+
+  const result = await runCli(['help'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.command, 'help');
+  assert.match(output, /vibepro help \[command\]/);
+  assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
+});
+
 test('init can bootstrap and select a local story', async () => {
   const repo = await makeRepo();
 
@@ -220,6 +233,41 @@ test('graph reports install guidance when graphify is missing', async () => {
 
   assert.equal(result.exitCode, 1);
   assert.equal(result.command, 'graph');
+});
+
+test('story derive can run graphify before generating the story catalog', async () => {
+  const repo = await makeRepo();
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-bin-'));
+  const graphifyBin = path.join(binDir, 'graphify');
+  await writeFile(graphifyBin, `#!/usr/bin/env node
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+if (process.argv[2] !== 'update' || process.argv[3] !== '.') {
+  console.error('unexpected graphify args: ' + process.argv.slice(2).join(' '));
+  process.exit(1);
+}
+const outDir = 'graphify-out';
+mkdirSync(outDir, { recursive: true });
+writeFileSync(path.join(outDir, 'graph.json'), JSON.stringify({
+  nodes: [{ id: 'src/app/api/debug/route.ts' }],
+  edges: []
+}));
+writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n');
+`);
+  await chmod(graphifyBin, 0o755);
+  await runCli(['init', repo]);
+
+  const result = await runCli(['story', 'derive', repo, '--run-graphify'], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.graph.graphifyExecuted, true);
+  assert.equal((await readJson(path.join(repo, '.vibepro', 'graphify', 'graph.json'))).nodes[0].id, 'src/app/api/debug/route.ts');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.graphify.last_execution.command, 'graphify update .');
+  await stat(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
 });
 
 test('story add list select and archive manage local stories without NocoDB', async () => {
