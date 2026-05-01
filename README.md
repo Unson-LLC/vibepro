@@ -168,9 +168,9 @@ node bin/vibepro.js doctor /path/to/repo --json
 
 `--fix` を付けた場合は、欠けた参照だけを管理情報から整理する。具体的には、欠けたevidenceを参照するrunの除去、存在しないlatest run参照の解除、存在しないgraphify成果物参照の解除、存在しないcurrent Storyの解除、Story catalogからconfigへの不足Story追加、古い派生Storyのarchiveを行う。対象リポジトリのコード、Story成果物、診断成果物そのものは変更しない。
 
-`status` は `doctor` の読み取り点検を内部で実行し、保守が必要な場合は次のコマンドとして `vibepro doctor` と `vibepro doctor --fix` を先に表示する。
+`status` は `doctor` の読み取り点検を内部で実行し、保守が必要な場合は `doctor` が返す復旧アクションを次コマンドとして先に表示する。
 
-`doctor` の結果には `next_commands` が含まれる。task workflow成果物の欠けた参照については、該当する `vibepro task handoff ...` または `vibepro task execute ...` の再実行コマンドまで表示する。
+`doctor` の結果には、互換用の `next_commands` と、理由・期待結果・安全性を持つ `next_actions` が含まれる。task workflow成果物の欠けた参照については、該当する `vibepro task handoff ...` または `vibepro task execute ...` の再実行アクションまで表示する。
 
 点検結果は以下に出力する。
 

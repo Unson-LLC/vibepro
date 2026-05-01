@@ -144,6 +144,12 @@ test('doctor detects and fixes missing diagnosis evidence references', async () 
   assert.equal(dryRun.result.overall_status, 'needs_maintenance');
   assert.equal(dryRun.result.checks[0].id, 'VP-DOCTOR-MISSING-EVIDENCE');
   assert.equal(dryRun.result.next_commands.includes(`vibepro doctor ${repo} --fix`), true);
+  assert.deepEqual(dryRun.result.next_actions[0], {
+    command: `vibepro doctor ${repo} --fix`,
+    reason: '存在しない evidence を参照する診断runを管理目録から整理する。',
+    expected_after: 'VP-DOCTOR-MISSING-EVIDENCE が消える。',
+    safe_to_run: true
+  });
   assert.equal((await readJson(manifestPath)).runs.length, 2);
 
   const fixed = await runCli(['doctor', repo, '--fix', '--json']);
@@ -208,6 +214,7 @@ test('doctor fixes stale story, run, catalog, and graphify references', async ()
   assert.equal(checkIds.includes('VP-DOCTOR-MISSING-GRAPHIFY-ARTIFACTS'), true);
   assert.equal(checkIds.includes('VP-DOCTOR-STORY-CATALOG-DRIFT'), true);
   assert.equal(dryRun.result.next_commands.includes(`vibepro story derive ${repo} --run-graphify`), true);
+  assert.equal(dryRun.result.next_actions.some((action) => action.command === `vibepro story derive ${repo} --run-graphify` && action.expected_after.includes('story-catalog.json')), true);
 
   const fixed = await runCli(['doctor', repo, '--fix']);
 
@@ -251,6 +258,8 @@ test('doctor reports missing task workflow references without modifying them', a
   assert.equal(taskCheck.items.length, 2);
   assert.equal(taskCheck.items[0].repair_command, `vibepro task handoff ${repo} --task TASK-001 --id story-live`);
   assert.equal(result.result.next_commands.includes(`vibepro task handoff ${repo} --task TASK-001 --id story-live`), true);
+  assert.equal(result.result.next_actions[0].reason.includes('task workflow成果物'), true);
+  assert.equal(result.result.next_actions[0].expected_after, 'VP-DOCTOR-MISSING-TASK-WORKFLOW-REFS が消える。');
 });
 
 test('graph imports existing graphify artifacts into the workspace', async () => {
@@ -1623,7 +1632,8 @@ test('status surfaces doctor maintenance before the next workflow command', asyn
   assert.equal(result.exitCode, 0);
   assert.equal(result.status.doctor.overall_status, 'needs_maintenance');
   assert.equal(result.status.doctor.blocking_check_ids.includes('VP-DOCTOR-CURRENT-STORY-MISSING'), true);
-  assert.equal(result.status.next_commands[0], `vibepro doctor ${repo}`);
+  assert.equal(result.status.doctor.next_actions[0].command, `vibepro doctor ${repo} --fix`);
+  assert.equal(result.status.next_commands[0], `vibepro doctor ${repo} --fix`);
   await assert.rejects(stat(path.join(repo, '.vibepro', 'doctor', 'doctor-result.json')), { code: 'ENOENT' });
 });
 

@@ -58,7 +58,8 @@ export async function getRepoStatus(repoRoot) {
       check_count: doctor.checks.length,
       blocking_check_ids: doctor.checks
         .filter((check) => ['fixable', 'manual'].includes(check.status))
-        .map((check) => check.id)
+        .map((check) => check.id),
+      next_actions: doctor.next_actions
     },
     next_commands: buildNextCommands(root, {
       activeStories,
@@ -164,7 +165,9 @@ async function readRunEvidence(repoRoot, run) {
 
 function buildNextCommands(repoRoot, { activeStories, selectedStory, latestRun, selectedStoryLatestRun, doctor = null }) {
   if (doctor && ['needs_maintenance', 'fixed'].includes(doctor.overall_status)) {
-    return [`vibepro doctor ${repoRoot}`, `vibepro doctor ${repoRoot} --fix`];
+    return doctor.next_commands?.length > 0
+      ? doctor.next_commands
+      : [`vibepro doctor ${repoRoot}`, `vibepro doctor ${repoRoot} --fix`];
   }
   if (activeStories.length === 0) {
     return [`vibepro story add ${repoRoot} --id <story-id> --title "<title>"`];
@@ -186,7 +189,12 @@ function renderDoctorStatus(doctor) {
   const checks = doctor.blocking_check_ids?.length > 0
     ? doctor.blocking_check_ids.join(', ')
     : '-';
+  const actions = doctor.next_actions?.length > 0
+    ? doctor.next_actions.map((action) => `  - ${action.command}: ${action.reason}`).join('\n')
+    : '  - なし';
   return `- overall: ${doctor.overall_status}
 - checks: ${doctor.check_count}
-- needs action: ${checks}`;
+- needs action: ${checks}
+- next actions:
+${actions}`;
 }

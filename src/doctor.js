@@ -21,6 +21,7 @@ export async function runDoctor(repoRoot, options = {}) {
     checks: [],
     repairs: [],
     next_commands: [],
+    next_actions: [],
     artifacts: {}
   };
 
@@ -34,9 +35,14 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: false,
       detail: '.vibepro workspaceが見つからない。',
       recommendation: 'vibepro init を実行してworkspaceを作成する。',
-      next_commands: [`vibepro init ${root}`]
+      next_actions: [buildAction({
+        command: `vibepro init ${root}`,
+        reason: '.vibepro workspace が存在しないため初期化する。',
+        expected_after: 'vibepro status が initialized: true を返す。',
+        safe_to_run: true
+      })]
     });
-    result.next_commands = collectNextCommands(result);
+    applyNextActions(result);
     return result;
   }
 
@@ -53,9 +59,19 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: false,
       detail: '.vibepro/config.json が見つからない。',
       recommendation: 'vibepro init の初期化状態を確認し、必要ならconfigを復元する。',
-      next_commands: [
-        `vibepro init ${root}`,
-        `vibepro doctor ${root}`
+      next_actions: [
+        buildAction({
+          command: `vibepro init ${root}`,
+          reason: '.vibepro/config.json が欠けているため初期化状態を復元する。',
+          expected_after: '.vibepro/config.json が存在する。',
+          safe_to_run: true
+        }),
+        buildAction({
+          command: `vibepro doctor ${root}`,
+          reason: 'config復元後に管理情報の整合性を再点検する。',
+          expected_after: 'VP-DOCTOR-MISSING-CONFIG が消える。',
+          safe_to_run: true
+        })
       ]
     });
   }
@@ -69,7 +85,12 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${missingEvidence.length} 件の診断runが存在しないevidenceを参照している。`,
       recommendation: 'run成果物を復元するか、不要なrun参照をmanifestから整理する。',
-      next_commands: [`vibepro doctor ${root} --fix`],
+      next_actions: [buildAction({
+        command: `vibepro doctor ${root} --fix`,
+        reason: '存在しない evidence を参照する診断runを管理目録から整理する。',
+        expected_after: 'VP-DOCTOR-MISSING-EVIDENCE が消える。',
+        safe_to_run: true
+      })],
       items: missingEvidence
     });
   }
@@ -90,7 +111,12 @@ export async function runDoctor(repoRoot, options = {}) {
         fixable: true,
         detail: `current_story_id が存在しないStoryを参照している: ${missingCurrentStory.story_id}`,
         recommendation: '存在するactive Storyを選択し直すか、不要なcurrent_story_idを解除する。',
-        next_commands: [`vibepro doctor ${root} --fix`],
+        next_actions: [buildAction({
+          command: `vibepro doctor ${root} --fix`,
+          reason: '存在しない current_story_id を解除する。',
+          expected_after: 'VP-DOCTOR-CURRENT-STORY-MISSING が消える。',
+          safe_to_run: true
+        })],
         items: [missingCurrentStory]
       });
       if (options.fix) {
@@ -114,7 +140,12 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${staleLatestRunRefs.length} 件のlatest run参照が存在しないrunを指している。`,
       recommendation: '不要なlatest_run参照をmanifestから整理する。',
-      next_commands: [`vibepro doctor ${root} --fix`],
+      next_actions: [buildAction({
+        command: `vibepro doctor ${root} --fix`,
+        reason: '存在しないrunを指す latest_run 参照を解除する。',
+        expected_after: 'VP-DOCTOR-STALE-LATEST-RUN-REFS が消える。',
+        safe_to_run: true
+      })],
       items: staleLatestRunRefs
     });
     if (options.fix) {
@@ -135,9 +166,19 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `${missingGraphifyArtifacts.length} 件のgraphify成果物参照が存在しないファイルを指している。`,
       recommendation: 'vibepro graph または vibepro story derive --run-graphify を実行してGraph成果物を作り直す。',
-      next_commands: [
-        `vibepro doctor ${root} --fix`,
-        `vibepro story derive ${root} --run-graphify`
+      next_actions: [
+        buildAction({
+          command: `vibepro doctor ${root} --fix`,
+          reason: '存在しないgraphify成果物参照を管理目録から解除する。',
+          expected_after: '欠けたgraphify artifact参照がmanifestから消える。',
+          safe_to_run: true
+        }),
+        buildAction({
+          command: `vibepro story derive ${root} --run-graphify`,
+          reason: 'Graphを再生成してStory Mapの根拠を更新する。',
+          expected_after: '.vibepro/graphify/graph.json と story-catalog.json が更新される。',
+          safe_to_run: true
+        })
       ],
       items: missingGraphifyArtifacts
     });
@@ -156,9 +197,19 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: true,
       detail: `Story catalog と config stories に差分がある。missing=${storyCatalogDrift.missing_in_config.length}, stale=${storyCatalogDrift.stale_derived_config.length}`,
       recommendation: 'vibepro story derive を再実行するか、config storiesをcatalogに合わせて整理する。',
-      next_commands: [
-        `vibepro doctor ${root} --fix`,
-        `vibepro story derive ${root}`
+      next_actions: [
+        buildAction({
+          command: `vibepro doctor ${root} --fix`,
+          reason: 'Story catalog と config stories の差分を管理情報上で整理する。',
+          expected_after: 'VP-DOCTOR-STORY-CATALOG-DRIFT が消える。',
+          safe_to_run: true
+        }),
+        buildAction({
+          command: `vibepro story derive ${root}`,
+          reason: 'Story Mapを再生成して派生Storyの正本を更新する。',
+          expected_after: 'story-catalog.json と config stories が揃う。',
+          safe_to_run: true
+        })
       ],
       items: storyCatalogDrift
     });
@@ -177,7 +228,7 @@ export async function runDoctor(repoRoot, options = {}) {
       fixable: false,
       detail: `${missingTaskRefs.length} 件のtask workflow成果物が存在しない参照を持っている。`,
       recommendation: '該当taskで vibepro task brief / plan / handoff / execute を再実行する。',
-      next_commands: buildTaskWorkflowRepairCommands(root, missingTaskRefs),
+      next_actions: buildTaskWorkflowRepairActions(root, missingTaskRefs),
       items: missingTaskRefs
     });
   }
@@ -186,7 +237,7 @@ export async function runDoctor(repoRoot, options = {}) {
   if (manifestChanged) await writeManifest(root, manifest);
 
   result.overall_status = resolveDoctorStatus(result);
-  result.next_commands = collectNextCommands(result);
+  applyNextActions(result);
   if (options.writeArtifacts !== false) await writeDoctorArtifact(root, result);
   return result;
 }
@@ -200,7 +251,10 @@ export function renderDoctor(result) {
     : result.repairs.map((repair) => `- ${repair.id}: ${repair.detail}`).join('\n');
   const nextCommands = result.next_commands.length === 0
     ? '- なし'
-    : result.next_commands.map((command) => `- \`${command}\``).join('\n');
+    : result.next_actions.map((action) => `- \`${action.command}\`
+  - reason: ${action.reason}
+  - expected: ${action.expected_after}
+  - safe_to_run: ${action.safe_to_run}`).join('\n');
   return `# VibePro Doctor
 
 | 項目 | 内容 |
@@ -488,27 +542,57 @@ function buildTaskWorkflowRepairCommand(repoRoot, storyId, taskId, groupId, arti
 }
 
 function buildTaskWorkflowRepairCommands(repoRoot, missingTaskRefs) {
-  const commands = unique(missingTaskRefs.map((item) => item.repair_command).filter(Boolean));
+  const commands = uniqueStrings(missingTaskRefs.map((item) => item.repair_command).filter(Boolean));
   if (commands.length > 0) return commands;
   const fallback = missingTaskRefs[0];
   if (!fallback) return [];
   return [buildTaskWorkflowRepairCommand(repoRoot, fallback.story_id, fallback.task_id, fallback.group_id, fallback.artifact)];
 }
 
-function collectNextCommands(result) {
-  const commands = [];
-  for (const check of result.checks) {
-    for (const command of check.next_commands ?? []) {
-      commands.push(command);
-    }
-  }
-  if (result.workspace.initialized && result.overall_status === 'needs_maintenance' && commands.length === 0) {
-    commands.push('vibepro doctor <repo> --fix');
-  }
-  return unique(commands);
+function buildTaskWorkflowRepairActions(repoRoot, missingTaskRefs) {
+  return buildTaskWorkflowRepairCommands(repoRoot, missingTaskRefs).map((command) => buildAction({
+    command,
+    reason: 'task workflow成果物が参照する briefing / plan / handoff が欠けている。',
+    expected_after: 'VP-DOCTOR-MISSING-TASK-WORKFLOW-REFS が消える。',
+    safe_to_run: true
+  }));
 }
 
-function unique(items) {
+function applyNextActions(result) {
+  const actions = [];
+  for (const check of result.checks) {
+    for (const action of check.next_actions ?? []) {
+      actions.push(action);
+    }
+  }
+  if (result.workspace.initialized && result.overall_status === 'needs_maintenance' && actions.length === 0) {
+    actions.push(buildAction({
+      command: 'vibepro doctor <repo> --fix',
+      reason: '管理情報に修復可能な不整合がある。',
+      expected_after: 'doctor の fixable なチェックが消える。',
+      safe_to_run: true
+    }));
+  }
+  result.next_actions = uniqueActions(actions);
+  result.next_commands = result.next_actions.map((action) => action.command);
+}
+
+function buildAction({ command, reason, expected_after, safe_to_run }) {
+  return { command, reason, expected_after, safe_to_run };
+}
+
+function uniqueActions(actions) {
+  const seen = new Set();
+  const unique = [];
+  for (const action of actions) {
+    if (seen.has(action.command)) continue;
+    seen.add(action.command);
+    unique.push(action);
+  }
+  return unique;
+}
+
+function uniqueStrings(items) {
   return [...new Set(items)];
 }
 
