@@ -1,6 +1,7 @@
 const MIN_CLUSTER_SIZE = 2;
 const HIGH_CONFIDENCE_THRESHOLD = 8;
 const MEDIUM_CONFIDENCE_THRESHOLD = 4;
+const CLUSTER_DEPTH_LEVELS = [4, 2];
 
 export function generateStoryCandidates(coverage) {
   const uncovered = Array.isArray(coverage?.uncovered) ? coverage.uncovered : [];
@@ -8,19 +9,25 @@ export function generateStoryCandidates(coverage) {
 
   const byRole = groupBy(uncovered, (item) => item.role || 'unknown');
   const candidates = [];
+  const seenIds = new Set();
 
   for (const [role, items] of Object.entries(byRole)) {
-    const clusters = clusterByCommonPath(items);
-    for (const cluster of clusters) {
-      if (cluster.paths.length < MIN_CLUSTER_SIZE) continue;
-      candidates.push(buildCandidate(role, cluster));
+    for (const depth of CLUSTER_DEPTH_LEVELS) {
+      const clusters = clusterByCommonPath(items, depth);
+      for (const cluster of clusters) {
+        if (cluster.paths.length < MIN_CLUSTER_SIZE) continue;
+        const candidate = buildCandidate(role, cluster);
+        if (seenIds.has(candidate.candidate_id)) continue;
+        seenIds.add(candidate.candidate_id);
+        candidates.push(candidate);
+      }
     }
   }
 
   return candidates.sort((a, b) => b.file_count - a.file_count || a.candidate_id.localeCompare(b.candidate_id));
 }
 
-function clusterByCommonPath(items) {
+function clusterByCommonPath(items, depth) {
   const buckets = new Map();
   for (const item of items) {
     const segments = item.path.split('/').filter(Boolean);
@@ -28,10 +35,8 @@ function clusterByCommonPath(items) {
     const dirSegments = segments.slice(0, -1);
     const prefix = dirSegments.length === 0
       ? segments[0]
-      : dirSegments.slice(0, 3).join('/');
-    if (!buckets.has(prefix)) {
-      buckets.set(prefix, { common_path: prefix, paths: [] });
-    }
+      : dirSegments.slice(0, depth).join('/');
+    if (!buckets.has(prefix)) buckets.set(prefix, { common_path: prefix, paths: [] });
     buckets.get(prefix).paths.push(item.path);
   }
   return [...buckets.values()];

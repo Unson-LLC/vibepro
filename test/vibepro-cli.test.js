@@ -2704,6 +2704,44 @@ test('story derive emits story_candidates clustering uncovered files', async () 
   assert.match(map, /candidate-auth-lib-auth/);
 });
 
+test('story derive surfaces domain subdirectories as separate candidates', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  // Place files under public/modules/domain/{task,session} so they would all
+  // be grouped under "public/modules/domain" at depth 3 — but with depth 4
+  // tuning, each subdomain should surface as its own candidate.
+  await mkdir(path.join(repo, 'lib', 'auth-local'), { recursive: true });
+  await mkdir(path.join(repo, 'lib', 'session-local'), { recursive: true });
+  for (let i = 0; i < 3; i += 1) {
+    await writeFile(path.join(repo, 'lib', 'auth-local', `auth${i}.js`), 'export {}\n');
+  }
+  for (let i = 0; i < 4; i += 1) {
+    await writeFile(path.join(repo, 'lib', 'session-local', `sess${i}.js`), 'export {}\n');
+  }
+
+  const nodes = [];
+  for (let i = 0; i < 3; i += 1) nodes.push({ id: `a${i}`, source_file: `lib/auth-local/auth${i}.js`, label: `auth${i}` });
+  for (let i = 0; i < 4; i += 1) nodes.push({ id: `s${i}`, source_file: `lib/session-local/sess${i}.js`, label: `sess${i}` });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const paths = catalog.story_candidates.map((c) => c.common_path);
+
+  assert.ok(paths.includes('lib/auth-local'),
+    `expected lib/auth-local subdir candidate, got ${JSON.stringify(paths)}`);
+  assert.ok(paths.includes('lib/session-local'),
+    `expected lib/session-local subdir candidate, got ${JSON.stringify(paths)}`);
+});
+
 test('story derive omits singletons from story_candidates', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
