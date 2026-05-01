@@ -218,7 +218,10 @@ node bin/vibepro.js story archive /path/to/repo --id story-local-hardening
 
 ```bash
 node bin/vibepro.js story derive /path/to/repo --run-graphify
+node bin/vibepro.js story derive /path/to/repo --run-graphify --preset modular-web
 ```
+
+`--preset` にはリポジトリ構造ごとのStory抽出プリセットを指定する。Next.js系は既定の `next-app`、Brainbase のような `cli/`、`lib/`、`mcp/`、`public/modules/`、`server/` を持つ構造では `modular-web` を使う。実際に使ったプリセットは `story-catalog.json` の `source.preset` に記録される。
 
 Story選択から診断レポート生成までをまとめて実行する場合:
 

@@ -132,7 +132,8 @@ export async function deriveStories(repoRoot, options = {}) {
   const catalog = await generateStoryCatalog(root, {
     config,
     manifest,
-    fromRunId: options.fromRunId
+    fromRunId: options.fromRunId,
+    preset: options.preset
   });
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });

@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { profileArchitecture } from './architecture-profiler.js';
+import { getPreset, resolvePresetId } from './presets.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const IGNORED_DIRS = new Set([
@@ -329,24 +330,25 @@ const STORY_COVERAGE_PATTERNS = {
 
 export async function generateStoryCatalog(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  const activePreset = getPreset(resolvePresetId(options.config, options.preset));
   const files = await collectRepoFiles(root);
   const fileSet = new Set(files.map((file) => file.relativePath));
   const evidenceResult = await readEvidence(root, options.manifest, options.fromRunId);
   const evidence = evidenceResult.evidence;
   const architectureProfile = evidence?.architecture_profile ?? await profileArchitecture(root);
   const currentStory = findCurrentStory(options.config);
-  const defaults = buildDefaultStoryFields(currentStory);
+  const defaults = buildDefaultStoryFields(currentStory, activePreset);
   const graph = await readGraph(root);
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files);
 
   const stories = dedupeStories([
     ...deriveProductSurfaceStories(fileSet, defaults, documentSignals),
-    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals),
+    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
   ]);
-  const coverage = buildGraphStoryCoverage(graph, stories);
+  const coverage = buildGraphStoryCoverage(graph, stories, activePreset);
   const openQuestions = collectOpenQuestions(stories);
 
   return {
@@ -357,6 +359,7 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
       repo: '.',
       run_id: evidence?.run_id ?? null,
       evidence: evidence ? evidencePathForRun(options.manifest, evidence.run_id) : null,
+      preset: activePreset.id,
       graphify: graphSummary,
       warnings: evidenceResult.warnings
     },
@@ -596,9 +599,10 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals) {
   return stories;
 }
 
-function deriveCodeSurfaceStories(fileSet, defaults, documentSignals) {
+function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
   const files = [...fileSet];
-  return CODE_SURFACE_SIGNATURES
+  const signatures = preset.codeSurfaceSignatures ?? CODE_SURFACE_SIGNATURES;
+  return signatures
     .map((signature) => {
       const codePaths = files
         .filter((file) => signature.patterns.some((pattern) => pattern.test(file)))
@@ -669,6 +673,7 @@ function buildDerivedStory({
   codeDerived = false,
   defaults
 }) {
+  const preset = defaults.preset;
   const planning = inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived });
   const normalizedDefinition = normalizeStoryDefinition(storyDefinition, docs);
   const businessContext = summarizeBusinessContext(docs, codeDerived);
@@ -686,7 +691,8 @@ function buildDerivedStory({
     businessContext,
     openQuestions,
     diagnosisBased,
-    codeDerived
+    codeDerived,
+    preset
   });
   return {
     story_id: id,
@@ -1040,11 +1046,12 @@ function buildStoryMeaning({
   businessContext,
   openQuestions,
   diagnosisBased,
-  codeDerived
+  codeDerived,
+  preset
 }) {
   const confidence = inferMeaningConfidence({ docs, paths, businessContext, openQuestions, diagnosisBased });
   const workflow = workflowPositionFor(id);
-  const codePaths = paths.filter(isCodePath);
+  const codePaths = paths.filter((item) => isCodePath(item, preset));
   return {
     value_hypothesis: `${definition.outcome} ${definition.business_value}`,
     user_actor: {
@@ -1059,16 +1066,16 @@ function buildStoryMeaning({
       missing: openQuestions.find((item) => item.field === 'business_metric')?.question ?? null
     },
     code_scope: {
-      value: summarizeCodeScope(paths, sourceType),
+      value: summarizeCodeScope(paths, sourceType, preset),
       confidence: codePaths.length > 0 ? 'high' : sourceType === 'architecture_profile' ? 'medium' : 'low',
       evidence: codePaths.slice(0, 8)
     },
     workflow_position: workflow,
     evidence_by_type: {
       docs_evidence: docs.map((doc) => doc.path),
-      code_evidence: paths.filter(isCodePath),
+      code_evidence: paths.filter((item) => isCodePath(item, preset)),
       diagnosis_evidence: relatedFindings,
-      inferred_evidence: evidence.filter((item) => typeof item === 'string' && !item.startsWith('src/') && !item.startsWith('docs/')).slice(0, 8),
+      inferred_evidence: evidence.filter((item) => typeof item === 'string' && !isCodePath(item, preset) && !item.startsWith('docs/')).slice(0, 8),
       missing_evidence: openQuestions.map((item) => ({ field: item.field, question: item.question }))
     },
     counter_evidence: buildCounterEvidence({ docs, paths, openQuestions, planning, codeDerived }),
@@ -1093,9 +1100,9 @@ function meaningEvidencePaths({ docs, paths, relatedFindings }) {
   ].filter(Boolean);
 }
 
-function summarizeCodeScope(paths, sourceType) {
+function summarizeCodeScope(paths, sourceType, preset) {
   if (paths.length === 0) return sourceType === 'architecture_profile' ? 'architecture profileから推定' : '直接のコード根拠なし';
-  const roles = [...new Set(paths.filter(isCodePath).map(inferCodeRole))];
+  const roles = [...new Set(paths.filter((item) => isCodePath(item, preset)).map(inferCodeRole))];
   return roles.length > 0 ? roles.join('、') : '直接のコード根拠なし';
 }
 
@@ -1780,7 +1787,7 @@ function summarizeGraph(graph) {
   };
 }
 
-function buildGraphStoryCoverage(graph, stories) {
+function buildGraphStoryCoverage(graph, stories, preset) {
   if (!Array.isArray(graph?.nodes)) {
     return {
       model: 'graphify-story-coverage-v1',
@@ -1798,19 +1805,19 @@ function buildGraphStoryCoverage(graph, stories) {
   }
 
   const graphFiles = summarizeGraphFiles(graph.nodes);
-  const relevantFiles = graphFiles.filter((item) => isStoryRelevantGraphFile(item.path));
-  const coverageMatchers = buildStoryCoverageMatchers(stories);
+  const relevantFiles = graphFiles.filter((item) => isStoryRelevantGraphFile(item.path, preset));
+  const coverageMatchers = buildStoryCoverageMatchers(stories, preset);
   const uncovered = relevantFiles
     .filter((item) => !isCoveredByStory(item.path, coverageMatchers))
     .map((item) => ({
       path: item.path,
-      role: classifyStoryRelevantFile(item.path),
+      role: classifyStoryRelevantFile(item.path, preset),
       node_count: item.node_count,
       reason: 'graphify上は主要な画面/API/ドメインコードだが、Story根拠に紐づいていない。'
     }))
     .sort((a, b) => b.node_count - a.node_count || a.path.localeCompare(b.path));
   const coveredCount = relevantFiles.length - uncovered.length;
-  const byRole = summarizeCoverageByRole(relevantFiles, uncovered);
+  const byRole = summarizeCoverageByRole(relevantFiles, uncovered, preset);
 
   return {
     model: 'graphify-story-coverage-v1',
@@ -1839,15 +1846,15 @@ function summarizeGraphFiles(nodes) {
   }));
 }
 
-function buildStoryCoverageMatchers(stories) {
+function buildStoryCoverageMatchers(stories, preset) {
   const paths = new Set();
   const patterns = [];
   for (const story of stories) {
     for (const pathName of story.source?.paths ?? []) {
-      if (isCodePath(pathName)) paths.add(normalizeGraphSourceFile(pathName));
+      if (isCodePath(pathName, preset)) paths.add(normalizeGraphSourceFile(pathName));
     }
     for (const item of story.derived?.story_definition?.source_synthesis ?? []) {
-      if (isCodePath(item.path)) paths.add(normalizeGraphSourceFile(item.path));
+      if (isCodePath(item.path, preset)) paths.add(normalizeGraphSourceFile(item.path));
     }
     patterns.push(...(STORY_COVERAGE_PATTERNS[story.story_id] ?? []));
   }
@@ -1860,9 +1867,9 @@ function isCoveredByStory(pathName, coverageMatchers) {
   return coverageMatchers.patterns.some((pattern) => pattern.test(pathName));
 }
 
-function summarizeCoverageByRole(relevantFiles, uncovered) {
+function summarizeCoverageByRole(relevantFiles, uncovered, preset) {
   const uncoveredByPath = new Set(uncovered.map((item) => item.path));
-  const groups = groupBy(relevantFiles, (item) => classifyStoryRelevantFile(item.path));
+  const groups = groupBy(relevantFiles, (item) => classifyStoryRelevantFile(item.path, preset));
   return Object.entries(groups)
     .map(([role, items]) => {
       const uncoveredCount = items.filter((item) => uncoveredByPath.has(item.path)).length;
@@ -1876,41 +1883,23 @@ function summarizeCoverageByRole(relevantFiles, uncovered) {
     .sort((a, b) => b.uncovered - a.uncovered || a.role.localeCompare(b.role));
 }
 
-function isStoryRelevantGraphFile(filePath) {
-  if (!isCodePath(filePath)) return false;
+function isStoryRelevantGraphFile(filePath, preset) {
+  if (!isCodePath(filePath, preset)) return false;
   if (/\.(test|spec)\.[jt]sx?$/.test(filePath)) return false;
   if (/\/(__tests__|test|tests)\//.test(filePath)) return false;
   if (/\/(ui|magicui)\//.test(filePath)) return false;
   if (/\/fonts\//.test(filePath)) return false;
   if (/\.types\.[jt]s$/.test(filePath)) return false;
   if (/(^|\/)(index|types|styles|constants)\.[jt]sx?$/.test(filePath)) return false;
-  return [
-    /^src\/app\/.+\/(page|route|client)\.[jt]sx?$/,
-    /^src\/app\/.+\/_components\/.+\.[jt]sx?$/,
-    /^src\/components\/(auth|hotel|layout|modals|common\/hotel_card)\/.+\.[jt]sx?$/,
-    /^src\/lib\/actions\/.+\.[jt]s$/,
-    /^src\/lib\/auth\/.+\.[jt]s$/,
-    /^src\/lib\/article\/.+\.[jt]s$/,
-    /^src\/lib\/crawlers\/.+\.[jt]s$/,
-    /^src\/lib\/services\/.+\.[jt]s$/,
-    /^src\/lib\/api\/.+\.[jt]s$/
-  ].some((pattern) => pattern.test(filePath));
+  return preset.storyRelevantPatterns.some((pattern) => pattern.test(filePath));
 }
 
-function classifyStoryRelevantFile(filePath) {
-  if (/^src\/app\/.+\/route\.[jt]s$/.test(filePath)) return 'api_route';
-  if (/^src\/app\//.test(filePath)) return 'app_route';
-  if (/^src\/components\//.test(filePath)) return 'component';
-  if (/^src\/lib\/actions\//.test(filePath)) return 'server_action';
-  if (/^src\/lib\/crawlers\//.test(filePath)) return 'crawler';
-  if (/^src\/lib\/auth\//.test(filePath)) return 'auth';
-  if (/^src\/lib\/article\//.test(filePath)) return 'article_logic';
-  if (/^src\/lib\/api\//.test(filePath)) return 'api_client';
-  return 'domain_code';
+function classifyStoryRelevantFile(filePath, preset) {
+  return preset.classifyRole(filePath);
 }
 
-function isCodePath(filePath) {
-  return typeof filePath === 'string' && filePath.startsWith('src/');
+function isCodePath(filePath, preset) {
+  return preset.isCodePath(filePath);
 }
 
 function normalizeGraphSourceFile(filePath) {
@@ -1925,13 +1914,14 @@ function findCurrentStory(config) {
     ?? null;
 }
 
-function buildDefaultStoryFields(currentStory) {
+function buildDefaultStoryFields(currentStory, preset) {
   const today = new Date();
   return {
     view: currentStory?.view ?? 'dev',
     period: currentStory?.period ?? formatIsoWeek(today),
     started_at: currentStory?.started_at ?? formatLocalDate(today),
-    due_at: null
+    due_at: null,
+    preset
   };
 }
 

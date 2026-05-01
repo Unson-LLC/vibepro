@@ -55,7 +55,7 @@ Usage:
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
-  vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--json]
+  vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro task list [repo] [--id <story-id>]
@@ -207,7 +207,10 @@ export async function runCli(argv, io = {}) {
           });
           if (!hasFlag(rest, '--json')) write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
         }
-        const result = await deriveStories(repoRoot, { fromRunId: getOption(rest, '--from-run') });
+        const result = await deriveStories(repoRoot, {
+          fromRunId: getOption(rest, '--from-run'),
+          preset: getOption(rest, '--preset')
+        });
         const outputResult = graph ? { ...result, graph } : result;
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.catalog, null, 2)}\n`
