@@ -16,20 +16,6 @@ const IGNORED_DIRS = new Set([
   'node_modules'
 ]);
 
-const DOCUMENT_SIGNAL_GROUPS = [
-  { key: 'hotelMapSearch', pattern: /(map[_-]search|map[_-]marker|search-results|REQ-001_map_search_integration|US-001_map_search_display|\/map\/)/i },
-  { key: 'shadowCall', pattern: /(shadow-call|premium-ai-phone-feature)/i },
-  { key: 'premiumBilling', pattern: /(stripe|premium|subscription|billing|webhook-secret)/i },
-  { key: 'contentCms', pattern: /(article|cms|sanity)/i },
-  { key: 'onboarding', pattern: /(onboarding|profile|preferences)/i },
-  { key: 'notification', pattern: /notification/i },
-  { key: 'architecture', pattern: /^docs\/architecture\// },
-  { key: 'managementStories', pattern: /^docs\/management\/stories\// },
-  { key: 'requirements', pattern: /^docs\/requirements\// },
-  { key: 'userStories', pattern: /^docs\/user_stories\// },
-  { key: 'features', pattern: /^docs\/features\// }
-];
-
 const CODE_SURFACE_SIGNATURES = [
   {
     id: 'story-product-hotel-detail-actions',
@@ -180,154 +166,6 @@ const CODE_SURFACE_SIGNATURES = [
   }
 ];
 
-const STORY_COVERAGE_PATTERNS = {
-  'story-product-hotel-map-search': [
-    /^src\/app\/\(app\)\/map\//,
-    /^src\/app\/\(app\)\/_components\/GoogleMapsScript\.tsx$/,
-    /^src\/app\/\(app\)\/_components\/search\//,
-    /^src\/app\/\(app\)\/_components\/PlanDisplay\.tsx$/,
-    /^src\/app\/\(public\)\/search-results\//,
-    /^src\/app\/api\/map-search\//,
-    /^src\/app\/api\/hotels\/search\//,
-    /^src\/lib\/services\/search\/mapSearchService\.ts$/,
-    /^src\/lib\/actions\/search_actions\.ts$/,
-    /^src\/lib\/constants\/map\.ts$/,
-    /^src\/lib\/constants\/search\.ts$/
-  ],
-  'story-product-shadow-call': [
-    /^src\/app\/\(app\)\/_components\/shadow_call\//,
-    /^src\/app\/shadow-call\//,
-    /^src\/app\/api\/twilio/,
-    /^src\/app\/api\/openai\/webhook\/response\/route\.ts$/,
-    /^src\/app\/api\/shadow-call\//,
-    /^src\/lib\/services\/shadow-call\//,
-    /^src\/components\/hotel\/HotelDetailWithShadowCall\.tsx$/,
-    /^src\/components\/hotel\/PhoneMethodDialog\.tsx$/
-  ],
-  'story-product-premium-billing': [
-    /^src\/app\/\(public\)\/premium\//,
-    /^src\/app\/api\/stripe\//,
-    /^src\/app\/api\/webhook\/stripe\/route\.ts$/,
-    /^src\/components\/ui\/button\/ButtonCheckout\.tsx$/,
-    /^src\/components\/ui\/button\/CheckoutErrorModal\.tsx$/,
-    /^src\/components\/ui\/modal\/PremiumRequiredModal\.tsx$/,
-    /^src\/lib\/constants\/stripe\.ts$/
-  ],
-  'story-product-content-cms': [
-    /^src\/app\/\(public\)\/articles\//,
-    /^src\/app\/api\/articles\//,
-    /^src\/lib\/article/,
-    /^src\/lib\/article-utils\.ts$/,
-    /^src\/lib\/actions\/sanity_hotel_search\.ts$/
-  ],
-  'story-product-onboarding': [
-    /^src\/app\/onboarding\//,
-    /^src\/app\/api\/onboarding\//,
-    /^src\/lib\/auth\/onboarding\.ts$/
-  ],
-  'story-product-notification': [
-    /^src\/app\/\(app\)\/notification\//,
-    /^src\/components\/ui\/UpdateNotification\.tsx$/
-  ],
-  'story-product-hotel-detail-actions': [
-    /^src\/app\/\(app\)\/detail\//,
-    /^src\/app\/\(public\)\/hotel\/\[hotel_id\]\//,
-    /^src\/app\/api\/hotels\/(\[hotelId\]|detail|list-tokyo)\//,
-    /^src\/components\/hotel\//,
-    /^src\/components\/common\/hotel_card\//,
-    /^src\/lib\/services\/hotel\//,
-    /^src\/lib\/services\/search\/detailSearchService\.ts$/,
-    /^src\/lib\/actions\/hotel_actions\.ts$/,
-    /^src\/lib\/actions\/lead_actions\.ts$/,
-    /^src\/lib\/actions\/post_actions\.ts$/
-  ],
-  'story-product-auth-account-access': [
-    /^src\/app\/\(auth\)\//,
-    /^src\/app\/\(app\)\/auth\//,
-    /^src\/components\/auth\//,
-    /^src\/app\/api\/auth\//,
-    /^src\/app\/api\/user\//,
-    /^src\/app\/api\/users\//,
-    /^src\/lib\/auth/,
-    /^src\/lib\/services\/user\//,
-    /^src\/lib\/actions\/user_actions\.ts$/
-  ],
-  'story-product-profile-personalization': [
-    /^src\/app\/\(app\)\/profile\//,
-    /^src\/components\/modals\/HotelSelectModal\.tsx$/,
-    /^src\/lib\/services\/profile\//,
-    /^src\/lib\/services\/user\/user(Read|Write|Entry)Service\.ts$/,
-    /^src\/lib\/actions\/profile_action\.ts$/
-  ],
-  'story-product-match-recommendation': [
-    /^src\/app\/\(app\)\/match\//,
-    /^src\/lib\/services\/search\/matchSearchService\.ts$/
-  ],
-  'story-product-timeline-posts': [
-    /^src\/app\/\(app\)\/timeline\//,
-    /^src\/app\/\(app\)\/_components\/post\//,
-    /^src\/components\/modals\/PostCompleteModal\.tsx$/,
-    /^src\/lib\/services\/timeline\//,
-    /^src\/lib\/services\/post\//,
-    /^src\/lib\/services\/reply\//,
-    /^src\/lib\/services\/image\//,
-    /^src\/lib\/actions\/timeline_actions\.ts$/,
-    /^src\/lib\/constants\/post\.ts$/
-  ],
-  'story-product-public-discovery-seo': [
-    /^src\/app\/\(public\)\/search-results\//,
-    /^src\/app\/\(public\)\/articles\//,
-    /^src\/app\/\(public\)\/_components\/landing\//,
-    /^src\/app\/\(public\)\/sitemap/,
-    /^src\/app\/robots\.ts$/,
-    /^src\/app\/sitemap\.ts$/,
-    /^src\/lib\/services\/analytics\//,
-    /^src\/components\/common\/StructuredData\.tsx$/
-  ],
-  'story-product-waiting-list-contact': [
-    /^src\/app\/\(public\)\/contact\//,
-    /^src\/app\/\(public\)\/waiting-list\//
-  ],
-  'story-product-qr-offline-access': [
-    /^src\/app\/\(app\)\/_components\/QRCodeScanner\.tsx$/,
-    /^src\/app\/\(public\)\/offline\//,
-    /^src\/components\/common\/ModernServiceWorkerManager\.tsx$/,
-    /^src\/components\/ui\/UpdateNotification\.tsx$/
-  ],
-  'story-product-app-navigation-shell': [
-    /^src\/app\/\(app\)\/home\//,
-    /^src\/components\/layout\//
-  ],
-  'story-ops-hotel-data-ingestion': [
-    /^src\/lib\/crawlers\//,
-    /^src\/app\/api\/crawl\//,
-    /^src\/app\/api\/hotels\/register\//,
-    /^src\/app\/api\/regenerate-sitemap\//,
-    /^src\/app\/\(app\)\/manager\//,
-    /^src\/lib\/services\/vercel-blob-service\.ts$/,
-    /^src\/lib\/api\/backend\.ts$/
-  ],
-  'story-ops-observability-health': [
-    /^src\/app\/api\/health\//,
-    /^src\/app\/api\/heartbeat\//,
-    /^src\/app\/api\/vercel\//,
-    /^src\/app\/log_viewer\//,
-    /^src\/components\/common\/ConsoleLogger\.tsx$/
-  ],
-  'story-product-legal-trust-pages': [
-    /^src\/app\/\(public\)\/privacy/,
-    /^src\/app\/\(public\)\/terms\//,
-    /^src\/app\/\(public\)\/tos\//,
-    /^src\/app\/\(public\)\/tokusho\//,
-    /^src\/app\/\(public\)\/guidelines\//
-  ],
-  'story-security-api-trust-boundary': [
-    /^src\/app\/api\/debug\//,
-    /^src\/app\/api\/test\//,
-    /^src\/app\/api\/admin\//
-  ]
-};
-
 export async function generateStoryCatalog(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const activePreset = getPreset(resolvePresetId(options.config, options.preset));
@@ -340,10 +178,10 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
   const defaults = buildDefaultStoryFields(currentStory, activePreset);
   const graph = await readGraph(root);
   const graphSummary = summarizeGraph(graph);
-  const documentSignals = await collectDocumentSignals(root, files);
+  const documentSignals = await collectDocumentSignals(root, files, activePreset);
 
   const stories = dedupeStories([
-    ...deriveProductSurfaceStories(fileSet, defaults, documentSignals),
+    ...deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
@@ -501,97 +339,29 @@ function deriveArchitectureStories(profile, evidence, defaults, documentSignals)
   return stories;
 }
 
-function deriveProductSurfaceStories(fileSet, defaults, documentSignals) {
+function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset) {
+  const signals = preset?.productSurfaceSignals ?? [];
+  if (signals.length === 0) return [];
+  const files = [...fileSet];
   const stories = [];
-  const has = (pattern) => [...fileSet].some((file) => pattern.test(file));
-  const hasDocs = (key) => (documentSignals[key] ?? []).length > 0;
+  const has = (pattern) => files.some((file) => pattern.test(file));
+  const hasDocs = (key) => key && (documentSignals[key] ?? []).length > 0;
 
-  if (has(/(^src\/app\/.+\/map|api\/map-search|api\/hotels\/search|search-results|mapSearchService|GoogleMapsScript|_components\/search)/) || hasDocs('hotelMapSearch')) {
-    const paths = docPaths(documentSignals, 'hotelMapSearch');
+  for (const signal of signals) {
+    const codeMatch = signal.codePattern && has(signal.codePattern);
+    const docMatch = hasDocs(signal.docKey);
+    if (!codeMatch && !docMatch) continue;
+    const docs = signal.docKey ? selectDocs(documentSignals, signal.docKey) : [];
+    const paths = signal.docKey ? docPaths(documentSignals, signal.docKey) : [];
     stories.push(buildDerivedStory({
-      id: 'story-product-hotel-map-search',
-      title: 'ホテル検索と地図体験を安定化する',
-      category: 'product',
-      sourceType: 'story_cluster',
+      id: signal.id,
+      title: signal.title,
+      category: signal.category ?? 'product',
+      sourceType: signal.sourceType ?? 'story_cluster',
       paths,
-      evidence: ['map', 'hotels', 'hotel services', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-hotel-map-search', selectDocs(documentSignals, 'hotelMapSearch')),
-      docs: selectDocs(documentSignals, 'hotelMapSearch'),
-      defaults
-    }));
-  }
-
-  if (has(/shadow-call/) || hasDocs('shadowCall')) {
-    const paths = docPaths(documentSignals, 'shadowCall');
-    stories.push(buildDerivedStory({
-      id: 'story-product-shadow-call',
-      title: 'AI電話代行体験を安定化する',
-      category: 'product',
-      sourceType: 'story_cluster',
-      paths,
-      evidence: ['shadow-call', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-shadow-call', selectDocs(documentSignals, 'shadowCall')),
-      docs: selectDocs(documentSignals, 'shadowCall'),
-      defaults
-    }));
-  }
-
-  if (has(/stripe|premium|subscription/) || hasDocs('premiumBilling')) {
-    const paths = docPaths(documentSignals, 'premiumBilling');
-    stories.push(buildDerivedStory({
-      id: 'story-product-premium-billing',
-      title: 'プレミアム課金導線を安定化する',
-      category: 'product',
-      sourceType: 'story_cluster',
-      paths,
-      evidence: ['stripe', 'premium', 'subscription', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-premium-billing', selectDocs(documentSignals, 'premiumBilling')),
-      docs: selectDocs(documentSignals, 'premiumBilling'),
-      defaults
-    }));
-  }
-
-  if (has(/articles|sanity|cms/) || hasDocs('contentCms')) {
-    const paths = docPaths(documentSignals, 'contentCms');
-    stories.push(buildDerivedStory({
-      id: 'story-product-content-cms',
-      title: '記事とCMS運用を整理する',
-      category: 'product',
-      sourceType: 'story_cluster',
-      paths,
-      evidence: ['articles', 'sanity', 'cms', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-content-cms', selectDocs(documentSignals, 'contentCms')),
-      docs: selectDocs(documentSignals, 'contentCms'),
-      defaults
-    }));
-  }
-
-  if (has(/onboarding|profile-step|preferences-step/) || hasDocs('onboarding')) {
-    const paths = docPaths(documentSignals, 'onboarding');
-    stories.push(buildDerivedStory({
-      id: 'story-product-onboarding',
-      title: 'オンボーディング体験を安定化する',
-      category: 'product',
-      sourceType: 'story_cluster',
-      paths,
-      evidence: ['onboarding', 'profile', 'preferences', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-onboarding', selectDocs(documentSignals, 'onboarding')),
-      docs: selectDocs(documentSignals, 'onboarding'),
-      defaults
-    }));
-  }
-
-  if (has(/notification/) || hasDocs('notification')) {
-    const paths = docPaths(documentSignals, 'notification');
-    stories.push(buildDerivedStory({
-      id: 'story-product-notification',
-      title: '通知体験を安定化する',
-      category: 'product',
-      sourceType: 'story_cluster',
-      paths,
-      evidence: ['notification', ...paths.slice(0, 3)],
-      storyDefinition: storyDefinitionFor('story-product-notification', selectDocs(documentSignals, 'notification')),
-      docs: selectDocs(documentSignals, 'notification'),
+      evidence: [...(signal.evidenceTokens ?? []), ...paths.slice(0, 3)],
+      storyDefinition: storyDefinitionFor(signal.id, docs),
+      docs,
       defaults
     }));
   }
@@ -1347,7 +1117,8 @@ async function collectRepoFiles(repoRoot, currentRelative = '') {
   return files;
 }
 
-async function collectDocumentSignals(repoRoot, files) {
+async function collectDocumentSignals(repoRoot, files, preset) {
+  const groups = preset?.documentSignalGroups ?? [];
   const signals = {};
   const byStoryId = {};
   const docFiles = files
@@ -1358,7 +1129,7 @@ async function collectDocumentSignals(repoRoot, files) {
     if (doc.story_id && filePath.startsWith('docs/management/stories/')) {
       byStoryId[doc.story_id] = [...(byStoryId[doc.story_id] ?? []), doc];
     }
-    for (const group of DOCUMENT_SIGNAL_GROUPS) {
+    for (const group of groups) {
       if (!group.pattern.test(filePath)) continue;
       signals[group.key] = [...(signals[group.key] ?? []), doc];
     }
@@ -1856,7 +1627,7 @@ function buildStoryCoverageMatchers(stories, preset) {
     for (const item of story.derived?.story_definition?.source_synthesis ?? []) {
       if (isCodePath(item.path, preset)) paths.add(normalizeGraphSourceFile(item.path));
     }
-    patterns.push(...(STORY_COVERAGE_PATTERNS[story.story_id] ?? []));
+    patterns.push(...(preset?.coveragePatterns?.[story.story_id] ?? []));
   }
   return { paths, patterns };
 }
