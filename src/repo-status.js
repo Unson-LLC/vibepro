@@ -1,6 +1,7 @@
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { runDoctor } from './doctor.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, MANIFEST_FILE } from './workspace.js';
 
 export async function getRepoStatus(repoRoot) {
@@ -39,6 +40,7 @@ export async function getRepoStatus(repoRoot) {
   const primaryRun = selectedStoryLatestRun ?? latestRun;
   const evidence = primaryRun ? await readRunEvidence(root, primaryRun) : null;
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const doctor = await runDoctor(root, { writeArtifacts: false });
 
   return {
     initialized: true,
@@ -51,11 +53,19 @@ export async function getRepoStatus(repoRoot) {
     gate_status: primaryRun?.gate_status ?? evidence?.gates?.[0]?.status ?? null,
     finding_count: findings.length,
     artifacts: primaryRun?.artifacts ?? {},
+    doctor: {
+      overall_status: doctor.overall_status,
+      check_count: doctor.checks.length,
+      blocking_check_ids: doctor.checks
+        .filter((check) => ['fixable', 'manual'].includes(check.status))
+        .map((check) => check.id)
+    },
     next_commands: buildNextCommands(root, {
       activeStories,
       selectedStory,
       latestRun,
-      selectedStoryLatestRun
+      selectedStoryLatestRun,
+      doctor
     })
   };
 }
@@ -75,6 +85,7 @@ export function renderRepoStatus(status) {
 | Selected Story Latest Run | ${selectedStoryRun?.run_id ?? '-'} |
 | Gate | ${status.gate_status ?? '-'} |
 | Findings | ${status.finding_count} |
+| Doctor | ${status.doctor?.overall_status ?? '-'} |
 
 ## Active Stories
 
@@ -83,6 +94,10 @@ ${status.active_stories.length === 0 ? '- なし' : status.active_stories.map((s
 ## Artifacts
 
 ${Object.entries(status.artifacts).length === 0 ? '- なし' : Object.entries(status.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+## Doctor
+
+${renderDoctorStatus(status.doctor)}
 
 ## Next Commands
 
@@ -139,10 +154,18 @@ function findLatestStoryRun(manifest, runs, storyId) {
 async function readRunEvidence(repoRoot, run) {
   const evidencePath = run.artifacts?.evidence;
   if (!evidencePath) return null;
-  return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
+  try {
+    return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
-function buildNextCommands(repoRoot, { activeStories, selectedStory, latestRun, selectedStoryLatestRun }) {
+function buildNextCommands(repoRoot, { activeStories, selectedStory, latestRun, selectedStoryLatestRun, doctor = null }) {
+  if (doctor && ['needs_maintenance', 'fixed'].includes(doctor.overall_status)) {
+    return [`vibepro doctor ${repoRoot}`, `vibepro doctor ${repoRoot} --fix`];
+  }
   if (activeStories.length === 0) {
     return [`vibepro story add ${repoRoot} --id <story-id> --title "<title>"`];
   }
@@ -156,4 +179,14 @@ function buildNextCommands(repoRoot, { activeStories, selectedStory, latestRun, 
     `vibepro story report ${repoRoot} --id ${selectedStory.story_id}`,
     `vibepro brainbase ${repoRoot}`
   ];
+}
+
+function renderDoctorStatus(doctor) {
+  if (!doctor) return '- なし';
+  const checks = doctor.blocking_check_ids?.length > 0
+    ? doctor.blocking_check_ids.join(', ')
+    : '-';
+  return `- overall: ${doctor.overall_status}
+- checks: ${doctor.check_count}
+- needs action: ${checks}`;
 }

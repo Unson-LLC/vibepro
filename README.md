@@ -157,7 +157,18 @@ node bin/vibepro.js doctor /path/to/repo --json
 
 `doctor` は `.vibepro/` の整合性を点検する。未初期化リポジトリでは `.vibepro/` を作らず、`uninitialized` と次の案内だけを返す。
 
-現時点では、管理目録の診断runが存在しない `evidence.json` を参照していないかを確認する。`--fix` を付けた場合は、欠けたevidenceを参照するrunだけを `vibepro-manifest.json` から除去し、`latest_run` と `latest_run_by_story` を残っているrunに合わせて整理する。対象リポジトリのコード、Story定義、診断成果物そのものは変更しない。
+主な点検項目:
+
+- `current_story_id` が存在するactive Storyを指しているか
+- `latest_run` と `latest_run_by_story` が実在runを指しているか
+- 診断runが存在する `evidence.json` を参照しているか
+- graphify成果物参照が実在ファイルを指しているか
+- `story-catalog.json` と `config.json` のStory一覧がずれていないか
+- handoff/execution成果物内の briefing / plan / handoff 参照が欠けていないか
+
+`--fix` を付けた場合は、欠けた参照だけを管理情報から整理する。具体的には、欠けたevidenceを参照するrunの除去、存在しないlatest run参照の解除、存在しないgraphify成果物参照の解除、存在しないcurrent Storyの解除、Story catalogからconfigへの不足Story追加、古い派生Storyのarchiveを行う。対象リポジトリのコード、Story成果物、診断成果物そのものは変更しない。
+
+`status` は `doctor` の読み取り点検を内部で実行し、保守が必要な場合は次のコマンドとして `vibepro doctor` と `vibepro doctor --fix` を先に表示する。
 
 点検結果は以下に出力する。
 

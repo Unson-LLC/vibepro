@@ -158,6 +158,97 @@ test('doctor detects and fixes missing diagnosis evidence references', async () 
   await stat(path.join(repo, '.vibepro', 'doctor', 'doctor-result.json'));
 });
 
+test('doctor fixes stale story, run, catalog, and graphify references', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-live', '--title', 'Live Story']);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const config = await readJson(configPath);
+  config.brainbase.current_story_id = 'story-missing';
+  config.brainbase.stories.push({
+    story_id: 'story-stale-derived',
+    title: 'Stale derived story',
+    ssot: 'local',
+    status: 'active',
+    derived_by: 'vibepro-story-derive'
+  });
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const manifest = await readJson(manifestPath);
+  manifest.latest_run = 'missing-run';
+  manifest.latest_run_by_story = { 'story-live': 'missing-run' };
+  manifest.runs = [];
+  manifest.artifacts = {
+    graphify_json: '.vibepro/graphify/missing-graph.json',
+    graphify_report: '.vibepro/graphify/missing-report.md'
+  };
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  await mkdir(path.join(repo, '.vibepro', 'stories'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'), JSON.stringify({
+    story_count: 1,
+    stories: [{
+      story_id: 'story-derived-new',
+      title: 'Derived New Story',
+      ssot: 'local',
+      status: 'active',
+      horizon: 'quarter',
+      view: 'business',
+      period: null,
+      category: 'product'
+    }]
+  }, null, 2));
+
+  const dryRun = await runCli(['doctor', repo, '--json']);
+
+  assert.equal(dryRun.exitCode, 0);
+  assert.equal(dryRun.result.overall_status, 'needs_maintenance');
+  const checkIds = dryRun.result.checks.map((check) => check.id);
+  assert.equal(checkIds.includes('VP-DOCTOR-CURRENT-STORY-MISSING'), true);
+  assert.equal(checkIds.includes('VP-DOCTOR-STALE-LATEST-RUN-REFS'), true);
+  assert.equal(checkIds.includes('VP-DOCTOR-MISSING-GRAPHIFY-ARTIFACTS'), true);
+  assert.equal(checkIds.includes('VP-DOCTOR-STORY-CATALOG-DRIFT'), true);
+
+  const fixed = await runCli(['doctor', repo, '--fix']);
+
+  assert.equal(fixed.exitCode, 0);
+  assert.equal(fixed.result.overall_status, 'fixed');
+  const fixedConfig = await readJson(configPath);
+  const fixedManifest = await readJson(manifestPath);
+  assert.equal(fixedConfig.brainbase.current_story_id, null);
+  assert.equal(fixedConfig.brainbase.stories.some((story) => story.story_id === 'story-derived-new'), true);
+  assert.equal(fixedConfig.brainbase.stories.find((story) => story.story_id === 'story-stale-derived').status, 'archived');
+  assert.equal(fixedManifest.latest_run, null);
+  assert.deepEqual(fixedManifest.latest_run_by_story, {});
+  assert.equal(fixedManifest.artifacts.graphify_json, undefined);
+  assert.equal(fixedManifest.artifacts.graphify_report, undefined);
+});
+
+test('doctor reports missing task workflow references without modifying them', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-live', '--title', 'Live Story']);
+  const tasksDir = path.join(repo, '.vibepro', 'stories', 'story-live', 'tasks');
+  await mkdir(path.join(tasksDir, 'TASK-001'), { recursive: true });
+  await writeFile(path.join(tasksDir, 'tasks.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story: { story_id: 'story-live', title: 'Live Story' },
+    source_run: { run_id: 'story-plan' },
+    tasks: [{ id: 'TASK-001', title: 'Task 001', target_groups: [] }]
+  }, null, 2));
+  await writeFile(path.join(tasksDir, 'TASK-001', 'handoff.json'), JSON.stringify({
+    references: {
+      briefing_json: '.vibepro/stories/story-live/tasks/TASK-001/briefing.json',
+      plan_json: '.vibepro/stories/story-live/tasks/TASK-001/plan.json'
+    }
+  }, null, 2));
+
+  const result = await runCli(['doctor', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.overall_status, 'needs_maintenance');
+  const taskCheck = result.result.checks.find((check) => check.id === 'VP-DOCTOR-MISSING-TASK-WORKFLOW-REFS');
+  assert.equal(taskCheck.status, 'manual');
+  assert.equal(taskCheck.items.length, 2);
+});
+
 test('graph imports existing graphify artifacts into the workspace', async () => {
   const repo = await makeRepo();
   const graphSource = path.join(repo, 'graphify-out');
@@ -1513,6 +1604,23 @@ test('status reports initialized repositories with no active stories', async () 
   assert.equal(status.initialized, true);
   assert.equal(status.active_stories.length, 0);
   assert.match(status.next_commands[0], /story add/);
+});
+
+test('status surfaces doctor maintenance before the next workflow command', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-alpha', '--title', 'Alpha']);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase.current_story_id = 'missing-story';
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = await runCli(['status', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.status.doctor.overall_status, 'needs_maintenance');
+  assert.equal(result.status.doctor.blocking_check_ids.includes('VP-DOCTOR-CURRENT-STORY-MISSING'), true);
+  assert.equal(result.status.next_commands[0], `vibepro doctor ${repo}`);
+  await assert.rejects(stat(path.join(repo, '.vibepro', 'doctor', 'doctor-result.json')), { code: 'ENOENT' });
 });
 
 test('status reports repository diagnosis state as text and json', async () => {

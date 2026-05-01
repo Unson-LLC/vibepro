@@ -350,19 +350,39 @@ Storyの `category` は次に分類する。
 
 未初期化リポジトリでも実行できる。この場合、`.vibepro` は作らず、`overall_status: uninitialized` と次に実行する `vibepro init` 相当の案内を返す。
 
-初期実装で確認する項目:
+確認する項目:
 
+- `.vibepro/config.json` が存在するか
+- `config.json` の `brainbase.current_story_id` が存在するactive Storyを指しているか
+- `vibepro-manifest.json` の `latest_run` と `latest_run_by_story` が実在runを指しているか
 - `vibepro-manifest.json` の `runs[]` が参照する `artifacts.evidence` が存在するか
+- `vibepro-manifest.json` の graphify artifact参照が実在ファイルを指しているか
+- `.vibepro/stories/story-catalog.json` と `.vibepro/config.json` の派生Story一覧がずれていないか
+- task workflow成果物の `handoff.json` と `execution.json` が参照する briefing / plan / handoff 成果物が存在するか
 
-`--fix` 指定時は、存在しない `evidence.json` を参照するrunだけを `vibepro-manifest.json` から除去する。あわせて `latest_run` と `latest_run_by_story` から、除去したrunへの参照を整理する。
+`--fix` 指定時は、管理情報の欠けた参照だけを保守的に整理する。
+
+`--fix` が行うこと:
+
+- 存在しない `evidence.json` を参照するrunを `vibepro-manifest.json` から除去する
+- 存在しないrunを指す `latest_run` と `latest_run_by_story` を解除する
+- 存在しないgraphify artifact参照を `vibepro-manifest.json` から解除する
+- 存在しないactive Storyを指す `current_story_id` を解除する
+- `story-catalog.json` にあるが `config.json` にない派生Storyを追加する
+- `config.json` に残る古い派生Storyを `archived` にする
+
+`--fix` が自動修復しないこと:
+
+- task workflow成果物内の欠けた参照は、対応する `vibepro task brief / plan / handoff / execute` の再実行を促す
 
 修復範囲:
 
 - 変更する: `.vibepro/vibepro-manifest.json`
+- 変更する: `.vibepro/config.json`
 - 生成する: `.vibepro/doctor/doctor-result.json`
 - 生成する: `.vibepro/doctor/doctor-result.md`
 - 変更しない: 対象リポジトリのコード
-- 変更しない: Story定義
+- 変更しない: Story成果物
 - 変更しない: 診断成果物そのもの
 
 `--json` 指定時は同じ内容を機械可読JSONとして出力する。
@@ -383,7 +403,10 @@ Storyの `category` は次に分類する。
 - ゲート状態
 - 検出事項数
 - 主要artifactパス
+- Doctor点検状態
 - 次に実行するコマンド
+
+`status` は `doctor` の読み取り点検を行うが、doctor artifactは生成しない。Doctor点検状態が `needs_maintenance` の場合は、通常の次コマンドより前に `vibepro doctor` と `vibepro doctor --fix` を表示する。
 
 `--json` 指定時は同じ内容を機械可読JSONとして出力する。active Story一覧は選択中Storyを先頭に並べる。
 
@@ -919,7 +942,11 @@ API route保護判定:
 - `doctor` は未初期化リポジトリで `.vibepro/` を作らず、`uninitialized` を返す。
 - `doctor` は管理目録の診断runが存在しない `evidence.json` を参照している場合に `needs_maintenance` を返す。
 - `doctor --fix` は欠けたevidenceを参照するrunを管理目録から除去し、`latest_run` と `latest_run_by_story` を整理する。
+- `doctor` は存在しないcurrent Story、存在しないlatest run参照、欠けたgraphify artifact参照、Story catalogとconfigの差分を検出する。
+- `doctor --fix` は存在しないcurrent Story、存在しないlatest run参照、欠けたgraphify artifact参照、Story catalogとconfigの差分を管理情報上で整理する。
+- `doctor` は task workflow成果物内の欠けた briefing / plan / handoff 参照をmanual対応として検出する。
 - `doctor` は点検結果を `.vibepro/doctor/doctor-result.json` と `doctor-result.md` に出力する。
+- `status` はDoctor点検状態を表示し、保守が必要な場合は次コマンドに `vibepro doctor` を優先表示する。
 - `graph` で graphify 成果物が `.vibepro/graphify/` に入る。
 - `graph` で管理目録に graphify 成果物のパスが記録される。
 - `diagnose` で `summary.md`、`risk-register.md`、`architecture-profile.md`、`static-site-check-result.md`、`evidence.json` が作られる。
