@@ -2614,6 +2614,43 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
     `expected at least 1 code_surface story for modular-web, got ${codeSurface.length}`);
 });
 
+test('story derive does not leak next-app product stories into modular-web preset', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  await mkdir(path.join(repo, 'lib', 'services', 'shadow-call'), { recursive: true });
+  await mkdir(path.join(repo, 'lib', 'services', 'stripe'), { recursive: true });
+  await writeFile(path.join(repo, 'lib', 'services', 'shadow-call', 'index.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'lib', 'services', 'stripe', 'billing.js'), 'export {}\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'sc', source_file: 'lib/services/shadow-call/index.js', label: 'shadow-call' },
+      { id: 'bill', source_file: 'lib/services/stripe/billing.js', label: 'billing' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const aitleProductIds = [
+    'story-product-shadow-call',
+    'story-product-premium-billing',
+    'story-product-hotel-map-search',
+    'story-product-content-cms'
+  ];
+  const leaked = catalog.stories.filter((s) => aitleProductIds.includes(s.story_id));
+  assert.equal(leaked.length, 0,
+    `next-app product stories must not leak into modular-web preset, found ${JSON.stringify(leaked.map((s) => s.story_id))}`);
+});
+
 test('story derive keeps next-app preset behavior when preset is unset', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
