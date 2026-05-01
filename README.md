@@ -145,7 +145,27 @@ node bin/vibepro.js diagnose /path/to/repo
 
 `vibepro-manifest.json` には最新の実行ID、ゲート状態、成果物パスを記録する。Brainbase はこの管理目録を読む。
 
-### 4. ローカルStory管理
+### 4. 点検
+
+```bash
+node bin/vibepro.js doctor /path/to/repo
+node bin/vibepro.js doctor /path/to/repo --fix
+node bin/vibepro.js doctor /path/to/repo --json
+```
+
+`doctor` は `.vibepro/` の整合性を点検する。未初期化リポジトリでは `.vibepro/` を作らず、`uninitialized` と次の案内だけを返す。
+
+現時点では、管理目録の診断runが存在しない `evidence.json` を参照していないかを確認する。`--fix` を付けた場合は、欠けたevidenceを参照するrunだけを `vibepro-manifest.json` から除去し、`latest_run` と `latest_run_by_story` を残っているrunに合わせて整理する。対象リポジトリのコード、Story定義、診断成果物そのものは変更しない。
+
+点検結果は以下に出力する。
+
+```text
+.vibepro/doctor/
+├── doctor-result.json
+└── doctor-result.md
+```
+
+### 5. ローカルStory管理
 
 NocoDBを使わず、対象リポジトリの `.vibepro/config.json` だけでStoryを管理できる。
 
@@ -198,7 +218,7 @@ node bin/vibepro.js status /path/to/repo --json
 
 `story diagnose` はStory選択、graphify取り込み、診断、Storyレポート生成、status表示を一度に行う。`story runs` は選択中Storyまたは `--id` 指定Storyに紐づく診断run一覧を表示する。`story status` はStoryの最新run、ゲート状態、検出事項数、artifactパスを表示する。`story report` は `.vibepro/stories/<story-id>/story-report.md` にStory単位の診断レポートを生成する。診断時には `.vibepro/stories/<story-id>/tasks/tasks.json` と `tasks.md` も自動生成し、Storyレポートには生成タスク一覧を投影する。いずれもNocoDBなしにローカルの `.vibepro/` だけで動く。
 
-### 5. PR準備
+### 6. PR準備
 
 Story実装後、PRを作る前に差分範囲を確認し、PR本文ドラフトを生成する。
 
@@ -255,7 +275,7 @@ node bin/vibepro.js pr prepare /path/to/repo \
 node bin/vibepro.js pr prepare /path/to/repo --base origin/develop --json
 ```
 
-### 6. Brainbase 取り込み状態の生成
+### 7. Brainbase 取り込み状態の生成
 
 ```bash
 node bin/vibepro.js brainbase /path/to/repo

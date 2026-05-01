@@ -342,6 +342,29 @@ Storyの `category` は次に分類する。
 
 `--id` 指定時は対象Storyの候補だけを作る。`--task` 指定時は特定候補だけを作る。`--limit` 指定時は候補の先頭N件だけを作る。
 
+### `vibepro doctor [repo] [--fix] [--json]`
+
+対象リポジトリの `.vibepro/` 管理情報を点検する。
+
+未初期化リポジトリでも実行できる。この場合、`.vibepro` は作らず、`overall_status: uninitialized` と次に実行する `vibepro init` 相当の案内を返す。
+
+初期実装で確認する項目:
+
+- `vibepro-manifest.json` の `runs[]` が参照する `artifacts.evidence` が存在するか
+
+`--fix` 指定時は、存在しない `evidence.json` を参照するrunだけを `vibepro-manifest.json` から除去する。あわせて `latest_run` と `latest_run_by_story` から、除去したrunへの参照を整理する。
+
+修復範囲:
+
+- 変更する: `.vibepro/vibepro-manifest.json`
+- 生成する: `.vibepro/doctor/doctor-result.json`
+- 生成する: `.vibepro/doctor/doctor-result.md`
+- 変更しない: 対象リポジトリのコード
+- 変更しない: Story定義
+- 変更しない: 診断成果物そのもの
+
+`--json` 指定時は同じ内容を機械可読JSONとして出力する。
+
 ### `vibepro status [repo] [--json]`
 
 対象リポジトリの VibePro 状態を表示する。
@@ -891,6 +914,10 @@ API route保護判定:
 - `init` で `.vibepro/` と除外設定が作られる。
 - `init --story-id` でNocoDBなしにローカルStoryを作り、選択中Storyにできる。
 - `init --story-id` で同じStory IDがすでに存在する場合は失敗する。
+- `doctor` は未初期化リポジトリで `.vibepro/` を作らず、`uninitialized` を返す。
+- `doctor` は管理目録の診断runが存在しない `evidence.json` を参照している場合に `needs_maintenance` を返す。
+- `doctor --fix` は欠けたevidenceを参照するrunを管理目録から除去し、`latest_run` と `latest_run_by_story` を整理する。
+- `doctor` は点検結果を `.vibepro/doctor/doctor-result.json` と `doctor-result.md` に出力する。
 - `graph` で graphify 成果物が `.vibepro/graphify/` に入る。
 - `graph` で管理目録に graphify 成果物のパスが記録される。
 - `diagnose` で `summary.md`、`risk-register.md`、`architecture-profile.md`、`static-site-check-result.md`、`evidence.json` が作られる。

@@ -1,6 +1,7 @@
 import { initWorkspace } from './workspace.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
+import { renderDoctor, runDoctor } from './doctor.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
@@ -41,6 +42,7 @@ const HELP = `VibePro CLI
 
 Usage:
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
+  vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
@@ -106,6 +108,15 @@ export async function runCli(argv, io = {}) {
         env: io.env
       });
       write(stdout, `graphify artifacts imported: ${result.graphifyDir}\n`);
+      return { exitCode: 0, command, result };
+    }
+
+    if (command === 'doctor') {
+      const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
+      const result = await runDoctor(repoRoot, { fix: hasFlag(rest, '--fix') });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderDoctor(result));
       return { exitCode: 0, command, result };
     }
 

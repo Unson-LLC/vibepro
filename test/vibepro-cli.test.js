@@ -89,6 +89,62 @@ test('init fails when bootstrapped story already exists', async () => {
   assert.equal(result.exitCode, 1);
 });
 
+test('doctor reports uninitialized repositories without creating a workspace', async () => {
+  const repo = await makeRepo();
+
+  const result = await runCli(['doctor', repo]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.overall_status, 'uninitialized');
+  await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+});
+
+test('doctor detects and fixes missing diagnosis evidence references', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, '.vibepro', 'diagnostics', 'ok-run'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'diagnostics', 'ok-run', 'evidence.json'), JSON.stringify({ run_id: 'ok-run' }));
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_run = 'missing-run';
+  manifest.latest_run_by_story = {
+    'story-alpha': 'missing-run',
+    'story-beta': 'ok-run'
+  };
+  manifest.runs = [
+    {
+      run_id: 'missing-run',
+      story_id: 'story-alpha',
+      artifacts: { evidence: '.vibepro/diagnostics/missing-run/evidence.json' }
+    },
+    {
+      run_id: 'ok-run',
+      story_id: 'story-beta',
+      artifacts: { evidence: '.vibepro/diagnostics/ok-run/evidence.json' }
+    }
+  ];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const dryRun = await runCli(['doctor', repo]);
+
+  assert.equal(dryRun.exitCode, 0);
+  assert.equal(dryRun.result.overall_status, 'needs_maintenance');
+  assert.equal(dryRun.result.checks[0].id, 'VP-DOCTOR-MISSING-EVIDENCE');
+  assert.equal((await readJson(manifestPath)).runs.length, 2);
+
+  const fixed = await runCli(['doctor', repo, '--fix', '--json']);
+
+  assert.equal(fixed.exitCode, 0);
+  assert.equal(fixed.result.overall_status, 'fixed');
+  assert.equal(fixed.result.repairs[0].removed_run_ids.includes('missing-run'), true);
+  const after = await readJson(manifestPath);
+  assert.equal(after.runs.length, 1);
+  assert.equal(after.latest_run, 'ok-run');
+  assert.equal(after.latest_run_by_story['story-alpha'], undefined);
+  assert.equal(after.latest_run_by_story['story-beta'], 'ok-run');
+  await stat(path.join(repo, '.vibepro', 'doctor', 'doctor-result.json'));
+});
+
 test('graph imports existing graphify artifacts into the workspace', async () => {
   const repo = await makeRepo();
   const graphSource = path.join(repo, 'graphify-out');
