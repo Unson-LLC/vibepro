@@ -1245,6 +1245,53 @@ export async function getUser() {
   assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
 });
 
+test('api boundary follows imported debug access gate helpers for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'debug', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'debug', 'session', 'route.ts'), `
+import { validateDebugAccess } from '@/lib/api/debug-access';
+
+export async function GET() {
+  const access = validateDebugAccess(await auth());
+  if (access !== 'allowed') {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'api'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'api', 'debug-access.ts'), `
+export function validateDebugAccess(session, env = process.env) {
+  if (env.NODE_ENV === 'production' || env.DEBUG_API_ENABLED !== 'true') {
+    return 'disabled';
+  }
+  if (!session?.user?.id) {
+    return 'unauthorized';
+  }
+  if (Number(session.user.userType) !== 9) {
+    return 'forbidden';
+  }
+  return 'allowed';
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: ['src/app/api/debug/session/route.ts']
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  assert.equal(result.routes[0].protection.status, 'protected_by_route');
+  assert.equal(result.routes[0].protection.evidence.includes('debug_access_gate'), true);
+  assert.equal(result.routes[0].protection.evidence.includes('imported_debug_gate_helper'), true);
+  assert.equal(result.routes[0].risk_hints.includes('debug_route_exposed'), false);
+});
+
 test('api boundary detects webhook signature checks for Svix and token based routes', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'resend'), { recursive: true });
@@ -1297,6 +1344,72 @@ export async function POST(request) {
   for (const route of result.routes) {
     assert.equal(route.protection.status, 'protected_by_route');
     assert.equal(route.protection.evidence.includes('webhook_signature_check'), true);
+    assert.equal(route.risk_hints.includes('webhook_signature_not_detected'), false);
+  }
+});
+
+test('api boundary follows imported webhook signature helper references for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'twilio', 'webhook', 'voice'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'twilio', 'webhook', 'voice', 'route.ts'), `
+import { verifyTwilioFormWebhook } from '@/lib/api/webhook-security';
+
+export async function POST(request) {
+  const formData = await request.formData();
+  const verification = await verifyTwilioFormWebhook(request, formData);
+  if (!verification.ok) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'openai', 'webhook', 'response'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'openai', 'webhook', 'response', 'route.ts'), `
+import { verifyOpenAIWebhook } from '@/lib/api/webhook-security';
+
+export async function POST(request) {
+  const rawBody = await request.text();
+  const verification = await verifyOpenAIWebhook(request, rawBody);
+  if (!verification.ok) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json(JSON.parse(rawBody));
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'api'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'api', 'webhook-security.ts'), `
+export async function verifyTwilioFormWebhook(request, formData) {
+  const signature = request.headers.get('x-twilio-signature');
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const isValid = twilio.validateRequest(authToken, signature, request.url, Object.fromEntries(formData.entries()));
+  return isValid ? { ok: true } : { ok: false };
+}
+
+export async function verifyOpenAIWebhook(request, rawBody) {
+  const client = new OpenAI({ webhookSecret: process.env.OPENAI_WEBHOOK_SECRET });
+  await client.webhooks.verifySignature(rawBody, Object.fromEntries(request.headers.entries()));
+  return { ok: true };
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: [
+          'src/app/api/twilio/webhook/voice/route.ts',
+          'src/app/api/openai/webhook/response/route.ts'
+        ]
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  for (const route of result.routes) {
+    assert.equal(route.protection.status, 'protected_by_route');
+    assert.equal(route.protection.evidence.includes('webhook_signature_check'), true);
+    assert.equal(route.protection.evidence.includes('imported_signature_helper'), true);
     assert.equal(route.risk_hints.includes('webhook_signature_not_detected'), false);
   }
 });
@@ -1731,6 +1844,15 @@ test('diagnose creates static site evidence and a static site report under the r
   await writeFile(path.join(repo, 'app.js'), `
 const apiKey = "sk-123456789012345678901234";
 const access_token = "runtimeReviewToken123";
+const secret_key = plainsecretvalue;
+const api_key = request.headers.get('x-api-key');
+const accessToken = body.access_token ?? null;
+const callConfig = {
+  authToken: twilioAuthToken,
+  apiKey: openaiConfig.apiKey!,
+  access_token: accessToken
+};
+FireCrawlApi(api_key=firecrawl_api_key);
 document.body.innerHTML = location.hash;
 eval("1+1");
 `);
@@ -1773,8 +1895,18 @@ element.innerHTML = userInput;
   const skillXss = evidence.static_site.xss_risk_hits.find((hit) => hit.file === '.claude/skills/security-patterns/SKILL.md');
   assert.equal(skillXss.confidence, 'low');
   assert.equal(skillXss.gate_effect, 'info');
+  const dynamicSecrets = evidence.static_site.secret_hits.filter(
+    (hit) => hit.file === 'app.js'
+      && /request\.headers|body\.access_token|twilioAuthToken|openaiConfig\.apiKey|accessToken|firecrawl_api_key/.test(hit.excerpt)
+  );
+  assert.equal(dynamicSecrets.length, 6);
+  assert.equal(dynamicSecrets.every((hit) => hit.gate_effect === 'info'), true);
+  assert.equal(dynamicSecrets.every((hit) => hit.confidence === 'low'), true);
+  const unquotedPlainSecret = evidence.static_site.secret_hits.find((hit) => hit.excerpt.includes('plainsecretvalue'));
+  assert.equal(unquotedPlainSecret.gate_effect, 'review');
+  assert.equal(unquotedPlainSecret.confidence, 'medium');
   assert.equal(evidence.static_site.risk_summary.secret_hits.block, 1);
-  assert.equal(evidence.static_site.risk_summary.secret_hits.info, 2);
+  assert.equal(evidence.static_site.risk_summary.secret_hits.info, 8);
   assert.equal(evidence.static_site.risk_summary.xss_risk_hits.review, 2);
   assert.equal(evidence.static_site.risk_summary.xss_risk_hits.info, 1);
   assert.equal(evidence.static_site.external_resources.length > 0, true);
@@ -2028,7 +2160,8 @@ export function middleware() {}
   assert.equal(evidence.finding_review.summary.total, evidence.findings.length);
   assert.equal(evidence.finding_review.summary.unreviewed, evidence.findings.length);
   assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').suggested_classification, 'implementation_gap');
-  assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-GRAPH-002').suggested_classification, 'detector_gap');
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-GRAPH-002'), false);
+  assert.equal(evidence.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').allowed_classifications.includes('false_negative'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
   assert.match(apiFinding.detail, /excluded_by_middleware: 1件/);
@@ -2049,6 +2182,8 @@ export function middleware() {}
   assert.match(summary, /読むファイル/);
   assert.match(summary, /実装手順/);
   assert.match(summary, /修正前ブリーフィング/);
+  assert.match(summary, /## 文脈品質ノート/);
+  assert.match(summary, /VP-GRAPH-002/);
   assert.match(summary, /## 診断レビュー/);
   assert.match(summary, /suggested implementation_gap/);
   assert.match(summary, /方針A/);
@@ -2089,7 +2224,7 @@ export function middleware() {}
   assert.match(importSummary, /## API境界/);
   assert.match(importSummary, /excluded_by_middleware \| 3/);
   assert.match(importSummary, /## 診断レビュー/);
-  assert.match(importSummary, /suggested detector_gap/);
+  assert.doesNotMatch(importSummary, /suggested detector_gap: [1-9]/);
   assert.match(importSummary, /## 次アクション候補/);
   assert.match(importSummary, /## 生成タスク/);
   assert.match(importSummary, /VP-TASK-API-001/);
@@ -2104,6 +2239,7 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
+  assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
   assert.equal(importState.signals.tasks.length, 5);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');

@@ -205,7 +205,7 @@ function classifySecretRisk(file, line, kind) {
   if (sourceKind !== 'runtime_code') {
     return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
   }
-  if (isPlaceholderSecret(line) || isEnvironmentReference(line)) {
+  if (isPlaceholderSecret(line) || isEnvironmentReference(line) || isSecretReferenceOnly(line, kind)) {
     return { source_kind: sourceKind, confidence: 'low', gate_effect: 'info' };
   }
   if (kind === 'env_file_value' || kind === 'openai_key_like' || /\bsk-[A-Za-z0-9]{20,}\b/.test(line)) {
@@ -247,6 +247,20 @@ function isPlaceholderSecret(line) {
 
 function isEnvironmentReference(line) {
   return /\bprocess\.env\b|\bos\.environ\b|\bos\.getenv\s*\(|\benv\.[A-Z0-9_]+\b/i.test(line);
+}
+
+function isSecretReferenceOnly(line, kind) {
+  if (kind !== 'secret_keyword') return false;
+  const match = /\b(api[_-]?key|api[_-]?secret|access[_-]?token|auth[_-]?token|secret[_-]?key)\b\s*[:=]\s*([^,;\n)]+)/i.exec(line);
+  if (!match) return false;
+  const value = match[2].trim();
+  if (!value) return true;
+  if (/^['"`]/.test(value)) return false;
+  if (/^(request|req|body|params|headers|cookies|formData)\b/i.test(value)) return true;
+  if (!/^[A-Za-z_$][\w$]*(?:[.?!][A-Za-z_$][\w$]*)*(?:\s*\(|\s*$|[.?!,\]])/.test(value)) return false;
+  return /[.?!]/.test(value)
+    || /\b[A-Za-z]+(?:Key|Token|Secret)\b/.test(value)
+    || /(?:^|_)(api_key|api_secret|access_token|auth_token|secret_key)(?:_|$)/i.test(value);
 }
 
 function summarizeGateEffects(hits) {

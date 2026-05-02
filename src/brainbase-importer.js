@@ -114,7 +114,8 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         edge_source_key: graphify.edge_source_key ?? null,
         extracted_edges_count: graphify.extracted_edges?.length ?? 0,
         inferred_edges_count: graphify.inferred_edges?.length ?? 0,
-        ambiguous_edges_count: graphify.ambiguous_edges?.length ?? 0
+        ambiguous_edges_count: graphify.ambiguous_edges?.length ?? 0,
+        quality_notices: graphify.quality_notices ?? []
       },
       architecture_profile: {
         app_type: architectureProfile.app_type ?? 'unknown',
