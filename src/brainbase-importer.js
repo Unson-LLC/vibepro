@@ -92,6 +92,9 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const refactoringOpportunities = Array.isArray(evidence.refactoring_opportunities)
     ? evidence.refactoring_opportunities
     : [];
+  const refactoringCampaigns = Array.isArray(evidence.refactoring_campaigns)
+    ? evidence.refactoring_campaigns
+    : [];
   const stories = storyContext.stories;
   const primaryStory = storyContext.currentStory;
 
@@ -188,6 +191,9 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         source: opportunity.source,
         title: opportunity.title,
         refactoring_intent: opportunity.refactoring_intent,
+        rank: opportunity.rank ?? null,
+        score: opportunity.score ?? null,
+        priority_reasons: opportunity.priority_reasons ?? [],
         target_count: opportunity.target_count,
         target_files: opportunity.target_files ?? [],
         confidence: opportunity.confidence,
@@ -195,6 +201,24 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         suggested_abstraction: opportunity.suggested_abstraction ?? null,
         evidence_refs: opportunity.evidence_refs ?? {},
         story_blueprint: opportunity.story_blueprint ?? null
+      })),
+      refactoring_campaigns: refactoringCampaigns.map((campaign) => ({
+        id: campaign.id,
+        rank: campaign.rank ?? null,
+        title: campaign.title,
+        refactoring_intent: campaign.refactoring_intent,
+        domain: campaign.domain,
+        priority: campaign.priority,
+        score: campaign.score ?? null,
+        opportunity_count: campaign.opportunity_count,
+        opportunity_ids: campaign.opportunity_ids ?? [],
+        finding_ids: campaign.finding_ids ?? [],
+        target_count: campaign.target_count,
+        target_files: campaign.target_files ?? [],
+        recommended_first_opportunity_id: campaign.recommended_first_opportunity_id ?? null,
+        expected_diagnostic_delta: campaign.expected_diagnostic_delta ?? {},
+        priority_reasons: campaign.priority_reasons ?? [],
+        story_blueprint: campaign.story_blueprint ?? null
       })),
       tasks: Array.isArray(taskState?.tasks) ? taskState.tasks : [],
       action_candidates: actionCandidates.map((candidate) => ({
@@ -209,6 +233,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         recommendation: candidate.recommendation,
         target_files: candidate.target_files ?? [],
         refactoring_opportunity_id: candidate.refactoring_opportunity_id ?? null,
+        refactoring_campaign_id: candidate.refactoring_campaign_id ?? null,
         story_blueprint: candidate.story_blueprint ?? null,
         route_examples: candidate.route_examples ?? [],
         graph_context: candidate.graph_context ?? emptyGraphContext(),
@@ -254,6 +279,7 @@ function renderImportSummary(importState) {
 | 重複query形状候補 | ${formatRiskCount(importState.signals.code_quality.duplicate_query_shapes_count, importState.signals.code_quality.duplicate_query_shapes_gate_summary)} |
 | 責務混在候補 | ${formatRiskCount(importState.signals.code_quality.responsibility_hotspots_count, importState.signals.code_quality.responsibility_hotspots_gate_summary)} |
 | リファクタリング機会 | ${importState.signals.refactoring_opportunities.length}件 |
+| リファクタリングcampaign | ${importState.signals.refactoring_campaigns.length}件 |
 | 検出事項 | ${importState.findings.length}件 |
 
 ## API境界
@@ -430,6 +456,7 @@ function renderPreFixBriefing(briefing) {
   if (briefing.opportunity) {
     return `修正前ブリーフィング:
 - リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- Campaign: ${briefing.campaign?.id ?? '-'} / rank=${briefing.campaign?.rank ?? '-'}
 - 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
 - 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
 - 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}

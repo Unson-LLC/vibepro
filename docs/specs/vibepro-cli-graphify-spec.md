@@ -676,8 +676,19 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `refactoring_opportunities[].source`
 - `refactoring_opportunities[].refactoring_intent`
 - `refactoring_opportunities[].target_files`
+- `refactoring_opportunities[].rank`
+- `refactoring_opportunities[].score`
+- `refactoring_opportunities[].priority_reasons`
 - `refactoring_opportunities[].suggested_abstraction`
 - `refactoring_opportunities[].story_blueprint`
+- `refactoring_campaigns`
+- `refactoring_campaigns[].id`
+- `refactoring_campaigns[].rank`
+- `refactoring_campaigns[].refactoring_intent`
+- `refactoring_campaigns[].opportunity_ids`
+- `refactoring_campaigns[].recommended_first_opportunity_id`
+- `refactoring_campaigns[].expected_diagnostic_delta`
+- `refactoring_campaigns[].story_blueprint`
 - `architecture_profile.system_type`
 - `architecture_profile.app_type`
 - `architecture_profile.frameworks`
@@ -703,6 +714,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `action_candidates[].mutates_repository`
 - `action_candidates[].target_files`
 - `action_candidates[].refactoring_opportunity_id`
+- `action_candidates[].refactoring_campaign_id`
 - `action_candidates[].story_blueprint`
 - `action_candidates[].route_examples`
 - `action_candidates[].route_examples[].file`
@@ -990,7 +1002,8 @@ API route保護判定:
 - `diagnose` はrouteからimportされた認証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある認証シグナルを `protected_by_route` として扱う。
 - `diagnose` はwebhook routeからimportされた署名検証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある署名検証シグナルを `protected_by_route` として扱う。
 - `diagnose` は `code-quality` が適用される場合、認可判定前のbulk DB read候補、重複したPrisma query形状、責務が混在する大きなruntime file候補を `evidence.code_quality` に記録する。
-- `diagnose` は重複query形状や責務混在候補を、repo固有辞書ではなく検出証拠から `evidence.refactoring_opportunities[]` に正規化し、DRY候補は `VP-ACTION-DRY-001` としてStory blueprint付きの次アクションにできる。
+- `diagnose` は重複query形状や責務混在候補を、repo固有辞書ではなく検出証拠から `evidence.refactoring_opportunities[]` に正規化し、score/rank/priority_reasons を付ける。
+- `diagnose` は上位のリファクタリング機会を intent/domain で `evidence.refactoring_campaigns[]` に束ね、DRY候補は `VP-ACTION-DRY-001`、責務分離候補は `VP-ACTION-ARCH-001` としてStory blueprint付きの次アクションにできる。
 - `task list` で選択中Storyの生成タスクを一覧できる。
 - `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
 - `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。

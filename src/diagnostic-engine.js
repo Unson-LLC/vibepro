@@ -7,6 +7,7 @@ import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import {
   buildRefactoringActionCandidates,
+  buildRefactoringCampaigns,
   buildRefactoringOpportunities
 } from './refactoring-opportunity-generator.js';
 import { scanStaticSite } from './static-site-scanner.js';
@@ -138,6 +139,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       : null,
     static_site: await scanStaticSite(repoRoot),
     refactoring_opportunities: [],
+    refactoring_campaigns: [],
     action_candidates: [],
     findings: [],
     finding_review: {
@@ -149,6 +151,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     gates: []
   };
   evidence.refactoring_opportunities = buildRefactoringOpportunities(evidence);
+  evidence.refactoring_campaigns = buildRefactoringCampaigns(evidence);
 
   return { graphIndex, evidence };
 }
@@ -1174,6 +1177,7 @@ function renderSummary({ runId, evidence, findings }) {
 | 重複query形状候補 | ${formatRiskCount(evidence.code_quality?.duplicate_query_shapes ?? [], evidence.code_quality?.risk_summary?.duplicate_query_shapes)} |
 | 責務混在候補 | ${formatRiskCount(evidence.code_quality?.responsibility_hotspots ?? [], evidence.code_quality?.risk_summary?.responsibility_hotspots)} |
 | リファクタリング機会 | ${evidence.refactoring_opportunities?.length ?? 0}件 |
+| リファクタリングcampaign | ${evidence.refactoring_campaigns?.length ?? 0}件 |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
@@ -1478,6 +1482,7 @@ function renderPreFixBriefing(briefing) {
   if (briefing.opportunity) {
     return `修正前ブリーフィング:
 - リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- Campaign: ${briefing.campaign?.id ?? '-'} / rank=${briefing.campaign?.rank ?? '-'}
 - 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
 - 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
 - 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}

@@ -325,6 +325,7 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
   const findingReview = evidence?.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence?.action_candidates) ? evidence.action_candidates : [];
+  const refactoringCampaigns = Array.isArray(evidence?.refactoring_campaigns) ? evidence.refactoring_campaigns : [];
   const tasks = Array.isArray(taskState?.tasks) ? taskState.tasks : [];
   const artifacts = latestRun.artifacts ?? {};
   const scanHeading = architectureProfile.app_type === 'static_site' ? '静的サイト診断' : '共通スキャン';
@@ -389,6 +390,7 @@ ${renderStoryApiBoundary(apiBoundary)}
 | XSS risk hits | ${formatRiskCount(staticSite.xss_risk_hits?.length ?? 0, staticSite.risk_summary?.xss_risk_hits)} |
 | external resources | ${staticSite.external_resources?.length ?? 0} |
 | non static files | ${staticSite.non_static_files?.length ?? 0} |
+| refactoring campaigns | ${refactoringCampaigns.length} |
 
 ## 検出事項
 
@@ -545,6 +547,7 @@ function renderPreFixBriefing(briefing) {
   if (briefing.opportunity) {
     return `修正前ブリーフィング:
 - リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- Campaign: ${briefing.campaign?.id ?? '-'} / rank=${briefing.campaign?.rank ?? '-'}
 - 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
 - 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
 - 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
