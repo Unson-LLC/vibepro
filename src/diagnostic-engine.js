@@ -737,7 +737,11 @@ function hasProviderSignatureHelper(routes, codeSignals) {
 
 function getWebhookProviders(routes) {
   return routes
-    .map((route) => /\/api\/webhooks\/([^/]+)/.exec(route.route_path)?.[1])
+    .map((route) => {
+      return /\/api\/webhooks\/([^/]+)/.exec(route.route_path)?.[1]
+        ?? /\/api\/([^/]+)\/webhook(?:s)?(?:\/|$)/.exec(route.route_path)?.[1]
+        ?? /\/webhook(?:s)?\/([^/]+)/.exec(route.route_path)?.[1];
+    })
     .filter(Boolean);
 }
 

@@ -81,6 +81,7 @@ async function classifyProtection({ repoRoot, file, routePath, classification, m
   if (classification === 'webhook' && await hasImportedWebhookSignatureHelperReference({ repoRoot, file, code })) {
     evidence.push('webhook_signature_check');
     evidence.push('imported_signature_helper');
+    evidence.push('imported_webhook_signature_helper');
   }
   if (middleware.matchers.some((matcher) => matcherExcludesApi(matcher))) {
     evidence.push('middleware_excludes_api');
@@ -284,15 +285,19 @@ async function hasImportedWebhookSignatureHelperReferenceRecursive({ repoRoot, f
   if (depth >= 4) return false;
   const imports = extractLocalImports(code);
   for (const item of imports) {
-    if (!item.specifiers.some((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code))) {
-      continue;
-    }
+    const calledSpecifiers = item.specifiers.filter((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code));
+    if (calledSpecifiers.length === 0) continue;
+
     const importedModule = await readImportedModule(repoRoot, file, item.source);
     if (!importedModule.content) continue;
     if (visited.has(importedModule.file)) continue;
     visited.add(importedModule.file);
 
     const importedCode = stripComments(importedModule.content);
+    if (calledSpecifiers.some((name) => isLikelyWebhookSignatureHelperName(name))
+      && hasWebhookSignatureVerificationSignal(importedCode)) {
+      return true;
+    }
     if (hasWebhookSignatureCheck(importedCode)) return true;
     if (await hasImportedWebhookSignatureHelperReferenceRecursive({
       repoRoot,
@@ -332,6 +337,16 @@ async function hasImportedAuthHelperReferenceRecursive({ repoRoot, file, code, v
     }
   }
   return false;
+}
+
+function isLikelyWebhookSignatureHelperName(name) {
+  return /\b(verify|validate|authenticate|authorize)[A-Za-z0-9_$]*(Webhook|Signature)[A-Za-z0-9_$]*\b/i.test(name)
+    || /\b(Webhook|Signature)[A-Za-z0-9_$]*(verify|validate|authenticate|authorize)[A-Za-z0-9_$]*\b/i.test(name);
+}
+
+function hasWebhookSignatureVerificationSignal(content) {
+  return /\b(validateRequest|validateRequestWithBody|verifySignature|webhooks\.(verify|unwrap)|constructEvent|Webhook\s*\(|timingSafeEqual|safeSignatureEquals)\b/i.test(content)
+    || /\b(x-twilio-signature|stripe-signature|svix-signature|OPENAI_WEBHOOK_SECRET|TWILIO_AUTH_TOKEN|WEBHOOK[A-Z0-9_]*(TOKEN|SECRET|AUTH))\b/i.test(content);
 }
 
 function extractLocalImports(content) {
