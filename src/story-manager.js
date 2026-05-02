@@ -489,7 +489,12 @@ function formatGraphCommunities(graphContext) {
   if (communities.length === 0) return '-';
   return communities
     .slice(0, 3)
-    .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
+    .map((community) => {
+      const scope = (community.route_count ?? 0) > 0
+        ? `route: ${community.route_count}`
+        : `file: ${community.file_count ?? 0}`;
+      return `${community.id}(${scope}, node: ${community.node_count}, edge: ${community.edge_count})`;
+    })
     .join(', ');
 }
 

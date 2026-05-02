@@ -2102,6 +2102,7 @@ export async function GET(request) {
   await mkdir(path.join(repo, 'src', 'app', 'api', 'queue', 'status'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'queue', 'status', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
   await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'db.ts'), 'export const prisma = {};\n');
   await writeFile(path.join(repo, 'src', 'lib', 'queue.ts'), `
 export function requireQueueAuth(request) {
   return request.headers.get('authorization');
@@ -2172,13 +2173,18 @@ export function middleware() {}
       { id: 'queue-handler', label: 'handleQueue()', source_file: 'src/app/api/queue/status/route.ts', community: 7 },
       { id: 'queue-service', label: 'QueueService', source_file: 'src/lib/queue.ts', community: 7 },
       { id: 'debug-route', label: 'debug route', source_file: 'src/app/api/debug-env/route.ts', community: 9 },
-      { id: 'webhook-route', label: 'stripe webhook', source_file: 'src/app/api/webhooks/stripe/route.ts', community: 10 }
+      { id: 'webhook-route', label: 'stripe webhook', source_file: 'src/app/api/webhooks/stripe/route.ts', community: 10 },
+      { id: 'company-alpha-service', label: 'listActiveCompaniesAlpha()', source_file: 'src/lib/services/company-alpha.ts', community: 11 },
+      { id: 'company-beta-service', label: 'listActiveCompaniesBeta()', source_file: 'src/lib/services/company-beta.ts', community: 11 },
+      { id: 'company-repository', label: 'prisma.company repository', source_file: 'src/lib/db.ts', community: 11 }
     ],
     links: [
       { source: 'queue-route', target: 'queue-handler', confidence: 'EXTRACTED', relation: 'contains' },
       { source: 'queue-handler', target: 'queue-service', confidence: 'EXTRACTED', relation: 'calls' },
       { source: 'debug-route', target: 'queue-service', confidence: 'INFERRED', relation: 'calls' },
-      { source: 'webhook-route', target: 'queue-service', confidence: 'INFERRED', relation: 'calls' }
+      { source: 'webhook-route', target: 'queue-service', confidence: 'INFERRED', relation: 'calls' },
+      { source: 'company-alpha-service', target: 'company-repository', confidence: 'EXTRACTED', relation: 'queries' },
+      { source: 'company-beta-service', target: 'company-repository', confidence: 'EXTRACTED', relation: 'queries' }
     ]
   }));
   await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
@@ -2245,6 +2251,10 @@ export function middleware() {}
   assert.equal(dryOpportunity.target_files.includes('src/lib/services/company-beta.ts'), true);
   assert.match(dryOpportunity.story_blueprint.title, /重複query形状/);
   assert.equal(dryOpportunity.story_blueprint.acceptance_criteria.some((item) => item.includes('VibePro診断')), true);
+  assert.equal(dryOpportunity.graph_context.matched_file_count, 2);
+  assert.equal(dryOpportunity.graph_context.related_files.includes('src/lib/db.ts'), true);
+  assert.equal(dryOpportunity.graph_context.affected_communities[0].id, 11);
+  assert.equal(dryOpportunity.graph_context.affected_communities[0].file_count, 2);
   const archOpportunity = evidence.refactoring_opportunities.find((opportunity) => opportunity.finding_id === 'VP-ARCH-001');
   assert.equal(archOpportunity.refactoring_intent, 'responsibility_split');
   assert.equal(archOpportunity.target_files.includes('src/lib/services/mixed-workflow.ts'), true);
@@ -2307,6 +2317,9 @@ export function middleware() {}
   assert.equal(tasks.tasks[6].target_files.includes('src/lib/services/company-alpha.ts'), true);
   assert.equal(tasks.tasks[6].pre_fix_briefing.opportunity.refactoring_intent, 'query_policy');
   assert.equal(tasks.tasks[6].pre_fix_briefing.campaign.id, dryCampaign.id);
+  assert.equal(tasks.tasks[6].graph_context.matched_file_count, 2);
+  assert.equal(tasks.tasks[6].read_first_files.some((item) => item.file === 'src/lib/db.ts'), true);
+  assert.equal(tasks.tasks[6].pre_fix_briefing.investigation_scope.related_files.includes('src/lib/db.ts'), true);
   assert.equal(tasks.tasks[6].recommended_strategy.id, 'extract-shared-boundary');
   assert.equal(tasks.tasks[7].source_id, 'VP-ACTION-ARCH-001');
   assert.equal(tasks.tasks[7].pre_fix_briefing.opportunity.refactoring_intent, 'responsibility_split');
@@ -2359,6 +2372,12 @@ export function middleware() {}
   assert.equal(dryAction.refactoring_campaign_id, dryCampaign.id);
   assert.equal(dryAction.target_files.includes('src/lib/services/company-beta.ts'), true);
   assert.equal(dryAction.story_blueprint.refactoring_intent, 'query_policy');
+  assert.equal(dryAction.graph_context.matched_file_count, 2);
+  assert.equal(dryAction.graph_context.related_files.includes('src/lib/db.ts'), true);
+  assert.equal(dryAction.graph_context.hub_nodes.some((node) => node.id === 'company-repository'), true);
+  assert.equal(dryAction.implementation_plan.read_first_files.some((item) => item.file === 'src/lib/db.ts'), true);
+  assert.equal(dryAction.implementation_plan.pre_fix_briefing.graph_context.impact_score > 0, true);
+  assert.equal(dryAction.implementation_plan.pre_fix_briefing.investigation_scope.cross_community, false);
   assert.equal(dryAction.implementation_plan.pre_fix_briefing.opportunity.id, dryOpportunity.id);
   const archAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-ARCH-001');
   assert.equal(archAction.finding_id, 'VP-ARCH-001');
@@ -2412,6 +2431,7 @@ export function middleware() {}
   assert.match(summary, /suggested implementation_gap/);
   assert.match(summary, /方針A/);
   assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
+  assert.match(summary, /11\(file: 2, node: 2, edge: 2\)/);
   const riskRegister = await readFile(path.join(runDir, 'risk-register.md'), 'utf8');
   assert.match(riskRegister, /## API境界の保護状態/);
   assert.match(riskRegister, /## 診断レビュー分類/);
@@ -2474,9 +2494,11 @@ export function middleware() {}
   assert.equal(importState.signals.refactoring_opportunities.length, 2);
   assert.equal(importState.signals.refactoring_opportunities[0].rank > 0, true);
   assert.equal(importState.signals.refactoring_opportunities[0].story_blueprint.source_finding_id, 'VP-DRY-001');
+  assert.equal(importState.signals.refactoring_opportunities.find((opportunity) => opportunity.id === dryOpportunity.id).graph_context.matched_file_count, 2);
   assert.equal(importState.signals.refactoring_campaigns.length, 2);
   assert.equal(importState.signals.refactoring_delta.status, 'no_baseline');
   assert.equal(importState.signals.refactoring_campaigns.some((campaign) => campaign.opportunity_ids.includes(dryOpportunity.id)), true);
+  assert.equal(importState.signals.refactoring_campaigns.find((campaign) => campaign.opportunity_ids.includes(dryOpportunity.id)).graph_context.related_files.includes('src/lib/db.ts'), true);
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
   assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
@@ -2495,6 +2517,8 @@ export function middleware() {}
   assert.equal(importedDryAction.refactoring_campaign_id, dryCampaign.id);
   assert.equal(importedDryAction.story_blueprint.refactoring_intent, 'query_policy');
   assert.equal(importedDryAction.target_files.includes('src/lib/services/company-alpha.ts'), true);
+  assert.equal(importedDryAction.graph_context.matched_file_count, 2);
+  assert.equal(importedDryAction.implementation_plan.read_first_files.some((item) => item.file === 'src/lib/db.ts'), true);
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').graph_context.impact_score > 0, true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(

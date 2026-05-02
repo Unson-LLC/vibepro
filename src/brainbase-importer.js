@@ -202,6 +202,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         priority: opportunity.priority,
         suggested_abstraction: opportunity.suggested_abstraction ?? null,
         evidence_refs: opportunity.evidence_refs ?? {},
+        graph_context: opportunity.graph_context ?? emptyGraphContext(),
         story_blueprint: opportunity.story_blueprint ?? null
       })),
       refactoring_campaigns: refactoringCampaigns.map((campaign) => ({
@@ -220,6 +221,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         recommended_first_opportunity_id: campaign.recommended_first_opportunity_id ?? null,
         expected_diagnostic_delta: campaign.expected_diagnostic_delta ?? {},
         priority_reasons: campaign.priority_reasons ?? [],
+        graph_context: campaign.graph_context ?? emptyGraphContext(),
         story_blueprint: campaign.story_blueprint ?? null
       })),
       refactoring_delta: refactoringDelta,
@@ -406,7 +408,12 @@ function formatGraphCommunities(graphContext) {
   if (communities.length === 0) return '-';
   return communities
     .slice(0, 3)
-    .map((community) => `${community.id}(route: ${community.route_count}, node: ${community.node_count}, edge: ${community.edge_count})`)
+    .map((community) => {
+      const scope = (community.route_count ?? 0) > 0
+        ? `route: ${community.route_count}`
+        : `file: ${community.file_count ?? 0}`;
+      return `${community.id}(${scope}, node: ${community.node_count}, edge: ${community.edge_count})`;
+    })
     .join(', ');
 }
 

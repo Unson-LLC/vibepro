@@ -684,6 +684,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `refactoring_opportunities[].score`
 - `refactoring_opportunities[].priority_reasons`
 - `refactoring_opportunities[].suggested_abstraction`
+- `refactoring_opportunities[].graph_context`
 - `refactoring_opportunities[].story_blueprint`
 - `refactoring_delta`
 - `refactoring_delta.status`
@@ -701,6 +702,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `refactoring_campaigns[].opportunity_ids`
 - `refactoring_campaigns[].recommended_first_opportunity_id`
 - `refactoring_campaigns[].expected_diagnostic_delta`
+- `refactoring_campaigns[].graph_context`
 - `refactoring_campaigns[].story_blueprint`
 - `architecture_profile.system_type`
 - `architecture_profile.app_type`
@@ -746,13 +748,18 @@ API route保護判定:
 - 検出事項
 - ゲート結果
 
-`graph_context` は graphify の関係情報をAPI境界診断へ接続するための要約であり、生のedge一覧は持たない。
+`graph_context` は graphify の関係情報をAPI境界診断とリファクタリング候補へ接続するための要約であり、生のedge一覧は持たない。API routeではroute単位、リファクタリング候補では対象ファイル単位で一致nodeと周辺nodeを要約する。
 
 - `matched_route_count`: API route と graphify node が一致したroute数
+- `target_file_count`: graphify照合対象になったファイル数
+- `matched_file_count`: 対象ファイルと graphify node が一致したファイル数
+- `matched_files[]`: graphify node と一致した対象ファイル
+- `unmatched_files[]`: graphify node が見つからなかった対象ファイル
 - `matched_node_count`: 一致したgraphify node数
 - `affected_communities[]`: 影響communityの要約
 - `affected_communities[].id`
 - `affected_communities[].route_count`
+- `affected_communities[].file_count`
 - `affected_communities[].node_count`
 - `affected_communities[].edge_count`
 - `hub_nodes[]`: 関連edge上で次数が高い代表node
@@ -761,8 +768,11 @@ API route保護判定:
 - `hub_nodes[].source_file`
 - `hub_nodes[].community`
 - `hub_nodes[].degree`
+- `related_files[]`: 対象ファイルと接続する周辺nodeのsource file。リファクタリングのread-first候補に使う。
 - `related_edge_count`: 一致nodeに接続するedge数
 - `impact_score`: graph全体のedge数に対する関連edge比率。0から1の数値。
+- `community_span`: 対象が跨るcommunity数
+- `cross_community`: 複数communityに跨る場合はtrue
 
 `implementation_plan` は graphify の影響範囲を使って、次に読むファイルと修正手順を提案する非破壊の計画である。初期実装では `execution_policy=proposal_only` と `mutates_repository=false` を維持し、対象リポジトリのコードは変更しない。
 
@@ -777,6 +787,7 @@ API route保護判定:
 - `steps[].detail`
 - `acceptance_criteria[]`: 完了判定
 - `pre_fix_briefing`: 修正前に読むべき現状整理。raw source code は保存しない
+- `pre_fix_briefing.investigation_scope`: リファクタリング候補で、対象ファイル、Graphify一致ファイル、周辺ファイル、hub、community跨ぎの有無、調査指針を記録する
 - `pre_fix_briefing.current_boundary`: middleware matcher、API除外有無、route保護状態
 - `pre_fix_briefing.auth_helpers[]`: action種別に合う認証・署名検証・環境制限候補のfile、category、関数名、参照シグナル
 - `pre_fix_briefing.auth_helpers[].category`: `auth`, `signature`, `environment`
@@ -1017,6 +1028,7 @@ API route保護判定:
 - `diagnose` は `code-quality` が適用される場合、認可判定前のbulk DB read候補、重複したPrisma query形状、責務が混在する大きなruntime file候補を `evidence.code_quality` に記録する。
 - `diagnose` は重複query形状や責務混在候補を、repo固有辞書ではなく検出証拠から `evidence.refactoring_opportunities[]` に正規化し、score/rank/priority_reasons を付ける。
 - `diagnose` は上位のリファクタリング機会を intent/domain で `evidence.refactoring_campaigns[]` に束ね、DRY候補は `VP-ACTION-DRY-001`、責務分離候補は `VP-ACTION-ARCH-001` としてStory blueprint付きの次アクションにできる。
+- `diagnose` はGraphifyのファイル単位contextを `refactoring_opportunities[]`、`refactoring_campaigns[]`、リファクタリング系 `action_candidates[]` に付与し、実装前に読むべき周辺ファイル、hub、community跨ぎを `implementation_plan.read_first_files[]` と `pre_fix_briefing.investigation_scope` に反映する。
 - `diagnose` は同一Storyの前回runと今回runの `refactoring_opportunities[]` を比較し、repo固有辞書ではなく `source`、query `signature`、hotspot `file` をキーに `evidence.refactoring_delta` を生成する。
 - `diagnose` はdelta後に残っている `refactoring_opportunities[]` を rank/score/count で並べ、次にStory化すべき候補として `evidence.refactoring_delta.top_remaining[]` に出す。
 - `task list` で選択中Storyの生成タスクを一覧できる。
