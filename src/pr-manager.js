@@ -61,7 +61,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     currentBranch: git.current_branch,
     suggestedBranch,
     commits: git.commits,
-    scope
+    scope,
+    storyId: story.story_id,
+    taskId: taskContext?.task?.id ?? options.taskId ?? null,
+    groupId: taskContext?.group?.id ?? options.groupId ?? null
   });
   const prBody = renderPrBody({
     story,
@@ -155,11 +158,19 @@ export async function createPullRequest(repoRoot, options = {}) {
   // Memory rule: テスト/検証証跡なしの PR を機械的に防ぐ（CLAUDE.md 0.6 Deterministic Guards）
   const gateDag = preparation.pr_context?.gate_dag;
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
-    const needsCount = gateDag.summary?.needs_evidence_count ?? 0;
+    const unresolved = collectUnresolvedRequiredGates(gateDag);
     throw new Error(
       `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
-      `(needs_evidence_count=${needsCount}). ` +
-      `Provide evidence for required gates (Unit/Integration/E2E) or pass --allow-needs-verification to bypass.`
+      `(needs_evidence_count=${gateDag.summary?.needs_evidence_count ?? 0}). ` +
+      `Unresolved gates: ${formatUnresolvedGateList(unresolved)}. ` +
+      `Provide evidence for required gates (Unit/Integration/E2E) or pass ` +
+      `--allow-needs-verification --verification-waiver <reason> to bypass with an auditable reason.`
+    );
+  }
+  if (gateDag && gateDag.overall_status !== 'ready_for_review' && options.allowNeedsVerification && !options.verificationWaiver) {
+    throw new Error(
+      `Pre-create gate waiver missing: --allow-needs-verification requires ` +
+      `--verification-waiver <reason> so the PR records why unresolved gates are acceptable.`
     );
   }
 
@@ -168,6 +179,11 @@ export async function createPullRequest(repoRoot, options = {}) {
   const title = options.title ?? buildPrTitle(preparation);
   const bodyFile = prepareResult.artifacts.pr_body;
   const warnings = [];
+  const gateOverride = buildGateOverride(gateDag, options);
+  if (gateOverride?.allowed) {
+    warnings.push(`Gate override used: ${gateOverride.reason}`);
+    warnings.push(`Unresolved gates: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`);
+  }
   if (headBranch === baseBranch) {
     warnings.push(`head branch equals base branch: ${headBranch}`);
     if (!options.dryRun) {
@@ -197,6 +213,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     workspace_initialized: preparation.workspace.initialized,
     story: preparation.story,
     task_context: preparation.task_context,
+    gate_dag: gateDag ?? null,
+    gate_override: gateOverride,
     base: baseBranch,
     head: headBranch,
     title,
@@ -276,6 +294,8 @@ export function renderPrCreateSummary(result) {
 | Title | ${execution.title} |
 | Dry run | ${execution.dry_run} |
 | PR URL | ${execution.pr_url ?? '-'} |
+| Gate | ${execution.gate_dag?.overall_status ?? '-'} |
+| Gate override | ${execution.gate_override?.allowed ? 'used' : 'none'} |
 
 ## Commands
 
@@ -449,10 +469,20 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, commits, maxReviewa
   };
 }
 
-function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, scope }) {
+function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, scope, storyId, taskId = null, groupId = null }) {
+  const prCreateCommand = [
+    'npx vibepro pr create .',
+    storyId ? `--story-id ${storyId}` : null,
+    taskId ? `--task ${taskId}` : null,
+    groupId ? `--group ${groupId}` : null,
+    `--base ${baseRef}`
+  ].filter(Boolean).join(' ');
+
   if (scope.recommended_strategy === 'current_branch_pr') {
     return [
-      `gh pr create --base ${stripRemote(baseRef)} --head ${currentBranch ?? '<current-branch>'} --fill`
+      currentBranch
+        ? `${prCreateCommand} --head ${currentBranch}`
+        : prCreateCommand
     ];
   }
 
@@ -462,7 +492,7 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
     commits.length === 1
       ? `git cherry-pick ${firstCommit}`
       : `git cherry-pick <story-related-commit-sha>`,
-    `gh pr create --base ${stripRemote(baseRef)} --head ${suggestedBranch} --body-file .vibepro/pr/<story-id>/pr-body.md`
+    `${prCreateCommand} --head ${suggestedBranch}`
   ];
 }
 
@@ -572,6 +602,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     ? '- 特記事項なし'
     : prContext.risks.map((item) => `- ${item}`).join('\n');
   const gateSummary = renderPrGateSummary(prContext.gate_dag);
+  const gateEnforcement = renderPrGateEnforcement(prContext.gate_dag);
   const taskSection = renderPrTaskSection(taskContext);
   const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
 
@@ -612,6 +643,9 @@ ${verification}
 
 ## Gate DAG
 ${gateSummary}
+
+## Gate Enforcement
+${gateEnforcement}
 
 ${refactoringDeltaSection}
 
@@ -1126,6 +1160,56 @@ function renderPrGateSummary(gateDag) {
   return lines.join('\n');
 }
 
+function renderPrGateEnforcement(gateDag) {
+  const unresolved = collectUnresolvedRequiredGates(gateDag);
+  if (unresolved.length === 0) {
+    return [
+      '- status: ready_for_review',
+      '- completion: Gate証跡が揃っているため、VibePro上は完了扱い可能'
+    ].join('\n');
+  }
+
+  return [
+    '- status: blocked_by_gate',
+    '- completion: 未完了Gateが残っているため、このPRはVibePro上の完了扱い不可',
+    `- unresolved: ${formatUnresolvedGateList(unresolved)}`,
+    '- required action: 対象Gateの証跡を追加するか、`vibepro pr create --allow-needs-verification --verification-waiver <reason>` で理由付きwaiverを記録する',
+    '- guardrail: 生の `gh pr create` はVibePro Gateを通らないため、PR作成経路として使わない'
+  ].join('\n');
+}
+
+function collectUnresolvedRequiredGates(gateDag) {
+  return (gateDag?.nodes ?? [])
+    .filter((node) => node.type === 'verification_gate')
+    .filter((node) => node.required)
+    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup'].includes(node.status))
+    .map((node) => ({
+      id: node.id,
+      label: node.label,
+      status: node.status,
+      command: node.command
+    }));
+}
+
+function formatUnresolvedGateList(gates) {
+  if (!gates || gates.length === 0) return 'none';
+  return gates
+    .map((gate) => `${gate.label ?? gate.id}:${gate.status}`)
+    .join(', ');
+}
+
+function buildGateOverride(gateDag, options) {
+  if (!gateDag || gateDag.overall_status === 'ready_for_review') return null;
+  if (!options.allowNeedsVerification) return null;
+  return {
+    allowed: true,
+    reason: options.verificationWaiver,
+    unresolved_gates: collectUnresolvedRequiredGates(gateDag),
+    overall_status: gateDag.overall_status,
+    recorded_at: new Date().toISOString()
+  };
+}
+
 async function assertStrictTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {
   const baseDir = groupId
     ? path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', taskId, 'groups', groupId)
@@ -1355,7 +1439,20 @@ ${results}
 ## Warnings
 
 ${warnings}
+
+## Gate Override
+
+${renderGateOverrideReport(execution.gate_override)}
 `;
+}
+
+function renderGateOverrideReport(gateOverride) {
+  if (!gateOverride?.allowed) return '- なし';
+  return [
+    `- reason: ${gateOverride.reason}`,
+    `- overall: ${gateOverride.overall_status}`,
+    `- unresolved: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`
+  ].join('\n');
 }
 
 function renderGateDagReport(gateDag) {
