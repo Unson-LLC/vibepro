@@ -599,11 +599,18 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.match(output, /# Story Plan/);
   assert.match(output, /Story実行計画/);
   assert.match(output, /まず確認する質問/);
-  assert.match(output, /仕様\/Story根拠を復元する/);
+  assert.match(output, /Source Consistency/);
+  assert.match(output, /Spec正本を復元する/);
   const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
   assert.equal(plan.priority_stories.length <= 2, true);
+  assert.equal(plan.summary.source_consistency_status, 'needs_recovery');
+  assert.equal(plan.source_consistency.needs_recovery_story_count > 0, true);
   assert.equal(plan.questions.some((question) => question.field === 'missing_spec'), true);
+  assert.equal(plan.questions.some((question) => question.field === 'source_spec_recovery'), true);
   assert.equal(plan.task_candidates.some((task) => task.id.endsWith('spec-recovery')), true);
+  const specRecoveryCandidate = plan.task_candidates.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery');
+  assert.equal(specRecoveryCandidate.source_recovery.sources.spec.status, 'needs_recovery');
+  assert.equal(specRecoveryCandidate.recovery_drafts.some((draft) => draft.kind === 'spec'), true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.story_plan, '.vibepro/stories/story-plan.json');
   assert.equal(manifest.artifacts.story_plan_markdown, '.vibepro/stories/story-plan.md');
@@ -618,12 +625,37 @@ test('story plan creates execution priorities from the generated story map', asy
   const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'tasks.json'));
   assert.equal(tasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
   assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_type, 'story_plan_candidate');
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_recovery.status, 'needs_recovery');
   const listResult = await runCli(['task', 'list', repo, '--id', 'story-product-hotel-detail-actions']);
   assert.equal(listResult.exitCode, 0);
   assert.equal(listResult.result.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
   const briefResult = await runCli(['task', 'brief', repo, '--id', 'story-product-hotel-detail-actions', '--task', 'story-product-hotel-detail-actions-spec-recovery']);
   assert.equal(briefResult.exitCode, 0);
   assert.equal(briefResult.result.artifacts.markdown, '.vibepro/stories/story-product-hotel-detail-actions/tasks/story-product-hotel-detail-actions-spec-recovery/briefing.md');
+  const briefing = await readFile(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'story-product-hotel-detail-actions-spec-recovery', 'briefing.md'), 'utf8');
+  assert.match(briefing, /Source Recovery/);
+  assert.match(briefing, /suggested_path: docs\/specs\/product-hotel-detail-actions.md/);
+});
+
+test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'auth', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'auth', 'session', 'route.ts'), 'export function GET() { return Response.json({ ok: true }); }\n');
+  await runCli(['story', 'derive', repo]);
+
+  let json = '';
+  const result = await runCli(['story', 'plan', repo, '--limit', '8', '--json'], {
+    stdout: { write: (text) => { json += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const plan = JSON.parse(json);
+  assert.equal(plan.task_candidates.some((task) => task.id.endsWith('architecture-recovery')), true);
+  const task = plan.task_candidates.find((item) => item.id.endsWith('architecture-recovery'));
+  assert.equal(task.source_recovery.sources.architecture.status, 'needs_decision');
+  assert.equal(task.recovery_drafts.some((draft) => draft.kind === 'architecture'), true);
+  assert.equal(task.recovery_drafts[0].suggested_path.startsWith('docs/architecture/ADR-'), true);
 });
 
 test('story derive creates stories for code surfaces that have no spec documents', async () => {

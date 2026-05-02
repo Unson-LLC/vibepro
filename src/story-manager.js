@@ -601,6 +601,7 @@ function buildStoryExecutionPlan(catalog, options = {}) {
     ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story))
   ];
   const warnings = catalog.source?.warnings ?? [];
+  const sourceConsistency = summarizeSourceConsistency(scoredStories);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -616,8 +617,11 @@ function buildStoryExecutionPlan(catalog, options = {}) {
       coverage_ratio: catalog.coverage?.totals?.coverage_ratio ?? null,
       uncovered_files: catalog.coverage?.totals?.uncovered_files ?? 0,
       open_question_count: Array.isArray(catalog.open_questions) ? catalog.open_questions.length : 0,
-      warning_count: warnings.length
+      warning_count: warnings.length,
+      source_consistency_status: sourceConsistency.status,
+      source_recovery_story_count: sourceConsistency.needs_recovery_story_count
     },
+    source_consistency: sourceConsistency,
     questions,
     priority_stories: priorityStories,
     task_candidates: taskCandidates,
@@ -649,6 +653,8 @@ function scoreStoryForExecution(story, catalog) {
   if (sourceType === 'code_surface') add(8, 'コードから逆算したStoryで人間レビューが必要');
   if (story.view === 'business' && story.category === 'product') add(5, 'ユーザー価値と事業価値に近いproduct Story');
   score += workflowStageWeight(meaning.workflow_position?.stage);
+  const sourceRecovery = buildSourceRecoveryForStory(story);
+  if (sourceRecovery.status !== 'aligned') add(18, 'Story/Spec/Architecture正本の復元または確認が必要');
 
   return {
     story_id: story.story_id,
@@ -664,9 +670,174 @@ function scoreStoryForExecution(story, catalog) {
     target_files: resolveStoryPlanTargetFiles(story),
     read_first_files: resolveStoryPlanReadFirstFiles(story),
     acceptance_focus: story.derived?.story_definition?.acceptance_focus ?? [],
+    source_recovery: sourceRecovery,
     reasons,
     next_command: `vibepro story select . --id ${story.story_id}`
   };
+}
+
+function buildSourceRecoveryForStory(story) {
+  const meaning = story.derived?.meaning ?? {};
+  const docs = meaning.evidence_by_type?.docs_evidence ?? [];
+  const codeFiles = [
+    ...(meaning.evidence_by_type?.code_evidence ?? []),
+    ...(story.source?.paths ?? []).filter((item) => typeof item === 'string' && item.startsWith('src/'))
+  ];
+  const definition = story.derived?.story_definition ?? {};
+  const openQuestions = story.derived?.open_questions ?? [];
+  const storyDocs = docs.filter(isStoryDocPath);
+  const specDocs = docs.filter(isSpecDocPath);
+  const architectureDocs = docs.filter(isArchitectureDocPath);
+  const hasMissingSpec = openQuestions.some((item) => item.field === 'missing_spec');
+  const boundarySignals = inferArchitectureBoundarySignals(story, codeFiles);
+  const storyStatus = storyDocs.length > 0 ? 'present' : story.source?.type === 'code_surface' ? 'derived' : 'implicit';
+  const specStatus = specDocs.length > 0
+    ? 'present'
+    : storyDocs.length > 0 && !hasMissingSpec
+      ? 'story_backed'
+      : 'needs_recovery';
+  const architectureStatus = architectureDocs.length > 0 || story.category === 'architecture'
+    ? 'present'
+    : boundarySignals.length > 0
+      ? 'needs_decision'
+      : 'implicit';
+  const status = specStatus === 'needs_recovery' || architectureStatus === 'needs_decision'
+    ? 'needs_recovery'
+    : storyStatus === 'derived'
+      ? 'needs_review'
+      : 'aligned';
+  const drafts = [];
+  if (specStatus === 'needs_recovery') {
+    drafts.push(buildSpecRecoveryDraft({ story, definition, codeFiles }));
+  }
+  if (architectureStatus === 'needs_decision') {
+    drafts.push(buildArchitectureRecoveryDraft({ story, codeFiles, boundarySignals }));
+  }
+  return {
+    status,
+    sources: {
+      story: {
+        status: storyStatus,
+        refs: storyDocs
+      },
+      spec: {
+        status: specStatus,
+        refs: specDocs
+      },
+      architecture: {
+        status: architectureStatus,
+        refs: architectureDocs,
+        signals: boundarySignals
+      }
+    },
+    drafts,
+    checks: [
+      'Storyのwho/problem/outcomeが人間レビュー済みか',
+      'Specの受け入れ基準がコード分岐と対応しているか',
+      'Architecture/ADRの境界判断がGraphと変更範囲に対応しているか'
+    ]
+  };
+}
+
+function buildSpecRecoveryDraft({ story, definition, codeFiles }) {
+  return {
+    kind: 'spec',
+    status: 'draft_from_code',
+    suggested_path: `docs/specs/${slugifyStoryId(story.story_id)}.md`,
+    title: `${story.title} Spec`,
+    must_include: [
+      `対象ユーザー: ${definition.who ?? 'TODO'}`,
+      `課題: ${definition.problem ?? 'TODO'}`,
+      `成功状態: ${definition.outcome ?? definition.want ?? 'TODO'}`,
+      ...(definition.acceptance_focus ?? []).map((item) => `受け入れ基準: ${item}`)
+    ].slice(0, 12),
+    evidence_files: codeFiles.slice(0, 8),
+    unresolved_questions: [
+      'このSpecをStory正本から確定できるか',
+      'コードから逆算した条件のうち、意図ではなく偶然の実装はどれか',
+      '成功指標または運用上の完了条件は何か'
+    ]
+  };
+}
+
+function buildArchitectureRecoveryDraft({ story, codeFiles, boundarySignals }) {
+  return {
+    kind: 'architecture',
+    status: 'decision_needed',
+    suggested_path: `docs/architecture/ADR-${slugifyStoryId(story.story_id)}.md`,
+    title: `${story.title} Architecture Decision`,
+    decision_needed: [
+      '既存Architecture内の変更として扱えるか、新しいADRが必要か',
+      `境界シグナル: ${boundarySignals.join(', ')}`,
+      '変更対象の責務境界、データ境界、外部連携境界をどこに置くか'
+    ],
+    evidence_files: codeFiles.slice(0, 8),
+    unresolved_questions: [
+      'Graph上のhubやcommunityと変更範囲が一致しているか',
+      'API/DB/Auth/外部連携の境界をどの層で守るか',
+      'ADR不要とする場合、その理由をStory frontmatterに残せるか'
+    ]
+  };
+}
+
+function summarizeSourceConsistency(stories) {
+  const items = stories.map((story) => ({
+    story_id: story.story_id,
+    title: story.title,
+    status: story.source_recovery?.status ?? 'unknown',
+    story_status: story.source_recovery?.sources?.story?.status ?? 'unknown',
+    spec_status: story.source_recovery?.sources?.spec?.status ?? 'unknown',
+    architecture_status: story.source_recovery?.sources?.architecture?.status ?? 'unknown'
+  }));
+  const counts = countBy(items, (item) => item.status);
+  const needsRecovery = items.filter((item) => item.status === 'needs_recovery');
+  return {
+    schema_version: '0.1.0',
+    status: needsRecovery.length > 0 ? 'needs_recovery' : counts.needs_review > 0 ? 'needs_review' : 'aligned',
+    counts,
+    needs_recovery_story_count: needsRecovery.length,
+    top_needs_recovery: needsRecovery.slice(0, 10),
+    stories: items
+  };
+}
+
+function inferArchitectureBoundarySignals(story, codeFiles) {
+  const text = [story.story_id, story.title, ...codeFiles].join(' ').toLowerCase();
+  const signals = [];
+  if (/api|route\.ts|webhook/.test(text)) signals.push('api_boundary');
+  if (/auth|session|user|identity|middleware/.test(text)) signals.push('auth_boundary');
+  if (/billing|stripe|subscription|payment|premium/.test(text)) signals.push('billing_boundary');
+  if (/prisma|database|db|repository|model/.test(text)) signals.push('data_boundary');
+  if (/webhook|stripe|resend|external|oauth/.test(text)) signals.push('external_integration_boundary');
+  return [...new Set(signals)];
+}
+
+function isStoryDocPath(filePath) {
+  return /^docs\/management\/stories\//.test(filePath);
+}
+
+function isSpecDocPath(filePath) {
+  return /^docs\/(specs|requirements|features|user_stories|shadow-call)\//.test(filePath);
+}
+
+function isArchitectureDocPath(filePath) {
+  return /^docs\/(architecture|management\/architecture)\//.test(filePath);
+}
+
+function slugifyStoryId(storyId) {
+  return String(storyId ?? 'story')
+    .replace(/^story-/, '')
+    .replace(/[^A-Za-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+}
+
+function countBy(items, keyFn) {
+  return items.reduce((acc, item) => {
+    const key = keyFn(item);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
 }
 
 function resolveStoryPlanTargetFiles(story) {
@@ -727,13 +898,37 @@ function buildPlanQuestions(catalog, priorityStories) {
     question: item.question,
     priority: priorityIds.has(item.story_id) ? questionPriority(item.field) : 'medium'
   }));
-  return [...warningQuestions, ...coverageQuestions, ...questions]
+  const sourceQuestions = priorityStories.flatMap((story) => buildSourceRecoveryQuestions(story));
+  return [...warningQuestions, ...coverageQuestions, ...sourceQuestions, ...questions]
     .sort((a, b) => questionPriorityRank(a.priority) - questionPriorityRank(b.priority) || String(a.story_id ?? '').localeCompare(String(b.story_id ?? '')))
     .slice(0, 20);
 }
 
+function buildSourceRecoveryQuestions(story) {
+  const recovery = story.source_recovery;
+  if (!recovery || recovery.status === 'aligned') return [];
+  const questions = [];
+  if (recovery.sources?.spec?.status === 'needs_recovery') {
+    questions.push({
+      story_id: story.story_id,
+      field: 'source_spec_recovery',
+      question: 'Spec正本が不足している。コードから逆算した受け入れ基準をSpecとして確定するか、既存Specへリンクする必要がある。',
+      priority: 'high'
+    });
+  }
+  if (recovery.sources?.architecture?.status === 'needs_decision') {
+    questions.push({
+      story_id: story.story_id,
+      field: 'source_architecture_recovery',
+      question: `Architecture/ADR判断が未確定。${recovery.sources.architecture.signals.join(', ')} の境界判断をStoryまたはADRに残す必要がある。`,
+      priority: 'high'
+    });
+  }
+  return questions;
+}
+
 function questionPriority(field) {
-  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence') return 'high';
+  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence' || field === 'source_spec_recovery' || field === 'source_architecture_recovery') return 'high';
   if (field === 'business_metric' || field === 'business_context') return 'medium';
   return 'low';
 }
@@ -745,7 +940,7 @@ function questionPriorityRank(priority) {
 function buildTaskCandidatesForStory(story) {
   const fields = new Set((story.reasons ?? []).flatMap((reason) => reason.includes('仕様/Story') ? ['missing_spec'] : []));
   const candidates = [];
-  const push = (suffix, title, purpose, acceptance) => {
+  const push = (suffix, title, purpose, acceptance, extra = {}) => {
     candidates.push({
       id: `${story.story_id}-${suffix}`,
       story_id: story.story_id,
@@ -761,16 +956,31 @@ function buildTaskCandidatesForStory(story) {
         reason: purpose
       },
       implementation_steps: buildPlanCandidateSteps(suffix),
-      suggested_command: `vibepro story select . --id ${story.story_id}`
+      suggested_command: `vibepro story select . --id ${story.story_id}`,
+      ...extra
     });
   };
 
-  if (fields.has('missing_spec') || story.source_type === 'code_surface') {
-    push('spec-recovery', '仕様/Story根拠を復元する', 'コードから逆算したStoryの根拠文書、対象ユーザー、成功条件を確認する', [
+  if (fields.has('missing_spec') || story.source_type === 'code_surface' || story.source_recovery?.sources?.spec?.status === 'needs_recovery') {
+    push('spec-recovery', 'Spec正本を復元する', 'コードから逆算したStoryの受け入れ基準をSpec正本として確定し、Storyとリンクする', [
       'missing_spec が残る理由を確認済みにする',
       'Storyのwho/problem/outcomeが人間レビュー済みになる',
+      'Spec草案の受け入れ基準がコード分岐と対応する',
       '必要なら仕様書またはNocoDB Storyを作る'
-    ]);
+    ], {
+      source_recovery: story.source_recovery,
+      recovery_drafts: (story.source_recovery?.drafts ?? []).filter((draft) => draft.kind === 'spec')
+    });
+  }
+  if (story.source_recovery?.sources?.architecture?.status === 'needs_decision') {
+    push('architecture-recovery', 'Architecture/ADR正本を復元する', 'Graphと変更対象コードから境界判断を復元し、ADR要否と理由をStoryまたはArchitecture文書に残す', [
+      'Architecture/ADRが必要か、不要なら理由が明示されている',
+      'API/Auth/Billing/Data/外部連携の境界判断がGraph文脈と対応する',
+      'Requirement GateでArchitecture SourceまたはADR不要理由を追跡できる'
+    ], {
+      source_recovery: story.source_recovery,
+      recovery_drafts: (story.source_recovery?.drafts ?? []).filter((draft) => draft.kind === 'architecture')
+    });
   }
   if (story.category === 'security' || story.source_type === 'diagnosis') {
     push('risk-fix', '診断Findingを修正候補に落とす', 'security/diagnosis Storyの検出事項を修正可能なタスクに分解する', [
@@ -829,8 +1039,15 @@ function buildPlanCandidateSteps(suffix) {
   const common = {
     'spec-recovery': [
       { id: 'review-meaning', title: 'Story意味づけを確認する', detail: 'derived.meaning の価値仮説、根拠、反証、不足情報を確認する' },
-      { id: 'recover-source', title: '根拠を復元する', detail: '仕様書、NocoDB Story、議事録、コード根拠のどれを正本にするか決める' },
-      { id: 'update-story', title: 'Storyを更新する', detail: 'who/problem/outcome/acceptanceを人間レビュー済みの形にする' }
+      { id: 'recover-spec', title: 'Spec草案を復元する', detail: 'source_recovery.drafts のspec草案を読み、コード由来条件と人間が確定すべき条件を分ける' },
+      { id: 'link-source', title: 'StoryとSpecをリンクする', detail: 'Story frontmatterまたは本文にSpec参照を残し、Requirement Gateが正本として読めるようにする' },
+      { id: 'rerun-gate', title: 'Requirement Gateを再実行する', detail: 'vibepro pr prepare または diagnose でSpec Sourceが拾われるか確認する' }
+    ],
+    'architecture-recovery': [
+      { id: 'read-graph', title: 'Graph文脈を読む', detail: '対象ファイルのhub/community/依存方向を確認し、境界変更か局所変更かを判定する' },
+      { id: 'decide-adr', title: 'ADR要否を決める', detail: 'API/Auth/Billing/Data/外部連携の境界判断が必要ならArchitecture/ADR草案に落とす' },
+      { id: 'record-decision', title: '判断を正本へ記録する', detail: 'ADR文書を作るか、ADR不要理由をStory frontmatterへ明示する' },
+      { id: 'rerun-gate', title: 'Requirement Gateを再実行する', detail: 'Architecture SourceまたはADR不要理由がPR本文とGate DAGに出るか確認する' }
     ],
     'risk-fix': [
       { id: 'read-finding', title: '診断Findingを読む', detail: '対象Finding、影響範囲、既存保護境界を確認する' },
@@ -876,6 +1093,7 @@ export function renderStoryPlan(plan) {
 - Stage: ${story.workflow_stage}
 - Confidence: ${story.confidence}
 - Source: ${story.source_type}
+- Source Consistency: ${story.source_recovery?.status ?? '-'} (story=${story.source_recovery?.sources?.story?.status ?? '-'}, spec=${story.source_recovery?.sources?.spec?.status ?? '-'}, architecture=${story.source_recovery?.sources?.architecture?.status ?? '-'})
 - 理由:
 ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
 - 次コマンド: \`${story.next_command}\``).join('\n\n');
@@ -896,6 +1114,8 @@ ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${tas
 | 未カバー | ${plan.summary.uncovered_files} |
 | 警告 | ${plan.summary.warning_count ?? 0} |
 | 未決事項 | ${plan.summary.open_question_count} |
+| Source Consistency | ${plan.summary.source_consistency_status ?? '-'} |
+| 正本復元対象Story | ${plan.summary.source_recovery_story_count ?? 0} |
 
 ## まず確認する質問
 
