@@ -2784,6 +2784,81 @@ test('modular-web preset coveragePatterns absorb broader paths into active stori
     `expected coverage_ratio = 1, got ${catalog.coverage.totals.coverage_ratio}`);
 });
 
+test('brainbase preset emits semantically separated active stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'brainbase' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  await mkdir(path.join(repo, 'cli'), { recursive: true });
+  await mkdir(path.join(repo, 'mcp', 'brainbase', 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'mcp', 'jibble', 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'mesh', 'crypto'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'services', 'session-runtime'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'services'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'core'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'app'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'domain', 'nocodb-task'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'terminal'), { recursive: true });
+
+  await writeFile(path.join(repo, 'cli', 'main.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'mcp', 'brainbase', 'src', 'server.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'mcp', 'jibble', 'src', 'index.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'server', 'mesh', 'crypto', 'cipher.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'server', 'services', 'session-runtime', 'state.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'server', 'services', 'terminal-transport-service.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'server', 'services', 'github-service.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'core', 'event-bus.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'app', 'home.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'domain', 'nocodb-task', 'service.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'terminal', 'view.js'), 'export {}\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'cli', source_file: 'cli/main.js', label: 'cli' },
+      { id: 'mcp_bb', source_file: 'mcp/brainbase/src/server.js', label: 'mcp-bb' },
+      { id: 'mcp_jb', source_file: 'mcp/jibble/src/index.js', label: 'mcp-jb' },
+      { id: 'mesh', source_file: 'server/mesh/crypto/cipher.js', label: 'mesh' },
+      { id: 'sess', source_file: 'server/services/session-runtime/state.js', label: 'sess' },
+      { id: 'term', source_file: 'server/services/terminal-transport-service.js', label: 'term' },
+      { id: 'gh', source_file: 'server/services/github-service.js', label: 'gh' },
+      { id: 'core', source_file: 'public/modules/core/event-bus.js', label: 'core' },
+      { id: 'portal', source_file: 'public/modules/app/home.js', label: 'portal' },
+      { id: 'nocodb', source_file: 'public/modules/domain/nocodb-task/service.js', label: 'nocodb' },
+      { id: 'tview', source_file: 'public/modules/terminal/view.js', label: 'tview' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const ids = catalog.stories.map((s) => s.story_id);
+
+  const expected = [
+    'story-code-cli-tooling',
+    'story-code-mcp-ssot',
+    'story-code-mcp-external',
+    'story-code-portal-views',
+    'story-code-domain-data',
+    'story-code-mana-detection',
+    'story-code-terminal-runtime',
+    'story-code-mesh-network',
+    'story-code-external-integrations',
+    'story-code-core-platform'
+  ];
+  for (const id of expected) {
+    assert.ok(ids.includes(id), `expected ${id} in active stories, got ${JSON.stringify(ids)}`);
+  }
+
+  assert.equal(catalog.coverage.totals.uncovered_files, 0,
+    `expected uncovered = 0 with brainbase preset, got ${catalog.coverage.totals.uncovered_files}`);
+});
+
 test('story derive surfaces domain subdirectories as separate candidates', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

@@ -606,10 +606,140 @@ const SALES_TAILOR_PRESET = {
   workflowPositions: SALES_TAILOR_WORKFLOW_POSITIONS
 };
 
+const BRAINBASE_CODE_SURFACE_SIGNATURES = [
+  {
+    id: 'story-code-cli-tooling',
+    title: 'CLIツールと配布インターフェースを整える',
+    category: 'product',
+    patterns: [/^cli\//]
+  },
+  {
+    id: 'story-code-mcp-ssot',
+    title: 'MCP経由のSSOT入出力を整える',
+    category: 'architecture',
+    patterns: [/^mcp\/brainbase\//]
+  },
+  {
+    id: 'story-code-mcp-external',
+    title: 'MCP経由の外部連携を整理する',
+    category: 'product',
+    patterns: [/^mcp\/(?!brainbase\/)[^/]+\//]
+  },
+  {
+    id: 'story-code-portal-views',
+    title: '役割別ポータル・ビューを成立させる',
+    category: 'product',
+    patterns: [
+      /^public\/modules\/(app|settings|auth|device|setup|ui)\//,
+      /^public\/modules\/(dashboard|session-list-renderer|session-handlers|session-manager|session-ui-state|session-indicators|task-manager|state|state-api|project-mapping)\.[jt]sx?$/,
+      /^server\/routes\/brainbase\//,
+      /^server\/routes\/vibepro\//,
+      /^server\/routes\/(setup|state|inbox|schedule|tasks|timeline|wiki|info-ssot)\.js$/,
+      /^server\/controllers\/(brainbase-action|info-ssot|inbox|schedule|task|timeline|wiki|setup|state)-controller\.js$/
+    ]
+  },
+  {
+    id: 'story-code-domain-data',
+    title: 'SSOTドメインデータと取り込みパイプラインを整える',
+    category: 'product',
+    patterns: [
+      /^public\/modules\/domain\/(nocodb-issue|nocodb-task)\//,
+      /^server\/services\/(info-ssot|nocodb|conversation-linker)/,
+      /^server\/controllers\/(info-ssot|nocodb)-controller\.js$/,
+      /^server\/routes\/(nocodb|info-ssot)\.js$/,
+      /^lib\/(config-parser|inbox-parser|kiro-schedule-parser|kiro-task-parser|schedule-parser|task-parser|task-directory-scanner|task-file-manager)\.js$/
+    ]
+  },
+  {
+    id: 'story-code-mana-detection',
+    title: 'mana 観測対象とセッション健全性を整える',
+    category: 'product',
+    patterns: [
+      /^server\/services\/(session-runtime|session-core)\//,
+      /^server\/services\/(session-activity-ws|session-health-monitor|learning-service|learning-health)/,
+      /^server\/controllers\/session\//,
+      /^server\/routes\/(sessions|learning|usage)\.js$/,
+      /^public\/modules\/domain\/timeline\//,
+      /^lib\/timeline-storage\.js$/
+    ]
+  },
+  {
+    id: 'story-code-terminal-runtime',
+    title: 'terminal/tmux 実行基盤を整える',
+    category: 'architecture',
+    patterns: [
+      /^server\/services\/(terminal-|tmux-|cli-pattern-detector|pasted-text-detector|terminal-output-parser)/,
+      /^server\/routes\/terminal\.js$/,
+      /^public\/modules\/terminal\//,
+      /^public\/modules\/xterm-/
+    ]
+  },
+  {
+    id: 'story-code-mesh-network',
+    title: 'mesh 通信境界とセキュリティを整える',
+    category: 'architecture',
+    patterns: [
+      /^server\/mesh\//,
+      /^server\/routes\/mesh\.js$/
+    ]
+  },
+  {
+    id: 'story-code-external-integrations',
+    title: '外部システム連携を整理する',
+    category: 'product',
+    patterns: [
+      /^server\/services\/(github-service|google-calendar-service|honcho-service|wiki-service)\.js$/,
+      /^server\/routes\/wiki\.js$/,
+      /^server\/controllers\/wiki-controller\.js$/,
+      /^lib\/(calendar-event-converter|google-calendar-utils)\.js$/
+    ]
+  },
+  {
+    id: 'story-code-core-platform',
+    title: 'コア基盤の責務分離（EventBus / DI / Store）',
+    category: 'architecture',
+    patterns: [
+      /^public\/modules\/core\//,
+      /^public\/modules\/(components|utils)\//,
+      /^public\/modules\/(confirm-modal|file-opener|file-preview-config|file-upload|iframe-contextmenu|mobile-keyboard|toast|ui-helpers)/,
+      /^server\/(middleware|lib|utils|bootstrap)\//,
+      /^lib\/(atomic-mutex|runtime-paths|sqlite-store|state-store)\.js$/,
+      /^server\/services\/(auth-service|config-service|env-sanitizer|storage-service|system-service|token-usage-service|worktree-service|archive-finalizer-service|create-session-services)\.js$/
+    ]
+  },
+  {
+    id: 'story-code-health-ops',
+    title: '稼働状態と運用確認を見える化する',
+    category: 'ops',
+    patterns: [
+      /^server\/controllers\/(health|misc)-controller\.js$/,
+      /^server\/routes\/(health|misc)\.js$/
+    ]
+  }
+];
+
+const BRAINBASE_COVERAGE_PATTERNS = Object.fromEntries(
+  BRAINBASE_CODE_SURFACE_SIGNATURES.map((sig) => [sig.id, sig.patterns])
+);
+
+const BRAINBASE_PRESET = {
+  id: 'brainbase',
+  isCodePath: (filePath) =>
+    typeof filePath === 'string' &&
+    /^(cli\/|lib\/|mcp\/|public\/modules\/|server\/|src\/)/.test(filePath),
+  storyRelevantPatterns: MODULAR_WEB_RELEVANT_PATTERNS,
+  classifyRole: classifyModularWeb,
+  codeSurfaceSignatures: BRAINBASE_CODE_SURFACE_SIGNATURES,
+  productSurfaceSignals: [],
+  documentSignalGroups: [...COMMON_DOCUMENT_SIGNAL_GROUPS],
+  coveragePatterns: BRAINBASE_COVERAGE_PATTERNS
+};
+
 const PRESETS = {
   'next-app': NEXT_APP_PRESET,
   'modular-web': MODULAR_WEB_PRESET,
-  salestailor: SALES_TAILOR_PRESET
+  salestailor: SALES_TAILOR_PRESET,
+  brainbase: BRAINBASE_PRESET
 };
 
 export const DEFAULT_PRESET_ID = 'next-app';
