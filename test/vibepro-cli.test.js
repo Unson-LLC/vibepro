@@ -964,6 +964,19 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
         status: 'improved'
       }],
       top_regressions: [],
+      top_remaining: [{
+        key: 'duplicate_query_shape:t_UserInfo.update|top:Id,data,where|where:Id|select:-|order:-',
+        title: 'user identity updateの重複query形状を共通化する',
+        refactoring_intent: 'identity_resolution',
+        after: {
+          target_file_count: 3,
+          occurrence_count: 5,
+          rank: 2,
+          score_total: 10
+        },
+        target_files_after: ['src/features/accounts/actions.ts', 'src/features/groups/actions.ts', 'src/features/profile/actions.ts'],
+        status: 'unchanged'
+      }],
       items: []
     }
   }, null, 2));
@@ -1008,6 +1021,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /## Gate DAG/);
   assert.match(prBody, /## VibePro refactoring delta/);
   assert.match(prBody, /5ファイル \/ 8出現 -> 3ファイル \/ 5出現/);
+  assert.match(prBody, /### 次の候補/);
+  assert.match(prBody, /3ファイル \/ 5出現/);
   assert.match(prBody, /## Task \/ Handoff/);
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /Task\/HandoffがPR本文に入る/);
@@ -1016,6 +1031,7 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(prepare.pr_context.verification_commands.length, 2);
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
   assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
+  assert.equal(prepare.pr_context.refactoring_delta.top_remaining.length, 1);
   assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
   assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
@@ -2532,6 +2548,18 @@ export async function listActiveCompaniesBeta() {
   });
 }
 `);
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-gamma.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesGamma() {
+  return prisma.company.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  });
+}
+`);
   await runCli(['init', repo, '--story-id', 'story-refactoring-delta', '--title', '差分計測']);
   const graphDir = path.join(repo, 'graphify-out');
   await mkdir(graphDir, { recursive: true });
@@ -2560,18 +2588,22 @@ export async function listActiveCompaniesBeta() {
   const afterRunDir = path.join(repo, '.vibepro', 'diagnostics', 'run-after');
   const afterEvidence = await readJson(path.join(afterRunDir, 'evidence.json'));
   assert.equal(afterEvidence.refactoring_delta.status, 'available');
-  const removed = afterEvidence.refactoring_delta.top_improvements.find((item) => item.status === 'removed');
-  assert.match(removed.key, /company\.findMany/);
-  assert.equal(removed.before.target_file_count, 2);
-  assert.equal(removed.before.occurrence_count, 2);
-  assert.equal(removed.after.target_file_count, 0);
-  assert.equal(removed.after.occurrence_count, 0);
+  const improved = afterEvidence.refactoring_delta.top_improvements.find((item) => item.status === 'improved');
+  assert.match(improved.key, /company\.findMany/);
+  assert.equal(improved.before.target_file_count, 3);
+  assert.equal(improved.before.occurrence_count, 3);
+  assert.equal(improved.after.target_file_count, 2);
+  assert.equal(improved.after.occurrence_count, 2);
+  assert.equal(afterEvidence.refactoring_delta.top_remaining[0].key, improved.key);
+  assert.equal(afterEvidence.refactoring_delta.top_remaining[0].after.target_file_count, 2);
   const deltaReport = await readFile(path.join(afterRunDir, 'refactoring-delta.md'), 'utf8');
+  assert.match(deltaReport, /## 残っている上位候補/);
+  assert.match(deltaReport, /3ファイル \/ 3出現/);
   assert.match(deltaReport, /2ファイル \/ 2出現/);
-  assert.match(deltaReport, /0ファイル \/ 0出現/);
   const summary = await readFile(path.join(afterRunDir, 'summary.md'), 'utf8');
   assert.match(summary, /## リファクタリング差分/);
-  assert.match(summary, /2ファイル \/ 2出現 -> 0ファイル \/ 0出現/);
+  assert.match(summary, /3ファイル \/ 3出現 -> 2ファイル \/ 2出現/);
+  assert.match(summary, /次の候補/);
 });
 
 test('brainbase creates an import state from the latest VibePro manifest run', async () => {

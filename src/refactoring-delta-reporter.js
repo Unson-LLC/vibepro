@@ -12,7 +12,8 @@ export function buildRefactoringDelta({ beforeEvidence = null, afterEvidence = n
       summary: emptySummary(),
       items: [],
       top_improvements: [],
-      top_regressions: []
+      top_regressions: [],
+      top_remaining: buildRemainingItems([], afterEvidence)
     };
   }
 
@@ -27,7 +28,8 @@ export function buildRefactoringDelta({ beforeEvidence = null, afterEvidence = n
       summary: emptySummary(),
       items: [],
       top_improvements: [],
-      top_regressions: []
+      top_regressions: [],
+      top_remaining: []
     };
   }
 
@@ -48,7 +50,8 @@ export function buildRefactoringDelta({ beforeEvidence = null, afterEvidence = n
     top_regressions: items
       .filter((item) => ['regressed', 'new'].includes(item.status))
       .sort(compareRegressions)
-      .slice(0, 10)
+      .slice(0, 10),
+    top_remaining: buildRemainingItems(items)
   };
 }
 
@@ -76,6 +79,7 @@ export function renderRefactoringDelta(delta, { limit = 10 } = {}) {
 
   const improvements = delta.top_improvements?.slice(0, limit) ?? [];
   const regressions = delta.top_regressions?.slice(0, limit) ?? [];
+  const remaining = delta.top_remaining?.slice(0, limit) ?? [];
   return `# VibePro リファクタリング差分
 
 | 項目 | 内容 |
@@ -97,6 +101,10 @@ ${renderDeltaTable(improvements)}
 ## 悪化・新規
 
 ${renderDeltaTable(regressions)}
+
+## 残っている上位候補
+
+${renderRemainingTable(remaining)}
 `;
 }
 
@@ -117,6 +125,13 @@ export function renderRefactoringDeltaCompact(delta, { limit = 5 } = {}) {
   } else {
     for (const item of improvements) {
       lines.push(`- ${formatDeltaItemLabel(item)}: ${formatCounts(item.before)} -> ${formatCounts(item.after)} (${formatStatus(item.status)})`);
+    }
+  }
+  const remaining = delta.top_remaining?.slice(0, 3) ?? [];
+  if (remaining.length > 0) {
+    lines.push('- 次の候補:');
+    for (const item of remaining) {
+      lines.push(`  - ${formatDeltaItemLabel(item)}: ${formatCounts(item.after)} (${item.refactoring_intent ?? '-'})`);
     }
   }
   return lines.join('\n');
@@ -212,6 +227,7 @@ function buildDeltaItem(key, before, after) {
     target_file_delta: targetFileDelta,
     target_files_removed: targetFilesRemoved,
     target_files_added: targetFilesAdded,
+    target_files_after: targetFilesAfter,
     status: classifyStatus({ before, after, occurrenceDelta, targetFileDelta })
   };
 }
@@ -258,6 +274,16 @@ function renderDeltaTable(items) {
 ${rows.join('\n')}`;
 }
 
+function renderRemainingTable(items) {
+  if (!Array.isArray(items) || items.length === 0) return '- なし';
+  const rows = items.map((item) => (
+    `| ${escapeTable(formatDeltaItemLabel(item))} | ${item.refactoring_intent ?? '-'} | ${formatCounts(item.after)} | ${item.target_files_after?.slice(0, 6).join('<br>') || '-'} | ${formatStatus(item.status)} |`
+  ));
+  return `| 対象 | Intent | Current | Files | Delta status |
+|------|--------|---------|-------|--------------|
+${rows.join('\n')}`;
+}
+
 function formatDeltaItemLabel(item) {
   const keyTail = item.key.includes(':') ? item.key.slice(item.key.indexOf(':') + 1) : item.key;
   return item.title && item.title !== item.key ? item.title : keyTail;
@@ -280,6 +306,34 @@ function compareImprovements(a, b) {
 
 function compareRegressions(a, b) {
   return regressionMagnitude(b) - regressionMagnitude(a)
+    || a.key.localeCompare(b.key);
+}
+
+function buildRemainingItems(items, afterEvidence = null) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return [...indexOpportunities(afterEvidence?.refactoring_opportunities).values()]
+      .map((item) => ({
+        ...item,
+        after: item.counts,
+        status: 'unchanged',
+        target_files_after: item.target_files
+      }))
+      .sort(compareRemaining)
+      .slice(0, 10);
+  }
+  return items
+    .filter((item) => (item.after?.target_file_count ?? 0) > 0 || (item.after?.occurrence_count ?? 0) > 0)
+    .sort(compareRemaining)
+    .slice(0, 10);
+}
+
+function compareRemaining(a, b) {
+  const aRank = Number.isFinite(a.after?.rank) ? a.after.rank : Number.MAX_SAFE_INTEGER;
+  const bRank = Number.isFinite(b.after?.rank) ? b.after.rank : Number.MAX_SAFE_INTEGER;
+  return aRank - bRank
+    || (b.after?.score_total ?? 0) - (a.after?.score_total ?? 0)
+    || (b.after?.occurrence_count ?? 0) - (a.after?.occurrence_count ?? 0)
+    || (b.after?.target_file_count ?? 0) - (a.after?.target_file_count ?? 0)
     || a.key.localeCompare(b.key);
 }
 

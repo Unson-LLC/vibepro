@@ -665,6 +665,9 @@ function renderPrRefactoringDelta(delta) {
   const regressions = (delta.top_regressions ?? []).slice(0, 3).map((item) => (
     `- ${item.title ?? item.key}: ${formatCounts(item.before)} -> ${formatCounts(item.after)} (${formatPrDeltaStatus(item.status)})`
   ));
+  const remaining = (delta.top_remaining ?? []).slice(0, 5).map((item) => (
+    `- ${item.title ?? item.key}: ${formatCounts(item.after)} (${item.refactoring_intent ?? '-'})`
+  ));
   return `## VibePro refactoring delta
 - before: ${delta.before_run_id ?? '-'}
 - after: ${delta.after_run_id ?? '-'}
@@ -674,7 +677,10 @@ function renderPrRefactoringDelta(delta) {
 ${rows.join('\n') || '- なし'}
 
 ### 悪化・新規
-${regressions.join('\n') || '- なし'}`;
+${regressions.join('\n') || '- なし'}
+
+### 次の候補
+${remaining.join('\n') || '- なし'}`;
 }
 
 function formatPrDeltaStatus(status) {
