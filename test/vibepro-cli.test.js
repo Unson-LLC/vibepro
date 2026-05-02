@@ -3250,6 +3250,45 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
     `default preset must classify src/components/** as 'component', got ${JSON.stringify(roles)}`);
 });
 
+test('pr prepare --strict requires --task option', async () => {
+  const repo = await makeGitRepoWithStory();
+  let stderrOut = '';
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--strict'], {
+    stderr: { write: (text) => { stderrOut += text; } }
+  });
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOut, /Strict mode requires --task/);
+});
+
+test('pr prepare --strict rejects when task artifacts are missing', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-strict', '--title', 'Strict Test', '--view', 'dev', '--period', '2026-W18']);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: init']);
+  await git(repo, ['switch', '-c', 'feature/strict']);
+
+  // task list のみ作成（briefing/plan/handoff は未作成）
+  const taskDir = path.join(repo, '.vibepro', 'stories', 'story-strict', 'tasks');
+  await mkdir(taskDir, { recursive: true });
+  await writeFile(path.join(taskDir, 'tasks.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story: { story_id: 'story-strict' },
+    source_run: { run_id: 'run-1' },
+    tasks: [{ id: 'TASK-S1', title: 'strict task', target_files: ['src/index.js'] }]
+  }));
+
+  let stderrOut = '';
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-S1', '--strict'], {
+    stderr: { write: (text) => { stderrOut += text; } }
+  });
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOut, /Strict mode requires task artifacts/);
+  assert.match(stderrOut, /briefing\.md/);
+});
+
 function jsonResponse(body) {
   return {
     ok: true,
