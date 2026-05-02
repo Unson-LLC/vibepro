@@ -1245,6 +1245,53 @@ export async function getUser() {
   assert.equal(result.routes[0].risk_hints.includes('privileged_route_unprotected'), false);
 });
 
+test('api boundary follows imported debug access gate helpers for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'debug', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'debug', 'session', 'route.ts'), `
+import { validateDebugAccess } from '@/lib/api/debug-access';
+
+export async function GET() {
+  const access = validateDebugAccess(await auth());
+  if (access !== 'allowed') {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'api'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'api', 'debug-access.ts'), `
+export function validateDebugAccess(session, env = process.env) {
+  if (env.NODE_ENV === 'production' || env.DEBUG_API_ENABLED !== 'true') {
+    return 'disabled';
+  }
+  if (!session?.user?.id) {
+    return 'unauthorized';
+  }
+  if (Number(session.user.userType) !== 9) {
+    return 'forbidden';
+  }
+  return 'allowed';
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: ['src/app/api/debug/session/route.ts']
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  assert.equal(result.routes[0].protection.status, 'protected_by_route');
+  assert.equal(result.routes[0].protection.evidence.includes('debug_access_gate'), true);
+  assert.equal(result.routes[0].protection.evidence.includes('imported_debug_gate_helper'), true);
+  assert.equal(result.routes[0].risk_hints.includes('debug_route_exposed'), false);
+});
+
 test('api boundary detects webhook signature checks for Svix and token based routes', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', 'api', 'webhooks', 'resend'), { recursive: true });

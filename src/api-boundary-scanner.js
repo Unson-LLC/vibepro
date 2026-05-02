@@ -68,6 +68,13 @@ async function classifyProtection({ repoRoot, file, routePath, classification, m
     evidence.push('route_auth_reference');
     evidence.push('imported_auth_helper');
   }
+  if (classification === 'debug' && hasDebugAccessGate(code)) {
+    evidence.push('debug_access_gate');
+  }
+  if (classification === 'debug' && await hasImportedDebugAccessGateHelperReference({ repoRoot, file, code })) {
+    evidence.push('debug_access_gate');
+    evidence.push('imported_debug_gate_helper');
+  }
   if (classification === 'webhook' && hasWebhookSignatureCheck(code)) {
     evidence.push('webhook_signature_check');
   }
@@ -101,6 +108,7 @@ function collectRiskHints({ classification, protection, content }) {
 
 function resolveProtectionStatus(evidence, middleware) {
   if (evidence.includes('webhook_signature_check')) return 'protected_by_route';
+  if (evidence.includes('debug_access_gate')) return 'protected_by_route';
   if (evidence.includes('route_auth_reference')) return 'protected_by_route';
   if (evidence.includes('middleware_matcher')) return 'protected_by_middleware';
   if (evidence.includes('middleware_excludes_api')) return 'excluded_by_middleware';
@@ -194,6 +202,18 @@ function hasRouteAuthReference(content) {
     || hasAuthorizationHeaderGuard(content);
 }
 
+function hasDebugAccessGate(content) {
+  const hasDebugEnvGate = /\bprocess\.env\.[A-Z0-9_]*(DEBUG|TEST|INTERNAL)[A-Z0-9_]*(ENABLED|TOKEN|SECRET|KEY)?\b/i.test(content)
+    || /\b(NODE_ENV|VERCEL_ENV)\b[\s\S]{0,80}\bproduction\b/i.test(content);
+  if (!hasDebugEnvGate) return false;
+
+  const hasDenyPath = /\b(status\s*:\s*(401|403|404)|notFound\s*\(|Unauthorized|Forbidden|disabled|forbidden|unauthorized)\b/i.test(content);
+  const hasCallerBoundary = /\b(auth|getServerSession|currentUser|getSession|validateSession)\s*\(/i.test(content)
+    || /\bsession\?\.user\b|\bsession\.user\b|\buserType\b|\brole\b|\badmin\b/i.test(content)
+    || /\bNODE_ENV\b|\bVERCEL_ENV\b/i.test(content);
+  return hasDenyPath && hasCallerBoundary;
+}
+
 function hasAuthorizationHeaderGuard(content) {
   const readsAuthorizationHeader = /\.headers\.get\s*\(\s*['"`]authorization['"`]\s*\)/i.test(content)
     || /\bheaders\s*\(\s*\)\.get\s*\(\s*['"`]authorization['"`]\s*\)/i.test(content);
@@ -221,6 +241,43 @@ async function hasImportedWebhookSignatureHelperReference({ repoRoot, file, code
     visited: new Set([normalizeRelativeFile(file)]),
     depth: 0
   });
+}
+
+async function hasImportedDebugAccessGateHelperReference({ repoRoot, file, code }) {
+  return hasImportedDebugAccessGateHelperReferenceRecursive({
+    repoRoot,
+    file,
+    code,
+    visited: new Set([normalizeRelativeFile(file)]),
+    depth: 0
+  });
+}
+
+async function hasImportedDebugAccessGateHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {
+  if (depth >= 4) return false;
+  const imports = extractLocalImports(code);
+  for (const item of imports) {
+    if (!item.specifiers.some((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code))) {
+      continue;
+    }
+    const importedModule = await readImportedModule(repoRoot, file, item.source);
+    if (!importedModule.content) continue;
+    if (visited.has(importedModule.file)) continue;
+    visited.add(importedModule.file);
+
+    const importedCode = stripComments(importedModule.content);
+    if (hasDebugAccessGate(importedCode)) return true;
+    if (await hasImportedDebugAccessGateHelperReferenceRecursive({
+      repoRoot,
+      file: importedModule.file,
+      code: importedCode,
+      visited,
+      depth: depth + 1
+    })) {
+      return true;
+    }
+  }
+  return false;
 }
 
 async function hasImportedWebhookSignatureHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {

@@ -651,6 +651,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `static_site.xss_risk_hits[].source_kind`
 - `static_site.xss_risk_hits[].confidence`
 - `static_site.xss_risk_hits[].gate_effect`
+- API 境界診断では、debug/test/internal route に対して production/debug env gate と拒否パスがあるroute/helperを `debug_access_gate` として記録し、import helper 越しの場合は `imported_debug_gate_helper` も記録する。
 - `static_site.risk_summary`
 - `static_site.external_resources`
 - `static_site.non_static_files`
