@@ -2747,6 +2747,43 @@ test('story derive emits story_candidates clustering uncovered files', async () 
   assert.match(map, /candidate-auth-lib-auth/);
 });
 
+test('modular-web preset coveragePatterns absorb broader paths into active stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { preset: 'modular-web' };
+  await writeFile(configPath, JSON.stringify(config, null, 2));
+
+  await mkdir(path.join(repo, 'cli', 'sub'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'modules', 'utils'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'controllers'), { recursive: true });
+  await writeFile(path.join(repo, 'cli', 'main.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'cli', 'sub', 'extra.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'public', 'modules', 'utils', 'helper.js'), 'export {}\n');
+  await writeFile(path.join(repo, 'server', 'controllers', 'foo-controller.js'), 'export {}\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'cli_main', source_file: 'cli/main.js', label: 'main' },
+      { id: 'cli_extra', source_file: 'cli/sub/extra.js', label: 'extra' },
+      { id: 'utils_helper', source_file: 'public/modules/utils/helper.js', label: 'helper' },
+      { id: 'foo_ctrl', source_file: 'server/controllers/foo-controller.js', label: 'foo' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.coverage.totals.uncovered_files, 0,
+    `expected coveragePatterns to absorb all 4 files, got ${catalog.coverage.totals.uncovered_files} uncovered: ${JSON.stringify(catalog.coverage.uncovered.map((u) => u.path))}`);
+  assert.equal(catalog.coverage.totals.coverage_ratio, 1,
+    `expected coverage_ratio = 1, got ${catalog.coverage.totals.coverage_ratio}`);
+});
+
 test('story derive surfaces domain subdirectories as separate candidates', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
