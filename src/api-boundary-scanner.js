@@ -71,12 +71,17 @@ async function classifyProtection({ repoRoot, file, routePath, classification, m
   if (classification === 'webhook' && hasWebhookSignatureCheck(code)) {
     evidence.push('webhook_signature_check');
   }
+  if (classification === 'webhook' && await hasImportedWebhookSignatureHelperReference({ repoRoot, file, code })) {
+    evidence.push('webhook_signature_check');
+    evidence.push('imported_signature_helper');
+  }
   if (middleware.matchers.some((matcher) => matcherExcludesApi(matcher))) {
     evidence.push('middleware_excludes_api');
   }
+  const uniqueEvidence = [...new Set(evidence)];
   return {
-    status: resolveProtectionStatus(evidence, middleware),
-    evidence
+    status: resolveProtectionStatus(uniqueEvidence, middleware),
+    evidence: uniqueEvidence
   };
 }
 
@@ -88,7 +93,7 @@ function collectRiskHints({ classification, protection, content }) {
   if (classification === 'debug' && !isProtectedStatus(protection.status)) {
     hints.push('debug_route_exposed');
   }
-  if (classification === 'webhook' && !hasWebhookSignatureCheck(stripComments(content))) {
+  if (classification === 'webhook' && !protection.evidence.includes('webhook_signature_check')) {
     hints.push('webhook_signature_not_detected');
   }
   return hints;
@@ -172,8 +177,14 @@ function hasWebhookSignatureCheck(content) {
     || /\bheaders\s*\(\s*\)\.get\s*\([^)]*(webhookHeaderName|authorization|token|signature)[^)]*\)/i.test(content);
   const hasWebhookTokenSecret = /\b(expectedWebhookToken|webhookAuthToken|webhookSecret|WEBHOOK[A-Z0-9_]*(TOKEN|SECRET|AUTH)|resolve[A-Za-z0-9_]*Webhook[A-Za-z0-9_]*Token)\b/.test(content);
   const verifiesWebhookToken = /\b(verify[A-Za-z0-9_]*(Webhook|Signature|Token)[A-Za-z0-9_]*|timingSafeEqual|safeSignatureEquals)\s*\(/.test(content);
+  const hasProviderWebhookVerification = /\b(validateRequest|validateRequestWithBody|constructEvent|unwrap|verifySignature|verifyWebhook|verifyWebhookSignature|verify[A-Za-z0-9_]*Webhook[A-Za-z0-9_]*)\s*\(/i.test(content)
+    || /\bwebhooks\.(constructEvent|unwrap|verifySignature|verify)\s*\(/i.test(content);
+  const hasSignatureCrypto = /\b(createHmac|timingSafeEqual)\s*\(/i.test(content);
+  const hasSignatureSecret = /\bprocess\.env\.[A-Z0-9_]*(WEBHOOK|SIGNATURE|SECRET|TOKEN|AUTH)[A-Z0-9_]*\b/i.test(content)
+    || /\b[A-Za-z0-9_]*(webhook|signature)[A-Za-z0-9_]*(Secret|Token|Key)\b/i.test(content);
   return (readsSignatureHeader && verifiesSignature)
-    || (readsWebhookTokenHeader && hasWebhookTokenSecret && verifiesWebhookToken);
+    || (readsWebhookTokenHeader && hasWebhookTokenSecret && verifiesWebhookToken)
+    || (hasSignatureSecret && (hasProviderWebhookVerification || hasSignatureCrypto));
 }
 
 function hasRouteAuthReference(content) {
@@ -200,6 +211,43 @@ async function hasImportedAuthHelperReference({ repoRoot, file, code }) {
     visited: new Set([normalizeRelativeFile(file)]),
     depth: 0
   });
+}
+
+async function hasImportedWebhookSignatureHelperReference({ repoRoot, file, code }) {
+  return hasImportedWebhookSignatureHelperReferenceRecursive({
+    repoRoot,
+    file,
+    code,
+    visited: new Set([normalizeRelativeFile(file)]),
+    depth: 0
+  });
+}
+
+async function hasImportedWebhookSignatureHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {
+  if (depth >= 4) return false;
+  const imports = extractLocalImports(code);
+  for (const item of imports) {
+    if (!item.specifiers.some((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code))) {
+      continue;
+    }
+    const importedModule = await readImportedModule(repoRoot, file, item.source);
+    if (!importedModule.content) continue;
+    if (visited.has(importedModule.file)) continue;
+    visited.add(importedModule.file);
+
+    const importedCode = stripComments(importedModule.content);
+    if (hasWebhookSignatureCheck(importedCode)) return true;
+    if (await hasImportedWebhookSignatureHelperReferenceRecursive({
+      repoRoot,
+      file: importedModule.file,
+      code: importedCode,
+      visited,
+      depth: depth + 1
+    })) {
+      return true;
+    }
+  }
+  return false;
 }
 
 async function hasImportedAuthHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {

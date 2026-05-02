@@ -1301,6 +1301,72 @@ export async function POST(request) {
   }
 });
 
+test('api boundary follows imported webhook signature helper references for route protection', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'twilio', 'webhook', 'voice'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'twilio', 'webhook', 'voice', 'route.ts'), `
+import { verifyTwilioFormWebhook } from '@/lib/api/webhook-security';
+
+export async function POST(request) {
+  const formData = await request.formData();
+  const verification = await verifyTwilioFormWebhook(request, formData);
+  if (!verification.ok) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json({ ok: true });
+}
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'openai', 'webhook', 'response'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'openai', 'webhook', 'response', 'route.ts'), `
+import { verifyOpenAIWebhook } from '@/lib/api/webhook-security';
+
+export async function POST(request) {
+  const rawBody = await request.text();
+  const verification = await verifyOpenAIWebhook(request, rawBody);
+  if (!verification.ok) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return Response.json(JSON.parse(rawBody));
+}
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'api'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'api', 'webhook-security.ts'), `
+export async function verifyTwilioFormWebhook(request, formData) {
+  const signature = request.headers.get('x-twilio-signature');
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const isValid = twilio.validateRequest(authToken, signature, request.url, Object.fromEntries(formData.entries()));
+  return isValid ? { ok: true } : { ok: false };
+}
+
+export async function verifyOpenAIWebhook(request, rawBody) {
+  const client = new OpenAI({ webhookSecret: process.env.OPENAI_WEBHOOK_SECRET });
+  await client.webhooks.verifySignature(rawBody, Object.fromEntries(request.headers.entries()));
+  return { ok: true };
+}
+`);
+
+  const result = await scanApiBoundary(repo, {
+    views: {
+      runtime: {
+        entrypoints: [
+          'src/app/api/twilio/webhook/voice/route.ts',
+          'src/app/api/openai/webhook/response/route.ts'
+        ]
+      },
+      security: {
+        auth_boundaries: []
+      }
+    }
+  });
+
+  for (const route of result.routes) {
+    assert.equal(route.protection.status, 'protected_by_route');
+    assert.equal(route.protection.evidence.includes('webhook_signature_check'), true);
+    assert.equal(route.protection.evidence.includes('imported_signature_helper'), true);
+    assert.equal(route.risk_hints.includes('webhook_signature_not_detected'), false);
+  }
+});
+
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

@@ -686,6 +686,7 @@ API route保護判定:
 - route内でセッション取得、認証helper、cookie token確認をしている場合は `protected_by_route` とする
 - route内で `authorization` ヘッダーを読み、`process.env.*API_KEY`、`process.env.*TOKEN`、`process.env.*SECRET`、または `Bearer` と照合する場合も `protected_by_route` とする
 - routeが同一repo内の認証helperをimportし、そのhelper自身またはそのhelperが呼ぶ同一repo内helperにセッション取得や認証シグナルがある場合も `protected_by_route` とする
+- webhook routeが同一repo内の署名検証helperをimportし、そのhelper自身またはそのhelperが呼ぶ同一repo内helperにprovider SDK、HMAC、署名header、webhook secretなどの署名検証シグナルがある場合も `protected_by_route` とする
 - middlewareがAPI全体を除外し、route内保護根拠がない場合は `excluded_by_middleware` とする
 - `action_candidates[].implementation_plan`
 - `findings[].graph_context`
@@ -959,6 +960,7 @@ API route保護判定:
 - `diagnose` で `api-boundary` が適用される場合、`evidence.api_boundary.routes[]` にAPI route分類、保護根拠、risk hintsが記録される。
 - `diagnose` は `authorization` ヘッダーと環境secretを照合するrouteを `protected_by_route` として扱う。
 - `diagnose` はrouteからimportされた認証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある認証シグナルを `protected_by_route` として扱う。
+- `diagnose` はwebhook routeからimportされた署名検証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある署名検証シグナルを `protected_by_route` として扱う。
 - `task list` で選択中Storyの生成タスクを一覧できる。
 - `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
 - `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。
