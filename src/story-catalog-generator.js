@@ -181,11 +181,15 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files, activePreset);
 
-  const stories = dedupeStories([
+  const derivedStories = [
     ...deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
+  ];
+  const stories = dedupeStories([
+    ...derivedStories,
+    ...deriveConfiguredStories(options.config, documentSignals, defaults)
   ]);
   const coverage = buildGraphStoryCoverage(graph, stories, activePreset);
   const openQuestions = collectOpenQuestions(stories);
@@ -456,6 +460,68 @@ function deriveDocumentationStories(fileSet, documentSignals, defaults) {
     ],
     defaults
   })];
+}
+
+function deriveConfiguredStories(config, documentSignals, defaults) {
+  const stories = Array.isArray(config?.brainbase?.stories) ? config.brainbase.stories : [];
+  return stories
+    .filter((story) => story?.story_id && !['archived', 'アーカイブ'].includes(story.status))
+    .filter((story) => !isLikelyObsoleteConfiguredStory(story))
+    .map((story) => buildConfiguredStory(story, documentSignals, defaults));
+}
+
+function buildConfiguredStory(story, documentSignals, defaults) {
+  const docs = documentSignals?._byStoryId?.[story.story_id] ?? [];
+  const category = story.category ?? inferConfiguredStoryCategory(story);
+  const derivedStory = buildDerivedStory({
+    id: story.story_id,
+    title: story.title ?? story.story_id,
+    category,
+    sourceType: 'config_story',
+    paths: docs.map((doc) => doc.path),
+    evidence: docs.map((doc) => doc.path),
+    docs,
+    storyDefinition: docs.find((doc) => doc.story_definition)?.story_definition ?? null,
+    defaults
+  });
+
+  derivedStory.ssot = story.ssot ?? derivedStory.ssot;
+  derivedStory.status = story.status ?? derivedStory.status;
+  derivedStory.horizon = story.horizon ?? derivedStory.horizon;
+  derivedStory.view = story.view ?? derivedStory.view;
+  derivedStory.period = story.period ?? derivedStory.period;
+  derivedStory.started_at = story.started_at ?? derivedStory.started_at;
+  derivedStory.due_at = story.due_at ?? derivedStory.due_at;
+  if (story.period) {
+    derivedStory.derived.open_questions = (derivedStory.derived.open_questions ?? [])
+      .filter((item) => item.field !== 'period');
+    const meaning = derivedStory.derived.meaning ?? {};
+    meaning.evidence_by_type = {
+      ...(meaning.evidence_by_type ?? {}),
+      missing_evidence: (meaning.evidence_by_type?.missing_evidence ?? [])
+        .filter((item) => item.field !== 'period')
+    };
+    meaning.counter_evidence = (meaning.counter_evidence ?? [])
+      .filter((item) => !/period|実行期|計画期間/i.test(item));
+  }
+  derivedStory.derived.config_story = {
+    story_id: story.story_id,
+    ssot: story.ssot ?? null,
+    status: story.status ?? null
+  };
+  return derivedStory;
+}
+
+function inferConfiguredStoryCategory(story) {
+  if (story.view === 'business') return 'product';
+  if (story.view === 'dev') return 'ops';
+  if (/arch|architecture|設計|adr/i.test(story.story_id) || /設計|アーキテクチャ|ADR/i.test(story.title ?? '')) return 'architecture';
+  return 'product';
+}
+
+function isLikelyObsoleteConfiguredStory(story) {
+  if (!/^story-(product|architecture)-/.test(story.story_id)) return false;
+  return /(仕様|要件|REQ-\d+|US-\d+|アーキテクチャ|設計|ガイド|ロードマップ|システムドキュメント|現在の実装|セットアップチェックリスト|インターフェース|テクノロジースタック|シーケンス図|sequence diagram|関係図|バージョン情報|フロー|構造)/i.test(story.title ?? '');
 }
 
 function buildDerivedStory({
@@ -1374,18 +1440,51 @@ function parseStoryDocumentDefinition(content) {
   const body = stripFrontMatter(content);
   const sections = extractMarkdownSections(body);
   const labeled = extractLabeledStoryFields(body);
+  const userStory = extractUserStoryFields(body);
   const sectionValue = (...keys) => firstText(keys.map((key) => sections[key]));
   const acceptanceSection = sectionValue('acceptance', 'completion');
   return {
-    who: labeled.who ?? sectionValue('who'),
-    problem: labeled.problem ?? sectionValue('problem'),
-    want: labeled.want ?? sectionValue('want'),
-    outcome: labeled.outcome ?? sectionValue('outcome'),
-    business_value: labeled.business_value ?? sectionValue('business_value'),
+    who: labeled.who ?? userStory.who ?? sectionValue('who'),
+    problem: labeled.problem ?? sectionValue('problem', 'background'),
+    want: labeled.want ?? userStory.want ?? sectionValue('want'),
+    outcome: labeled.outcome ?? userStory.outcome ?? sectionValue('outcome'),
+    business_value: labeled.business_value ?? userStory.business_value ?? sectionValue('business_value'),
     acceptance_focus: labeled.acceptance_focus?.length > 0
       ? labeled.acceptance_focus
       : extractBulletItems(acceptanceSection)
   };
+}
+
+function extractUserStoryFields(content) {
+  const asA = matchStoryLine(content, /(?:\*\*)?As a(?:\*\*)?\s+(.+)/i);
+  const want = matchStoryLine(content, /(?:\*\*)?I want to(?:\*\*)?\s+(.+)/i);
+  const soThat = matchStoryLine(content, /(?:\*\*)?So that(?:\*\*)?\s+(.+)/i);
+  return {
+    who: asA,
+    want,
+    outcome: soThat,
+    business_value: soThat
+  };
+}
+
+function matchStoryLine(content, pattern) {
+  for (const line of content.split(/\r?\n/)) {
+    const normalized = line
+      .replace(/^\s*[-*]\s*/, '')
+      .replace(/\s{2,}$/, '')
+      .trim();
+    const match = normalized.match(pattern);
+    if (!match) continue;
+    return cleanMarkdownInline(match[1]);
+  }
+  return null;
+}
+
+function cleanMarkdownInline(value) {
+  return value
+    .replace(/\*\*/g, '')
+    .replace(/`/g, '')
+    .trim();
 }
 
 function stripFrontMatter(content) {
@@ -1419,7 +1518,7 @@ function extractMarkdownSections(content) {
 function normalizeStoryHeading(heading) {
   const normalized = heading.trim().toLowerCase();
   if (/誰のため|だれのため|対象ユーザー|利用者|who|actor|user/.test(normalized)) return 'who';
-  if (/課題|問題|現状|problem|pain/.test(normalized)) return 'problem';
+  if (/課題|問題|現状|背景|problem|pain|background/.test(normalized)) return 'problem';
   if (/望む変化|やりたいこと|したいこと|want|need/.test(normalized)) return 'want';
   if (/成果|成功状態|outcome|goal/.test(normalized)) return 'outcome';
   if (/事業価値|価値|効果|kpi|business/.test(normalized)) return 'business_value';
