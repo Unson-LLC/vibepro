@@ -582,8 +582,20 @@ test('story plan creates execution priorities from the generated story map', asy
   await runCli(['init', repo]);
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
   await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'detail-page', source_file: 'src/app/(app)/detail/page.tsx', community: 'hotel-detail' },
+      { id: 'hotel-detail', source_file: 'src/components/hotel/HotelDetail.tsx', community: 'hotel-detail' },
+      { id: 'hotel-api', source_file: 'src/lib/hotel/api.ts', community: 'hotel-detail' }
+    ],
+    edges: [
+      { source: 'detail-page', target: 'hotel-detail' },
+      { source: 'hotel-detail', target: 'hotel-api' }
+    ]
+  }));
   await runCli(['story', 'derive', repo]);
 
   let output = '';
@@ -610,7 +622,10 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.equal(plan.task_candidates.some((task) => task.id.endsWith('spec-recovery')), true);
   const specRecoveryCandidate = plan.task_candidates.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery');
   assert.equal(specRecoveryCandidate.source_recovery.sources.spec.status, 'needs_recovery');
+  assert.equal(specRecoveryCandidate.graph_context.matched_node_count > 0, true);
   assert.equal(specRecoveryCandidate.recovery_drafts.some((draft) => draft.kind === 'spec'), true);
+  assert.equal(specRecoveryCandidate.recovery_drafts[0].graph_evidence.related_edge_count > 0, true);
+  assert.equal(specRecoveryCandidate.recovery_drafts[0].evidence_files.includes('src/lib/hotel/api.ts'), true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.story_plan, '.vibepro/stories/story-plan.json');
   assert.equal(manifest.artifacts.story_plan_markdown, '.vibepro/stories/story-plan.md');
@@ -626,6 +641,7 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.equal(tasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
   assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_type, 'story_plan_candidate');
   assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_recovery.status, 'needs_recovery');
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').graph_context.related_edge_count > 0, true);
   const listResult = await runCli(['task', 'list', repo, '--id', 'story-product-hotel-detail-actions']);
   assert.equal(listResult.exitCode, 0);
   assert.equal(listResult.result.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
@@ -635,13 +651,24 @@ test('story plan creates execution priorities from the generated story map', asy
   const briefing = await readFile(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'story-product-hotel-detail-actions-spec-recovery', 'briefing.md'), 'utf8');
   assert.match(briefing, /Source Recovery/);
   assert.match(briefing, /suggested_path: docs\/specs\/product-hotel-detail-actions.md/);
+  assert.match(briefing, /graph: matched=/);
 });
 
 test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
   await mkdir(path.join(repo, 'src', 'app', 'api', 'auth', 'session'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'api', 'auth', 'session', 'route.ts'), 'export function GET() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'session-route', source_file: 'src/app/api/auth/session/route.ts', community: 'auth-api' },
+      { id: 'session-helper', source_file: 'src/lib/auth/session.ts', community: 'auth-api' }
+    ],
+    edges: [
+      { source: 'session-route', target: 'session-helper' }
+    ]
+  }));
   await runCli(['story', 'derive', repo]);
 
   let json = '';
@@ -654,8 +681,10 @@ test('story plan creates architecture recovery tasks for boundary code without A
   assert.equal(plan.task_candidates.some((task) => task.id.endsWith('architecture-recovery')), true);
   const task = plan.task_candidates.find((item) => item.id.endsWith('architecture-recovery'));
   assert.equal(task.source_recovery.sources.architecture.status, 'needs_decision');
+  assert.equal(task.graph_context.matched_node_count > 0, true);
   assert.equal(task.recovery_drafts.some((draft) => draft.kind === 'architecture'), true);
   assert.equal(task.recovery_drafts[0].suggested_path.startsWith('docs/architecture/ADR-'), true);
+  assert.equal(task.recovery_drafts[0].graph_evidence.matched_files.includes('src/lib/auth/session.ts'), true);
 });
 
 test('story derive creates stories for code surfaces that have no spec documents', async () => {

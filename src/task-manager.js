@@ -442,6 +442,7 @@ function renderSourceRecovery(sourceRecovery, drafts = []) {
       `  - suggested_path: ${draft.suggested_path ?? '-'}`,
       `  - title: ${draft.title ?? '-'}`,
       `  - evidence: ${(draft.evidence_files ?? []).slice(0, 5).join(', ') || '-'}`,
+      `  - graph: ${formatSourceRecoveryGraphEvidence(draft.graph_evidence)}`,
       `  - unresolved: ${(draft.unresolved_questions ?? []).slice(0, 3).join(' / ') || '-'}`
     ].join('\n')).join('\n');
   return [
@@ -451,6 +452,13 @@ function renderSourceRecovery(sourceRecovery, drafts = []) {
     `- architecture: ${sourceRecovery.sources?.architecture?.status ?? '-'}`,
     draftLines
   ].join('\n');
+}
+
+function formatSourceRecoveryGraphEvidence(graphEvidence) {
+  if (!graphEvidence) return '-';
+  const communities = (graphEvidence.affected_communities ?? []).map((community) => `${community.id}:${community.node_count ?? 0}`).slice(0, 3).join(', ') || '-';
+  const hubs = (graphEvidence.hub_nodes ?? []).map((node) => `${node.source_file ?? node.id}(${node.degree ?? 0})`).slice(0, 3).join(', ') || '-';
+  return `matched=${(graphEvidence.matched_files ?? []).length}, related=${(graphEvidence.related_files ?? []).length}, edges=${graphEvidence.related_edge_count ?? 0}, communities=${communities}, hubs=${hubs}`;
 }
 
 export function renderTaskHandoff(handoff) {
@@ -639,7 +647,7 @@ function buildPlanTaskState({ story, plan, candidates }) {
     acceptance_criteria: candidate.acceptance ?? [],
     source_recovery: candidate.source_recovery ?? null,
     recovery_drafts: candidate.recovery_drafts ?? [],
-    graph_context: null,
+    graph_context: candidate.graph_context ?? candidate.source_recovery?.graph_context ?? null,
     pre_fix_briefing: null
   }));
   return {
