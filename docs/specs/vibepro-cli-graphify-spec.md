@@ -491,11 +491,13 @@ scope判定:
 
 `--task <task-id>` 指定時は `.vibepro/stories/<story-id>/tasks/tasks.json` からTaskを読み、同じTask配下の `briefing.json`、`plan.json`、`handoff.json` が存在する場合は `pr-prepare.json` と `pr-body.md` に参照を記録する。`--group <group-id>` 指定時は対象グループ配下の成果物を参照する。
 
-VibePro v1 の `pr prepare` は対象リポジトリのコードを自動変更しない。PR作成やbranch作成は `next_commands[]`、`pr-body.md`、または `pr create` を使って実行する。
+VibePro v1 の `pr prepare` は対象リポジトリのコードを自動変更しない。PR作成やbranch作成は `next_commands[]`、`pr-body.md`、または `pr create` を使って実行する。`next_commands[]` は raw `gh pr create` ではなく `vibepro pr create` を案内し、Gate未完了のままPR作成経路へ進むことを防ぐ。
 
-### `vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--json]`
+### `vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--json]`
 
 `pr prepare` と同じ文脈解決を行ったうえで、PR本文ドラフトを使って `git push` と `gh pr create` を実行する。`--dry-run` 指定時は外部コマンドを実行せず、実行予定コマンドとPR作成成果物だけを生成する。
+
+`gate_dag.overall_status` が `ready_for_review` ではない場合、`pr create` は既定で失敗する。未完了Gateを意図的に残す場合は `--allow-needs-verification --verification-waiver <reason>` を両方指定し、waiver理由を `pr-create.json` / `pr-create.md` に監査証跡として残す。waiver理由なしの bypass は許可しない。
 
 実行予定コマンド:
 

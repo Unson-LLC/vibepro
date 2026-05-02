@@ -1019,6 +1019,9 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
   assert.match(prBody, /## Gate DAG/);
+  assert.match(prBody, /## Gate Enforcement/);
+  assert.match(prBody, /blocked_by_gate/);
+  assert.match(prBody, /生の `gh pr create` はVibePro Gateを通らない/);
   assert.match(prBody, /## VibePro refactoring delta/);
   assert.match(prBody, /5ファイル \/ 8出現 -> 3ファイル \/ 5出現/);
   assert.match(prBody, /### 次の候補/);
@@ -1039,6 +1042,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(gateDag.model, 'story-acceptance-verification-dag');
   assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
   assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.md'), 'utf8'), /VibePro Gate DAG/);
+  assert.equal(prepare.next_commands.some((command) => command.startsWith('gh pr create')), false);
+  assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), true);
 
   // gate guard: flag無しなら needs_verification で拒否される
   let stderrOutput = '';
@@ -1048,11 +1053,34 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(blockedResult.exitCode, 1);
   assert.match(stderrOutput, /Pre-create gate check failed/);
   assert.match(stderrOutput, /needs_verification/);
+  assert.match(stderrOutput, /--verification-waiver <reason>/);
 
-  // --allow-needs-verification を渡せば通る
-  const createResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run', '--allow-needs-verification']);
+  // --allow-needs-verification だけでは通らず、理由付きwaiverを要求する
+  let waiverStderrOutput = '';
+  const missingWaiverResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run', '--allow-needs-verification'], {
+    stderr: { write: (text) => { waiverStderrOutput += text; } }
+  });
+  assert.equal(missingWaiverResult.exitCode, 1);
+  assert.match(waiverStderrOutput, /Pre-create gate waiver missing/);
+
+  // --allow-needs-verification と --verification-waiver を渡せば監査証跡付きで通る
+  const createResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'UI影響のないPR本文生成テストのためE2Eは対象外'
+  ]);
   assert.equal(createResult.exitCode, 0);
   assert.equal(createResult.result.execution.dry_run, true);
+  assert.equal(createResult.result.execution.gate_override.allowed, true);
+  assert.equal(createResult.result.execution.gate_override.reason, 'UI影響のないPR本文生成テストのためE2Eは対象外');
   assert.equal(createResult.result.execution.task_context.task.id, 'TASK-001');
   assert.equal(createResult.result.execution.base, 'main');
   assert.equal(createResult.result.execution.head, 'feature/test-story');
@@ -1061,6 +1089,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   const prCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
   assert.equal(prCreate.mode, 'pr_create');
   assert.equal(prCreate.dry_run, true);
+  assert.equal(prCreate.gate_override.allowed, true);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.md'), 'utf8'), /Gate Override/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
 
@@ -1078,7 +1108,20 @@ if (process.argv[2] !== 'pr' || process.argv[3] !== 'create') {
 console.log('https://github.example.test/unson/vibepro/pull/123');
 `);
   await chmod(ghBin, 0o755);
-  const actualCreateResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--title', 'Test PR', '--allow-needs-verification'], {
+  const actualCreateResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--title',
+    'Test PR',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'fixtureではGitHub作成経路だけを検証する'
+  ], {
     env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
   });
   assert.equal(actualCreateResult.exitCode, 0);
