@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { formatCounts, renderRefactoringDeltaCompact } from './refactoring-delta-reporter.js';
+import { buildRequirementConsistency, renderRequirementGateSummary } from './requirement-consistency.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
@@ -641,6 +642,9 @@ ${acceptance}
 ## 検証
 ${verification}
 
+## 要件整合性
+${renderRequirementPrSection(prContext.requirement_consistency)}
+
 ## Gate DAG
 ${gateSummary}
 
@@ -734,9 +738,15 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const verificationCommands = buildVerificationCommands(fileGroups);
   const e2eCommand = await detectPlaywrightCommand(repoRoot);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
+  const requirementConsistency = await buildRequirementConsistency(repoRoot, {
+    story,
+    storySource: primaryStory,
+    fileGroups
+  });
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
+    requirement_consistency: requirementConsistency,
     change_summary: buildChangeSummary(fileGroups),
     verification_commands: verificationCommands,
     review_points: buildReviewPoints(fileGroups, taskContext),
@@ -747,6 +757,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     story,
     storySource: primaryStory,
     architectureDecision,
+    requirementConsistency,
     fileGroups,
     verificationCommands,
     e2eCommand
@@ -939,11 +950,19 @@ function buildVerificationCommands(fileGroups) {
   return commands;
 }
 
-function buildGateDag({ story, storySource, architectureDecision, fileGroups, verificationCommands, e2eCommand }) {
+function buildGateDag({ story, storySource, architectureDecision, requirementConsistency, fileGroups, verificationCommands, e2eCommand }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
     : ['Storyの受け入れ基準を明文化する'];
   const gates = buildVerificationGates({ fileGroups, verificationCommands, e2eCommand });
+  const requirementGate = {
+    id: 'gate:requirement',
+    type: 'requirement_gate',
+    label: 'Requirement Gate',
+    status: resolveRequirementGateStatus(requirementConsistency),
+    required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0,
+    reason: buildRequirementGateReason(requirementConsistency)
+  };
   const nodes = [
     {
       id: 'story',
@@ -975,6 +994,7 @@ function buildGateDag({ story, storySource, architectureDecision, fileGroups, ve
       status: fileGroups.source.count > 0 ? 'present' : 'not_required',
       files: fileGroups.source.files
     },
+    requirementGate,
     ...gates,
     {
       id: 'pr',
@@ -999,19 +1019,21 @@ function buildGateDag({ story, storySource, architectureDecision, fileGroups, ve
     { from: 'spec', to: 'code' },
     ...acceptanceNodes.flatMap((node) => [
       { from: 'story', to: node.id },
+      { from: node.id, to: 'gate:requirement' },
       { from: node.id, to: 'gate:unit' },
       { from: node.id, to: 'gate:integration' },
       { from: node.id, to: 'gate:e2e' }
     ]),
-    { from: 'code', to: 'gate:unit' },
+    { from: 'code', to: 'gate:requirement' },
+    { from: 'gate:requirement', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
     { from: 'gate:e2e', to: 'pr' }
   ];
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
-  const requiredGates = gates.filter((gate) => gate.required);
-  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup'].includes(gate.status));
+  const requiredGates = [requirementGate, ...gates].filter((gate) => gate.required);
+  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted'].includes(gate.status));
   return {
     schema_version: '0.1.0',
     model: 'story-acceptance-verification-dag',
@@ -1020,7 +1042,8 @@ function buildGateDag({ story, storySource, architectureDecision, fileGroups, ve
     summary: {
       acceptance_criteria_count: acceptanceCriteria.length,
       required_gate_count: requiredGates.length,
-      needs_evidence_count: needsEvidence.length
+      needs_evidence_count: needsEvidence.length,
+      requirement_status: requirementGate.status
     },
     nodes: allNodes,
     edges
@@ -1060,6 +1083,28 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }
       artifact_expectation: '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す'
     }
   ];
+}
+
+function resolveRequirementGateStatus(requirement) {
+  if (!requirement) return 'not_generated';
+  if (requirement.status === 'contradicted') return 'contradicted';
+  if (requirement.status === 'needs_review') return 'needs_review';
+  if (requirement.status === 'pass') return 'passed';
+  return 'not_applicable';
+}
+
+function buildRequirementGateReason(requirement) {
+  if (!requirement) return 'Requirement Consistencyが未生成';
+  if (requirement.status === 'contradicted') {
+    return `${requirement.summary?.contradiction_count ?? 0}件の要件矛盾候補がある`;
+  }
+  if (requirement.status === 'needs_review') {
+    return `${requirement.summary?.scenario_gap_count ?? 0}件のStory未明示シナリオがある`;
+  }
+  if (requirement.status === 'pass') {
+    return 'Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない';
+  }
+  return 'Story不変条件を抽出できなかったため適用外';
 }
 
 async function detectPlaywrightCommand(repoRoot) {
@@ -1144,20 +1189,62 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   if (e2eGate?.required && ['needs_evidence', 'needs_setup'].includes(e2eGate.status)) {
     risks.push('E2E GateのPlaywright CLI証跡が未記録');
   }
+  const requirementGate = gateDag?.nodes?.find((node) => node.id === 'gate:requirement');
+  if (requirementGate?.required && ['needs_review', 'contradicted'].includes(requirementGate.status)) {
+    risks.push(`Requirement Gateが ${requirementGate.status}: ${requirementGate.reason}`);
+  }
   return risks;
 }
 
 function renderPrGateSummary(gateDag) {
   const gates = gateDag.nodes.filter((node) => node.type === 'verification_gate');
+  const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
   const lines = [
     `- overall: ${gateDag.overall_status}`,
     `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
+    requirementGate
+      ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
+      : null,
     ...gates.map((gate) => {
       const required = gate.required ? 'required' : 'optional';
       return `- ${gate.label}: ${gate.status} (${required}) - \`${gate.command}\``;
     })
-  ];
+  ].filter(Boolean);
   return lines.join('\n');
+}
+
+function renderRequirementPrSection(requirement) {
+  if (!requirement) return '- Requirement Consistency未生成';
+  const summary = requirement.summary ?? {};
+  const sources = [
+    `- Requirement Sources: ${summary.requirement_source_count ?? 0}`,
+    `- Spec Sources: ${summary.spec_ref_count ?? 0}`,
+    `- Architecture Sources: ${summary.architecture_ref_count ?? 0}`,
+    `- Policy Sources: ${summary.policy_ref_count ?? 0}`
+  ].join('\n');
+  const sourceRefs = (requirement.requirement_sources ?? []).slice(0, 6)
+    .map((item) => `- Requirement Source: ${item.kind}:${item.path}${item.title ? ` - ${item.title}` : ''}`)
+    .join('\n');
+  const invariants = (requirement.invariants ?? []).slice(0, 5)
+    .map((item) => {
+      const source = item.source ? ` (${item.source.kind}:${item.source.path ?? '-'})` : '';
+      return `- Invariant: ${item.text}${source}`;
+    })
+    .join('\n');
+  const gaps = (requirement.scenario_gaps ?? []).slice(0, 5)
+    .map((item) => `- Scenario Gap: ${item.detail}`)
+    .join('\n');
+  const contradictions = (requirement.contradictions ?? []).slice(0, 5)
+    .map((item) => `- Potential Contradiction: ${item.detail}`)
+    .join('\n');
+  return [
+    renderRequirementGateSummary(requirement),
+    sources,
+    sourceRefs,
+    invariants,
+    gaps,
+    contradictions
+  ].filter(Boolean).join('\n');
 }
 
 function renderPrGateEnforcement(gateDag) {
@@ -1180,14 +1267,15 @@ function renderPrGateEnforcement(gateDag) {
 
 function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
-    .filter((node) => node.type === 'verification_gate')
+    .filter((node) => node.type === 'verification_gate' || node.type === 'requirement_gate')
     .filter((node) => node.required)
-    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup'].includes(node.status))
+    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted'].includes(node.status))
     .map((node) => ({
       id: node.id,
       label: node.label,
       status: node.status,
-      command: node.command
+      command: node.command,
+      reason: node.reason
     }));
 }
 

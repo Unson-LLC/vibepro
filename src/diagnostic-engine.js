@@ -15,6 +15,7 @@ import {
   renderRefactoringDelta,
   renderRefactoringDeltaCompact
 } from './refactoring-delta-reporter.js';
+import { buildRequirementConsistency, renderRequirementConsistencyReport } from './requirement-consistency.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
@@ -33,6 +34,9 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const { currentStory } = resolveStoryContext(config);
   const manifest = await readManifest(root);
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory);
+  evidence.requirement_consistency = await buildRequirementConsistency(root, {
+    story: currentStory
+  });
   const findings = buildFindings(evidence);
   evidence.findings = findings;
   evidence.action_candidates = await buildActionCandidates(root, evidence, graphIndex);
@@ -60,6 +64,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
   const findingReviewPath = path.join(runDir, 'finding-review.md');
   const refactoringDeltaPath = path.join(runDir, 'refactoring-delta.md');
+  const requirementConsistencyPath = path.join(runDir, 'requirement-consistency.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
@@ -85,6 +90,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
     findingReview: evidence.finding_review
   }));
   await writeFile(refactoringDeltaPath, renderRefactoringDelta(evidence.refactoring_delta));
+  await writeFile(requirementConsistencyPath, renderRequirementConsistencyReport(evidence.requirement_consistency));
 
   const run = {
     run_id: runId,
@@ -100,6 +106,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
       finding_review: toWorkspaceRelative(root, findingReviewPath),
       refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
+      requirement_consistency: toWorkspaceRelative(root, requirementConsistencyPath),
       ...storyTasks.artifacts
     }
   };
@@ -182,6 +189,16 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       status: 'not_generated',
       items: [],
       summary: {}
+    },
+    requirement_consistency: {
+      schema_version: '0.1.0',
+      status: 'not_generated',
+      summary: {},
+      invariants: [],
+      scenario_gaps: [],
+      contradictions: [],
+      policy_refs: [],
+      code_scenarios: []
     },
     gates: []
   };
@@ -357,6 +374,25 @@ function buildFindings(evidence) {
         recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。'
       });
     }
+  }
+  if (evidence.requirement_consistency?.status === 'contradicted') {
+    findings.push({
+      id: 'VP-REQ-001',
+      severity: 'High',
+      category: '要件整合性',
+      title: 'Story要件とコード上の状態遷移が矛盾している可能性がある',
+      detail: `${evidence.requirement_consistency.summary?.contradiction_count ?? 0} 件の要件矛盾候補を検出した。`,
+      recommendation: 'Story不変条件、実装分岐、テスト期待値を突き合わせ、業務ルールとして正しい状態遷移を明示する。'
+    });
+  } else if (evidence.requirement_consistency?.status === 'needs_review') {
+    findings.push({
+      id: 'VP-REQ-002',
+      severity: 'Medium',
+      category: '要件整合性',
+      title: 'Storyに明示されていない重要シナリオ分岐がある',
+      detail: `${evidence.requirement_consistency.summary?.scenario_gap_count ?? 0} 件のシナリオ確認候補を検出した。`,
+      recommendation: '受け入れ基準に重要分岐を追加するか、既存ポリシーへの参照をStoryに残す。'
+    });
   }
   return findings;
 }
@@ -1295,6 +1331,10 @@ function renderSummary({ runId, evidence, findings }) {
 | リファクタリング機会 | ${evidence.refactoring_opportunities?.length ?? 0}件 |
 | リファクタリングcampaign | ${evidence.refactoring_campaigns?.length ?? 0}件 |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
+| Requirement Gate | ${evidence.requirement_consistency?.status ?? 'not_generated'} |
+| 要件不変条件 | ${evidence.requirement_consistency?.summary?.invariant_count ?? 0}件 |
+| シナリオ確認候補 | ${evidence.requirement_consistency?.summary?.scenario_gap_count ?? 0}件 |
+| 要件矛盾候補 | ${evidence.requirement_consistency?.summary?.contradiction_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
 ## アーキテクチャView
@@ -1308,6 +1348,10 @@ ${renderApiBoundarySummary(evidence.api_boundary)}
 ## ゲート状態
 
 ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).join('\n')}
+
+## Requirement Consistency
+
+${renderRequirementConsistencySummary(evidence.requirement_consistency)}
 
 ## 主な検出事項
 
@@ -1329,6 +1373,24 @@ ${renderRefactoringDeltaCompact(evidence.refactoring_delta)}
 
 ${renderActionCandidates(evidence.action_candidates)}
 `;
+}
+
+function renderRequirementConsistencySummary(requirement) {
+  if (!requirement) return '- 未生成';
+  const gaps = (requirement.scenario_gaps ?? []).slice(0, 5)
+    .map((item) => `- Scenario Gap: ${item.detail}`)
+    .join('\n');
+  const contradictions = (requirement.contradictions ?? []).slice(0, 5)
+    .map((item) => `- Potential Contradiction: ${item.detail}`)
+    .join('\n');
+  return [
+    `- Status: ${requirement.status}`,
+    `- Invariants: ${requirement.summary?.invariant_count ?? 0}`,
+    `- Scenario Gaps: ${requirement.summary?.scenario_gap_count ?? 0}`,
+    `- Contradictions: ${requirement.summary?.contradiction_count ?? 0}`,
+    gaps,
+    contradictions
+  ].filter(Boolean).join('\n');
 }
 
 function renderGraphQualityNotices(notices) {
