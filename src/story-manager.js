@@ -1,6 +1,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import {
+  buildGraphContextForFiles,
+  buildGraphIndex,
+  normalizeGraphEdges
+} from './graph-context.js';
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
@@ -191,8 +196,9 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
+  const graphIndex = await readStoryPlanGraphIndex(root);
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
-  const plan = buildStoryExecutionPlan(catalog, { limit });
+  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex });
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const planPath = path.join(storyDir, 'story-plan.json');
@@ -213,6 +219,18 @@ export async function createStoryPlan(repoRoot, options = {}) {
   };
   await writeManifest(root, manifest);
   return { plan, planPath, markdownPath };
+}
+
+async function readStoryPlanGraphIndex(root) {
+  try {
+    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+    const { edges } = normalizeGraphEdges(graph);
+    return buildGraphIndex({ nodes, edges });
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 export function parseStoryOptions(args) {
@@ -592,7 +610,7 @@ function formatInlineSummary(summary = {}) {
 function buildStoryExecutionPlan(catalog, options = {}) {
   const stories = Array.isArray(catalog?.stories) ? catalog.stories : [];
   const scoredStories = stories
-    .map((story) => scoreStoryForExecution(story, catalog))
+    .map((story) => scoreStoryForExecution(story, catalog, options.graphIndex))
     .sort((a, b) => b.score - a.score || a.story_id.localeCompare(b.story_id));
   const priorityStories = scoredStories.slice(0, options.limit ?? 5);
   const questions = buildPlanQuestions(catalog, priorityStories);
@@ -601,6 +619,8 @@ function buildStoryExecutionPlan(catalog, options = {}) {
     ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story))
   ];
   const warnings = catalog.source?.warnings ?? [];
+  const sourceConsistency = summarizeSourceConsistency(scoredStories);
+  const sourceRecoveryMap = buildSourceRecoveryMap(scoredStories, taskCandidates);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -616,8 +636,14 @@ function buildStoryExecutionPlan(catalog, options = {}) {
       coverage_ratio: catalog.coverage?.totals?.coverage_ratio ?? null,
       uncovered_files: catalog.coverage?.totals?.uncovered_files ?? 0,
       open_question_count: Array.isArray(catalog.open_questions) ? catalog.open_questions.length : 0,
-      warning_count: warnings.length
+      warning_count: warnings.length,
+      source_consistency_status: sourceConsistency.status,
+      source_recovery_story_count: sourceConsistency.needs_recovery_story_count,
+      source_missing_spec_count: sourceRecoveryMap.counts.missing_spec,
+      source_missing_architecture_count: sourceRecoveryMap.counts.missing_architecture
     },
+    source_consistency: sourceConsistency,
+    source_recovery_map: sourceRecoveryMap,
     questions,
     priority_stories: priorityStories,
     task_candidates: taskCandidates,
@@ -625,10 +651,12 @@ function buildStoryExecutionPlan(catalog, options = {}) {
   };
 }
 
-function scoreStoryForExecution(story, catalog) {
+function scoreStoryForExecution(story, catalog, graphIndex = null) {
   const fields = new Set((story.derived?.open_questions ?? []).map((item) => item.field));
   const meaning = story.derived?.meaning ?? {};
   const sourceType = story.source?.type ?? '';
+  const targetFiles = resolveStoryPlanTargetFiles(story, graphIndex);
+  const graphContext = buildGraphContextForFiles(targetFiles, graphIndex);
   const reasons = [];
   let score = 0;
 
@@ -649,6 +677,8 @@ function scoreStoryForExecution(story, catalog) {
   if (sourceType === 'code_surface') add(8, 'コードから逆算したStoryで人間レビューが必要');
   if (story.view === 'business' && story.category === 'product') add(5, 'ユーザー価値と事業価値に近いproduct Story');
   score += workflowStageWeight(meaning.workflow_position?.stage);
+  const sourceRecovery = buildSourceRecoveryForStory(story, graphContext);
+  if (sourceRecovery.status !== 'aligned') add(18, 'Story/Spec/Architecture正本の復元または確認が必要');
 
   return {
     story_id: story.story_id,
@@ -661,29 +691,352 @@ function scoreStoryForExecution(story, catalog) {
     source_type: sourceType,
     confidence: meaning.confidence ?? story.derived?.confidence ?? 'unknown',
     workflow_stage: meaning.workflow_position?.stage ?? 'unknown',
-    target_files: resolveStoryPlanTargetFiles(story),
-    read_first_files: resolveStoryPlanReadFirstFiles(story),
+    target_files: targetFiles,
+    read_first_files: resolveStoryPlanReadFirstFiles(story, graphContext),
+    graph_context: graphContext,
     acceptance_focus: story.derived?.story_definition?.acceptance_focus ?? [],
+    source_recovery: sourceRecovery,
     reasons,
     next_command: `vibepro story select . --id ${story.story_id}`
   };
 }
 
-function resolveStoryPlanTargetFiles(story) {
+function buildSourceRecoveryForStory(story, graphContext = null) {
+  const meaning = story.derived?.meaning ?? {};
+  const docs = meaning.evidence_by_type?.docs_evidence ?? [];
+  const codeFiles = [
+    ...(meaning.evidence_by_type?.code_evidence ?? []),
+    ...(story.source?.paths ?? []).filter((item) => typeof item === 'string' && item.startsWith('src/'))
+  ];
+  const definition = story.derived?.story_definition ?? {};
+  const openQuestions = story.derived?.open_questions ?? [];
+  const storyDocs = docs.filter(isStoryDocPath);
+  const specDocs = docs.filter(isSpecDocPath);
+  const architectureDocs = docs.filter(isArchitectureDocPath);
+  const hasMissingSpec = openQuestions.some((item) => item.field === 'missing_spec');
+  const boundarySignals = inferArchitectureBoundarySignals(story, codeFiles);
+  const storyStatus = storyDocs.length > 0 ? 'present' : story.source?.type === 'code_surface' ? 'derived' : 'implicit';
+  const specStatus = specDocs.length > 0
+    ? 'present'
+    : storyDocs.length > 0 && !hasMissingSpec
+      ? 'story_backed'
+      : 'needs_recovery';
+  const architectureStatus = architectureDocs.length > 0 || story.category === 'architecture'
+    ? 'present'
+    : boundarySignals.length > 0
+      ? 'needs_decision'
+      : 'implicit';
+  const status = specStatus === 'needs_recovery' || architectureStatus === 'needs_decision'
+    ? 'needs_recovery'
+    : storyStatus === 'derived'
+      ? 'needs_review'
+      : 'aligned';
+  const drafts = [];
+  if (specStatus === 'needs_recovery') {
+    drafts.push(buildSpecRecoveryDraft({ story, definition, codeFiles, graphContext }));
+  }
+  if (architectureStatus === 'needs_decision') {
+    drafts.push(buildArchitectureRecoveryDraft({ story, codeFiles, boundarySignals, graphContext }));
+  }
+  return {
+    status,
+    graph_context: graphContext,
+    sources: {
+      story: {
+        status: storyStatus,
+        refs: storyDocs
+      },
+      spec: {
+        status: specStatus,
+        refs: specDocs
+      },
+      architecture: {
+        status: architectureStatus,
+        refs: architectureDocs,
+        signals: boundarySignals
+      }
+    },
+    drafts,
+    checks: [
+      'Storyのwho/problem/outcomeが人間レビュー済みか',
+      'Specの受け入れ基準がコード分岐と対応しているか',
+      'Architecture/ADRの境界判断がGraphと変更範囲に対応しているか'
+    ]
+  };
+}
+
+function buildSpecRecoveryDraft({ story, definition, codeFiles, graphContext }) {
+  return {
+    kind: 'spec',
+    status: 'draft_from_code',
+    suggested_path: `docs/specs/${slugifyStoryId(story.story_id)}.md`,
+    title: `${story.title} Spec`,
+    must_include: [
+      `対象ユーザー: ${definition.who ?? 'TODO'}`,
+      `課題: ${definition.problem ?? 'TODO'}`,
+      `成功状態: ${definition.outcome ?? definition.want ?? 'TODO'}`,
+      ...(definition.acceptance_focus ?? []).map((item) => `受け入れ基準: ${item}`)
+    ].slice(0, 12),
+    evidence_files: buildRecoveryEvidenceFiles(codeFiles, graphContext),
+    graph_evidence: buildRecoveryGraphEvidence(graphContext),
+    unresolved_questions: [
+      'このSpecをStory正本から確定できるか',
+      'コードから逆算した条件のうち、意図ではなく偶然の実装はどれか',
+      'Graphify上の関連ファイルも同じ受け入れ基準に含めるべきか',
+      '成功指標または運用上の完了条件は何か'
+    ]
+  };
+}
+
+function buildArchitectureRecoveryDraft({ story, codeFiles, boundarySignals, graphContext }) {
+  return {
+    kind: 'architecture',
+    status: 'decision_needed',
+    suggested_path: `docs/architecture/ADR-${slugifyStoryId(story.story_id)}.md`,
+    title: `${story.title} Architecture Decision`,
+    decision_needed: [
+      '既存Architecture内の変更として扱えるか、新しいADRが必要か',
+      `境界シグナル: ${boundarySignals.join(', ')}`,
+      '変更対象の責務境界、データ境界、外部連携境界をどこに置くか'
+    ],
+    evidence_files: buildRecoveryEvidenceFiles(codeFiles, graphContext),
+    graph_evidence: buildRecoveryGraphEvidence(graphContext),
+    unresolved_questions: [
+      'Graph上のhubやcommunityと変更範囲が一致しているか',
+      'API/DB/Auth/外部連携の境界をどの層で守るか',
+      'ADR不要とする場合、その理由をStory frontmatterに残せるか'
+    ]
+  };
+}
+
+function buildRecoveryEvidenceFiles(codeFiles, graphContext) {
+  return [
+    ...(codeFiles ?? []),
+    ...(graphContext?.related_files ?? []),
+    ...(graphContext?.hub_nodes ?? []).map((node) => node.source_file).filter(Boolean)
+  ]
+    .filter(Boolean)
+    .filter((file, index, files) => files.indexOf(file) === index)
+    .slice(0, 12);
+}
+
+function buildRecoveryGraphEvidence(graphContext) {
+  if (!graphContext) return null;
+  return {
+    matched_files: graphContext.matched_files ?? [],
+    related_files: graphContext.related_files ?? [],
+    hub_nodes: graphContext.hub_nodes ?? [],
+    affected_communities: graphContext.affected_communities ?? [],
+    related_edge_count: graphContext.related_edge_count ?? 0,
+    impact_score: graphContext.impact_score ?? 0,
+    cross_community: Boolean(graphContext.cross_community)
+  };
+}
+
+function summarizeSourceConsistency(stories) {
+  const items = stories.map((story) => ({
+    story_id: story.story_id,
+    title: story.title,
+    status: story.source_recovery?.status ?? 'unknown',
+    story_status: story.source_recovery?.sources?.story?.status ?? 'unknown',
+    spec_status: story.source_recovery?.sources?.spec?.status ?? 'unknown',
+    architecture_status: story.source_recovery?.sources?.architecture?.status ?? 'unknown'
+  }));
+  const counts = countBy(items, (item) => item.status);
+  const needsRecovery = items.filter((item) => item.status === 'needs_recovery');
+  return {
+    schema_version: '0.1.0',
+    status: needsRecovery.length > 0 ? 'needs_recovery' : counts.needs_review > 0 ? 'needs_review' : 'aligned',
+    counts,
+    needs_recovery_story_count: needsRecovery.length,
+    top_needs_recovery: needsRecovery.slice(0, 10),
+    stories: items
+  };
+}
+
+function buildSourceRecoveryMap(stories, taskCandidates = []) {
+  const taskIds = new Set(taskCandidates.map((candidate) => candidate.id));
+  const rows = stories
+    .map((story) => buildSourceRecoveryMapRow(story, taskIds))
+    .sort((a, b) => sourceRecoveryMapRank(a) - sourceRecoveryMapRank(b) || b.score - a.score || a.story_id.localeCompare(b.story_id));
+  const missingRows = rows.filter((row) => row.spec.status === 'needs_recovery' || row.architecture.status === 'needs_decision');
+  return {
+    schema_version: '0.1.0',
+    status: missingRows.length > 0 ? 'needs_recovery' : rows.some((row) => row.status === 'needs_review') ? 'needs_review' : 'aligned',
+    counts: {
+      stories: rows.length,
+      needs_recovery: missingRows.length,
+      missing_spec: rows.filter((row) => row.spec.status === 'needs_recovery').length,
+      missing_architecture: rows.filter((row) => row.architecture.status === 'needs_decision').length,
+      aligned: rows.filter((row) => row.status === 'aligned').length
+    },
+    missing: missingRows,
+    rows
+  };
+}
+
+function buildSourceRecoveryMapRow(story, taskIds) {
+  const recovery = story.source_recovery ?? {};
+  const specDraft = (recovery.drafts ?? []).find((draft) => draft.kind === 'spec');
+  const architectureDraft = (recovery.drafts ?? []).find((draft) => draft.kind === 'architecture');
+  const graph = story.graph_context ?? recovery.graph_context ?? {};
+  const specTaskId = `${story.story_id}-spec-recovery`;
+  const architectureTaskId = `${story.story_id}-architecture-recovery`;
+  return {
+    story_id: story.story_id,
+    title: story.title,
+    score: story.score,
+    status: recovery.status ?? 'unknown',
+    story_source: {
+      status: recovery.sources?.story?.status ?? 'unknown',
+      refs: recovery.sources?.story?.refs ?? []
+    },
+    spec: {
+      status: recovery.sources?.spec?.status ?? 'unknown',
+      refs: recovery.sources?.spec?.refs ?? [],
+      suggested_path: specDraft?.suggested_path ?? null,
+      draft_title: specDraft?.title ?? null,
+      suggested_task_id: specDraft ? specTaskId : null,
+      task_candidate_id: taskIds.has(specTaskId) ? specTaskId : null
+    },
+    architecture: {
+      status: recovery.sources?.architecture?.status ?? 'unknown',
+      refs: recovery.sources?.architecture?.refs ?? [],
+      signals: recovery.sources?.architecture?.signals ?? [],
+      suggested_path: architectureDraft?.suggested_path ?? null,
+      draft_title: architectureDraft?.title ?? null,
+      suggested_task_id: architectureDraft ? architectureTaskId : null,
+      task_candidate_id: taskIds.has(architectureTaskId) ? architectureTaskId : null
+    },
+    graph: {
+      matched_file_count: graph.matched_file_count ?? 0,
+      matched_files: (graph.matched_files ?? []).slice(0, 12),
+      related_edge_count: graph.related_edge_count ?? 0,
+      related_files: (graph.related_files ?? []).slice(0, 8),
+      hub_files: (graph.hub_nodes ?? []).map((node) => node.source_file).filter(Boolean).slice(0, 5),
+      affected_communities: graph.affected_communities ?? [],
+      cross_community: Boolean(graph.cross_community)
+    }
+  };
+}
+
+function sourceRecoveryMapRank(row) {
+  if (row.spec.status === 'needs_recovery' && row.architecture.status === 'needs_decision') return 0;
+  if (row.architecture.status === 'needs_decision') return 1;
+  if (row.spec.status === 'needs_recovery') return 2;
+  if (row.status === 'needs_review') return 3;
+  return 4;
+}
+
+function inferArchitectureBoundarySignals(story, codeFiles) {
+  const text = [story.story_id, story.title, ...codeFiles].join(' ').toLowerCase();
+  const signals = [];
+  if (/api|route\.ts|webhook/.test(text)) signals.push('api_boundary');
+  if (/auth|session|user|identity|middleware/.test(text)) signals.push('auth_boundary');
+  if (/billing|stripe|subscription|payment|premium/.test(text)) signals.push('billing_boundary');
+  if (/prisma|database|db|repository|model/.test(text)) signals.push('data_boundary');
+  if (/webhook|stripe|resend|external|oauth/.test(text)) signals.push('external_integration_boundary');
+  return [...new Set(signals)];
+}
+
+function isStoryDocPath(filePath) {
+  return /^docs\/management\/stories\//.test(filePath);
+}
+
+function isSpecDocPath(filePath) {
+  return /^docs\/(specs|requirements|features|user_stories|shadow-call)\//.test(filePath);
+}
+
+function isArchitectureDocPath(filePath) {
+  return /^docs\/(architecture|management\/architecture)\//.test(filePath);
+}
+
+function slugifyStoryId(storyId) {
+  return String(storyId ?? 'story')
+    .replace(/^story-/, '')
+    .replace(/[^A-Za-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+}
+
+function countBy(items, keyFn) {
+  return items.reduce((acc, item) => {
+    const key = keyFn(item);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
+function resolveStoryPlanTargetFiles(story, graphIndex = null) {
   const meaning = story.derived?.meaning ?? {};
   const paths = [
     ...(meaning.code_scope?.evidence ?? []),
     ...(story.source?.paths ?? []).filter((item) => typeof item === 'string' && item.startsWith('src/'))
   ];
-  return [...new Set(paths)].slice(0, 12);
+  const explicitFiles = [...new Set(paths)].slice(0, 12);
+  if (explicitFiles.length > 0) return explicitFiles;
+  return resolveStoryPlanGraphFallbackFiles(story, graphIndex);
 }
 
-function resolveStoryPlanReadFirstFiles(story) {
-  const files = resolveStoryPlanTargetFiles(story);
-  return files.slice(0, 6).map((file) => ({
+function resolveStoryPlanReadFirstFiles(story, graphContext = null) {
+  const files = graphContext?.matched_files?.length > 0
+    ? graphContext.matched_files
+    : resolveStoryPlanTargetFiles(story);
+  const items = files.slice(0, 6).map((file) => ({
     file,
     reason: `Story ${story.story_id} の根拠コード`
   }));
+  for (const file of graphContext?.related_files ?? []) {
+    addReadFirstFile(items, file, 'Graphifyで対象Storyの周辺依存として検出');
+  }
+  for (const hub of graphContext?.hub_nodes ?? []) {
+    if (hub.source_file) addReadFirstFile(items, hub.source_file, `Graphify hub: ${hub.label ?? hub.id} / degree=${hub.degree ?? 0}`);
+  }
+  return items.slice(0, 10);
+}
+
+function addReadFirstFile(items, file, reason) {
+  if (!file || items.some((item) => item.file === file)) return;
+  items.push({ file, reason });
+}
+
+function resolveStoryPlanGraphFallbackFiles(story, graphIndex) {
+  if (!graphIndex?.nodesBySourceFile) return [];
+  const storyText = [story.story_id, story.title, story.category, story.view].filter(Boolean).join(' ').toLowerCase();
+  const tokens = [...new Set(storyText.split(/[^a-z0-9]+/).filter((token) => token.length >= 4))];
+  const boundaryMatchers = buildStoryBoundaryGraphMatchers(storyText);
+  return [...graphIndex.nodesBySourceFile.keys()]
+    .filter((file) => file.startsWith('src/'))
+    .map((file) => ({
+      file,
+      score: scoreGraphFallbackFile(file, tokens, boundaryMatchers)
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.file.localeCompare(b.file))
+    .slice(0, 12)
+    .map((item) => item.file);
+}
+
+function buildStoryBoundaryGraphMatchers(storyText) {
+  const matchers = [];
+  if (/auth|security|session|identity|user/.test(storyText)) matchers.push(/auth|session|identity|user|middleware/);
+  if (/api|route|webhook|boundary/.test(storyText)) matchers.push(/\/api\/|route\.ts|webhook|middleware/);
+  if (/billing|stripe|subscription|payment|premium/.test(storyText)) matchers.push(/billing|stripe|subscription|payment|premium/);
+  if (/data|database|db|repository|model/.test(storyText)) matchers.push(/database|db|repository|model|prisma/);
+  return matchers;
+}
+
+function scoreGraphFallbackFile(file, tokens, boundaryMatchers) {
+  const text = file.toLowerCase();
+  let score = 0;
+  for (const matcher of boundaryMatchers) {
+    if (matcher.test(text)) score += 10;
+  }
+  for (const token of tokens) {
+    if (text.includes(token)) score += 2;
+  }
+  if (/\/api\/|route\.ts|middleware/.test(text)) score += 1;
+  return score;
 }
 
 function workflowStageWeight(stage) {
@@ -727,13 +1080,37 @@ function buildPlanQuestions(catalog, priorityStories) {
     question: item.question,
     priority: priorityIds.has(item.story_id) ? questionPriority(item.field) : 'medium'
   }));
-  return [...warningQuestions, ...coverageQuestions, ...questions]
+  const sourceQuestions = priorityStories.flatMap((story) => buildSourceRecoveryQuestions(story));
+  return [...warningQuestions, ...coverageQuestions, ...sourceQuestions, ...questions]
     .sort((a, b) => questionPriorityRank(a.priority) - questionPriorityRank(b.priority) || String(a.story_id ?? '').localeCompare(String(b.story_id ?? '')))
     .slice(0, 20);
 }
 
+function buildSourceRecoveryQuestions(story) {
+  const recovery = story.source_recovery;
+  if (!recovery || recovery.status === 'aligned') return [];
+  const questions = [];
+  if (recovery.sources?.spec?.status === 'needs_recovery') {
+    questions.push({
+      story_id: story.story_id,
+      field: 'source_spec_recovery',
+      question: 'Spec正本が不足している。コードから逆算した受け入れ基準をSpecとして確定するか、既存Specへリンクする必要がある。',
+      priority: 'high'
+    });
+  }
+  if (recovery.sources?.architecture?.status === 'needs_decision') {
+    questions.push({
+      story_id: story.story_id,
+      field: 'source_architecture_recovery',
+      question: `Architecture/ADR判断が未確定。${recovery.sources.architecture.signals.join(', ')} の境界判断をStoryまたはADRに残す必要がある。`,
+      priority: 'high'
+    });
+  }
+  return questions;
+}
+
 function questionPriority(field) {
-  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence') return 'high';
+  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence' || field === 'source_spec_recovery' || field === 'source_architecture_recovery') return 'high';
   if (field === 'business_metric' || field === 'business_context') return 'medium';
   return 'low';
 }
@@ -745,7 +1122,7 @@ function questionPriorityRank(priority) {
 function buildTaskCandidatesForStory(story) {
   const fields = new Set((story.reasons ?? []).flatMap((reason) => reason.includes('仕様/Story') ? ['missing_spec'] : []));
   const candidates = [];
-  const push = (suffix, title, purpose, acceptance) => {
+  const push = (suffix, title, purpose, acceptance, extra = {}) => {
     candidates.push({
       id: `${story.story_id}-${suffix}`,
       story_id: story.story_id,
@@ -756,21 +1133,37 @@ function buildTaskCandidatesForStory(story) {
       source_type: 'story_plan_candidate',
       target_files: story.target_files ?? [],
       read_first_files: story.read_first_files ?? [],
+      graph_context: story.graph_context ?? null,
       recommended_strategy: {
         id: suffix,
         reason: purpose
       },
       implementation_steps: buildPlanCandidateSteps(suffix),
-      suggested_command: `vibepro story select . --id ${story.story_id}`
+      suggested_command: `vibepro story select . --id ${story.story_id}`,
+      ...extra
     });
   };
 
-  if (fields.has('missing_spec') || story.source_type === 'code_surface') {
-    push('spec-recovery', '仕様/Story根拠を復元する', 'コードから逆算したStoryの根拠文書、対象ユーザー、成功条件を確認する', [
+  if (fields.has('missing_spec') || story.source_type === 'code_surface' || story.source_recovery?.sources?.spec?.status === 'needs_recovery') {
+    push('spec-recovery', 'Spec正本を復元する', 'コードから逆算したStoryの受け入れ基準をSpec正本として確定し、Storyとリンクする', [
       'missing_spec が残る理由を確認済みにする',
       'Storyのwho/problem/outcomeが人間レビュー済みになる',
+      'Spec草案の受け入れ基準がコード分岐と対応する',
       '必要なら仕様書またはNocoDB Storyを作る'
-    ]);
+    ], {
+      source_recovery: story.source_recovery,
+      recovery_drafts: (story.source_recovery?.drafts ?? []).filter((draft) => draft.kind === 'spec')
+    });
+  }
+  if (story.source_recovery?.sources?.architecture?.status === 'needs_decision') {
+    push('architecture-recovery', 'Architecture/ADR正本を復元する', 'Graphと変更対象コードから境界判断を復元し、ADR要否と理由をStoryまたはArchitecture文書に残す', [
+      'Architecture/ADRが必要か、不要なら理由が明示されている',
+      'API/Auth/Billing/Data/外部連携の境界判断がGraph文脈と対応する',
+      'Requirement GateでArchitecture SourceまたはADR不要理由を追跡できる'
+    ], {
+      source_recovery: story.source_recovery,
+      recovery_drafts: (story.source_recovery?.drafts ?? []).filter((draft) => draft.kind === 'architecture')
+    });
   }
   if (story.category === 'security' || story.source_type === 'diagnosis') {
     push('risk-fix', '診断Findingを修正候補に落とす', 'security/diagnosis Storyの検出事項を修正可能なタスクに分解する', [
@@ -829,8 +1222,15 @@ function buildPlanCandidateSteps(suffix) {
   const common = {
     'spec-recovery': [
       { id: 'review-meaning', title: 'Story意味づけを確認する', detail: 'derived.meaning の価値仮説、根拠、反証、不足情報を確認する' },
-      { id: 'recover-source', title: '根拠を復元する', detail: '仕様書、NocoDB Story、議事録、コード根拠のどれを正本にするか決める' },
-      { id: 'update-story', title: 'Storyを更新する', detail: 'who/problem/outcome/acceptanceを人間レビュー済みの形にする' }
+      { id: 'recover-spec', title: 'Spec草案を復元する', detail: 'source_recovery.drafts のspec草案を読み、コード由来条件と人間が確定すべき条件を分ける' },
+      { id: 'link-source', title: 'StoryとSpecをリンクする', detail: 'Story frontmatterまたは本文にSpec参照を残し、Requirement Gateが正本として読めるようにする' },
+      { id: 'rerun-gate', title: 'Requirement Gateを再実行する', detail: 'vibepro pr prepare または diagnose でSpec Sourceが拾われるか確認する' }
+    ],
+    'architecture-recovery': [
+      { id: 'read-graph', title: 'Graph文脈を読む', detail: '対象ファイルのhub/community/依存方向を確認し、境界変更か局所変更かを判定する' },
+      { id: 'decide-adr', title: 'ADR要否を決める', detail: 'API/Auth/Billing/Data/外部連携の境界判断が必要ならArchitecture/ADR草案に落とす' },
+      { id: 'record-decision', title: '判断を正本へ記録する', detail: 'ADR文書を作るか、ADR不要理由をStory frontmatterへ明示する' },
+      { id: 'rerun-gate', title: 'Requirement Gateを再実行する', detail: 'Architecture SourceまたはADR不要理由がPR本文とGate DAGに出るか確認する' }
     ],
     'risk-fix': [
       { id: 'read-finding', title: '診断Findingを読む', detail: '対象Finding、影響範囲、既存保護境界を確認する' },
@@ -876,6 +1276,7 @@ export function renderStoryPlan(plan) {
 - Stage: ${story.workflow_stage}
 - Confidence: ${story.confidence}
 - Source: ${story.source_type}
+- Source Consistency: ${story.source_recovery?.status ?? '-'} (story=${story.source_recovery?.sources?.story?.status ?? '-'}, spec=${story.source_recovery?.sources?.spec?.status ?? '-'}, architecture=${story.source_recovery?.sources?.architecture?.status ?? '-'})
 - 理由:
 ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
 - 次コマンド: \`${story.next_command}\``).join('\n\n');
@@ -884,6 +1285,7 @@ ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
     : `| Story | Task | Purpose |
 |-------|------|---------|
 ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${task.purpose} |`).join('\n')}`;
+  const sourceRecoveryMap = renderSourceRecoveryMap(plan.source_recovery_map);
   return `# Story実行計画
 
 ## サマリー
@@ -896,6 +1298,10 @@ ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${tas
 | 未カバー | ${plan.summary.uncovered_files} |
 | 警告 | ${plan.summary.warning_count ?? 0} |
 | 未決事項 | ${plan.summary.open_question_count} |
+| Source Consistency | ${plan.summary.source_consistency_status ?? '-'} |
+| 正本復元対象Story | ${plan.summary.source_recovery_story_count ?? 0} |
+| Spec欠落 | ${plan.summary.source_missing_spec_count ?? 0} |
+| Architecture/ADR判断欠落 | ${plan.summary.source_missing_architecture_count ?? 0} |
 
 ## まず確認する質問
 
@@ -905,6 +1311,10 @@ ${questions}
 
 ${stories}
 
+## 正本欠落マップ
+
+${sourceRecoveryMap}
+
 ## タスク候補
 
 ${tasks}
@@ -913,6 +1323,29 @@ ${tasks}
 
 ${plan.next_commands.map((command) => `- \`${command}\``).join('\n') || '-'}
 `;
+}
+
+function renderSourceRecoveryMap(map) {
+  const rows = map?.missing ?? [];
+  if (rows.length === 0) return '- なし';
+  return `| Story | Spec | Spec復元先 | Architecture | ADR復元先 | Graph | Task |
+|-------|------|------------|--------------|-----------|-------|------|
+${rows.map((row) => `| ${escapeTableCell(row.story_id)} | ${escapeTableCell(row.spec.status)} | ${escapeTableCell(row.spec.suggested_path ?? '-')} | ${escapeTableCell(row.architecture.status)} | ${escapeTableCell(row.architecture.suggested_path ?? '-')} | ${escapeTableCell(formatSourceRecoveryMapGraph(row.graph))} | ${escapeTableCell(formatSourceRecoveryMapTasks(row))} |`).join('\n')}`;
+}
+
+function formatSourceRecoveryMapGraph(graph) {
+  return `${graph?.matched_file_count ?? 0} files / ${graph?.related_edge_count ?? 0} edges${graph?.cross_community ? ' / cross-community' : ''}`;
+}
+
+function formatSourceRecoveryMapTasks(row) {
+  return [
+    row.spec.task_candidate_id ?? row.spec.suggested_task_id,
+    row.architecture.task_candidate_id ?? row.architecture.suggested_task_id
+  ].filter(Boolean).join(', ') || '-';
+}
+
+function escapeTableCell(value) {
+  return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
 }
 
 function formatPercent(value) {

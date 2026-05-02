@@ -368,6 +368,10 @@ ${formatReadFirst(briefing.read_first_files)}
 
 - ${briefing.recommended_strategy?.id ?? '-'}: ${briefing.recommended_strategy?.reason ?? '-'}
 
+## Source Recovery
+
+${renderSourceRecovery(briefing.source_recovery, briefing.recovery_drafts)}
+
 ## 実装手順候補
 
 ${briefing.implementation_steps.length === 0 ? '- なし' : briefing.implementation_steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
@@ -427,6 +431,34 @@ ${formatList(plan.rollback_considerations)}
 
 ${formatList(plan.guardrails)}
 `;
+}
+
+function renderSourceRecovery(sourceRecovery, drafts = []) {
+  if (!sourceRecovery) return '- なし';
+  const draftLines = drafts.length === 0
+    ? '- Draft: なし'
+    : drafts.map((draft) => [
+      `- Draft: ${draft.kind} / ${draft.status}`,
+      `  - suggested_path: ${draft.suggested_path ?? '-'}`,
+      `  - title: ${draft.title ?? '-'}`,
+      `  - evidence: ${(draft.evidence_files ?? []).slice(0, 5).join(', ') || '-'}`,
+      `  - graph: ${formatSourceRecoveryGraphEvidence(draft.graph_evidence)}`,
+      `  - unresolved: ${(draft.unresolved_questions ?? []).slice(0, 3).join(' / ') || '-'}`
+    ].join('\n')).join('\n');
+  return [
+    `- status: ${sourceRecovery.status}`,
+    `- story: ${sourceRecovery.sources?.story?.status ?? '-'}`,
+    `- spec: ${sourceRecovery.sources?.spec?.status ?? '-'}`,
+    `- architecture: ${sourceRecovery.sources?.architecture?.status ?? '-'}`,
+    draftLines
+  ].join('\n');
+}
+
+function formatSourceRecoveryGraphEvidence(graphEvidence) {
+  if (!graphEvidence) return '-';
+  const communities = (graphEvidence.affected_communities ?? []).map((community) => `${community.id}:${community.node_count ?? 0}`).slice(0, 3).join(', ') || '-';
+  const hubs = (graphEvidence.hub_nodes ?? []).map((node) => `${node.source_file ?? node.id}(${node.degree ?? 0})`).slice(0, 3).join(', ') || '-';
+  return `matched=${(graphEvidence.matched_files ?? []).length}, related=${(graphEvidence.related_files ?? []).length}, edges=${graphEvidence.related_edge_count ?? 0}, communities=${communities}, hubs=${hubs}`;
 }
 
 export function renderTaskHandoff(handoff) {
@@ -613,7 +645,9 @@ function buildPlanTaskState({ story, plan, candidates }) {
     },
     implementation_steps: candidate.implementation_steps ?? [],
     acceptance_criteria: candidate.acceptance ?? [],
-    graph_context: null,
+    source_recovery: candidate.source_recovery ?? null,
+    recovery_drafts: candidate.recovery_drafts ?? [],
+    graph_context: candidate.graph_context ?? candidate.source_recovery?.graph_context ?? null,
     pre_fix_briefing: null
   }));
   return {
@@ -672,6 +706,8 @@ function buildTaskBriefing({ story, sourceRun, task, group }) {
     read_first_files: readFirstFiles,
     graph_context: task.graph_context ?? null,
     pre_fix_briefing: task.pre_fix_briefing ?? null,
+    source_recovery: task.source_recovery ?? null,
+    recovery_drafts: task.recovery_drafts ?? [],
     recommended_strategy: group?.recommended_strategy ?? task.recommended_strategy ?? null,
     implementation_steps: task.implementation_steps ?? [],
     acceptance_criteria: group?.acceptance_criteria ?? task.acceptance_criteria ?? []

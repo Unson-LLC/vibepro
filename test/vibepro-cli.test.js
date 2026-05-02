@@ -582,8 +582,20 @@ test('story plan creates execution priorities from the generated story map', asy
   await runCli(['init', repo]);
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
   await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'detail-page', source_file: 'src/app/(app)/detail/page.tsx', community: 'hotel-detail' },
+      { id: 'hotel-detail', source_file: 'src/components/hotel/HotelDetail.tsx', community: 'hotel-detail' },
+      { id: 'hotel-api', source_file: 'src/lib/hotel/api.ts', community: 'hotel-detail' }
+    ],
+    edges: [
+      { source: 'detail-page', target: 'hotel-detail' },
+      { source: 'hotel-detail', target: 'hotel-api' }
+    ]
+  }));
   await runCli(['story', 'derive', repo]);
 
   let output = '';
@@ -599,11 +611,29 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.match(output, /# Story Plan/);
   assert.match(output, /Story実行計画/);
   assert.match(output, /まず確認する質問/);
-  assert.match(output, /仕様\/Story根拠を復元する/);
+  assert.match(output, /Source Consistency/);
+  assert.match(output, /正本欠落マップ/);
+  assert.match(output, /Spec欠落/);
+  assert.match(output, /Spec正本を復元する/);
   const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
   assert.equal(plan.priority_stories.length <= 2, true);
+  assert.equal(plan.summary.source_consistency_status, 'needs_recovery');
+  assert.equal(plan.source_consistency.needs_recovery_story_count > 0, true);
+  assert.equal(plan.summary.source_missing_spec_count > 0, true);
+  assert.equal(plan.source_recovery_map.counts.missing_spec > 0, true);
+  const missingSpecRow = plan.source_recovery_map.missing.find((row) => row.story_id === 'story-product-hotel-detail-actions');
+  assert.equal(missingSpecRow.spec.suggested_path, 'docs/specs/product-hotel-detail-actions.md');
+  assert.equal(missingSpecRow.spec.suggested_task_id, 'story-product-hotel-detail-actions-spec-recovery');
+  assert.equal(missingSpecRow.graph.related_edge_count > 0, true);
   assert.equal(plan.questions.some((question) => question.field === 'missing_spec'), true);
+  assert.equal(plan.questions.some((question) => question.field === 'source_spec_recovery'), true);
   assert.equal(plan.task_candidates.some((task) => task.id.endsWith('spec-recovery')), true);
+  const specRecoveryCandidate = plan.task_candidates.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery');
+  assert.equal(specRecoveryCandidate.source_recovery.sources.spec.status, 'needs_recovery');
+  assert.equal(specRecoveryCandidate.graph_context.matched_node_count > 0, true);
+  assert.equal(specRecoveryCandidate.recovery_drafts.some((draft) => draft.kind === 'spec'), true);
+  assert.equal(specRecoveryCandidate.recovery_drafts[0].graph_evidence.related_edge_count > 0, true);
+  assert.equal(specRecoveryCandidate.recovery_drafts[0].evidence_files.includes('src/lib/hotel/api.ts'), true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.story_plan, '.vibepro/stories/story-plan.json');
   assert.equal(manifest.artifacts.story_plan_markdown, '.vibepro/stories/story-plan.md');
@@ -618,12 +648,55 @@ test('story plan creates execution priorities from the generated story map', asy
   const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'tasks.json'));
   assert.equal(tasks.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
   assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_type, 'story_plan_candidate');
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').source_recovery.status, 'needs_recovery');
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery').graph_context.related_edge_count > 0, true);
   const listResult = await runCli(['task', 'list', repo, '--id', 'story-product-hotel-detail-actions']);
   assert.equal(listResult.exitCode, 0);
   assert.equal(listResult.result.tasks.some((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery'), true);
   const briefResult = await runCli(['task', 'brief', repo, '--id', 'story-product-hotel-detail-actions', '--task', 'story-product-hotel-detail-actions-spec-recovery']);
   assert.equal(briefResult.exitCode, 0);
   assert.equal(briefResult.result.artifacts.markdown, '.vibepro/stories/story-product-hotel-detail-actions/tasks/story-product-hotel-detail-actions-spec-recovery/briefing.md');
+  const briefing = await readFile(path.join(repo, '.vibepro', 'stories', 'story-product-hotel-detail-actions', 'tasks', 'story-product-hotel-detail-actions-spec-recovery', 'briefing.md'), 'utf8');
+  assert.match(briefing, /Source Recovery/);
+  assert.match(briefing, /suggested_path: docs\/specs\/product-hotel-detail-actions.md/);
+  assert.match(briefing, /graph: matched=/);
+});
+
+test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'auth', 'session'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'auth', 'session', 'route.ts'), 'export function GET() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'session-route', source_file: 'src/app/api/auth/session/route.ts', community: 'auth-api' },
+      { id: 'session-helper', source_file: 'src/lib/auth/session.ts', community: 'auth-api' }
+    ],
+    edges: [
+      { source: 'session-route', target: 'session-helper' }
+    ]
+  }));
+  await runCli(['story', 'derive', repo]);
+
+  let json = '';
+  const result = await runCli(['story', 'plan', repo, '--limit', '8', '--json'], {
+    stdout: { write: (text) => { json += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const plan = JSON.parse(json);
+  assert.equal(plan.task_candidates.some((task) => task.id.endsWith('architecture-recovery')), true);
+  const task = plan.task_candidates.find((item) => item.id.endsWith('architecture-recovery'));
+  assert.equal(task.source_recovery.sources.architecture.status, 'needs_decision');
+  const mapRow = plan.source_recovery_map.missing.find((row) => row.story_id === task.story_id);
+  assert.equal(mapRow.architecture.suggested_path.startsWith('docs/architecture/ADR-'), true);
+  assert.equal(mapRow.architecture.suggested_task_id.endsWith('-architecture-recovery'), true);
+  assert.equal(mapRow.graph.matched_file_count > 0, true);
+  assert.equal(task.graph_context.matched_node_count > 0, true);
+  assert.equal(task.recovery_drafts.some((draft) => draft.kind === 'architecture'), true);
+  assert.equal(task.recovery_drafts[0].suggested_path.startsWith('docs/architecture/ADR-'), true);
+  assert.equal(task.recovery_drafts[0].graph_evidence.matched_files.includes('src/lib/auth/session.ts'), true);
 });
 
 test('story derive creates stories for code surfaces that have no spec documents', async () => {
@@ -751,6 +824,51 @@ period: 2026Q2
   assert.match(story.derived.story_definition.business_value, /問い合わせ発生率/);
   assert.equal(story.derived.story_definition.acceptance_focus.includes('問い合わせや外部遷移の失敗時の扱いが決まる'), true);
   assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
+});
+
+test('story derive links story_id frontmatter specs and architecture docs to stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'specs', 'product-hotel-detail-actions.md'), `---
+story_id: story-product-hotel-detail-actions
+title: ホテル詳細Spec
+status: recovered
+---
+
+# ホテル詳細Spec
+
+## 受け入れ基準
+
+- ホテル詳細から予約前アクションへ進める
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'ADR-product-hotel-detail-actions.md'), `---
+story_id: story-product-hotel-detail-actions
+title: ホテル詳細ADR
+status: accepted
+---
+
+# ADR: ホテル詳細
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+
+  await runCli(['story', 'derive', repo]);
+  await runCli(['story', 'plan', repo, '--limit', '5']);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const story = catalog.stories.find((item) => item.story_id === 'story-product-hotel-detail-actions');
+  assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/specs/product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/architecture/ADR-product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.open_questions.some((item) => item.field === 'missing_spec'), false);
+  assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/specs/product-hotel-detail-actions.md'), true);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const row = plan.source_recovery_map.rows.find((item) => item.story_id === 'story-product-hotel-detail-actions');
+  assert.equal(row.spec.status, 'present');
+  assert.equal(row.architecture.status, 'present');
 });
 
 test('story derive does not create map search story from hotel detail code alone', async () => {
