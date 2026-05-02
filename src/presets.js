@@ -295,21 +295,65 @@ const MODULAR_WEB_CODE_SURFACE_SIGNATURES = [
     id: 'story-code-web-core',
     title: 'Webクライアントのコア基盤を整える',
     category: 'architecture',
-    patterns: [/^public\/modules\/core\//]
+    patterns: [
+      /^public\/modules\/core\//,
+      /^public\/modules\/components\//,
+      /^public\/modules\/utils\//,
+      /^public\/modules\/[^/]+\.[jt]sx?$/
+    ]
   },
   {
     id: 'story-code-domain-services',
     title: 'ドメインサービスの責務と契約を整える',
     category: 'product',
-    patterns: [/^public\/modules\/domain\//, /^lib\/services\//]
+    patterns: [
+      /^public\/modules\/domain\//,
+      /^public\/modules\/(app|settings|auth|device|setup|terminal|ui)\//,
+      /^lib\/services\//,
+      /^server\/services\//
+    ]
   },
   {
     id: 'story-code-server-routes',
     title: 'サーバ側ルートとAPI境界を整える',
     category: 'architecture',
-    patterns: [/^server\/routes\//, /^server\/api\//]
+    patterns: [
+      /^server\/routes\//,
+      /^server\/api\//,
+      /^server\/controllers\//,
+      /^server\/(middleware|lib|utils|bootstrap|mesh)\//,
+      /^lib\/[^/]+\.[jt]s$/
+    ]
   }
 ];
+
+const MODULAR_WEB_COVERAGE_PATTERNS = {
+  'story-code-cli-tooling': [
+    /^cli\//
+  ],
+  'story-code-mcp-server': [
+    /^mcp\//
+  ],
+  'story-code-web-core': [
+    /^public\/modules\/core\//,
+    /^public\/modules\/components\//,
+    /^public\/modules\/utils\//,
+    /^public\/modules\/[^/]+\.[jt]sx?$/
+  ],
+  'story-code-domain-services': [
+    /^public\/modules\/domain\//,
+    /^public\/modules\/(app|settings|auth|device|setup|terminal|ui)\//,
+    /^lib\/services\//,
+    /^server\/services\//
+  ],
+  'story-code-server-routes': [
+    /^server\/routes\//,
+    /^server\/api\//,
+    /^server\/controllers\//,
+    /^server\/(middleware|lib|utils|bootstrap|mesh)\//,
+    /^lib\/[^/]+\.[jt]s$/
+  ]
+};
 
 const MODULAR_WEB_PRESET = {
   id: 'modular-web',
@@ -321,7 +365,7 @@ const MODULAR_WEB_PRESET = {
   codeSurfaceSignatures: MODULAR_WEB_CODE_SURFACE_SIGNATURES,
   productSurfaceSignals: [],
   documentSignalGroups: [...COMMON_DOCUMENT_SIGNAL_GROUPS],
-  coveragePatterns: {}
+  coveragePatterns: MODULAR_WEB_COVERAGE_PATTERNS
 };
 
 const SALES_TAILOR_CODE_SURFACE_SIGNATURES = [
