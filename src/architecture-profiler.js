@@ -242,6 +242,10 @@ function buildArchitectureViews({
 function selectCheckCatalog(profile) {
   const checks = ['secrets', 'xss', 'dependency-graph'];
   const selectedViews = ['structure'];
+  if (profile.languages.some((language) => ['javascript', 'typescript'].includes(language))) {
+    selectedViews.push('quality');
+    checks.push('code-quality');
+  }
   if (profile.views.runtime.entrypoints.length > 0 || profile.views.runtime.server_boundaries.length > 0) {
     selectedViews.push('runtime');
     checks.push('api-boundary');

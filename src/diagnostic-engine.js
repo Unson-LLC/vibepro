@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
+import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
@@ -130,6 +131,9 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       database_access: architectureProfile.applicable_checks.includes('database-access')
         ? await scanDatabaseAccess(repoRoot)
         : null,
+      code_quality: architectureProfile.applicable_checks.includes('code-quality')
+        ? await scanCodeQuality(repoRoot)
+        : null,
       static_site: await scanStaticSite(repoRoot),
       action_candidates: [],
       findings: [],
@@ -218,6 +222,44 @@ function buildFindings(evidence) {
         title: '未ページングのDB一覧取得候補がある',
         detail: `${unboundedQueries.length} 件のruntime queryで件数上限のない Prisma findMany 候補を検出した。内訳: ${formatGateSummary(querySummary)}。`,
         recommendation: '公開APIやユーザー操作に紐づく一覧取得には take/skip/cursor 等の上限を設け、必要ならページング仕様をStoryに落とす。'
+      });
+    }
+  }
+  if (applicableChecks.has('code-quality') && evidence.code_quality) {
+    const authorizationOrderRisks = filterGateRelevant(evidence.code_quality.authorization_order_risks);
+    if (authorizationOrderRisks.length > 0) {
+      const authzSummary = summarizeGateEffects(evidence.code_quality.authorization_order_risks);
+      findings.push({
+        id: 'VP-SEC-004',
+        severity: 'High',
+        category: 'セキュリティ',
+        title: '認可判定前に一覧・集計DB取得候補がある',
+        detail: `${authorizationOrderRisks.length} 件のruntime codeで403/Access denied判定より前にbulk DB read候補を検出した。内訳: ${formatGateSummary(authzSummary)}。`,
+        recommendation: '所有者確認や権限判定を先に行い、一覧・集計・外部I/Oは認可後に移動する。'
+      });
+    }
+    const duplicateQueryShapes = filterGateRelevant(evidence.code_quality.duplicate_query_shapes);
+    if (duplicateQueryShapes.length > 0) {
+      const duplicateSummary = summarizeGateEffects(evidence.code_quality.duplicate_query_shapes);
+      findings.push({
+        id: 'VP-DRY-001',
+        severity: 'Medium',
+        category: 'リファクタリング',
+        title: '重複したDB query形状の候補がある',
+        detail: `${duplicateQueryShapes.length} 種類のPrisma query形状が複数箇所に出現している。内訳: ${formatGateSummary(duplicateSummary)}。`,
+        recommendation: '同じwhere/select/orderByを繰り返す箇所は、用途が同じならservice/helperへ集約し、違う用途なら責務境界をStoryで明示する。'
+      });
+    }
+    const responsibilityHotspots = filterGateRelevant(evidence.code_quality.responsibility_hotspots);
+    if (responsibilityHotspots.length > 0) {
+      const hotspotSummary = summarizeGateEffects(evidence.code_quality.responsibility_hotspots);
+      findings.push({
+        id: 'VP-ARCH-001',
+        severity: 'Medium',
+        category: '責務分離',
+        title: '責務が混在している大きなruntime file候補がある',
+        detail: `${responsibilityHotspots.length} 件のruntime fileで、DB・認証・検証・外部I/Oなど複数責務の集中を検出した。内訳: ${formatGateSummary(hotspotSummary)}。`,
+        recommendation: 'route/action/serviceの境界を見直し、DB取得、認可、入力検証、通知・外部I/O、レスポンス整形を分離するStoryに落とす。'
       });
     }
   }
@@ -1121,6 +1163,9 @@ function renderSummary({ runId, evidence, findings }) {
 | 秘密情報候補 | ${formatRiskCount(evidence.static_site.secret_hits, evidence.static_site.risk_summary?.secret_hits)} |
 | XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
 | DB未ページング候補 | ${formatRiskCount(evidence.database_access?.unbounded_find_many ?? [], evidence.database_access?.risk_summary?.unbounded_find_many)} |
+| 認可前bulk DB候補 | ${formatRiskCount(evidence.code_quality?.authorization_order_risks ?? [], evidence.code_quality?.risk_summary?.authorization_order_risks)} |
+| 重複query形状候補 | ${formatRiskCount(evidence.code_quality?.duplicate_query_shapes ?? [], evidence.code_quality?.risk_summary?.duplicate_query_shapes)} |
+| 責務混在候補 | ${formatRiskCount(evidence.code_quality?.responsibility_hotspots ?? [], evidence.code_quality?.risk_summary?.responsibility_hotspots)} |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 

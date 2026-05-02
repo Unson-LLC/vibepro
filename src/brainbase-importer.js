@@ -85,6 +85,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
   const databaseAccess = evidence.database_access ?? {};
+  const codeQuality = evidence.code_quality ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const findingReview = evidence.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
@@ -161,6 +162,18 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         unbounded_find_many_gate_summary: databaseAccess.risk_summary?.unbounded_find_many
           ?? summarizeGateEffects(databaseAccess.unbounded_find_many)
       },
+      code_quality: {
+        scanned_files: codeQuality.scanned_files ?? 0,
+        authorization_order_risks_count: codeQuality.authorization_order_risks?.length ?? 0,
+        authorization_order_risks_gate_summary: codeQuality.risk_summary?.authorization_order_risks
+          ?? summarizeGateEffects(codeQuality.authorization_order_risks),
+        duplicate_query_shapes_count: codeQuality.duplicate_query_shapes?.length ?? 0,
+        duplicate_query_shapes_gate_summary: codeQuality.risk_summary?.duplicate_query_shapes
+          ?? summarizeGateEffects(codeQuality.duplicate_query_shapes),
+        responsibility_hotspots_count: codeQuality.responsibility_hotspots?.length ?? 0,
+        responsibility_hotspots_gate_summary: codeQuality.risk_summary?.responsibility_hotspots
+          ?? summarizeGateEffects(codeQuality.responsibility_hotspots)
+      },
       finding_review: {
         status: findingReview.status ?? 'unknown',
         summary: findingReview.summary ?? {},
@@ -217,6 +230,9 @@ function renderImportSummary(importState) {
 | 共通スキャン対象 | ${importState.signals.static_site.scanned_files}件 |
 | 秘密情報候補 | ${formatRiskCount(importState.signals.static_site.secret_hits_count, importState.signals.static_site.secret_hits_gate_summary)} |
 | XSSリスク候補 | ${formatRiskCount(importState.signals.static_site.xss_risk_hits_count, importState.signals.static_site.xss_risk_hits_gate_summary)} |
+| 認可前bulk DB候補 | ${formatRiskCount(importState.signals.code_quality.authorization_order_risks_count, importState.signals.code_quality.authorization_order_risks_gate_summary)} |
+| 重複query形状候補 | ${formatRiskCount(importState.signals.code_quality.duplicate_query_shapes_count, importState.signals.code_quality.duplicate_query_shapes_gate_summary)} |
+| 責務混在候補 | ${formatRiskCount(importState.signals.code_quality.responsibility_hotspots_count, importState.signals.code_quality.responsibility_hotspots_gate_summary)} |
 | 検出事項 | ${importState.findings.length}件 |
 
 ## API境界
