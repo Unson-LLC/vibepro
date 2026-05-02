@@ -66,7 +66,7 @@ Usage:
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -346,6 +346,7 @@ export async function runCli(argv, io = {}) {
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),
+          allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
           env: io.env
         });
         write(stdout, hasFlag(rest, '--json')

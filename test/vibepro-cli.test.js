@@ -965,7 +965,17 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
   assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.md'), 'utf8'), /VibePro Gate DAG/);
 
-  const createResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run']);
+  // gate guard: flag無しなら needs_verification で拒否される
+  let stderrOutput = '';
+  const blockedResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run'], {
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+  assert.equal(blockedResult.exitCode, 1);
+  assert.match(stderrOutput, /Pre-create gate check failed/);
+  assert.match(stderrOutput, /needs_verification/);
+
+  // --allow-needs-verification を渡せば通る
+  const createResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--dry-run', '--allow-needs-verification']);
   assert.equal(createResult.exitCode, 0);
   assert.equal(createResult.result.execution.dry_run, true);
   assert.equal(createResult.result.execution.task_context.task.id, 'TASK-001');
@@ -993,7 +1003,7 @@ if (process.argv[2] !== 'pr' || process.argv[3] !== 'create') {
 console.log('https://github.example.test/unson/vibepro/pull/123');
 `);
   await chmod(ghBin, 0o755);
-  const actualCreateResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--title', 'Test PR'], {
+  const actualCreateResult = await runCli(['pr', 'create', repo, '--base', 'main', '--task', 'TASK-001', '--title', 'Test PR', '--allow-needs-verification'], {
     env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
   });
   assert.equal(actualCreateResult.exitCode, 0);

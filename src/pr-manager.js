@@ -135,6 +135,18 @@ export async function createPullRequest(repoRoot, options = {}) {
     throw new Error('Current branch could not be resolved. Specify --head or run on a named branch.');
   }
 
+  // Gate DAG enforcement: overall_status が ready_for_review でなければ拒否
+  // Memory rule: テスト/検証証跡なしの PR を機械的に防ぐ（CLAUDE.md 0.6 Deterministic Guards）
+  const gateDag = preparation.pr_context?.gate_dag;
+  if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
+    const needsCount = gateDag.summary?.needs_evidence_count ?? 0;
+    throw new Error(
+      `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
+      `(needs_evidence_count=${needsCount}). ` +
+      `Provide evidence for required gates (Unit/Integration/E2E) or pass --allow-needs-verification to bypass.`
+    );
+  }
+
   const baseBranch = stripRemote(options.prBase ?? preparation.git.base_ref);
   const headBranch = options.headBranch ?? currentBranch;
   const title = options.title ?? buildPrTitle(preparation);
