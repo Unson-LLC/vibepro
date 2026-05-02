@@ -620,6 +620,7 @@ function buildStoryExecutionPlan(catalog, options = {}) {
   ];
   const warnings = catalog.source?.warnings ?? [];
   const sourceConsistency = summarizeSourceConsistency(scoredStories);
+  const sourceRecoveryMap = buildSourceRecoveryMap(scoredStories, taskCandidates);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -637,9 +638,12 @@ function buildStoryExecutionPlan(catalog, options = {}) {
       open_question_count: Array.isArray(catalog.open_questions) ? catalog.open_questions.length : 0,
       warning_count: warnings.length,
       source_consistency_status: sourceConsistency.status,
-      source_recovery_story_count: sourceConsistency.needs_recovery_story_count
+      source_recovery_story_count: sourceConsistency.needs_recovery_story_count,
+      source_missing_spec_count: sourceRecoveryMap.counts.missing_spec,
+      source_missing_architecture_count: sourceRecoveryMap.counts.missing_architecture
     },
     source_consistency: sourceConsistency,
+    source_recovery_map: sourceRecoveryMap,
     questions,
     priority_stories: priorityStories,
     task_candidates: taskCandidates,
@@ -848,6 +852,80 @@ function summarizeSourceConsistency(stories) {
     top_needs_recovery: needsRecovery.slice(0, 10),
     stories: items
   };
+}
+
+function buildSourceRecoveryMap(stories, taskCandidates = []) {
+  const taskIds = new Set(taskCandidates.map((candidate) => candidate.id));
+  const rows = stories
+    .map((story) => buildSourceRecoveryMapRow(story, taskIds))
+    .sort((a, b) => sourceRecoveryMapRank(a) - sourceRecoveryMapRank(b) || b.score - a.score || a.story_id.localeCompare(b.story_id));
+  const missingRows = rows.filter((row) => row.spec.status === 'needs_recovery' || row.architecture.status === 'needs_decision');
+  return {
+    schema_version: '0.1.0',
+    status: missingRows.length > 0 ? 'needs_recovery' : rows.some((row) => row.status === 'needs_review') ? 'needs_review' : 'aligned',
+    counts: {
+      stories: rows.length,
+      needs_recovery: missingRows.length,
+      missing_spec: rows.filter((row) => row.spec.status === 'needs_recovery').length,
+      missing_architecture: rows.filter((row) => row.architecture.status === 'needs_decision').length,
+      aligned: rows.filter((row) => row.status === 'aligned').length
+    },
+    missing: missingRows,
+    rows
+  };
+}
+
+function buildSourceRecoveryMapRow(story, taskIds) {
+  const recovery = story.source_recovery ?? {};
+  const specDraft = (recovery.drafts ?? []).find((draft) => draft.kind === 'spec');
+  const architectureDraft = (recovery.drafts ?? []).find((draft) => draft.kind === 'architecture');
+  const graph = story.graph_context ?? recovery.graph_context ?? {};
+  const specTaskId = `${story.story_id}-spec-recovery`;
+  const architectureTaskId = `${story.story_id}-architecture-recovery`;
+  return {
+    story_id: story.story_id,
+    title: story.title,
+    score: story.score,
+    status: recovery.status ?? 'unknown',
+    story_source: {
+      status: recovery.sources?.story?.status ?? 'unknown',
+      refs: recovery.sources?.story?.refs ?? []
+    },
+    spec: {
+      status: recovery.sources?.spec?.status ?? 'unknown',
+      refs: recovery.sources?.spec?.refs ?? [],
+      suggested_path: specDraft?.suggested_path ?? null,
+      draft_title: specDraft?.title ?? null,
+      suggested_task_id: specDraft ? specTaskId : null,
+      task_candidate_id: taskIds.has(specTaskId) ? specTaskId : null
+    },
+    architecture: {
+      status: recovery.sources?.architecture?.status ?? 'unknown',
+      refs: recovery.sources?.architecture?.refs ?? [],
+      signals: recovery.sources?.architecture?.signals ?? [],
+      suggested_path: architectureDraft?.suggested_path ?? null,
+      draft_title: architectureDraft?.title ?? null,
+      suggested_task_id: architectureDraft ? architectureTaskId : null,
+      task_candidate_id: taskIds.has(architectureTaskId) ? architectureTaskId : null
+    },
+    graph: {
+      matched_file_count: graph.matched_file_count ?? 0,
+      matched_files: (graph.matched_files ?? []).slice(0, 12),
+      related_edge_count: graph.related_edge_count ?? 0,
+      related_files: (graph.related_files ?? []).slice(0, 8),
+      hub_files: (graph.hub_nodes ?? []).map((node) => node.source_file).filter(Boolean).slice(0, 5),
+      affected_communities: graph.affected_communities ?? [],
+      cross_community: Boolean(graph.cross_community)
+    }
+  };
+}
+
+function sourceRecoveryMapRank(row) {
+  if (row.spec.status === 'needs_recovery' && row.architecture.status === 'needs_decision') return 0;
+  if (row.architecture.status === 'needs_decision') return 1;
+  if (row.spec.status === 'needs_recovery') return 2;
+  if (row.status === 'needs_review') return 3;
+  return 4;
 }
 
 function inferArchitectureBoundarySignals(story, codeFiles) {
@@ -1207,6 +1285,7 @@ ${story.reasons.map((reason) => `  - ${reason}`).join('\n') || '  - -'}
     : `| Story | Task | Purpose |
 |-------|------|---------|
 ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${task.purpose} |`).join('\n')}`;
+  const sourceRecoveryMap = renderSourceRecoveryMap(plan.source_recovery_map);
   return `# Story実行計画
 
 ## サマリー
@@ -1221,6 +1300,8 @@ ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${tas
 | 未決事項 | ${plan.summary.open_question_count} |
 | Source Consistency | ${plan.summary.source_consistency_status ?? '-'} |
 | 正本復元対象Story | ${plan.summary.source_recovery_story_count ?? 0} |
+| Spec欠落 | ${plan.summary.source_missing_spec_count ?? 0} |
+| Architecture/ADR判断欠落 | ${plan.summary.source_missing_architecture_count ?? 0} |
 
 ## まず確認する質問
 
@@ -1230,6 +1311,10 @@ ${questions}
 
 ${stories}
 
+## 正本欠落マップ
+
+${sourceRecoveryMap}
+
 ## タスク候補
 
 ${tasks}
@@ -1238,6 +1323,29 @@ ${tasks}
 
 ${plan.next_commands.map((command) => `- \`${command}\``).join('\n') || '-'}
 `;
+}
+
+function renderSourceRecoveryMap(map) {
+  const rows = map?.missing ?? [];
+  if (rows.length === 0) return '- なし';
+  return `| Story | Spec | Spec復元先 | Architecture | ADR復元先 | Graph | Task |
+|-------|------|------------|--------------|-----------|-------|------|
+${rows.map((row) => `| ${escapeTableCell(row.story_id)} | ${escapeTableCell(row.spec.status)} | ${escapeTableCell(row.spec.suggested_path ?? '-')} | ${escapeTableCell(row.architecture.status)} | ${escapeTableCell(row.architecture.suggested_path ?? '-')} | ${escapeTableCell(formatSourceRecoveryMapGraph(row.graph))} | ${escapeTableCell(formatSourceRecoveryMapTasks(row))} |`).join('\n')}`;
+}
+
+function formatSourceRecoveryMapGraph(graph) {
+  return `${graph?.matched_file_count ?? 0} files / ${graph?.related_edge_count ?? 0} edges${graph?.cross_community ? ' / cross-community' : ''}`;
+}
+
+function formatSourceRecoveryMapTasks(row) {
+  return [
+    row.spec.task_candidate_id ?? row.spec.suggested_task_id,
+    row.architecture.task_candidate_id ?? row.architecture.suggested_task_id
+  ].filter(Boolean).join(', ') || '-';
+}
+
+function escapeTableCell(value) {
+  return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
 }
 
 function formatPercent(value) {
