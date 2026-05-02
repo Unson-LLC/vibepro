@@ -181,12 +181,12 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files, activePreset);
 
-  const derivedStories = [
+  const derivedStories = attachLinkedDocumentSignals([
     ...deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
-  ];
+  ], documentSignals);
   const stories = dedupeStories([
     ...derivedStories,
     ...deriveConfiguredStories(options.config, documentSignals, defaults)
@@ -1230,7 +1230,7 @@ async function collectDocumentSignals(repoRoot, files, preset) {
     .filter((file) => file.endsWith('.md') && file.startsWith('docs/') && !/dummy|template/i.test(file));
   for (const filePath of docFiles) {
     const doc = await analyzeDocument(repoRoot, filePath);
-    if (doc.story_id && filePath.startsWith('docs/management/stories/')) {
+    if (doc.story_id) {
       byStoryId[doc.story_id] = [...(byStoryId[doc.story_id] ?? []), doc];
     }
     for (const group of groups) {
@@ -1644,6 +1644,75 @@ function selectDocs(documentSignals, key) {
 
 function selectDocsForStory(documentSignals, storyId) {
   return documentSignals._byStoryId?.[storyId] ?? [];
+}
+
+function attachLinkedDocumentSignals(stories, documentSignals) {
+  return stories.map((story) => {
+    const docs = selectDocsForStory(documentSignals, story.story_id);
+    if (docs.length === 0) return story;
+    const docPathsForStory = docs.map((doc) => doc.path);
+    const docsEvidence = uniqueList([
+      ...(story.derived?.meaning?.evidence_by_type?.docs_evidence ?? []),
+      ...docPathsForStory
+    ]);
+    const sourcePaths = uniqueList([
+      ...(story.source?.paths ?? []),
+      ...docPathsForStory
+    ]);
+    const openQuestions = linkedDocsSatisfySpec(docs)
+      ? (story.derived?.open_questions ?? []).filter((item) => item.field !== 'missing_spec')
+      : story.derived?.open_questions ?? [];
+    const meaning = story.derived?.meaning ?? {};
+    const evidenceByType = {
+      ...(meaning.evidence_by_type ?? {}),
+      docs_evidence: docsEvidence,
+      missing_evidence: (meaning.evidence_by_type?.missing_evidence ?? [])
+        .filter((item) => !(linkedDocsSatisfySpec(docs) && item.field === 'missing_spec'))
+    };
+    return {
+      ...story,
+      source: {
+        ...(story.source ?? {}),
+        paths: sourcePaths
+      },
+      derived: {
+        ...(story.derived ?? {}),
+        open_questions: openQuestions,
+        story_definition: appendLinkedDocsToStoryDefinition(story.derived?.story_definition, docs),
+        meaning: {
+          ...meaning,
+          evidence_by_type: evidenceByType
+        }
+      }
+    };
+  });
+}
+
+function linkedDocsSatisfySpec(docs) {
+  return docs.some((doc) => /docs\/(specs|requirements|features|user_stories|shadow-call)\//.test(doc.path));
+}
+
+function appendLinkedDocsToStoryDefinition(definition = {}, docs = []) {
+  return {
+    ...definition,
+    source_synthesis: [
+      ...(definition?.source_synthesis ?? []),
+      ...docs.map((doc) => ({
+        path: doc.path,
+        role: classifyDocumentRole(doc),
+        title: doc.title
+      }))
+    ].filter((item, index, items) => items.findIndex((candidate) => candidate.path === item.path) === index)
+  };
+}
+
+function classifyDocumentRole(doc) {
+  if (doc.path.startsWith('docs/specs/')) return 'Spec正本';
+  if (doc.path.startsWith('docs/architecture/')) return 'Architecture正本';
+  if (doc.path.startsWith('docs/requirements/')) return 'Requirement正本';
+  if (doc.path.startsWith('docs/user_stories/')) return 'User Story正本';
+  if (doc.path.startsWith('docs/management/stories/')) return 'Story正本';
+  return 'linked document';
 }
 
 function docPaths(documentSignals, key) {

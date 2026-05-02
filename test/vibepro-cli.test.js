@@ -826,6 +826,51 @@ period: 2026Q2
   assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/management/stories/active/story-product-hotel-detail-actions.md'), true);
 });
 
+test('story derive links story_id frontmatter specs and architecture docs to stories', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components', 'hotel'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'specs', 'product-hotel-detail-actions.md'), `---
+story_id: story-product-hotel-detail-actions
+title: ホテル詳細Spec
+status: recovered
+---
+
+# ホテル詳細Spec
+
+## 受け入れ基準
+
+- ホテル詳細から予約前アクションへ進める
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'ADR-product-hotel-detail-actions.md'), `---
+story_id: story-product-hotel-detail-actions
+title: ホテル詳細ADR
+status: accepted
+---
+
+# ADR: ホテル詳細
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'detail', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await writeFile(path.join(repo, 'src', 'components', 'hotel', 'HotelDetail.tsx'), 'export function HotelDetail() { return null; }\n');
+
+  await runCli(['story', 'derive', repo]);
+  await runCli(['story', 'plan', repo, '--limit', '5']);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const story = catalog.stories.find((item) => item.story_id === 'story-product-hotel-detail-actions');
+  assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/specs/product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.meaning.evidence_by_type.docs_evidence.includes('docs/architecture/ADR-product-hotel-detail-actions.md'), true);
+  assert.equal(story.derived.open_questions.some((item) => item.field === 'missing_spec'), false);
+  assert.equal(story.derived.story_definition.source_synthesis.some((item) => item.path === 'docs/specs/product-hotel-detail-actions.md'), true);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const row = plan.source_recovery_map.rows.find((item) => item.story_id === 'story-product-hotel-detail-actions');
+  assert.equal(row.spec.status, 'present');
+  assert.equal(row.architecture.status, 'present');
+});
+
 test('story derive does not create map search story from hotel detail code alone', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
