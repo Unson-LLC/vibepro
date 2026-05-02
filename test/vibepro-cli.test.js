@@ -2151,6 +2151,17 @@ export function middleware() {}
   assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-beta.ts'), true);
   assert.equal(evidence.code_quality.responsibility_hotspots.length, 1);
   assert.equal(evidence.code_quality.responsibility_hotspots[0].file, 'src/lib/services/mixed-workflow.ts');
+  assert.equal(evidence.refactoring_opportunities.length, 2);
+  const dryOpportunity = evidence.refactoring_opportunities.find((opportunity) => opportunity.finding_id === 'VP-DRY-001');
+  assert.equal(dryOpportunity.source, 'duplicate_query_shape');
+  assert.equal(dryOpportunity.refactoring_intent, 'query_policy');
+  assert.equal(dryOpportunity.target_files.includes('src/lib/services/company-alpha.ts'), true);
+  assert.equal(dryOpportunity.target_files.includes('src/lib/services/company-beta.ts'), true);
+  assert.match(dryOpportunity.story_blueprint.title, /重複query形状/);
+  assert.equal(dryOpportunity.story_blueprint.acceptance_criteria.some((item) => item.includes('VibePro診断')), true);
+  const archOpportunity = evidence.refactoring_opportunities.find((opportunity) => opportunity.finding_id === 'VP-ARCH-001');
+  assert.equal(archOpportunity.refactoring_intent, 'responsibility_split');
+  assert.equal(archOpportunity.target_files.includes('src/lib/services/mixed-workflow.ts'), true);
   assert.equal(evidence.api_boundary.routes.length, 8);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_middleware, 3);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_route, 1);
@@ -2180,7 +2191,7 @@ export function middleware() {}
   assert.equal(queueRoute.protection.status, 'excluded_by_middleware');
   assert.equal(queueRoute.protection.evidence.includes('middleware_excludes_api'), true);
   assert.equal(queueRoute.risk_hints.includes('privileged_route_unprotected'), true);
-  assert.equal(evidence.action_candidates.length, 3);
+  assert.equal(evidence.action_candidates.length, 4);
   const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.json'));
   assert.equal(tasks.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');
   assert.equal(tasks.tasks[0].priority, 'critical');
@@ -2196,6 +2207,10 @@ export function middleware() {}
   assert.equal(tasks.tasks[4].target_groups[0].id, 'queue-status');
   assert.equal(tasks.tasks[4].target_groups[0].route_count, 1);
   assert.equal(tasks.tasks[4].pre_fix_briefing.current_boundary.middleware.excludes_api, true);
+  assert.equal(tasks.tasks[6].source_id, 'VP-ACTION-DRY-001');
+  assert.equal(tasks.tasks[6].target_files.includes('src/lib/services/company-alpha.ts'), true);
+  assert.equal(tasks.tasks[6].pre_fix_briefing.opportunity.refactoring_intent, 'query_policy');
+  assert.equal(tasks.tasks[6].recommended_strategy.id, 'extract-shared-boundary');
   const apiAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-001');
   assert.equal(apiAction.finding_id, 'VP-API-001');
   assert.equal(apiAction.execution_policy, 'proposal_only');
@@ -2238,6 +2253,13 @@ export function middleware() {}
     webhookAction.implementation_plan.pre_fix_briefing.auth_helpers.some((helper) => helper.file === 'src/lib/queue.ts'),
     false
   );
+  const dryAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-DRY-001');
+  assert.equal(dryAction.finding_id, 'VP-DRY-001');
+  assert.equal(dryAction.scope, 'refactoring');
+  assert.equal(dryAction.refactoring_opportunity_id, dryOpportunity.id);
+  assert.equal(dryAction.target_files.includes('src/lib/services/company-beta.ts'), true);
+  assert.equal(dryAction.story_blueprint.refactoring_intent, 'query_policy');
+  assert.equal(dryAction.implementation_plan.pre_fix_briefing.opportunity.id, dryOpportunity.id);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-DB-001'), true);
@@ -2266,10 +2288,12 @@ export function middleware() {}
   assert.match(summary, /認可前bulk DB候補/);
   assert.match(summary, /重複query形状候補/);
   assert.match(summary, /責務混在候補/);
+  assert.match(summary, /リファクタリング機会/);
   assert.match(summary, /保護状態別/);
   assert.match(summary, /excluded_by_middleware \| 4/);
   assert.match(summary, /## 次アクション候補/);
   assert.match(summary, /VP-ACTION-API-001/);
+  assert.match(summary, /VP-ACTION-DRY-001/);
   assert.match(summary, /Impact/);
   assert.match(summary, /読むファイル/);
   assert.match(summary, /実装手順/);
@@ -2317,6 +2341,7 @@ export function middleware() {}
   assert.match(importSummary, /認可前bulk DB候補/);
   assert.match(importSummary, /重複query形状候補/);
   assert.match(importSummary, /責務混在候補/);
+  assert.match(importSummary, /リファクタリング機会/);
   assert.match(importSummary, /excluded_by_middleware \| 4/);
   assert.match(importSummary, /## 診断レビュー/);
   assert.doesNotMatch(importSummary, /suggested detector_gap: [1-9]/);
@@ -2336,17 +2361,24 @@ export function middleware() {}
   assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1);
   assert.equal(importState.signals.code_quality.duplicate_query_shapes_count, 1);
   assert.equal(importState.signals.code_quality.responsibility_hotspots_count, 1);
+  assert.equal(importState.signals.refactoring_opportunities.length, 2);
+  assert.equal(importState.signals.refactoring_opportunities[0].story_blueprint.source_finding_id, 'VP-DRY-001');
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
   assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
-  assert.equal(importState.signals.tasks.length, 6);
+  assert.equal(importState.signals.tasks.length, 7);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');
   assert.equal(importState.signals.tasks[4].source_id, 'VP-ACTION-API-001');
-  assert.equal(importState.signals.action_candidates.length, 3);
+  assert.equal(importState.signals.tasks[6].source_id, 'VP-ACTION-DRY-001');
+  assert.equal(importState.signals.action_candidates.length, 4);
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
   assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
   assert.equal(importState.signals.action_candidates[0].implementation_plan.read_first_files.some((item) => item.file === 'src/lib/queue.ts'), true);
   assert.equal(importState.signals.action_candidates[0].implementation_plan.pre_fix_briefing.recommended_strategy.id, 'route-level-auth');
+  const importedDryAction = importState.signals.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-DRY-001');
+  assert.equal(importedDryAction.refactoring_opportunity_id, dryOpportunity.id);
+  assert.equal(importedDryAction.story_blueprint.refactoring_intent, 'query_policy');
+  assert.equal(importedDryAction.target_files.includes('src/lib/services/company-alpha.ts'), true);
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').graph_context.impact_score > 0, true);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(

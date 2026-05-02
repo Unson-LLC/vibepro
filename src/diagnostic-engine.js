@@ -5,6 +5,10 @@ import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
 import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
+import {
+  buildRefactoringActionCandidates,
+  buildRefactoringOpportunities
+} from './refactoring-opportunity-generator.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
@@ -107,45 +111,46 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     selected_views: architectureProfile.selected_views,
     applicable_checks: architectureProfile.applicable_checks
   };
-  return {
-    graphIndex,
-    evidence: {
+  const evidence = {
+    schema_version: '0.1.0',
+    run_id: runId,
+    story_id: story.story_id,
+    story,
+    graphify: {
+      node_count: nodes.length,
+      edge_count: edges.length,
+      edge_source_key: edgeSourceKey,
+      extracted_edges: extractedEdges,
+      inferred_edges: inferredEdges,
+      ambiguous_edges: ambiguousEdges,
+      quality_notices: buildGraphQualityNotices({ inferredEdges })
+    },
+    architecture_profile: architectureProfile,
+    check_catalog: checkCatalog,
+    api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
+      ? await scanApiBoundary(repoRoot, architectureProfile)
+      : null,
+    database_access: architectureProfile.applicable_checks.includes('database-access')
+      ? await scanDatabaseAccess(repoRoot)
+      : null,
+    code_quality: architectureProfile.applicable_checks.includes('code-quality')
+      ? await scanCodeQuality(repoRoot)
+      : null,
+    static_site: await scanStaticSite(repoRoot),
+    refactoring_opportunities: [],
+    action_candidates: [],
+    findings: [],
+    finding_review: {
       schema_version: '0.1.0',
-      run_id: runId,
-      story_id: story.story_id,
-      story,
-      graphify: {
-        node_count: nodes.length,
-        edge_count: edges.length,
-        edge_source_key: edgeSourceKey,
-        extracted_edges: extractedEdges,
-        inferred_edges: inferredEdges,
-        ambiguous_edges: ambiguousEdges,
-        quality_notices: buildGraphQualityNotices({ inferredEdges })
-      },
-      architecture_profile: architectureProfile,
-      check_catalog: checkCatalog,
-      api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
-        ? await scanApiBoundary(repoRoot, architectureProfile)
-        : null,
-      database_access: architectureProfile.applicable_checks.includes('database-access')
-        ? await scanDatabaseAccess(repoRoot)
-        : null,
-      code_quality: architectureProfile.applicable_checks.includes('code-quality')
-        ? await scanCodeQuality(repoRoot)
-        : null,
-      static_site: await scanStaticSite(repoRoot),
-      action_candidates: [],
-      findings: [],
-      finding_review: {
-        schema_version: '0.1.0',
-        status: 'not_generated',
-        items: [],
-        summary: {}
-      },
-      gates: []
-    }
+      status: 'not_generated',
+      items: [],
+      summary: {}
+    },
+    gates: []
   };
+  evidence.refactoring_opportunities = buildRefactoringOpportunities(evidence);
+
+  return { graphIndex, evidence };
 }
 
 function normalizeGraphEdges(graph) {
@@ -333,86 +338,88 @@ function buildGraphQualityNotices({ inferredEdges }) {
 async function buildActionCandidates(repoRoot, evidence, graphIndex) {
   const candidates = [];
   const apiBoundary = evidence.api_boundary;
-  if (!apiBoundary) return candidates;
 
-  const privilegedUnprotected = apiBoundary.routes
-    .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
-  if (privilegedUnprotected.length > 0) {
-    const graphContext = buildGraphContextForRoutes(privilegedUnprotected, graphIndex);
-    candidates.push({
-      id: 'VP-ACTION-API-001',
-      finding_id: 'VP-API-001',
-      scope: 'api_boundary',
-      title: '管理系または内部系APIの保護方針を決める',
-      target_count: privilegedUnprotected.length,
-      execution_policy: 'proposal_only',
-      mutates_repository: false,
-      confidence: privilegedUnprotected.some((route) => route.protection?.status === 'unknown') ? 'medium' : 'high',
-      recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
-      route_examples: buildRouteExamples(privilegedUnprotected),
-      graph_context: graphContext,
-      implementation_plan: await buildImplementationPlanForAction({
-        repoRoot,
-        actionId: 'VP-ACTION-API-001',
-        routes: privilegedUnprotected,
-        apiBoundary,
-        graphContext
-      })
-    });
+  if (apiBoundary) {
+    const privilegedUnprotected = apiBoundary.routes
+      .filter((route) => route.risk_hints.includes('privileged_route_unprotected'));
+    if (privilegedUnprotected.length > 0) {
+      const graphContext = buildGraphContextForRoutes(privilegedUnprotected, graphIndex);
+      candidates.push({
+        id: 'VP-ACTION-API-001',
+        finding_id: 'VP-API-001',
+        scope: 'api_boundary',
+        title: '管理系または内部系APIの保護方針を決める',
+        target_count: privilegedUnprotected.length,
+        execution_policy: 'proposal_only',
+        mutates_repository: false,
+        confidence: privilegedUnprotected.some((route) => route.protection?.status === 'unknown') ? 'medium' : 'high',
+        recommendation: 'middlewareでAPIを保護するか、route内認証を追加するかを決め、対象routeごとに保護根拠を明示する。',
+        route_examples: buildRouteExamples(privilegedUnprotected),
+        graph_context: graphContext,
+        implementation_plan: await buildImplementationPlanForAction({
+          repoRoot,
+          actionId: 'VP-ACTION-API-001',
+          routes: privilegedUnprotected,
+          apiBoundary,
+          graphContext
+        })
+      });
+    }
+
+    const debugExposed = apiBoundary.routes
+      .filter((route) => route.risk_hints.includes('debug_route_exposed'));
+    if (debugExposed.length > 0) {
+      const graphContext = buildGraphContextForRoutes(debugExposed, graphIndex);
+      candidates.push({
+        id: 'VP-ACTION-API-002',
+        finding_id: 'VP-API-002',
+        scope: 'api_boundary',
+        title: 'debug/test APIの公開可否を確認する',
+        target_count: debugExposed.length,
+        execution_policy: 'proposal_only',
+        mutates_repository: false,
+        confidence: 'high',
+        recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
+        route_examples: buildRouteExamples(debugExposed),
+        graph_context: graphContext,
+        implementation_plan: await buildImplementationPlanForAction({
+          repoRoot,
+          actionId: 'VP-ACTION-API-002',
+          routes: debugExposed,
+          apiBoundary,
+          graphContext
+        })
+      });
+    }
+
+    const webhooksWithoutSignature = apiBoundary.routes
+      .filter((route) => route.risk_hints.includes('webhook_signature_not_detected'));
+    if (webhooksWithoutSignature.length > 0) {
+      const graphContext = buildGraphContextForRoutes(webhooksWithoutSignature, graphIndex);
+      candidates.push({
+        id: 'VP-ACTION-API-003',
+        finding_id: 'VP-API-003',
+        scope: 'api_boundary',
+        title: 'webhook APIの署名検証方針を確認する',
+        target_count: webhooksWithoutSignature.length,
+        execution_policy: 'proposal_only',
+        mutates_repository: false,
+        confidence: 'high',
+        recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
+        route_examples: buildRouteExamples(webhooksWithoutSignature),
+        graph_context: graphContext,
+        implementation_plan: await buildImplementationPlanForAction({
+          repoRoot,
+          actionId: 'VP-ACTION-API-003',
+          routes: webhooksWithoutSignature,
+          apiBoundary,
+          graphContext
+        })
+      });
+    }
   }
 
-  const debugExposed = apiBoundary.routes
-    .filter((route) => route.risk_hints.includes('debug_route_exposed'));
-  if (debugExposed.length > 0) {
-    const graphContext = buildGraphContextForRoutes(debugExposed, graphIndex);
-    candidates.push({
-      id: 'VP-ACTION-API-002',
-      finding_id: 'VP-API-002',
-      scope: 'api_boundary',
-      title: 'debug/test APIの公開可否を確認する',
-      target_count: debugExposed.length,
-      execution_policy: 'proposal_only',
-      mutates_repository: false,
-      confidence: 'high',
-      recommendation: '本番公開が不要なdebug/test APIは削除し、必要な場合は認証または環境制限を明示する。',
-      route_examples: buildRouteExamples(debugExposed),
-      graph_context: graphContext,
-      implementation_plan: await buildImplementationPlanForAction({
-        repoRoot,
-        actionId: 'VP-ACTION-API-002',
-        routes: debugExposed,
-        apiBoundary,
-        graphContext
-      })
-    });
-  }
-
-  const webhooksWithoutSignature = apiBoundary.routes
-    .filter((route) => route.risk_hints.includes('webhook_signature_not_detected'));
-  if (webhooksWithoutSignature.length > 0) {
-    const graphContext = buildGraphContextForRoutes(webhooksWithoutSignature, graphIndex);
-    candidates.push({
-      id: 'VP-ACTION-API-003',
-      finding_id: 'VP-API-003',
-      scope: 'api_boundary',
-      title: 'webhook APIの署名検証方針を確認する',
-      target_count: webhooksWithoutSignature.length,
-      execution_policy: 'proposal_only',
-      mutates_repository: false,
-      confidence: 'high',
-      recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。',
-      route_examples: buildRouteExamples(webhooksWithoutSignature),
-      graph_context: graphContext,
-      implementation_plan: await buildImplementationPlanForAction({
-        repoRoot,
-        actionId: 'VP-ACTION-API-003',
-        routes: webhooksWithoutSignature,
-        apiBoundary,
-        graphContext
-      })
-    });
-  }
-
+  candidates.push(...buildRefactoringActionCandidates(evidence));
   return candidates;
 }
 
@@ -1166,6 +1173,7 @@ function renderSummary({ runId, evidence, findings }) {
 | 認可前bulk DB候補 | ${formatRiskCount(evidence.code_quality?.authorization_order_risks ?? [], evidence.code_quality?.risk_summary?.authorization_order_risks)} |
 | 重複query形状候補 | ${formatRiskCount(evidence.code_quality?.duplicate_query_shapes ?? [], evidence.code_quality?.risk_summary?.duplicate_query_shapes)} |
 | 責務混在候補 | ${formatRiskCount(evidence.code_quality?.responsibility_hotspots ?? [], evidence.code_quality?.risk_summary?.responsibility_hotspots)} |
+| リファクタリング機会 | ${evidence.refactoring_opportunities?.length ?? 0}件 |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
@@ -1467,6 +1475,14 @@ ${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
 
 function renderPreFixBriefing(briefing) {
   if (!briefing) return '';
+  if (briefing.opportunity) {
+    return `修正前ブリーフィング:
+- リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
+- 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
+- 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
+- 方針: ${briefing.strategy_options?.map((option) => option.label).join(' / ') || '-'}`;
+  }
   return `修正前ブリーフィング:
 - 現在の境界: middleware excludes_api=${briefing.current_boundary?.middleware?.excludes_api ?? false}, route protection=${formatInlineSummary(briefing.current_boundary?.route_protection ?? {})}
 - 認証/署名候補: ${formatAuthHelpers(briefing.auth_helpers)}

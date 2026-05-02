@@ -670,6 +670,14 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `code_quality.responsibility_hotspots`
 - `code_quality.responsibility_hotspots[].signals`
 - `code_quality.risk_summary`
+- `refactoring_opportunities`
+- `refactoring_opportunities[].id`
+- `refactoring_opportunities[].finding_id`
+- `refactoring_opportunities[].source`
+- `refactoring_opportunities[].refactoring_intent`
+- `refactoring_opportunities[].target_files`
+- `refactoring_opportunities[].suggested_abstraction`
+- `refactoring_opportunities[].story_blueprint`
 - `architecture_profile.system_type`
 - `architecture_profile.app_type`
 - `architecture_profile.frameworks`
@@ -693,6 +701,9 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `action_candidates[].target_count`
 - `action_candidates[].execution_policy`
 - `action_candidates[].mutates_repository`
+- `action_candidates[].target_files`
+- `action_candidates[].refactoring_opportunity_id`
+- `action_candidates[].story_blueprint`
 - `action_candidates[].route_examples`
 - `action_candidates[].route_examples[].file`
 - `action_candidates[].graph_context`
@@ -793,7 +804,7 @@ API route保護判定:
 
 生成ルール:
 
-- `action_candidates[]` は1件ずつ `VP-TASK-*` に変換する。対象routeは `route_examples[]` ではなく `implementation_plan.pre_fix_briefing.target_routes[]` を正本にして全件を `target_routes[]` と `target_files[]` に入れる。
+- `action_candidates[]` は1件ずつ `VP-TASK-*` に変換する。対象routeは `route_examples[]` ではなく `implementation_plan.pre_fix_briefing.target_routes[]` を正本にして全件を `target_routes[]` と `target_files[]` に入れる。routeを持たないリファクタリング候補では `action_candidates[].target_files[]` を正本として `target_files[]` に入れる。
 - `action_candidate` 由来タスクでは `target_routes[]` を `target_groups[]` に分ける。`/api/admin/<domain>/...` は `<domain>`、`/api/batch-jobs/...` は `batch-jobs`、`/api/companies/...` は `companies` など、path prefix を優先する。
 - Critical/Highの `findings[]` のうち `action_candidates` に対応しないものは確認タスクに変換する。
 - `VP-STATIC-002` は `block` と `review` を別タスクに分ける。`block` は `VP-TASK-STATIC-002-BLOCK`、`review` は `VP-TASK-STATIC-002-REVIEW` とする。
@@ -979,6 +990,7 @@ API route保護判定:
 - `diagnose` はrouteからimportされた認証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある認証シグナルを `protected_by_route` として扱う。
 - `diagnose` はwebhook routeからimportされた署名検証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある署名検証シグナルを `protected_by_route` として扱う。
 - `diagnose` は `code-quality` が適用される場合、認可判定前のbulk DB read候補、重複したPrisma query形状、責務が混在する大きなruntime file候補を `evidence.code_quality` に記録する。
+- `diagnose` は重複query形状や責務混在候補を、repo固有辞書ではなく検出証拠から `evidence.refactoring_opportunities[]` に正規化し、DRY候補は `VP-ACTION-DRY-001` としてStory blueprint付きの次アクションにできる。
 - `task list` で選択中Storyの生成タスクを一覧できる。
 - `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
 - `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。

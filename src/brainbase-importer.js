@@ -89,6 +89,9 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const findingReview = evidence.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
+  const refactoringOpportunities = Array.isArray(evidence.refactoring_opportunities)
+    ? evidence.refactoring_opportunities
+    : [];
   const stories = storyContext.stories;
   const primaryStory = storyContext.currentStory;
 
@@ -179,6 +182,20 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         summary: findingReview.summary ?? {},
         items: Array.isArray(findingReview.items) ? findingReview.items : []
       },
+      refactoring_opportunities: refactoringOpportunities.map((opportunity) => ({
+        id: opportunity.id,
+        finding_id: opportunity.finding_id,
+        source: opportunity.source,
+        title: opportunity.title,
+        refactoring_intent: opportunity.refactoring_intent,
+        target_count: opportunity.target_count,
+        target_files: opportunity.target_files ?? [],
+        confidence: opportunity.confidence,
+        priority: opportunity.priority,
+        suggested_abstraction: opportunity.suggested_abstraction ?? null,
+        evidence_refs: opportunity.evidence_refs ?? {},
+        story_blueprint: opportunity.story_blueprint ?? null
+      })),
       tasks: Array.isArray(taskState?.tasks) ? taskState.tasks : [],
       action_candidates: actionCandidates.map((candidate) => ({
         id: candidate.id,
@@ -190,6 +207,9 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         mutates_repository: candidate.mutates_repository,
         confidence: candidate.confidence,
         recommendation: candidate.recommendation,
+        target_files: candidate.target_files ?? [],
+        refactoring_opportunity_id: candidate.refactoring_opportunity_id ?? null,
+        story_blueprint: candidate.story_blueprint ?? null,
         route_examples: candidate.route_examples ?? [],
         graph_context: candidate.graph_context ?? emptyGraphContext(),
         implementation_plan: candidate.implementation_plan ?? emptyImplementationPlan()
@@ -233,6 +253,7 @@ function renderImportSummary(importState) {
 | 認可前bulk DB候補 | ${formatRiskCount(importState.signals.code_quality.authorization_order_risks_count, importState.signals.code_quality.authorization_order_risks_gate_summary)} |
 | 重複query形状候補 | ${formatRiskCount(importState.signals.code_quality.duplicate_query_shapes_count, importState.signals.code_quality.duplicate_query_shapes_gate_summary)} |
 | 責務混在候補 | ${formatRiskCount(importState.signals.code_quality.responsibility_hotspots_count, importState.signals.code_quality.responsibility_hotspots_gate_summary)} |
+| リファクタリング機会 | ${importState.signals.refactoring_opportunities.length}件 |
 | 検出事項 | ${importState.findings.length}件 |
 
 ## API境界
@@ -406,6 +427,14 @@ ${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
 
 function renderPreFixBriefing(briefing) {
   if (!briefing) return '';
+  if (briefing.opportunity) {
+    return `修正前ブリーフィング:
+- リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
+- 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
+- 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
+- 方針: ${briefing.strategy_options?.map((option) => option.label).join(' / ') || '-'}`;
+  }
   return `修正前ブリーフィング:
 - 現在の境界: middleware excludes_api=${briefing.current_boundary?.middleware?.excludes_api ?? false}, route protection=${formatInlineSummary(briefing.current_boundary?.route_protection ?? {})}
 - 認証/署名候補: ${formatAuthHelpers(briefing.auth_helpers)}
