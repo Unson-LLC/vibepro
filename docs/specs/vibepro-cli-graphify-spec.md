@@ -646,6 +646,7 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `static_site.secret_hits[].source_kind`
 - `static_site.secret_hits[].confidence`
 - `static_site.secret_hits[].gate_effect`
+- runtime code の秘密情報検出では、`.env*` 値・`sk-` 形式・引用符付きのハードコード値を block/review 対象とし、`request.headers`、`body`、設定オブジェクト、変数、Python 引数などから渡される動的参照は `gate_effect: info` とする。
 - `static_site.xss_risk_hits`
 - `static_site.xss_risk_hits[].source_kind`
 - `static_site.xss_risk_hits[].confidence`

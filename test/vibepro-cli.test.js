@@ -1797,6 +1797,15 @@ test('diagnose creates static site evidence and a static site report under the r
   await writeFile(path.join(repo, 'app.js'), `
 const apiKey = "sk-123456789012345678901234";
 const access_token = "runtimeReviewToken123";
+const secret_key = plainsecretvalue;
+const api_key = request.headers.get('x-api-key');
+const accessToken = body.access_token ?? null;
+const callConfig = {
+  authToken: twilioAuthToken,
+  apiKey: openaiConfig.apiKey!,
+  access_token: accessToken
+};
+FireCrawlApi(api_key=firecrawl_api_key);
 document.body.innerHTML = location.hash;
 eval("1+1");
 `);
@@ -1839,8 +1848,18 @@ element.innerHTML = userInput;
   const skillXss = evidence.static_site.xss_risk_hits.find((hit) => hit.file === '.claude/skills/security-patterns/SKILL.md');
   assert.equal(skillXss.confidence, 'low');
   assert.equal(skillXss.gate_effect, 'info');
+  const dynamicSecrets = evidence.static_site.secret_hits.filter(
+    (hit) => hit.file === 'app.js'
+      && /request\.headers|body\.access_token|twilioAuthToken|openaiConfig\.apiKey|accessToken|firecrawl_api_key/.test(hit.excerpt)
+  );
+  assert.equal(dynamicSecrets.length, 6);
+  assert.equal(dynamicSecrets.every((hit) => hit.gate_effect === 'info'), true);
+  assert.equal(dynamicSecrets.every((hit) => hit.confidence === 'low'), true);
+  const unquotedPlainSecret = evidence.static_site.secret_hits.find((hit) => hit.excerpt.includes('plainsecretvalue'));
+  assert.equal(unquotedPlainSecret.gate_effect, 'review');
+  assert.equal(unquotedPlainSecret.confidence, 'medium');
   assert.equal(evidence.static_site.risk_summary.secret_hits.block, 1);
-  assert.equal(evidence.static_site.risk_summary.secret_hits.info, 2);
+  assert.equal(evidence.static_site.risk_summary.secret_hits.info, 8);
   assert.equal(evidence.static_site.risk_summary.xss_risk_hits.review, 2);
   assert.equal(evidence.static_site.risk_summary.xss_risk_hits.info, 1);
   assert.equal(evidence.static_site.external_resources.length > 0, true);
