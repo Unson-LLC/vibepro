@@ -8,6 +8,7 @@ import {
   toWorkspaceRelative,
   writeManifest
 } from './workspace.js';
+import { renderRefactoringDeltaCompact } from './refactoring-delta-reporter.js';
 import { resolveStoryContext } from './story-manager.js';
 import { readStoryTasks } from './story-task-generator.js';
 
@@ -95,6 +96,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const refactoringCampaigns = Array.isArray(evidence.refactoring_campaigns)
     ? evidence.refactoring_campaigns
     : [];
+  const refactoringDelta = evidence.refactoring_delta ?? null;
   const stories = storyContext.stories;
   const primaryStory = storyContext.currentStory;
 
@@ -220,6 +222,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         priority_reasons: campaign.priority_reasons ?? [],
         story_blueprint: campaign.story_blueprint ?? null
       })),
+      refactoring_delta: refactoringDelta,
       tasks: Array.isArray(taskState?.tasks) ? taskState.tasks : [],
       action_candidates: actionCandidates.map((candidate) => ({
         id: candidate.id,
@@ -280,11 +283,16 @@ function renderImportSummary(importState) {
 | 責務混在候補 | ${formatRiskCount(importState.signals.code_quality.responsibility_hotspots_count, importState.signals.code_quality.responsibility_hotspots_gate_summary)} |
 | リファクタリング機会 | ${importState.signals.refactoring_opportunities.length}件 |
 | リファクタリングcampaign | ${importState.signals.refactoring_campaigns.length}件 |
+| リファクタリング差分 | ${importState.signals.refactoring_delta?.status ?? '-'} |
 | 検出事項 | ${importState.findings.length}件 |
 
 ## API境界
 
 ${renderApiBoundaryImportSummary(importState.signals.api_boundary)}
+
+## リファクタリング差分
+
+${renderRefactoringDeltaCompact(importState.signals.refactoring_delta)}
 
 ## 成果物
 

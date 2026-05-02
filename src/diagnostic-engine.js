@@ -10,6 +10,11 @@ import {
   buildRefactoringCampaigns,
   buildRefactoringOpportunities
 } from './refactoring-opportunity-generator.js';
+import {
+  buildRefactoringDelta,
+  renderRefactoringDelta,
+  renderRefactoringDeltaCompact
+} from './refactoring-delta-reporter.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
@@ -26,6 +31,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const graph = JSON.parse(await readFile(graphPath, 'utf8'));
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   const { currentStory } = resolveStoryContext(config);
+  const manifest = await readManifest(root);
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory);
   const findings = buildFindings(evidence);
   evidence.findings = findings;
@@ -33,6 +39,12 @@ export async function runDiagnosis(repoRoot, options = {}) {
   attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
   evidence.finding_review = buildFindingReview({ findings, actionCandidates: evidence.action_candidates });
   evidence.gates = buildGates(findings);
+  const previousRun = findPreviousStoryRun(manifest, currentStory.story_id, runId);
+  evidence.refactoring_delta = buildRefactoringDelta({
+    beforeEvidence: await readRunEvidenceIfExists(root, previousRun),
+    afterEvidence: evidence,
+    beforeRun: previousRun
+  });
   const gateStatus = evidence.gates[0]?.status ?? 'unknown';
   const storyTasks = await createStoryTasks(root, {
     story: currentStory,
@@ -47,6 +59,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
   const findingReviewPath = path.join(runDir, 'finding-review.md');
+  const refactoringDeltaPath = path.join(runDir, 'refactoring-delta.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
@@ -71,8 +84,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
     runId,
     findingReview: evidence.finding_review
   }));
+  await writeFile(refactoringDeltaPath, renderRefactoringDelta(evidence.refactoring_delta));
 
-  const manifest = await readManifest(root);
   const run = {
     run_id: runId,
     story_id: currentStory.story_id,
@@ -86,6 +99,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       static_site_check: toWorkspaceRelative(root, staticSitePath),
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
       finding_review: toWorkspaceRelative(root, findingReviewPath),
+      refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
       ...storyTasks.artifacts
     }
   };
@@ -98,6 +112,27 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await writeManifest(root, manifest);
 
   return { runDir, run };
+}
+
+function findPreviousStoryRun(manifest, storyId, currentRunId) {
+  const runs = (manifest?.runs ?? []).filter((run) => run?.run_id && run.run_id !== currentRunId);
+  const latestRunIdForStory = manifest?.latest_run_by_story?.[storyId];
+  return runs.find((run) => run.run_id === latestRunIdForStory)
+    ?? runs.find((run) => run.story_id === storyId)
+    ?? runs.find((run) => run.run_id === manifest?.latest_run)
+    ?? runs[0]
+    ?? null;
+}
+
+async function readRunEvidenceIfExists(repoRoot, run) {
+  const evidencePath = run?.artifacts?.evidence;
+  if (!evidencePath) return null;
+  try {
+    return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 async function buildEvidence(repoRoot, graph, runId, story) {
@@ -1204,6 +1239,10 @@ ${renderGraphQualityNotices(evidence.graphify?.quality_notices)}
 ## 診断レビュー
 
 ${renderFindingReviewSummary(evidence.finding_review)}
+
+## リファクタリング差分
+
+${renderRefactoringDeltaCompact(evidence.refactoring_delta)}
 
 ## 次アクション候補
 

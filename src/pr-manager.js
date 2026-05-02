@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { formatCounts, renderRefactoringDeltaCompact } from './refactoring-delta-reporter.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
@@ -517,6 +518,10 @@ ${renderTaskContextReport(preparation.task_context)}
 - required gates: ${preparation.pr_context.gate_dag.summary.required_gate_count}
 - gates needing evidence: ${preparation.pr_context.gate_dag.summary.needs_evidence_count}
 
+## リファクタリング差分
+
+${renderRefactoringDeltaCompact(preparation.pr_context.refactoring_delta)}
+
 ## 次コマンド
 
 ${preparation.next_commands.map((command) => `- \`${command}\``).join('\n')}
@@ -553,6 +558,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     : prContext.risks.map((item) => `- ${item}`).join('\n');
   const gateSummary = renderPrGateSummary(prContext.gate_dag);
   const taskSection = renderPrTaskSection(taskContext);
+  const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
 
   return `## 概要
 - Story: ${story.story_id} ${story.title}
@@ -592,6 +598,8 @@ ${verification}
 ## Gate DAG
 ${gateSummary}
 
+${refactoringDeltaSection}
+
 ## レビュー観点
 ${reviewPoints || '- Story / ADR / Spec と実装差分が対応しているか'}
 
@@ -627,18 +635,57 @@ ${acceptance}
 ${references || '- なし'}`;
 }
 
+function renderPrRefactoringDelta(delta) {
+  if (!delta || delta.status === 'no_baseline') {
+    return `## VibePro refactoring delta
+- 前回の同一Story診断runがないため、差分は未算出`;
+  }
+  if (delta.status === 'no_refactoring_opportunities') {
+    return `## VibePro refactoring delta
+- 比較対象の両runにリファクタリング機会なし`;
+  }
+  const rows = (delta.top_improvements ?? []).slice(0, 5).map((item) => (
+    `- ${item.title ?? item.key}: ${formatCounts(item.before)} -> ${formatCounts(item.after)} (${formatPrDeltaStatus(item.status)})`
+  ));
+  const regressions = (delta.top_regressions ?? []).slice(0, 3).map((item) => (
+    `- ${item.title ?? item.key}: ${formatCounts(item.before)} -> ${formatCounts(item.after)} (${formatPrDeltaStatus(item.status)})`
+  ));
+  return `## VibePro refactoring delta
+- before: ${delta.before_run_id ?? '-'}
+- after: ${delta.after_run_id ?? '-'}
+- 改善: ${delta.summary?.improved ?? 0}件 / 解消: ${delta.summary?.removed ?? 0}件 / 悪化: ${delta.summary?.regressed ?? 0}件 / 新規: ${delta.summary?.new ?? 0}件
+
+### 改善・解消
+${rows.join('\n') || '- なし'}
+
+### 悪化・新規
+${regressions.join('\n') || '- なし'}`;
+}
+
+function formatPrDeltaStatus(status) {
+  return {
+    improved: '改善',
+    removed: '解消',
+    regressed: '悪化',
+    new: '新規',
+    unchanged: '変化なし'
+  }[status] ?? status;
+}
+
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   const primaryStory = pickPrimaryStory(storyDocs, story);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const verificationCommands = buildVerificationCommands(fileGroups);
   const e2eCommand = await detectPlaywrightCommand(repoRoot);
+  const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
     change_summary: buildChangeSummary(fileGroups),
     verification_commands: verificationCommands,
     review_points: buildReviewPoints(fileGroups, taskContext),
+    refactoring_delta: latestEvidence?.refactoring_delta ?? null,
     risks: []
   };
   context.gate_dag = buildGateDag({
@@ -651,6 +698,17 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   });
   context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext });
   return context;
+}
+
+async function readRunEvidenceIfExists(repoRoot, run) {
+  const evidencePath = run?.artifacts?.evidence;
+  if (!evidencePath) return null;
+  try {
+    return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 async function readStoryDocs(repoRoot, files) {

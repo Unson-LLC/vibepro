@@ -926,6 +926,62 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'plan.md'), '# plan');
   await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'handoff.json'), JSON.stringify({ mode: 'implementation_handoff' }));
   await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'handoff.md'), '# handoff');
+  await mkdir(path.join(repo, '.vibepro', 'diagnostics', 'run-refactoring-delta'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'diagnostics', 'run-refactoring-delta', 'evidence.json'), JSON.stringify({
+    run_id: 'run-refactoring-delta',
+    refactoring_delta: {
+      schema_version: '0.1.0',
+      status: 'available',
+      before_run_id: 'run-before',
+      after_run_id: 'run-refactoring-delta',
+      summary: {
+        total_before: 1,
+        total_after: 1,
+        improved: 1,
+        removed: 0,
+        regressed: 0,
+        new: 0,
+        unchanged: 0
+      },
+      top_improvements: [{
+        key: 'duplicate_query_shape:t_UserInfo.findFirst|top:nextAuthUserId,where|where:nextAuthUserId|select:-|order:-',
+        title: 'user identity lookupの重複query形状を共通化する',
+        refactoring_intent: 'query_policy',
+        before: {
+          target_file_count: 5,
+          occurrence_count: 8,
+          rank: 1,
+          score_total: 12
+        },
+        after: {
+          target_file_count: 3,
+          occurrence_count: 5,
+          rank: 1,
+          score_total: 8
+        },
+        target_files_removed: ['src/features/accounts/actions.ts', 'src/features/groups/actions.ts'],
+        target_files_added: [],
+        status: 'improved'
+      }],
+      top_regressions: [],
+      items: []
+    }
+  }, null, 2));
+  const manifestWithDelta = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  manifestWithDelta.latest_run = 'run-refactoring-delta';
+  manifestWithDelta.latest_run_by_story = {
+    ...(manifestWithDelta.latest_run_by_story ?? {}),
+    'story-pr-prepare': 'run-refactoring-delta'
+  };
+  manifestWithDelta.runs = [{
+    run_id: 'run-refactoring-delta',
+    story_id: 'story-pr-prepare',
+    gate_status: 'pass',
+    artifacts: {
+      evidence: '.vibepro/diagnostics/run-refactoring-delta/evidence.json'
+    }
+  }, ...(manifestWithDelta.runs ?? [])];
+  await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify(manifestWithDelta, null, 2)}\n`);
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
 
@@ -950,6 +1006,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
   assert.match(prBody, /## Gate DAG/);
+  assert.match(prBody, /## VibePro refactoring delta/);
+  assert.match(prBody, /5ファイル \/ 8出現 -> 3ファイル \/ 5出現/);
   assert.match(prBody, /## Task \/ Handoff/);
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /Task\/HandoffがPR本文に入る/);
@@ -957,6 +1015,7 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(prepare.pr_context.story_source.requirement_id, 'BUG-001');
   assert.equal(prepare.pr_context.verification_commands.length, 2);
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
+  assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
   assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
   assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
@@ -2115,6 +2174,7 @@ export function middleware() {}
   const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T140000Z');
   await stat(path.join(runDir, 'architecture-profile.md'));
   await stat(path.join(runDir, 'finding-review.md'));
+  await stat(path.join(runDir, 'refactoring-delta.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
   assert.equal(evidence.architecture_profile.app_type, 'web_app');
   assert.equal(evidence.architecture_profile.system_type, 'web_application');
@@ -2178,6 +2238,7 @@ export function middleware() {}
   assert.equal(evidence.refactoring_campaigns.length, 2);
   assert.equal(evidence.refactoring_campaigns[0].rank, 1);
   assert.equal(evidence.refactoring_campaigns.some((campaign) => campaign.recommended_first_opportunity_id === dryOpportunity.id), true);
+  assert.equal(evidence.refactoring_delta.status, 'no_baseline');
   const dryCampaign = evidence.refactoring_campaigns.find((campaign) => campaign.opportunity_ids.includes(dryOpportunity.id));
   assert.equal(dryCampaign.story_blueprint.source_opportunity_ids.includes(dryOpportunity.id), true);
   assert.equal(dryCampaign.expected_diagnostic_delta.duplicate_query_shapes, 1);
@@ -2330,6 +2391,8 @@ export function middleware() {}
   assert.match(summary, /## 文脈品質ノート/);
   assert.match(summary, /VP-GRAPH-002/);
   assert.match(summary, /## 診断レビュー/);
+  assert.match(summary, /## リファクタリング差分/);
+  assert.match(summary, /差分は未算出/);
   assert.match(summary, /suggested implementation_gap/);
   assert.match(summary, /方針A/);
   assert.match(summary, /7\(route: 1, node: 2, edge: 2\)/);
@@ -2372,6 +2435,7 @@ export function middleware() {}
   assert.match(importSummary, /責務混在候補/);
   assert.match(importSummary, /リファクタリング機会/);
   assert.match(importSummary, /リファクタリングcampaign/);
+  assert.match(importSummary, /リファクタリング差分/);
   assert.match(importSummary, /excluded_by_middleware \| 4/);
   assert.match(importSummary, /## 診断レビュー/);
   assert.doesNotMatch(importSummary, /suggested detector_gap: [1-9]/);
@@ -2395,6 +2459,7 @@ export function middleware() {}
   assert.equal(importState.signals.refactoring_opportunities[0].rank > 0, true);
   assert.equal(importState.signals.refactoring_opportunities[0].story_blueprint.source_finding_id, 'VP-DRY-001');
   assert.equal(importState.signals.refactoring_campaigns.length, 2);
+  assert.equal(importState.signals.refactoring_delta.status, 'no_baseline');
   assert.equal(importState.signals.refactoring_campaigns.some((campaign) => campaign.opportunity_ids.includes(dryOpportunity.id)), true);
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
   assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
@@ -2424,6 +2489,89 @@ export function middleware() {}
     manifest.runs[0].artifacts.finding_review,
     '.vibepro/diagnostics/2026-04-28T140000Z/finding-review.md'
   );
+  assert.equal(
+    manifest.runs[0].artifacts.refactoring_delta,
+    '.vibepro/diagnostics/2026-04-28T140000Z/refactoring-delta.md'
+  );
+});
+
+test('diagnose records refactoring delta against the previous story run', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-refactoring-delta-test-'));
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: { dev: 'next dev' },
+    dependencies: {
+      '@prisma/client': '^5.0.0',
+      next: '^14.0.0',
+      react: '^18.2.0'
+    }
+  }));
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <main>Aitle</main>; }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-alpha.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesAlpha() {
+  return prisma.company.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  });
+}
+`);
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-beta.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesBeta() {
+  return prisma.company.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  });
+}
+`);
+  await runCli(['init', repo, '--story-id', 'story-refactoring-delta', '--title', '差分計測']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'app' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const beforeResult = await runCli(['diagnose', repo, '--run-id', 'run-before']);
+  assert.equal(beforeResult.exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-beta.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesBeta() {
+  return prisma.company.findMany({
+    where: { archived: false },
+    select: { id: true, displayName: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 20
+  });
+}
+`);
+
+  const afterResult = await runCli(['diagnose', repo, '--run-id', 'run-after']);
+  assert.equal(afterResult.exitCode, 0);
+  const afterRunDir = path.join(repo, '.vibepro', 'diagnostics', 'run-after');
+  const afterEvidence = await readJson(path.join(afterRunDir, 'evidence.json'));
+  assert.equal(afterEvidence.refactoring_delta.status, 'available');
+  const removed = afterEvidence.refactoring_delta.top_improvements.find((item) => item.status === 'removed');
+  assert.match(removed.key, /company\.findMany/);
+  assert.equal(removed.before.target_file_count, 2);
+  assert.equal(removed.before.occurrence_count, 2);
+  assert.equal(removed.after.target_file_count, 0);
+  assert.equal(removed.after.occurrence_count, 0);
+  const deltaReport = await readFile(path.join(afterRunDir, 'refactoring-delta.md'), 'utf8');
+  assert.match(deltaReport, /2ファイル \/ 2出現/);
+  assert.match(deltaReport, /0ファイル \/ 0出現/);
+  const summary = await readFile(path.join(afterRunDir, 'summary.md'), 'utf8');
+  assert.match(summary, /## リファクタリング差分/);
+  assert.match(summary, /2ファイル \/ 2出現 -> 0ファイル \/ 0出現/);
 });
 
 test('brainbase creates an import state from the latest VibePro manifest run', async () => {
