@@ -65,8 +65,8 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification] [--strict] [--allow-extra-files] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
 `;
 
@@ -326,7 +326,9 @@ export async function runCli(argv, io = {}) {
           baseRef: getOption(rest, '--base'),
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
-          maxReviewableFiles: parseNumberOption(rest, '--max-files')
+          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          strict: hasFlag(rest, '--strict'),
+          allowExtraFiles: hasFlag(rest, '--allow-extra-files')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
@@ -347,6 +349,8 @@ export async function runCli(argv, io = {}) {
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),
           allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
+          strict: hasFlag(rest, '--strict'),
+          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           env: io.env
         });
         write(stdout, hasFlag(rest, '--json')

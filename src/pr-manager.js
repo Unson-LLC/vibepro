@@ -21,9 +21,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const manifest = workspace.initialized
     ? await readManifest(root)
     : createTransientManifest();
+
+  // DAG strict mode: task必須・target_files一致・handoff/execute artifacts存在を要求
+  if (options.strict && !options.taskId) {
+    throw new Error(
+      'Strict mode requires --task. Run `vibepro task create --from-plan --id <story>` and ' +
+      '`vibepro task brief|plan|handoff|execute` for the task before pr prepare/create.'
+    );
+  }
+
   const taskContext = workspace.initialized && options.taskId
     ? await loadPrTaskContext(root, story.story_id, options.taskId, options.groupId)
     : null;
+
+  if (options.strict && taskContext) {
+    await assertStrictTaskArtifacts(root, story.story_id, taskContext.task.id, taskContext.group?.id);
+    assertStrictTargetFiles(taskContext, git.changed_files, options);
+  }
+
   const fileGroups = groupChangedFiles(git.changed_files);
   const scope = assessScope({
     changedFiles: git.changed_files,
@@ -1103,6 +1118,60 @@ function renderPrGateSummary(gateDag) {
     })
   ];
   return lines.join('\n');
+}
+
+async function assertStrictTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {
+  const baseDir = groupId
+    ? path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', taskId, 'groups', groupId)
+    : path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', taskId);
+  const required = [
+    { name: 'briefing.md', path: path.join(baseDir, 'briefing.md') },
+    { name: 'plan.md', path: path.join(baseDir, 'plan.md') },
+    { name: 'handoff.md', path: path.join(baseDir, 'handoff.md') }
+  ];
+  const missing = [];
+  for (const item of required) {
+    try {
+      await readFile(item.path);
+    } catch {
+      missing.push(item.name);
+    }
+  }
+  if (missing.length > 0) {
+    throw new Error(
+      `Strict mode requires task artifacts to exist before pr prepare/create. ` +
+      `Missing: ${missing.join(', ')}. ` +
+      `Run \`vibepro task ${missing[0].replace('.md', '')} ${repoRoot} --task ${taskId} --id ${storyId}\` first.`
+    );
+  }
+}
+
+function assertStrictTargetFiles(taskContext, changedFiles, options) {
+  const targetFiles = taskContext?.task?.target_files ?? [];
+  if (targetFiles.length === 0) {
+    if (!options.allowExtraFiles) {
+      throw new Error(
+        `Strict mode: task "${taskContext.task.id}" has no target_files. ` +
+        `Run \`vibepro task plan\` to populate target_files, or pass --allow-extra-files to bypass.`
+      );
+    }
+    return;
+  }
+  const targetSet = new Set(targetFiles);
+  // テストファイルは target_files に無くても許容（証跡として追加されるのが普通）
+  const isTestFile = (file) => /(^|\/)(tests?|__tests__|spec)\//i.test(file)
+    || /\.(test|spec)\.[jt]sx?$/.test(file);
+  const extra = (changedFiles ?? [])
+    .map((file) => typeof file === 'string' ? file : file.path)
+    .filter(Boolean)
+    .filter((file) => !targetSet.has(file) && !isTestFile(file));
+  if (extra.length > 0 && !options.allowExtraFiles) {
+    throw new Error(
+      `Strict mode: PR includes ${extra.length} files outside task.target_files. ` +
+      `Extra: ${extra.slice(0, 5).join(', ')}${extra.length > 5 ? ', ...' : ''}. ` +
+      `Either narrow the PR scope, update task.target_files, or pass --allow-extra-files.`
+    );
+  }
 }
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
