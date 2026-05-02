@@ -1018,6 +1018,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.match(prBody, /PR本文に背景が入る/);
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
+  assert.match(prBody, /## 要件整合性/);
+  assert.match(prBody, /Requirement Gate: not_applicable/);
   assert.match(prBody, /## Gate DAG/);
   assert.match(prBody, /## Gate Enforcement/);
   assert.match(prBody, /blocked_by_gate/);
@@ -1036,6 +1038,8 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
   assert.equal(prepare.pr_context.refactoring_delta.top_remaining.length, 1);
   assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  assert.equal(prepare.pr_context.gate_dag.summary.requirement_status, 'not_applicable');
+  assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:requirement'), true);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
   assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
@@ -1128,6 +1132,83 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.dry_run, false);
   assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
+});
+
+test('pr prepare flags requirement contradictions from story invariants and code states', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'stripe', 'cancel-subscription'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-REQ-001-billing-cancel.md'), `---
+story_id: STR-REQ-001
+title: Stripe cancel keeps premium until period end
+architecture_docs:
+  - path: docs/architecture/ADR-billing-subscription.md
+    status: required
+specifications:
+  - path: docs/specs/billing-subscription.md
+---
+
+# Stripe cancel keeps premium until period end
+
+## 背景
+
+Stripe subscription cancellation must keep premium access until current_period_end.
+
+## 方針
+
+キャンセル予約時は期間終了までプレミアム状態を維持する。
+
+## 受け入れ基準
+
+- [x] premium userType is kept until current_period_end
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'billing-subscription.md'), `# Billing Subscription Spec
+
+## Acceptance Criteria
+
+- Subscription cancellation must keep premium access until current_period_end.
+- Missing subscription must never downgrade a premium user before current_period_end.
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'ADR-billing-subscription.md'), `# Billing Subscription Boundary
+
+## 方針
+
+- Billing route must keep HTTP response mapping separate from subscription state transition policy.
+- Subscription state transitions shall be handled in the billing service boundary.
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'stripe', 'cancel-subscription', 'route.ts'), `
+export async function POST() {
+  if (!subscriptionId) {
+    return Response.json({ data: { userType: 1, message: 'free now' } });
+  }
+  return Response.json({ data: { userType: 2, currentPeriodEnd: '2026-06-01' } });
+}
+`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'refactor: split billing cancel route']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  assert.equal(prepare.pr_context.requirement_consistency.status, 'contradicted');
+  assert.equal(prepare.pr_context.requirement_consistency.contradictions.length, 1);
+  assert.equal(prepare.pr_context.requirement_consistency.requirement_sources.some((source) => source.kind === 'spec'), true);
+  assert.equal(prepare.pr_context.requirement_consistency.requirement_sources.some((source) => source.kind === 'architecture'), true);
+  assert.equal(prepare.pr_context.requirement_consistency.invariants.some((invariant) => invariant.source.kind === 'spec'), true);
+  assert.equal(prepare.pr_context.requirement_consistency.invariants.some((invariant) => invariant.source.kind === 'architecture'), true);
+  assert.equal(prepare.pr_context.gate_dag.summary.requirement_status, 'contradicted');
+  assert.equal(prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:requirement').status, 'contradicted');
+  assert.equal(prepare.pr_context.risks.some((risk) => risk.includes('Requirement Gate')), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Potential Contradiction/);
+  assert.match(prBody, /Spec Sources: 1/);
+  assert.match(prBody, /Architecture Sources: 1/);
+  assert.match(prBody, /Requirement Source: spec:docs\/specs\/billing-subscription.md/);
+  assert.match(prBody, /Requirement Source: architecture:docs\/architecture\/ADR-billing-subscription.md/);
+  assert.match(prBody, /期間終了までpremium維持/);
 });
 
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
@@ -1957,15 +2038,18 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T120000Z');
   await stat(path.join(runDir, 'summary.md'));
   await stat(path.join(runDir, 'risk-register.md'));
+  await stat(path.join(runDir, 'requirement-consistency.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
   assert.equal(evidence.graphify.node_count, 2);
   assert.equal(evidence.graphify.edge_count, 2);
   assert.equal(evidence.graphify.edge_source_key, 'links');
   assert.equal(evidence.graphify.extracted_edges.length, 1);
   assert.equal(evidence.graphify.ambiguous_edges.length, 1);
+  assert.equal(evidence.requirement_consistency.status, 'not_applicable');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_run, '2026-04-28T120000Z');
   assert.equal(manifest.runs[0].artifacts.summary, '.vibepro/diagnostics/2026-04-28T120000Z/summary.md');
+  assert.equal(manifest.runs[0].artifacts.requirement_consistency, '.vibepro/diagnostics/2026-04-28T120000Z/requirement-consistency.md');
 });
 
 test('diagnose creates static site evidence and a static site report under the run directory', async () => {
