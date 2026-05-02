@@ -302,22 +302,44 @@ function buildRefactoringReadFirstFiles({ targetFiles, opportunity, campaign, gr
   const files = [];
   const seen = new Set();
   const add = (file, reason) => {
-    if (!file || seen.has(file)) return;
+    if (files.length >= 12 || !file || seen.has(file)) return;
     seen.add(file);
     files.push({ file, reason });
   };
-  for (const file of targetFiles ?? []) {
-    add(file, campaign
-      ? `リファクタリングcampaign ${campaign.id} の対象ファイル`
-      : `リファクタリング機会 ${opportunity.id} の対象ファイル`);
+  const graphItems = buildRefactoringGraphReadFirstItems(graphContext);
+  const targetBudget = graphItems.length > 0 && (targetFiles?.length ?? 0) > 8
+    ? Math.max(6, 12 - Math.min(4, graphItems.length))
+    : 12;
+  const targetReason = campaign
+    ? `リファクタリングcampaign ${campaign.id} の対象ファイル`
+    : `リファクタリング機会 ${opportunity.id} の対象ファイル`;
+  for (const file of (targetFiles ?? []).slice(0, targetBudget)) {
+    add(file, targetReason);
   }
+  for (const item of graphItems) {
+    add(item.file, item.reason);
+  }
+  for (const file of targetFiles ?? []) {
+    add(file, targetReason);
+  }
+  return files;
+}
+
+function buildRefactoringGraphReadFirstItems(graphContext) {
+  const items = [];
+  const seen = new Set();
+  const add = (file, reason) => {
+    if (!file || seen.has(file)) return;
+    seen.add(file);
+    items.push({ file, reason });
+  };
   for (const file of graphContext?.related_files ?? []) {
     add(file, 'Graphifyで対象ファイルと直接つながる周辺ファイル');
   }
   for (const hub of graphContext?.hub_nodes ?? []) {
     add(hub.source_file, `Graphify hub: ${hub.label ?? hub.id} / degree=${hub.degree ?? 0}`);
   }
-  return files.slice(0, 12);
+  return items;
 }
 
 function buildRefactoringInvestigationScope({ targetFiles, readFirstFiles, graphContext }) {
