@@ -2,37 +2,85 @@ const INFO_GATE_EFFECT = 'info';
 
 export function buildRefactoringOpportunities(evidence) {
   const codeQuality = evidence?.code_quality ?? {};
-  return [
+  const opportunities = [
     ...buildDuplicateQueryOpportunities(codeQuality.duplicate_query_shapes ?? []),
     ...buildResponsibilityHotspotOpportunities(codeQuality.responsibility_hotspots ?? [])
   ];
+  return rankRefactoringOpportunities(opportunities, evidence);
+}
+
+export function buildRefactoringCampaigns(evidence) {
+  const opportunities = Array.isArray(evidence?.refactoring_opportunities)
+    ? evidence.refactoring_opportunities
+    : [];
+  const groups = new Map();
+  for (const opportunity of opportunities) {
+    const key = buildCampaignKey(opportunity);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(opportunity);
+  }
+
+  return [...groups.values()]
+    .map((items, index) => buildRefactoringCampaign(items, index + 1))
+    .sort((a, b) => b.score.total - a.score.total || a.id.localeCompare(b.id))
+    .map((campaign, index) => ({
+      ...campaign,
+      id: `VP-CAMPAIGN-REF-${formatSerial(index + 1)}`,
+      rank: index + 1
+    }));
 }
 
 export function buildRefactoringActionCandidates(evidence) {
   const opportunities = Array.isArray(evidence?.refactoring_opportunities)
     ? evidence.refactoring_opportunities
     : [];
+  const campaigns = Array.isArray(evidence?.refactoring_campaigns)
+    ? evidence.refactoring_campaigns
+    : [];
   const primaryDryOpportunity = opportunities.find((opportunity) => (
     opportunity.finding_id === 'VP-DRY-001'
     && opportunity.source === 'duplicate_query_shape'
   ));
-  if (!primaryDryOpportunity) return [];
+  const primaryArchOpportunity = opportunities.find((opportunity) => (
+    opportunity.finding_id === 'VP-ARCH-001'
+    && opportunity.source === 'responsibility_hotspot'
+  ));
+  return [
+    primaryDryOpportunity
+      ? buildRefactoringActionCandidate({
+          actionId: 'VP-ACTION-DRY-001',
+          opportunity: primaryDryOpportunity,
+          campaign: findCampaignForOpportunity(campaigns, primaryDryOpportunity.id)
+        })
+      : null,
+    primaryArchOpportunity
+      ? buildRefactoringActionCandidate({
+          actionId: 'VP-ACTION-ARCH-001',
+          opportunity: primaryArchOpportunity,
+          campaign: findCampaignForOpportunity(campaigns, primaryArchOpportunity.id)
+        })
+      : null
+  ].filter(Boolean);
+}
 
-  return [{
-    id: 'VP-ACTION-DRY-001',
-    finding_id: 'VP-DRY-001',
+function buildRefactoringActionCandidate({ actionId, opportunity, campaign }) {
+  const title = campaign?.title ?? opportunity.title;
+  return {
+    id: actionId,
+    finding_id: opportunity.finding_id,
     scope: 'refactoring',
-    title: primaryDryOpportunity.title,
-    target_count: primaryDryOpportunity.target_count,
-    target_files: primaryDryOpportunity.target_files,
+    title,
+    target_count: campaign?.target_count ?? opportunity.target_count,
+    target_files: campaign?.target_files ?? opportunity.target_files,
     execution_policy: 'proposal_only',
     mutates_repository: false,
-    confidence: primaryDryOpportunity.confidence,
-    recommendation: primaryDryOpportunity.story_blueprint.summary,
-    refactoring_opportunity_id: primaryDryOpportunity.id,
-    story_blueprint: primaryDryOpportunity.story_blueprint,
-    implementation_plan: buildRefactoringImplementationPlan(primaryDryOpportunity)
-  }];
+    confidence: opportunity.confidence,
+    recommendation: campaign?.story_blueprint?.summary ?? opportunity.story_blueprint.summary,
+    refactoring_opportunity_id: opportunity.id,
+    refactoring_campaign_id: campaign?.id ?? null,
+    story_blueprint: campaign?.story_blueprint ?? opportunity.story_blueprint,
+    implementation_plan: buildRefactoringImplementationPlan(opportunity, campaign)
+  };
 }
 
 function buildDuplicateQueryOpportunities(duplicateQueryShapes) {
@@ -186,13 +234,18 @@ function buildResponsibilityStoryBlueprint({ hotspot, targetFiles }) {
   };
 }
 
-function buildRefactoringImplementationPlan(opportunity) {
+function buildRefactoringImplementationPlan(opportunity, campaign = null) {
+  const targetFiles = campaign?.target_files ?? opportunity.target_files;
   return {
-    priority: opportunity.priority,
-    rationale: `${opportunity.finding_id} から ${opportunity.refactoring_intent} としてStory化できる候補。対象は ${opportunity.target_count}ファイル。`,
-    read_first_files: opportunity.target_files.map((file) => ({
+    priority: campaign?.priority ?? opportunity.priority,
+    rationale: campaign
+      ? `${campaign.id} は ${campaign.opportunity_count}件の機会を束ねるStory候補。最初に ${opportunity.id} を確認する。`
+      : `${opportunity.finding_id} から ${opportunity.refactoring_intent} としてStory化できる候補。対象は ${opportunity.target_count}ファイル。`,
+    read_first_files: targetFiles.map((file) => ({
       file,
-      reason: `リファクタリング機会 ${opportunity.id} の対象ファイル`
+      reason: campaign
+        ? `リファクタリングcampaign ${campaign.id} の対象ファイル`
+        : `リファクタリング機会 ${opportunity.id} の対象ファイル`
     })),
     steps: [
       {
@@ -216,42 +269,270 @@ function buildRefactoringImplementationPlan(opportunity) {
         detail: '型検査・関連テスト・VibePro診断で重複query形状が減ったことを確認する。'
       }
     ],
-    acceptance_criteria: opportunity.story_blueprint.acceptance_criteria,
+    acceptance_criteria: campaign?.story_blueprint?.acceptance_criteria ?? opportunity.story_blueprint.acceptance_criteria,
     pre_fix_briefing: {
       opportunity: {
         id: opportunity.id,
         source: opportunity.source,
         refactoring_intent: opportunity.refactoring_intent,
+        rank: opportunity.rank,
+        score: opportunity.score,
         suggested_abstraction: opportunity.suggested_abstraction,
         evidence_refs: opportunity.evidence_refs
       },
-      target_files: opportunity.target_files,
-      invariants: opportunity.story_blueprint.invariants,
+      campaign: campaign
+        ? {
+            id: campaign.id,
+            rank: campaign.rank,
+            title: campaign.title,
+            opportunity_ids: campaign.opportunity_ids,
+            expected_diagnostic_delta: campaign.expected_diagnostic_delta
+          }
+        : null,
+      target_files: targetFiles,
+      invariants: campaign?.story_blueprint?.invariants ?? opportunity.story_blueprint.invariants,
       evidence_examples: opportunity.evidence_refs.examples ?? [],
-      strategy_options: [
-        {
-          id: 'extract-shared-boundary',
-          label: '方針A: 同じ用途の処理を共通境界へ抽出する',
-          target_count: opportunity.target_count,
-          candidate_files: opportunity.target_files,
-          benefits: ['重複query形状を直接減らせる', '挙動変更を一箇所で検証しやすい'],
-          cautions: ['用途が違う重複を誤って統合しない確認が必要']
-        },
-        {
-          id: 'separate-behavior-variants',
-          label: '方針B: 用途差分を明示して責務を分ける',
-          target_count: opportunity.target_count,
-          candidate_files: opportunity.target_files,
-          benefits: ['暗黙の差分をStoryに残せる', '無理な共通化による回帰を避けやすい'],
-          cautions: ['重複削減より責務明確化を優先する判断になる']
-        }
-      ],
-      recommended_strategy: {
-        id: 'extract-shared-boundary',
-        reason: '同一query形状が複数ファイルで繰り返されており、まず用途一致を確認して共通境界化する価値が高い。'
-      }
+      strategy_options: buildRefactoringStrategyOptions(opportunity, targetFiles),
+      recommended_strategy: buildRefactoringRecommendedStrategy(opportunity)
     }
   };
+}
+
+function buildRefactoringStrategyOptions(opportunity, targetFiles) {
+  if (opportunity.source === 'responsibility_hotspot') {
+    return [
+      {
+        id: 'split-runtime-boundaries',
+        label: '方針A: runtime責務をroute/action/service/helperへ分離する',
+        target_count: targetFiles.length,
+        candidate_files: targetFiles,
+        benefits: ['認可、DB、検証、外部I/Oの責務境界を読みやすくできる', '副作用の順序をレビューしやすくなる'],
+        cautions: ['入出力と副作用タイミングを先に固定する必要がある']
+      },
+      {
+        id: 'extract-side-effect-boundary',
+        label: '方針B: 外部I/Oや通知など副作用境界から切り出す',
+        target_count: targetFiles.length,
+        candidate_files: targetFiles,
+        benefits: ['大きなファイルを段階的に小さくできる', 'テストしづらい副作用を隔離できる'],
+        cautions: ['DB更新やレスポンス整形との順序を変えない確認が必要']
+      }
+    ];
+  }
+  return [
+    {
+      id: 'extract-shared-boundary',
+      label: '方針A: 同じ用途の処理を共通境界へ抽出する',
+      target_count: targetFiles.length,
+      candidate_files: targetFiles,
+      benefits: ['重複query形状を直接減らせる', '挙動変更を一箇所で検証しやすい'],
+      cautions: ['用途が違う重複を誤って統合しない確認が必要']
+    },
+    {
+      id: 'separate-behavior-variants',
+      label: '方針B: 用途差分を明示して責務を分ける',
+      target_count: targetFiles.length,
+      candidate_files: targetFiles,
+      benefits: ['暗黙の差分をStoryに残せる', '無理な共通化による回帰を避けやすい'],
+      cautions: ['重複削減より責務明確化を優先する判断になる']
+    }
+  ];
+}
+
+function buildRefactoringRecommendedStrategy(opportunity) {
+  if (opportunity.source === 'responsibility_hotspot') {
+    return {
+      id: 'split-runtime-boundaries',
+      reason: '責務混在候補は重複削減より先に、認可、DB、検証、外部I/Oの境界を固定する価値が高い。'
+    };
+  }
+  return {
+    id: 'extract-shared-boundary',
+    reason: '同一query形状が複数ファイルで繰り返されており、まず用途一致を確認して共通境界化する価値が高い。'
+  };
+}
+
+function rankRefactoringOpportunities(opportunities, evidence) {
+  return opportunities
+    .map((opportunity) => {
+      const score = scoreRefactoringOpportunity(opportunity, evidence);
+      return {
+        ...opportunity,
+        priority: score.total >= 75 ? 'high' : score.total >= 40 ? opportunity.priority : 'low',
+        score,
+        priority_reasons: score.reasons
+      };
+    })
+    .sort((a, b) => b.score.total - a.score.total || compareOpportunities(a, b))
+    .map((opportunity, index) => ({
+      ...opportunity,
+      rank: index + 1
+    }));
+}
+
+function scoreRefactoringOpportunity(opportunity, evidence) {
+  const reasons = [];
+  const targetFiles = opportunity.target_files ?? [];
+  const occurrenceCount = opportunity.evidence_refs?.occurrence_count ?? opportunity.target_count ?? 0;
+  const securityScore = scoreSecurityProximity(opportunity, targetFiles, reasons);
+  const blastRadiusScore = Math.min(25, (targetFiles.length * 4) + (occurrenceCount * 2));
+  if (blastRadiusScore >= 12) reasons.push(`blast_radius:${blastRadiusScore}`);
+  const confidenceScore = { high: 15, medium: 10, low: 5 }[opportunity.confidence] ?? 5;
+  reasons.push(`confidence:${opportunity.confidence ?? 'unknown'}`);
+  const storyFitScore = scoreStoryFit(opportunity, evidence?.story, reasons);
+  const sourceScore = opportunity.source === 'duplicate_query_shape' ? 8 : 5;
+  const total = securityScore + blastRadiusScore + confidenceScore + storyFitScore + sourceScore;
+  return {
+    total,
+    components: {
+      security_proximity: securityScore,
+      blast_radius: blastRadiusScore,
+      confidence: confidenceScore,
+      story_fit: storyFitScore,
+      source: sourceScore
+    },
+    reasons
+  };
+}
+
+function scoreSecurityProximity(opportunity, targetFiles, reasons) {
+  const haystack = [
+    opportunity.refactoring_intent,
+    opportunity.title,
+    ...(targetFiles ?? [])
+  ].join(' ').toLowerCase();
+  if (opportunity.refactoring_intent === 'authorization_boundary') {
+    reasons.push('security_proximity:authorization_boundary');
+    return 30;
+  }
+  if (/(auth|session|user|account|identity|middleware|permission|role)/.test(haystack)) {
+    reasons.push('security_proximity:auth_or_identity');
+    return 25;
+  }
+  if (/(billing|subscription|stripe|payment|invoice|webhook)/.test(haystack)) {
+    reasons.push('security_proximity:billing_or_webhook');
+    return 22;
+  }
+  if (/(api\/|route\.ts|route\.js|server)/.test(haystack)) {
+    reasons.push('security_proximity:runtime_boundary');
+    return 15;
+  }
+  return 5;
+}
+
+function scoreStoryFit(opportunity, story, reasons) {
+  const patterns = extractStoryCoveragePatterns(story);
+  if (patterns.length === 0) return 5;
+  const targetFiles = opportunity.target_files ?? [];
+  const matched = targetFiles.filter((file) => patterns.some((pattern) => matchesStoryPattern(file, pattern)));
+  if (matched.length === 0) return 0;
+  reasons.push(`story_fit:${matched.length}/${targetFiles.length}`);
+  return Math.min(15, 5 + matched.length * 3);
+}
+
+function extractStoryCoveragePatterns(story) {
+  const rawPatterns = [
+    ...(story?.coverage_patterns ?? []),
+    ...(story?.coveragePatterns ?? []),
+    ...(story?.derived?.coverage_patterns ?? []),
+    ...(story?.derived?.coveragePatterns ?? [])
+  ];
+  return rawPatterns
+    .map((pattern) => typeof pattern === 'string' ? pattern : pattern?.path ?? pattern?.pattern ?? null)
+    .filter(Boolean);
+}
+
+function matchesStoryPattern(file, pattern) {
+  const normalizedFile = normalizePath(file);
+  const normalizedPattern = normalizePath(pattern)
+    .replace(/\*\*\/?/g, '')
+    .replace(/\*/g, '');
+  if (!normalizedPattern) return false;
+  return normalizedFile.includes(normalizedPattern.replace(/\/$/, ''));
+}
+
+function buildCampaignKey(opportunity) {
+  return `${opportunity.refactoring_intent}:${resolveCampaignDomain(opportunity)}`;
+}
+
+function resolveCampaignDomain(opportunity) {
+  const haystack = [
+    opportunity.title,
+    opportunity.refactoring_intent,
+    ...(opportunity.target_files ?? [])
+  ].join(' ').toLowerCase();
+  if (/(auth|session|identity|user|account|profile|member)/.test(haystack)) return 'identity';
+  if (/(billing|subscription|stripe|payment|invoice|customer)/.test(haystack)) return 'billing';
+  if (/(permission|role|owner|tenant|workspace|organization|policy|access)/.test(haystack)) return 'authorization';
+  if (/(webhook|notification|event|integration|audit)/.test(haystack)) return 'integration';
+  if (/(api\/|route\.ts|route\.js)/.test(haystack)) return 'api';
+  return 'application';
+}
+
+function buildRefactoringCampaign(opportunities, serialNumber) {
+  const sorted = [...opportunities].sort((a, b) => b.score.total - a.score.total || a.id.localeCompare(b.id));
+  const primary = sorted[0];
+  const targetFiles = uniqueFiles(sorted.flatMap((opportunity) => opportunity.target_files ?? []));
+  const scoreTotal = Math.round(sorted.reduce((sum, opportunity) => sum + opportunity.score.total, 0) / sorted.length);
+  const priority = scoreTotal >= 75 ? 'high' : scoreTotal >= 40 ? 'medium' : 'low';
+  const storyBlueprint = buildCampaignStoryBlueprint({ primary, opportunities: sorted, targetFiles });
+  return {
+    id: `VP-CAMPAIGN-REF-${formatSerial(serialNumber)}`,
+    title: storyBlueprint.title,
+    refactoring_intent: primary.refactoring_intent,
+    domain: resolveCampaignDomain(primary),
+    priority,
+    score: {
+      total: scoreTotal,
+      top_opportunity_score: primary.score.total
+    },
+    opportunity_count: sorted.length,
+    opportunity_ids: sorted.map((opportunity) => opportunity.id),
+    finding_ids: [...new Set(sorted.map((opportunity) => opportunity.finding_id))],
+    target_count: targetFiles.length,
+    target_files: targetFiles.slice(0, 20),
+    recommended_first_opportunity_id: primary.id,
+    expected_diagnostic_delta: {
+      duplicate_query_shapes: sorted.filter((opportunity) => opportunity.finding_id === 'VP-DRY-001').length,
+      responsibility_hotspots: sorted.filter((opportunity) => opportunity.finding_id === 'VP-ARCH-001').length
+    },
+    priority_reasons: uniqueFiles(sorted.flatMap((opportunity) => opportunity.priority_reasons ?? [])).slice(0, 10),
+    story_blueprint: storyBlueprint
+  };
+}
+
+function buildCampaignStoryBlueprint({ primary, opportunities, targetFiles }) {
+  const title = `${intentLabel(primary.refactoring_intent)} campaignをStory化する`;
+  return {
+    title,
+    summary: `${opportunities.length}件の ${primary.refactoring_intent} 機会を、診断で効果確認できるStory単位に束ねる。最初の対象は ${primary.id}。`,
+    source_opportunity_ids: opportunities.map((opportunity) => opportunity.id),
+    source_finding_ids: [...new Set(opportunities.map((opportunity) => opportunity.finding_id))],
+    refactoring_intent: primary.refactoring_intent,
+    target_files: targetFiles.slice(0, 20),
+    recommended_sequence: opportunities.slice(0, 5).map((opportunity, index) => ({
+      order: index + 1,
+      opportunity_id: opportunity.id,
+      title: opportunity.title,
+      reason: opportunity.priority_reasons?.slice(0, 3) ?? []
+    })),
+    invariants: uniqueFiles(opportunities.flatMap((opportunity) => opportunity.story_blueprint?.invariants ?? [])).slice(0, 8),
+    acceptance_criteria: [
+      'campaign内の機会がStory単位として実装順に並んでいる。',
+      '最初に直す機会と後続に回す機会の判断根拠がscore/reasonで説明できる。',
+      '修正後のVibePro診断で対象findingまたはopportunityの件数差分を確認できる。',
+      ...uniqueFiles(opportunities.flatMap((opportunity) => opportunity.story_blueprint?.acceptance_criteria ?? [])).slice(0, 4)
+    ],
+    validation_commands: [
+      'npm test -- <related tests>',
+      'npm run type-check',
+      'vibepro diagnose <repo>'
+    ]
+  };
+}
+
+function findCampaignForOpportunity(campaigns, opportunityId) {
+  return campaigns.find((campaign) => campaign.opportunity_ids?.includes(opportunityId)) ?? null;
 }
 
 function parseQuerySignature(signature = '') {
@@ -367,4 +648,8 @@ function formatSerial(value) {
 
 function uniqueFiles(files) {
   return [...new Set((files ?? []).filter(Boolean))];
+}
+
+function normalizePath(file) {
+  return String(file ?? '').replace(/\\/g, '/').replace(/^\.\//, '');
 }

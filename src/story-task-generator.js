@@ -350,6 +350,8 @@ function resolveActionOrder(candidate) {
   if (candidate.id === 'VP-ACTION-API-002') return 20;
   if (candidate.id === 'VP-ACTION-API-003') return 30;
   if (candidate.id === 'VP-ACTION-API-001') return 40;
+  if (candidate.id === 'VP-ACTION-DRY-001') return 60;
+  if (candidate.id === 'VP-ACTION-ARCH-001') return 70;
   return 60;
 }
 
