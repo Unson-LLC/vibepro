@@ -2160,7 +2160,8 @@ export function middleware() {}
   assert.equal(evidence.finding_review.summary.total, evidence.findings.length);
   assert.equal(evidence.finding_review.summary.unreviewed, evidence.findings.length);
   assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').suggested_classification, 'implementation_gap');
-  assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-GRAPH-002').suggested_classification, 'detector_gap');
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-GRAPH-002'), false);
+  assert.equal(evidence.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(evidence.finding_review.items.find((item) => item.finding_id === 'VP-API-001').allowed_classifications.includes('false_negative'), true);
   const apiFinding = evidence.findings.find((finding) => finding.id === 'VP-API-001');
   assert.match(apiFinding.detail, /excluded_by_middleware: 1件/);
@@ -2181,6 +2182,8 @@ export function middleware() {}
   assert.match(summary, /読むファイル/);
   assert.match(summary, /実装手順/);
   assert.match(summary, /修正前ブリーフィング/);
+  assert.match(summary, /## 文脈品質ノート/);
+  assert.match(summary, /VP-GRAPH-002/);
   assert.match(summary, /## 診断レビュー/);
   assert.match(summary, /suggested implementation_gap/);
   assert.match(summary, /方針A/);
@@ -2221,7 +2224,7 @@ export function middleware() {}
   assert.match(importSummary, /## API境界/);
   assert.match(importSummary, /excluded_by_middleware \| 3/);
   assert.match(importSummary, /## 診断レビュー/);
-  assert.match(importSummary, /suggested detector_gap/);
+  assert.doesNotMatch(importSummary, /suggested detector_gap: [1-9]/);
   assert.match(importSummary, /## 次アクション候補/);
   assert.match(importSummary, /## 生成タスク/);
   assert.match(importSummary, /VP-TASK-API-001/);
@@ -2236,6 +2239,7 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
+  assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
   assert.equal(importState.signals.tasks.length, 5);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');

@@ -96,6 +96,9 @@ export async function runDiagnosis(repoRoot, options = {}) {
 async function buildEvidence(repoRoot, graph, runId, story) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const { edges, sourceKey: edgeSourceKey } = normalizeGraphEdges(graph);
+  const extractedEdges = edges.filter((edge) => edge.confidence === 'EXTRACTED');
+  const inferredEdges = edges.filter((edge) => edge.confidence === 'INFERRED');
+  const ambiguousEdges = edges.filter((edge) => edge.confidence === 'AMBIGUOUS');
   const graphIndex = buildGraphIndex({ nodes, edges });
   const architectureProfile = await profileArchitecture(repoRoot);
   const checkCatalog = {
@@ -113,9 +116,10 @@ async function buildEvidence(repoRoot, graph, runId, story) {
         node_count: nodes.length,
         edge_count: edges.length,
         edge_source_key: edgeSourceKey,
-        extracted_edges: edges.filter((edge) => edge.confidence === 'EXTRACTED'),
-        inferred_edges: edges.filter((edge) => edge.confidence === 'INFERRED'),
-        ambiguous_edges: edges.filter((edge) => edge.confidence === 'AMBIGUOUS')
+        extracted_edges: extractedEdges,
+        inferred_edges: inferredEdges,
+        ambiguous_edges: ambiguousEdges,
+        quality_notices: buildGraphQualityNotices({ inferredEdges })
       },
       architecture_profile: architectureProfile,
       check_catalog: checkCatalog,
@@ -153,16 +157,6 @@ function buildFindings(evidence) {
       title: '曖昧な依存関係が残っている',
       detail: `graphify が ${evidence.graphify.ambiguous_edges.length} 件の曖昧な関係を検出した。`,
       recommendation: '本番化判断に使う前に、対象の関係を人間または追加調査で確認する。'
-    });
-  }
-  if (evidence.graphify.inferred_edges.length > 0) {
-    findings.push({
-      id: 'VP-GRAPH-002',
-      severity: 'Low',
-      category: '文脈品質',
-      title: '推論された依存関係がある',
-      detail: `graphify が ${evidence.graphify.inferred_edges.length} 件の推論関係を検出した。`,
-      recommendation: '推論関係は診断質問として扱い、検証済み事実として扱わない。'
     });
   }
   if (applicableChecks.has('static-entry') && !evidence.static_site.has_index_html) {
@@ -259,6 +253,21 @@ function buildFindings(evidence) {
     }
   }
   return findings;
+}
+
+function buildGraphQualityNotices({ inferredEdges }) {
+  const notices = [];
+  if (inferredEdges.length > 0) {
+    notices.push({
+      id: 'VP-GRAPH-002',
+      level: 'info',
+      category: '文脈品質',
+      title: '推論された依存関係がある',
+      detail: `graphify が ${inferredEdges.length} 件の推論関係を検出した。`,
+      recommendation: '推論関係は診断質問として扱い、検証済み事実として扱わない。'
+    });
+  }
+  return notices;
 }
 
 async function buildActionCandidates(repoRoot, evidence, graphIndex) {
@@ -1112,6 +1121,10 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 
 ${findings.length === 0 ? '- なし' : findings.map((finding) => `- ${finding.id}: ${finding.title}（${finding.severity}）`).join('\n')}
 
+## 文脈品質ノート
+
+${renderGraphQualityNotices(evidence.graphify?.quality_notices)}
+
 ## 診断レビュー
 
 ${renderFindingReviewSummary(evidence.finding_review)}
@@ -1120,6 +1133,11 @@ ${renderFindingReviewSummary(evidence.finding_review)}
 
 ${renderActionCandidates(evidence.action_candidates)}
 `;
+}
+
+function renderGraphQualityNotices(notices) {
+  if (!Array.isArray(notices) || notices.length === 0) return '- なし';
+  return notices.map((notice) => `- ${notice.id}: ${notice.title}（${notice.level}）`).join('\n');
 }
 
 function renderApiBoundarySummary(apiBoundary) {

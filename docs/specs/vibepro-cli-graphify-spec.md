@@ -640,6 +640,9 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `graphify.extracted_edges`
 - `graphify.inferred_edges`
 - `graphify.ambiguous_edges`
+- `graphify.quality_notices`
+- `graphify.quality_notices[].id`
+- `graphify.quality_notices[].level`
 - `static_site.has_index_html`
 - `static_site.scanned_files`
 - `static_site.secret_hits`
