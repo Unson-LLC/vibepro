@@ -1967,6 +1967,28 @@ export async function GET() {
   return Response.json(companies);
 }
 `);
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'accounts', '[id]'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'accounts', '[id]', 'route.ts'), `
+import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
+
+export async function GET(request, { params }) {
+  const session = await auth();
+  if (!session) return Response.json({}, { status: 401 });
+  const events = await prisma.auditLog.findMany({
+    where: { accountId: params.id },
+    orderBy: { createdAt: 'desc' },
+    take: 100
+  });
+  const account = await prisma.account.findUnique({
+    where: { id: params.id }
+  });
+  if (account.userId !== session.user.id) {
+    return Response.json({ error: 'Access denied' }, { status: 403 });
+  }
+  return Response.json({ events });
+}
+`);
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.test.ts'), 'import test from "node:test";\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'helper.ts'), 'export const helper = true;\n');
   await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'users'), { recursive: true });
@@ -2002,6 +2024,47 @@ export function requireQueueAuth(request) {
 export function verifyQueueSignature(signature) {
   return Boolean(signature);
 }
+`);
+  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-alpha.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesAlpha() {
+  return prisma.company.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  });
+}
+`);
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'company-beta.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function listActiveCompaniesBeta() {
+  return prisma.company.findMany({
+    where: { active: true },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  });
+}
+`);
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'mixed-workflow.ts'), `
+import { prisma } from '@/lib/db';
+import { z } from 'zod';
+
+export async function mixedWorkflow(request) {
+  const session = await auth();
+  const schema = z.object({ id: z.string() });
+  const input = schema.parse(await request.json());
+  const company = await prisma.company.findUnique({ where: { id: input.id } });
+  await fetch(process.env.WEBHOOK_URL, { method: 'POST', body: JSON.stringify(company) });
+  await notifyTeam(session.user.email);
+  return company;
+}
+
+${Array.from({ length: 155 }, (_, index) => `const workflowLine${index} = ${index};`).join('\n')}
 `);
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
 const api_secret = "runtimeReviewToken123";
@@ -2074,16 +2137,24 @@ export function middleware() {}
   assert.equal(evidence.check_catalog.selected_views.includes('data'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('api-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('database-access'), true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('code-quality'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
   assert.equal(evidence.database_access.unbounded_find_many.length, 1);
   assert.equal(evidence.database_access.unbounded_find_many[0].file, 'src/app/api/companies/route.ts');
   assert.equal(evidence.database_access.unbounded_find_many[0].gate_effect, 'review');
-  assert.equal(evidence.api_boundary.routes.length, 7);
+  assert.equal(evidence.code_quality.authorization_order_risks.length, 1);
+  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/[id]/route.ts');
+  assert.equal(evidence.code_quality.duplicate_query_shapes.length, 1);
+  assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-alpha.ts'), true);
+  assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-beta.ts'), true);
+  assert.equal(evidence.code_quality.responsibility_hotspots.length, 1);
+  assert.equal(evidence.code_quality.responsibility_hotspots[0].file, 'src/lib/services/mixed-workflow.ts');
+  assert.equal(evidence.api_boundary.routes.length, 8);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_middleware, 3);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_route, 1);
-  assert.equal(evidence.api_boundary.protection_summary.excluded_by_middleware, 3);
+  assert.equal(evidence.api_boundary.protection_summary.excluded_by_middleware, 4);
   const adminRoute = evidence.api_boundary.routes.find((route) => route.route_path === '/api/admin/users');
   assert.equal(adminRoute.classification, 'admin');
   assert.equal(adminRoute.protection.status, 'protected_by_middleware');
@@ -2170,6 +2241,9 @@ export function middleware() {}
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-DB-001'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-SEC-004'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-DRY-001'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-ARCH-001'), true);
   assert.equal(evidence.finding_review.status, 'needs_review');
   assert.equal(evidence.finding_review.summary.total, evidence.findings.length);
   assert.equal(evidence.finding_review.summary.unreviewed, evidence.findings.length);
@@ -2189,8 +2263,11 @@ export function middleware() {}
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
   assert.match(summary, /DB未ページング候補/);
+  assert.match(summary, /認可前bulk DB候補/);
+  assert.match(summary, /重複query形状候補/);
+  assert.match(summary, /責務混在候補/);
   assert.match(summary, /保護状態別/);
-  assert.match(summary, /excluded_by_middleware \| 3/);
+  assert.match(summary, /excluded_by_middleware \| 4/);
   assert.match(summary, /## 次アクション候補/);
   assert.match(summary, /VP-ACTION-API-001/);
   assert.match(summary, /Impact/);
@@ -2207,7 +2284,7 @@ export function middleware() {}
   assert.match(riskRegister, /## API境界の保護状態/);
   assert.match(riskRegister, /## 診断レビュー分類/);
   assert.match(riskRegister, /VP-API-001 \| unreviewed \| implementation_gap/);
-  assert.match(riskRegister, /excluded_by_middleware \| 3/);
+  assert.match(riskRegister, /excluded_by_middleware \| 4/);
   assert.match(riskRegister, /proposal_only/);
   assert.match(riskRegister, /Impact/);
   const findingReview = await readFile(path.join(runDir, 'finding-review.md'), 'utf8');
@@ -2237,7 +2314,10 @@ export function middleware() {}
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
   assert.match(importSummary, /共通スキャン対象/);
   assert.match(importSummary, /## API境界/);
-  assert.match(importSummary, /excluded_by_middleware \| 3/);
+  assert.match(importSummary, /認可前bulk DB候補/);
+  assert.match(importSummary, /重複query形状候補/);
+  assert.match(importSummary, /責務混在候補/);
+  assert.match(importSummary, /excluded_by_middleware \| 4/);
   assert.match(importSummary, /## 診断レビュー/);
   assert.doesNotMatch(importSummary, /suggested detector_gap: [1-9]/);
   assert.match(importSummary, /## 次アクション候補/);
@@ -2250,13 +2330,16 @@ export function middleware() {}
   assert.equal(importState.signals.architecture_profile.system_type, 'web_application');
   assert.equal(importState.signals.architecture_profile.views.security.auth_boundaries.length, 1);
   assert.equal(importState.signals.check_catalog.selected_views.includes('runtime'), true);
-  assert.equal(importState.signals.api_boundary.route_count, 7);
+  assert.equal(importState.signals.api_boundary.route_count, 8);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
-  assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 3);
+  assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 4);
+  assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1);
+  assert.equal(importState.signals.code_quality.duplicate_query_shapes_count, 1);
+  assert.equal(importState.signals.code_quality.responsibility_hotspots_count, 1);
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
   assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
-  assert.equal(importState.signals.tasks.length, 5);
+  assert.equal(importState.signals.tasks.length, 6);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');
   assert.equal(importState.signals.tasks[4].source_id, 'VP-ACTION-API-001');
   assert.equal(importState.signals.action_candidates.length, 3);

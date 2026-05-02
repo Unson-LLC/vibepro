@@ -242,6 +242,21 @@ function resolveFindingTargetFiles(finding, evidence) {
       .filter((hit) => hit.gate_effect !== 'info')
       .map((hit) => hit.file));
   }
+  if (finding.id === 'VP-SEC-004') {
+    return uniqueFiles((evidence.code_quality?.authorization_order_risks ?? [])
+      .filter((hit) => hit.gate_effect !== 'info')
+      .map((hit) => hit.file));
+  }
+  if (finding.id === 'VP-DRY-001') {
+    return uniqueFiles((evidence.code_quality?.duplicate_query_shapes ?? [])
+      .filter((hit) => hit.gate_effect !== 'info')
+      .flatMap((hit) => hit.files ?? []));
+  }
+  if (finding.id === 'VP-ARCH-001') {
+    return uniqueFiles((evidence.code_quality?.responsibility_hotspots ?? [])
+      .filter((hit) => hit.gate_effect !== 'info')
+      .map((hit) => hit.file));
+  }
   return [];
 }
 

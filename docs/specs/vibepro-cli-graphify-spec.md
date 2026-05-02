@@ -662,6 +662,14 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `database_access.unbounded_find_many`
 - `database_access.unbounded_find_many[].gate_effect`
 - `database_access.risk_summary.unbounded_find_many`
+- `code_quality.scanned_files`
+- `code_quality.authorization_order_risks`
+- `code_quality.authorization_order_risks[].gate_effect`
+- `code_quality.duplicate_query_shapes`
+- `code_quality.duplicate_query_shapes[].files`
+- `code_quality.responsibility_hotspots`
+- `code_quality.responsibility_hotspots[].signals`
+- `code_quality.risk_summary`
 - `architecture_profile.system_type`
 - `architecture_profile.app_type`
 - `architecture_profile.frameworks`
@@ -970,6 +978,7 @@ API route保護判定:
 - `diagnose` は `authorization` ヘッダーと環境secretを照合するrouteを `protected_by_route` として扱う。
 - `diagnose` はrouteからimportされた認証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある認証シグナルを `protected_by_route` として扱う。
 - `diagnose` はwebhook routeからimportされた署名検証helper呼び出しを追跡し、helper自身またはその先の同一repo内helperにある署名検証シグナルを `protected_by_route` として扱う。
+- `diagnose` は `code-quality` が適用される場合、認可判定前のbulk DB read候補、重複したPrisma query形状、責務が混在する大きなruntime file候補を `evidence.code_quality` に記録する。
 - `task list` で選択中Storyの生成タスクを一覧できる。
 - `task show --task <task-id>` で対象ファイル、対象route、対象グループ、完了条件を確認できる。
 - `task brief --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/briefing.json` と `briefing.md` が生成される。
