@@ -1956,7 +1956,17 @@ test('diagnose profiles a Next.js repository and selects applicable checks witho
     }
   }, null, 2));
   await mkdir(path.join(repo, 'src', 'app', 'api', 'companies'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), 'export async function GET() { return Response.json([]); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.ts'), `
+import { prisma } from '@/lib/db';
+
+export async function GET() {
+  const companies = await prisma.company.findMany({
+    where: { active: true },
+    orderBy: { createdAt: 'desc' }
+  });
+  return Response.json(companies);
+}
+`);
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'route.test.ts'), 'import test from "node:test";\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'helper.ts'), 'export const helper = true;\n');
   await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'users'), { recursive: true });
@@ -2067,6 +2077,9 @@ export function middleware() {}
   assert.equal(evidence.check_catalog.applicable_checks.includes('auth-boundary'), true);
   assert.equal(evidence.check_catalog.applicable_checks.includes('static-entry'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.local'), true);
+  assert.equal(evidence.database_access.unbounded_find_many.length, 1);
+  assert.equal(evidence.database_access.unbounded_find_many[0].file, 'src/app/api/companies/route.ts');
+  assert.equal(evidence.database_access.unbounded_find_many[0].gate_effect, 'review');
   assert.equal(evidence.api_boundary.routes.length, 7);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_middleware, 3);
   assert.equal(evidence.api_boundary.protection_summary.protected_by_route, 1);
@@ -2156,6 +2169,7 @@ export function middleware() {}
   );
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-002'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-API-003'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-DB-001'), true);
   assert.equal(evidence.finding_review.status, 'needs_review');
   assert.equal(evidence.finding_review.summary.total, evidence.findings.length);
   assert.equal(evidence.finding_review.summary.unreviewed, evidence.findings.length);
@@ -2174,6 +2188,7 @@ export function middleware() {}
   assert.match(summary, /Security \|/);
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
+  assert.match(summary, /DB未ページング候補/);
   assert.match(summary, /保護状態別/);
   assert.match(summary, /excluded_by_middleware \| 3/);
   assert.match(summary, /## 次アクション候補/);

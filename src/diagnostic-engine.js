@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
+import { scanDatabaseAccess } from './database-access-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
@@ -126,6 +127,9 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
         ? await scanApiBoundary(repoRoot, architectureProfile)
         : null,
+      database_access: architectureProfile.applicable_checks.includes('database-access')
+        ? await scanDatabaseAccess(repoRoot)
+        : null,
       static_site: await scanStaticSite(repoRoot),
       action_candidates: [],
       findings: [],
@@ -202,6 +206,20 @@ function buildFindings(evidence) {
       detail: `${evidence.static_site.non_static_files.length} 件の非静的ファイル候補を検出した。`,
       recommendation: '公開ディレクトリにサーバーコード、設定ファイル、生成前ソースを含めない構成に分離する。'
     });
+  }
+  if (applicableChecks.has('database-access') && evidence.database_access) {
+    const unboundedQueries = filterGateRelevant(evidence.database_access.unbounded_find_many);
+    if (unboundedQueries.length > 0) {
+      const querySummary = summarizeGateEffects(evidence.database_access.unbounded_find_many);
+      findings.push({
+        id: 'VP-DB-001',
+        severity: 'Medium',
+        category: 'パフォーマンス',
+        title: '未ページングのDB一覧取得候補がある',
+        detail: `${unboundedQueries.length} 件のruntime queryで件数上限のない Prisma findMany 候補を検出した。内訳: ${formatGateSummary(querySummary)}。`,
+        recommendation: '公開APIやユーザー操作に紐づく一覧取得には take/skip/cursor 等の上限を設け、必要ならページング仕様をStoryに落とす。'
+      });
+    }
   }
   if (applicableChecks.has('external-resources') && evidence.static_site.external_resources.length > 0) {
     findings.push({
@@ -1102,6 +1120,7 @@ function renderSummary({ runId, evidence, findings }) {
 | 共通スキャン対象 | ${evidence.static_site.scanned_files}件 |
 | 秘密情報候補 | ${formatRiskCount(evidence.static_site.secret_hits, evidence.static_site.risk_summary?.secret_hits)} |
 | XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
+| DB未ページング候補 | ${formatRiskCount(evidence.database_access?.unbounded_find_many ?? [], evidence.database_access?.risk_summary?.unbounded_find_many)} |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 

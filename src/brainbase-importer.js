@@ -84,6 +84,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const checkCatalog = evidence.check_catalog ?? {};
   const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
+  const databaseAccess = evidence.database_access ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const findingReview = evidence.finding_review ?? {};
   const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
@@ -153,6 +154,12 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         xss_risk_hits_gate_summary: staticSite.risk_summary?.xss_risk_hits ?? summarizeGateEffects(staticSite.xss_risk_hits),
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
+      },
+      database_access: {
+        scanned_files: databaseAccess.scanned_files ?? 0,
+        unbounded_find_many_count: databaseAccess.unbounded_find_many?.length ?? 0,
+        unbounded_find_many_gate_summary: databaseAccess.risk_summary?.unbounded_find_many
+          ?? summarizeGateEffects(databaseAccess.unbounded_find_many)
       },
       finding_review: {
         status: findingReview.status ?? 'unknown',

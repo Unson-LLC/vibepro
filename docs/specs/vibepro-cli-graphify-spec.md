@@ -658,6 +658,10 @@ Story 設定は `.vibepro/config.json` の `brainbase.stories[]` を読む。各
 - `static_site.risk_summary`
 - `static_site.external_resources`
 - `static_site.non_static_files`
+- `database_access.scanned_files`
+- `database_access.unbounded_find_many`
+- `database_access.unbounded_find_many[].gate_effect`
+- `database_access.risk_summary.unbounded_find_many`
 - `architecture_profile.system_type`
 - `architecture_profile.app_type`
 - `architecture_profile.frameworks`
