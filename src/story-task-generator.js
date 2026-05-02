@@ -126,7 +126,10 @@ function buildActionTask(candidate) {
   const targetRoutes = plan.pre_fix_briefing?.target_routes ?? [];
   const targetFiles = uniqueFiles(targetRoutes.length > 0
     ? targetRoutes.map((route) => route.file)
-    : (candidate.route_examples ?? []).map((route) => route.file));
+    : [
+        ...(candidate.target_files ?? []),
+        ...(candidate.route_examples ?? []).map((route) => route.file)
+      ]);
   const targetGroups = buildTargetGroups({ targetRoutes, candidate, plan });
   return {
     id: candidate.id.replace('VP-ACTION-', 'VP-TASK-'),

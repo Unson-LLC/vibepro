@@ -542,6 +542,14 @@ ${plan.acceptance_criteria.map((item) => `- ${item}`).join('\n')}`;
 
 function renderPreFixBriefing(briefing) {
   if (!briefing) return '';
+  if (briefing.opportunity) {
+    return `修正前ブリーフィング:
+- リファクタリング機会: ${briefing.opportunity.id} / ${briefing.opportunity.refactoring_intent}
+- 推奨抽象化: ${briefing.opportunity.suggested_abstraction?.label ?? '-'}
+- 対象ファイル: ${briefing.target_files?.slice(0, 5).join(', ') || '-'}
+- 推奨方針: ${briefing.recommended_strategy?.id ?? '-'} - ${briefing.recommended_strategy?.reason ?? '-'}
+- 方針: ${briefing.strategy_options?.map((option) => option.label).join(' / ') || '-'}`;
+  }
   return `修正前ブリーフィング:
 - 現在の境界: middleware excludes_api=${briefing.current_boundary?.middleware?.excludes_api ?? false}, route protection=${formatInlineSummary(briefing.current_boundary?.route_protection ?? {})}
 - 認証/署名候補: ${formatAuthHelpers(briefing.auth_helpers)}
