@@ -65,6 +65,7 @@ export function buildRefactoringActionCandidates(evidence) {
 
 function buildRefactoringActionCandidate({ actionId, opportunity, campaign }) {
   const title = campaign?.title ?? opportunity.title;
+  const graphContext = campaign?.graph_context ?? opportunity.graph_context ?? null;
   return {
     id: actionId,
     finding_id: opportunity.finding_id,
@@ -78,8 +79,9 @@ function buildRefactoringActionCandidate({ actionId, opportunity, campaign }) {
     recommendation: campaign?.story_blueprint?.summary ?? opportunity.story_blueprint.summary,
     refactoring_opportunity_id: opportunity.id,
     refactoring_campaign_id: campaign?.id ?? null,
+    graph_context: graphContext,
     story_blueprint: campaign?.story_blueprint ?? opportunity.story_blueprint,
-    implementation_plan: buildRefactoringImplementationPlan(opportunity, campaign)
+    implementation_plan: buildRefactoringImplementationPlan(opportunity, campaign, graphContext)
   };
 }
 
@@ -234,29 +236,25 @@ function buildResponsibilityStoryBlueprint({ hotspot, targetFiles }) {
   };
 }
 
-function buildRefactoringImplementationPlan(opportunity, campaign = null) {
+function buildRefactoringImplementationPlan(opportunity, campaign = null, graphContext = null) {
   const targetFiles = campaign?.target_files ?? opportunity.target_files;
+  const readFirstFiles = buildRefactoringReadFirstFiles({ targetFiles, opportunity, campaign, graphContext });
   return {
     priority: campaign?.priority ?? opportunity.priority,
     rationale: campaign
       ? `${campaign.id} は ${campaign.opportunity_count}件の機会を束ねるStory候補。最初に ${opportunity.id} を確認する。`
       : `${opportunity.finding_id} から ${opportunity.refactoring_intent} としてStory化できる候補。対象は ${opportunity.target_count}ファイル。`,
-    read_first_files: targetFiles.map((file) => ({
-      file,
-      reason: campaign
-        ? `リファクタリングcampaign ${campaign.id} の対象ファイル`
-        : `リファクタリング機会 ${opportunity.id} の対象ファイル`
-    })),
+    read_first_files: readFirstFiles,
     steps: [
       {
         id: 'inventory-current-behavior',
         title: '現在の挙動を棚卸しする',
-        detail: '対象ファイルごとにquery条件、返却shape、fallback、例外処理、呼び出し元期待値を確認する。'
+        detail: '対象ファイルごとにquery条件、返却shape、fallback、例外処理、呼び出し元期待値を確認する。Graphifyの関連ファイルがある場合は先に呼び出し方向と共有hubを確認する。'
       },
       {
         id: 'decide-abstraction-boundary',
         title: '共通境界を決める',
-        detail: '同じ用途なら共通service/helper/repositoryへ集約し、用途が違う場合はStory内で分離する。'
+        detail: '同じ用途なら共通service/helper/repositoryへ集約する。複数communityに跨る場合は、共通化前にflow単位の責務差分をStory内で分ける。'
       },
       {
         id: 'replace-call-sites',
@@ -266,7 +264,7 @@ function buildRefactoringImplementationPlan(opportunity, campaign = null) {
       {
         id: 'rerun-diagnosis',
         title: '診断を再実行する',
-        detail: '型検査・関連テスト・VibePro診断で重複query形状が減ったことを確認する。'
+        detail: '型検査・関連テスト・VibePro診断で対象機会が減ったこと、Graphify上の影響範囲外を不用意に変更していないことを確認する。'
       }
     ],
     acceptance_criteria: campaign?.story_blueprint?.acceptance_criteria ?? opportunity.story_blueprint.acceptance_criteria,
@@ -290,15 +288,67 @@ function buildRefactoringImplementationPlan(opportunity, campaign = null) {
           }
         : null,
       target_files: targetFiles,
+      graph_context: graphContext,
+      investigation_scope: buildRefactoringInvestigationScope({ targetFiles, readFirstFiles, graphContext }),
       invariants: campaign?.story_blueprint?.invariants ?? opportunity.story_blueprint.invariants,
       evidence_examples: opportunity.evidence_refs.examples ?? [],
-      strategy_options: buildRefactoringStrategyOptions(opportunity, targetFiles),
-      recommended_strategy: buildRefactoringRecommendedStrategy(opportunity)
+      strategy_options: buildRefactoringStrategyOptions(opportunity, targetFiles, graphContext),
+      recommended_strategy: buildRefactoringRecommendedStrategy(opportunity, graphContext)
     }
   };
 }
 
-function buildRefactoringStrategyOptions(opportunity, targetFiles) {
+function buildRefactoringReadFirstFiles({ targetFiles, opportunity, campaign, graphContext }) {
+  const files = [];
+  const seen = new Set();
+  const add = (file, reason) => {
+    if (!file || seen.has(file)) return;
+    seen.add(file);
+    files.push({ file, reason });
+  };
+  for (const file of targetFiles ?? []) {
+    add(file, campaign
+      ? `リファクタリングcampaign ${campaign.id} の対象ファイル`
+      : `リファクタリング機会 ${opportunity.id} の対象ファイル`);
+  }
+  for (const file of graphContext?.related_files ?? []) {
+    add(file, 'Graphifyで対象ファイルと直接つながる周辺ファイル');
+  }
+  for (const hub of graphContext?.hub_nodes ?? []) {
+    add(hub.source_file, `Graphify hub: ${hub.label ?? hub.id} / degree=${hub.degree ?? 0}`);
+  }
+  return files.slice(0, 12);
+}
+
+function buildRefactoringInvestigationScope({ targetFiles, readFirstFiles, graphContext }) {
+  return {
+    target_files: targetFiles ?? [],
+    read_first_files: readFirstFiles.map((item) => item.file),
+    graph_matched_files: graphContext?.matched_files ?? [],
+    graph_unmatched_files: graphContext?.unmatched_files ?? [],
+    related_files: graphContext?.related_files ?? [],
+    hub_nodes: graphContext?.hub_nodes ?? [],
+    affected_communities: graphContext?.affected_communities ?? [],
+    community_span: graphContext?.community_span ?? 0,
+    cross_community: Boolean(graphContext?.cross_community),
+    guidance: buildRefactoringGraphGuidance(graphContext)
+  };
+}
+
+function buildRefactoringGraphGuidance(graphContext) {
+  if (!graphContext || (graphContext.matched_file_count ?? 0) === 0) {
+    return 'Graphifyで対象ファイルに対応するnodeが見つからないため、対象ファイルと静的import/呼び出し元を手動で確認する。';
+  }
+  if (graphContext.cross_community) {
+    return '複数communityに跨るため、先にflowごとの責務差分を確認し、共通化は安定した境界に限定する。';
+  }
+  return '同一community内の影響が中心のため、hub/related fileを先に読んで共有境界を決める。';
+}
+
+function buildRefactoringStrategyOptions(opportunity, targetFiles, graphContext = null) {
+  const graphCaution = graphContext?.cross_community
+    ? 'Graphify上で複数communityに跨るため、flow差分を確認してから共通化する必要がある'
+    : null;
   if (opportunity.source === 'responsibility_hotspot') {
     return [
       {
@@ -307,7 +357,7 @@ function buildRefactoringStrategyOptions(opportunity, targetFiles) {
         target_count: targetFiles.length,
         candidate_files: targetFiles,
         benefits: ['認可、DB、検証、外部I/Oの責務境界を読みやすくできる', '副作用の順序をレビューしやすくなる'],
-        cautions: ['入出力と副作用タイミングを先に固定する必要がある']
+        cautions: ['入出力と副作用タイミングを先に固定する必要がある', graphCaution].filter(Boolean)
       },
       {
         id: 'extract-side-effect-boundary',
@@ -315,7 +365,7 @@ function buildRefactoringStrategyOptions(opportunity, targetFiles) {
         target_count: targetFiles.length,
         candidate_files: targetFiles,
         benefits: ['大きなファイルを段階的に小さくできる', 'テストしづらい副作用を隔離できる'],
-        cautions: ['DB更新やレスポンス整形との順序を変えない確認が必要']
+        cautions: ['DB更新やレスポンス整形との順序を変えない確認が必要', graphCaution].filter(Boolean)
       }
     ];
   }
@@ -326,7 +376,7 @@ function buildRefactoringStrategyOptions(opportunity, targetFiles) {
       target_count: targetFiles.length,
       candidate_files: targetFiles,
       benefits: ['重複query形状を直接減らせる', '挙動変更を一箇所で検証しやすい'],
-      cautions: ['用途が違う重複を誤って統合しない確認が必要']
+      cautions: ['用途が違う重複を誤って統合しない確認が必要', graphCaution].filter(Boolean)
     },
     {
       id: 'separate-behavior-variants',
@@ -334,12 +384,18 @@ function buildRefactoringStrategyOptions(opportunity, targetFiles) {
       target_count: targetFiles.length,
       candidate_files: targetFiles,
       benefits: ['暗黙の差分をStoryに残せる', '無理な共通化による回帰を避けやすい'],
-      cautions: ['重複削減より責務明確化を優先する判断になる']
+      cautions: ['重複削減より責務明確化を優先する判断になる', graphCaution].filter(Boolean)
     }
   ];
 }
 
-function buildRefactoringRecommendedStrategy(opportunity) {
+function buildRefactoringRecommendedStrategy(opportunity, graphContext = null) {
+  if (graphContext?.cross_community) {
+    return {
+      id: 'split-by-graph-community',
+      reason: 'Graphify上で複数communityに跨るため、先にflow単位の責務差分を分け、共通化は安定した境界に限定する。'
+    };
+  }
   if (opportunity.source === 'responsibility_hotspot') {
     return {
       id: 'split-runtime-boundaries',
@@ -476,6 +532,7 @@ function buildRefactoringCampaign(opportunities, serialNumber) {
   const scoreTotal = Math.round(sorted.reduce((sum, opportunity) => sum + opportunity.score.total, 0) / sorted.length);
   const priority = scoreTotal >= 75 ? 'high' : scoreTotal >= 40 ? 'medium' : 'low';
   const storyBlueprint = buildCampaignStoryBlueprint({ primary, opportunities: sorted, targetFiles });
+  const graphContext = mergeRefactoringGraphContexts(sorted.map((opportunity) => opportunity.graph_context));
   return {
     id: `VP-CAMPAIGN-REF-${formatSerial(serialNumber)}`,
     title: storyBlueprint.title,
@@ -497,8 +554,71 @@ function buildRefactoringCampaign(opportunities, serialNumber) {
       responsibility_hotspots: sorted.filter((opportunity) => opportunity.finding_id === 'VP-ARCH-001').length
     },
     priority_reasons: uniqueFiles(sorted.flatMap((opportunity) => opportunity.priority_reasons ?? [])).slice(0, 10),
+    graph_context: graphContext,
     story_blueprint: storyBlueprint
   };
+}
+
+function mergeRefactoringGraphContexts(contexts) {
+  const items = contexts.filter(Boolean);
+  if (items.length === 0) return null;
+  const matchedFiles = uniqueFiles(items.flatMap((context) => context.matched_files ?? []));
+  const unmatchedFiles = uniqueFiles(items.flatMap((context) => context.unmatched_files ?? []))
+    .filter((file) => !matchedFiles.includes(file));
+  const relatedFiles = uniqueFiles(items.flatMap((context) => context.related_files ?? []));
+  const communities = mergeAffectedCommunities(items.flatMap((context) => context.affected_communities ?? []));
+  return {
+    matched_route_count: items.reduce((sum, context) => sum + (context.matched_route_count ?? 0), 0),
+    target_file_count: uniqueFiles(items.flatMap((context) => [
+      ...(context.matched_files ?? []),
+      ...(context.unmatched_files ?? [])
+    ])).length,
+    matched_file_count: matchedFiles.length,
+    matched_files: matchedFiles,
+    unmatched_files: unmatchedFiles,
+    matched_node_count: items.reduce((sum, context) => sum + (context.matched_node_count ?? 0), 0),
+    affected_communities: communities,
+    hub_nodes: mergeHubNodes(items.flatMap((context) => context.hub_nodes ?? [])),
+    related_files: relatedFiles.slice(0, 8),
+    related_edge_count: items.reduce((sum, context) => sum + (context.related_edge_count ?? 0), 0),
+    impact_score: Math.max(...items.map((context) => context.impact_score ?? 0)),
+    community_span: communities.length,
+    cross_community: communities.length > 1
+  };
+}
+
+function mergeAffectedCommunities(communities) {
+  const byId = new Map();
+  for (const community of communities) {
+    if (!community) continue;
+    const key = String(community.id);
+    const item = byId.get(key) ?? {
+      id: community.id,
+      route_count: 0,
+      file_count: 0,
+      node_count: 0,
+      edge_count: 0
+    };
+    item.route_count += community.route_count ?? 0;
+    item.file_count += community.file_count ?? 0;
+    item.node_count += community.node_count ?? 0;
+    item.edge_count += community.edge_count ?? 0;
+    byId.set(key, item);
+  }
+  return [...byId.values()]
+    .sort((a, b) => b.route_count - a.route_count || b.file_count - a.file_count || b.node_count - a.node_count || String(a.id).localeCompare(String(b.id)));
+}
+
+function mergeHubNodes(hubNodes) {
+  const byId = new Map();
+  for (const node of hubNodes) {
+    if (!node?.id) continue;
+    const previous = byId.get(node.id);
+    if (!previous || (node.degree ?? 0) > (previous.degree ?? 0)) byId.set(node.id, node);
+  }
+  return [...byId.values()]
+    .sort((a, b) => (b.degree ?? 0) - (a.degree ?? 0) || a.id.localeCompare(b.id))
+    .slice(0, 5);
 }
 
 function buildCampaignStoryBlueprint({ primary, opportunities, targetFiles }) {
