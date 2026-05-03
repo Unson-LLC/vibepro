@@ -372,6 +372,10 @@ ${formatReadFirst(briefing.read_first_files)}
 
 ${renderSourceRecovery(briefing.source_recovery, briefing.recovery_drafts)}
 
+## Source Alignment Findings
+
+${renderSourceAlignmentFindings(briefing.source_alignment_findings)}
+
 ## 実装手順候補
 
 ${briefing.implementation_steps.length === 0 ? '- なし' : briefing.implementation_steps.map((step, index) => `${index + 1}. ${step.title}: ${step.detail}`).join('\n')}
@@ -459,6 +463,16 @@ function formatSourceRecoveryGraphEvidence(graphEvidence) {
   const communities = (graphEvidence.affected_communities ?? []).map((community) => `${community.id}:${community.node_count ?? 0}`).slice(0, 3).join(', ') || '-';
   const hubs = (graphEvidence.hub_nodes ?? []).map((node) => `${node.source_file ?? node.id}(${node.degree ?? 0})`).slice(0, 3).join(', ') || '-';
   return `matched=${(graphEvidence.matched_files ?? []).length}, related=${(graphEvidence.related_files ?? []).length}, edges=${graphEvidence.related_edge_count ?? 0}, communities=${communities}, hubs=${hubs}`;
+}
+
+function renderSourceAlignmentFindings(findings = []) {
+  if (!Array.isArray(findings) || findings.length === 0) return '- なし';
+  return findings.slice(0, 8).map((finding) => [
+    `- ${finding.severity}: ${finding.type}`,
+    `  - potential_bug: ${finding.potential_bug}`,
+    `  - review: ${finding.recommended_review}`,
+    `  - evidence_files: ${(finding.evidence?.files ?? []).slice(0, 5).join(', ') || '-'}`
+  ].join('\n')).join('\n');
 }
 
 export function renderTaskHandoff(handoff) {
@@ -647,6 +661,7 @@ function buildPlanTaskState({ story, plan, candidates }) {
     acceptance_criteria: candidate.acceptance ?? [],
     source_recovery: candidate.source_recovery ?? null,
     recovery_drafts: candidate.recovery_drafts ?? [],
+    source_alignment_findings: candidate.source_alignment_findings ?? [],
     graph_context: candidate.graph_context ?? candidate.source_recovery?.graph_context ?? null,
     pre_fix_briefing: null
   }));
@@ -708,6 +723,7 @@ function buildTaskBriefing({ story, sourceRun, task, group }) {
     pre_fix_briefing: task.pre_fix_briefing ?? null,
     source_recovery: task.source_recovery ?? null,
     recovery_drafts: task.recovery_drafts ?? [],
+    source_alignment_findings: task.source_alignment_findings ?? [],
     recommended_strategy: group?.recommended_strategy ?? task.recommended_strategy ?? null,
     implementation_steps: task.implementation_steps ?? [],
     acceptance_criteria: group?.acceptance_criteria ?? task.acceptance_criteria ?? []
