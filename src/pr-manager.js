@@ -427,8 +427,8 @@ function groupChangedFiles(files) {
   for (const file of files) {
     const target = file.path;
     if (target.startsWith('docs/management/stories/')) groups.story_docs.push(file);
-    else if (target.startsWith('docs/management/architecture/')) groups.architecture_docs.push(file);
-    else if (target.startsWith('docs/features/specifications/')) groups.specifications.push(file);
+    else if (target.startsWith('docs/architecture/') || target.startsWith('docs/management/architecture/')) groups.architecture_docs.push(file);
+    else if (target.startsWith('docs/specs/') || target.startsWith('docs/features/specifications/')) groups.specifications.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
     else if (target.startsWith('src/')) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);

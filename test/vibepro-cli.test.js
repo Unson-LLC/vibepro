@@ -979,6 +979,8 @@ test('pr prepare writes PR artifacts for the selected story', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'management', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
   await mkdir(path.join(repo, 'tests', 'unit'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-001-pr-prepare.md'), `---
@@ -1008,6 +1010,18 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
 - [x] PR本文に検証候補が入る
 `);
   await writeFile(path.join(repo, 'docs', 'management', 'architecture', 'ADR-001-pr-prepare.md'), '# ADR');
+  await writeFile(path.join(repo, 'docs', 'architecture', 'ADR-story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+spec_ref: docs/specs/story-pr-prepare.md
+---
+# ADR: story-pr-prepare
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+architecture_ref: docs/architecture/ADR-story-pr-prepare.md
+---
+# Spec: story-pr-prepare
+`);
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.test.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'tests', 'unit', 'pr-prepare.test.js'), 'export const ok = true;\n');
@@ -1131,14 +1145,17 @@ PR本文がファイル数だけでは、レビュアーがなぜこの変更を
   assert.equal(prepare.task_context.artifacts.handoff_json, '.vibepro/stories/story-pr-prepare/tasks/TASK-001/handoff.json');
   assert.equal(prepare.scope.status, 'reviewable');
   assert.equal(prepare.file_groups.story_docs.count, 1);
-  assert.equal(prepare.file_groups.architecture_docs.count, 1);
+  assert.equal(prepare.file_groups.architecture_docs.count, 2);
+  assert.equal(prepare.file_groups.specifications.count, 1);
+  assert.equal(prepare.file_groups.architecture_docs.files.includes('docs/architecture/ADR-story-pr-prepare.md'), true);
+  assert.equal(prepare.file_groups.specifications.files.includes('docs/specs/story-pr-prepare.md'), true);
   assert.equal(prepare.file_groups.source.count, 1);
   assert.equal(prepare.file_groups.tests.count, 2);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
   assert.match(prBody, /## 背景・要求/);
   assert.match(prBody, /PR本文がファイル数だけでは/);
-  assert.match(prBody, /ADRあり \(docs\/management\/architecture\/ADR-001-pr-prepare.md\)/);
+  assert.match(prBody, /ADRあり \(docs\/architecture\/ADR-story-pr-prepare.md, docs\/management\/architecture\/ADR-001-pr-prepare.md\)/);
   assert.match(prBody, /PR本文に背景が入る/);
   assert.match(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /npm run typecheck/);
