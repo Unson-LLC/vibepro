@@ -589,7 +589,7 @@ test('story plan creates execution priorities from the generated story map', asy
     nodes: [
       { id: 'detail-page', source_file: 'src/app/(app)/detail/page.tsx', community: 'hotel-detail' },
       { id: 'hotel-detail', source_file: 'src/components/hotel/HotelDetail.tsx', community: 'hotel-detail' },
-      { id: 'hotel-api', source_file: 'src/lib/hotel/api.ts', community: 'hotel-detail' }
+      { id: 'hotel-api', source_file: 'src/lib/hotel/api.ts', community: 'hotel-data' }
     ],
     edges: [
       { source: 'detail-page', target: 'hotel-detail' },
@@ -613,6 +613,7 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.match(output, /まず確認する質問/);
   assert.match(output, /Source Consistency/);
   assert.match(output, /正本欠落マップ/);
+  assert.match(output, /潜在バグ候補/);
   assert.match(output, /Spec欠落/);
   assert.match(output, /Spec正本を復元する/);
   const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
@@ -620,7 +621,11 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.equal(plan.summary.source_consistency_status, 'needs_recovery');
   assert.equal(plan.source_consistency.needs_recovery_story_count > 0, true);
   assert.equal(plan.summary.source_missing_spec_count > 0, true);
+  assert.equal(plan.summary.source_alignment_finding_count > 0, true);
+  assert.equal(plan.summary.source_alignment_high_count > 0, true);
   assert.equal(plan.source_recovery_map.counts.missing_spec > 0, true);
+  assert.equal(plan.source_alignment_findings.items.some((finding) => finding.type === 'missing_spec_source'), true);
+  assert.equal(plan.questions.some((question) => question.field === 'source_alignment'), true);
   const missingSpecRow = plan.source_recovery_map.missing.find((row) => row.story_id === 'story-product-hotel-detail-actions');
   assert.equal(missingSpecRow.spec.suggested_path, 'docs/specs/product-hotel-detail-actions.md');
   assert.equal(missingSpecRow.spec.suggested_task_id, 'story-product-hotel-detail-actions-spec-recovery');
@@ -628,6 +633,7 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.equal(plan.questions.some((question) => question.field === 'missing_spec'), true);
   assert.equal(plan.questions.some((question) => question.field === 'source_spec_recovery'), true);
   assert.equal(plan.task_candidates.some((task) => task.id.endsWith('spec-recovery')), true);
+  assert.equal(plan.task_candidates.some((task) => task.id.endsWith('source-alignment-review')), true);
   const specRecoveryCandidate = plan.task_candidates.find((task) => task.id === 'story-product-hotel-detail-actions-spec-recovery');
   assert.equal(specRecoveryCandidate.source_recovery.sources.spec.status, 'needs_recovery');
   assert.equal(specRecoveryCandidate.graph_context.matched_node_count > 0, true);

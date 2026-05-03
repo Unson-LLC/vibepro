@@ -613,14 +613,19 @@ function buildStoryExecutionPlan(catalog, options = {}) {
     .map((story) => scoreStoryForExecution(story, catalog, options.graphIndex))
     .sort((a, b) => b.score - a.score || a.story_id.localeCompare(b.story_id));
   const priorityStories = scoredStories.slice(0, options.limit ?? 5);
-  const questions = buildPlanQuestions(catalog, priorityStories);
-  const taskCandidates = [
+  const baseTaskCandidates = [
     ...buildWarningTaskCandidates(catalog),
     ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story))
   ];
   const warnings = catalog.source?.warnings ?? [];
   const sourceConsistency = summarizeSourceConsistency(scoredStories);
-  const sourceRecoveryMap = buildSourceRecoveryMap(scoredStories, taskCandidates);
+  const sourceRecoveryMap = buildSourceRecoveryMap(scoredStories, baseTaskCandidates);
+  const sourceAlignmentFindings = buildSourceAlignmentFindings(scoredStories);
+  const taskCandidates = [
+    ...baseTaskCandidates,
+    ...buildSourceAlignmentTaskCandidates(sourceAlignmentFindings.items, scoredStories)
+  ];
+  const questions = buildPlanQuestions(catalog, priorityStories, sourceAlignmentFindings);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -640,10 +645,13 @@ function buildStoryExecutionPlan(catalog, options = {}) {
       source_consistency_status: sourceConsistency.status,
       source_recovery_story_count: sourceConsistency.needs_recovery_story_count,
       source_missing_spec_count: sourceRecoveryMap.counts.missing_spec,
-      source_missing_architecture_count: sourceRecoveryMap.counts.missing_architecture
+      source_missing_architecture_count: sourceRecoveryMap.counts.missing_architecture,
+      source_alignment_finding_count: sourceAlignmentFindings.counts.total,
+      source_alignment_high_count: sourceAlignmentFindings.counts.high
     },
     source_consistency: sourceConsistency,
     source_recovery_map: sourceRecoveryMap,
+    source_alignment_findings: sourceAlignmentFindings,
     questions,
     priority_stories: priorityStories,
     task_candidates: taskCandidates,
@@ -928,6 +936,250 @@ function sourceRecoveryMapRank(row) {
   return 4;
 }
 
+function buildSourceAlignmentFindings(stories) {
+  const items = stories
+    .flatMap((story) => buildSourceAlignmentFindingsForStory(story))
+    .sort((a, b) => sourceAlignmentSeverityRank(a.severity) - sourceAlignmentSeverityRank(b.severity)
+      || (b.graph?.impact_score ?? 0) - (a.graph?.impact_score ?? 0)
+      || (b.graph?.related_edge_count ?? 0) - (a.graph?.related_edge_count ?? 0)
+      || a.story_id.localeCompare(b.story_id)
+      || a.type.localeCompare(b.type));
+  const countsBySeverity = countBy(items, (item) => item.severity);
+  const countsByType = countBy(items, (item) => item.type);
+  return {
+    schema_version: '0.1.0',
+    status: items.some((item) => item.severity === 'high')
+      ? 'needs_review'
+      : items.length > 0
+        ? 'watch'
+        : 'aligned',
+    counts: {
+      total: items.length,
+      high: countsBySeverity.high ?? 0,
+      medium: countsBySeverity.medium ?? 0,
+      low: countsBySeverity.low ?? 0,
+      by_type: countsByType
+    },
+    top: items.slice(0, 10),
+    items: items.slice(0, 50)
+  };
+}
+
+function buildSourceAlignmentFindingsForStory(story) {
+  const recovery = story.source_recovery ?? {};
+  const sourceStatus = recovery.sources?.story?.status ?? 'unknown';
+  const specStatus = recovery.sources?.spec?.status ?? 'unknown';
+  const architectureStatus = recovery.sources?.architecture?.status ?? 'unknown';
+  const graph = story.graph_context ?? recovery.graph_context ?? {};
+  const fields = new Set((story.derived?.open_questions ?? []).map((item) => item.field));
+  const refs = {
+    story: recovery.sources?.story?.refs ?? [],
+    spec: recovery.sources?.spec?.refs ?? [],
+    architecture: recovery.sources?.architecture?.refs ?? []
+  };
+  const findings = [];
+  const add = (type, severity, reason, potentialBug, recommendedReview, extra = {}) => {
+    findings.push({
+      id: `${story.story_id}-${type}`,
+      story_id: story.story_id,
+      title: story.title,
+      type,
+      severity,
+      reason,
+      potential_bug: potentialBug,
+      recommended_review: recommendedReview,
+      evidence: buildSourceAlignmentEvidence(story, graph, refs, extra.evidence),
+      refs,
+      graph: buildRecoveryGraphEvidence(graph),
+      execution_policy: 'proposal_only',
+      mutates_repository: false
+    });
+  };
+
+  if (specStatus === 'needs_recovery') {
+    add(
+      'missing_spec_source',
+      'high',
+      'Spec正本が未復元のため、受け入れ基準がコード由来の仮説に留まっている。',
+      '実装上の分岐や表示が、そのまま本来の要件だと誤認されている可能性がある。',
+      'Spec草案を作り、コード由来条件と人間が承認する受け入れ基準を分ける。'
+    );
+  }
+
+  if (architectureStatus === 'needs_decision') {
+    add(
+      'missing_architecture_decision',
+      'high',
+      'Architecture/ADR判断が未確定のまま境界シグナルが検出されている。',
+      'API/Auth/Billing/Data/外部連携の責務境界が曖昧で、要件外の副作用を作る可能性がある。',
+      'ADRが必要か、Story内のADR不要理由で足りるかをGraphify影響範囲と照合して判断する。'
+    );
+  }
+
+  if ((sourceStatus === 'derived' || sourceStatus === 'implicit') && specStatus === 'present') {
+    add(
+      'spec_from_unreviewed_story',
+      sourceStatus === 'derived' ? 'medium' : 'low',
+      `Spec正本はあるが、Story正本は${sourceStatus}のため意図が人間承認済みとは限らない。`,
+      'コードから逆算した画面/分岐を、ユーザー要求として誤って固定している可能性がある。',
+      'Specの受け入れ基準ごとに、Storyのwho/problem/outcomeと一致するか確認する。'
+    );
+  }
+
+  if ((sourceStatus === 'derived' || sourceStatus === 'implicit') && architectureStatus === 'present') {
+    add(
+      'adr_from_unreviewed_story',
+      sourceStatus === 'derived' ? 'medium' : 'low',
+      `Architecture/ADRはあるが、Story正本は${sourceStatus}のため設計判断の前提が未承認の可能性がある。`,
+      'ADRの境界判断は正しくても、解こうとしている要件や運用制約が違う可能性がある。',
+      'ADRの前提、非目標、境界判断がStoryの成果状態と対応しているか確認する。'
+    );
+  }
+
+  if (graph.cross_community && architectureStatus !== 'present') {
+    add(
+      'cross_community_without_architecture',
+      'high',
+      'Graphify上で複数communityに跨るが、Architecture/ADR正本が未確定。',
+      '局所変更のつもりで責務境界を跨ぎ、別flowや共有serviceの挙動を壊す可能性がある。',
+      'hub/related fileを先に読み、ADRが必要な境界変更か、Storyをflow単位に分割すべきか判断する。'
+    );
+  }
+
+  if (graph.cross_community && architectureStatus === 'present') {
+    add(
+      'cross_community_architecture_review',
+      sourceStatus === 'present' ? 'medium' : 'high',
+      'Graphify上で複数communityに跨り、ADRは存在するため、ADRと実依存の対応確認が必要。',
+      'ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。',
+      'ADRの対象境界とGraphifyのaffected_communities/hub_nodesが一致しているか確認する。'
+    );
+  }
+
+  if (isHighGraphImpact(graph) && sourceStatus !== 'present') {
+    add(
+      'high_graph_impact_unreviewed_source',
+      'high',
+      'Graphifyの影響度が高いが、Story正本が人間レビュー済みではない。',
+      '大きな影響範囲を持つ実装を、コード由来の仮説だけで正しい要件として扱う可能性がある。',
+      '変更前にStory正本をレビューし、影響範囲に含まれる各flowが同じ受け入れ基準でよいか確認する。'
+    );
+  }
+
+  if (fields.has('business_context')) {
+    add(
+      'business_context_gap',
+      story.category === 'product' ? 'high' : 'medium',
+      'Storyの事業/利用文脈が未確定。',
+      'コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。',
+      '対象ユーザー、利用場面、成功状態をStory正本に明記してからSpecを承認する。',
+      { evidence: { open_question: 'business_context' } }
+    );
+  }
+
+  if (fields.has('business_metric')) {
+    add(
+      'business_metric_gap',
+      'medium',
+      'Storyの成功指標または観測観点が未確定。',
+      '受け入れ基準を満たしても、プロダクト上の改善を検知できない可能性がある。',
+      '少なくとも1つのKPI、ログ、運用確認観点をSpecまたはStoryへ紐づける。',
+      { evidence: { open_question: 'business_metric' } }
+    );
+  }
+
+  if ((story.acceptance_focus ?? []).length === 0 && specStatus !== 'present') {
+    add(
+      'acceptance_criteria_gap',
+      'medium',
+      '受け入れ基準の焦点が薄く、Spec正本も未確定。',
+      '実装完了の判定がコード差分や見た目確認に寄り、要件バグを見逃す可能性がある。',
+      'Spec草案に「何ができれば完了か」「何を壊してはいけないか」を追加する。'
+    );
+  }
+
+  return findings;
+}
+
+function buildSourceAlignmentEvidence(story, graph, refs, extra = {}) {
+  return {
+    story_source_status: story.source_recovery?.sources?.story?.status ?? 'unknown',
+    spec_status: story.source_recovery?.sources?.spec?.status ?? 'unknown',
+    architecture_status: story.source_recovery?.sources?.architecture?.status ?? 'unknown',
+    source_type: story.source_type ?? null,
+    confidence: story.confidence ?? null,
+    open_questions: (story.derived?.open_questions ?? []).map((item) => item.field).slice(0, 8),
+    docs: [...refs.story, ...refs.spec, ...refs.architecture].slice(0, 12),
+    files: [
+      ...(graph?.matched_files ?? []),
+      ...(graph?.related_files ?? []),
+      ...(graph?.hub_nodes ?? []).map((node) => node.source_file).filter(Boolean)
+    ].filter((file, index, files) => file && files.indexOf(file) === index).slice(0, 12),
+    ...extra
+  };
+}
+
+function isHighGraphImpact(graph = {}) {
+  return (graph.impact_score ?? 0) >= 20
+    || (graph.related_edge_count ?? 0) >= 20
+    || (graph.matched_file_count ?? 0) >= 6
+    || (graph.community_span ?? 0) >= 3;
+}
+
+function sourceAlignmentSeverityRank(severity) {
+  return { high: 0, medium: 1, low: 2 }[severity] ?? 3;
+}
+
+function buildSourceAlignmentTaskCandidates(findings, stories) {
+  const storyById = new Map(stories.map((story) => [story.story_id, story]));
+  return [...groupSourceAlignmentFindingsByStory(findings).entries()]
+    .filter(([, items]) => items.some((item) => item.severity === 'high' || item.severity === 'medium'))
+    .slice(0, 10)
+    .map(([storyId, items]) => {
+      const story = storyById.get(storyId) ?? {};
+      const topFinding = items[0];
+      const files = topFinding.evidence?.files ?? [];
+      return {
+        id: `${storyId}-source-alignment-review`,
+        story_id: storyId,
+        title: 'Story/Spec/ADR不整合をレビューする',
+        purpose: 'Story、Spec、Architecture/ADR、Graphify影響範囲を照合し、要件として間違っている可能性を潰す',
+        acceptance: [
+          '各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している',
+          'Graphifyのhub/communityを読んだ上で影響範囲を説明できる',
+          '要件が正しい場合はレビュー済み理由を正本またはPR本文に残している'
+        ],
+        priority: topFinding.severity === 'high' ? 'high' : 'medium',
+        source_type: 'source_alignment_finding',
+        target_files: files.slice(0, 12),
+        read_first_files: files.slice(0, 8).map((file) => ({
+          file,
+          reason: 'Source Alignment FindingのGraphify/コード証跡'
+        })),
+        graph_context: story.graph_context ?? topFinding.graph ?? null,
+        source_alignment_findings: items,
+        recommended_strategy: {
+          id: 'source-alignment-review',
+          reason: topFinding.potential_bug
+        },
+        implementation_steps: buildPlanCandidateSteps('source-alignment-review'),
+        suggested_command: `vibepro story select . --id ${storyId}`,
+        execution_policy: 'proposal_only',
+        mutates_repository: false
+      };
+    });
+}
+
+function groupSourceAlignmentFindingsByStory(findings) {
+  const groups = new Map();
+  for (const finding of findings) {
+    const items = groups.get(finding.story_id) ?? [];
+    items.push(finding);
+    groups.set(finding.story_id, items);
+  }
+  return groups;
+}
+
 function inferArchitectureBoundarySignals(story, codeFiles) {
   const text = [story.story_id, story.title, ...codeFiles].join(' ').toLowerCase();
   const signals = [];
@@ -1059,7 +1311,7 @@ function workflowStageWeight(stage) {
   return weights[stage] ?? 0;
 }
 
-function buildPlanQuestions(catalog, priorityStories) {
+function buildPlanQuestions(catalog, priorityStories, sourceAlignmentFindings = null) {
   const priorityIds = new Set(priorityStories.map((story) => story.story_id));
   const rawQuestions = Array.isArray(catalog.open_questions) ? catalog.open_questions : [];
   const warningQuestions = (catalog.source?.warnings ?? []).map((warning) => ({
@@ -1081,7 +1333,16 @@ function buildPlanQuestions(catalog, priorityStories) {
     priority: priorityIds.has(item.story_id) ? questionPriority(item.field) : 'medium'
   }));
   const sourceQuestions = priorityStories.flatMap((story) => buildSourceRecoveryQuestions(story));
-  return [...warningQuestions, ...coverageQuestions, ...sourceQuestions, ...questions]
+  const alignmentQuestions = (sourceAlignmentFindings?.top ?? [])
+    .filter((finding) => finding.severity === 'high')
+    .slice(0, 5)
+    .map((finding) => ({
+      story_id: finding.story_id,
+      field: 'source_alignment',
+      question: `${finding.reason} 潜在バグ: ${finding.potential_bug}`,
+      priority: 'high'
+    }));
+  return [...warningQuestions, ...coverageQuestions, ...alignmentQuestions, ...sourceQuestions, ...questions]
     .sort((a, b) => questionPriorityRank(a.priority) - questionPriorityRank(b.priority) || String(a.story_id ?? '').localeCompare(String(b.story_id ?? '')))
     .slice(0, 20);
 }
@@ -1110,7 +1371,7 @@ function buildSourceRecoveryQuestions(story) {
 }
 
 function questionPriority(field) {
-  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence' || field === 'source_spec_recovery' || field === 'source_architecture_recovery') return 'high';
+  if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence' || field === 'source_spec_recovery' || field === 'source_architecture_recovery' || field === 'source_alignment') return 'high';
   if (field === 'business_metric' || field === 'business_context') return 'medium';
   return 'low';
 }
@@ -1241,6 +1502,12 @@ function buildPlanCandidateSteps(suffix) {
       { id: 'define-kpi', title: 'KPIを決める', detail: 'Storyの成果を測る指標または観測観点を1つ以上決める' },
       { id: 'define-period', title: 'Periodを決める', detail: 'NocoDB同期可能な実行期を確定するか、未定として扱う判断を残す' }
     ],
+    'source-alignment-review': [
+      { id: 'read-sources', title: '正本を読む', detail: 'Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる' },
+      { id: 'read-graph', title: 'Graph影響範囲を読む', detail: 'Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する' },
+      { id: 'classify-mismatch', title: '不整合を分類する', detail: 'Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する' },
+      { id: 'record-outcome', title: '判断を記録する', detail: '修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す' }
+    ],
     review: [
       { id: 'review-story', title: 'Story仮説をレビューする', detail: 'meaning confidenceとcounter_evidenceを確認して次アクションを決める' }
     ],
@@ -1302,6 +1569,8 @@ ${plan.task_candidates.map((task) => `| ${task.story_id} | ${task.title} | ${tas
 | 正本復元対象Story | ${plan.summary.source_recovery_story_count ?? 0} |
 | Spec欠落 | ${plan.summary.source_missing_spec_count ?? 0} |
 | Architecture/ADR判断欠落 | ${plan.summary.source_missing_architecture_count ?? 0} |
+| 潜在バグ候補 | ${plan.summary.source_alignment_finding_count ?? 0} |
+| 高リスク潜在バグ候補 | ${plan.summary.source_alignment_high_count ?? 0} |
 
 ## まず確認する質問
 
@@ -1315,6 +1584,10 @@ ${stories}
 
 ${sourceRecoveryMap}
 
+## 潜在バグ候補
+
+${renderSourceAlignmentFindings(plan.source_alignment_findings)}
+
 ## タスク候補
 
 ${tasks}
@@ -1323,6 +1596,14 @@ ${tasks}
 
 ${plan.next_commands.map((command) => `- \`${command}\``).join('\n') || '-'}
 `;
+}
+
+function renderSourceAlignmentFindings(findings) {
+  const rows = findings?.top ?? [];
+  if (rows.length === 0) return '- なし';
+  return `| Severity | Story | Type | Potential Bug | Review |
+|----------|-------|------|---------------|--------|
+${rows.map((row) => `| ${escapeTableCell(row.severity)} | ${escapeTableCell(row.story_id)} | ${escapeTableCell(row.type)} | ${escapeTableCell(row.potential_bug)} | ${escapeTableCell(row.recommended_review)} |`).join('\n')}`;
 }
 
 function renderSourceRecoveryMap(map) {
