@@ -1459,6 +1459,16 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
     await mkdir(path.join(repo, 'src', `feature-${index}`), { recursive: true });
     await writeFile(path.join(repo, 'src', `feature-${index}`, 'index.js'), `export const value = ${index};\n`);
   }
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'feature-0', source_file: 'src/feature-0/index.js' },
+      { id: 'shared-security', source_file: 'src/shared/security.js' }
+    ],
+    edges: [
+      { source: 'feature-0', target: 'shared-security', relation: 'imports' }
+    ]
+  }, null, 2));
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: broad session work']);
 
@@ -1468,7 +1478,101 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   assert.equal(result.result.preparation.scope.status, 'needs_clean_branch');
   assert.equal(result.result.preparation.scope.recommended_strategy, 'clean_branch_or_split_pr');
   assert.equal(result.result.preparation.file_groups.repo_control.count, 1);
+  assert.equal(result.result.preparation.split_plan.status, 'split_recommended');
+  assert.equal(result.result.preparation.split_plan.graph_context.available, true);
+  assert.equal(result.result.preparation.split_plan.graph_context.investigation_files.includes('src/shared/security.js'), true);
+  assert.equal(result.result.preparation.split_plan.lanes.some((lane) => lane.id === 'runtime-behavior' && lane.graph_investigation_files.includes('src/shared/security.js')), true);
+  assert.equal(result.result.preparation.split_plan.lanes.some((lane) => lane.id === 'repo-control' && lane.files.includes('.claude/commands/commit.md')), true);
   assert.match(result.result.preparation.next_commands.join('\n'), /git switch -c feat\/pr-prepare main/);
+  const splitPlan = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.json'));
+  assert.equal(splitPlan.model, 'story-pr-split-plan-v1');
+  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.md'), 'utf8'), /Graphify Investigation Scope/);
+});
+
+test('pr prepare treats split repo-control and e2e gate lanes as reviewable', async () => {
+  const e2eRepo = await makeGitRepoWithStory();
+  await writeFile(path.join(e2eRepo, 'package.json'), JSON.stringify({
+    scripts: {
+      'test:e2e': 'playwright test'
+    },
+    devDependencies: {
+      '@playwright/test': '^1.50.0'
+    }
+  }, null, 2));
+  await writeFile(path.join(e2eRepo, 'playwright.config.ts'), "export default {};\n");
+  await mkdir(path.join(e2eRepo, 'e2e', 'tests'), { recursive: true });
+  await writeFile(path.join(e2eRepo, 'e2e', 'tests', 'smoke.spec.ts'), 'import { test } from "@playwright/test"; test("smoke", async () => {});\n');
+  await git(e2eRepo, ['add', '.']);
+  await git(e2eRepo, ['commit', '-m', 'test: split e2e gate lane']);
+
+  const e2eResult = await runCli(['pr', 'prepare', e2eRepo, '--base', 'main']);
+
+  assert.equal(e2eResult.exitCode, 0);
+  assert.equal(e2eResult.result.preparation.scope.status, 'reviewable');
+  assert.equal(e2eResult.result.preparation.file_groups.repo_control.count, 2);
+  assert.equal(e2eResult.result.preparation.file_groups.tests.count, 1);
+
+  const repoControlRepo = await makeGitRepoWithStory();
+  await writeFile(path.join(repoControlRepo, '.gitignore'), `${await readFile(path.join(repoControlRepo, '.gitignore'), 'utf8')}\n.vibepro/raw/\n`);
+  await git(repoControlRepo, ['add', '.gitignore']);
+  await git(repoControlRepo, ['commit', '-m', 'chore: split repo control lane']);
+
+  const repoControlResult = await runCli(['pr', 'prepare', repoControlRepo, '--base', 'main']);
+
+  assert.equal(repoControlResult.exitCode, 0);
+  assert.equal(repoControlResult.result.preparation.scope.status, 'reviewable');
+  assert.equal(repoControlResult.result.preparation.file_groups.repo_control.count, 1);
+});
+
+test('pr prepare avoids masked E2E scripts and detects type-check script names', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: {
+      test: 'vitest run',
+      'type-check': 'tsc --noEmit',
+      'test:e2e': "playwright test && pkill -f 'next dev' || true"
+    },
+    devDependencies: {
+      '@playwright/test': '^1.50.0',
+      typescript: '^5.9.0',
+      vitest: '^3.0.0'
+    }
+  }, null, 2));
+  await writeFile(path.join(repo, 'playwright.config.ts'), "export default { globalTeardown: './e2e/global-teardown.ts' };\n");
+  await mkdir(path.join(repo, 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'e2e', 'global-teardown.ts'), 'export default async function teardown() { process.exit(0); }\n');
+  await mkdir(path.join(repo, 'e2e', 'tests'), { recursive: true });
+  await writeFile(path.join(repo, 'e2e', 'tests', 'smoke.spec.ts'), 'import { test } from "@playwright/test"; test("smoke", async () => {});\n');
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature', 'typed.ts'), 'export const value: string = "ok";\n');
+  await writeFile(path.join(repo, 'src', 'feature', 'typed.test.ts'), 'import "./typed";\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: typed feature']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const integrationGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:integration');
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(integrationGate.command, 'npm run type-check');
+  assert.equal(prepare.pr_context.verification_commands.some((item) => item.kind === 'unit' && item.command === 'npm test -- src/feature/typed.test.ts'), true);
+  assert.equal(prepare.pr_context.verification_commands.some((item) => item.kind === 'typecheck' && item.command === 'npm run type-check'), true);
+  assert.equal(prepare.file_groups.repo_control.files.includes('playwright.config.ts'), true);
+  assert.equal(prepare.file_groups.tests.files.includes('e2e/global-teardown.ts'), true);
+  assert.equal(prepare.file_groups.tests.files.includes('e2e/tests/smoke.spec.ts'), true);
+  assert.equal(prepare.pr_context.verification_commands.some((item) => item.kind === 'unit' && item.command.includes('e2e/tests/smoke.spec.ts')), false);
+  assert.equal(e2eGate.command, 'npx playwright test e2e/tests/smoke.spec.ts --project=chromium');
+  assert.equal(e2eGate.status, 'needs_setup');
+  assert.match(e2eGate.reason, /差分に含まれるE2E specへスコープ/);
+  assert.match(e2eGate.reason, /global-teardown\.ts が process\.exit\(0\)/);
+  assert.equal(prepare.split_plan.stacked_gate_plan.summary.requires_cumulative_e2e, true);
+  const e2eLanePlan = prepare.split_plan.stacked_gate_plan.lane_plans.find((lane) => lane.lane_id === 'e2e-gate');
+  assert.equal(e2eLanePlan.gate_mode, 'cumulative_after_dependencies');
+  assert.equal(e2eLanePlan.depends_on.includes('runtime-behavior'), true);
+  assert.equal(e2eLanePlan.cumulative_checks.includes('npx playwright test e2e/tests/smoke.spec.ts --project=chromium'), true);
+  assert.equal(prepare.split_plan.stacked_gate_plan.final_validation.required, true);
+  assert.equal(prepare.split_plan.merge_order.indexOf('runtime-behavior') < prepare.split_plan.merge_order.indexOf('e2e-gate'), true);
 });
 
 test('story task generator groups admin API routes by domain', () => {

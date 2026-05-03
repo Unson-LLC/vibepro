@@ -339,47 +339,6 @@ async function hasImportedAuthHelperReferenceRecursive({ repoRoot, file, code, v
   return false;
 }
 
-async function hasImportedWebhookSignatureHelperReference({ repoRoot, file, code }) {
-  return hasImportedWebhookSignatureHelperReferenceRecursive({
-    repoRoot,
-    file,
-    code,
-    visited: new Set([normalizeRelativeFile(file)]),
-    depth: 0
-  });
-}
-
-async function hasImportedWebhookSignatureHelperReferenceRecursive({ repoRoot, file, code, visited, depth }) {
-  if (depth >= 4) return false;
-  const imports = extractLocalImports(code);
-  for (const item of imports) {
-    const calledSpecifiers = item.specifiers.filter((name) => new RegExp(`\\b${escapeRegExp(name)}\\s*\\(`).test(code));
-    if (calledSpecifiers.length === 0) continue;
-
-    const importedModule = await readImportedModule(repoRoot, file, item.source);
-    if (!importedModule.content) continue;
-    if (visited.has(importedModule.file)) continue;
-    visited.add(importedModule.file);
-
-    const importedCode = stripComments(importedModule.content);
-    if (calledSpecifiers.some((name) => isLikelyWebhookSignatureHelperName(name))
-      && hasWebhookSignatureVerificationSignal(importedCode)) {
-      return true;
-    }
-    if (hasWebhookSignatureCheck(importedCode)) return true;
-    if (await hasImportedWebhookSignatureHelperReferenceRecursive({
-      repoRoot,
-      file: importedModule.file,
-      code: importedCode,
-      visited,
-      depth: depth + 1
-    })) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function isLikelyWebhookSignatureHelperName(name) {
   return /\b(verify|validate|authenticate|authorize)[A-Za-z0-9_$]*(Webhook|Signature)[A-Za-z0-9_$]*\b/i.test(name)
     || /\b(Webhook|Signature)[A-Za-z0-9_$]*(verify|validate|authenticate|authorize)[A-Za-z0-9_$]*\b/i.test(name);
