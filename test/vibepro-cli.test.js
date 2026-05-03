@@ -1352,6 +1352,67 @@ export async function POST() {
   assert.match(prBody, /期間終了までpremium維持/);
 });
 
+test('pr prepare extracts invariants from story_id matched Spec and ADR sources', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'actions'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+architecture_ref: docs/architecture/ADR-story-pr-prepare.md
+---
+
+# PR準備 Spec
+
+## 受け入れ基準
+
+- 同一ユーザー・同一ホテルはリスト上で重複表示されない。
+- 追加時は現在状態を1件に正規化する。
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'ADR-story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+spec_ref: docs/specs/story-pr-prepare.md
+---
+
+# ADR: PR準備
+
+## Decision
+
+- UIアクションは履歴追加ではなく現在状態トグルとして扱う。
+- 履歴分析が必要な場合は現在状態と履歴記録を分離する。
+
+## Consequences
+
+- 責務境界を越える変更ではADR更新要否を確認する。
+`);
+  await writeFile(path.join(repo, 'src', 'lib', 'actions', 'hotel_actions.ts'), `
+export async function updateVisited(isAdd: boolean) {
+  if (isAdd) {
+    return { isVisited: true };
+  }
+  return { isVisited: false };
+}
+`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'fix: update visited state']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const requirement = prepare.pr_context.requirement_consistency;
+  assert.equal(requirement.requirement_sources.some((source) => source.kind === 'spec' && source.matched_by_story_id), true);
+  assert.equal(requirement.requirement_sources.some((source) => source.kind === 'architecture' && source.matched_by_story_id), true);
+  assert.equal(requirement.summary.spec_ref_count, 1);
+  assert.equal(requirement.summary.architecture_ref_count, 1);
+  assert.equal(requirement.invariants.some((invariant) => invariant.source.kind === 'spec' && /重複表示されない/.test(invariant.text)), true);
+  assert.equal(requirement.invariants.some((invariant) => invariant.source.kind === 'architecture' && /現在状態トグルとして扱う/.test(invariant.text)), true);
+  assert.equal(requirement.invariants.some((invariant) => invariant.source.kind === 'architecture' && /分離する/.test(invariant.text)), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Spec Sources: 1/);
+  assert.match(prBody, /Architecture Sources: 1/);
+});
+
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
