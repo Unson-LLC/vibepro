@@ -57,6 +57,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun
   });
   const suggestedBranch = options.branchName ?? buildBranchName(story);
+  const splitPlan = await buildPrSplitPlan(root, {
+    story,
+    git,
+    fileGroups,
+    scope,
+    prContext,
+    suggestedBranch
+  });
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: git.current_branch,
@@ -74,7 +82,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     fileGroups,
     latestStoryRun,
     scope,
-    prContext
+    prContext,
+    splitPlan
   });
   const preparation = {
     schema_version: '0.1.0',
@@ -87,6 +96,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     git,
     file_groups: fileGroups,
     scope,
+    split_plan: splitPlan,
     pr_context: prContext,
     task_context: taskContext,
     latest_story_run: latestStoryRun,
@@ -104,14 +114,19 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const bodyPath = path.join(prDir, 'pr-body.md');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
   const gateDagReportPath = path.join(prDir, 'gate-dag.md');
+  const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
+  const splitPlanReportPath = path.join(prDir, 'split-plan.md');
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`);
   await writeFile(bodyPath, prBody);
   await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`);
   await writeFile(gateDagReportPath, renderGateDagReport(prContext.gate_dag));
+  await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`);
+  await writeFile(splitPlanReportPath, renderSplitPlanReport(splitPlan));
   await writeFile(reportPath, renderPrepareReport({
     preparation,
     bodyPath: toWorkspaceRelative(root, bodyPath),
-    gateDagPath: toWorkspaceRelative(root, gateDagReportPath)
+    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath)
   }));
 
   if (workspace.initialized) {
@@ -123,6 +138,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
         latest_gate_dag: toWorkspaceRelative(root, gateDagJsonPath),
         latest_gate_dag_report: toWorkspaceRelative(root, gateDagReportPath),
+        latest_split_plan: toWorkspaceRelative(root, splitPlanJsonPath),
+        latest_split_plan_report: toWorkspaceRelative(root, splitPlanReportPath),
         latest_prepare_generated_at: preparation.created_at
       }
     };
@@ -141,7 +158,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       report: reportPath,
       pr_body: bodyPath,
       gate_dag: gateDagJsonPath,
-      gate_dag_report: gateDagReportPath
+      gate_dag_report: gateDagReportPath,
+      split_plan: splitPlanJsonPath,
+      split_plan_report: splitPlanReportPath
     }
   };
 }
@@ -427,12 +446,12 @@ function groupChangedFiles(files) {
   for (const file of files) {
     const target = file.path;
     if (target.startsWith('docs/management/stories/')) groups.story_docs.push(file);
-    else if (target.startsWith('docs/architecture/') || target.startsWith('docs/management/architecture/')) groups.architecture_docs.push(file);
-    else if (target.startsWith('docs/specs/') || target.startsWith('docs/features/specifications/')) groups.specifications.push(file);
-    else if (target.startsWith('test/') || target.startsWith('tests/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
+    else if (isArchitectureDocPath(target)) groups.architecture_docs.push(file);
+    else if (isSpecificationDocPath(target)) groups.specifications.push(file);
+    else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
     else if (target.startsWith('src/')) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
-    else if (target.startsWith('.claude/') || ['AGENTS.md', 'CLAUDE.md', '.github/', 'package.json', 'package-lock.json'].some((prefix) => target === prefix || target.startsWith(prefix))) groups.repo_control.push(file);
+    else if (isRepoControlPath(target)) groups.repo_control.push(file);
     else groups.other.push(file);
   }
 
@@ -444,12 +463,39 @@ function groupChangedFiles(files) {
   );
 }
 
+function isRepoControlPath(filePath) {
+  return filePath.startsWith('.claude/')
+    || filePath.startsWith('.github/')
+    || /^tsconfig(\..+)?\.json$/.test(filePath)
+    || /^playwright\.config\.[cm]?[jt]s$/.test(filePath)
+    || [
+      'AGENTS.md',
+      'CLAUDE.md',
+      '.gitignore',
+      '.vibeproignore',
+      'package.json',
+      'package-lock.json'
+    ].includes(filePath);
+}
+
+function isArchitectureDocPath(filePath) {
+  return filePath.startsWith('docs/architecture/')
+    || filePath.startsWith('docs/management/architecture/')
+    || /^docs\/.+\/ADR-[^/]+\.md$/i.test(filePath);
+}
+
+function isSpecificationDocPath(filePath) {
+  return filePath.startsWith('docs/specs/')
+    || filePath.startsWith('docs/features/specifications/')
+    || /^docs\/.+\/[^/]*(spec|specification)[^/]*\.md$/i.test(filePath);
+}
+
 function assessScope({ changedFiles, fileGroups, dirtyFiles, commits, maxReviewableFiles }) {
   const reasons = [];
   if (changedFiles.length > maxReviewableFiles) {
     reasons.push(`差分が ${changedFiles.length} files あり、レビュー可能な目安 ${maxReviewableFiles} files を超えている`);
   }
-  if (fileGroups.repo_control.count > 0) {
+  if (hasMixedRepoControlChanges(fileGroups)) {
     reasons.push('repo制御ファイルやagent設定が差分に含まれている');
   }
   const nonWorkspaceDirty = dirtyFiles.filter((file) => !file.path.startsWith('.vibepro/'));
@@ -468,6 +514,18 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, commits, maxReviewa
     reviewable_file_limit: maxReviewableFiles,
     changed_file_count: changedFiles.length
   };
+}
+
+function hasMixedRepoControlChanges(fileGroups) {
+  if (fileGroups.repo_control.count === 0) return false;
+  const nonRepoGroups = [
+    fileGroups.story_docs,
+    fileGroups.architecture_docs,
+    fileGroups.specifications,
+    fileGroups.source,
+    fileGroups.other
+  ];
+  return nonRepoGroups.some((group) => group.count > 0);
 }
 
 function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, scope, storyId, taskId = null, groupId = null }) {
@@ -497,7 +555,7 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
   ];
 }
 
-function renderPrepareReport({ preparation, bodyPath, gateDagPath }) {
+function renderPrepareReport({ preparation, bodyPath, gateDagPath, splitPlanPath }) {
   const groups = Object.entries(preparation.file_groups)
     .filter(([, value]) => value.count > 0)
     .map(([key, value]) => `| ${key} | ${value.count} | ${value.files.slice(0, 8).join('<br>')}${value.files.length > 8 ? '<br>...' : ''} |`)
@@ -564,6 +622,14 @@ ${renderTaskContextReport(preparation.task_context)}
 - required gates: ${preparation.pr_context.gate_dag.summary.required_gate_count}
 - gates needing evidence: ${preparation.pr_context.gate_dag.summary.needs_evidence_count}
 
+## Split Plan
+
+- ${splitPlanPath}
+- status: ${preparation.split_plan.status}
+- lanes: ${preparation.split_plan.lanes.length}
+- graphify: ${preparation.split_plan.graph_context.available ? `${preparation.split_plan.graph_context.matched_file_count} matched files / ${preparation.split_plan.graph_context.related_file_count} related files` : preparation.split_plan.graph_context.reason}
+- stacked gates: cumulative=${preparation.split_plan.stacked_gate_plan.summary.cumulative_gate_count}, final validation required=${preparation.split_plan.stacked_gate_plan.final_validation.required}
+
 ## リファクタリング差分
 
 ${renderRefactoringDeltaCompact(preparation.pr_context.refactoring_delta)}
@@ -587,7 +653,7 @@ function renderTaskContextReport(taskContext) {
 | Briefing | ${taskContext.artifacts.briefing_json ?? '-'} |`;
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan }) {
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
     ? '- 差分なし'
@@ -653,6 +719,9 @@ ${gateEnforcement}
 
 ${refactoringDeltaSection}
 
+## 分割計画
+${renderPrSplitSection(splitPlan)}
+
 ## レビュー観点
 ${reviewPoints || '- Story / ADR / Spec と実装差分が対応しているか'}
 
@@ -663,6 +732,86 @@ ${risks}
 - latest story run: ${latestStoryRun?.run_id ?? '-'}
 - gate: ${latestStoryRun?.gate_status ?? '-'}
 - PR strategy: ${scope.recommended_strategy}
+`;
+}
+
+function renderPrSplitSection(splitPlan) {
+  if (!splitPlan) return '- Split plan未生成';
+  const lanes = splitPlan.lanes.map((lane) => [
+    `- ${lane.id}: ${lane.title}`,
+    `  - recommendation: ${lane.recommendation}`,
+    `  - files: ${lane.file_count}`,
+    lane.graph_investigation_files.length > 0
+      ? `  - graph investigation: ${formatFileList(lane.graph_investigation_files)}`
+      : null
+  ].filter(Boolean).join('\n')).join('\n');
+  return [
+    `- status: ${splitPlan.status}`,
+    `- strategy: ${splitPlan.recommended_strategy}`,
+    `- graphify: ${splitPlan.graph_context.available ? `${splitPlan.graph_context.matched_file_count} matched files / ${splitPlan.graph_context.related_file_count} related files` : splitPlan.graph_context.reason}`,
+    `- stacked gates: cumulative=${splitPlan.stacked_gate_plan.summary.cumulative_gate_count}, final validation required=${splitPlan.stacked_gate_plan.final_validation.required}`,
+    lanes || '- lanesなし'
+  ].join('\n');
+}
+
+function renderSplitPlanReport(splitPlan) {
+  const rationale = splitPlan.rationale.length === 0
+    ? '- なし'
+    : splitPlan.rationale.map((item) => `- ${item}`).join('\n');
+  const laneRows = splitPlan.lanes.map((lane) => `| ${lane.id} | ${lane.category} | ${lane.recommendation} | ${lane.file_count} | ${lane.files.slice(0, 8).join('<br>')}${lane.files.length > 8 ? '<br>...' : ''} |`).join('\n');
+  const graphRows = splitPlan.graph_context.impact_by_file.length === 0
+    ? '| - | - | - |'
+    : splitPlan.graph_context.impact_by_file.map((item) => `| ${item.file} | ${item.matched_nodes.join('<br>') || '-'} | ${item.related_files.join('<br>') || '-'} |`).join('\n');
+  const stackedRows = splitPlan.stacked_gate_plan.lane_plans.map((lane) => `| ${lane.lane_id} | ${lane.gate_mode} | ${lane.depends_on.join('<br>') || '-'} | ${lane.isolated_checks.join('<br>') || '-'} | ${lane.cumulative_checks.join('<br>') || '-'} |`).join('\n');
+  const nextActions = splitPlan.next_actions.map((action) => {
+    if (typeof action === 'string') return `- ${action}`;
+    return `- ${action.lane_id}: \`${action.command}\``;
+  }).join('\n');
+
+  return `# VibePro PR Split Plan
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${splitPlan.story_id} |
+| Status | ${splitPlan.status} |
+| Strategy | ${splitPlan.recommended_strategy} |
+| Graphify | ${splitPlan.graph_context.available ? `${splitPlan.graph_context.matched_file_count} matched files / ${splitPlan.graph_context.related_file_count} related files` : splitPlan.graph_context.reason} |
+
+## Rationale
+
+${rationale}
+
+## Lanes
+
+| Lane | Category | Recommendation | Files | File list |
+|------|----------|----------------|-------|-----------|
+${laneRows || '| - | - | - | 0 | - |'}
+
+## Merge Order
+
+${splitPlan.merge_order.map((id, index) => `${index + 1}. ${id}`).join('\n') || '- なし'}
+
+## Stacked PR Gate Plan
+
+| Lane | Gate mode | Depends on | Isolated checks | Cumulative checks |
+|------|-----------|------------|-----------------|-------------------|
+${stackedRows || '| - | - | - | - | - |'}
+
+### Final Validation
+
+- required: ${splitPlan.stacked_gate_plan.final_validation.required}
+- trigger: ${splitPlan.stacked_gate_plan.final_validation.trigger}
+- commands: ${splitPlan.stacked_gate_plan.final_validation.commands.map((command) => `\`${command}\``).join(', ') || '-'}
+
+## Graphify Investigation Scope
+
+| Changed file | Matched graph nodes | Related files to inspect |
+|--------------|---------------------|--------------------------|
+${graphRows}
+
+## Next Actions
+
+${nextActions || '- なし'}
 `;
 }
 
@@ -731,12 +880,423 @@ function formatPrDeltaStatus(status) {
   }[status] ?? status;
 }
 
+async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prContext, suggestedBranch }) {
+  const graphContext = await buildSplitGraphContext(repoRoot, git.changed_files.map((file) => file.path));
+  const lanes = buildSplitLanes({
+    fileGroups,
+    scope,
+    prContext,
+    suggestedBranch,
+    graphContext
+  });
+  const splitRequired = scope.status !== 'reviewable' || lanes.some((lane) => lane.recommendation === 'separate_pr');
+  const mergeOrder = lanes
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((lane) => lane.id);
+  const stackedGatePlan = buildStackedGatePlan({ lanes, mergeOrder, prContext });
+  return {
+    schema_version: '0.1.0',
+    model: 'story-pr-split-plan-v1',
+    story_id: story.story_id,
+    status: splitRequired ? 'split_recommended' : 'single_pr_ok',
+    recommended_strategy: splitRequired ? 'split_by_lane_then_prepare' : 'keep_current_pr',
+    rationale: buildSplitRationale({ scope, lanes, graphContext }),
+    graph_context: graphContext,
+    lanes,
+    merge_order: mergeOrder,
+    stacked_gate_plan: stackedGatePlan,
+    next_actions: buildSplitNextActions({ lanes, splitRequired })
+  };
+}
+
+function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphContext }) {
+  const lanes = [];
+  const used = new Set();
+  const addLane = (lane) => {
+    const files = [...new Set(lane.files)].filter(Boolean);
+    if (files.length === 0) return;
+    for (const file of files) used.add(file);
+    lanes.push({
+      ...lane,
+      files,
+      file_count: files.length,
+      graph_investigation_files: collectLaneGraphInvestigationFiles(files, graphContext),
+      suggested_branch: `${suggestedBranch}-${lane.id}`.replace(/[^a-zA-Z0-9/_-]+/g, '-').replace(/-+/g, '-')
+    });
+  };
+
+  const repoControlFiles = fileGroups.repo_control.files;
+  const e2eFiles = fileGroups.tests.files.filter((file) => file.startsWith('e2e/'));
+  const unitTestFiles = fileGroups.tests.files.filter((file) => !file.startsWith('e2e/'));
+  const gateInfraFiles = repoControlFiles.filter(isGateInfraPath);
+  const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
+
+  addLane({
+    id: 'repo-control',
+    order: 5,
+    title: 'Repository control and agent policy',
+    category: 'repo_control',
+    recommendation: 'separate_pr',
+    files: repoPolicyFiles,
+    required_gates: ['Integration Gate'],
+    review_focus: [
+      'アプリ挙動変更とrepo制御変更が混ざっていないか',
+      '無関係なagent設定やignore規則を巻き込んでいないか'
+    ]
+  });
+
+  addLane({
+    id: 'requirements-ssot',
+    order: 10,
+    title: 'Story / Spec / Architecture SSOT',
+    category: 'requirements',
+    recommendation: scope.status === 'reviewable' ? 'same_pr_allowed' : 'separate_pr',
+    files: [
+      ...fileGroups.story_docs.files,
+      ...fileGroups.specifications.files,
+      ...fileGroups.architecture_docs.files
+    ],
+    required_gates: ['Requirement Gate'],
+    review_focus: [
+      'Story / Spec / Architecture の正本が互いに矛盾していないか',
+      '実装差分が要求の範囲を超えていないか'
+    ]
+  });
+
+  addLane({
+    id: 'runtime-behavior',
+    order: 20,
+    title: 'Runtime behavior and unit coverage',
+    category: 'implementation',
+    recommendation: 'primary_pr',
+    files: [
+      ...fileGroups.source.files,
+      ...unitTestFiles
+    ],
+    required_gates: buildRuntimeLaneGates(prContext),
+    review_focus: [
+      '受け入れ基準と実装分岐が対応しているか',
+      'Graphifyで隣接するファイルまで影響確認されているか'
+    ]
+  });
+
+  addLane({
+    id: 'e2e-gate',
+    order: 30,
+    title: 'E2E and verification harness',
+    category: 'verification',
+    recommendation: (e2eFiles.length > 0 || gateInfraFiles.length > 0) && scope.status !== 'reviewable' ? 'separate_pr' : 'same_pr_allowed',
+    files: [
+      ...gateInfraFiles,
+      ...e2eFiles
+    ],
+    required_gates: ['E2E Gate', 'Integration Gate'],
+    review_focus: [
+      'E2E harnessが失敗exit codeを握りつぶしていないか',
+      'PR Gateが変更対象のE2Eに正しくスコープされているか'
+    ]
+  });
+
+  const remainingFiles = [
+    ...fileGroups.other.files,
+    ...getAllGroupFiles(fileGroups).filter((file) => !used.has(file))
+  ];
+  addLane({
+    id: 'misc-follow-up',
+    order: 90,
+    title: 'Miscellaneous follow-up',
+    category: 'other',
+    recommendation: 'separate_pr',
+    files: remainingFiles,
+    required_gates: ['Manual Review'],
+    review_focus: [
+      'Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する'
+    ]
+  });
+
+  return lanes;
+}
+
+function buildRuntimeLaneGates(prContext) {
+  const gates = ['Requirement Gate', 'Unit Gate', 'Integration Gate'];
+  const e2eGate = prContext.gate_dag?.nodes?.find((node) => node.id === 'gate:e2e');
+  if (e2eGate?.required) gates.push('E2E Gate');
+  return gates;
+}
+
+function buildSplitRationale({ scope, lanes, graphContext }) {
+  const items = [];
+  if (scope.reasons.length > 0) items.push(...scope.reasons);
+  if (lanes.length > 1) items.push(`${lanes.length} lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる`);
+  if (graphContext.available) {
+    items.push(`Graphifyで ${graphContext.matched_file_count} changed files が一致し、${graphContext.related_file_count} related files を影響調査候補にした`);
+  } else {
+    items.push(`Graphify未利用: ${graphContext.reason}`);
+  }
+  return items;
+}
+
+function buildStackedGatePlan({ lanes, mergeOrder, prContext }) {
+  const byId = new Map(lanes.map((lane) => [lane.id, lane]));
+  const orderedLanes = mergeOrder.map((id) => byId.get(id)).filter(Boolean);
+  const runtimeLane = byId.get('runtime-behavior') ?? null;
+  const e2eLane = byId.get('e2e-gate') ?? null;
+  const hasRuntimeChanges = Boolean(runtimeLane?.files?.some((file) => file.startsWith('src/')));
+  const requiresCumulativeE2e = Boolean(e2eLane && hasRuntimeChanges);
+  const requiredCommands = extractGateCommands(prContext);
+
+  const lanePlans = orderedLanes.map((lane, index) => {
+    const previousLaneIds = orderedLanes.slice(0, index).map((item) => item.id);
+    const gateMode = lane.id === 'e2e-gate' && requiresCumulativeE2e
+      ? 'cumulative_after_dependencies'
+      : 'isolated_pr';
+    const dependsOn = gateMode === 'cumulative_after_dependencies'
+      ? previousLaneIds
+      : [];
+    return {
+      lane_id: lane.id,
+      gate_mode: gateMode,
+      depends_on: dependsOn,
+      isolated_checks: buildIsolatedLaneChecks(lane, requiredCommands),
+      cumulative_checks: buildCumulativeLaneChecks({ lane, commands: requiredCommands, requiresCumulativeE2e }),
+      review_note: buildStackedGateReviewNote({ lane, gateMode, dependsOn })
+    };
+  });
+
+  return {
+    schema_version: '0.1.0',
+    model: 'stacked-pr-gate-plan-v1',
+    summary: {
+      lane_count: lanePlans.length,
+      cumulative_gate_count: lanePlans.filter((lane) => lane.gate_mode === 'cumulative_after_dependencies').length,
+      requires_cumulative_e2e: requiresCumulativeE2e
+    },
+    lane_plans: lanePlans,
+    final_validation: buildFinalValidationPlan({ requiredCommands, requiresCumulativeE2e })
+  };
+}
+
+function extractGateCommands(prContext) {
+  const gates = prContext.gate_dag?.nodes?.filter((node) => node.type === 'verification_gate') ?? [];
+  const commandByLabel = new Map(gates.map((gate) => [gate.label, gate.command]).filter(([, command]) => command));
+  const unitCommand = commandByLabel.get('Unit Gate') ?? prContext.verification_commands?.find((item) => item.kind === 'unit')?.command ?? 'npm test';
+  const integrationCommand = commandByLabel.get('Integration Gate') ?? prContext.verification_commands?.find((item) => item.kind === 'typecheck')?.command ?? 'npm run typecheck';
+  const e2eCommand = commandByLabel.get('E2E Gate') ?? 'npx playwright test';
+  return {
+    unit: unitCommand,
+    integration: integrationCommand,
+    e2e: e2eCommand
+  };
+}
+
+function buildIsolatedLaneChecks(lane, commands) {
+  if (lane.id === 'requirements-ssot') return ['Requirement Gate / document consistency review'];
+  if (lane.id === 'runtime-behavior') return [commands.unit, commands.integration];
+  if (lane.id === 'e2e-gate') return [commands.integration, 'Playwright harness smoke if runtime dependencies are already merged'];
+  if (lane.id === 'repo-control') return ['git diff --check', commands.integration];
+  return ['manual review'];
+}
+
+function buildCumulativeLaneChecks({ lane, commands, requiresCumulativeE2e }) {
+  if (lane.id === 'e2e-gate' && requiresCumulativeE2e) {
+    return [commands.unit, commands.integration, commands.e2e];
+  }
+  return [];
+}
+
+function buildStackedGateReviewNote({ lane, gateMode, dependsOn }) {
+  if (gateMode === 'cumulative_after_dependencies') {
+    return `${lane.id} は単体PRだけで完了判定せず、${dependsOn.join(' -> ')} を取り込んだ累積状態でGateを確認する。`;
+  }
+  if (lane.id === 'runtime-behavior') {
+    return 'runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。';
+  }
+  return `${lane.id} は単体PRとしてレビュー可能。`;
+}
+
+function buildFinalValidationPlan({ requiredCommands, requiresCumulativeE2e }) {
+  const commands = [requiredCommands.unit, requiredCommands.integration];
+  if (requiresCumulativeE2e) commands.push(requiredCommands.e2e);
+  return {
+    required: requiresCumulativeE2e,
+    trigger: requiresCumulativeE2e
+      ? 'runtime-behavior と e2e-gate の両方がmerge対象に含まれる'
+      : '各PRのisolated checksで十分',
+    commands
+  };
+}
+
+function buildSplitNextActions({ lanes, splitRequired }) {
+  if (!splitRequired) {
+    return ['現PRのまま進め、split-planをレビュー観点として使う'];
+  }
+  return lanes.map((lane) => ({
+    lane_id: lane.id,
+    action: `Create ${lane.suggested_branch} with ${lane.file_count} files`,
+    command: `git switch -c ${lane.suggested_branch} <base> && git add ${lane.files.map(shellQuote).join(' ')}`
+  }));
+}
+
+function getAllGroupFiles(fileGroups) {
+  return Object.values(fileGroups).flatMap((group) => group.files ?? []);
+}
+
+function isGateInfraPath(filePath) {
+  return filePath.startsWith('e2e/')
+    || /^playwright\.config\.[cm]?[jt]s$/.test(filePath)
+    || /^tsconfig(\..+)?\.json$/.test(filePath)
+    || ['package.json', 'package-lock.json'].includes(filePath);
+}
+
+function collectLaneGraphInvestigationFiles(files, graphContext) {
+  if (!graphContext.available) return [];
+  const related = new Set();
+  for (const file of files) {
+    const item = graphContext.impact_by_file.find((impact) => impact.file === file);
+    if (!item) continue;
+    for (const relatedFile of item.related_files) {
+      if (!files.includes(relatedFile)) related.add(relatedFile);
+    }
+  }
+  return [...related].sort().slice(0, 12);
+}
+
+async function buildSplitGraphContext(repoRoot, changedFiles) {
+  const graphPath = path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json');
+  let graph = null;
+  try {
+    graph = JSON.parse(await readFile(graphPath, 'utf8'));
+  } catch {
+    return {
+      available: false,
+      reason: '.vibepro/graphify/graph.json が見つからない',
+      graph_path: toWorkspaceRelative(repoRoot, graphPath),
+      node_count: 0,
+      edge_count: 0,
+      matched_file_count: 0,
+      related_file_count: 0,
+      investigation_files: [],
+      impact_by_file: []
+    };
+  }
+
+  const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+  const { edges, sourceKey } = normalizeSplitGraphEdges(graph);
+  const index = buildSplitGraphIndex(nodes, edges);
+  const changedSet = new Set(changedFiles.map(normalizeGraphPath));
+  const relatedFiles = new Set();
+  const impactByFile = [];
+
+  for (const changedFile of changedSet) {
+    const matchedNodes = index.nodesByFile.get(changedFile) ?? [];
+    if (matchedNodes.length === 0) continue;
+    const fileRelated = new Set();
+    for (const node of matchedNodes) {
+      for (const edge of index.edgesByNodeId.get(node.id) ?? []) {
+        const endpoints = [getSplitEdgeEndpoint(edge, 'source'), getSplitEdgeEndpoint(edge, 'target')].filter(Boolean);
+        for (const endpoint of endpoints) {
+          const endpointNode = index.nodesById.get(endpoint);
+          const endpointFile = endpointNode ? getSplitGraphNodeFile(endpointNode) : null;
+          if (!endpointFile) continue;
+          const normalized = normalizeGraphPath(endpointFile);
+          if (normalized !== changedFile) {
+            fileRelated.add(normalized);
+            relatedFiles.add(normalized);
+          }
+        }
+      }
+    }
+    impactByFile.push({
+      file: changedFile,
+      matched_nodes: matchedNodes.map((node) => node.id).slice(0, 8),
+      related_files: [...fileRelated].sort().slice(0, 12)
+    });
+  }
+
+  return {
+    available: true,
+    graph_path: toWorkspaceRelative(repoRoot, graphPath),
+    edge_source_key: sourceKey,
+    node_count: nodes.length,
+    edge_count: edges.length,
+    matched_file_count: impactByFile.length,
+    related_file_count: relatedFiles.size,
+    investigation_files: [...relatedFiles].sort().slice(0, 30),
+    impact_by_file: impactByFile.sort((a, b) => a.file.localeCompare(b.file))
+  };
+}
+
+function normalizeSplitGraphEdges(graph) {
+  if (Array.isArray(graph.edges)) return { edges: graph.edges, sourceKey: 'edges' };
+  if (Array.isArray(graph.links)) return { edges: graph.links, sourceKey: 'links' };
+  return { edges: [], sourceKey: null };
+}
+
+function buildSplitGraphIndex(nodes, edges) {
+  const nodesById = new Map();
+  const nodesByFile = new Map();
+  const edgesByNodeId = new Map();
+
+  for (const node of nodes) {
+    if (!node || typeof node !== 'object' || typeof node.id !== 'string') continue;
+    nodesById.set(node.id, node);
+    const file = getSplitGraphNodeFile(node);
+    if (!file) continue;
+    const normalized = normalizeGraphPath(file);
+    if (!nodesByFile.has(normalized)) nodesByFile.set(normalized, []);
+    nodesByFile.get(normalized).push(node);
+  }
+
+  for (const edge of edges) {
+    const source = getSplitEdgeEndpoint(edge, 'source');
+    const target = getSplitEdgeEndpoint(edge, 'target');
+    if (!source || !target) continue;
+    if (!edgesByNodeId.has(source)) edgesByNodeId.set(source, []);
+    if (!edgesByNodeId.has(target)) edgesByNodeId.set(target, []);
+    edgesByNodeId.get(source).push(edge);
+    edgesByNodeId.get(target).push(edge);
+  }
+
+  return { nodesById, nodesByFile, edgesByNodeId };
+}
+
+function getSplitGraphNodeFile(node) {
+  const explicit = node.source_file
+    ?? node.sourceFile
+    ?? node.file
+    ?? node.path
+    ?? node.payload?.source_file
+    ?? node.payload?.sourceFile
+    ?? null;
+  if (explicit) return explicit;
+  if (/^(src|app|pages|lib|components|e2e|tests|test|docs)\//.test(node.id)) return node.id;
+  return null;
+}
+
+function getSplitEdgeEndpoint(edge, endpoint) {
+  if (!edge || typeof edge !== 'object') return null;
+  const value = endpoint === 'source'
+    ? edge.source ?? edge.from ?? edge._src ?? edge.source_id ?? edge.sourceId ?? null
+    : edge.target ?? edge.to ?? edge._dst ?? edge._tgt ?? edge.target_id ?? edge.targetId ?? null;
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') return value.id ?? value.name ?? null;
+  return String(value);
+}
+
+function normalizeGraphPath(filePath) {
+  return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   const primaryStory = pickPrimaryStory(storyDocs, story);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
-  const verificationCommands = buildVerificationCommands(fileGroups);
-  const e2eCommand = await detectPlaywrightCommand(repoRoot);
+  const typecheckCommand = await detectTypecheckCommand(repoRoot);
+  const testRunner = await detectTestRunner(repoRoot);
+  const verificationCommands = buildVerificationCommands(fileGroups, { typecheckCommand, testRunner });
+  const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
     story,
@@ -923,31 +1483,46 @@ function buildChangeSummary(fileGroups) {
   return items;
 }
 
-function buildVerificationCommands(fileGroups) {
+function buildVerificationCommands(fileGroups, options = {}) {
   const commands = [];
   if (fileGroups.tests.count > 0) {
     const testFiles = fileGroups.tests.files
       .filter((file) => /\.(test|spec)\.[jt]sx?$/.test(file))
+      .filter((file) => !file.startsWith('e2e/'))
       .slice(0, 6);
     if (testFiles.length > 0) {
       commands.push({
-        command: `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`,
+        kind: 'unit',
+        command: buildTargetedTestCommand(testFiles, options.testRunner),
         reason: '変更に対応する対象テスト'
       });
     } else {
       commands.push({
+        kind: 'unit',
         command: 'npm test',
         reason: 'テスト差分があるため'
       });
     }
   }
   if (fileGroups.source.count > 0) {
-    commands.push({
+    const typecheckCommand = options.typecheckCommand ?? {
       command: 'npm run typecheck',
       reason: 'TypeScript/型境界の確認'
+    };
+    commands.push({
+      kind: 'typecheck',
+      command: typecheckCommand.command,
+      reason: typecheckCommand.reason
     });
   }
   return commands;
+}
+
+function buildTargetedTestCommand(testFiles, testRunner = null) {
+  if (testRunner === 'vitest') {
+    return `npm test -- ${testFiles.join(' ')}`;
+  }
+  return `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`;
 }
 
 function buildGateDag({ story, storySource, architectureDecision, requirementConsistency, fileGroups, verificationCommands, e2eCommand }) {
@@ -1051,8 +1626,8 @@ function buildGateDag({ story, storySource, architectureDecision, requirementCon
 }
 
 function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }) {
-  const unitCommand = verificationCommands.find((item) => item.command.startsWith('npm test')) ?? null;
-  const typecheckCommand = verificationCommands.find((item) => item.command === 'npm run typecheck') ?? null;
+  const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
+  const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
   return [
     {
       id: 'gate:unit',
@@ -1076,7 +1651,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }
       id: 'gate:e2e',
       type: 'verification_gate',
       label: 'E2E Gate',
-      status: e2eCommand.detected ? 'needs_evidence' : 'needs_setup',
+      status: e2eCommand.reliable_exit === false ? 'needs_setup' : e2eCommand.detected ? 'needs_evidence' : 'needs_setup',
       required: fileGroups.source.count > 0,
       command: e2eCommand.command,
       reason: e2eCommand.reason,
@@ -1107,7 +1682,7 @@ function buildRequirementGateReason(requirement) {
   return 'Story不変条件を抽出できなかったため適用外';
 }
 
-async function detectPlaywrightCommand(repoRoot) {
+async function detectPlaywrightCommand(repoRoot, fileGroups = null) {
   let packageJson = null;
   try {
     packageJson = JSON.parse(await readFile(path.join(repoRoot, 'package.json'), 'utf8'));
@@ -1120,42 +1695,177 @@ async function detectPlaywrightCommand(repoRoot) {
   }
 
   const scripts = packageJson.scripts ?? {};
+  const harnessRisk = await detectPlaywrightHarnessRisk(repoRoot);
+  const scopedE2eFiles = findScopedE2eSpecFiles(fileGroups);
+  if (scopedE2eFiles.length > 0 && hasPlaywrightDependency(packageJson)) {
+    return {
+      detected: true,
+      reliable_exit: !harnessRisk.masks_exit,
+      command: `npx playwright test ${scopedE2eFiles.join(' ')} --project=chromium`,
+      reason: withPlaywrightHarnessRisk('差分に含まれるE2E specへスコープしてPlaywright CLIで確認する', harnessRisk)
+    };
+  }
+
   const preferredNames = ['test:e2e', 'e2e', 'test:playwright', 'playwright'];
   const preferred = preferredNames.find((name) => scripts[name]);
   if (preferred) {
+    if (scriptMasksFailures(scripts[preferred]) && hasPlaywrightDependency(packageJson)) {
+      return {
+        detected: true,
+        reliable_exit: !harnessRisk.masks_exit,
+        command: 'npx playwright test',
+        reason: withPlaywrightHarnessRisk(`package.json の ${preferred} scriptは失敗exit codeを握りつぶす可能性があるため、Playwright CLIを直接実行する`, harnessRisk)
+      };
+    }
     return {
       detected: true,
+      reliable_exit: !harnessRisk.masks_exit,
       command: `npm run ${preferred}`,
-      reason: `package.json の ${preferred} scriptでPlaywright E2Eを実行する`
+      reason: withPlaywrightHarnessRisk(`package.json の ${preferred} scriptでPlaywright E2Eを実行する`, harnessRisk)
     };
   }
 
   const scriptEntry = Object.entries(scripts).find(([, command]) => /\bplaywright\b/.test(command));
   if (scriptEntry) {
+    if (scriptMasksFailures(scriptEntry[1]) && hasPlaywrightDependency(packageJson)) {
+      return {
+        detected: true,
+        reliable_exit: !harnessRisk.masks_exit,
+        command: 'npx playwright test',
+        reason: withPlaywrightHarnessRisk(`package.json の ${scriptEntry[0]} scriptは失敗exit codeを握りつぶす可能性があるため、Playwright CLIを直接実行する`, harnessRisk)
+      };
+    }
     return {
       detected: true,
+      reliable_exit: !harnessRisk.masks_exit,
       command: `npm run ${scriptEntry[0]}`,
-      reason: `package.json の ${scriptEntry[0]} scriptでPlaywright E2Eを実行する`
+      reason: withPlaywrightHarnessRisk(`package.json の ${scriptEntry[0]} scriptでPlaywright E2Eを実行する`, harnessRisk)
     };
   }
 
-  const deps = {
-    ...(packageJson.dependencies ?? {}),
-    ...(packageJson.devDependencies ?? {})
-  };
-  if (deps['@playwright/test'] || deps.playwright) {
+  if (hasPlaywrightDependency(packageJson)) {
     return {
       detected: true,
+      reliable_exit: !harnessRisk.masks_exit,
       command: 'npx playwright test',
-      reason: 'Playwright依存があるためCLIでE2Eを実行する'
+      reason: withPlaywrightHarnessRisk('Playwright依存があるためCLIでE2Eを実行する', harnessRisk)
     };
   }
 
   return {
     detected: false,
+    reliable_exit: !harnessRisk.masks_exit,
     command: 'npx playwright test',
-    reason: 'Playwright scriptが未検出のため、対象フローのE2Eを追加してCLIで確認する'
+    reason: withPlaywrightHarnessRisk('Playwright scriptが未検出のため、対象フローのE2Eを追加してCLIで確認する', harnessRisk)
   };
+}
+
+async function detectTypecheckCommand(repoRoot) {
+  let packageJson = null;
+  try {
+    packageJson = JSON.parse(await readFile(path.join(repoRoot, 'package.json'), 'utf8'));
+  } catch {
+    return {
+      command: 'npm run typecheck',
+      reason: 'TypeScript/型境界の確認'
+    };
+  }
+
+  const scripts = packageJson.scripts ?? {};
+  for (const name of ['type-check', 'typecheck', 'check:types', 'tsc']) {
+    if (scripts[name]) {
+      return {
+        command: `npm run ${name}`,
+        reason: `package.json の ${name} scriptでTypeScript/型境界を確認する`
+      };
+    }
+  }
+  const deps = {
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {})
+  };
+  if (deps.typescript) {
+    return {
+      command: 'npx tsc --noEmit',
+      reason: 'TypeScript依存があるためCLIで型境界を確認する'
+    };
+  }
+  return {
+    command: 'npm run typecheck',
+    reason: 'TypeScript/型境界の確認'
+  };
+}
+
+async function detectTestRunner(repoRoot) {
+  let packageJson = null;
+  try {
+    packageJson = JSON.parse(await readFile(path.join(repoRoot, 'package.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+  const testScript = packageJson.scripts?.test ?? '';
+  const deps = {
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {})
+  };
+  if (/\bvitest\b/.test(testScript) || deps.vitest) return 'vitest';
+  if (/\bjest\b/.test(testScript) || deps.jest) return 'jest';
+  return null;
+}
+
+function hasPlaywrightDependency(packageJson) {
+  const deps = {
+    ...(packageJson.dependencies ?? {}),
+    ...(packageJson.devDependencies ?? {})
+  };
+  return Boolean(deps['@playwright/test'] || deps.playwright);
+}
+
+function findScopedE2eSpecFiles(fileGroups) {
+  return (fileGroups?.tests?.files ?? [])
+    .filter((file) => file.startsWith('e2e/'))
+    .filter((file) => /\.(spec|test)\.[jt]sx?$/.test(file))
+    .slice(0, 4);
+}
+
+function scriptMasksFailures(command) {
+  return /\|\|\s*true\b/.test(command)
+    || /;\s*exit\s+0\b/.test(command);
+}
+
+async function detectPlaywrightHarnessRisk(repoRoot) {
+  for (const configName of ['playwright.config.ts', 'playwright.config.js', 'playwright.config.mjs', 'playwright.config.cjs']) {
+    let content = null;
+    try {
+      content = await readFile(path.join(repoRoot, configName), 'utf8');
+    } catch {
+      continue;
+    }
+    const teardownMatch = content.match(/globalTeardown\s*:\s*['"](.+?)['"]/);
+    if (!teardownMatch) return { masks_exit: false, reason: null };
+    const teardownPath = path.resolve(repoRoot, teardownMatch[1]);
+    try {
+      const teardown = await readFile(teardownPath, 'utf8');
+      if (/process\.exit\(\s*0\s*\)/.test(teardown)) {
+        return {
+          masks_exit: true,
+          reason: `${path.relative(repoRoot, teardownPath)} が process.exit(0) でE2E失敗を成功exitに上書きする可能性がある`
+        };
+      }
+    } catch {
+      return {
+        masks_exit: true,
+        reason: `${teardownMatch[1]} が参照されているが読み取れないため、E2E teardownのexit code信頼性を確認する`
+      };
+    }
+    return { masks_exit: false, reason: null };
+  }
+  return { masks_exit: false, reason: null };
+}
+
+function withPlaywrightHarnessRisk(reason, harnessRisk) {
+  if (!harnessRisk?.masks_exit) return reason;
+  return `${reason}; ${harnessRisk.reason}`;
 }
 
 function buildReviewPoints(fileGroups, taskContext = null) {
