@@ -33,6 +33,14 @@ const INVARIANT_PATTERNS = [
   /期間終了/,
   /認可/,
   /署名/,
+  /重複/,
+  /正規化/,
+  /1件/,
+  /一意/,
+  /分離/,
+  /境界/,
+  /責務/,
+  /扱う/,
   /premium|プレミアム/i,
   /subscription|サブスクリプション/i
 ];
@@ -59,6 +67,7 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
   const codeFiles = await resolveCodeFiles(root, options);
   const storySource = await resolveStorySource(root, options);
   const requirementSources = await collectRequirementSources(root, {
+    story: options.story,
     storySource,
     codeFiles
   });
@@ -187,7 +196,7 @@ async function resolveStorySource(repoRoot, options) {
     : findStorySource(repoRoot, options.story);
 }
 
-async function collectRequirementSources(repoRoot, { storySource, codeFiles }) {
+async function collectRequirementSources(repoRoot, { story, storySource, codeFiles }) {
   const docs = [];
   for (const sourceDir of REQUIREMENT_SOURCE_DIRS) {
     const files = await listFiles(path.join(repoRoot, sourceDir.dir));
@@ -197,7 +206,9 @@ async function collectRequirementSources(repoRoot, { storySource, codeFiles }) {
   }
 
   const linkedPaths = new Set(extractLinkedDocPaths(storySource?.content ?? ''));
+  const storyId = story?.story_id ?? storySource?.story_id ?? null;
   const sourceText = [
+    storyId,
     storySource?.title,
     storySource?.background,
     storySource?.policy,
@@ -211,17 +222,24 @@ async function collectRequirementSources(repoRoot, { storySource, codeFiles }) {
     const parsed = await parseStoryLikeDocument(repoRoot, file, kind);
     if (seen.has(parsed.path) || parsed.path === storySource?.path) continue;
     const linked = linkedPaths.has(parsed.path) || linkedPaths.has(`./${parsed.path}`);
+    const storyMatched = storyId && parsed.frontmatter?.story_id === storyId;
+    const refMatched = storyId && [
+      parsed.frontmatter?.story_ref,
+      parsed.frontmatter?.story,
+      parsed.frontmatter?.requirement_id
+    ].filter(Boolean).some((value) => String(value) === storyId);
     const haystack = [parsed.path, parsed.title, parsed.content.slice(0, 1600)].filter(Boolean).join(' ').toLowerCase();
     const invariantHints = extractInvariantTexts(parsed).slice(0, 6);
     const keywordHits = sourceKeywords.filter((keyword) => haystack.includes(keyword.toLowerCase()));
     const keywordMatched = sourceKeywords.length > 0
       && keywordHits.length >= 2
       && invariantHints.length > 0;
-    if (!linked && !keywordMatched) continue;
+    if (!linked && !storyMatched && !refMatched && !keywordMatched) continue;
     seen.add(parsed.path);
     refs.push({
       ...parsed,
       linked_from_story: linked,
+      matched_by_story_id: Boolean(storyMatched || refMatched),
       invariant_hints: invariantHints
     });
   }
@@ -234,6 +252,7 @@ function toRequirementSourceRef(source) {
     path: source.path ?? null,
     title: source.title ?? null,
     linked_from_story: source.linked_from_story === true,
+    matched_by_story_id: source.matched_by_story_id === true,
     invariant_count: source.invariant_hints?.length ?? 0
   };
 }
@@ -315,9 +334,11 @@ function extractInvariants(storySource, requirementSources) {
 }
 
 function extractInvariantTexts(doc) {
+  const sourceKind = doc?.kind ?? inferSourceKind(doc?.path);
   const content = [
     doc?.policy,
     ...(doc?.acceptance_criteria ?? []),
+    ...(sourceKind === 'architecture' && doc?.content ? extractDecisionLines(doc.content) : []),
     ...(doc?.content ? extractImportantLines(doc.content) : [])
   ].filter(Boolean);
   const values = [];
@@ -332,6 +353,19 @@ function extractInvariantTexts(doc) {
     }
   }
   return [...new Set(values.map((item) => item.slice(0, 240)))].slice(0, 12);
+}
+
+function extractDecisionLines(content) {
+  return [
+    extractRawSection(content, ['Decision', '判断', '決定']),
+    extractRawSection(content, ['Consequences', '影響', '結果', '制約'])
+  ]
+    .filter(Boolean)
+    .flatMap((section) => section.split('\n'))
+    .map((line) => line.trim())
+    .filter((line) => /^[-*]\s+/.test(line))
+    .map((line) => line.replace(/^[-*]\s+/, ''))
+    .slice(0, 24);
 }
 
 function isDiagnosticNarrative(text) {
@@ -536,15 +570,30 @@ async function parseStoryLikeDocument(repoRoot, absoluteOrRelativeFile, kind = n
     : path.join(repoRoot, absoluteOrRelativeFile);
   const content = await readFile(absolute, 'utf8');
   const relative = normalizePath(path.relative(repoRoot, absolute));
+  const frontmatter = parseFrontmatter(content);
   return {
     kind: kind ?? inferSourceKind(relative),
     path: relative,
+    frontmatter,
+    story_id: frontmatter.story_id ?? null,
     title: findMarkdownTitle(content),
     content,
     background: extractSectionText(content, ['背景', '現状', '課題']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略', 'ポリシー']),
     acceptance_criteria: extractAcceptanceCriteria(content)
   };
+}
+
+function parseFrontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return {};
+  const result = {};
+  for (const line of match[1].split('\n')) {
+    const item = line.match(/^\s*([A-Za-z0-9_-]+):\s*(.+?)\s*$/);
+    if (!item) continue;
+    result[item[1]] = item[2].replace(/^['"]|['"]$/g, '');
+  }
+  return result;
 }
 
 function findMarkdownTitle(content) {
