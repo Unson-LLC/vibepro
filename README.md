@@ -1,10 +1,93 @@
-# VibePro - リポジトリ診断CLI
+# VibePro
 
-Vibe Coding で作成されたリポジトリの公開前チェックを支援する
+VibePro は、Story / Architecture / Spec / Graphify / Gate 証跡を使って、AI リファクタリングの対象選定、影響範囲調査、潜在バグ候補検出、PR 準備を支援する社内向け制御基盤です。
+
+VibePro は対象リポジトリの実装を直接直すツールではありません。対象リポジトリ内に `.vibepro/` 作業領域を作り、診断結果、Story、タスク、Graphify 影響範囲、Requirement Consistency、Gate DAG、PR 分割計画を証跡として管理します。AI や開発者は、その証跡を見ながらリファクタリングやレビューを進めます。
+
+## Conceptual Model
+
+VibeProは「AIに直させる」ための道具ではなく、「AIや人間が何を根拠に直すべきか」を揃える制御基盤です。中心にあるのはコードではなく、要求の正本と完了判断の証跡です。
+
+VibeProでは、要求を次の順番で扱います。
+
+1. Story: ユーザー価値、背景、受け入れ基準。何を満たすべきかの入口。
+2. Architecture: 変更してよい境界、責務分離、依存方向、ADR要否。どういう構造で満たすべきかの判断。
+3. Spec: 具体的な振る舞い、不変条件、例外ケース。何が起きるべきかの詳細。
+4. Code: 実際の実装差分。Story / Architecture / Spec を満たしているか確認される対象。
+5. Graphify: コードのつながりを表す地図。変更ファイルだけでなく、調査すべき隣接ファイルを広げる。
+6. Gates: Requirement / Unit / Integration / E2E の完了判断。何が揃えばPRを進めてよいかを明示する。
+7. PR Evidence: `pr-body.md`、`gate-dag.md`、`split-plan.md`、JSON成果物。レビューとAI作業の共通文脈。
+
+この順番にする理由は、Storyだけでは設計判断が曖昧になり、Specだけではなぜその振る舞いが必要かが見えにくくなるためです。VibeProは Story -> Architecture -> Spec の順に要求を具体化し、最後にコードとGateへ接続します。
+
+重要な見方:
+
+- Requirement Consistency は、Story / Architecture / Spec から抽出した不変条件とコード差分を突き合わせ、「コードとしては動くが、要件として怪しい」候補を出す。
+- Gate DAG は、StoryからPR完了までの依存関係を表す。未解決Gateがある場合、PR作成は原則止める。
+- split-plan は、変更をどのPRレーンに分けるべきかを示す。repo-control、requirements-ssot、runtime-behavior、e2e-gateを混ぜないための作戦図。
+- Markdownは人間が読む投影で、JSONは機械可読な正本。AI agentはJSONとMarkdownの両方を証跡として使う。
+
+## 社内βでできること
+
+- Story / Architecture / Spec の正本とコード差分を突き合わせる
+- コード上は成立していても、要件として怪しい潜在バグ候補を出す
+- Graphify のコードグラフから、変更時に調査すべき隣接ファイルを提示する
+- リファクタ候補、セキュリティ境界、DRY不足、責務分離不足を Story 単位の作業候補にする
+- PR 作成前に Gate DAG、Requirement Consistency、split-plan、PR 本文ドラフトを生成する
+- E2E Gate や repo-control 変更を分割 PR として扱い、累積 Gate が必要なケースを明示する
+
+## 誰が何を見るか
+
+初見で使う人は、まず `story diagnose` と `pr prepare` を実行し、`pr-body.md`、`gate-dag.md`、`split-plan.md` の3つを見ます。細かいJSONを読む必要はありません。
+
+実装修正を担当する人は、`story plan` と `task create --from-plan` で出るタスクを見ます。VibeProが出す候補は、実装前に「本当にStoryの範囲か」「Architecture / Spec と矛盾していないか」を確認するための入口です。
+
+レビューする人は、`pr-body.md` の背景・要求・要件整合性と、`gate-dag.md` の未解決Gate、`split-plan.md` の分割レーンを見ます。特に `e2e-gate` が `cumulative_after_dependencies` になっている場合、単体PRではなく前段PR込みの状態でE2E確認が必要です。
+
+運用する人は、`.vibepro/` の成果物を証跡として扱います。`evidence.json`、`pr-prepare.json`、`gate-dag.json`、`split-plan.json` は機械可読な正本で、Markdownは人間向けの投影です。
+
+## 社内βの注意点
+
+- 検出結果は「候補」です。自動修正や自動承認の根拠にはしません。
+- 復元された Story / Architecture / Spec は人間レビュー前提です。
+- Graphify の品質が影響範囲調査の品質に影響します。
+- E2E Gate の完了確認には、対象リポジトリ側の Playwright 実行環境と証跡運用が必要です。
+- VibePro の主目的は実装修正ではなく、Story 駆動開発と証跡管理の制御基盤です。
 
 ## VibePro CLI
 
-VibePro は対象リポジトリ内に `.vibepro/` 作業領域を作り、診断結果、証跡、ゲート状態、Brainbase 連携用の管理目録を管理する。
+### 最短フロー
+
+対象リポジトリに初めて当てる場合:
+
+```bash
+npx vibepro init /path/to/repo \
+  --story-id story-internal-beta \
+  --title "社内β診断" \
+  --view dev \
+  --period 2026-W18
+
+npx vibepro story diagnose /path/to/repo --id story-internal-beta --run-graphify
+npx vibepro story derive /path/to/repo --run-graphify
+npx vibepro story map /path/to/repo
+npx vibepro story plan /path/to/repo
+npx vibepro task create /path/to/repo --from-plan --id story-internal-beta
+npx vibepro pr prepare /path/to/repo --base origin/develop --story-id story-internal-beta
+```
+
+既に Story / Architecture / Spec があるリポジトリで、PR 前の確認だけを行う場合:
+
+```bash
+npx vibepro graph /path/to/repo --run-graphify
+npx vibepro pr prepare /path/to/repo --base origin/develop --story-id <story-id>
+```
+
+`pr prepare` の成果物を見て、以下を確認します。
+
+- `pr-body.md`: PR 本文ドラフト
+- `gate-dag.md`: Story / Requirement / Unit / Integration / E2E Gate の状態
+- `split-plan.md`: PR 分割レーン、merge order、Graphify 調査範囲、累積 Gate
+- `pr-prepare.json`: 機械可読な全体状態
 
 ### インストール
 
@@ -244,7 +327,7 @@ node bin/vibepro.js status /path/to/repo --json
 
 ### 6. PR準備
 
-Story実装後、PRを作る前に差分範囲を確認し、PR本文ドラフトを生成する。
+Story実装後、PRを作る前に差分範囲、Requirement Consistency、Gate DAG、PR分割計画、PR本文ドラフトを生成する。
 
 ```bash
 node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
@@ -256,7 +339,11 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 .vibepro/pr/<story-id>/
 ├── pr-prepare.json
 ├── pr-prepare.md
-└── pr-body.md
+├── pr-body.md
+├── gate-dag.json
+├── gate-dag.md
+├── split-plan.json
+└── split-plan.md
 ```
 
 対象リポジトリが未初期化の場合、成果物は一時ディレクトリに出力されます。この場合、`pr prepare` は対象リポジトリに `.vibepro/` や ignore 設定を作らないため、PR用のクリーンブランチを汚さずに差分診断だけを実行できます。
@@ -266,11 +353,14 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 - 選択中Story
 - Story文書から抽出した要求、背景、受け入れ基準
 - ADR差分またはStory内のADR不要理由
+- Story / Architecture / Spec から抽出した不変条件とコード差分の非整合候補
 - baseからHEADまでの変更ファイル
 - Story / Architecture / Spec / Source / Test / repo制御ファイルの差分分類
 - baseからのcommit数
 - 未コミット差分
 - 現在ブランチでPR化してよいか、クリーンブランチへ切り出すべきか
+- Graphifyで見つかった、変更ファイルから隣接する調査候補ファイル
+- Unit / Integration / E2E / Requirement Gate の未解決状態
 
 `pr-body.md` は、レビュアーが最初に確認したい情報を含む。
 
@@ -279,10 +369,26 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 - 変更内容
 - 受け入れ基準
 - 検証候補コマンド
+- 要件整合性
+- Gate DAG
+- Gate Enforcement
+- 分割計画
 - レビュー観点
 - リスク・確認事項
 
-差分が大きい、`.claude/` や `AGENTS.md` などのrepo制御ファイルが混ざる、複数commitが混在する、未コミット差分が残る場合は `needs_clean_branch` と判定する。この場合、VibePro は自動でPRを作らず、クリーンブランチ作成と cherry-pick の次コマンドを提示する。
+`gate-dag.md` は、Story、Architecture、Spec、Requirement Gate、Unit Gate、Integration Gate、E2E Gate、PR Gate の依存関係と未解決Gateを示す。`pr create` は Gate DAG が `ready_for_review` でない場合、原則としてPR作成を止める。未解決Gateを理由付きで許容する場合は `--allow-needs-verification --verification-waiver <reason>` を使い、waiver を証跡に残す。
+
+`split-plan.md` は、大きな差分を次のレーンへ分ける。
+
+- `repo-control`: agent設定、CI、package、tsconfig、Playwright設定など
+- `requirements-ssot`: Story / Architecture / Spec の正本
+- `runtime-behavior`: 実装とUnitテスト
+- `e2e-gate`: E2E spec と検証ハーネス
+- `misc-follow-up`: Storyとの対応が弱い残差分
+
+runtime変更とE2E変更が同じStoryにある場合、`e2e-gate` は単体PRだけで完了判定せず、前段PRを取り込んだ累積状態でE2E Gateを確認する計画になる。Graphify成果物がある場合は、各レーンに `graph_investigation_files` としてAIが調査すべき隣接ファイルを出力する。
+
+差分が大きい、repo制御ファイルと実装が混ざる、複数commitが混在する、未コミット差分が残る場合は `needs_clean_branch` と判定する。この場合、VibePro は自動でPRを作らず、クリーンブランチ作成と cherry-pick の次コマンドを提示する。repo制御だけ、またはE2E Gateだけの差分は、分割レーンとして扱える場合に過剰な `needs_clean_branch` にはしない。
 
 例:
 
@@ -293,10 +399,41 @@ node bin/vibepro.js pr prepare /path/to/repo \
   --branch feat/local-hardening
 ```
 
+Task/Handoff成果物と対象ファイルの対応まで強く確認する場合:
+
+```bash
+node bin/vibepro.js pr prepare /path/to/repo \
+  --story-id story-local-hardening \
+  --task TASK-001 \
+  --base origin/develop \
+  --strict
+```
+
 機械可読な結果だけを見る場合:
 
 ```bash
 node bin/vibepro.js pr prepare /path/to/repo --base origin/develop --json
+```
+
+PR作成までVibePro経由で行う場合:
+
+```bash
+node bin/vibepro.js pr create /path/to/repo \
+  --story-id story-local-hardening \
+  --task TASK-001 \
+  --base origin/develop \
+  --head feat/local-hardening
+```
+
+未解決Gateを理由付きで許容する場合:
+
+```bash
+node bin/vibepro.js pr create /path/to/repo \
+  --story-id story-local-hardening \
+  --base origin/develop \
+  --head feat/local-hardening \
+  --allow-needs-verification \
+  --verification-waiver "UI影響がない設定変更のためE2Eは対象外"
 ```
 
 ### 7. Brainbase 取り込み状態の生成

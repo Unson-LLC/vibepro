@@ -40,6 +40,29 @@ import {
 
 const HELP = `VibePro CLI
 
+VibePro is a Story / Architecture / Spec / Graphify / Gate evidence control plane.
+It does not directly rewrite the target repository. It prepares diagnosis, task,
+impact, consistency, and PR-gate evidence so humans and AI agents can refactor
+with reviewable context.
+
+Conceptual model:
+  Story defines user value and acceptance criteria.
+  Architecture defines boundaries, responsibility, dependency direction, and ADR needs.
+  Spec defines concrete behavior and invariants.
+  Graphify expands the investigation scope beyond changed files.
+  Gate DAG and split-plan decide whether the PR is reviewable and how to split it.
+
+Typical internal beta flow:
+  vibepro init <repo> --story-id <id> --title <title> --view dev --period <period>
+  vibepro story diagnose <repo> --id <id> --run-graphify
+  vibepro story derive <repo> --run-graphify
+  vibepro story plan <repo>
+  vibepro task create <repo> --from-plan --id <id>
+  vibepro pr prepare <repo> --base origin/develop --story-id <id>
+
+PR prepare creates pr-body, gate-dag, split-plan, and machine-readable evidence
+under .vibepro/pr/<story-id>/ when the target repo is initialized.
+
 Usage:
   vibepro help [command]
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
@@ -64,7 +87,7 @@ Usage:
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--json]
+  vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
