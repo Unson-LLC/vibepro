@@ -54,6 +54,12 @@ VibeProでは、要求を次の順番で扱います。
 - E2E Gate の完了確認には、対象リポジトリ側の Playwright 実行環境と証跡運用が必要です。
 - VibePro の主目的は実装修正ではなく、Story 駆動開発と証跡管理の制御基盤です。
 
+## 社内βリリース
+
+- リリース計画: [docs/releases/internal-beta-2026-05-05.md](docs/releases/internal-beta-2026-05-05.md)
+- フィードバック: Slack `#0230-vibepro`
+- 共有資料: `雲孫ドライブ/unson/brainbase/社内共有資料/VibePro_社内活用ガイド_2026-05-05.pdf`
+
 ## VibePro CLI
 
 ### 最短フロー

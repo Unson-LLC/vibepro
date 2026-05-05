@@ -1,7 +1,7 @@
 {
   "name": "vibepro",
-  "version": "0.1.0",
-  "description": "VibePro CLI for production-readiness diagnostics",
+  "version": "0.1.0-internal-beta.1",
+  "description": "VibePro CLI for Story/Architecture/Spec-driven refactoring evidence",
   "type": "module",
   "bin": {
     "vibepro": "./bin/vibepro.js"
@@ -12,6 +12,7 @@
     "docs/architecture/vibepro-cli-graphify-architecture.md",
     "docs/frames/vibepro-operating-philosophy.md",
     "docs/frames/vibepro-repo-local-control-plane-frame.md",
+    "docs/releases",
     "docs/specs/vibepro-cli-graphify-spec.md",
     "docs/static_site",
     "README.md"
