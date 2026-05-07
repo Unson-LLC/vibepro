@@ -242,6 +242,9 @@ function buildArchitectureViews({
 function selectCheckCatalog(profile) {
   const checks = ['secrets', 'xss', 'dependency-graph'];
   const selectedViews = ['structure'];
+  if (profile.app_type === 'web_app' || profile.app_type === 'static_site') {
+    checks.push('component-style');
+  }
   if (profile.languages.some((language) => ['javascript', 'typescript'].includes(language))) {
     selectedViews.push('quality');
     checks.push('code-quality');

@@ -85,6 +85,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
   const checkCatalog = evidence.check_catalog ?? {};
   const apiBoundary = evidence.api_boundary ?? {};
   const staticSite = evidence.static_site ?? {};
+  const componentStyle = evidence.component_style ?? {};
   const databaseAccess = evidence.database_access ?? {};
   const codeQuality = evidence.code_quality ?? {};
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
@@ -163,6 +164,16 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
         xss_risk_hits_gate_summary: staticSite.risk_summary?.xss_risk_hits ?? summarizeGateEffects(staticSite.xss_risk_hits),
         external_resources_count: staticSite.external_resources?.length ?? 0,
         non_static_files_count: staticSite.non_static_files?.length ?? 0
+      },
+      component_style: {
+        scanned_files: componentStyle.scanned_files ?? 0,
+        component_kinds: componentStyle.component_kinds ?? [],
+        component_inventory_count: componentStyle.component_inventory?.length ?? 0,
+        legacy_style_hits_count: componentStyle.legacy_style_hits?.length ?? 0,
+        legacy_style_hits_gate_summary: componentStyle.risk_summary?.legacy_style_hits
+          ?? summarizeGateEffects(componentStyle.legacy_style_hits),
+        design_system_markers_count: componentStyle.design_system_markers?.length ?? 0,
+        replacement_observable: Boolean(componentStyle.coverage?.replacement_observable)
       },
       database_access: {
         scanned_files: databaseAccess.scanned_files ?? 0,

@@ -7,6 +7,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
+import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { runCli } from '../src/cli.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
@@ -338,6 +339,30 @@ test('graph reports install guidance when graphify is missing', async () => {
 
   assert.equal(result.exitCode, 1);
   assert.equal(result.command, 'graph');
+});
+
+test('component style scanner inventories UI components and flags legacy tokens', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'public'), { recursive: true });
+  await writeFile(path.join(repo, 'public', 'style.css'), `
+:root { --bb-surface-main: #101113; }
+.primary-button {
+  background: #1e293b;
+  border-radius: 16px;
+}
+.task-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3); }
+`);
+  await writeFile(path.join(repo, 'public', 'index.html'), '<button class="primary-button" data-component="button">Save</button>');
+
+  const result = await scanComponentStyle(repo);
+
+  assert.equal(result.component_kinds.includes('button'), true);
+  assert.equal(result.component_kinds.includes('card'), true);
+  assert.equal(result.design_system_markers.length > 0, true);
+  assert.equal(result.coverage.replacement_observable, true);
+  assert.equal(result.legacy_style_hits.some((hit) => hit.token === '#1e293b'), true);
+  assert.equal(result.legacy_style_hits.some((hit) => hit.kind === 'large_rounded_card'), true);
+  assert.equal(result.risk_summary.legacy_style_hits.review >= 2, true);
 });
 
 test('story derive can run graphify before generating the story catalog', async () => {
@@ -2364,11 +2389,21 @@ test('diagnose creates static site evidence and a static site report under the r
 <html>
   <head>
     <script src="https://cdn.example.com/app.js"></script>
+    <link rel="stylesheet" href="./style.css">
   </head>
   <body>
+    <button class="primary-button" data-component="button">Run</button>
     <script src="./app.js"></script>
   </body>
 </html>
+`);
+  await writeFile(path.join(repo, 'style.css'), `
+:root { --bb-surface-main: #101113; }
+.primary-button {
+  background: #1e293b;
+  border-radius: 16px;
+}
+.task-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3); }
 `);
   await writeFile(path.join(repo, 'app.js'), `
 const apiKey = "sk-123456789012345678901234";
@@ -2440,6 +2475,13 @@ element.innerHTML = userInput;
   assert.equal(evidence.static_site.risk_summary.xss_risk_hits.info, 1);
   assert.equal(evidence.static_site.external_resources.length > 0, true);
   assert.equal(evidence.static_site.non_static_files.some((item) => item.file === 'server.py'), true);
+  assert.equal(evidence.check_catalog.applicable_checks.includes('component-style'), true);
+  assert.equal(evidence.component_style.component_kinds.includes('button'), true);
+  assert.equal(evidence.component_style.component_kinds.includes('card'), true);
+  assert.equal(evidence.component_style.design_system_markers.length > 0, true);
+  assert.equal(evidence.component_style.legacy_style_hits.some((hit) => hit.file === 'style.css' && hit.token === '#1e293b'), true);
+  assert.equal(evidence.component_style.risk_summary.legacy_style_hits.review >= 2, true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-UI-001'), true);
   assert.equal(evidence.gates[0].status, 'block');
   const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.json'));
   assert.equal(tasks.source_run.run_id, '2026-04-28T130000Z');
@@ -2458,10 +2500,15 @@ element.innerHTML = userInput;
   assert.match(await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.md'), 'utf8'), /VP-TASK-STATIC-002-BLOCK/);
   assert.match(await readFile(path.join(runDir, 'risk-register.md'), 'utf8'), /秘密情報/);
   assert.match(await readFile(path.join(runDir, 'static-site-check-result.md'), 'utf8'), /gate_effect/);
+  assert.match(await readFile(path.join(runDir, 'component-style-check-result.md'), 'utf8'), /旧トークン候補/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.static_site_check,
     '.vibepro/diagnostics/2026-04-28T130000Z/static-site-check-result.md'
+  );
+  assert.equal(
+    manifest.runs[0].artifacts.component_style_check,
+    '.vibepro/diagnostics/2026-04-28T130000Z/component-style-check-result.md'
   );
   assert.equal(
     manifest.runs[0].artifacts.story_tasks_json,

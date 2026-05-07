@@ -224,11 +224,14 @@ node bin/vibepro.js diagnose /path/to/repo
 
 共通チェックでは秘密情報候補、XSSリスク候補、graphify上の曖昧な関係を確認する。静的サイトに該当する場合だけ、次の観点を静的サイト固有チェックとして扱う。
 
+Web app / static site では `component-style` も適用する。CSS/HTML/JS/TSX からボタン、タブ、カード、入力、バッジなどのUIコンポーネント候補をinventory化し、旧デザイン由来の色・角丸・影トークンが残っていないかを evidence に記録する。これは「証跡はあるが実UIの部品が置き換わっていない」状態を検出するための本体ガードである。
+
 `api-boundary` が適用される場合は、API routeを `public`、`authenticated`、`admin`、`internal`、`webhook`、`debug`、`cron_batch_queue` に分類し、middleware matcherやroute内の認証参照、webhook署名検証らしき実装を保護根拠として記録する。
 
 - ルート `index.html` の有無
 - 秘密情報候補
 - XSS につながり得る DOM 操作
+- UIコンポーネントinventoryと旧デザイントークン候補
 - 外部リソース参照
 - 静的配信対象外のファイル候補
 
