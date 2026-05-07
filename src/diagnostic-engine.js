@@ -4,6 +4,7 @@ import path from 'node:path';
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
 import { scanCodeQuality } from './code-quality-scanner.js';
+import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import {
   buildRefactoringActionCandidates,
@@ -69,6 +70,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const summaryPath = path.join(runDir, 'summary.md');
   const riskPath = path.join(runDir, 'risk-register.md');
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
+  const componentStylePath = path.join(runDir, 'component-style-check-result.md');
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
   const findingReviewPath = path.join(runDir, 'finding-review.md');
   const refactoringDeltaPath = path.join(runDir, 'refactoring-delta.md');
@@ -87,6 +89,10 @@ export async function runDiagnosis(repoRoot, options = {}) {
     runId,
     staticSite: evidence.static_site,
     profile: evidence.architecture_profile
+  }));
+  await writeFile(componentStylePath, renderComponentStyleCheck({
+    runId,
+    componentStyle: evidence.component_style
   }));
   await writeFile(architectureProfilePath, renderArchitectureProfile({
     runId,
@@ -111,6 +117,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       risk_register: toWorkspaceRelative(root, riskPath),
       evidence: toWorkspaceRelative(root, evidencePath),
       static_site_check: toWorkspaceRelative(root, staticSitePath),
+      component_style_check: toWorkspaceRelative(root, componentStylePath),
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
       finding_review: toWorkspaceRelative(root, findingReviewPath),
       refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
@@ -188,6 +195,9 @@ async function buildEvidence(repoRoot, graph, runId, story) {
       ? await scanCodeQuality(repoRoot)
       : null,
     static_site: await scanStaticSite(repoRoot),
+    component_style: architectureProfile.applicable_checks.includes('component-style')
+      ? await scanComponentStyle(repoRoot)
+      : null,
     refactoring_opportunities: [],
     refactoring_campaigns: [],
     action_candidates: [],
@@ -337,6 +347,20 @@ function buildFindings(evidence) {
       detail: `${evidence.static_site.external_resources.length} 件の外部リソース参照を検出した。`,
       recommendation: '可用性、改ざん、CSP、ライセンスの観点で読み込み元を確認する。'
     });
+  }
+  if (applicableChecks.has('component-style') && evidence.component_style) {
+    const legacyStyleHits = filterGateRelevant(evidence.component_style.legacy_style_hits);
+    if (legacyStyleHits.length > 0) {
+      const legacySummary = summarizeGateEffects(evidence.component_style.legacy_style_hits);
+      findings.push({
+        id: 'VP-UI-001',
+        severity: 'Medium',
+        category: 'UI品質',
+        title: '旧デザインコンポーネントのトークン候補が残っている',
+        detail: `${legacyStyleHits.length} 件のUI sourceで旧デザイン由来の色・角丸・影トークン候補を検出した。内訳: ${formatGateSummary(legacySummary)}。`,
+        recommendation: '対象コンポーネントをdesign tokenまたは新しいcomponent styleへ置き換え、スクリーンショット証跡で確認する。'
+      });
+    }
   }
   if (applicableChecks.has('api-boundary') && evidence.api_boundary) {
     const privilegedUnprotected = evidence.api_boundary.routes
@@ -1068,6 +1092,8 @@ function renderSummary({ runId, evidence, findings }) {
 | 共通スキャン対象 | ${evidence.static_site.scanned_files}件 |
 | 秘密情報候補 | ${formatRiskCount(evidence.static_site.secret_hits, evidence.static_site.risk_summary?.secret_hits)} |
 | XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
+| UI旧トークン候補 | ${formatRiskCount(evidence.component_style?.legacy_style_hits ?? [], evidence.component_style?.risk_summary?.legacy_style_hits)} |
+| UIコンポーネント種別 | ${(evidence.component_style?.component_kinds ?? []).join(', ') || '-'} |
 | DB未ページング候補 | ${formatRiskCount(evidence.database_access?.unbounded_find_many ?? [], evidence.database_access?.risk_summary?.unbounded_find_many)} |
 | 認可前bulk DB候補 | ${formatRiskCount(evidence.code_quality?.authorization_order_risks ?? [], evidence.code_quality?.risk_summary?.authorization_order_risks)} |
 | 重複query形状候補 | ${formatRiskCount(evidence.code_quality?.duplicate_query_shapes ?? [], evidence.code_quality?.risk_summary?.duplicate_query_shapes)} |
@@ -1250,6 +1276,41 @@ ${staticSite.external_resources.length === 0 ? '- なし' : staticSite.external_
 ## 非静的ファイル候補
 
 ${staticSite.non_static_files.length === 0 ? '- なし' : staticSite.non_static_files.map((file) => `- ${file.file} (${file.extension})`).join('\n')}
+`;
+}
+
+function renderComponentStyleCheck({ runId, componentStyle }) {
+  if (!componentStyle) {
+    return `# コンポーネントスタイル診断結果
+
+| 項目 | 内容 |
+|------|------|
+| Run ID | ${runId} |
+| 状態 | component-style は適用されていない |
+`;
+  }
+  return `# コンポーネントスタイル診断結果
+
+| 項目 | 内容 |
+|------|------|
+| Run ID | ${runId} |
+| 走査ファイル | ${componentStyle.scanned_files}件 |
+| 検出コンポーネント種別 | ${componentStyle.component_kinds.join(', ') || '-'} |
+| 旧トークン候補 | ${formatRiskCount(componentStyle.legacy_style_hits, componentStyle.risk_summary?.legacy_style_hits)} |
+| design-system marker | ${componentStyle.design_system_markers.length}件 |
+| 置換確認可能 | ${componentStyle.coverage?.replacement_observable ? 'yes' : 'no'} |
+
+## コンポーネントInventory
+
+${componentStyle.component_inventory.length === 0 ? '- なし' : componentStyle.component_inventory.slice(0, 80).map((item) => `- ${item.file}:${item.line} ${item.kind} \`${item.excerpt}\``).join('\n')}
+
+## 旧トークン候補
+
+${componentStyle.legacy_style_hits.length === 0 ? '- なし' : componentStyle.legacy_style_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} token=${hit.token} confidence=${hit.confidence} gate_effect=${hit.gate_effect} \`${hit.excerpt}\``).join('\n')}
+
+## design-system marker
+
+${componentStyle.design_system_markers.length === 0 ? '- なし' : componentStyle.design_system_markers.slice(0, 80).map((marker) => `- ${marker.file}:${marker.line} ${marker.marker} \`${marker.excerpt}\``).join('\n')}
 `;
 }
 
