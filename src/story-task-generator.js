@@ -7,9 +7,9 @@ export async function createStoryTasks(repoRoot, { story, evidence, runId, gateS
   const root = path.resolve(repoRoot);
   const tasksDir = path.join(getWorkspaceDir(root), 'stories', story.story_id, 'tasks');
 
-  const taskState = buildStoryTaskState({ story, evidence, runId, gateStatus });
   const canonicalTasksJsonPath = path.join(tasksDir, 'tasks.json');
   const existingTaskState = await readTaskStateIfExists(canonicalTasksJsonPath);
+  const taskState = buildStoryTaskState({ story, evidence, runId, gateStatus, existingTaskState });
   const outputDir = shouldPreserveCanonicalTasks(existingTaskState)
     ? path.join(getWorkspaceDir(root), 'stories', story.story_id, 'diagnostics', safeRunId(runId))
     : tasksDir;
@@ -59,17 +59,26 @@ export async function readStoryTasks(repoRoot, artifactPath) {
   }
 }
 
-export function buildStoryTaskState({ story, evidence, runId, gateStatus }) {
+export function buildStoryTaskState({ story, evidence, runId, gateStatus, existingTaskState = null }) {
   const actionCandidates = Array.isArray(evidence.action_candidates) ? evidence.action_candidates : [];
   const findings = Array.isArray(evidence.findings) ? evidence.findings : [];
   const actionFindingIds = new Set(actionCandidates.map((candidate) => candidate.finding_id));
-  const tasks = [
+  const activeTasks = [
     ...findings
       .filter((finding) => !actionFindingIds.has(finding.id))
       .filter((finding) => shouldCreateFindingTask(finding))
       .flatMap((finding) => buildFindingTasks({ finding, evidence })),
     ...actionCandidates.map((candidate) => buildActionTask(candidate))
-  ]
+  ];
+  const tasks = applyCompletionStatus({
+    activeTasks,
+    existingTaskState,
+    currentSourceIds: new Set([
+      ...findings.map((finding) => finding.id),
+      ...actionCandidates.map((candidate) => candidate.id)
+    ]),
+    runId
+  })
     .sort(compareTasks)
     .map((task, index) => ({
       ...task,
@@ -159,6 +168,9 @@ function buildFindingTasks({ finding, evidence }) {
   if (finding.id === 'VP-STATIC-002') {
     return buildSecretFindingTasks({ finding, evidence });
   }
+  if (finding.id === 'VP-DB-001') {
+    return buildDatabaseFindingTasks({ finding, evidence });
+  }
   return [buildFindingTask({
     finding,
     targetFiles: resolveFindingTargetFiles(finding, evidence),
@@ -166,6 +178,83 @@ function buildFindingTasks({ finding, evidence }) {
     order: resolveFindingOrder(finding),
     gateEffect: null
   })];
+}
+
+function buildDatabaseFindingTasks({ finding, evidence }) {
+  const hits = (evidence.database_access?.unbounded_find_many ?? [])
+    .filter((hit) => hit.gate_effect !== 'info');
+  const groups = groupBy(hits, (hit) => resolveDatabaseTaskGroup(hit.file));
+  return Object.values(groups).map((group, index) => {
+    const targetFiles = uniqueFiles(group.hits.map((hit) => hit.file));
+    return buildFindingTask({
+      finding,
+      id: `VP-TASK-DB-001-${group.id.toUpperCase().replace(/-/g, '_')}`,
+      title: `${finding.title}（${group.title}）`,
+      targetFiles,
+      priority: severityToPriority(finding.severity),
+      order: 55 + index,
+      gateEffect: null,
+      targetGroups: [{
+        id: group.id,
+        title: group.title,
+        target_count: targetFiles.length,
+        target_files: targetFiles
+      }],
+      recommendedStrategy: {
+        id: 'add-query-boundary',
+        reason: 'route/domain単位でtake/skip/cursorまたは集計API分離を入れ、挙動差分を小さくする。'
+      },
+      acceptanceCriteria: [
+        `${group.title} の公開APIまたはユーザー操作に紐づく一覧取得に take/skip/cursor 等の上限がある。`,
+        '再診断でこのgroupの未ページング候補が減っている。'
+      ]
+    });
+  });
+}
+
+function resolveDatabaseTaskGroup(file) {
+  if (file.startsWith('src/app/api/') || file.startsWith('app/api/')) {
+    const apiPath = file.replace(/^src\/app\/api\//, '').replace(/^app\/api\//, '');
+    const segments = apiPath.split('/').filter(Boolean);
+    const first = normalizeRouteSegment(segments[0] ?? 'api');
+    const second = normalizeRouteSegment(segments[1] ?? '');
+    if (first === 'admin' && second) return { id: `api-admin-${second}`, title: `Admin API / ${second}` };
+    if (first === 'analytics' && second) return { id: 'api-analytics', title: 'Analytics API' };
+    if (first === 'v1' && second) return { id: `api-v1-${second}`, title: `v1 API / ${second}` };
+    if (first === 'projects') return { id: 'api-projects', title: 'Projects API' };
+    return { id: `api-${first}`, title: `API / ${first}` };
+  }
+  if (file.startsWith('src/lib/services/')) {
+    const servicePath = file.replace(/^src\/lib\/services\//, '');
+    const [first] = servicePath.split('/').filter(Boolean);
+    if (first && servicePath.includes('/')) return { id: `services-${slugify(first)}`, title: `Services / ${first}` };
+    return { id: 'services-core', title: 'Services / core' };
+  }
+  return { id: 'runtime-other', title: 'Runtime other' };
+}
+
+function normalizeRouteSegment(segment) {
+  return slugify(segment.replace(/^\[(.+)\]$/, '$1'));
+}
+
+function slugify(value) {
+  return String(value || 'unknown')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'unknown';
+}
+
+function groupBy(items, keyFn) {
+  const groups = {};
+  for (const item of items) {
+    const key = keyFn(item);
+    const id = typeof key === 'string' ? key : key.id;
+    const title = typeof key === 'string' ? key : key.title;
+    groups[id] ??= { id, title, hits: [] };
+    groups[id].hits.push(item);
+  }
+  return groups;
 }
 
 function buildSecretFindingTasks({ finding, evidence }) {
@@ -193,7 +282,18 @@ function buildSecretFindingTasks({ finding, evidence }) {
   ].filter(Boolean);
 }
 
-function buildFindingTask({ finding, id = null, title = null, targetFiles = [], priority, order, gateEffect }) {
+function buildFindingTask({
+  finding,
+  id = null,
+  title = null,
+  targetFiles = [],
+  priority,
+  order,
+  gateEffect,
+  targetGroups = [],
+  recommendedStrategy = null,
+  acceptanceCriteria = null
+}) {
   return {
     id: id ?? finding.id.replace('VP-', 'VP-TASK-'),
     source_type: 'finding',
@@ -209,12 +309,12 @@ function buildFindingTask({ finding, id = null, title = null, targetFiles = [], 
     target_count: targetFiles.length,
     target_files: targetFiles,
     target_routes: [],
-    target_groups: [],
+    target_groups: targetGroups,
     read_first_files: targetFiles.map((file) => ({
       file,
       reason: `検出事項 ${finding.id} の確認対象`
     })),
-    recommended_strategy: {
+    recommended_strategy: recommendedStrategy ?? {
       id: 'manual-review',
       reason: finding.recommendation
     },
@@ -223,13 +323,32 @@ function buildFindingTask({ finding, id = null, title = null, targetFiles = [], 
       title: '検出内容を確認する',
       detail: finding.detail
     }],
-    acceptance_criteria: [finding.recommendation],
+    acceptance_criteria: acceptanceCriteria ?? [finding.recommendation],
     graph_context: finding.graph_context ?? null,
     pre_fix_briefing: null
   };
 }
 
+function applyCompletionStatus({ activeTasks, existingTaskState, currentSourceIds, runId }) {
+  const activeTaskIds = new Set(activeTasks.map((task) => task.id));
+  const completedTasks = (existingTaskState?.tasks ?? [])
+    .filter((task) => !activeTaskIds.has(task.id))
+    .filter((task) => task.source_type !== 'story_plan_candidate')
+    .filter((task) => task.source_id && !currentSourceIds.has(task.source_id))
+    .map((task) => ({
+      ...task,
+      status: 'done',
+      completed_at: new Date().toISOString(),
+      completion_evidence: {
+        run_id: runId,
+        reason: `source ${task.source_id} was not detected in the latest diagnosis`
+      }
+    }));
+  return [...activeTasks, ...completedTasks];
+}
+
 function shouldCreateFindingTask(finding) {
+  if (['VP-DB-001', 'VP-PERF-001'].includes(finding.id)) return true;
   return ['Critical', 'High'].includes(finding.severity);
 }
 
@@ -247,6 +366,16 @@ function resolveFindingTargetFiles(finding, evidence) {
   }
   if (finding.id === 'VP-SEC-004') {
     return uniqueFiles((evidence.code_quality?.authorization_order_risks ?? [])
+      .filter((hit) => hit.gate_effect !== 'info')
+      .map((hit) => hit.file));
+  }
+  if (finding.id === 'VP-DB-001') {
+    return uniqueFiles((evidence.database_access?.unbounded_find_many ?? [])
+      .filter((hit) => hit.gate_effect !== 'info')
+      .map((hit) => hit.file));
+  }
+  if (finding.id === 'VP-PERF-001') {
+    return uniqueFiles((evidence.local_dev?.heavy_dev_scripts ?? [])
       .filter((hit) => hit.gate_effect !== 'info')
       .map((hit) => hit.file));
   }
@@ -341,6 +470,8 @@ function resolveTaskSort(task) {
 
 function resolveFindingOrder(finding) {
   if (finding.id === 'VP-STATIC-002') return 10;
+  if (finding.id === 'VP-PERF-001') return 45;
+  if (finding.id === 'VP-DB-001') return 55;
   if (finding.severity === 'Critical') return 10;
   if (finding.severity === 'High') return 50;
   return 100;

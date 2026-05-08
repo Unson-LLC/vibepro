@@ -141,7 +141,6 @@ node bin/vibepro.js init /path/to/repo \
 │   ├── graphify/
 │   ├── diagnostics/
 │   └── raw/
-├── .vibeproignore
 └── .gitignore
 ```
 
@@ -155,7 +154,7 @@ VibePro から graphify を起動して取り込む場合:
 node bin/vibepro.js graph /path/to/repo --run-graphify
 ```
 
-内部では対象リポジトリで `graphify update .` を実行し、生成された `graphify-out/` を `.vibepro/graphify/` に取り込む。
+内部では対象リポジトリで `graphify update .` を実行し、生成された `graphify-out/` を `.vibepro/graphify/` に取り込む。VibeProが起動したgraphifyのデフォルト出力は、取り込み後に削除する。
 
 graphify が未インストールの場合は、先にインストールする。
 
@@ -239,7 +238,48 @@ Web app / static site では `component-style` も適用する。CSS/HTML/JS/TSX
 
 `vibepro-manifest.json` には最新の実行ID、ゲート状態、成果物パスを記録する。Brainbase はこの管理目録を読む。
 
-### 4. 点検
+### 4. 性能計測
+
+VibePro は対象リポジトリのコードを変更せず、ローカルまたはpreview環境に対して性能指標を測る。
+
+```bash
+node bin/vibepro.js measure /path/to/repo \
+  --base-url http://localhost:3000 \
+  --pages /dashboard,/projects,/companies \
+  --apis /api/dashboard/summary,/api/projects \
+  --samples 10 \
+  --startup-script dev:web \
+  --ready-pattern "ready|Local:" \
+  --startup-timeout 30000
+```
+
+取得できる主な指標:
+
+- `npm run typecheck` の実行時間
+- `--build` 指定時の `npm run build` 実行時間
+- Page/API の total time、TTFB、status、bytes の p50/p95/max
+- `--startup-script` 指定時の dev server ready time
+- `--prisma-log <file>` 指定時の query count、unique query shape、重複query shape
+
+成果物:
+
+```text
+.vibepro/performance/<run-id>/
+├── performance.json
+└── performance.md
+```
+
+before/after を比較する場合:
+
+```bash
+node bin/vibepro.js measure compare /path/to/repo \
+  --before .vibepro/performance/before/performance.json \
+  --after .vibepro/performance/after/performance.json
+```
+
+`measure` は対象サーバーを暗黙に起動しない。HTTP計測は `--base-url` で指定した既存の dev/preview server を叩く。dev startupだけは `--startup-script` で明示した npm script を起動し、ready pattern を検出したらプロセスを終了する。
+
+### 5. 点検
 
 ```bash
 node bin/vibepro.js doctor /path/to/repo
@@ -272,7 +312,7 @@ node bin/vibepro.js doctor /path/to/repo --json
 └── doctor-result.md
 ```
 
-### 5. ローカルStory管理
+### 6. ローカルStory管理
 
 NocoDBを使わず、対象リポジトリの `.vibepro/config.json` だけでStoryを管理できる。
 
