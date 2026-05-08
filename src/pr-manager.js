@@ -4,8 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { formatCounts, renderRefactoringDeltaCompact } from './refactoring-delta-reporter.js';
+import { formatCounts } from './refactoring-delta-reporter.js';
 import { buildRequirementConsistency, renderRequirementGateSummary } from './requirement-consistency.js';
+import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
@@ -110,19 +111,19 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
   const jsonPath = path.join(prDir, 'pr-prepare.json');
-  const reportPath = path.join(prDir, 'pr-prepare.md');
+  const reportPath = path.join(prDir, 'pr-prepare.html');
   const bodyPath = path.join(prDir, 'pr-body.md');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
-  const gateDagReportPath = path.join(prDir, 'gate-dag.md');
+  const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
-  const splitPlanReportPath = path.join(prDir, 'split-plan.md');
+  const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`);
   await writeFile(bodyPath, prBody);
   await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`);
-  await writeFile(gateDagReportPath, renderGateDagReport(prContext.gate_dag));
+  await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag));
   await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`);
-  await writeFile(splitPlanReportPath, renderSplitPlanReport(splitPlan));
-  await writeFile(reportPath, renderPrepareReport({
+  await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan));
+  await writeFile(reportPath, renderPrPrepareHtml({
     preparation,
     bodyPath: toWorkspaceRelative(root, bodyPath),
     gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
@@ -287,9 +288,12 @@ export function renderPrPrepareSummary(result) {
 
 ## Artifacts
 
-- report: ${toDisplayPath(result.artifacts.report)}
-- pr_body: ${toDisplayPath(result.artifacts.pr_body)}
-- gate_dag: ${toDisplayPath(result.artifacts.gate_dag)}
+- report_html: ${toDisplayPath(result.artifacts.report)}
+- pr_body_markdown: ${toDisplayPath(result.artifacts.pr_body)}
+- gate_dag_json: ${toDisplayPath(result.artifacts.gate_dag)}
+- gate_dag_html: ${toDisplayPath(result.artifacts.gate_dag_report)}
+- split_plan_json: ${toDisplayPath(result.artifacts.split_plan)}
+- split_plan_html: ${toDisplayPath(result.artifacts.split_plan_report)}
 - json: ${toDisplayPath(result.artifacts.json)}
 `;
 }
@@ -555,104 +559,6 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
   ];
 }
 
-function renderPrepareReport({ preparation, bodyPath, gateDagPath, splitPlanPath }) {
-  const groups = Object.entries(preparation.file_groups)
-    .filter(([, value]) => value.count > 0)
-    .map(([key, value]) => `| ${key} | ${value.count} | ${value.files.slice(0, 8).join('<br>')}${value.files.length > 8 ? '<br>...' : ''} |`)
-    .join('\n');
-  const reasons = preparation.scope.reasons.length === 0
-    ? '- なし'
-    : preparation.scope.reasons.map((reason) => `- ${reason}`).join('\n');
-  return `# VibePro PR Prepare
-
-## Story
-
-| 項目 | 内容 |
-|------|------|
-| Story ID | ${preparation.story.story_id} |
-| Story | ${preparation.story.title} |
-| View | ${preparation.story.view ?? '-'} |
-| Period | ${preparation.story.period ?? '-'} |
-
-## Git
-
-| 項目 | 内容 |
-|------|------|
-| Base | ${preparation.git.base_ref} |
-| Head | ${preparation.git.head_ref} |
-| Current branch | ${preparation.git.current_branch ?? '-'} |
-| Changed files | ${preparation.git.changed_files.length} |
-| Commits | ${preparation.git.commits.length} |
-| Dirty files | ${preparation.git.dirty_files.length} |
-| Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
-
-## Scope判定
-
-| 項目 | 内容 |
-|------|------|
-| Status | ${preparation.scope.status} |
-| Recommended strategy | ${preparation.scope.recommended_strategy} |
-
-### 理由
-
-${reasons}
-
-## 差分グループ
-
-| Group | Count | Files |
-|-------|-------|-------|
-${groups || '| - | 0 | - |'}
-
-## Commit
-
-${preparation.git.commits.length === 0 ? '- なし' : preparation.git.commits.map((commit) => `- ${commit.sha} ${commit.message}`).join('\n')}
-
-## Task / Handoff
-
-${renderTaskContextReport(preparation.task_context)}
-
-## PR本文ドラフト
-
-- ${bodyPath}
-
-## Gate DAG
-
-- ${gateDagPath}
-- overall: ${preparation.pr_context.gate_dag.overall_status}
-- required gates: ${preparation.pr_context.gate_dag.summary.required_gate_count}
-- gates needing evidence: ${preparation.pr_context.gate_dag.summary.needs_evidence_count}
-
-## Split Plan
-
-- ${splitPlanPath}
-- status: ${preparation.split_plan.status}
-- lanes: ${preparation.split_plan.lanes.length}
-- graphify: ${preparation.split_plan.graph_context.available ? `${preparation.split_plan.graph_context.matched_file_count} matched files / ${preparation.split_plan.graph_context.related_file_count} related files` : preparation.split_plan.graph_context.reason}
-- stacked gates: cumulative=${preparation.split_plan.stacked_gate_plan.summary.cumulative_gate_count}, final validation required=${preparation.split_plan.stacked_gate_plan.final_validation.required}
-
-## リファクタリング差分
-
-${renderRefactoringDeltaCompact(preparation.pr_context.refactoring_delta)}
-
-## 次コマンド
-
-${preparation.next_commands.map((command) => `- \`${command}\``).join('\n')}
-`;
-}
-
-function renderTaskContextReport(taskContext) {
-  if (!taskContext) return '- task指定なし';
-  return `| 項目 | 内容 |
-|------|------|
-| Task ID | ${taskContext.task.id} |
-| Task | ${taskContext.task.title} |
-| Priority | ${taskContext.task.priority ?? '-'} |
-| Source | ${taskContext.task.source_type ?? '-'} |
-| Handoff | ${taskContext.artifacts.handoff_json ?? '-'} |
-| Plan | ${taskContext.artifacts.plan_json ?? '-'} |
-| Briefing | ${taskContext.artifacts.briefing_json ?? '-'} |`;
-}
-
 function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan }) {
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
@@ -752,67 +658,6 @@ function renderPrSplitSection(splitPlan) {
     `- stacked gates: cumulative=${splitPlan.stacked_gate_plan.summary.cumulative_gate_count}, final validation required=${splitPlan.stacked_gate_plan.final_validation.required}`,
     lanes || '- lanesなし'
   ].join('\n');
-}
-
-function renderSplitPlanReport(splitPlan) {
-  const rationale = splitPlan.rationale.length === 0
-    ? '- なし'
-    : splitPlan.rationale.map((item) => `- ${item}`).join('\n');
-  const laneRows = splitPlan.lanes.map((lane) => `| ${lane.id} | ${lane.category} | ${lane.recommendation} | ${lane.file_count} | ${lane.files.slice(0, 8).join('<br>')}${lane.files.length > 8 ? '<br>...' : ''} |`).join('\n');
-  const graphRows = splitPlan.graph_context.impact_by_file.length === 0
-    ? '| - | - | - |'
-    : splitPlan.graph_context.impact_by_file.map((item) => `| ${item.file} | ${item.matched_nodes.join('<br>') || '-'} | ${item.related_files.join('<br>') || '-'} |`).join('\n');
-  const stackedRows = splitPlan.stacked_gate_plan.lane_plans.map((lane) => `| ${lane.lane_id} | ${lane.gate_mode} | ${lane.depends_on.join('<br>') || '-'} | ${lane.isolated_checks.join('<br>') || '-'} | ${lane.cumulative_checks.join('<br>') || '-'} |`).join('\n');
-  const nextActions = splitPlan.next_actions.map((action) => {
-    if (typeof action === 'string') return `- ${action}`;
-    return `- ${action.lane_id}: \`${action.command}\``;
-  }).join('\n');
-
-  return `# VibePro PR Split Plan
-
-| 項目 | 内容 |
-|------|------|
-| Story | ${splitPlan.story_id} |
-| Status | ${splitPlan.status} |
-| Strategy | ${splitPlan.recommended_strategy} |
-| Graphify | ${splitPlan.graph_context.available ? `${splitPlan.graph_context.matched_file_count} matched files / ${splitPlan.graph_context.related_file_count} related files` : splitPlan.graph_context.reason} |
-
-## Rationale
-
-${rationale}
-
-## Lanes
-
-| Lane | Category | Recommendation | Files | File list |
-|------|----------|----------------|-------|-----------|
-${laneRows || '| - | - | - | 0 | - |'}
-
-## Merge Order
-
-${splitPlan.merge_order.map((id, index) => `${index + 1}. ${id}`).join('\n') || '- なし'}
-
-## Stacked PR Gate Plan
-
-| Lane | Gate mode | Depends on | Isolated checks | Cumulative checks |
-|------|-----------|------------|-----------------|-------------------|
-${stackedRows || '| - | - | - | - | - |'}
-
-### Final Validation
-
-- required: ${splitPlan.stacked_gate_plan.final_validation.required}
-- trigger: ${splitPlan.stacked_gate_plan.final_validation.trigger}
-- commands: ${splitPlan.stacked_gate_plan.final_validation.commands.map((command) => `\`${command}\``).join(', ') || '-'}
-
-## Graphify Investigation Scope
-
-| Changed file | Matched graph nodes | Related files to inspect |
-|--------------|---------------------|--------------------------|
-${graphRows}
-
-## Next Actions
-
-${nextActions || '- なし'}
-`;
 }
 
 function renderPrTaskSection(taskContext) {
@@ -2166,9 +2011,9 @@ function extractPrUrl(stdout) {
 async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
   const prDir = path.dirname(prepareResult.artifacts.json);
   const jsonPath = path.join(prDir, 'pr-create.json');
-  const reportPath = path.join(prDir, 'pr-create.md');
+  const reportPath = path.join(prDir, 'pr-create.html');
   await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
-  await writeFile(reportPath, renderPrCreateReport(execution));
+  await writeFile(reportPath, renderPrCreateHtml(execution));
 
   if (!execution.workspace_initialized) {
     return {
@@ -2198,89 +2043,6 @@ async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
     pr_create_json: jsonPath,
     pr_create_report: reportPath
   };
-}
-
-function renderPrCreateReport(execution) {
-  const commands = execution.commands.map((command) => `- \`${command}\``).join('\n');
-  const results = execution.results.length === 0
-    ? '- dry-run'
-    : execution.results.map((item) => [
-      `- \`${item.command}\`: exit=${item.exit_code}`,
-      item.stdout ? `  - stdout: ${item.stdout}` : null,
-      item.stderr ? `  - stderr: ${item.stderr}` : null
-    ].filter(Boolean).join('\n')).join('\n');
-  const warnings = execution.warnings.length === 0
-    ? '- なし'
-    : execution.warnings.map((item) => `- ${item}`).join('\n');
-  return `# VibePro PR Create
-
-## Summary
-
-| 項目 | 内容 |
-|------|------|
-| Story | ${execution.story.story_id} |
-| Task | ${execution.task_context?.task?.id ?? '-'} |
-| Base | ${execution.base} |
-| Head | ${execution.head} |
-| Title | ${execution.title} |
-| Dry run | ${execution.dry_run} |
-| PR URL | ${execution.pr_url ?? '-'} |
-
-## Commands
-
-${commands}
-
-## Results
-
-${results}
-
-## Warnings
-
-${warnings}
-
-## Gate Override
-
-${renderGateOverrideReport(execution.gate_override)}
-`;
-}
-
-function renderGateOverrideReport(gateOverride) {
-  if (!gateOverride?.allowed) return '- なし';
-  return [
-    `- reason: ${gateOverride.reason}`,
-    `- overall: ${gateOverride.overall_status}`,
-    `- unresolved: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`
-  ].join('\n');
-}
-
-function renderGateDagReport(gateDag) {
-  const nodes = gateDag.nodes
-    .map((node) => `| ${node.id} | ${node.type} | ${node.status ?? '-'} | ${node.label ?? node.reason ?? '-'} |`)
-    .join('\n');
-  const edges = gateDag.edges
-    .map((edge) => `- ${edge.from} -> ${edge.to}`)
-    .join('\n');
-  return `# VibePro Gate DAG
-
-| 項目 | 内容 |
-|------|------|
-| Story | ${gateDag.story_id} |
-| Model | ${gateDag.model} |
-| Overall | ${gateDag.overall_status} |
-| Acceptance Criteria | ${gateDag.summary.acceptance_criteria_count} |
-| Required Gates | ${gateDag.summary.required_gate_count} |
-| Needs Evidence | ${gateDag.summary.needs_evidence_count} |
-
-## Nodes
-
-| ID | Type | Status | Label |
-|----|------|--------|-------|
-${nodes}
-
-## Edges
-
-${edges}
-`;
 }
 
 function formatFileList(files) {

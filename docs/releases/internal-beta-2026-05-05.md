@@ -51,7 +51,7 @@ vibepro --help
 例: vibepro pr prepare . --base origin/develop --story-id <story-id>
 
 【見た成果物】
-pr-body.md / gate-dag.md / split-plan.md / pr-prepare.json など
+pr-body.md / pr-prepare.html / gate-dag.html / split-plan.html / pr-prepare.json など
 
 【期待したこと】
 
@@ -100,8 +100,8 @@ vibepro pr prepare . --base origin/develop --story-id <story-id>
 初回利用者は次だけ見ればよい。
 
 - `pr-body.md`: 背景、要求、要件整合性、レビュー観点が伝わるか
-- `gate-dag.md`: 未解決Gateが何か分かるか
-- `split-plan.md`: PRを分けるべき単位とGraphify調査範囲が分かるか
+- `gate-dag.html`: 未解決Gateが何か分かるか
+- `split-plan.html`: PRを分けるべき単位とGraphify調査範囲が分かるか
 
 実装者は次を見る。
 
