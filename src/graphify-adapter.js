@@ -1,4 +1,4 @@
-import { copyFile, mkdir, stat } from 'node:fs/promises';
+import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 
@@ -13,40 +13,47 @@ export async function importGraphifyArtifacts(repoRoot, options = {}) {
   const sourceDir = path.resolve(root, sourceArg);
 
   let execution = null;
-  if (options.runGraphify) {
-    execution = await runGraphify(root, sourceArg, options.env);
-  }
+  const cleanupGeneratedGraphifyOutput = Boolean(options.runGraphify);
+  try {
+    if (options.runGraphify) {
+      execution = await runGraphify(root, sourceArg, options.env);
+    }
 
-  const graphifyDir = path.join(getWorkspaceDir(root), 'graphify');
-  await mkdir(graphifyDir, { recursive: true });
+    const graphifyDir = path.join(getWorkspaceDir(root), 'graphify');
+    await mkdir(graphifyDir, { recursive: true });
 
-  await ensureFile(path.join(sourceDir, 'graph.json'));
-  await ensureFile(path.join(sourceDir, 'GRAPH_REPORT.md'));
+    await ensureFile(path.join(sourceDir, 'graph.json'));
+    await ensureFile(path.join(sourceDir, 'GRAPH_REPORT.md'));
 
-  for (const fileName of GRAPHIFY_FILES) {
-    const sourceFile = path.join(sourceDir, fileName);
-    try {
-      await copyFile(sourceFile, path.join(graphifyDir, fileName));
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
+    for (const fileName of GRAPHIFY_FILES) {
+      const sourceFile = path.join(sourceDir, fileName);
+      try {
+        await copyFile(sourceFile, path.join(graphifyDir, fileName));
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+
+    const manifest = await readManifest(root);
+    manifest.artifacts = {
+      ...manifest.artifacts,
+      graphify_json: toWorkspaceRelative(root, path.join(graphifyDir, 'graph.json')),
+      graphify_report: toWorkspaceRelative(root, path.join(graphifyDir, 'GRAPH_REPORT.md'))
+    };
+    if (execution) {
+      manifest.graphify = {
+        ...(manifest.graphify ?? {}),
+        last_execution: execution
+      };
+    }
+    await writeManifest(root, manifest);
+
+    return { graphifyDir, graphifyExecuted: Boolean(execution) };
+  } finally {
+    if (cleanupGeneratedGraphifyOutput) {
+      await cleanupDefaultGraphifyOutput(root);
     }
   }
-
-  const manifest = await readManifest(root);
-  manifest.artifacts = {
-    ...manifest.artifacts,
-    graphify_json: toWorkspaceRelative(root, path.join(graphifyDir, 'graph.json')),
-    graphify_report: toWorkspaceRelative(root, path.join(graphifyDir, 'GRAPH_REPORT.md'))
-  };
-  if (execution) {
-    manifest.graphify = {
-      ...(manifest.graphify ?? {}),
-      last_execution: execution
-    };
-  }
-  await writeManifest(root, manifest);
-
-  return { graphifyDir, graphifyExecuted: Boolean(execution) };
 }
 
 async function runGraphify(repoRoot, outputArg, env) {
@@ -93,6 +100,13 @@ async function mirrorGraphifyOutput(repoRoot, outputArg) {
       if (error.code !== 'ENOENT') throw error;
     }
   }
+}
+
+async function cleanupDefaultGraphifyOutput(repoRoot) {
+  await rm(path.join(repoRoot, 'graphify-out'), {
+    recursive: true,
+    force: true
+  });
 }
 
 function runProcess(command, args, options) {

@@ -33,7 +33,6 @@ export async function initWorkspace(repoRoot) {
   });
 
   await writeJsonIfMissing(path.join(workspaceDir, MANIFEST_FILE), createManifest(root));
-  await ensureIgnoreFile(root);
   await ensureGitIgnore(root);
 
   return { repoRoot: root, workspaceDir };
@@ -90,29 +89,6 @@ async function writeJsonIfMissing(filePath, value) {
     if (error.code !== 'ENOENT') throw error;
     await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
   }
-}
-
-async function ensureIgnoreFile(repoRoot) {
-  const ignorePath = path.join(path.resolve(repoRoot), '.vibeproignore');
-  const required = [
-    '.vibepro/raw/',
-    '.vibepro/**/raw/',
-    '.vibepro/**/secrets*',
-    '.vibepro/**/*.log'
-  ];
-
-  let existing = '';
-  try {
-    existing = await readFile(ignorePath, 'utf8');
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-  }
-
-  const missing = required.filter((line) => !existing.includes(line));
-  if (missing.length === 0) return;
-
-  const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
-  await writeFile(ignorePath, `${prefix}${missing.join('\n')}\n`);
 }
 
 async function ensureGitIgnore(repoRoot) {

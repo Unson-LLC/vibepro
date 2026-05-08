@@ -5,6 +5,11 @@ import { renderDoctor, runDoctor } from './doctor.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
+import {
+  comparePerformanceMeasurements,
+  renderPerformanceSummary,
+  runPerformanceMeasurement
+} from './performance-measurer.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import {
   addStory,
@@ -70,6 +75,8 @@ Usage:
   vibepro status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
+  vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -158,6 +165,38 @@ export async function runCli(argv, io = {}) {
       const runId = getOption(rest, '--run-id');
       const result = await runDiagnosis(repoRoot, { runId });
       write(stdout, `diagnosis created: ${result.runDir}\n`);
+      return { exitCode: 0, command, result };
+    }
+
+    if (command === 'measure') {
+      const subcommand = rest[0];
+      if (subcommand === 'compare') {
+        const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+        const result = await comparePerformanceMeasurements(repoRoot, {
+          before: getOption(rest, '--before'),
+          after: getOption(rest, '--after')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.comparison, null, 2)}\n`
+          : result.markdown);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
+      const result = await runPerformanceMeasurement(repoRoot, {
+        runId: getOption(rest, '--run-id'),
+        baseUrl: getOption(rest, '--base-url'),
+        pages: parseCsvOption(rest, '--pages'),
+        apis: parseCsvOption(rest, '--apis'),
+        samples: parseNumberOption(rest, '--samples') ?? 5,
+        build: hasFlag(rest, '--build'),
+        typecheck: !hasFlag(rest, '--no-typecheck'),
+        commands: getOptions(rest, '--command'),
+        startups: buildStartupOptions(rest),
+        prismaLog: getOption(rest, '--prisma-log')
+      });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result.measurement, null, 2)}\n`
+        : renderPerformanceSummary(result));
       return { exitCode: 0, command, result };
     }
 
@@ -425,8 +464,22 @@ function getOption(args, name) {
   return args[index + 1] ?? null;
 }
 
+function getOptions(args, name) {
+  const values = [];
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] === name && args[index + 1]) values.push(args[index + 1]);
+  }
+  return values;
+}
+
 function hasFlag(args, name) {
   return args.includes(name);
+}
+
+function parseCsvOption(args, name) {
+  const value = getOption(args, name);
+  if (!value) return [];
+  return value.split(',').map((item) => item.trim()).filter(Boolean);
 }
 
 function parseNumberOption(args, name) {
@@ -435,6 +488,18 @@ function parseNumberOption(args, name) {
   const number = Number(value);
   if (!Number.isFinite(number)) throw new Error(`${name} must be a number`);
   return number;
+}
+
+function buildStartupOptions(args) {
+  const scripts = getOptions(args, '--startup-script');
+  const readyPattern = getOption(args, '--ready-pattern');
+  const timeoutMs = parseNumberOption(args, '--startup-timeout') ?? 30000;
+  return scripts.map((script) => ({
+    id: `startup:${script}`,
+    script,
+    readyPattern,
+    timeoutMs
+  }));
 }
 
 function write(stream, text) {

@@ -6,6 +6,7 @@ import { profileArchitecture } from './architecture-profiler.js';
 import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
+import { scanLocalDev } from './local-dev-scanner.js';
 import {
   buildRefactoringActionCandidates,
   buildRefactoringCampaigns,
@@ -191,6 +192,7 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     database_access: architectureProfile.applicable_checks.includes('database-access')
       ? await scanDatabaseAccess(repoRoot)
       : null,
+    local_dev: await scanLocalDev(repoRoot),
     code_quality: architectureProfile.applicable_checks.includes('code-quality')
       ? await scanCodeQuality(repoRoot)
       : null,
@@ -297,6 +299,20 @@ function buildFindings(evidence) {
         title: '未ページングのDB一覧取得候補がある',
         detail: `${unboundedQueries.length} 件のruntime queryで件数上限のない Prisma findMany 候補を検出した。内訳: ${formatGateSummary(querySummary)}。`,
         recommendation: '公開APIやユーザー操作に紐づく一覧取得には take/skip/cursor 等の上限を設け、必要ならページング仕様をStoryに落とす。'
+      });
+    }
+  }
+  if (evidence.local_dev) {
+    const heavyDevScripts = filterGateRelevant(evidence.local_dev.heavy_dev_scripts ?? []);
+    if (heavyDevScripts.length > 0) {
+      const scriptSummary = summarizeGateEffects(evidence.local_dev.heavy_dev_scripts);
+      findings.push({
+        id: 'VP-PERF-001',
+        severity: 'Medium',
+        category: 'パフォーマンス',
+        title: 'ローカルdev起動が複数runtimeを同時起動している',
+        detail: `${heavyDevScripts.length} 件のdev scriptでNext.js dev serverと複数worker等の同時起動候補を検出した。内訳: ${formatGateSummary(scriptSummary)}。`,
+        recommendation: 'UI確認用のweb-only dev scriptとworker起動scriptを分離し、ローカル調査時は必要なruntimeだけを起動できるようにする。'
       });
     }
   }
@@ -1094,6 +1110,8 @@ function renderSummary({ runId, evidence, findings }) {
 | XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
 | UI旧トークン候補 | ${formatRiskCount(evidence.component_style?.legacy_style_hits ?? [], evidence.component_style?.risk_summary?.legacy_style_hits)} |
 | UIコンポーネント種別 | ${(evidence.component_style?.component_kinds ?? []).join(', ') || '-'} |
+| 重いdev script候補 | ${formatRiskCount(evidence.local_dev?.heavy_dev_scripts ?? [], evidence.local_dev?.risk_summary?.heavy_dev_scripts)} |
+| runtime probe plan | ${evidence.local_dev?.runtime_probe_plan?.status ?? '-'} (${evidence.local_dev?.runtime_probe_plan?.commands?.length ?? 0} commands) |
 | DB未ページング候補 | ${formatRiskCount(evidence.database_access?.unbounded_find_many ?? [], evidence.database_access?.risk_summary?.unbounded_find_many)} |
 | 認可前bulk DB候補 | ${formatRiskCount(evidence.code_quality?.authorization_order_risks ?? [], evidence.code_quality?.risk_summary?.authorization_order_risks)} |
 | 重複query形状候補 | ${formatRiskCount(evidence.code_quality?.duplicate_query_shapes ?? [], evidence.code_quality?.risk_summary?.duplicate_query_shapes)} |

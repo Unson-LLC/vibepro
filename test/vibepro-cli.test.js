@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -9,6 +10,7 @@ import { promisify } from 'node:util';
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { runCli } from '../src/cli.js';
+import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
@@ -21,6 +23,16 @@ async function makeRepo() {
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
+}
+
+async function pathExists(filePath) {
+  try {
+    await stat(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 async function git(repo, args) {
@@ -39,7 +51,7 @@ async function makeGitRepoWithStory() {
   return repo;
 }
 
-test('init creates a repo-local VibePro workspace and ignore file', async () => {
+test('init creates a repo-local VibePro workspace and updates gitignore only', async () => {
   const repo = await makeRepo();
 
   const result = await runCli(['init', repo]);
@@ -48,8 +60,7 @@ test('init creates a repo-local VibePro workspace and ignore file', async () => 
   assert.equal(result.command, 'init');
   assert.equal((await readJson(path.join(repo, '.vibepro', 'config.json'))).schema_version, '0.1.0');
   assert.equal((await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'))).latest_run, null);
-  const ignore = await readFile(path.join(repo, '.vibeproignore'), 'utf8');
-  assert.match(ignore, /\.vibepro\/raw\//);
+  await assert.rejects(stat(path.join(repo, '.vibeproignore')), { code: 'ENOENT' });
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
   assert.match(gitignore, /\.vibepro\/raw\//);
 });
@@ -64,6 +75,8 @@ test('help command prints discoverable usage', async () => {
   assert.equal(result.exitCode, 0);
   assert.equal(result.command, 'help');
   assert.match(output, /vibepro help \[command\]/);
+  assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
+  assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
 });
@@ -326,6 +339,7 @@ writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.graphifyExecuted, true);
   assert.equal((await readJson(path.join(repo, '.vibepro', 'graphify', 'graph.json'))).nodes[0].id, 'from-graphify');
+  assert.equal(await pathExists(path.join(repo, 'graphify-out')), false);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.graphify.last_execution.command, 'graphify update .');
 });
@@ -363,6 +377,153 @@ test('component style scanner inventories UI components and flags legacy tokens'
   assert.equal(result.legacy_style_hits.some((hit) => hit.token === '#1e293b'), true);
   assert.equal(result.legacy_style_hits.some((hit) => hit.kind === 'large_rounded_card'), true);
   assert.equal(result.risk_summary.legacy_style_hits.review >= 2, true);
+});
+
+test('measure records command, HTTP, startup, and Prisma log metrics', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'measured-app',
+    scripts: {
+      typecheck: 'node -e "console.log(\\"typecheck ok\\")"',
+      'dev:web': 'node dev-server.mjs'
+    }
+  }, null, 2));
+  await writeFile(path.join(repo, 'dev-server.mjs'), `
+setTimeout(() => {
+  console.log('ready');
+}, 20);
+setInterval(() => {}, 1000);
+`);
+  await writeFile(path.join(repo, 'prisma.log'), [
+    'prisma:query SELECT * FROM "Project" WHERE "id" = $1',
+    'prisma:query SELECT * FROM "Project" WHERE "id" = $2',
+    'not a query'
+  ].join('\n'));
+  const server = http.createServer((request, response) => {
+    response.setHeader('content-type', request.url.startsWith('/api/') ? 'application/json' : 'text/html');
+    response.end(request.url.startsWith('/api/') ? '{"ok":true}' : '<!doctype html><title>ok</title>');
+  });
+  await new Promise((resolve) => server.listen(0, resolve));
+  const port = server.address().port;
+
+  try {
+    const result = await runCli([
+      'measure',
+      repo,
+      '--run-id',
+      'perf-test',
+      '--base-url',
+      `http://127.0.0.1:${port}`,
+      '--pages',
+      '/dashboard',
+      '--apis',
+      '/api/projects',
+      '--samples',
+      '2',
+      '--startup-script',
+      'dev:web',
+      '--ready-pattern',
+      'ready',
+      '--startup-timeout',
+      '3000',
+      '--prisma-log',
+      'prisma.log'
+    ]);
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.result.measurement.commands.find((item) => item.id === 'typecheck').status, 'pass');
+    assert.equal(result.result.measurement.http.length, 2);
+    assert.equal(result.result.measurement.http.find((item) => item.id === 'page:/dashboard').summary.count, 2);
+    assert.equal(result.result.measurement.startup[0].status, 'pass');
+    assert.equal(result.result.measurement.prisma_log.query_count, 2);
+    assert.equal(result.result.measurement.prisma_log.repeated_query_shapes.length, 1);
+    await stat(path.join(repo, '.vibepro', 'performance', 'perf-test', 'performance.json'));
+    const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+    assert.equal(manifest.latest_performance_run, 'perf-test');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test('measure compare reports before and after deltas', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const beforeDir = path.join(repo, '.vibepro', 'performance', 'before');
+  const afterDir = path.join(repo, '.vibepro', 'performance', 'after');
+  await mkdir(beforeDir, { recursive: true });
+  await mkdir(afterDir, { recursive: true });
+  await writeFile(path.join(beforeDir, 'performance.json'), JSON.stringify({
+    run_id: 'before',
+    created_at: '2026-05-01T00:00:00.000Z',
+    commands: [{ id: 'typecheck', duration_ms: 1000 }],
+    http: [{
+      id: 'api:/api/projects',
+      summary: {
+        total_ms: { p95: 200 },
+        ttfb_ms: { p95: 80 }
+      }
+    }],
+    startup: [{ id: 'startup:dev:web', ready_ms: 1500 }],
+    prisma_log: { query_count: 12, unique_query_shape_count: 6 }
+  }, null, 2));
+  await writeFile(path.join(afterDir, 'performance.json'), JSON.stringify({
+    run_id: 'after',
+    created_at: '2026-05-02T00:00:00.000Z',
+    commands: [{ id: 'typecheck', duration_ms: 900 }],
+    http: [{
+      id: 'api:/api/projects',
+      summary: {
+        total_ms: { p95: 150 },
+        ttfb_ms: { p95: 60 }
+      }
+    }],
+    startup: [{ id: 'startup:dev:web', ready_ms: 1200 }],
+    prisma_log: { query_count: 10, unique_query_shape_count: 5 }
+  }, null, 2));
+  let output = '';
+
+  const result = await runCli([
+    'measure',
+    'compare',
+    repo,
+    '--before',
+    '.vibepro/performance/before/performance.json',
+    '--after',
+    '.vibepro/performance/after/performance.json'
+  ], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.comparison.commands[0].delta_ms, -100);
+  assert.equal(result.result.comparison.http[0].delta_p95_ms, -50);
+  assert.equal(result.result.comparison.startup[0].delta_ready_ms, -300);
+  assert.equal(result.result.comparison.prisma_log.delta_query_count, -2);
+  assert.match(output, /Performance Comparison/);
+  assert.match(output, /-50ms/);
+});
+
+test('graph cleans generated graphify-out when graphify fails', async () => {
+  const repo = await makeRepo();
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-bin-'));
+  const graphifyBin = path.join(binDir, 'graphify');
+  await writeFile(graphifyBin, `#!/usr/bin/env node
+import { mkdirSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+
+mkdirSync('graphify-out', { recursive: true });
+writeFileSync(path.join('graphify-out', 'partial.txt'), 'partial');
+console.error('simulated graphify failure');
+process.exit(2);
+`);
+  await chmod(graphifyBin, 0o755);
+
+  const result = await runCli(['graph', repo, '--run-graphify'], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(await pathExists(path.join(repo, 'graphify-out')), false);
 });
 
 test('story derive can run graphify before generating the story catalog', async () => {
@@ -1658,6 +1819,176 @@ test('story task generator groups admin API routes by domain', () => {
   assert.equal(task.target_groups.find((group) => group.id === 'queue').read_first_files.length, 2);
 });
 
+test('local dev scanner detects heavy dev scripts and task generator taskifies performance findings', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: {
+      dev: 'concurrently "next dev" "npm:worker" "npm:worker:generation" "npm:worker:email" "npm:worker:delivery-task"',
+      'dev:web': 'next dev',
+      worker: 'tsx src/workers/index.ts',
+      'worker:generation': 'tsx src/workers/generation.ts',
+      'worker:email': 'tsx src/workers/email.ts',
+      'worker:delivery-task': 'tsx src/workers/delivery-task.ts'
+    },
+    dependencies: {
+      next: '^15.0.0',
+      react: '^19.0.0'
+    }
+  }, null, 2));
+
+  const localDev = await scanLocalDev(repo);
+
+  assert.equal(localDev.heavy_dev_scripts.length, 1);
+  assert.equal(localDev.heavy_dev_scripts[0].script_name, 'dev');
+  assert.equal(localDev.heavy_dev_scripts[0].has_next_dev, true);
+  assert.equal(localDev.heavy_dev_scripts[0].worker_script_refs, 4);
+  assert.equal(localDev.runtime_probe_plan.status, 'available');
+  assert.equal(localDev.runtime_probe_plan.auto_run, false);
+  assert.equal(localDev.runtime_probe_plan.commands.some((command) => command.id === 'web-dev-startup'), true);
+
+  const taskState = buildStoryTaskState({
+    story: { story_id: 'story-local-perf', title: 'ローカル性能を改善する' },
+    runId: '2026-05-07Tlocal-perf',
+    gateStatus: 'needs_review',
+    evidence: {
+      local_dev: localDev,
+      database_access: {
+        unbounded_find_many: [{
+          file: 'src/app/api/projects/route.ts',
+          gate_effect: 'review'
+        }]
+      },
+      findings: [
+        {
+          id: 'VP-PERF-001',
+          severity: 'Medium',
+          category: 'パフォーマンス',
+          title: 'ローカルdev起動が複数runtimeを同時起動している',
+          recommendation: 'web-only dev scriptとworker起動scriptを分離する。'
+        },
+        {
+          id: 'VP-DB-001',
+          severity: 'Medium',
+          category: 'パフォーマンス',
+          title: '未ページングのDB一覧取得候補がある',
+          recommendation: '一覧取得に件数上限を設ける。'
+        }
+      ],
+      action_candidates: []
+    }
+  });
+
+  assert.deepEqual(taskState.tasks.map((task) => task.id), ['VP-TASK-PERF-001', 'VP-TASK-DB-001-API_PROJECTS']);
+  assert.equal(taskState.tasks[0].target_files.includes('package.json'), true);
+  assert.equal(taskState.tasks[1].target_files.includes('src/app/api/projects/route.ts'), true);
+  assert.equal(taskState.tasks[1].target_groups[0].id, 'api-projects');
+});
+
+test('diagnose emits local dev performance findings and tasks', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: {
+      dev: 'concurrently "next dev" "npm:worker" "npm:worker:generation" "npm:worker:email"',
+      worker: 'tsx src/workers/index.ts',
+      'worker:generation': 'tsx src/workers/generation.ts',
+      'worker:email': 'tsx src/workers/email.ts'
+    },
+    dependencies: {
+      next: '^15.0.0',
+      react: '^19.0.0'
+    }
+  }, null, 2));
+  await runCli(['init', repo, '--story-id', 'story-local-dev-performance', '--title', 'ローカルdev性能', '--view', 'dev', '--period', '2026-05']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [], links: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-05-07Tlocal-dev']);
+
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', '2026-05-07Tlocal-dev', 'evidence.json'));
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-PERF-001'), true);
+  assert.equal(evidence.local_dev.heavy_dev_scripts[0].script_name, 'dev');
+  assert.equal(evidence.local_dev.runtime_probe_plan.commands.length > 0, true);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-local-dev-performance', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks.some((task) => task.id === 'VP-TASK-PERF-001'), true);
+  assert.equal(tasks.tasks.find((task) => task.id === 'VP-TASK-PERF-001').target_files.includes('package.json'), true);
+  const summary = await readFile(path.join(repo, '.vibepro', 'diagnostics', '2026-05-07Tlocal-dev', 'summary.md'), 'utf8');
+  assert.match(summary, /重いdev script候補/);
+  assert.match(summary, /runtime probe plan/);
+});
+
+test('story task generator keeps resolved finding tasks as done after re-diagnosis', () => {
+  const taskState = buildStoryTaskState({
+    story: { story_id: 'story-local-perf', title: 'ローカル性能を改善する' },
+    runId: '2026-05-07Tresolved',
+    gateStatus: 'pass',
+    existingTaskState: {
+      tasks: [{
+        id: 'VP-TASK-PERF-001',
+        source_type: 'finding',
+        source_id: 'VP-PERF-001',
+        finding_id: 'VP-PERF-001',
+        title: 'ローカルdev起動が複数runtimeを同時起動している',
+        priority: 'medium',
+        status: 'todo',
+        target_files: ['package.json'],
+        target_routes: [],
+        target_groups: [],
+        read_first_files: [],
+        recommended_strategy: { id: 'manual-review', reason: '分離する' },
+        implementation_steps: [],
+        acceptance_criteria: ['分離する']
+      }]
+    },
+    evidence: {
+      findings: [],
+      action_candidates: []
+    }
+  });
+
+  assert.equal(taskState.tasks.length, 1);
+  assert.equal(taskState.tasks[0].id, 'VP-TASK-PERF-001');
+  assert.equal(taskState.tasks[0].status, 'done');
+  assert.equal(taskState.tasks[0].completion_evidence.run_id, '2026-05-07Tresolved');
+});
+
+test('story task generator splits DB findings by route and service domain', () => {
+  const taskState = buildStoryTaskState({
+    story: { story_id: 'story-db-perf', title: 'DB性能を改善する' },
+    runId: '2026-05-07Tdb-split',
+    gateStatus: 'needs_review',
+    evidence: {
+      database_access: {
+        unbounded_find_many: [
+          { file: 'src/app/api/projects/route.ts', gate_effect: 'review' },
+          { file: 'src/app/api/projects/[projectId]/tasks/route.ts', gate_effect: 'review' },
+          { file: 'src/app/api/analytics/project-summary/route.ts', gate_effect: 'review' },
+          { file: 'src/lib/services/admin/llmUsageAnalyticsService.ts', gate_effect: 'review' }
+        ]
+      },
+      findings: [{
+        id: 'VP-DB-001',
+        severity: 'Medium',
+        category: 'パフォーマンス',
+        title: '未ページングのDB一覧取得候補がある',
+        recommendation: '一覧取得に件数上限を設ける。'
+      }],
+      action_candidates: []
+    }
+  });
+
+  assert.deepEqual(taskState.tasks.map((task) => task.id), [
+    'VP-TASK-DB-001-API_PROJECTS',
+    'VP-TASK-DB-001-API_ANALYTICS',
+    'VP-TASK-DB-001-SERVICES_ADMIN'
+  ]);
+  assert.equal(taskState.tasks[0].target_files.length, 2);
+  assert.equal(taskState.tasks[0].target_groups[0].id, 'api-projects');
+});
+
 test('api boundary treats authorization header with environment secret as route protection', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'queue', 'status'), { recursive: true });
@@ -2804,16 +3135,19 @@ export function middleware() {}
   assert.equal(tasks.tasks[4].target_groups[0].id, 'queue-status');
   assert.equal(tasks.tasks[4].target_groups[0].route_count, 1);
   assert.equal(tasks.tasks[4].pre_fix_briefing.current_boundary.middleware.excludes_api, true);
-  assert.equal(tasks.tasks[6].source_id, 'VP-ACTION-DRY-001');
-  assert.equal(tasks.tasks[6].target_files.includes('src/lib/services/company-alpha.ts'), true);
-  assert.equal(tasks.tasks[6].pre_fix_briefing.opportunity.refactoring_intent, 'query_policy');
-  assert.equal(tasks.tasks[6].pre_fix_briefing.campaign.id, dryCampaign.id);
-  assert.equal(tasks.tasks[6].graph_context.matched_file_count, 2);
-  assert.equal(tasks.tasks[6].read_first_files.some((item) => item.file === 'src/lib/db.ts'), true);
-  assert.equal(tasks.tasks[6].pre_fix_briefing.investigation_scope.related_files.includes('src/lib/db.ts'), true);
-  assert.equal(tasks.tasks[6].recommended_strategy.id, 'extract-shared-boundary');
-  assert.equal(tasks.tasks[7].source_id, 'VP-ACTION-ARCH-001');
-  assert.equal(tasks.tasks[7].pre_fix_briefing.opportunity.refactoring_intent, 'responsibility_split');
+  assert.equal(tasks.tasks[6].source_id, 'VP-DB-001');
+  assert.equal(tasks.tasks[6].priority, 'medium');
+  assert.equal(tasks.tasks[6].target_files.includes('src/app/api/companies/route.ts'), true);
+  assert.equal(tasks.tasks[7].source_id, 'VP-ACTION-DRY-001');
+  assert.equal(tasks.tasks[7].target_files.includes('src/lib/services/company-alpha.ts'), true);
+  assert.equal(tasks.tasks[7].pre_fix_briefing.opportunity.refactoring_intent, 'query_policy');
+  assert.equal(tasks.tasks[7].pre_fix_briefing.campaign.id, dryCampaign.id);
+  assert.equal(tasks.tasks[7].graph_context.matched_file_count, 2);
+  assert.equal(tasks.tasks[7].read_first_files.some((item) => item.file === 'src/lib/db.ts'), true);
+  assert.equal(tasks.tasks[7].pre_fix_briefing.investigation_scope.related_files.includes('src/lib/db.ts'), true);
+  assert.equal(tasks.tasks[7].recommended_strategy.id, 'extract-shared-boundary');
+  assert.equal(tasks.tasks[8].source_id, 'VP-ACTION-ARCH-001');
+  assert.equal(tasks.tasks[8].pre_fix_briefing.opportunity.refactoring_intent, 'responsibility_split');
   const apiAction = evidence.action_candidates.find((candidate) => candidate.id === 'VP-ACTION-API-001');
   assert.equal(apiAction.finding_id, 'VP-API-001');
   assert.equal(apiAction.execution_policy, 'proposal_only');
@@ -2993,11 +3327,12 @@ export function middleware() {}
   assert.equal(importState.signals.finding_review.summary.total, importState.findings.length);
   assert.equal(importState.signals.graphify.quality_notices.find((notice) => notice.id === 'VP-GRAPH-002').level, 'info');
   assert.equal(importState.findings.find((finding) => finding.id === 'VP-API-001').review.suggested_classification, 'implementation_gap');
-  assert.equal(importState.signals.tasks.length, 8);
+  assert.equal(importState.signals.tasks.length, 9);
   assert.equal(importState.signals.tasks[0].id, 'VP-TASK-STATIC-002-BLOCK');
   assert.equal(importState.signals.tasks[4].source_id, 'VP-ACTION-API-001');
-  assert.equal(importState.signals.tasks[6].source_id, 'VP-ACTION-DRY-001');
-  assert.equal(importState.signals.tasks[7].source_id, 'VP-ACTION-ARCH-001');
+  assert.equal(importState.signals.tasks[6].source_id, 'VP-DB-001');
+  assert.equal(importState.signals.tasks[7].source_id, 'VP-ACTION-DRY-001');
+  assert.equal(importState.signals.tasks[8].source_id, 'VP-ACTION-ARCH-001');
   assert.equal(importState.signals.action_candidates.length, 5);
   assert.equal(importState.signals.action_candidates[0].mutates_repository, false);
   assert.equal(importState.signals.action_candidates[0].graph_context.matched_route_count, 1);
