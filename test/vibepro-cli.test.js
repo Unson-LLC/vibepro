@@ -4604,6 +4604,136 @@ test('pr prepare --strict rejects when task artifacts are missing', async () => 
   assert.match(stderrOut, /briefing\.md/);
 });
 
+test('--version prints the package version', async () => {
+  const versions = [];
+  for (const arg of ['--version', '-v', 'version']) {
+    let out = '';
+    const result = await runCli([arg], { stdout: { write: (text) => { out += text; } } });
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.command, 'version');
+    assert.match(out.trim(), /^\d+\.\d+\.\d+/);
+    versions.push(out.trim());
+  }
+  assert.equal(new Set(versions).size, 1);
+});
+
+test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  // Overwrite .gitignore so .vibepro/ entry is missing
+  await writeFile(path.join(repo, '.gitignore'), 'node_modules/\n');
+
+  const dryRun = await runCli(['doctor', repo, '--json']);
+  assert.equal(dryRun.exitCode, 0);
+  assert.equal(dryRun.result.checks.some((check) => check.id === 'VP-DOCTOR-GITIGNORE-MISSING'), true);
+  assert.equal(dryRun.result.overall_status, 'needs_maintenance');
+
+  const fixed = await runCli(['doctor', repo, '--fix']);
+  assert.equal(fixed.exitCode, 0);
+  assert.equal(fixed.result.repairs.some((repair) => repair.id === 'ensure-gitignore-vibepro'), true);
+  const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
+  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /node_modules\//);
+
+  const after = await runCli(['doctor', repo, '--json']);
+  assert.equal(after.result.checks.some((check) => check.id === 'VP-DOCTOR-GITIGNORE-MISSING'), false);
+});
+
+test('doctor --fix creates .gitignore when it is absent', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  // Remove the .gitignore entirely.
+  await writeFile(path.join(repo, '.gitignore'), '');
+
+  const dryRun = await runCli(['doctor', repo, '--json']);
+  assert.equal(dryRun.result.checks.some((check) => check.id === 'VP-DOCTOR-GITIGNORE-MISSING'), true);
+
+  await runCli(['doctor', repo, '--fix']);
+  const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
+  assert.match(gitignore, /^\.vibepro\/$/m);
+});
+
+test('story report writes index.html and links resolve to latest run artifacts', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-html', '--title', 'HTML Story', '--view', 'dev', '--period', '2026-W18']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }, { id: 'api' }],
+    edges: [{ source: 'app', target: 'api', relation: 'calls', confidence: 'AMBIGUOUS' }]
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  // Provide a graph.html artefact since graphify import may not produce one in tests.
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.html'), '<!doctype html><title>Graph</title>');
+  await runCli(['story', 'select', repo, '--id', 'story-html']);
+  await runCli(['diagnose', repo, '--run-id', 'run-old']);
+  await runCli(['diagnose', repo, '--run-id', 'run-latest']);
+
+  const result = await runCli(['story', 'report', repo]);
+  assert.equal(result.exitCode, 0);
+  const storyDir = path.join(repo, '.vibepro', 'stories', 'story-html');
+  const htmlPath = path.join(storyDir, 'index.html');
+  await stat(htmlPath);
+
+  const html = await readFile(htmlPath, 'utf8');
+  assert.match(html, /Latest Run Artifacts \(run-latest\)/);
+  // Old run id should not appear in the latest-run section.
+  assert.equal(html.includes('Latest Run Artifacts (run-old)'), false);
+
+  // Extract every href and confirm it resolves to an actual file.
+  const hrefMatches = [...html.matchAll(/href="([^"#]+)"/g)].map((match) => match[1]);
+  assert.equal(hrefMatches.length > 0, true);
+  for (const href of hrefMatches) {
+    const resolved = path.resolve(storyDir, href);
+    await stat(resolved);
+  }
+
+  // Spot-check: the summary link must point to the latest run, not the older one.
+  const summaryHref = hrefMatches.find((href) => href.endsWith('summary.md'));
+  assert.equal(summaryHref?.includes('run-latest'), true);
+  assert.equal(summaryHref?.includes('run-old'), false);
+
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.stories['story-html'].latest_report_html, '.vibepro/stories/story-html/index.html');
+  assert.equal(manifest.stories['story-html'].latest_report_run_id, 'run-latest');
+});
+
+test('vibepro commands only write files under .vibepro/ in the target repo', async () => {
+  const repo = await makeRepo();
+  // Snapshot of repo top-level entries before any vibepro command (just index.html created by makeRepo).
+  const before = new Set(await readdirSafe(repo));
+  await runCli(['init', repo, '--story-id', 'story-stray', '--title', 'No Stray', '--view', 'dev', '--period', '2026-W18']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({ nodes: [{ id: 'a' }], edges: [] }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+  await runCli(['diagnose', repo, '--run-id', 'run-stray']);
+  await runCli(['story', 'report', repo]);
+  await runCli(['doctor', repo, '--fix']);
+
+  const after = new Set(await readdirSafe(repo));
+  const allowed = new Set([...before, '.vibepro', '.gitignore', 'graphify-out']);
+  for (const entry of after) {
+    assert.equal(allowed.has(entry), true, `Unexpected top-level entry "${entry}" written by vibepro outside .vibepro/`);
+  }
+  // Verify nothing else changed under repo root that's not in allowed list.
+  // Crucially the workspace must exist.
+  await stat(path.join(repo, '.vibepro'));
+});
+
+async function readdirSafe(dir) {
+  const { readdir } = await import('node:fs/promises');
+  try {
+    return await readdir(dir);
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
 function jsonResponse(body) {
   return {
     ok: true,

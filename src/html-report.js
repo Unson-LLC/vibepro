@@ -594,3 +594,14 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+export const __testing__ = {
+  baseCss,
+  renderDocument,
+  metricCard,
+  renderTable,
+  escapeHtml,
+  escapeAttr,
+  statusClass,
+  toneForStatus
+};
