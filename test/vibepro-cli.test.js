@@ -62,7 +62,26 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.equal((await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'))).latest_run, null);
   await assert.rejects(stat(path.join(repo, '.vibeproignore')), { code: 'ENOENT' });
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /\.vibepro\/raw\//);
+  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
+});
+
+test('init ignores all VibePro workspace artifacts from git status', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+
+  const result = await runCli(['init', repo]);
+  await mkdir(path.join(repo, '.vibepro', 'pr', 'story-ignore-check'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'pr', 'story-ignore-check', 'pr-prepare.html'), '<!doctype html>');
+
+  assert.equal(result.exitCode, 0);
+  const ignored = await git(repo, [
+    'check-ignore',
+    '.vibepro/config.json',
+    '.vibepro/pr/story-ignore-check/pr-prepare.html'
+  ]);
+  assert.match(ignored.stdout, /^\.vibepro\/config\.json$/m);
+  assert.match(ignored.stdout, /^\.vibepro\/pr\/story-ignore-check\/pr-prepare\.html$/m);
 });
 
 test('help command prints discoverable usage', async () => {
@@ -1720,7 +1739,7 @@ test('pr prepare treats split repo-control and e2e gate lanes as reviewable', as
   assert.equal(e2eResult.result.preparation.file_groups.tests.count, 1);
 
   const repoControlRepo = await makeGitRepoWithStory();
-  await writeFile(path.join(repoControlRepo, '.gitignore'), `${await readFile(path.join(repoControlRepo, '.gitignore'), 'utf8')}\n.vibepro/raw/\n`);
+  await writeFile(path.join(repoControlRepo, '.gitignore'), `${await readFile(path.join(repoControlRepo, '.gitignore'), 'utf8')}\n.editorconfig\n`);
   await git(repoControlRepo, ['add', '.gitignore']);
   await git(repoControlRepo, ['commit', '-m', 'chore: split repo control lane']);
 

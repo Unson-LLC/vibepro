@@ -94,10 +94,7 @@ async function writeJsonIfMissing(filePath, value) {
 async function ensureGitIgnore(repoRoot) {
   const ignorePath = path.join(path.resolve(repoRoot), '.gitignore');
   const required = [
-    '.vibepro/raw/',
-    '.vibepro/**/raw/',
-    '.vibepro/**/secrets*',
-    '.vibepro/**/*.log'
+    '.vibepro/'
   ];
 
   let existing = '';
