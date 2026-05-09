@@ -259,6 +259,7 @@ function classifySourceKind(file) {
   const normalized = file.toLowerCase();
   const basename = path.basename(normalized);
   if (normalized.startsWith('.claude/')) return 'agent_skill';
+  if (normalized.startsWith('public/ttyd/')) return 'vendor_bundle';
   if (basename === '.env.example' || basename === '.env.sample' || basename === '.env.template') return 'example';
   if (normalized.startsWith('docs/') || normalized.endsWith('.md')) return 'docs';
   if (/(^|\/)(__tests__|tests?|spec|fixtures?)(\/|$)/.test(normalized)

@@ -9,8 +9,10 @@ import { promisify } from 'node:util';
 
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { scanComponentStyle } from '../src/component-style-scanner.js';
+import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
+import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
 const execFileAsync = promisify(execFile);
@@ -383,6 +385,12 @@ test('component style scanner inventories UI components and flags legacy tokens'
   background: #1e293b;
   border-radius: 16px;
 }
+.task-action-btn {
+  width: 24px;
+  height: 24px;
+  transition: all 0.15s ease;
+}
+.task-action-btn:hover { transform: translateY(-1px); }
 .task-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3); }
 `);
   await writeFile(path.join(repo, 'public', 'index.html'), '<button class="primary-button" data-component="button">Save</button>');
@@ -396,6 +404,193 @@ test('component style scanner inventories UI components and flags legacy tokens'
   assert.equal(result.legacy_style_hits.some((hit) => hit.token === '#1e293b'), true);
   assert.equal(result.legacy_style_hits.some((hit) => hit.kind === 'large_rounded_card'), true);
   assert.equal(result.risk_summary.legacy_style_hits.review >= 2, true);
+  assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'interactive_target_moves_on_state'), true);
+  assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'transition_all_on_interactive_target'), true);
+  assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'small_interactive_target'), true);
+  assert.equal(result.risk_summary.interaction_reliability_hits.review, 3);
+});
+
+test('flow design scanner flags unsafe UI journey contracts', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'new'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'patients', '[id]'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { next: '16.2.1', react: '19.0.0' }
+  }, null, 2));
+  await writeFile(path.join(repo, 'docs', 'specs', 'u-020.md'), `---
+story_id: U-020
+---
+# SPEC-U-020
+
+- DPC未入力登録後、患者詳細でDPC確認質問が表示される。
+- DPCを回答すると退院目標日が更新される。
+- 新規登録画面に退院先選択カードが表示されない。
+- 退院予定日という語は未確定値に使わない。
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'new', 'page.tsx'), `
+"use client";
+export default function NewPage() {
+  const searchByName = async () => {
+    if (!searchQuery.trim()) return;
+    await fetch('/api/dpc-lookup?q=' + searchQuery);
+  };
+  const lookup = async (code) => {
+    if (!code || !admissionDate) return;
+    const data = await res.json();
+    setLookupResult(data);
+    await saveCase(code, data);
+    router.push('/patients/' + data.id);
+  };
+  const selectDpc = (result) => {
+    setDpcCode(result.dpc_code);
+    router.push('/patients/' + result.id);
+  };
+  return <>{lookupResult && <div>退院目標日 preview</div>}<button onClick={selectDpc}>DPC候補を選択</button></>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'patients', '[id]', 'page.tsx'), `
+"use client";
+export default function PatientPage() {
+  const saveQuestionAnswer = async (question, value) => {
+    if (question.key === 'dpc_target_date') {
+      await fetch('/api/cases/1/notes', { method: 'POST' });
+      setDpcTargetDateStatus(value);
+    }
+  };
+  return <div>退院予定日</div>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-020', title: '新規登録でタスクを量産せず不足情報を質問化する', view: 'user' },
+    config: {
+      flow_design: {
+        profile: 'senpainurse',
+        value_contract: {
+          forbidden_labels: ['退院予定日'],
+          required_labels: ['退院目標日']
+        }
+      }
+    }
+  });
+
+  assert.equal(result.summary.scanned_ui_files, 2);
+  assert.equal(result.silent_noop_hits.some((hit) => hit.file === 'src/app/new/page.tsx'), true);
+  assert.equal(result.selection_side_effect_hits.some((hit) => hit.kind === 'selection_triggers_navigation'), true);
+  assert.equal(result.question_dead_end_hits.some((hit) => hit.question_key === 'dpc_target_date'), true);
+  assert.equal(result.dead_ui_state_hits.some((hit) => hit.state === 'lookupResult'), true);
+  assert.equal(result.value_alignment_hits.some((hit) => hit.kind === 'forbidden_label' && hit.label === '退院予定日'), true);
+  assert.equal(result.status, 'needs_review');
+});
+
+test('terminal link scanner flags dot directory HTML preview gaps', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'public', 'modules'), { recursive: true });
+  await mkdir(path.join(repo, 'public', 'ttyd'), { recursive: true });
+  await mkdir(path.join(repo, 'server', 'controllers', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'public', 'modules', 'xterm-file-links.js'), `
+const XTERM_FILE_TOKEN_REGEX = new RegExp(
+  '((?:~\\\\/|\\\\.{1,2}\\\\/|\\\\/)?[a-zA-Z0-9_][a-zA-Z0-9_/.\\\\-]*\\\\.(?:html|js))',
+  'g'
+);
+const XTERM_CONTINUATION_SUFFIX_REGEX = new RegExp('^(\\\\s+)([a-zA-Z0-9_/.\\\\-]+\\\\.(?:html))');
+`);
+  await writeFile(path.join(repo, 'public', 'ttyd', 'custom_ttyd_index.html'), `
+<script>
+const filePathRegex = new RegExp('((?:~\\\\/|\\\\.{1,2}\\\\/|\\\\/)?[a-zA-Z0-9_][a-zA-Z0-9_/.\\\\-]*\\\\.(?:html))', 'g');
+term.registerLinkProvider({ provideLinks() {} });
+</script>
+`);
+  await writeFile(path.join(repo, 'server', 'controllers', 'session', 'shared-methods.js'), `
+controller._readTree = async () => entries.filter((entry) => {
+  if (entry.name.startsWith('.')) return false;
+  return true;
+});
+`);
+
+  const result = await scanTerminalLinkContracts(repo);
+
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.dot_directory_link_hits.some((hit) => hit.kind === 'dot_directory_file_link_not_supported'), true);
+  assert.equal(result.wrapped_terminal_link_hits.some((hit) => hit.kind === 'wrapped_terminal_continuation_requires_indent'), true);
+  assert.equal(result.dot_directory_tree_hits.some((hit) => hit.kind === 'dot_directory_tree_hidden_without_allowlist'), true);
+});
+
+test('diagnose writes flow design evidence, report, findings, and story tasks', async () => {
+  const repo = await makeRepo();
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'U-020',
+    '--title',
+    '新規登録でタスクを量産せず不足情報を質問化する',
+    '--view',
+    'user',
+    '--period',
+    '2026-05'
+  ]);
+  await mkdir(path.join(repo, 'src', 'app', 'new'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'patients', '[id]'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { next: '16.2.1', react: '19.0.0' }
+  }, null, 2));
+  await writeFile(path.join(repo, 'src', 'app', 'new', 'page.tsx'), `
+"use client";
+export default function NewPage() {
+  const selectDpc = (result) => {
+    setDpcCode(result.dpc_code);
+    router.push('/patients/' + result.id);
+  };
+  return <button onClick={() => selectDpc(result)}>DPC候補を選択</button>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'patients', '[id]', 'page.tsx'), `
+"use client";
+export default function PatientPage() {
+  const saveQuestionAnswer = async (question, value) => {
+    if (question.key === 'dpc_target_date') {
+      await fetch('/api/cases/1/notes', { method: 'POST' });
+      setDpcTargetDateStatus(value);
+    }
+  };
+  return <div>退院予定日</div>;
+}
+`);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = { profile: 'senpainurse' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'new-page' }, { id: 'patient-page' }],
+    edges: []
+  }));
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-05-10T000000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-05-10T000000Z');
+  const evidence = await readJson(path.join(runDir, 'evidence.json'));
+  assert.equal(evidence.flow_design.profile, 'senpainurse');
+  assert.equal(evidence.flow_design.summary.scanned_ui_files, 2);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-003'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-004'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-006'), true);
+  assert.equal(evidence.gates[0].status, 'needs_review');
+  const report = await readFile(path.join(runDir, 'flow-design-check-result.md'), 'utf8');
+  assert.match(report, /Flow Design Check/);
+  assert.match(report, /Selection side effect/);
+  const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
+  assert.match(summary, /Flow Design Gate/);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'U-020', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks.some((task) => task.finding_id === 'VP-FLOW-003'), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.runs[0].artifacts.flow_design_check,
+    '.vibepro/diagnostics/2026-05-10T000000Z/flow-design-check-result.md'
+  );
 });
 
 test('measure records command, HTTP, startup, and Prisma log metrics', async () => {
@@ -2774,6 +2969,12 @@ test('diagnose creates static site evidence and a static site report under the r
   background: #1e293b;
   border-radius: 16px;
 }
+.task-action-btn {
+  width: 24px;
+  height: 24px;
+  transition: all 0.15s ease;
+}
+.task-action-btn:hover { transform: translateY(-1px); }
 .task-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3); }
 `);
   await writeFile(path.join(repo, 'app.js'), `
@@ -2852,7 +3053,11 @@ element.innerHTML = userInput;
   assert.equal(evidence.component_style.design_system_markers.length > 0, true);
   assert.equal(evidence.component_style.legacy_style_hits.some((hit) => hit.file === 'style.css' && hit.token === '#1e293b'), true);
   assert.equal(evidence.component_style.risk_summary.legacy_style_hits.review >= 2, true);
+  assert.equal(evidence.component_style.interaction_reliability_hits.some((hit) => hit.kind === 'interactive_target_moves_on_state'), true);
+  assert.equal(evidence.component_style.interaction_reliability_hits.some((hit) => hit.kind === 'small_interactive_target'), true);
+  assert.equal(evidence.component_style.risk_summary.interaction_reliability_hits.review, 3);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-UI-001'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-UI-002'), true);
   assert.equal(evidence.gates[0].status, 'block');
   const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.json'));
   assert.equal(tasks.source_run.run_id, '2026-04-28T130000Z');
@@ -2871,7 +3076,9 @@ element.innerHTML = userInput;
   assert.match(await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'tasks.md'), 'utf8'), /VP-TASK-STATIC-002-BLOCK/);
   assert.match(await readFile(path.join(runDir, 'risk-register.md'), 'utf8'), /秘密情報/);
   assert.match(await readFile(path.join(runDir, 'static-site-check-result.md'), 'utf8'), /gate_effect/);
-  assert.match(await readFile(path.join(runDir, 'component-style-check-result.md'), 'utf8'), /旧トークン候補/);
+  const componentStyleReport = await readFile(path.join(runDir, 'component-style-check-result.md'), 'utf8');
+  assert.match(componentStyleReport, /旧トークン候補/);
+  assert.match(componentStyleReport, /操作信頼性候補/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(
     manifest.runs[0].artifacts.static_site_check,

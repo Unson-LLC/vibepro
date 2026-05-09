@@ -209,7 +209,7 @@ export function renderPrCreateHtml(execution) {
 }
 
 function renderDocument({ title, reportType, generatedAt, body }) {
-  return `<!doctype html>
+  return trimTrailingWhitespace(`<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
@@ -230,7 +230,14 @@ function renderDocument({ title, reportType, generatedAt, body }) {
   </main>
 </body>
 </html>
-`;
+`);
+}
+
+function trimTrailingWhitespace(html) {
+  return html
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n');
 }
 
 function baseCss() {

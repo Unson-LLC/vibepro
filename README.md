@@ -196,6 +196,7 @@ node bin/vibepro.js diagnose /path/to/repo
 ├── finding-review.md
 ├── architecture-profile.md
 ├── static-site-check-result.md
+├── flow-design-check-result.md
 └── evidence.json
 
 .vibepro/stories/<story-id>/tasks/
@@ -225,6 +226,24 @@ node bin/vibepro.js diagnose /path/to/repo
 共通チェックでは秘密情報候補、XSSリスク候補、graphify上の曖昧な関係を確認する。静的サイトに該当する場合だけ、次の観点を静的サイト固有チェックとして扱う。
 
 Web app / static site では `component-style` も適用する。CSS/HTML/JS/TSX からボタン、タブ、カード、入力、バッジなどのUIコンポーネント候補をinventory化し、旧デザイン由来の色・角丸・影トークンが残っていないかを evidence に記録する。これは「証跡はあるが実UIの部品が置き換わっていない」状態を検出するための本体ガードである。
+
+UI Storyでは `flow-design-check` も適用する。これはStory/Specの文言だけでは拾えない、画面状態・主操作・副作用・次状態・価値観逸脱の検査である。候補選択が保存や遷移まで実行する、空入力で無反応returnする、質問回答後に対応入力UIへ進まない、表示stateが遷移直前にだけ設定される、禁止ラベルが残る、といった導線設計の破綻候補を `evidence.flow_design` と `flow-design-check-result.md` に記録する。
+
+必要に応じて `.vibepro/config.json` に対象UI実装の場所と価値観contractを指定できる。
+
+```json
+{
+  "flow_design": {
+    "enabled": true,
+    "profile": "senpainurse",
+    "code_roots": ["apps/web/src/app", "apps/web/src/components"],
+    "value_contract": {
+      "forbidden_labels": ["退院予定日"],
+      "required_labels": ["退院目標日"]
+    }
+  }
+}
+```
 
 `api-boundary` が適用される場合は、API routeを `public`、`authenticated`、`admin`、`internal`、`webhook`、`debug`、`cron_batch_queue` に分類し、middleware matcherやroute内の認証参照、webhook署名検証らしき実装を保護根拠として記録する。
 

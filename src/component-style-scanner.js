@@ -47,6 +47,10 @@ const DESIGN_SYSTEM_MARKERS = [
   'component-style',
   'design-token'
 ];
+const INTERACTIVE_SELECTOR_PATTERN = /\b(button|btn|action|icon|menu-toggle|tab|link|trigger|start|edit|delete|play|close|submit|toggle)\b|\[role=["']?button["']?\]|button\b/i;
+const INTERACTIVE_STATE_PATTERN = /:(hover|focus|focus-visible|active)\b/i;
+const MOVING_TRANSFORM_PATTERN = /transform\s*:\s*(?!none\b)[^;]*(translate|scale|rotate|matrix)/i;
+const TRANSITION_ALL_PATTERN = /transition\s*:\s*all\b/i;
 
 export async function scanComponentStyle(repoRoot) {
   const root = path.resolve(repoRoot);
@@ -57,9 +61,11 @@ export async function scanComponentStyle(repoRoot) {
     component_inventory: [],
     component_kinds: [],
     legacy_style_hits: [],
+    interaction_reliability_hits: [],
     design_system_markers: [],
     risk_summary: {
-      legacy_style_hits: { block: 0, review: 0, info: 0 }
+      legacy_style_hits: { block: 0, review: 0, info: 0 },
+      interaction_reliability_hits: { block: 0, review: 0, info: 0 }
     },
     coverage: {
       observed_component_kinds: [],
@@ -76,6 +82,9 @@ export async function scanComponentStyle(repoRoot) {
       collectLegacyStyleHits(result.legacy_style_hits, file.relativePath, index + 1, line);
       collectDesignSystemMarkers(result.design_system_markers, file.relativePath, index + 1, line);
     }
+    if (path.extname(file.relativePath).toLowerCase() === '.css') {
+      collectInteractionReliabilityHits(result.interaction_reliability_hits, file.relativePath, content);
+    }
   }
 
   result.component_kinds = [...new Set(result.component_inventory.map((item) => item.kind))].sort();
@@ -83,6 +92,7 @@ export async function scanComponentStyle(repoRoot) {
   result.coverage.replacement_observable = result.design_system_markers.length > 0;
   result.coverage.missing_component_kinds = inferMissingComponentKinds(result.component_kinds);
   result.risk_summary.legacy_style_hits = summarizeGateEffects(result.legacy_style_hits);
+  result.risk_summary.interaction_reliability_hits = summarizeGateEffects(result.interaction_reliability_hits);
   return result;
 }
 
@@ -161,6 +171,90 @@ function collectDesignSystemMarkers(markers, file, lineNumber, line) {
     marker,
     excerpt: line.trim().slice(0, 160)
   });
+}
+
+function collectInteractionReliabilityHits(hits, file, content) {
+  const rulePattern = /([^{}]+)\{([^{}]*)\}/gm;
+  const smallTargetCandidates = new Map();
+  let match;
+  while ((match = rulePattern.exec(content)) !== null) {
+    const selector = match[1].trim().replace(/\s+/g, ' ');
+    const body = match[2];
+    if (!INTERACTIVE_SELECTOR_PATTERN.test(selector)) continue;
+
+    const lineNumber = lineNumberAt(content, match.index);
+    const excerpt = `${selector} { ${body.trim().replace(/\s+/g, ' ').slice(0, 140)} }`;
+
+    if (INTERACTIVE_STATE_PATTERN.test(selector) && MOVING_TRANSFORM_PATTERN.test(body)) {
+      hits.push({
+        file,
+        line: lineNumber,
+        kind: 'interactive_target_moves_on_state',
+        selector,
+        excerpt,
+        confidence: 'high',
+        gate_effect: 'review',
+        recommendation: 'クリック可能要素のhover/focus/activeではhit targetを移動せず、色・border・shadowで状態を表現する。'
+      });
+    }
+
+    if (TRANSITION_ALL_PATTERN.test(body)) {
+      hits.push({
+        file,
+        line: lineNumber,
+        kind: 'transition_all_on_interactive_target',
+        selector,
+        excerpt,
+        confidence: 'medium',
+        gate_effect: 'review',
+        recommendation: 'transition: all はhit targetやlayoutの意図しない遷移を含むため、background-color/border-color/color/box-shadowなどに限定する。'
+      });
+    }
+
+    const targetSize = extractStaticTargetSize(body);
+    if (targetSize && !isInteractiveChildGraphicSelector(selector)) {
+      smallTargetCandidates.set(selector, {
+        file,
+        line: lineNumber,
+        kind: 'small_interactive_target',
+        selector,
+        width_px: targetSize.width,
+        height_px: targetSize.height,
+        excerpt,
+        confidence: 'medium',
+        gate_effect: 'review',
+        recommendation: '高頻度操作のclick targetは少なくとも28px程度を確保し、端クリックでも取りこぼさないようにする。'
+      });
+    }
+  }
+
+  for (const candidate of smallTargetCandidates.values()) {
+    if (candidate.width_px < 28 && candidate.height_px < 28) {
+      hits.push(candidate);
+    }
+  }
+}
+
+function isInteractiveChildGraphicSelector(selector) {
+  return selector
+    .split(',')
+    .every((part) => /(?:^|[\s>+~])(?:i|svg|path|use)\b/i.test(part.trim()));
+}
+
+function lineNumberAt(content, index) {
+  return content.slice(0, index).split(/\r?\n/).length;
+}
+
+function extractStaticTargetSize(body) {
+  const width = extractPxValue(body, 'width');
+  const height = extractPxValue(body, 'height');
+  if (width == null || height == null) return null;
+  return { width, height };
+}
+
+function extractPxValue(body, property) {
+  const match = body.match(new RegExp(`(?:^|[;\\s])${property}\\s*:\\s*(\\d+(?:\\.\\d+)?)px\\b`, 'i'));
+  return match ? Number.parseFloat(match[1]) : null;
 }
 
 function classifyLegacyConfidence(file, line) {

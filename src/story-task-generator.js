@@ -353,6 +353,9 @@ function shouldCreateFindingTask(finding) {
 }
 
 function resolveFindingTargetFiles(finding, evidence) {
+  if (Array.isArray(finding.target_files) && finding.target_files.length > 0) {
+    return uniqueFiles(finding.target_files);
+  }
   if (finding.id === 'VP-STATIC-002') {
     return uniqueFiles([
       ...resolveSecretTargetFiles(evidence, 'block'),

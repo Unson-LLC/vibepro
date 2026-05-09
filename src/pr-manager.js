@@ -371,9 +371,10 @@ async function collectGitState(repoRoot, options) {
   const currentBranch = await gitOptional(repoRoot, ['branch', '--show-current']);
   const baseRef = options.baseRef ?? await resolveBaseRef(repoRoot);
   const headRef = options.headRef ?? 'HEAD';
-  const changedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
+  const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const dirtyFiles = parseStatus(await gitOptional(repoRoot, ['status', '--porcelain']));
+  const changedFiles = mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles);
   return {
     current_branch: currentBranch || null,
     base_ref: baseRef,
@@ -382,6 +383,18 @@ async function collectGitState(repoRoot, options) {
     dirty_files: dirtyFiles,
     commits
   };
+}
+
+function mergeChangedAndDirtyFiles(changedFiles, dirtyFiles) {
+  const byPath = new Map(changedFiles.map((file) => [file.path, file]));
+  for (const dirty of dirtyFiles) {
+    if (!dirty.path || byPath.has(dirty.path)) continue;
+    byPath.set(dirty.path, {
+      status: dirty.status || 'M',
+      path: dirty.path
+    });
+  }
+  return [...byPath.values()];
 }
 
 async function resolveBaseRef(repoRoot) {
@@ -449,11 +462,11 @@ function groupChangedFiles(files) {
 
   for (const file of files) {
     const target = file.path;
-    if (target.startsWith('docs/management/stories/')) groups.story_docs.push(file);
+    if (target.startsWith('docs/management/stories/') || target.startsWith('docs/stories/')) groups.story_docs.push(file);
     else if (isArchitectureDocPath(target)) groups.architecture_docs.push(file);
     else if (isSpecificationDocPath(target)) groups.specifications.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
-    else if (target.startsWith('src/')) groups.source.push(file);
+    else if (isSourcePath(target)) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
     else if (isRepoControlPath(target)) groups.repo_control.push(file);
     else groups.other.push(file);
@@ -465,6 +478,19 @@ function groupChangedFiles(files) {
       files: value.map((file) => file.path)
     }])
   );
+}
+
+function isSourcePath(filePath) {
+  return filePath.startsWith('src/')
+    || filePath.startsWith('app/')
+    || filePath.startsWith('pages/')
+    || filePath.startsWith('components/')
+    || filePath.startsWith('public/modules/')
+    || filePath.startsWith('server/')
+    || filePath.startsWith('lib/')
+    || filePath.startsWith('api/')
+    || filePath.startsWith('mcp/')
+    || filePath.startsWith('scripts/');
 }
 
 function isRepoControlPath(filePath) {
@@ -1200,10 +1226,12 @@ function parseStoryDoc(file, content) {
   const title = frontmatter.title ?? findMarkdownTitle(content);
   return {
     path: file,
+    story_id: frontmatter.story_id ?? null,
+    vibepro_story_id: frontmatter.vibepro_story_id ?? null,
     title,
-    requirement_id: frontmatter.id ?? frontmatter.requirement_id ?? null,
-    requirement_title: frontmatter.requirement_title ?? frontmatter.title ?? title,
-    requirement_url: frontmatter.url ?? null,
+    requirement_id: frontmatter.id ?? frontmatter.requirement_id ?? frontmatter.source_id ?? null,
+    requirement_title: frontmatter.requirement_title ?? frontmatter.source_title ?? frontmatter.title ?? title,
+    requirement_url: frontmatter.url ?? frontmatter.source_url ?? null,
     background: extractSectionText(content, ['背景', '現状', '課題']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
     acceptance_criteria: extractAcceptanceCriteria(content),
@@ -1215,10 +1243,25 @@ function parseFrontmatter(content) {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return {};
   const result = {};
+  let currentBlock = null;
   for (const line of match[1].split('\n')) {
-    const item = line.match(/^\s*([A-Za-z0-9_-]+):\s*(.+?)\s*$/);
-    if (!item) continue;
-    result[item[1]] = item[2].replace(/^['"]|['"]$/g, '');
+    const item = line.match(/^([A-Za-z0-9_-]+):\s*(.+?)\s*$/);
+    if (item) {
+      currentBlock = null;
+      result[item[1]] = item[2].replace(/^['"]|['"]$/g, '');
+      continue;
+    }
+    const block = line.match(/^([A-Za-z0-9_-]+):\s*$/);
+    if (block) {
+      currentBlock = block[1];
+      continue;
+    }
+    const sourceItem = currentBlock === 'source'
+      ? line.match(/^\s+([A-Za-z0-9_-]+):\s*(.+?)\s*$/)
+      : null;
+    if (sourceItem) {
+      result[`source_${sourceItem[1]}`] = sourceItem[2].replace(/^['"]|['"]$/g, '');
+    }
   }
   return result;
 }
@@ -1277,7 +1320,9 @@ function extractFrontmatterBlockReason(content, blockName) {
 }
 
 function pickPrimaryStory(storyDocs, story) {
-  return storyDocs.find((doc) => doc.path.includes(story.story_id))
+  return storyDocs.find((doc) => doc.story_id === story.story_id || doc.vibepro_story_id === story.story_id)
+    ?? storyDocs.find((doc) => doc.path.includes(story.story_id))
+    ?? storyDocs.find((doc) => doc.title === story.title || doc.requirement_title === story.title)
     ?? storyDocs[0]
     ?? {
       path: null,

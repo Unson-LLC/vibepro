@@ -6,7 +6,9 @@ import { profileArchitecture } from './architecture-profiler.js';
 import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
+import { renderFlowDesignReport, scanFlowDesign } from './flow-design-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
+import { renderTerminalLinkReport, scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import {
   buildRefactoringActionCandidates,
   buildRefactoringCampaigns,
@@ -43,7 +45,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   const { currentStory } = resolveStoryContext(config);
   const manifest = await readManifest(root);
-  const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory);
+  const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
   evidence.requirement_consistency = await buildRequirementConsistency(root, {
     story: currentStory
   });
@@ -72,6 +74,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const riskPath = path.join(runDir, 'risk-register.md');
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
   const componentStylePath = path.join(runDir, 'component-style-check-result.md');
+  const flowDesignPath = path.join(runDir, 'flow-design-check-result.md');
+  const terminalLinkPath = path.join(runDir, 'terminal-link-check-result.md');
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
   const findingReviewPath = path.join(runDir, 'finding-review.md');
   const refactoringDeltaPath = path.join(runDir, 'refactoring-delta.md');
@@ -94,6 +98,14 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await writeFile(componentStylePath, renderComponentStyleCheck({
     runId,
     componentStyle: evidence.component_style
+  }));
+  await writeFile(flowDesignPath, renderFlowDesignReport({
+    runId,
+    flowDesign: evidence.flow_design
+  }));
+  await writeFile(terminalLinkPath, renderTerminalLinkReport({
+    runId,
+    terminalLinkContracts: evidence.terminal_link_contracts
   }));
   await writeFile(architectureProfilePath, renderArchitectureProfile({
     runId,
@@ -119,6 +131,8 @@ export async function runDiagnosis(repoRoot, options = {}) {
       evidence: toWorkspaceRelative(root, evidencePath),
       static_site_check: toWorkspaceRelative(root, staticSitePath),
       component_style_check: toWorkspaceRelative(root, componentStylePath),
+      flow_design_check: toWorkspaceRelative(root, flowDesignPath),
+      terminal_link_check: toWorkspaceRelative(root, terminalLinkPath),
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
       finding_review: toWorkspaceRelative(root, findingReviewPath),
       refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
@@ -158,7 +172,7 @@ async function readRunEvidenceIfExists(repoRoot, run) {
   }
 }
 
-async function buildEvidence(repoRoot, graph, runId, story) {
+async function buildEvidence(repoRoot, graph, runId, story, config = {}) {
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const { edges, sourceKey: edgeSourceKey } = normalizeGraphEdges(graph);
   const extractedEdges = edges.filter((edge) => edge.confidence === 'EXTRACTED');
@@ -200,6 +214,8 @@ async function buildEvidence(repoRoot, graph, runId, story) {
     component_style: architectureProfile.applicable_checks.includes('component-style')
       ? await scanComponentStyle(repoRoot)
       : null,
+    flow_design: await scanFlowDesign(repoRoot, { story, config }),
+    terminal_link_contracts: await scanTerminalLinkContracts(repoRoot),
     refactoring_opportunities: [],
     refactoring_campaigns: [],
     action_candidates: [],
@@ -364,6 +380,26 @@ function buildFindings(evidence) {
       recommendation: '可用性、改ざん、CSP、ライセンスの観点で読み込み元を確認する。'
     });
   }
+  if (evidence.terminal_link_contracts) {
+    const terminalLinkHits = filterGateRelevant([
+      ...(evidence.terminal_link_contracts.dot_directory_link_hits ?? []),
+      ...(evidence.terminal_link_contracts.wrapped_terminal_link_hits ?? []),
+      ...(evidence.terminal_link_contracts.dot_directory_tree_hits ?? [])
+    ]);
+    if (terminalLinkHits.length > 0) {
+      const terminalLinkSummary = summarizeGateEffects(terminalLinkHits);
+      findings.push({
+        id: 'VP-TERM-001',
+        severity: 'High',
+        category: 'ターミナルプレビュー',
+        title: 'dot directory配下のHTMLリンクを開けない実装候補がある',
+        detail: `${terminalLinkHits.length} 件のterminal/file tree contract欠落候補を検出した。内訳: ${formatGateSummary(terminalLinkSummary)}。`,
+        recommendation: 'terminal linkifierは.vibepro等のdot directory相対パスとcolumn 1 hard wrapを扱い、folder treeは.vibeproをallowlistで表示する。',
+        target_files: uniqueFiles(terminalLinkHits.map((hit) => hit.file)),
+        terminal_link_hits: terminalLinkHits
+      });
+    }
+  }
   if (applicableChecks.has('component-style') && evidence.component_style) {
     const legacyStyleHits = filterGateRelevant(evidence.component_style.legacy_style_hits);
     if (legacyStyleHits.length > 0) {
@@ -376,6 +412,99 @@ function buildFindings(evidence) {
         detail: `${legacyStyleHits.length} 件のUI sourceで旧デザイン由来の色・角丸・影トークン候補を検出した。内訳: ${formatGateSummary(legacySummary)}。`,
         recommendation: '対象コンポーネントをdesign tokenまたは新しいcomponent styleへ置き換え、スクリーンショット証跡で確認する。'
       });
+    }
+    const interactionReliabilityHits = filterGateRelevant(evidence.component_style.interaction_reliability_hits);
+    if (interactionReliabilityHits.length > 0) {
+      const interactionSummary = summarizeGateEffects(evidence.component_style.interaction_reliability_hits);
+      findings.push({
+        id: 'VP-UI-002',
+        severity: 'Medium',
+        category: 'UI操作信頼性',
+        title: 'クリック可能要素のhit targetが不安定になるCSS候補がある',
+        detail: `${interactionReliabilityHits.length} 件のUI sourceで、hover/focus中の移動、小さすぎる操作領域、またはtransition: allを検出した。内訳: ${formatGateSummary(interactionSummary)}。`,
+        recommendation: 'クリック可能要素はhover/focus/press中にhit targetを移動させず、状態表現は色・border・shadowに限定する。高頻度操作のtargetは最低28px程度を確保する。'
+      });
+    }
+  }
+  if (evidence.flow_design) {
+    const noUiCodeHits = (evidence.flow_design.value_alignment_hits ?? [])
+      .filter((hit) => hit.kind === 'ui_story_without_code_scan');
+    if (noUiCodeHits.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-000',
+        severity: 'Critical',
+        title: 'UI Storyなのに導線検査対象のUIコードが走査できない',
+        hits: noUiCodeHits,
+        detail: `${noUiCodeHits.length} 件のUIコード未走査状態を検出した。`,
+        recommendation: '対象repoでVibeProを実行するか、flow_design.code_rootsで実UI実装パスを指定する。'
+      }));
+    }
+    const ambiguousPrimaryActions = evidence.flow_design.ambiguous_primary_action_hits ?? [];
+    if (ambiguousPrimaryActions.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-001',
+        severity: 'Medium',
+        title: '主操作の意味が状態によって変わる可能性がある',
+        hits: ambiguousPrimaryActions,
+        detail: `${ambiguousPrimaryActions.length} 件の主操作意味の曖昧さを検出した。`,
+        recommendation: '主ボタンは検索、選択、保存、遷移のいずれかに意味を固定し、状態差分は明示ラベルや別操作に分ける。'
+      }));
+    }
+    const silentNoops = evidence.flow_design.silent_noop_hits ?? [];
+    if (silentNoops.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-002',
+        severity: 'Medium',
+        title: '押しても何も起きない導線候補がある',
+        hits: silentNoops,
+        detail: `${silentNoops.length} 件のsilent noop候補を検出した。`,
+        recommendation: '空入力や前提不足の経路では、disabled、エラー表示、フォーカス移動、補助文のいずれかを実装する。'
+      }));
+    }
+    const selectionSideEffects = evidence.flow_design.selection_side_effect_hits ?? [];
+    if (selectionSideEffects.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-003',
+        severity: 'High',
+        title: '候補選択が保存または遷移まで実行する導線候補がある',
+        hits: selectionSideEffects,
+        detail: `${selectionSideEffects.length} 件の選択副作用候補を検出した。`,
+        recommendation: '候補クリックは選択または入力欄反映に限定し、保存や画面遷移は明示ボタンに分ける。'
+      }));
+    }
+    const questionDeadEnds = evidence.flow_design.question_dead_end_hits ?? [];
+    if (questionDeadEnds.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-004',
+        severity: 'High',
+        title: '質問回答後に次の入力UIへ進まない導線候補がある',
+        hits: questionDeadEnds,
+        detail: `${questionDeadEnds.length} 件の質問dead end候補を検出した。`,
+        recommendation: '質問の回答後は、次質問、対応入力UIの展開、focus/scroll、画面遷移のいずれかに接続する。'
+      }));
+    }
+    const deadUiStates = evidence.flow_design.dead_ui_state_hits ?? [];
+    if (deadUiStates.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-005',
+        severity: 'Medium',
+        title: '到達不能な表示state候補がある',
+        hits: deadUiStates,
+        detail: `${deadUiStates.length} 件の到達不能UI state候補を検出した。`,
+        recommendation: '保存や遷移の直前にしか設定されない表示stateは削除するか、確認画面として実際に見える順序へ移動する。'
+      }));
+    }
+    const valueAlignmentHits = (evidence.flow_design.value_alignment_hits ?? [])
+      .filter((hit) => hit.kind !== 'ui_story_without_code_scan');
+    if (valueAlignmentHits.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-006',
+        severity: 'High',
+        title: 'Storyの価値観contractから逸脱する表示候補がある',
+        hits: valueAlignmentHits,
+        detail: `${valueAlignmentHits.length} 件の価値観contract逸脱候補を検出した。`,
+        recommendation: '禁止ラベルや旧来の判断癖を補強する導線を、Story/Spec上の価値観に沿う表現へ置き換える。'
+      }));
     }
   }
   if (applicableChecks.has('api-boundary') && evidence.api_boundary) {
@@ -452,6 +581,19 @@ function buildGraphQualityNotices({ inferredEdges }) {
     });
   }
   return notices;
+}
+
+function buildFlowFinding({ id, severity, title, hits, detail, recommendation }) {
+  return {
+    id,
+    severity,
+    category: '導線設計',
+    title,
+    detail,
+    recommendation,
+    target_files: uniqueFiles((hits ?? []).map((hit) => hit.file)),
+    flow_hits: hits ?? []
+  };
 }
 
 async function buildActionCandidates(repoRoot, evidence, graphIndex) {
@@ -1109,7 +1251,17 @@ function renderSummary({ runId, evidence, findings }) {
 | 秘密情報候補 | ${formatRiskCount(evidence.static_site.secret_hits, evidence.static_site.risk_summary?.secret_hits)} |
 | XSSリスク候補 | ${formatRiskCount(evidence.static_site.xss_risk_hits, evidence.static_site.risk_summary?.xss_risk_hits)} |
 | UI旧トークン候補 | ${formatRiskCount(evidence.component_style?.legacy_style_hits ?? [], evidence.component_style?.risk_summary?.legacy_style_hits)} |
+| UI操作信頼性候補 | ${formatRiskCount(evidence.component_style?.interaction_reliability_hits ?? [], evidence.component_style?.risk_summary?.interaction_reliability_hits)} |
 | UIコンポーネント種別 | ${(evidence.component_style?.component_kinds ?? []).join(', ') || '-'} |
+| Terminal Link契約 | ${evidence.terminal_link_contracts?.status ?? 'not_generated'} |
+| Terminal Link候補 | ${formatRiskCount([
+  ...(evidence.terminal_link_contracts?.dot_directory_link_hits ?? []),
+  ...(evidence.terminal_link_contracts?.wrapped_terminal_link_hits ?? []),
+  ...(evidence.terminal_link_contracts?.dot_directory_tree_hits ?? [])
+])} |
+| Flow Design Gate | ${evidence.flow_design?.status ?? 'not_generated'} |
+| Flow Design UI走査 | ${evidence.flow_design?.summary?.scanned_ui_files ?? 0}件 |
+| Flow Design検出候補 | ${flowDesignHitCount(evidence.flow_design)}件 |
 | 重いdev script候補 | ${formatRiskCount(evidence.local_dev?.heavy_dev_scripts ?? [], evidence.local_dev?.risk_summary?.heavy_dev_scripts)} |
 | runtime probe plan | ${evidence.local_dev?.runtime_probe_plan?.status ?? '-'} (${evidence.local_dev?.runtime_probe_plan?.commands?.length ?? 0} commands) |
 | DB未ページング候補 | ${formatRiskCount(evidence.database_access?.unbounded_find_many ?? [], evidence.database_access?.risk_summary?.unbounded_find_many)} |
@@ -1140,6 +1292,10 @@ ${evidence.gates.map((gate) => `- ${gate.id}: ${gate.status} - ${gate.reason}`).
 ## Requirement Consistency
 
 ${renderRequirementConsistencySummary(evidence.requirement_consistency)}
+
+## Flow Design
+
+${renderFlowDesignSummary(evidence.flow_design)}
 
 ## 主な検出事項
 
@@ -1179,6 +1335,31 @@ function renderRequirementConsistencySummary(requirement) {
     gaps,
     contradictions
   ].filter(Boolean).join('\n');
+}
+
+function renderFlowDesignSummary(flowDesign) {
+  if (!flowDesign) return '- 未生成';
+  return [
+    `- Status: ${flowDesign.status}`,
+    `- UI Files: ${flowDesign.summary?.scanned_ui_files ?? 0}`,
+    `- Silent Noops: ${flowDesign.summary?.silent_noop_count ?? 0}`,
+    `- Selection Side Effects: ${flowDesign.summary?.selection_side_effect_count ?? 0}`,
+    `- Question Dead Ends: ${flowDesign.summary?.question_dead_end_count ?? 0}`,
+    `- Dead UI States: ${flowDesign.summary?.dead_ui_state_count ?? 0}`,
+    `- Value Alignment: ${flowDesign.summary?.value_alignment_count ?? 0}`
+  ].join('\n');
+}
+
+function flowDesignHitCount(flowDesign) {
+  if (!flowDesign) return 0;
+  return [
+    flowDesign.silent_noop_hits,
+    flowDesign.ambiguous_primary_action_hits,
+    flowDesign.selection_side_effect_hits,
+    flowDesign.question_dead_end_hits,
+    flowDesign.dead_ui_state_hits,
+    flowDesign.value_alignment_hits
+  ].reduce((total, hits) => total + (hits?.length ?? 0), 0);
 }
 
 function renderGraphQualityNotices(notices) {
@@ -1315,6 +1496,7 @@ function renderComponentStyleCheck({ runId, componentStyle }) {
 | 走査ファイル | ${componentStyle.scanned_files}件 |
 | 検出コンポーネント種別 | ${componentStyle.component_kinds.join(', ') || '-'} |
 | 旧トークン候補 | ${formatRiskCount(componentStyle.legacy_style_hits, componentStyle.risk_summary?.legacy_style_hits)} |
+| 操作信頼性候補 | ${formatRiskCount(componentStyle.interaction_reliability_hits ?? [], componentStyle.risk_summary?.interaction_reliability_hits)} |
 | design-system marker | ${componentStyle.design_system_markers.length}件 |
 | 置換確認可能 | ${componentStyle.coverage?.replacement_observable ? 'yes' : 'no'} |
 
@@ -1325,6 +1507,10 @@ ${componentStyle.component_inventory.length === 0 ? '- なし' : componentStyle.
 ## 旧トークン候補
 
 ${componentStyle.legacy_style_hits.length === 0 ? '- なし' : componentStyle.legacy_style_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} token=${hit.token} confidence=${hit.confidence} gate_effect=${hit.gate_effect} \`${hit.excerpt}\``).join('\n')}
+
+## 操作信頼性候補
+
+${(componentStyle.interaction_reliability_hits ?? []).length === 0 ? '- なし' : componentStyle.interaction_reliability_hits.map((hit) => `- ${hit.file}:${hit.line} ${hit.kind} selector=${hit.selector} confidence=${hit.confidence} gate_effect=${hit.gate_effect} \`${hit.excerpt}\``).join('\n')}
 
 ## design-system marker
 
