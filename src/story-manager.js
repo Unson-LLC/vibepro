@@ -7,7 +7,8 @@ import {
   normalizeGraphEdges
 } from './graph-context.js';
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { renderStoryReportHtml } from './story-html.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
 
 const STORY_FIELDS = [
@@ -116,17 +117,31 @@ export async function createStoryReport(repoRoot, storyId = null) {
   await mkdir(storyDir, { recursive: true });
   const reportPath = path.join(storyDir, 'story-report.md');
   await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState }));
+  const htmlPath = path.join(storyDir, 'index.html');
+  const graphHtmlRel = path.join(WORKSPACE_DIR, 'graphify', 'graph.html');
+  await writeFile(htmlPath, renderStoryReportHtml({
+    story,
+    latestRun,
+    runs,
+    evidence,
+    repoRoot: root,
+    storyDir,
+    graphHtmlPath: graphHtmlRel,
+    storyReportMdPath: reportPath,
+    storyTasksMdPath: latestRun.artifacts?.story_tasks_markdown ?? null
+  }));
   manifest.stories = {
     ...(manifest.stories ?? {}),
     [story.story_id]: {
       ...(manifest.stories?.[story.story_id] ?? {}),
       latest_report: toWorkspaceRelative(root, reportPath),
+      latest_report_html: toWorkspaceRelative(root, htmlPath),
       latest_report_run_id: latestRun.run_id,
       latest_report_generated_at: new Date().toISOString()
     }
   };
   await writeManifest(root, manifest);
-  return { story, latestRun, reportPath };
+  return { story, latestRun, reportPath, htmlPath };
 }
 
 export async function deriveStories(repoRoot, options = {}) {

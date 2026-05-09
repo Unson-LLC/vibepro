@@ -1,7 +1,9 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
+
+const REQUIRED_GITIGNORE_LINE = `${WORKSPACE_DIR}/`;
 
 export async function runDoctor(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -219,6 +221,35 @@ export async function runDoctor(repoRoot, options = {}) {
     }
   }
 
+  const gitignoreState = await checkGitignore(root);
+  if (gitignoreState.needs_update) {
+    result.checks.push({
+      id: 'VP-DOCTOR-GITIGNORE-MISSING',
+      severity: 'warning',
+      status: options.fix ? 'fixed' : 'fixable',
+      fixable: true,
+      detail: gitignoreState.exists
+        ? `.gitignore に ${REQUIRED_GITIGNORE_LINE} が含まれていない。`
+        : '.gitignore が存在せず .vibepro/ が無視されない。',
+      recommendation: 'vibepro doctor --fix または vibepro init で .gitignore に .vibepro/ を追記する。',
+      next_actions: [buildAction({
+        command: `vibepro doctor ${root} --fix`,
+        reason: '.vibepro/ が git に含まれないように .gitignore を更新する。',
+        expected_after: 'VP-DOCTOR-GITIGNORE-MISSING が消える。',
+        safe_to_run: true
+      })],
+      items: [{ path: '.gitignore', required_line: REQUIRED_GITIGNORE_LINE }]
+    });
+    if (options.fix) {
+      await applyGitignoreFix(root, gitignoreState);
+      result.repairs.push({
+        id: 'ensure-gitignore-vibepro',
+        detail: `.gitignore に ${REQUIRED_GITIGNORE_LINE} を追記した。`,
+        path: '.gitignore'
+      });
+    }
+  }
+
   const missingTaskRefs = await findMissingTaskWorkflowRefs(root);
   if (missingTaskRefs.length > 0) {
     result.checks.push({
@@ -275,6 +306,29 @@ ${repairs}
 
 ${nextCommands}
 `;
+}
+
+async function checkGitignore(repoRoot) {
+  const gitignorePath = path.join(repoRoot, '.gitignore');
+  let content = null;
+  try {
+    content = await readFile(gitignorePath, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (content === null) {
+    return { exists: false, content: '', needs_update: true };
+  }
+  const lines = content.split(/\r?\n/).map((line) => line.trim());
+  const hasRequired = lines.includes(REQUIRED_GITIGNORE_LINE);
+  return { exists: true, content, needs_update: !hasRequired };
+}
+
+async function applyGitignoreFix(repoRoot, state) {
+  const gitignorePath = path.join(repoRoot, '.gitignore');
+  const existing = state.content ?? '';
+  const prefix = existing.trim().length > 0 ? `${existing.trimEnd()}\n` : '';
+  await writeFile(gitignorePath, `${prefix}${REQUIRED_GITIGNORE_LINE}\n`);
 }
 
 async function readJsonIfExists(filePath) {

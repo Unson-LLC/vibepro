@@ -1,3 +1,7 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { initWorkspace } from './workspace.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
@@ -70,6 +74,8 @@ under .vibepro/pr/<story-id>/ when the target repo is initialized.
 
 Usage:
   vibepro help [command]
+  vibepro version
+  vibepro --version | -v
   vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
@@ -109,6 +115,12 @@ export async function runCli(argv, io = {}) {
     if (!command || command === 'help' || command === '--help' || command === '-h') {
       write(stdout, HELP);
       return { exitCode: 0, command: 'help' };
+    }
+
+    if (command === 'version' || command === '--version' || command === '-v') {
+      const version = await readPackageVersion();
+      write(stdout, `${version}\n`);
+      return { exitCode: 0, command: 'version', version };
     }
 
     if (command === 'init') {
@@ -504,4 +516,14 @@ function buildStartupOptions(args) {
 
 function write(stream, text) {
   if (stream) stream.write(text);
+}
+
+async function readPackageVersion() {
+  try {
+    const pkgPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
+    const pkg = JSON.parse(await readFile(pkgPath, 'utf8'));
+    return pkg.version ?? 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
