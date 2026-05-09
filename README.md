@@ -16,7 +16,7 @@ VibeProでは、要求を次の順番で扱います。
 4. Code: 実際の実装差分。Story / Architecture / Spec を満たしているか確認される対象。
 5. Graphify: コードのつながりを表す地図。変更ファイルだけでなく、調査すべき隣接ファイルを広げる。
 6. Gates: Requirement / Unit / Integration / E2E の完了判断。何が揃えばPRを進めてよいかを明示する。
-7. PR Evidence: `pr-body.md`、`gate-dag.md`、`split-plan.md`、JSON成果物。レビューとAI作業の共通文脈。
+7. PR Evidence: `pr-body.md`、`pr-prepare.html`、`gate-dag.html`、`split-plan.html`、JSON成果物。レビューとAI作業の共通文脈。
 
 この順番にする理由は、Storyだけでは設計判断が曖昧になり、Specだけではなぜその振る舞いが必要かが見えにくくなるためです。VibeProは Story -> Architecture -> Spec の順に要求を具体化し、最後にコードとGateへ接続します。
 
@@ -25,7 +25,7 @@ VibeProでは、要求を次の順番で扱います。
 - Requirement Consistency は、Story / Architecture / Spec から抽出した不変条件とコード差分を突き合わせ、「コードとしては動くが、要件として怪しい」候補を出す。
 - Gate DAG は、StoryからPR完了までの依存関係を表す。未解決Gateがある場合、PR作成は原則止める。
 - split-plan は、変更をどのPRレーンに分けるべきかを示す。repo-control、requirements-ssot、runtime-behavior、e2e-gateを混ぜないための作戦図。
-- Markdownは人間が読む投影で、JSONは機械可読な正本。AI agentはJSONとMarkdownの両方を証跡として使う。
+- HTML は人間が読むレビュー用artifactで、JSONは機械可読な正本。AI agentはJSONを再利用し、人間はHTMLでStory / Architecture / Spec / Code / Gateの関係を判断する。
 
 ## 社内βでできること
 
@@ -38,13 +38,13 @@ VibeProでは、要求を次の順番で扱います。
 
 ## 誰が何を見るか
 
-初見で使う人は、まず `story diagnose` と `pr prepare` を実行し、`pr-body.md`、`gate-dag.md`、`split-plan.md` の3つを見ます。細かいJSONを読む必要はありません。
+初見で使う人は、まず `story diagnose` と `pr prepare` を実行し、`pr-body.md`、`pr-prepare.html`、`gate-dag.html`、`split-plan.html` を見ます。細かいJSONを読む必要はありません。
 
 実装修正を担当する人は、`story plan` と `task create --from-plan` で出るタスクを見ます。VibeProが出す候補は、実装前に「本当にStoryの範囲か」「Architecture / Spec と矛盾していないか」を確認するための入口です。
 
-レビューする人は、`pr-body.md` の背景・要求・要件整合性と、`gate-dag.md` の未解決Gate、`split-plan.md` の分割レーンを見ます。特に `e2e-gate` が `cumulative_after_dependencies` になっている場合、単体PRではなく前段PR込みの状態でE2E確認が必要です。
+レビューする人は、`pr-body.md` の背景・要求・要件整合性と、`gate-dag.html` の未解決Gate、`split-plan.html` の分割レーンを見ます。特に `e2e-gate` が `cumulative_after_dependencies` になっている場合、単体PRではなく前段PR込みの状態でE2E確認が必要です。
 
-運用する人は、`.vibepro/` の成果物を証跡として扱います。`evidence.json`、`pr-prepare.json`、`gate-dag.json`、`split-plan.json` は機械可読な正本で、Markdownは人間向けの投影です。
+運用する人は、`.vibepro/` の成果物を証跡として扱います。`evidence.json`、`pr-prepare.json`、`gate-dag.json`、`split-plan.json` は機械可読な正本です。HTMLはMarkdown変換ではなく、人間が短時間で判断するためのレビュー画面です。
 
 ## 社内βの注意点
 
@@ -91,8 +91,9 @@ npx vibepro pr prepare /path/to/repo --base origin/develop --story-id <story-id>
 `pr prepare` の成果物を見て、以下を確認します。
 
 - `pr-body.md`: PR 本文ドラフト
-- `gate-dag.md`: Story / Requirement / Unit / Integration / E2E Gate の状態
-- `split-plan.md`: PR 分割レーン、merge order、Graphify 調査範囲、累積 Gate
+- `pr-prepare.html`: Story -> Architecture -> Spec -> Code -> Gate の全体レビュー画面
+- `gate-dag.html`: Story / Requirement / Unit / Integration / E2E Gate の状態
+- `split-plan.html`: PR 分割レーン、merge order、Graphify 調査範囲、累積 Gate
 - `pr-prepare.json`: 機械可読な全体状態
 
 ### インストール
@@ -387,12 +388,12 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 ```text
 .vibepro/pr/<story-id>/
 ├── pr-prepare.json
-├── pr-prepare.md
+├── pr-prepare.html
 ├── pr-body.md
 ├── gate-dag.json
-├── gate-dag.md
+├── gate-dag.html
 ├── split-plan.json
-└── split-plan.md
+└── split-plan.html
 ```
 
 対象リポジトリが未初期化の場合、成果物は一時ディレクトリに出力されます。この場合、`pr prepare` は対象リポジトリに `.vibepro/` や ignore 設定を作らないため、PR用のクリーンブランチを汚さずに差分診断だけを実行できます。
@@ -425,9 +426,11 @@ node bin/vibepro.js pr prepare /path/to/repo --base origin/develop
 - レビュー観点
 - リスク・確認事項
 
-`gate-dag.md` は、Story、Architecture、Spec、Requirement Gate、Unit Gate、Integration Gate、E2E Gate、PR Gate の依存関係と未解決Gateを示す。`pr create` は Gate DAG が `ready_for_review` でない場合、原則としてPR作成を止める。未解決Gateを理由付きで許容する場合は `--allow-needs-verification --verification-waiver <reason>` を使い、waiver を証跡に残す。
+`pr-prepare.html` は、Story -> Architecture -> Spec -> Code -> Gate の流れ、Requirement Consistency、Graphify影響範囲、変更ファイル分類、次コマンドを1つのレビュー画面として表示する。
 
-`split-plan.md` は、大きな差分を次のレーンへ分ける。
+`gate-dag.html` は、Story、Architecture、Spec、Requirement Gate、Unit Gate、Integration Gate、E2E Gate、PR Gate の依存関係をSVG DAGとGateカードで示す。未解決Gateは上部に抽出される。`pr create` は Gate DAG が `ready_for_review` でない場合、原則としてPR作成を止める。未解決Gateを理由付きで許容する場合は `--allow-needs-verification --verification-waiver <reason>` を使い、waiver を証跡に残す。
+
+`split-plan.html` は、大きな差分をPRレーンボードとして表示し、次のレーンへ分ける。
 
 - `repo-control`: agent設定、CI、package、tsconfig、Playwright設定など
 - `requirements-ssot`: Story / Architecture / Spec の正本

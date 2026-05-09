@@ -1372,7 +1372,18 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
   assert.equal(gateDag.model, 'story-acceptance-verification-dag');
   assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
-  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.md'), 'utf8'), /VibePro Gate DAG/);
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  assert.match(gateDagHtml, /<!doctype html>/);
+  assert.match(gateDagHtml, /data-vibepro-report="gate-dag"/);
+  assert.match(gateDagHtml, /<svg class="dag-svg"/);
+  assert.match(gateDagHtml, /data-node-id="gate:e2e"/);
+  assert.match(gateDagHtml, /VibePro Gate DAG/);
+  const prepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
+  assert.match(prepareHtml, /data-vibepro-report="pr-prepare"/);
+  assert.match(prepareHtml, /VibePro PR Prepare/);
+  assert.match(prepareHtml, /Story -> Architecture -> Spec -> Code -> Gate/);
+  assert.match(prepareHtml, /Requirement Consistency/);
+  assert.match(prepareHtml, /gate-dag\.html/);
   assert.equal(prepare.next_commands.some((command) => command.startsWith('gh pr create')), false);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), true);
 
@@ -1421,9 +1432,14 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   assert.equal(prCreate.mode, 'pr_create');
   assert.equal(prCreate.dry_run, true);
   assert.equal(prCreate.gate_override.allowed, true);
-  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.md'), 'utf8'), /Gate Override/);
+  const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
+  assert.match(prCreateHtml, /data-vibepro-report="pr-create"/);
+  assert.match(prCreateHtml, /VibePro PR Create/);
+  assert.match(prCreateHtml, /Gate Override/);
+  assert.match(prCreateHtml, /Command Timeline/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
+  assert.equal(manifest.pr_creations['story-pr-prepare'].latest_report, '.vibepro/pr/story-pr-prepare/pr-create.html');
 
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
   await git(remote, ['init', '--bare']);
@@ -1672,7 +1688,12 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   assert.match(result.result.preparation.next_commands.join('\n'), /git switch -c feat\/pr-prepare main/);
   const splitPlan = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.json'));
   assert.equal(splitPlan.model, 'story-pr-split-plan-v1');
-  assert.match(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.md'), 'utf8'), /Graphify Investigation Scope/);
+  const splitPlanHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.html'), 'utf8');
+  assert.match(splitPlanHtml, /<!doctype html>/);
+  assert.match(splitPlanHtml, /data-vibepro-report="split-plan"/);
+  assert.match(splitPlanHtml, /class="lane-board"/);
+  assert.match(splitPlanHtml, /data-lane-id="runtime-behavior"/);
+  assert.match(splitPlanHtml, /Graphify Investigation Scope/);
 });
 
 test('pr prepare treats split repo-control and e2e gate lanes as reviewable', async () => {
