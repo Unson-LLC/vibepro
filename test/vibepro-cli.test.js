@@ -2887,6 +2887,44 @@ element.innerHTML = userInput;
   );
 });
 
+test('diagnose ignores gitignored env files and downgrades variable secret references', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await writeFile(path.join(repo, '.gitignore'), '.env\n.env.preview\n');
+  await writeFile(path.join(repo, '.env'), 'OPENAI_API_KEY=sk-123456789012345678901234\n');
+  await writeFile(path.join(repo, '.env.preview'), 'NEXTAUTH_SECRET=secret_1234567890abcdef\n');
+  await writeFile(path.join(repo, 'app.js'), `
+const provider = new OpenAIProvider({ apiKey: openaiKey });
+access_token = get_token()
+const secret_key = plainsecretvalue;
+`);
+  await runCli(['init', repo]);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'app' }],
+    edges: []
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-05-09T010000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', '2026-05-09T010000Z', 'evidence.json'));
+  assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env'), false);
+  assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.preview'), false);
+  const variableReferenceHits = evidence.static_site.secret_hits.filter(
+    (hit) => hit.file === 'app.js' && /openaiKey|get_token/.test(hit.excerpt)
+  );
+  assert.equal(variableReferenceHits.length, 2);
+  assert.equal(variableReferenceHits.every((hit) => hit.gate_effect === 'info'), true);
+  const hardcodedReference = evidence.static_site.secret_hits.find(
+    (hit) => hit.file === 'app.js' && hit.excerpt.includes('plainsecretvalue')
+  );
+  assert.equal(hardcodedReference.gate_effect, 'review');
+});
+
 test('diagnose profiles a Next.js repository and selects applicable checks without static site entry findings', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-nextjs-test-'));
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({

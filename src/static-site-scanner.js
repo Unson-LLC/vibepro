@@ -1,5 +1,9 @@
+import { execFile } from 'node:child_process';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
+
+const execFileAsync = promisify(execFile);
 
 const IGNORED_DIRS = new Set([
   '.git',
@@ -71,7 +75,7 @@ const GATE_EFFECTS = ['block', 'review', 'info'];
 
 export async function scanStaticSite(repoRoot) {
   const root = path.resolve(repoRoot);
-  const files = await collectFiles(root);
+  const files = await filterGitIgnoredFiles(root, await collectFiles(root));
   const result = {
     has_index_html: files.some((file) => file.relativePath === 'index.html'),
     scanned_files: files.length,
@@ -127,6 +131,32 @@ async function collectFiles(root, current = root) {
   }
 
   return files;
+}
+
+async function filterGitIgnoredFiles(root, files) {
+  if (files.length === 0) return files;
+
+  try {
+    const ignored = new Set();
+    for (let index = 0; index < files.length; index += 200) {
+      const chunk = files.slice(index, index + 200).map((file) => file.relativePath);
+      try {
+        const { stdout } = await execFileAsync('git', ['check-ignore', ...chunk], {
+          cwd: root,
+          encoding: 'utf8',
+          maxBuffer: 1024 * 1024
+        });
+        for (const file of stdout.split(/\r?\n/).filter(Boolean)) {
+          ignored.add(file);
+        }
+      } catch (error) {
+        if (error.code !== 1) throw error;
+      }
+    }
+    return files.filter((file) => !ignored.has(file.relativePath));
+  } catch (error) {
+    return files;
+  }
 }
 
 function collectSecretHits(hits, file, lineNumber, line) {
@@ -251,12 +281,13 @@ function isEnvironmentReference(line) {
 
 function isSecretReferenceOnly(line, kind) {
   if (kind !== 'secret_keyword') return false;
-  const match = /\b(api[_-]?key|api[_-]?secret|access[_-]?token|auth[_-]?token|secret[_-]?key)\b\s*[:=]\s*([^,;\n)]+)/i.exec(line);
+  const match = /\b(api[_-]?key|api[_-]?secret|access[_-]?token|auth[_-]?token|secret[_-]?key)\b\s*[:=]\s*([^,;\n)\]}]+)/i.exec(line);
   if (!match) return false;
   const value = match[2].trim();
   if (!value) return true;
   if (/^['"`]/.test(value)) return false;
   if (/^(request|req|body|params|headers|cookies|formData)\b/i.test(value)) return true;
+  if (/^[A-Za-z_$][\w$]*\s*\($/.test(value)) return true;
   if (!/^[A-Za-z_$][\w$]*(?:[.?!][A-Za-z_$][\w$]*)*(?:\s*\(|\s*$|[.?!,\]])/.test(value)) return false;
   return /[.?!]/.test(value)
     || /\b[A-Za-z]+(?:Key|Token|Secret)\b/.test(value)
