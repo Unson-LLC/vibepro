@@ -2,6 +2,7 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const CANDIDATE_PATHS = [
+  'public/modules/file-preview-config.js',
   'public/modules/xterm-file-links.js',
   'public/modules/iframe-contextmenu-handler.js',
   'public/ttyd/custom_ttyd_index.html',
@@ -9,6 +10,7 @@ const CANDIDATE_PATHS = [
   'server/controllers/session/context-handlers.js'
 ];
 const GATE_EFFECTS = ['block', 'review', 'info'];
+const REQUIRED_IMAGE_PREVIEW_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
 
 export async function scanTerminalLinkContracts(repoRoot) {
   const root = path.resolve(repoRoot);
@@ -19,10 +21,12 @@ export async function scanTerminalLinkContracts(repoRoot) {
     dot_directory_link_hits: [],
     wrapped_terminal_link_hits: [],
     dot_directory_tree_hits: [],
+    image_preview_extension_hits: [],
     risk_summary: {
       dot_directory_link_hits: { block: 0, review: 0, info: 0 },
       wrapped_terminal_link_hits: { block: 0, review: 0, info: 0 },
-      dot_directory_tree_hits: { block: 0, review: 0, info: 0 }
+      dot_directory_tree_hits: { block: 0, review: 0, info: 0 },
+      image_preview_extension_hits: { block: 0, review: 0, info: 0 }
     },
     status: 'ok'
   };
@@ -32,12 +36,14 @@ export async function scanTerminalLinkContracts(repoRoot) {
     collectDotDirectoryLinkHits(result.dot_directory_link_hits, file.relativePath, content);
     collectWrappedTerminalLinkHits(result.wrapped_terminal_link_hits, file.relativePath, content);
     collectDotDirectoryTreeHits(result.dot_directory_tree_hits, file.relativePath, content);
+    collectImagePreviewExtensionHits(result.image_preview_extension_hits, file.relativePath, content);
   }
 
   result.risk_summary = {
     dot_directory_link_hits: summarizeGateEffects(result.dot_directory_link_hits),
     wrapped_terminal_link_hits: summarizeGateEffects(result.wrapped_terminal_link_hits),
-    dot_directory_tree_hits: summarizeGateEffects(result.dot_directory_tree_hits)
+    dot_directory_tree_hits: summarizeGateEffects(result.dot_directory_tree_hits),
+    image_preview_extension_hits: summarizeGateEffects(result.image_preview_extension_hits)
   };
   result.status = allHits(result).length > 0 ? 'needs_review' : 'ok';
   return result;
@@ -64,6 +70,7 @@ export function renderTerminalLinkReport({ runId, terminalLinkContracts }) {
 | dot directoryリンク候補 | ${formatRiskCount(terminalLinkContracts.dot_directory_link_hits, terminalLinkContracts.risk_summary?.dot_directory_link_hits)} |
 | 折り返しリンク候補 | ${formatRiskCount(terminalLinkContracts.wrapped_terminal_link_hits, terminalLinkContracts.risk_summary?.wrapped_terminal_link_hits)} |
 | dot directoryツリー候補 | ${formatRiskCount(terminalLinkContracts.dot_directory_tree_hits, terminalLinkContracts.risk_summary?.dot_directory_tree_hits)} |
+| 画像プレビュー拡張子候補 | ${formatRiskCount(terminalLinkContracts.image_preview_extension_hits, terminalLinkContracts.risk_summary?.image_preview_extension_hits)} |
 
 ## dot directoryリンク候補
 
@@ -76,6 +83,10 @@ ${formatHits(terminalLinkContracts.wrapped_terminal_link_hits)}
 ## dot directoryツリー候補
 
 ${formatHits(terminalLinkContracts.dot_directory_tree_hits)}
+
+## 画像プレビュー拡張子候補
+
+${formatHits(terminalLinkContracts.image_preview_extension_hits)}
 `;
 }
 
@@ -131,6 +142,30 @@ function collectDotDirectoryTreeHits(hits, file, content) {
   });
 }
 
+function collectImagePreviewExtensionHits(hits, file, content) {
+  if (file !== 'public/modules/file-preview-config.js' && !content.includes('BROWSER_PREVIEWABLE_EXTENSIONS')) return;
+
+  const browserBody = extractSetBody(content, 'BROWSER_PREVIEWABLE_EXTENSIONS');
+  if (!browserBody) return;
+
+  const imageBody = extractSetBody(content, 'IMAGE_EXTENSIONS');
+  const browserUsesImageSet = /\.\.\.\s*IMAGE_EXTENSIONS/.test(browserBody);
+  const previewableSource = browserUsesImageSet && imageBody ? imageBody : browserBody;
+  const missing = REQUIRED_IMAGE_PREVIEW_EXTENSIONS.filter((ext) => !hasQuotedExtension(previewableSource, ext));
+  if (missing.length === 0) return;
+
+  hits.push({
+    file,
+    line: lineNumberOf(content, 'BROWSER_PREVIEWABLE_EXTENSIONS'),
+    kind: 'browser_preview_image_extensions_missing',
+    missing_extensions: missing,
+    excerpt: excerptAround(content, 'BROWSER_PREVIEWABLE_EXTENSIONS'),
+    confidence: 'high',
+    gate_effect: 'review',
+    recommendation: `file viewer browser-preview contract should include common image extensions: ${REQUIRED_IMAGE_PREVIEW_EXTENSIONS.join(', ')}. Missing: ${missing.join(', ')}.`
+  });
+}
+
 function isTerminalLinkFile(file, content) {
   return /xterm|ttyd|terminal/i.test(file) || /registerLinkProvider|OPEN_FILE|filePathRegex|XTERM_FILE_TOKEN_REGEX/.test(content);
 }
@@ -139,7 +174,8 @@ function allHits(result) {
   return [
     ...result.dot_directory_link_hits,
     ...result.wrapped_terminal_link_hits,
-    ...result.dot_directory_tree_hits
+    ...result.dot_directory_tree_hits,
+    ...result.image_preview_extension_hits
   ];
 }
 
@@ -189,4 +225,14 @@ function excerptAround(content, needle) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 180);
+}
+
+function extractSetBody(content, exportName) {
+  const match = content.match(new RegExp(`${exportName}\\s*=\\s*new\\s+Set\\s*\\(\\s*\\[([\\s\\S]*?)\\]\\s*\\)`, 'm'));
+  return match?.[1] || null;
+}
+
+function hasQuotedExtension(content, extension) {
+  const escaped = extension.replace('.', '\\.');
+  return new RegExp(`['"\`]${escaped}['"\`]`).test(content);
 }
