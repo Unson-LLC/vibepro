@@ -593,6 +593,329 @@ export default function PatientPage() {
   );
 });
 
+test('verify flow writes Playwright evidence and skips mutating probes by default', async () => {
+  const repo = await makeRepo();
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'U-020',
+    '--title',
+    '新規登録でタスクを量産せず不足情報を質問化する',
+    '--view',
+    'user',
+    '--period',
+    '2026-05'
+  ]);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { '@playwright/test': '^1.50.0' }
+  }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    profile: 'senpainurse',
+    runtime_probes: [
+      {
+        id: 'new-registration-readonly',
+        title: '新規登録の非破壊導線',
+        path: '/new',
+        mutates: false,
+        steps: [
+          { action: 'expectVisible', text: '病名' },
+          { action: 'expectNotVisible', text: '退院予定日' },
+          { action: 'screenshot', name: 'new-registration' }
+        ]
+      },
+      {
+        id: 'new-registration-create',
+        title: '新規登録の保存導線',
+        path: '/new',
+        mutates: true,
+        steps: [{ action: 'click', text: '仮登録してあとで確認' }]
+      }
+    ]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+const { appendFileSync } = require('node:fs');
+appendFileSync(process.env.FAKE_NPX_LOG, process.argv.slice(2).join(' ') + '\\n');
+console.log('fake playwright ok');
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-run-1',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
+      FAKE_NPX_LOG: path.join(repo, 'fake-npx.log')
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'pass');
+  assert.equal(result.result.verification.summary.pass, 1);
+  assert.equal(result.result.verification.summary.skipped, 1);
+  assert.equal(result.result.verification.probes.find((probe) => probe.id === 'new-registration-create').status, 'skipped');
+  const runDir = path.join(repo, '.vibepro', 'verification', 'flow-run-1');
+  const verification = await readJson(path.join(runDir, 'flow-verification.json'));
+  assert.equal(verification.base_url, 'http://127.0.0.1:3000');
+  assert.equal(verification.probes[0].artifacts.screenshot_paths.includes('screenshots/new-registration.png'), true);
+  assert.match(await readFile(path.join(runDir, 'flow-verification.md'), 'utf8'), /new-registration-readonly/);
+  assert.match(await readFile(path.join(repo, 'fake-npx.log'), 'utf8'), /playwright test/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.latest_flow_verification_run, 'flow-run-1');
+  assert.equal(manifest.flow_verification_runs[0].artifacts.flow_verification_json, '.vibepro/verification/flow-run-1/flow-verification.json');
+});
+
+test('verify flow records needs_setup when Playwright is unavailable', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'U-018', '--title', '質問駆動退院支援UI', '--view', 'user']);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-run-needs-setup'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'needs_setup');
+  const verification = await readJson(path.join(repo, '.vibepro', 'verification', 'flow-run-needs-setup', 'flow-verification.json'));
+  assert.equal(verification.status, 'needs_setup');
+  assert.match(verification.reason, /Playwright/);
+  assert.equal(verification.setup.next_commands.includes('npm install -D @playwright/test'), true);
+});
+
+test('verify flow records browser install guidance when Playwright browser is missing', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'U-020', '--title', '新規登録導線', '--view', 'user']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    devDependencies: { '@playwright/test': '^1.59.1' }
+  }, null, 2));
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+console.log('Error: browserType.launch: Executable does not exist at /tmp/chromium');
+console.log('Please run the following command to download new browsers:');
+console.log('    npx playwright install');
+process.exit(1);
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-browser-missing',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'needs_setup');
+  assert.match(result.result.verification.reason, /Playwright browser binaries/);
+  assert.equal(result.result.verification.setup.next_commands.includes('npx playwright install chromium'), true);
+  const verification = await readJson(path.join(repo, '.vibepro', 'verification', 'flow-browser-missing', 'flow-verification.json'));
+  assert.equal(verification.probes[0].status, 'needs_setup');
+});
+
+test('verify flow supports basic auth from env without persisting the password', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'U-020', '--title', '新規登録導線', '--view', 'user']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    devDependencies: { '@playwright/test': '^1.59.1' }
+  }, null, 2));
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+const { appendFileSync } = require('node:fs');
+appendFileSync(process.env.FAKE_NPX_LOG, [
+  process.argv.slice(2).join(' '),
+  'auth=' + process.env.VIBEPRO_BASIC_AUTH_USER + ':' + process.env.VIBEPRO_BASIC_AUTH_PASSWORD
+].join('\\n') + '\\n');
+console.log('fake playwright ok');
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://54.221.232.92',
+    '--basic-auth-env',
+    'SENPAI_BASIC_AUTH',
+    '--run-id',
+    'flow-basic-auth',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
+      FAKE_NPX_LOG: path.join(repo, 'fake-npx-basic-auth.log'),
+      SENPAI_BASIC_AUTH: 'nurse:super-secret'
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'pass');
+  assert.deepEqual(result.result.verification.http_auth, {
+    enabled: true,
+    source: 'env:SENPAI_BASIC_AUTH',
+    username: 'nurse',
+    password_redacted: true
+  });
+  assert.match(await readFile(path.join(repo, 'fake-npx-basic-auth.log'), 'utf8'), /auth=nurse:super-secret/);
+  const verificationText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.json'), 'utf8');
+  assert.doesNotMatch(verificationText, /super-secret/);
+  const specText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.spec.js'), 'utf8');
+  assert.doesNotMatch(specText, /super-secret/);
+});
+
+test('verify flow can fill a value captured from visible page text', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'U-020', '--title', '新規登録導線', '--view', 'user']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    devDependencies: { '@playwright/test': '^1.59.1' }
+  }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    profile: 'senpainurse',
+    runtime_probes: [{
+      id: 'login-to-new',
+      title: 'ログインして新規登録を見る',
+      path: '/login?next=%2Fnew',
+      mutates: false,
+      steps: [
+        { action: 'click', text: '認証キーを送信' },
+        { action: 'expectVisible', text: '開発用認証キー' },
+        { action: 'fillFromText', label: '認証キー', textRegex: '開発用認証キー: ([0-9]+)' },
+        { action: 'click', text: 'ログイン' }
+      ]
+    }]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+console.log('fake playwright ok');
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-fill-from-text',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const specText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-fill-from-text', 'flow-verification.spec.js'), 'utf8');
+  assert.match(specText, /bodyText\.match/);
+  assert.match(specText, /開発用認証キー: \(\[0-9\]\+\)/);
+  assert.match(specText, /getByLabel\("認証キー"/);
+});
+
+test('pr prepare attaches latest flow verification evidence to the E2E gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature', 'flow.js'), 'export const flow = true;\n');
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-pass'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    run_id: 'flow-pass',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-10T00:00:00.000Z',
+    status: 'pass',
+    base_url: 'http://127.0.0.1:3000',
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    },
+    probes: [{
+      id: 'new-registration-readonly',
+      status: 'pass',
+      artifacts: {
+        screenshot_paths: ['screenshots/new-registration.png']
+      }
+    }]
+  }, null, 2));
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.md'), '# Flow Verification\n');
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'playwright-output.log'), 'ok\n');
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_flow_verification_run = 'flow-pass';
+  manifest.flow_verification_runs = [{
+    run_id: 'flow-pass',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-10T00:00:00.000Z',
+    status: 'pass',
+    base_url: 'http://127.0.0.1:3000',
+    artifacts: {
+      flow_verification_json: '.vibepro/verification/flow-pass/flow-verification.json',
+      flow_verification_report: '.vibepro/verification/flow-pass/flow-verification.md',
+      playwright_log: '.vibepro/verification/flow-pass/playwright-output.log'
+    },
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    }
+  }];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.status, 'passed');
+  assert.equal(e2eGate.flow_verification.run_id, 'flow-pass');
+  assert.equal(e2eGate.flow_verification.artifact, '.vibepro/verification/flow-pass/flow-verification.json');
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /## Flow Verification Evidence/);
+  assert.match(prBody, /status: pass/);
+  assert.match(prBody, /\.vibepro\/verification\/flow-pass\/flow-verification\.json/);
+});
+
 test('measure records command, HTTP, startup, and Prisma log metrics', async () => {
   const repo = await makeRepo();
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({

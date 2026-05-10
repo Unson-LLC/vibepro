@@ -15,6 +15,7 @@ import {
   runPerformanceMeasurement
 } from './performance-measurer.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
+import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import {
   addStory,
   archiveStory,
@@ -81,6 +82,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
   vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
   vibepro story list [repo] [--all]
@@ -178,6 +180,34 @@ export async function runCli(argv, io = {}) {
       const result = await runDiagnosis(repoRoot, { runId });
       write(stdout, `diagnosis created: ${result.runDir}\n`);
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'verify') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'flow') {
+        const result = await runFlowVerification(repoRoot, {
+          baseUrl: getOption(rest, '--base-url'),
+          storyId: getOption(rest, '--id'),
+          runId: getOption(rest, '--run-id'),
+          journeyId: getOption(rest, '--journey'),
+          allowMutation: hasFlag(rest, '--allow-mutation'),
+          headed: hasFlag(rest, '--headed'),
+          basicAuth: getOption(rest, '--basic-auth'),
+          basicAuthEnv: getOption(rest, '--basic-auth-env'),
+          env: io.env
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.verification, null, 2)}\n`
+          : renderFlowVerificationSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown verify command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'measure') {

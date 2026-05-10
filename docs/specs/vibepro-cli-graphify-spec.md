@@ -137,6 +137,71 @@ Web app / static site / UI Storyでは、`flow-design-check` を実行する。`
 - 表示stateを設定した直後に保存/遷移し、実質到達不能なUIになる
 - `value_contract` で禁止されたラベルや価値観逸脱表現が残る
 
+### `vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]`
+
+対象リポジトリのPlaywright実行環境を使い、Story単位の動線証跡を `.vibepro/verification/<run-id>/` に生成する。VibeProは対象アプリの開発サーバーを暗黙起動しない。`--base-url` は必須で、起動済みの対象アプリURLを渡す。
+
+出力:
+
+- `.vibepro/verification/<run-id>/flow-verification.json`
+- `.vibepro/verification/<run-id>/flow-verification.md`
+- `.vibepro/verification/<run-id>/flow-verification.spec.js`
+- `.vibepro/verification/<run-id>/playwright-output.log`
+- `.vibepro/verification/<run-id>/screenshots/*.png`
+
+Playwright依存またはPlaywright scriptが対象リポジトリの `package.json` から検出できない場合は、失敗終了ではなく `status: needs_setup` の証跡を残す。
+
+Playwright依存またはブラウザ本体が不足している場合、`setup.next_commands[]` に次アクションを記録する。
+
+- Playwright依存なし: `npm install -D @playwright/test`、`npx playwright install chromium`
+- ブラウザ本体なし: `npx playwright install chromium`
+
+Basic認証付きURLを検証する場合は、秘密情報をartifactへ保存しないため `--basic-auth-env <env>` を推奨する。env値は `<username>:<password>` 形式とする。互換のため `--basic-auth <username>:<password>` と、`--base-url http://user:pass@example.test` 形式も受け付ける。`flow-verification.json` には `http_auth.enabled`、`source`、`username`、`password_redacted: true` だけを保存し、パスワードは保存しない。
+
+`.vibepro/config.json` の `flow_design.runtime_probes[]` で実行プローブを指定できる。
+
+```json
+{
+  "flow_design": {
+    "profile": "senpainurse",
+    "runtime_probes": [
+      {
+        "id": "new-registration-readonly",
+        "title": "新規登録の非破壊導線",
+        "path": "/new",
+        "mutates": false,
+        "steps": [
+          { "action": "expectVisible", "text": "病名" },
+          { "action": "expectNotVisible", "text": "退院予定日" },
+          { "action": "screenshot", "name": "new-registration" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Probe DSL v1:
+
+- `expectVisible`: 指定テキストが見えることを確認する
+- `expectNotVisible`: 指定テキストが見えないことを確認する
+- `click`: 指定テキストをクリックする
+- `fill`: `selector` または `label` に値を入力する
+- `fillFromText`: 画面本文を `textRegex` で抽出し、capture groupを `selector` または `label` に入力する。開発用認証キーなど、画面上に動的表示される値の検証に使う
+- `screenshot`: スクリーンショットを保存する
+
+`mutates: true` のプローブは、`--allow-mutation` なしでは `skipped` として記録する。保存・登録・削除を伴う検証を本番相当データへ誤実行しないためのガードである。
+
+管理目録更新:
+
+- `latest_flow_verification_run`
+- `flow_verification_runs[]`
+- `flow_verification_runs[].artifacts.flow_verification_json`
+- `flow_verification_runs[].artifacts.flow_verification_report`
+- `flow_verification_runs[].artifacts.playwright_log`
+
+`pr prepare` は最新のFlow Verificationを読み、E2E Gateの `flow_verification` とPR本文の `Flow Verification Evidence` に接続する。最新runが `status: pass` の場合、E2E Gateは `passed` として扱う。`fail` は `failed`、`needs_setup` は `needs_setup` として未解決Gateに残す。
+
 ### `vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]`
 
 対象リポジトリのコードを変更せず、性能指標を `.vibepro/performance/<run-id>/` に記録する。
@@ -1112,6 +1177,13 @@ API route保護判定:
 - `diagnose` はGraphifyのファイル単位contextを `refactoring_opportunities[]`、`refactoring_campaigns[]`、リファクタリング系 `action_candidates[]` に付与し、実装前に読むべき周辺ファイル、hub、community跨ぎを `implementation_plan.read_first_files[]` と `pre_fix_briefing.investigation_scope` に反映する。
 - `diagnose` は同一Storyの前回runと今回runの `refactoring_opportunities[]` を比較し、repo固有辞書ではなく `source`、query `signature`、hotspot `file` をキーに `evidence.refactoring_delta` を生成する。
 - `diagnose` はdelta後に残っている `refactoring_opportunities[]` を rank/score/count で並べ、次にStory化すべき候補として `evidence.refactoring_delta.top_remaining[]` に出す。
+- `verify flow` は `--base-url` 必須で、対象リポジトリのPlaywright CLIを使って `.vibepro/verification/<run-id>/flow-verification.json`、Markdown、生成spec、ログ、スクリーンショットを保存する。
+- `verify flow` は `flow_design.runtime_probes[]` の非破壊プローブを実行し、`mutates: true` のプローブは `--allow-mutation` なしではskipする。
+- `verify flow` はPlaywright未設定時に `status: needs_setup` の証跡を保存し、管理目録の `latest_flow_verification_run` と `flow_verification_runs[]` を更新する。
+- `verify flow` はPlaywrightブラウザ本体不足を `needs_setup` として扱い、`setup.next_commands[]` に `npx playwright install chromium` を記録する。
+- `verify flow --basic-auth-env <env>` はBasic認証情報をPlaywrightへ渡し、artifactにはパスワードを保存しない。
+- `verify flow` のProbe DSLは `fillFromText` で画面本文から正規表現captureした値を入力できる。
+- `pr prepare` は最新Flow VerificationをE2E GateとPR本文に接続し、`status: pass` のrunがある場合はE2E Gateを `passed` にする。
 - `measure` で `.vibepro/performance/<run-id>/performance.json` と `performance.md` が生成される。
 - `measure` は typecheck/build/custom command の実行時間、HTTP total/TTFB p50/p95、startup ready time、Prisma query log集計を記録できる。
 - `measure` は `latest_performance_run` と `performance_runs[]` を管理目録に記録する。

@@ -41,26 +41,41 @@ export async function preparePullRequest(repoRoot, options = {}) {
     assertStrictTargetFiles(taskContext, git.changed_files, options);
   }
 
-  const fileGroups = groupChangedFiles(git.changed_files);
+  const reviewChangedFiles = git.changed_files.filter((file) => !isWorkspaceArtifactPath(file.path));
+  const reviewDirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
+  const reviewGit = {
+    ...git,
+    changed_files: reviewChangedFiles,
+    dirty_files: reviewDirtyFiles,
+    ignored_workspace_artifacts: {
+      changed_files: git.changed_files.length - reviewChangedFiles.length,
+      dirty_files: git.dirty_files.length - reviewDirtyFiles.length
+    }
+  };
+  const fileGroups = groupChangedFiles(reviewChangedFiles);
   const scope = assessScope({
-    changedFiles: git.changed_files,
+    changedFiles: reviewChangedFiles,
     fileGroups,
-    dirtyFiles: git.dirty_files,
-    commits: git.commits,
+    dirtyFiles: reviewDirtyFiles,
+    commits: reviewGit.commits,
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
+  const verificationEvidence = workspace.initialized
+    ? await readVerificationEvidenceIfExists(root, story.story_id)
+    : null;
   const prContext = await buildPrContext(root, {
     story,
     taskContext,
-    git,
+    git: reviewGit,
     fileGroups,
-    latestStoryRun
+    latestStoryRun,
+    verificationEvidence
   });
   const suggestedBranch = options.branchName ?? buildBranchName(story);
   const splitPlan = await buildPrSplitPlan(root, {
     story,
-    git,
+    git: reviewGit,
     fileGroups,
     scope,
     prContext,
@@ -68,9 +83,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
   });
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
-    currentBranch: git.current_branch,
+    currentBranch: reviewGit.current_branch,
     suggestedBranch,
-    commits: git.commits,
+    commits: reviewGit.commits,
     scope,
     storyId: story.story_id,
     taskId: taskContext?.task?.id ?? options.taskId ?? null,
@@ -79,7 +94,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const prBody = renderPrBody({
     story,
     taskContext,
-    git,
+    git: reviewGit,
     fileGroups,
     latestStoryRun,
     scope,
@@ -94,7 +109,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       initialized: workspace.initialized,
       artifact_location: workspace.initialized ? 'repo' : 'temporary'
     },
-    git,
+    git: reviewGit,
     file_groups: fileGroups,
     scope,
     split_plan: splitPlan,
@@ -604,6 +619,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const gateEnforcement = renderPrGateEnforcement(prContext.gate_dag);
   const taskSection = renderPrTaskSection(taskContext);
   const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
+  const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
 
   return `## 概要
 - Story: ${story.story_id} ${story.title}
@@ -648,6 +664,8 @@ ${gateSummary}
 
 ## Gate Enforcement
 ${gateEnforcement}
+
+${flowVerificationSection}
 
 ${refactoringDeltaSection}
 
@@ -741,6 +759,26 @@ ${regressions.join('\n') || '- なし'}
 ${remaining.join('\n') || '- なし'}`;
 }
 
+function renderPrFlowVerification(flowVerification) {
+  if (!flowVerification) {
+    return `## Flow Verification Evidence
+- 未実行: \`vibepro verify flow . --base-url <url>\` で動線証跡を作成する`;
+  }
+  const verification = flowVerification.verification ?? flowVerification;
+  const artifacts = flowVerification.artifacts ?? {};
+  const artifactPath = flowVerification.artifact ?? artifacts.flow_verification_json ?? '-';
+  const reportPath = artifacts.flow_verification_report ?? '-';
+  const logPath = artifacts.playwright_log ?? '-';
+  return `## Flow Verification Evidence
+- status: ${verification.status ?? flowVerification.status ?? '-'}
+- run: ${verification.run_id ?? flowVerification.run_id ?? '-'}
+- base_url: ${verification.base_url ?? flowVerification.base_url ?? '-'}
+- probes: pass=${verification.summary?.pass ?? flowVerification.summary?.pass ?? 0}, fail=${verification.summary?.fail ?? flowVerification.summary?.fail ?? 0}, skipped=${verification.summary?.skipped ?? flowVerification.summary?.skipped ?? 0}, needs_setup=${verification.summary?.needs_setup ?? flowVerification.summary?.needs_setup ?? 0}
+- json: ${artifactPath}
+- report: ${reportPath}
+- log: ${logPath}`;
+}
+
 function formatPrDeltaStatus(status) {
   return {
     improved: '改善',
@@ -752,7 +790,12 @@ function formatPrDeltaStatus(status) {
 }
 
 async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prContext, suggestedBranch }) {
-  const graphContext = await buildSplitGraphContext(repoRoot, git.changed_files.map((file) => file.path));
+  const graphContext = await buildSplitGraphContext(
+    repoRoot,
+    git.changed_files
+      .map((file) => file.path)
+      .filter((file) => !isWorkspaceArtifactPath(file))
+  );
   const lanes = buildSplitLanes({
     fileGroups,
     scope,
@@ -1010,7 +1053,13 @@ function buildSplitNextActions({ lanes, splitRequired }) {
 }
 
 function getAllGroupFiles(fileGroups) {
-  return Object.values(fileGroups).flatMap((group) => group.files ?? []);
+  return Object.entries(fileGroups)
+    .filter(([key]) => key !== 'vibepro_artifacts')
+    .flatMap(([, group]) => group.files ?? []);
+}
+
+function isWorkspaceArtifactPath(filePath) {
+  return String(filePath ?? '').startsWith('.vibepro/');
 }
 
 function isGateInfraPath(filePath) {
@@ -1160,7 +1209,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   const primaryStory = pickPrimaryStory(storyDocs, story);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
@@ -1169,6 +1218,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const verificationCommands = buildVerificationCommands(fileGroups, { typecheckCommand, testRunner });
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
+  const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
     story,
     storySource: primaryStory,
@@ -1182,6 +1232,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     verification_commands: verificationCommands,
     review_points: buildReviewPoints(fileGroups, taskContext),
     refactoring_delta: latestEvidence?.refactoring_delta ?? null,
+    flow_verification: latestFlowVerification,
+    verification_evidence: verificationEvidence,
     risks: []
   };
   context.gate_dag = buildGateDag({
@@ -1191,7 +1243,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     requirementConsistency,
     fileGroups,
     verificationCommands,
-    e2eCommand
+    e2eCommand,
+    flowVerification: latestFlowVerification,
+    verificationEvidence
   });
   context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext });
   return context;
@@ -1204,6 +1258,54 @@ async function readRunEvidenceIfExists(repoRoot, run) {
     return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function readVerificationEvidenceIfExists(repoRoot, storyId) {
+  const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
+  try {
+    const evidence = JSON.parse(await readFile(evidencePath, 'utf8'));
+    return {
+      ...evidence,
+      artifact: toWorkspaceRelative(repoRoot, evidencePath)
+    };
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function readLatestFlowVerification(repoRoot, storyId) {
+  let manifest = null;
+  try {
+    manifest = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'vibepro-manifest.json'), 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return null;
+  }
+  const runs = Array.isArray(manifest.flow_verification_runs) ? manifest.flow_verification_runs : [];
+  const matching = runs.find((run) => run.story_id === storyId)
+    ?? runs.find((run) => run.run_id === manifest.latest_flow_verification_run)
+    ?? runs[0]
+    ?? null;
+  const artifact = matching?.artifacts?.flow_verification_json;
+  if (!artifact) return matching;
+  try {
+    const verification = JSON.parse(await readFile(path.resolve(repoRoot, artifact), 'utf8'));
+    return {
+      ...matching,
+      verification,
+      artifact
+    };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return {
+        ...matching,
+        artifact,
+        missing_artifact: true
+      };
+    }
     throw error;
   }
 }
@@ -1415,11 +1517,27 @@ function buildTargetedTestCommand(testFiles, testRunner = null) {
   return `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`;
 }
 
-function buildGateDag({ story, storySource, architectureDecision, requirementConsistency, fileGroups, verificationCommands, e2eCommand }) {
+function buildGateDag({
+  story,
+  storySource,
+  architectureDecision,
+  requirementConsistency,
+  fileGroups,
+  verificationCommands,
+  e2eCommand,
+  flowVerification,
+  verificationEvidence
+}) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
     : ['Storyの受け入れ基準を明文化する'];
-  const gates = buildVerificationGates({ fileGroups, verificationCommands, e2eCommand });
+  const gates = buildVerificationGates({
+    fileGroups,
+    verificationCommands,
+    e2eCommand,
+    flowVerification,
+    verificationEvidence
+  });
   const requirementGate = {
     id: 'gate:requirement',
     type: 'requirement_gate',
@@ -1498,7 +1616,7 @@ function buildGateDag({ story, storySource, architectureDecision, requirementCon
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
   const requiredGates = [requirementGate, ...gates].filter((gate) => gate.required);
-  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted'].includes(gate.status));
+  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted', 'failed'].includes(gate.status));
   return {
     schema_version: '0.1.0',
     model: 'story-acceptance-verification-dag',
@@ -1515,9 +1633,11 @@ function buildGateDag({ story, storySource, architectureDecision, requirementCon
   };
 }
 
-function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }) {
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, verificationEvidence }) {
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
+  const e2eGateStatus = resolveE2eGateStatus(e2eCommand, flowVerification);
+  const e2eReason = buildE2eGateReason(e2eCommand, flowVerification);
   return [
     {
       id: 'gate:unit',
@@ -1541,13 +1661,99 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand }
       id: 'gate:e2e',
       type: 'verification_gate',
       label: 'E2E Gate',
-      status: e2eCommand.reliable_exit === false ? 'needs_setup' : e2eCommand.detected ? 'needs_evidence' : 'needs_setup',
+      status: e2eGateStatus,
       required: fileGroups.source.count > 0,
       command: e2eCommand.command,
-      reason: e2eCommand.reason,
+      reason: e2eReason,
+      flow_verification: flowVerification ? summarizeFlowVerificationForGate(flowVerification) : null,
       artifact_expectation: '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す'
     }
-  ];
+  ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
+}
+
+function applyVerificationEvidence(gate, verificationEvidence) {
+  const evidence = findVerificationEvidenceForGate(gate, verificationEvidence);
+  if (!evidence) return gate;
+  const status = normalizeVerificationEvidenceStatus(evidence.status);
+  const artifact = evidence.artifact ?? verificationEvidence?.artifact ?? null;
+  const summary = evidence.summary ?? evidence.reason ?? evidence.status ?? 'verification evidence recorded';
+  return {
+    ...gate,
+    status,
+    command: evidence.command ?? gate.command,
+    reason: artifact ? `${summary}; evidence: ${artifact}` : summary,
+    evidence: {
+      kind: evidence.kind ?? null,
+      status: evidence.status ?? null,
+      summary,
+      artifact,
+      executed_at: evidence.executed_at ?? null
+    }
+  };
+}
+
+function findVerificationEvidenceForGate(gate, verificationEvidence) {
+  const items = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  if (items.length === 0) return null;
+  const kindMap = {
+    'gate:unit': ['unit', 'test'],
+    'gate:integration': ['integration', 'typecheck', 'build'],
+    'gate:e2e': ['e2e', 'flow']
+  };
+  const expectedKinds = kindMap[gate.id] ?? [];
+  const matches = items.filter((item) => expectedKinds.includes(item.kind));
+  if (matches.length === 0) return null;
+  return matches.find((item) => ['fail', 'failed', 'error'].includes(item.status))
+    ?? matches.find((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status))
+    ?? matches[0];
+}
+
+function normalizeVerificationEvidenceStatus(status) {
+  if (['pass', 'passed', 'success', 'ok'].includes(status)) return 'passed';
+  if (['fail', 'failed', 'error'].includes(status)) return 'failed';
+  if (status === 'needs_setup') return 'needs_setup';
+  return 'needs_evidence';
+}
+
+function resolveE2eGateStatus(e2eCommand, flowVerification) {
+  const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  if (status === 'pass') return 'passed';
+  if (status === 'fail') return 'failed';
+  if (status === 'needs_setup') return 'needs_setup';
+  if (status === 'skipped') return 'needs_evidence';
+  if (e2eCommand.reliable_exit === false) return 'needs_setup';
+  return e2eCommand.detected ? 'needs_evidence' : 'needs_setup';
+}
+
+function buildE2eGateReason(e2eCommand, flowVerification) {
+  const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  const runId = flowVerification?.verification?.run_id ?? flowVerification?.run_id ?? null;
+  const artifact = flowVerification?.artifact ?? flowVerification?.artifacts?.flow_verification_json ?? null;
+  if (status === 'pass') {
+    return `Flow Verification passed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+  }
+  if (status === 'fail') {
+    return `Flow Verification failed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+  }
+  if (status === 'needs_setup') {
+    return `Flow Verification needs setup${runId ? ` (${runId})` : ''}: ${flowVerification?.verification?.reason ?? flowVerification?.reason ?? e2eCommand.reason}`;
+  }
+  if (status === 'skipped') {
+    return `Flow Verification skipped${runId ? ` (${runId})` : ''}; runnable non-mutating probes are required for PR evidence.`;
+  }
+  return e2eCommand.reason;
+}
+
+function summarizeFlowVerificationForGate(flowVerification) {
+  const verification = flowVerification.verification ?? flowVerification;
+  return {
+    run_id: verification.run_id ?? flowVerification.run_id ?? null,
+    status: verification.status ?? flowVerification.status ?? null,
+    base_url: verification.base_url ?? flowVerification.base_url ?? null,
+    artifact: flowVerification.artifact ?? flowVerification.artifacts?.flow_verification_json ?? null,
+    report: flowVerification.artifacts?.flow_verification_report ?? null,
+    summary: verification.summary ?? flowVerification.summary ?? null
+  };
 }
 
 function resolveRequirementGateStatus(requirement) {
@@ -1770,14 +1976,15 @@ function buildReviewPoints(fileGroups, taskContext = null) {
 
 function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null }) {
   const risks = [];
+  const dirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
   if (taskContext && !taskContext.artifacts.handoff_json) {
     risks.push('Task指定はあるがhandoff.jsonが見つからない');
   }
   if (fileGroups.tests.count === 0 && fileGroups.source.count > 0) {
     risks.push('ソース差分に対するテスト差分がない');
   }
-  if (git.dirty_files.length > 0) {
-    risks.push(`未コミット差分が ${git.dirty_files.length} files ある`);
+  if (dirtyFiles.length > 0) {
+    risks.push(`未コミット差分が ${dirtyFiles.length} files ある`);
   }
   if (fileGroups.repo_control.count > 0) {
     risks.push('repo制御ファイルが差分に含まれるため、アプリ変更と分けてレビューする');
@@ -1788,6 +1995,9 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e');
   if (e2eGate?.required && ['needs_evidence', 'needs_setup'].includes(e2eGate.status)) {
     risks.push('E2E GateのPlaywright CLI証跡が未記録');
+  }
+  if (e2eGate?.required && e2eGate.status === 'failed') {
+    risks.push(`E2E Gateが failed: ${e2eGate.reason}`);
   }
   const requirementGate = gateDag?.nodes?.find((node) => node.id === 'gate:requirement');
   if (requirementGate?.required && ['needs_review', 'contradicted'].includes(requirementGate.status)) {
@@ -1869,7 +2079,7 @@ function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => node.type === 'verification_gate' || node.type === 'requirement_gate')
     .filter((node) => node.required)
-    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted'].includes(node.status))
+    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted', 'failed'].includes(node.status))
     .map((node) => ({
       id: node.id,
       label: node.label,

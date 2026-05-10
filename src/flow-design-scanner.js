@@ -64,7 +64,7 @@ export async function scanFlowDesign(repoRoot, options = {}) {
     question_dead_end_hits: [],
     dead_ui_state_hits: [],
     value_alignment_hits: [],
-    runtime_probe_plan: buildRuntimeProbePlan({ profile, story })
+    runtime_probe_plan: buildRuntimeProbePlan({ profile, story, flowConfig })
   };
 
   if (uiFiles.length === 0 && isUiStory(story, flowConfig)) {
@@ -390,7 +390,20 @@ function buildValueContract({ profile, flowConfig }) {
   };
 }
 
-function buildRuntimeProbePlan({ profile, story }) {
+function buildRuntimeProbePlan({ profile, story, flowConfig }) {
+  if (Array.isArray(flowConfig?.runtime_probes) && flowConfig.runtime_probes.length > 0) {
+    return {
+      status: 'available',
+      commands: flowConfig.runtime_probes.map((probe) => ({
+        id: probe.id,
+        intent: probe.intent ?? probe.title ?? probe.id,
+        path: probe.path ?? null,
+        mutates: probe.mutates === true,
+        steps: Array.isArray(probe.steps) ? probe.steps : []
+      })),
+      story_id: story?.story_id ?? null
+    };
+  }
   if (profile !== 'senpainurse') {
     return { status: 'available', commands: [] };
   }
@@ -399,11 +412,26 @@ function buildRuntimeProbePlan({ profile, story }) {
     commands: [
       {
         id: 'new-registration-dpc-flow',
-        intent: '新規登録で病名検索、候補選択、明示登録、患者詳細遷移を確認する。'
+        intent: '新規登録で病名検索、候補選択、明示登録、患者詳細遷移を確認する。',
+        path: '/new',
+        mutates: false,
+        steps: [
+          { action: 'expectVisible', text: '病名' },
+          { action: 'expectVisible', text: '仮登録' },
+          { action: 'expectNotVisible', text: '退院予定日' },
+          { action: 'screenshot', name: 'new-registration-dpc-flow' }
+        ]
       },
       {
         id: 'patient-detail-dpc-question',
-        intent: 'DPC未入力患者で質問カードからDPC入力UIへ進めることを確認する。'
+        intent: 'DPC未入力患者で質問カードからDPC入力UIへ進めることを確認する。',
+        path: '/patients/demo',
+        mutates: false,
+        steps: [
+          { action: 'expectVisible', text: '？' },
+          { action: 'expectVisible', text: '病名' },
+          { action: 'screenshot', name: 'patient-detail-dpc-question' }
+        ]
       }
     ],
     story_id: story?.story_id ?? null
