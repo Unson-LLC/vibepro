@@ -508,6 +508,14 @@ controller._readTree = async () => entries.filter((entry) => {
   return true;
 });
 `);
+  await writeFile(path.join(repo, 'public', 'modules', 'file-preview-config.js'), `
+export const BROWSER_PREVIEWABLE_EXTENSIONS = new Set([
+  '.md',
+  '.html',
+  '.svg',
+  '.js'
+]);
+`);
 
   const result = await scanTerminalLinkContracts(repo);
 
@@ -515,6 +523,36 @@ controller._readTree = async () => entries.filter((entry) => {
   assert.equal(result.dot_directory_link_hits.some((hit) => hit.kind === 'dot_directory_file_link_not_supported'), true);
   assert.equal(result.wrapped_terminal_link_hits.some((hit) => hit.kind === 'wrapped_terminal_continuation_requires_indent'), true);
   assert.equal(result.dot_directory_tree_hits.some((hit) => hit.kind === 'dot_directory_tree_hidden_without_allowlist'), true);
+  assert.equal(result.image_preview_extension_hits.some((hit) => hit.kind === 'browser_preview_image_extensions_missing'), true);
+  assert.deepEqual(
+    result.image_preview_extension_hits[0].missing_extensions,
+    ['.png', '.jpg', '.jpeg', '.gif', '.webp']
+  );
+});
+
+test('terminal link scanner accepts image preview extensions via IMAGE_EXTENSIONS spread', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'public', 'modules'), { recursive: true });
+  await writeFile(path.join(repo, 'public', 'modules', 'file-preview-config.js'), `
+export const IMAGE_EXTENSIONS = new Set([
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp'
+]);
+export const BROWSER_PREVIEWABLE_EXTENSIONS = new Set([
+  ...IMAGE_EXTENSIONS,
+  '.md',
+  '.html',
+  '.svg'
+]);
+`);
+
+  const result = await scanTerminalLinkContracts(repo);
+
+  assert.equal(result.status, 'ok');
+  assert.equal(result.image_preview_extension_hits.length, 0);
 });
 
 test('diagnose writes flow design evidence, report, findings, and story tasks', async () => {

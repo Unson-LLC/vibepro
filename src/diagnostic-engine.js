@@ -384,7 +384,8 @@ function buildFindings(evidence) {
     const terminalLinkHits = filterGateRelevant([
       ...(evidence.terminal_link_contracts.dot_directory_link_hits ?? []),
       ...(evidence.terminal_link_contracts.wrapped_terminal_link_hits ?? []),
-      ...(evidence.terminal_link_contracts.dot_directory_tree_hits ?? [])
+      ...(evidence.terminal_link_contracts.dot_directory_tree_hits ?? []),
+      ...(evidence.terminal_link_contracts.image_preview_extension_hits ?? [])
     ]);
     if (terminalLinkHits.length > 0) {
       const terminalLinkSummary = summarizeGateEffects(terminalLinkHits);
@@ -392,9 +393,9 @@ function buildFindings(evidence) {
         id: 'VP-TERM-001',
         severity: 'High',
         category: 'ターミナルプレビュー',
-        title: 'dot directory配下のHTMLリンクを開けない実装候補がある',
+        title: 'ターミナル/ファイルビューアのプレビュー契約欠落候補がある',
         detail: `${terminalLinkHits.length} 件のterminal/file tree contract欠落候補を検出した。内訳: ${formatGateSummary(terminalLinkSummary)}。`,
-        recommendation: 'terminal linkifierは.vibepro等のdot directory相対パスとcolumn 1 hard wrapを扱い、folder treeは.vibeproをallowlistで表示する。',
+        recommendation: 'terminal linkifierは.vibepro等のdot directory相対パスとcolumn 1 hard wrapを扱い、folder treeは.vibeproをallowlistで表示する。file viewerはpng/jpg/jpeg/gif/webpなどの画像をブラウザプレビュー対象に含める。',
         target_files: uniqueFiles(terminalLinkHits.map((hit) => hit.file)),
         terminal_link_hits: terminalLinkHits
       });
@@ -1257,7 +1258,8 @@ function renderSummary({ runId, evidence, findings }) {
 | Terminal Link候補 | ${formatRiskCount([
   ...(evidence.terminal_link_contracts?.dot_directory_link_hits ?? []),
   ...(evidence.terminal_link_contracts?.wrapped_terminal_link_hits ?? []),
-  ...(evidence.terminal_link_contracts?.dot_directory_tree_hits ?? [])
+  ...(evidence.terminal_link_contracts?.dot_directory_tree_hits ?? []),
+  ...(evidence.terminal_link_contracts?.image_preview_extension_hits ?? [])
 ])} |
 | Flow Design Gate | ${evidence.flow_design?.status ?? 'not_generated'} |
 | Flow Design UI走査 | ${evidence.flow_design?.summary?.scanned_ui_files ?? 0}件 |
