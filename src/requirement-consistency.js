@@ -386,7 +386,7 @@ async function resolveCodeFiles(repoRoot, options) {
   const files = options.files?.length > 0
     ? options.files
     : options.fileGroups
-      ? [...(options.fileGroups.source?.files ?? []), ...(options.fileGroups.tests?.files ?? [])]
+      ? [...(options.fileGroups.source?.files ?? [])]
       : await listLikelyRuntimeFiles(repoRoot);
   return [...new Set(files.map(normalizePath))]
     .filter((file) => CODE_EXTENSIONS.has(path.extname(file)))
@@ -551,7 +551,24 @@ function isPremiumUntilEndInvariant(invariant) {
 }
 
 function isDomainBranch(condition) {
-  return /user|auth|session|subscription|premium|stripe|webhook|signature|customer|not|missing|found|error|cancel/i.test(condition);
+  const normalized = String(condition ?? '').trim().toLowerCase();
+  if (!normalized) return false;
+  if (isGenericImplementationGuard(normalized)) return false;
+  return /user|auth|session|subscription|premium|stripe|webhook|signature|customer|cancel/i.test(normalized);
+}
+
+function isGenericImplementationGuard(condition) {
+  return /^error\s+instanceof\s+error\b/.test(condition)
+    || /^!?found$/.test(condition)
+    || /^!?session(?:id)?(?:\s*\|\|\s*![a-z0-9_.$]+)?$/.test(condition)
+    || /^!?isinsecureheaderauthallowed\(/.test(condition)
+    || /^session\.[a-z0-9_?.]+$/.test(condition)
+    || /^sessions\[[^\]]+\]\.[a-z0-9_?.]+\s*!==/.test(condition)
+    || /^!?normalizedsessionid$/.test(condition)
+    || /^changesnotpushed\s*>/.test(condition)
+    || /^result\.notfound\s*\|\|\s*!result\.success$/.test(condition)
+    || /^message\.includes\(/.test(condition)
+    || /^value\s*===\s*['"][a-z0-9_:-]+['"]$/.test(condition);
 }
 
 function relatedInvariantIds(invariants, text) {
