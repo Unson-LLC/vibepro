@@ -5,7 +5,12 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { formatCounts } from './refactoring-delta-reporter.js';
-import { buildRequirementConsistency, renderRequirementGateSummary } from './requirement-consistency.js';
+import {
+  buildRequirementConsistency,
+  findStorySource,
+  isStoryDocPath,
+  renderRequirementGateSummary
+} from './requirement-consistency.js';
 import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
@@ -481,7 +486,7 @@ function groupChangedFiles(files) {
 
   for (const file of files) {
     const target = file.path;
-    if (target.startsWith('docs/management/stories/') || target.startsWith('docs/stories/')) groups.story_docs.push(file);
+    if (isStoryDocPath(target)) groups.story_docs.push(file);
     else if (isArchitectureDocPath(target)) groups.architecture_docs.push(file);
     else if (isSpecificationDocPath(target)) groups.specifications.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
@@ -1250,7 +1255,18 @@ function normalizeGraphPath(filePath) {
 
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
-  const primaryStory = pickPrimaryStory(storyDocs, story);
+  let primaryStory = pickPrimaryStory(storyDocs, story);
+  if (!primaryStory.path) {
+    const filesystemStory = await findStorySource(repoRoot, story);
+    if (filesystemStory?.path) {
+      try {
+        const content = await readFile(path.join(repoRoot, filesystemStory.path), 'utf8');
+        primaryStory = parseStoryDoc(filesystemStory.path, content);
+      } catch {
+        // keep the default primaryStory if the file disappeared between scans
+      }
+    }
+  }
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const typecheckCommand = await detectTypecheckCommand(repoRoot);
   const testRunner = await detectTestRunner(repoRoot);
@@ -1442,9 +1458,10 @@ function extractAcceptanceCriteria(content) {
   return source
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => /^-\s+\[[ xX]\]\s+/.test(line))
-    .map((line) => line.replace(/^-\s+\[[ xX]\]\s+/, '').trim())
-    .slice(0, 8);
+    .filter((line) => /^-\s+(?:\[[ xX]\]\s+)?\S/.test(line))
+    .map((line) => line.replace(/^-\s+(?:\[[ xX]\]\s+)?/, '').trim())
+    .filter(Boolean)
+    .slice(0, 12);
 }
 
 function extractRawSection(content, headings) {

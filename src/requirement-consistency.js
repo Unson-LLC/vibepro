@@ -3,10 +3,14 @@ import path from 'node:path';
 
 export const MAX_SCAN_FILES = 80;
 export const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
-const STORY_DIRS = [
+export const DEFAULT_STORY_DIRS = [
+  path.join('docs', 'user_stories', 'active'),
+  path.join('docs', 'user_stories'),
   path.join('docs', 'management', 'stories', 'active'),
-  path.join('docs', 'management', 'stories')
+  path.join('docs', 'management', 'stories'),
+  path.join('docs', 'stories')
 ];
+export const STORY_DIR_PREFIXES = DEFAULT_STORY_DIRS.map((dir) => dir.split(path.sep).join('/'));
 const REQUIREMENT_SOURCE_DIRS = [
   { kind: 'spec', dir: path.join('docs', 'specs') },
   { kind: 'spec', dir: path.join('docs', 'features', 'specifications') },
@@ -156,18 +160,33 @@ export function renderRequirementGateSummary(requirement) {
   return `- Requirement Gate: ${requirement.status} - ${detail}`;
 }
 
-async function findStorySource(repoRoot, story) {
+export async function resolveStoryDirs(repoRoot) {
+  try {
+    const { getWorkspaceDir } = await import('./workspace.js');
+    const configPath = path.join(getWorkspaceDir(repoRoot), 'config.json');
+    const raw = await readFile(configPath, 'utf8');
+    const config = JSON.parse(raw);
+    const override = config?.doc_paths?.stories;
+    if (Array.isArray(override) && override.length > 0) {
+      return override.map((entry) => String(entry));
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      // fall through to defaults
+    }
+  }
+  return [...DEFAULT_STORY_DIRS];
+}
+
+export async function findStorySource(repoRoot, story) {
   const storyId = story?.story_id ?? null;
+  const storyDirs = await resolveStoryDirs(repoRoot);
   const candidates = [];
-  for (const dir of STORY_DIRS) {
+  for (const dir of storyDirs) {
     const files = await listFiles(path.join(repoRoot, dir));
     candidates.push(...files.filter((file) => /\.(md|mdx)$/i.test(file)));
   }
-  const matched = storyId
-    ? candidates.find((file) => normalizePath(file).includes(storyId))
-    : null;
-  const target = matched ?? candidates[0] ?? null;
-  if (!target) {
+  if (candidates.length === 0) {
     return {
       path: null,
       title: story?.title ?? null,
@@ -177,7 +196,34 @@ async function findStorySource(repoRoot, story) {
       policy: null
     };
   }
-  return parseStoryLikeDocument(repoRoot, target, 'story');
+  if (storyId) {
+    const byFrontmatter = await findCandidateByFrontmatter(repoRoot, candidates, storyId);
+    if (byFrontmatter) return parseStoryLikeDocument(repoRoot, byFrontmatter, 'story');
+    const bySubstring = candidates.find((file) => normalizePath(file).includes(storyId));
+    if (bySubstring) return parseStoryLikeDocument(repoRoot, bySubstring, 'story');
+  }
+  return parseStoryLikeDocument(repoRoot, candidates[0], 'story');
+}
+
+async function findCandidateByFrontmatter(repoRoot, candidates, storyId) {
+  for (const file of candidates) {
+    let content;
+    try {
+      content = await readFile(file, 'utf8');
+    } catch {
+      continue;
+    }
+    const frontmatter = parseFrontmatter(content);
+    const candidateIds = [
+      frontmatter.story_id,
+      frontmatter.vibepro_story_id,
+      frontmatter.story_ref,
+      frontmatter.story,
+      frontmatter.requirement_id
+    ].filter(Boolean).map((value) => String(value));
+    if (candidateIds.includes(storyId)) return file;
+  }
+  return null;
 }
 
 export async function resolveStorySource(repoRoot, options) {
@@ -265,11 +311,24 @@ function formatSourceRef(source) {
   return `${kind}:${source.path ?? '-'}`;
 }
 
-function inferSourceKind(filePath) {
+export function inferSourceKind(filePath) {
   const normalized = normalizePath(filePath ?? '');
-  if (normalized.includes('/stories/') || normalized.startsWith('docs/management/stories/')) return 'story';
+  if (
+    normalized.includes('/stories/')
+    || normalized.includes('/user_stories/')
+    || normalized.startsWith('user_stories/')
+    || normalized.startsWith('docs/management/stories/')
+  ) {
+    return 'story';
+  }
   if (normalized.startsWith('docs/specs/') || normalized.startsWith('docs/features/specifications/')) return 'spec';
-  if (normalized.startsWith('docs/architecture/') || normalized.startsWith('docs/management/architecture/')) return 'architecture';
+  if (
+    normalized.startsWith('docs/architecture/')
+    || normalized.startsWith('docs/management/architecture/')
+    || /^docs\/.+\/ADR-[^/]+\.md$/i.test(normalized)
+  ) {
+    return 'architecture';
+  }
   if (
     normalized.startsWith('docs/management/policies/')
     || normalized.startsWith('docs/frames/')
@@ -278,6 +337,15 @@ function inferSourceKind(filePath) {
     return 'policy';
   }
   return 'requirement';
+}
+
+export function isStoryDocPath(filePath) {
+  const normalized = normalizePath(filePath ?? '');
+  if (!normalized) return false;
+  for (const prefix of STORY_DIR_PREFIXES) {
+    if (normalized.startsWith(`${prefix}/`)) return true;
+  }
+  return /^docs\/.+\/stories\//.test(normalized);
 }
 
 function extractLinkedDocPaths(content) {
