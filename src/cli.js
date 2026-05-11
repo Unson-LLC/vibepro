@@ -16,6 +16,24 @@ import {
 } from './performance-measurer.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
+import { buildSpecFingerprint } from './spec-fingerprint.js';
+import { validateSpec } from './spec-validator.js';
+import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
+import {
+  readInferredSpec,
+  stabilizeClauseIds,
+  writeDrift,
+  writeDriftMarkdown,
+  writeInferredSpec
+} from './spec-store.js';
+import { buildReportFingerprint } from './report-fingerprint.js';
+import { validateReportNarrative } from './report-validator.js';
+import {
+  readNarrative,
+  REPORT_KINDS,
+  stabilizeTalkingPointIds,
+  writeNarrative
+} from './report-store.js';
 import {
   addStory,
   archiveStory,
@@ -106,6 +124,13 @@ Usage:
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
+  vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
+  vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
+  vibepro spec show [repo] --id <story-id> [--clause <clause-id>] [--json]
+  vibepro spec drift [repo] --id <story-id> [--against <git-ref>] [--json]
+  vibepro report fingerprint [repo] --kind <kind> --id <story-id> [--base <ref>] [--task <id>] [--group <id>] [--include-instructions]
+  vibepro report write [repo] --kind <kind> --id <story-id> [--from-stdin] [--input <file>] [--caller <name>]
+  vibepro report show [repo] --kind <kind> --id <story-id>
 `;
 
 export async function runCli(argv, io = {}) {
@@ -492,6 +517,183 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'spec') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+
+      if (subcommand === 'fingerprint') {
+        if (!storyId) throw new Error('--id <story-id> is required for spec fingerprint');
+        const fingerprint = await buildSpecFingerprint(repoRoot, {
+          storyId,
+          includeInstructions: hasFlag(rest, '--include-instructions')
+        });
+        write(stdout, `${JSON.stringify(fingerprint, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, fingerprint };
+      }
+
+      if (subcommand === 'write') {
+        if (!storyId) throw new Error('--id <story-id> is required for spec write');
+        const inputPath = getOption(rest, '--input');
+        const fromStdin = hasFlag(rest, '--from-stdin') || !inputPath;
+        const caller = getOption(rest, '--caller') ?? 'unknown';
+        const raw = inputPath
+          ? await readFile(path.resolve(inputPath), 'utf8')
+          : await readStdin(io.stdin ?? process.stdin);
+        if (!raw.trim()) throw new Error('spec write received empty input');
+        let parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (error) {
+          throw new Error(`spec write: input is not valid JSON: ${error.message}`);
+        }
+        const validation = await validateSpec(repoRoot, parsed, { expectedStoryId: storyId });
+        if (!validation.ok) {
+          write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
+          return { exitCode: 2, command, subcommand, validation };
+        }
+        const previousSpec = await readInferredSpec(repoRoot, storyId);
+        const seeded = {
+          ...parsed,
+          schema_version: '0.1.0',
+          story_id: storyId,
+          generated_at: parsed.generated_at ?? new Date().toISOString(),
+          generated_by: {
+            caller,
+            stage: parsed.generated_by?.stage ?? 'ai_synthesis'
+          },
+          previous_spec_id: previousSpec ? `${previousSpec.generated_at ?? ''}` : null
+        };
+        const stabilized = stabilizeClauseIds(seeded, previousSpec);
+        await writeInferredSpec(repoRoot, storyId, stabilized);
+        write(stdout, `${JSON.stringify({ ok: true, story_id: storyId, clauses: stabilized.clauses.length, warnings: validation.warnings }, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, spec: stabilized };
+      }
+
+      if (subcommand === 'show') {
+        if (!storyId) throw new Error('--id <story-id> is required for spec show');
+        const spec = await readInferredSpec(repoRoot, storyId);
+        if (!spec) {
+          write(stdout, `${JSON.stringify({ story_id: storyId, found: false }, null, 2)}\n`);
+          return { exitCode: 0, command, subcommand, spec: null };
+        }
+        const clauseId = getOption(rest, '--clause');
+        const projection = clauseId
+          ? { ...spec, clauses: spec.clauses.filter((entry) => entry.id === clauseId) }
+          : spec;
+        write(stdout, `${JSON.stringify(projection, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, spec: projection };
+      }
+
+      if (subcommand === 'drift') {
+        if (!storyId) throw new Error('--id <story-id> is required for spec drift');
+        const drift = await buildSpecDrift(repoRoot, {
+          storyId,
+          againstRef: getOption(rest, '--against')
+        });
+        await writeDrift(repoRoot, storyId, drift);
+        await writeDriftMarkdown(repoRoot, storyId, renderDriftMarkdown(drift));
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(drift, null, 2)}\n`
+          : renderDriftMarkdown(drift));
+        return { exitCode: 0, command, subcommand, drift };
+      }
+
+      write(stderr, `Unknown spec command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'report') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const kind = getOption(rest, '--kind');
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+      if (!kind || !REPORT_KINDS.has(kind)) {
+        throw new Error(`--kind is required (supported: ${[...REPORT_KINDS].join('|')})`);
+      }
+      if (!storyId) throw new Error('--id <story-id> is required');
+
+      if (subcommand === 'fingerprint') {
+        const fingerprint = await buildReportFingerprint(repoRoot, {
+          kind,
+          storyId,
+          baseRef: getOption(rest, '--base'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
+          branchName: getOption(rest, '--branch'),
+          includeInstructions: hasFlag(rest, '--include-instructions')
+        });
+        write(stdout, `${JSON.stringify(fingerprint, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, fingerprint };
+      }
+
+      if (subcommand === 'write') {
+        const caller = getOption(rest, '--caller') ?? 'unknown';
+        const inputPath = getOption(rest, '--input');
+        const raw = inputPath
+          ? await readFile(path.resolve(inputPath), 'utf8')
+          : await readStdin(io.stdin ?? process.stdin);
+        if (!raw.trim()) throw new Error('report write received empty input');
+        let parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (error) {
+          throw new Error(`report write: input is not valid JSON: ${error.message}`);
+        }
+        const fingerprint = await buildReportFingerprint(repoRoot, {
+          kind,
+          storyId,
+          baseRef: getOption(rest, '--base'),
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group')
+        });
+        const validation = await validateReportNarrative(repoRoot, parsed, fingerprint, { expectedStoryId: storyId });
+        if (!validation.ok) {
+          write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
+          return { exitCode: 2, command, subcommand, validation };
+        }
+        const previousNarrative = await readNarrative(repoRoot, storyId, kind);
+        const seeded = {
+          ...parsed,
+          schema_version: '0.1.0',
+          story_id: storyId,
+          kind,
+          generated_at: parsed.generated_at ?? new Date().toISOString(),
+          generated_by: {
+            caller,
+            stage: parsed.generated_by?.stage ?? 'ai_synthesis'
+          },
+          previous_report_id: previousNarrative ? (previousNarrative.generated_at ?? null) : null,
+          inputs_digest: parsed.inputs_digest ?? fingerprint.inputs_digest
+        };
+        const stabilized = stabilizeTalkingPointIds(seeded, previousNarrative);
+        await writeNarrative(repoRoot, storyId, kind, stabilized);
+        write(stdout, `${JSON.stringify({ ok: true, story_id: storyId, kind, slots: stabilized.narrative_slots.length, warnings: validation.warnings }, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, narrative: stabilized };
+      }
+
+      if (subcommand === 'show') {
+        const narrative = await readNarrative(repoRoot, storyId, kind);
+        if (!narrative) {
+          write(stdout, `${JSON.stringify({ story_id: storyId, kind, found: false }, null, 2)}\n`);
+          return { exitCode: 0, command, subcommand, narrative: null };
+        }
+        write(stdout, `${JSON.stringify(narrative, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, narrative };
+      }
+
+      write(stderr, `Unknown report command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
     write(stderr, `Unknown command: ${command}\n\n${HELP}`);
     return { exitCode: 1, command };
   } catch (error) {
@@ -546,6 +748,15 @@ function buildStartupOptions(args) {
 
 function write(stream, text) {
   if (stream) stream.write(text);
+}
+
+async function readStdin(stream) {
+  if (!stream || stream.isTTY) return '';
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
 }
 
 async function readPackageVersion() {

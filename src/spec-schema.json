@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibepro.local/schemas/spec.json",
+  "title": "VibePro Inferred Spec",
+  "description": "AI-authored spec produced from Story+Code+Test fingerprints. VibePro CLI validates and stores this artifact; humans do not edit it directly.",
+  "type": "object",
+  "required": ["schema_version", "story_id", "clauses"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "story_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp. Filled by validator if absent."
+    },
+    "generated_by": {
+      "type": "object",
+      "properties": {
+        "caller": {
+          "type": "string",
+          "description": "claude-code | codex | other identifier"
+        },
+        "stage": {
+          "type": "string",
+          "enum": ["ai_synthesis", "static_fallback"]
+        }
+      }
+    },
+    "inputs_digest": {
+      "type": "object",
+      "properties": {
+        "story_sha": { "type": "string" },
+        "code_sha": { "type": "string" },
+        "test_sha": { "type": "string" }
+      }
+    },
+    "previous_spec_id": {
+      "type": ["string", "null"]
+    },
+    "clauses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/clause" }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "question"],
+        "properties": {
+          "id": { "type": "string" },
+          "question": { "type": "string", "minLength": 1 },
+          "blocker": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "clause": {
+      "type": "object",
+      "required": ["id", "type", "statement", "origin"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Clause id. Use INV-<n>, S-<n>, C-<n>, SLA-<n>. New clauses may use INV-NEW-<n> placeholders; validator assigns stable ids."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["invariant", "scenario", "contract", "sla"]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 4,
+          "description": "One-sentence machine-checkable statement. Avoid ambiguity."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Why this clause exists. Cite story acceptance criterion / code anchor."
+        },
+        "origin": {
+          "type": "object",
+          "description": "Where this clause was derived from. At least one of story_refs / code_refs / test_refs must be non-empty.",
+          "properties": {
+            "story_refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["kind"],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["acceptance_criteria", "background", "policy", "frontmatter", "other"]
+                  },
+                  "index": { "type": "integer", "minimum": 0 },
+                  "text_snippet": { "type": "string" }
+                }
+              }
+            },
+            "code_refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "minLength": 1 },
+                  "anchor": {
+                    "type": "string",
+                    "description": "Identifier or substring that should appear in the file."
+                  },
+                  "line": { "type": "integer", "minimum": 1 }
+                }
+              }
+            },
+            "test_refs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "minLength": 1 },
+                  "case": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "verifiable_by": {
+          "type": "object",
+          "description": "Deterministic patterns the drift detector uses. Optional but recommended.",
+          "properties": {
+            "code_pattern": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/pattern" }
+            },
+            "test_pattern": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/pattern" }
+            }
+          }
+        },
+        "first_seen_at": { "type": "string" },
+        "last_revised_at": { "type": "string" }
+      }
+    },
+    "pattern": {
+      "type": "object",
+      "required": ["file_glob"],
+      "properties": {
+        "file_glob": {
+          "type": "string",
+          "description": "Glob relative to repo root. Examples: src/**/billing*.ts, test/**/*.test.{js,ts}"
+        },
+        "must_contain": {
+          "type": "string",
+          "description": "Substring (case-sensitive) that must appear in at least one matched file."
+        },
+        "must_not_contain": {
+          "type": "string",
+          "description": "Substring (case-sensitive) that must not appear in any matched file."
+        },
+        "must_cover": {
+          "type": "string",
+          "description": "Identifier or substring that must appear in test names or assertion text across matched files."
+        }
+      }
+    }
+  }
+}
