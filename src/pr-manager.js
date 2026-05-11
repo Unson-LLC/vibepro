@@ -8,6 +8,8 @@ import { formatCounts } from './refactoring-delta-reporter.js';
 import { buildRequirementConsistency, renderRequirementGateSummary } from './requirement-consistency.js';
 import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { normalizeActiveStories } from './story-manager.js';
+import { readNarrative } from './report-store.js';
+import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -91,6 +93,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     taskId: taskContext?.task?.id ?? options.taskId ?? null,
     groupId: taskContext?.group?.id ?? options.groupId ?? null
   });
+  const prBodyNarrative = await readNarrative(root, story.story_id, 'pr-body');
   const prBody = renderPrBody({
     story,
     taskContext,
@@ -99,7 +102,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun,
     scope,
     prContext,
-    splitPlan
+    splitPlan,
+    narrative: prBodyNarrative
   });
   const preparation = {
     schema_version: '0.1.0',
@@ -600,7 +604,42 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
   ];
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan }) {
+function renderPrNarrative(narrative) {
+  if (!narrative || !Array.isArray(narrative.narrative_slots) || narrative.narrative_slots.length === 0) {
+    return '';
+  }
+  const grouped = new Map();
+  for (const slot of narrative.narrative_slots) {
+    if (!slot || typeof slot !== 'object' || typeof slot.slot !== 'string') continue;
+    if (!grouped.has(slot.slot)) grouped.set(slot.slot, []);
+    grouped.get(slot.slot).push(slot);
+  }
+  const sections = [];
+  const callerLabel = narrative.generated_by?.caller ?? 'unknown';
+  const summary = grouped.get('summary')?.[0];
+  if (summary) {
+    sections.push(`## なぜこの PR か (${summary.id} by ${callerLabel})\n${summary.text.trim()}`);
+  }
+  const focus = grouped.get('review_focus') ?? [];
+  if (focus.length > 0) {
+    const lines = focus.map((slot) => `- (${slot.id}) ${slot.text.trim()}`).join('\n');
+    sections.push(`## レビュー焦点 (synthesis)\n${lines}`);
+  }
+  const risks = grouped.get('risks_synthesis')?.[0];
+  if (risks) {
+    sections.push(`## リスク合成 (${risks.id})\n${risks.text.trim()}`);
+  }
+  const openQuestions = grouped.get('open_questions') ?? [];
+  if (openQuestions.length > 0) {
+    const lines = openQuestions.map((slot) => `- (${slot.id}) ${slot.text.trim()}`).join('\n');
+    sections.push(`## レビュアー判断要\n${lines}`);
+  }
+  if (sections.length === 0) return '';
+  return `${sections.join('\n\n')}\n\n`;
+}
+
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null }) {
+  const narrativeSection = renderPrNarrative(narrative);
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
     ? '- 差分なし'
@@ -621,7 +660,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
   const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
 
-  return `## 概要
+  return `${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
 - VibePro scope: ${scope.status}
 - PR strategy: ${scope.recommended_strategy}
@@ -1219,15 +1258,20 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
+  const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
+  const specDrift = await readDrift(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
     story,
     storySource: primaryStory,
-    fileGroups
+    fileGroups,
+    inferredSpec
   });
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
     requirement_consistency: requirementConsistency,
+    inferred_spec: inferredSpec,
+    spec_drift: specDrift,
     change_summary: buildChangeSummary(fileGroups),
     verification_commands: verificationCommands,
     review_points: buildReviewPoints(fileGroups, taskContext),
@@ -1245,9 +1289,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     verificationCommands,
     e2eCommand,
     flowVerification: latestFlowVerification,
-    verificationEvidence
+    verificationEvidence,
+    inferredSpec,
+    specDrift
   });
-  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext });
+  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift });
   return context;
 }
 
@@ -1517,6 +1563,46 @@ function buildTargetedTestCommand(testFiles, testRunner = null) {
   return `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`;
 }
 
+function buildSpecGateNode({ fileGroups, inferredSpec, specDrift }) {
+  const driftHighCount = Array.isArray(specDrift?.items)
+    ? specDrift.items.filter((item) => item.severity === 'high').length
+    : 0;
+  if (inferredSpec) {
+    const clauseCount = Array.isArray(inferredSpec.clauses) ? inferredSpec.clauses.length : 0;
+    const status = clauseCount === 0
+      ? 'inferred_empty'
+      : (driftHighCount > 0 ? 'needs_review' : 'inferred');
+    const baseReason = clauseCount === 0
+      ? 'inferred spec clauses が 0 (Spec を再生成してください)'
+      : `${clauseCount} clauses inferred from Story+Code+Test`;
+    const reason = driftHighCount > 0
+      ? `${baseReason} (severity=high な drift が ${driftHighCount} 件)`
+      : baseReason;
+    return {
+      id: 'spec',
+      type: 'spec_gate',
+      label: 'Spec Gate',
+      status,
+      reason,
+      inferred_spec: {
+        story_id: inferredSpec.story_id,
+        clauses: clauseCount,
+        generated_at: inferredSpec.generated_at ?? null
+      },
+      drift: specDrift?.summary ?? null
+    };
+  }
+  return {
+    id: 'spec',
+    type: 'spec_gate',
+    label: 'Spec Gate',
+    status: fileGroups.specifications.count > 0 ? 'present' : 'implicit',
+    reason: fileGroups.specifications.count > 0
+      ? '仕様差分がある'
+      : 'Story受け入れ基準を仕様として扱う (vibepro spec fingerprint で Spec を生成可)'
+  };
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -1526,7 +1612,9 @@ function buildGateDag({
   verificationCommands,
   e2eCommand,
   flowVerification,
-  verificationEvidence
+  verificationEvidence,
+  inferredSpec = null,
+  specDrift = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -1561,15 +1649,7 @@ function buildGateDag({
       status: architectureDecision.startsWith('ADRあり') || architectureDecision.startsWith('ADR不要') ? 'satisfied' : 'needs_review',
       reason: architectureDecision
     },
-    {
-      id: 'spec',
-      type: 'spec_gate',
-      label: 'Spec Gate',
-      status: fileGroups.specifications.count > 0 ? 'present' : 'implicit',
-      reason: fileGroups.specifications.count > 0
-        ? '仕様差分がある'
-        : 'Story受け入れ基準を仕様として扱う'
-    },
+    buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
     {
       id: 'code',
       type: 'code_gate',
@@ -1974,9 +2054,15 @@ function buildReviewPoints(fileGroups, taskContext = null) {
   return points;
 }
 
-function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null }) {
+function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null, specDrift = null }) {
   const risks = [];
   const dirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
+  if (Array.isArray(specDrift?.items)) {
+    const highDrift = specDrift.items.filter((item) => item.severity === 'high');
+    if (highDrift.length > 0) {
+      risks.push(`Spec drift severity=high が ${highDrift.length} 件 (詳細: .vibepro/spec/${specDrift.story_id}/drift.md)`);
+    }
+  }
   if (taskContext && !taskContext.artifacts.handoff_json) {
     risks.push('Task指定はあるがhandoff.jsonが見つからない');
   }

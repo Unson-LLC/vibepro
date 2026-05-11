@@ -28,6 +28,8 @@ import {
   normalizeGraphPath
 } from './graph-context.js';
 import { buildRequirementConsistency, renderRequirementConsistencyReport } from './requirement-consistency.js';
+import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
+import { readInferredSpec } from './spec-store.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
@@ -46,9 +48,17 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const { currentStory } = resolveStoryContext(config);
   const manifest = await readManifest(root);
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
+  const inferredSpec = await readInferredSpec(root, currentStory.story_id);
   evidence.requirement_consistency = await buildRequirementConsistency(root, {
-    story: currentStory
+    story: currentStory,
+    inferredSpec
   });
+  evidence.inferred_spec = inferredSpec
+    ? { story_id: inferredSpec.story_id, clauses: inferredSpec.clauses?.length ?? 0, generated_at: inferredSpec.generated_at ?? null }
+    : null;
+  evidence.spec_drift = inferredSpec
+    ? await buildSpecDrift(root, { storyId: currentStory.story_id, spec: inferredSpec })
+    : { status: 'inconclusive', reason: 'no inferred spec', items: [] };
   const findings = buildFindings(evidence);
   evidence.findings = findings;
   evidence.action_candidates = await buildActionCandidates(root, evidence, graphIndex);
@@ -80,6 +90,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const findingReviewPath = path.join(runDir, 'finding-review.md');
   const refactoringDeltaPath = path.join(runDir, 'refactoring-delta.md');
   const requirementConsistencyPath = path.join(runDir, 'requirement-consistency.md');
+  const specDriftPath = path.join(runDir, 'spec-drift.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
@@ -118,6 +129,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   }));
   await writeFile(refactoringDeltaPath, renderRefactoringDelta(evidence.refactoring_delta));
   await writeFile(requirementConsistencyPath, renderRequirementConsistencyReport(evidence.requirement_consistency));
+  await writeFile(specDriftPath, renderDriftMarkdown(evidence.spec_drift));
 
   const run = {
     run_id: runId,
@@ -137,6 +149,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       finding_review: toWorkspaceRelative(root, findingReviewPath),
       refactoring_delta: toWorkspaceRelative(root, refactoringDeltaPath),
       requirement_consistency: toWorkspaceRelative(root, requirementConsistencyPath),
+      spec_drift: toWorkspaceRelative(root, specDriftPath),
       ...storyTasks.artifacts
     }
   };

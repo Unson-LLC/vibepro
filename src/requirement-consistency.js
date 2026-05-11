@@ -1,8 +1,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const MAX_SCAN_FILES = 80;
-const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
+export const MAX_SCAN_FILES = 80;
+export const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const STORY_DIRS = [
   path.join('docs', 'management', 'stories', 'active'),
   path.join('docs', 'management', 'stories')
@@ -16,7 +16,7 @@ const REQUIREMENT_SOURCE_DIRS = [
   { kind: 'policy', dir: path.join('docs', 'frames') },
   { kind: 'policy', dir: path.join('docs', '00-glossary') }
 ];
-const INVARIANT_PATTERNS = [
+export const INVARIANT_PATTERNS = [
   /\bmust\b/i,
   /\bshall\b/i,
   /\bnever\b/i,
@@ -45,7 +45,7 @@ const INVARIANT_PATTERNS = [
   /subscription|サブスクリプション/i
 ];
 
-const DOMAIN_KEYWORDS = [
+export const DOMAIN_KEYWORDS = [
   'auth',
   '認証',
   '認可',
@@ -72,7 +72,9 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
     codeFiles
   });
   const policyRefs = requirementSources.filter((source) => source.kind === 'policy');
-  const invariants = extractInvariants(storySource, requirementSources);
+  const invariants = options.inferredSpec
+    ? extractInvariantsFromInferredSpec(options.inferredSpec, storySource)
+    : extractInvariants(storySource, requirementSources);
   const codeScenarios = await collectCodeScenarios(root, codeFiles);
   const scenarioGaps = buildScenarioGaps({ invariants, codeScenarios, storySource, requirementSources });
   const contradictions = buildContradictions({ invariants, codeScenarios, storySource });
@@ -178,7 +180,7 @@ async function findStorySource(repoRoot, story) {
   return parseStoryLikeDocument(repoRoot, target, 'story');
 }
 
-async function resolveStorySource(repoRoot, options) {
+export async function resolveStorySource(repoRoot, options) {
   if (options.storySource?.path) {
     try {
       const parsed = await parseStoryLikeDocument(repoRoot, options.storySource.path, 'story');
@@ -314,6 +316,22 @@ function compareRequirementSources(a, b) {
   return String(a.path ?? '').localeCompare(String(b.path ?? ''));
 }
 
+function extractInvariantsFromInferredSpec(spec, storySource) {
+  if (!spec || !Array.isArray(spec.clauses)) return [];
+  return spec.clauses
+    .filter((clause) => clause && typeof clause.statement === 'string')
+    .map((clause) => ({
+      id: clause.id,
+      text: clause.statement.slice(0, 240),
+      source: {
+        kind: 'inferred_spec',
+        path: storySource?.path ?? null,
+        clause_type: clause.type ?? 'invariant'
+      }
+    }))
+    .slice(0, 32);
+}
+
 function extractInvariants(storySource, requirementSources) {
   const storyInvariants = extractInvariantTexts(storySource).map((text, index) => ({
     id: `REQ-INV-${String(index + 1).padStart(3, '0')}`,
@@ -333,7 +351,7 @@ function extractInvariants(storySource, requirementSources) {
   return [...storyInvariants, ...sourceInvariants].slice(0, 24);
 }
 
-function extractInvariantTexts(doc) {
+export function extractInvariantTexts(doc) {
   const sourceKind = doc?.kind ?? inferSourceKind(doc?.path);
   const content = [
     doc?.policy,
@@ -382,7 +400,7 @@ function extractImportantLines(content) {
     .slice(0, 80);
 }
 
-async function resolveCodeFiles(repoRoot, options) {
+export async function resolveCodeFiles(repoRoot, options) {
   const files = options.files?.length > 0
     ? options.files
     : options.fileGroups
@@ -410,7 +428,7 @@ async function listLikelyRuntimeFiles(repoRoot) {
     .slice(0, MAX_SCAN_FILES);
 }
 
-async function collectCodeScenarios(repoRoot, files) {
+export async function collectCodeScenarios(repoRoot, files) {
   const scenarios = [];
   for (const file of files) {
     const absolute = path.join(repoRoot, file);
@@ -581,7 +599,7 @@ function relatedInvariantIds(invariants, text) {
     .slice(0, 5);
 }
 
-async function parseStoryLikeDocument(repoRoot, absoluteOrRelativeFile, kind = null) {
+export async function parseStoryLikeDocument(repoRoot, absoluteOrRelativeFile, kind = null) {
   const absolute = path.isAbsolute(absoluteOrRelativeFile)
     ? absoluteOrRelativeFile
     : path.join(repoRoot, absoluteOrRelativeFile);

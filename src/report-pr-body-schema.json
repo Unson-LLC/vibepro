@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibepro.local/schemas/report-pr-body.json",
+  "title": "VibePro PR-body narrative",
+  "description": "AI-authored narrative slots inserted into pr-body.md. VibePro keeps the section skeleton fixed; AI only writes the prose inside the declared slots, citing only files / findings / clauses / drift items that exist.",
+  "type": "object",
+  "required": ["schema_version", "story_id", "kind", "narrative_slots"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "0.1.0" },
+    "story_id": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "const": "pr-body" },
+    "generated_at": { "type": "string" },
+    "generated_by": {
+      "type": "object",
+      "properties": {
+        "caller": { "type": "string" },
+        "stage": { "type": "string", "enum": ["ai_synthesis", "static_fallback"] }
+      }
+    },
+    "inputs_digest": { "type": "object" },
+    "previous_report_id": { "type": ["string", "null"] },
+    "narrative_slots": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/slot" }
+    }
+  },
+  "$defs": {
+    "slot": {
+      "type": "object",
+      "required": ["id", "slot", "text"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Talking-point id. Use TP-<n>. New slots may use TP-NEW-<n>; validator assigns stable ids."
+        },
+        "slot": {
+          "type": "string",
+          "enum": ["summary", "review_focus", "risks_synthesis", "open_questions"],
+          "description": "Where in pr-body.md the text is inserted. One id per slot per run; multiple ids per slot allowed for review_focus and open_questions only."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 4,
+          "description": "Plain prose / single bullet. No markdown headings. <= 280 chars per slot item recommended."
+        },
+        "citations": {
+          "type": "object",
+          "description": "What the text refers to. Validator rejects any reference to a non-existent file / finding / clause / drift item.",
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "finding_ids": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "clause_ids": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "drift_ids": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "numerical_claims": {
+          "type": "array",
+          "description": "Claims about counts that must match fingerprint values. Validator rejects on contradiction.",
+          "items": {
+            "type": "object",
+            "required": ["field", "value"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": [
+                  "changed_files_count",
+                  "drift_high_count",
+                  "drift_total_count",
+                  "requirement_invariant_count",
+                  "requirement_contradiction_count",
+                  "acceptance_criteria_count"
+                ]
+              },
+              "value": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "first_seen_at": { "type": "string" },
+        "last_revised_at": { "type": "string" }
+      }
+    }
+  }
+}
