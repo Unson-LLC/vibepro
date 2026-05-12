@@ -3677,6 +3677,12 @@ test('diagnose ignores gitignored env files and downgrades variable secret refer
   await writeFile(path.join(repo, '.gitignore'), '.env\n.env.preview\n');
   await writeFile(path.join(repo, '.env'), 'OPENAI_API_KEY=sk-123456789012345678901234\n');
   await writeFile(path.join(repo, '.env.preview'), 'NEXTAUTH_SECRET=secret_1234567890abcdef\n');
+  await writeFile(path.join(repo, '.env.production'), [
+    'DOTENV_PUBLIC_KEY_PRODUCTION=dotenvx_public_key_1234567890123456789012345678901234567890',
+    'OPENAI_API_KEY=encrypted:abc1234567890abcdef',
+    'DATABASE_URL="encrypted:def1234567890abcdef"',
+    ''
+  ].join('\n'));
   await writeFile(path.join(repo, 'app.js'), `
 const provider = new OpenAIProvider({ apiKey: openaiKey });
 access_token = get_token()
@@ -3698,6 +3704,7 @@ const secret_key = plainsecretvalue;
   const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', '2026-05-09T010000Z', 'evidence.json'));
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env'), false);
   assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.preview'), false);
+  assert.equal(evidence.static_site.secret_hits.some((hit) => hit.file === '.env.production'), false);
   const variableReferenceHits = evidence.static_site.secret_hits.filter(
     (hit) => hit.file === 'app.js' && /openaiKey|get_token/.test(hit.excerpt)
   );

@@ -161,6 +161,7 @@ async function filterGitIgnoredFiles(root, files) {
 
 function collectSecretHits(hits, file, lineNumber, line) {
   if (isEnvFile(file) && line.trim() && !line.trim().startsWith('#')) {
+    if (isSafeEnvFileLine(line)) return;
     const risk = classifySecretRisk(file, line, 'env_file_value');
     hits.push({
       file,
@@ -190,6 +191,16 @@ function collectSecretHits(hits, file, lineNumber, line) {
 function isEnvFile(file) {
   const basename = path.basename(file);
   return basename === '.env' || basename.startsWith('.env.');
+}
+
+function isSafeEnvFileLine(line) {
+  const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(line.trim());
+  if (!match) return false;
+
+  const [, key, rawValue] = match;
+  if (key.startsWith('DOTENV_PUBLIC_KEY')) return true;
+
+  return /^"?encrypted:/.test(rawValue.trim());
 }
 
 function collectXssHits(hits, file, lineNumber, line) {
