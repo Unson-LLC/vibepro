@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { buildRuntimeDoctorCheck, collectRuntimeInfo } from './runtime-info.js';
 import { getWorkspaceDir, MANIFEST_FILE, SCHEMA_VERSION, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 
 const REQUIRED_GITIGNORE_LINE = `${WORKSPACE_DIR}/`;
@@ -24,7 +25,8 @@ export async function runDoctor(repoRoot, options = {}) {
     repairs: [],
     next_commands: [],
     next_actions: [],
-    artifacts: {}
+    artifacts: {},
+    toolchain: await collectRuntimeInfo()
   };
 
   const manifest = await readJsonIfExists(manifestPath);
@@ -44,6 +46,7 @@ export async function runDoctor(repoRoot, options = {}) {
         safe_to_run: true
       })]
     });
+    result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
     applyNextActions(result);
     return result;
   }
@@ -267,6 +270,7 @@ export async function runDoctor(repoRoot, options = {}) {
   if (configChanged) await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   if (manifestChanged) await writeManifest(root, manifest);
 
+  result.checks.push(buildRuntimeDoctorCheck(result.toolchain));
   result.overall_status = resolveDoctorStatus(result);
   applyNextActions(result);
   if (options.writeArtifacts !== false) await writeDoctorArtifact(root, result);

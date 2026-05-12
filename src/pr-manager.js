@@ -14,6 +14,7 @@ import {
 import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
+import { collectRuntimeInfo } from './runtime-info.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
@@ -22,6 +23,7 @@ const DEFAULT_MAX_REVIEWABLE_FILES = 30;
 
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  const toolchain = await collectRuntimeInfo();
   const git = await collectGitState(root, options);
   const workspace = await readWorkspaceState(root);
   const story = resolveStory(workspace.config, options.storyId, {
@@ -79,6 +81,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun,
     verificationEvidence
   });
+  prContext.toolchain = toolchain;
   const suggestedBranch = options.branchName ?? buildBranchName(story);
   const splitPlan = await buildPrSplitPlan(root, {
     story,
@@ -123,6 +126,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     scope,
     split_plan: splitPlan,
     pr_context: prContext,
+    toolchain,
     task_context: taskContext,
     latest_story_run: latestStoryRun,
     suggested_branch: suggestedBranch,
@@ -158,10 +162,13 @@ export async function preparePullRequest(repoRoot, options = {}) {
   });
   await writeFile(reportPath, reviewCockpitHtml);
   await writeFile(reviewCockpitPath, reviewCockpitHtml);
+  const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
+  const existingHumanReview = await readJsonIfExists(humanReviewPath);
   await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
     preparation,
     reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
-    gateDagPath: toWorkspaceRelative(root, gateDagReportPath)
+    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+    existingReview: existingArchitectureReview
   }), null, 2)}\n`);
   await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
     preparation,
@@ -169,7 +176,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
     bodyPath: toWorkspaceRelative(root, bodyPath),
     gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath)
+    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+    existingReview: existingHumanReview
   }), null, 2)}\n`);
 
   if (workspace.initialized) {
@@ -214,7 +222,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   };
 }
 
-function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateDagPath }) {
+function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateDagPath, existingReview = null }) {
   const architectureGate = preparation.pr_context?.gate_dag?.nodes?.find((node) => node.id === 'architecture') ?? null;
   const specGate = preparation.pr_context?.gate_dag?.nodes?.find((node) => node.id === 'spec') ?? null;
   return {
@@ -239,7 +247,8 @@ function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateD
         reason: specGate.reason ?? null
       } : null
     },
-    review_record: {
+    toolchain: preparation.toolchain ?? null,
+    review_record: existingReview?.review_record ?? {
       approved: null,
       reviewer: null,
       reason: null,
@@ -249,7 +258,7 @@ function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateD
   };
 }
 
-function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architectureReviewPath, bodyPath, gateDagPath, splitPlanPath }) {
+function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architectureReviewPath, bodyPath, gateDagPath, splitPlanPath, existingReview = null }) {
   const visualQa = preparation.pr_context?.visual_qa ?? null;
   const completionQuality = preparation.pr_context?.completion_quality ?? null;
   return {
@@ -283,6 +292,7 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
         required_evidence_count: completionQuality.required_evidence.length
       } : null
     },
+    toolchain: preparation.toolchain ?? null,
     decision_options: [
       'proceed',
       'split_pr',
@@ -290,7 +300,7 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
       'waive_with_reason',
       'block'
     ],
-    review_record: {
+    review_record: existingReview?.review_record ?? {
       selected_decision: null,
       reviewer: null,
       reason: null,
@@ -374,7 +384,10 @@ export async function createPullRequest(repoRoot, options = {}) {
   const title = options.title ?? buildPrTitle(preparation);
   const bodyFile = prepareResult.artifacts.pr_body;
   const warnings = [];
-  const gateOverride = buildGateOverride(gateDag, options);
+  const gateOverride = buildGateOverride(gateDag, options, {
+    completionQuality: preparation.pr_context?.completion_quality ?? null,
+    toolchain: preparation.toolchain ?? null
+  });
   if (gateOverride?.allowed) {
     warnings.push(`Gate override used: ${gateOverride.reason}`);
     warnings.push(`Unresolved gates: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`);
@@ -410,6 +423,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     task_context: preparation.task_context,
     gate_dag: gateDag ?? null,
     gate_override: gateOverride,
+    toolchain: preparation.toolchain ?? null,
     base: baseBranch,
     head: headBranch,
     title,
@@ -885,7 +899,20 @@ ${risks}
 - latest story run: ${latestStoryRun?.run_id ?? '-'}
 - gate: ${latestStoryRun?.gate_status ?? '-'}
 - PR strategy: ${scope.recommended_strategy}
+- runtime: ${renderRuntimeSummary(prContext, story)}
 `;
+}
+
+function renderRuntimeSummary(prContext, story) {
+  const toolchain = prContext.toolchain ?? null;
+  if (!toolchain) return 'not recorded';
+  const git = toolchain.source_git ?? {};
+  const version = toolchain.package?.version ?? 'unknown';
+  const commit = git.commit ? git.commit.slice(0, 12) : 'no-git';
+  const branch = git.branch ?? 'detached/package';
+  const dirty = git.dirty ? 'dirty' : 'clean';
+  const storyLabel = story?.story_id ? `story=${story.story_id}` : 'story=unknown';
+  return `vibepro@${version} ${commit} ${branch} ${dirty} (${storyLabel})`;
 }
 
 function renderPrSplitSection(splitPlan) {
@@ -1548,6 +1575,15 @@ async function readRunEvidenceIfExists(repoRoot, run) {
   if (!evidencePath) return null;
   try {
     return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;
@@ -2686,16 +2722,42 @@ function formatUnresolvedGateList(gates) {
     .join(', ');
 }
 
-function buildGateOverride(gateDag, options) {
+function buildGateOverride(gateDag, options, context = {}) {
   if (!gateDag || gateDag.overall_status === 'ready_for_review') return null;
   if (!options.allowNeedsVerification) return null;
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
+  const completionQuality = context.completionQuality ?? null;
   return {
     allowed: true,
+    waiver_policy: 'cli_reason',
+    severity: criticalGates.length > 0 || completionQuality?.status === 'needs_quality_closure'
+      ? 'critical'
+      : 'warning',
     reason: options.verificationWaiver,
-    unresolved_gates: collectUnresolvedRequiredGates(gateDag),
+    unresolved_gates: unresolvedGates,
+    critical_unresolved_gates: criticalGates,
+    completion_quality: completionQuality ? {
+      status: completionQuality.status,
+      target_quality_rate: completionQuality.target_quality_rate,
+      metrics: completionQuality.metrics,
+      required_evidence: completionQuality.required_evidence
+    } : null,
+    required_evidence: completionQuality?.required_evidence ?? [],
+    toolchain: context.toolchain ?? null,
     overall_status: gateDag.overall_status,
     recorded_at: new Date().toISOString()
   };
+}
+
+function isCriticalUnresolvedGate(gate) {
+  if (gate.id === 'story' && gate.status === 'transient') return true;
+  if (gate.id === 'architecture' && gate.status === 'needs_review') return true;
+  if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
+  if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
+  return gate.status === 'failed' || gate.status === 'contradicted';
 }
 
 async function assertStrictTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {

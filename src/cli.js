@@ -16,6 +16,7 @@ import {
 } from './performance-measurer.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
+import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
@@ -101,6 +102,7 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
   vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
   vibepro story list [repo] [--all]
@@ -229,6 +231,20 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.verification, null, 2)}\n`
           : renderFlowVerificationSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'record') {
+        const result = await recordVerificationEvidence(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          kind: getOption(rest, '--kind'),
+          status: getOption(rest, '--status'),
+          command: getOption(rest, '--command'),
+          summary: getOption(rest, '--summary'),
+          artifact: getOption(rest, '--artifact')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.evidence, null, 2)}\n`
+          : renderVerificationEvidenceSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown verify command: ${subcommand ?? ''}\n\n${HELP}`);

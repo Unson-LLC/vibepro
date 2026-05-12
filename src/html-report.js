@@ -550,12 +550,38 @@ function renderGateOverridePanel(gateOverride) {
   if (!gateOverride?.allowed) {
     return renderCards('Gate Override', [{ title: 'None', detail: 'Gate overrideは使われていません。', tone: 'good' }]);
   }
-  return renderCards('Gate Override', [{
-    title: 'Override Allowed',
-    detail: gateOverride.reason,
-    meta: `overall=${gateOverride.overall_status}; unresolved=${gateOverride.unresolved_gates?.length ?? 0}`,
-    tone: 'danger'
-  }]);
+  const critical = gateOverride.critical_unresolved_gates ?? [];
+  const evidence = gateOverride.required_evidence ?? [];
+  const toolchain = gateOverride.toolchain;
+  return `
+    ${renderCards('Gate Override', [{
+      title: `Override Allowed (${gateOverride.severity ?? 'warning'})`,
+      detail: gateOverride.reason,
+      meta: `policy=${gateOverride.waiver_policy ?? 'unknown'}; overall=${gateOverride.overall_status}; unresolved=${gateOverride.unresolved_gates?.length ?? 0}; critical=${critical.length}`,
+      tone: gateOverride.severity === 'critical' ? 'danger' : 'warn'
+    }])}
+    <section>
+      <h2>Critical Unresolved Gates</h2>
+      ${renderList(critical.length > 0
+        ? critical.map((gate) => `${gate.label ?? gate.id}: ${gate.status} - ${gate.reason ?? gate.command ?? '-'}`)
+        : ['なし'])}
+    </section>
+    <section>
+      <h2>Completion Quality Waiver Evidence</h2>
+      <p><span class="${statusClass(gateOverride.completion_quality?.status ?? 'unknown')}">${escapeHtml(gateOverride.completion_quality?.status ?? 'unknown')}</span></p>
+      ${renderList(evidence.length > 0 ? evidence : ['不足証跡なし'])}
+    </section>
+    <section>
+      <h2>VibePro Runtime</h2>
+      ${renderList([
+        `package: ${toolchain?.package?.name ?? 'vibepro'}@${toolchain?.package?.version ?? 'unknown'}`,
+        `root: ${toolchain?.package?.root ?? '-'}`,
+        `commit: ${toolchain?.source_git?.commit ?? '-'}`,
+        `branch: ${toolchain?.source_git?.branch ?? '-'}`,
+        `dirty: ${toolchain?.source_git?.dirty == null ? '-' : String(toolchain.source_git.dirty)}`
+      ])}
+    </section>
+  `;
 }
 
 function gateStatus(gateDag, id) {

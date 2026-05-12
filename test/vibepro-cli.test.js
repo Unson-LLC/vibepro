@@ -98,6 +98,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro help \[command\]/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
+  assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
 });
@@ -145,6 +146,33 @@ test('doctor reports uninitialized repositories without creating a workspace', a
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.overall_status, 'uninitialized');
+  assert.equal(result.result.checks.some((check) => check.id === 'VP-DOCTOR-CLI-RUNTIME'), true);
+  assert.equal(result.result.toolchain.package.name, 'vibepro');
+  await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+});
+
+test('verify record requires an initialized workspace', async () => {
+  const repo = await makeRepo();
+  let stderrOutput = '';
+
+  const result = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-x',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test'
+  ], {
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOutput, /requires an initialized VibePro workspace/);
   await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
 });
 
@@ -1912,6 +1940,10 @@ Weighted semantic/layout residual: **34%**
   assert.equal(result.exitCode, 0);
   const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
+  assert.equal(prepare.toolchain.package.name, 'vibepro');
+  assert.match(prepare.toolchain.package.version, /^0\.1\.0/);
+  assert.equal(typeof prepare.toolchain.package.root, 'string');
+  assert.equal(prepare.pr_context.toolchain.package.name, 'vibepro');
   assert.equal(prepare.task_context.task.id, 'TASK-001');
   assert.equal(prepare.task_context.artifacts.handoff_json, '.vibepro/stories/story-pr-prepare/tasks/TASK-001/handoff.json');
   assert.equal(prepare.scope.status, 'reviewable');
@@ -1937,6 +1969,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /blocked_by_gate/);
   assert.match(prBody, /生の `gh pr create` はVibePro Gateを通らない/);
   assert.match(prBody, /## VibePro refactoring delta/);
+  assert.match(prBody, /runtime: vibepro@0\.1\.0/);
   assert.match(prBody, /5ファイル \/ 8出現 -> 3ファイル \/ 5出現/);
   assert.match(prBody, /### 次の候補/);
   assert.match(prBody, /3ファイル \/ 5出現/);
@@ -1993,6 +2026,7 @@ Weighted semantic/layout residual: **34%**
   assert.equal(architectureReview.required, true);
   assert.equal(architectureReview.source_artifacts.review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
   assert.equal(architectureReview.review_record.approved, null);
+  assert.equal(architectureReview.toolchain.package.name, 'vibepro');
   const humanReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'human-review.json'));
   assert.equal(humanReview.story_id, 'story-pr-prepare');
   assert.equal(humanReview.recommended_decision, 'add_evidence');
@@ -2009,6 +2043,7 @@ Weighted semantic/layout residual: **34%**
   assert.equal(humanReview.evidence_summary.completion_quality.status, 'needs_quality_closure');
   assert.equal(humanReview.evidence_summary.completion_quality.required_evidence_count > 0, true);
   assert.equal(humanReview.review_record.selected_decision, null);
+  assert.equal(humanReview.toolchain.package.name, 'vibepro');
   assert.equal(prepare.next_commands.some((command) => command.startsWith('gh pr create')), false);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), true);
 
@@ -2047,7 +2082,13 @@ Weighted semantic/layout residual: **34%**
   assert.equal(createResult.exitCode, 0);
   assert.equal(createResult.result.execution.dry_run, true);
   assert.equal(createResult.result.execution.gate_override.allowed, true);
+  assert.equal(createResult.result.execution.gate_override.waiver_policy, 'cli_reason');
+  assert.equal(createResult.result.execution.gate_override.severity, 'critical');
   assert.equal(createResult.result.execution.gate_override.reason, 'UI影響のないPR本文生成テストのためE2Eは対象外');
+  assert.equal(createResult.result.execution.gate_override.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), true);
+  assert.equal(createResult.result.execution.gate_override.completion_quality.status, 'needs_quality_closure');
+  assert.equal(createResult.result.execution.gate_override.required_evidence.length > 0, true);
+  assert.equal(createResult.result.execution.toolchain.package.name, 'vibepro');
   assert.equal(createResult.result.execution.task_context.task.id, 'TASK-001');
   assert.equal(createResult.result.execution.base, 'main');
   assert.equal(createResult.result.execution.head, 'feature/test-story');
@@ -2057,10 +2098,15 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prCreate.mode, 'pr_create');
   assert.equal(prCreate.dry_run, true);
   assert.equal(prCreate.gate_override.allowed, true);
+  assert.equal(prCreate.gate_override.waiver_policy, 'cli_reason');
+  assert.equal(prCreate.toolchain.package.name, 'vibepro');
   const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
   assert.match(prCreateHtml, /data-vibepro-report="pr-create"/);
   assert.match(prCreateHtml, /VibePro PR Create/);
   assert.match(prCreateHtml, /Gate Override/);
+  assert.match(prCreateHtml, /Critical Unresolved Gates/);
+  assert.match(prCreateHtml, /Completion Quality Waiver Evidence/);
+  assert.match(prCreateHtml, /VibePro Runtime/);
   assert.match(prCreateHtml, /Command Timeline/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
@@ -2103,6 +2149,77 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.dry_run, false);
   assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
+});
+
+test('verify record promotes gate evidence into the next pr prepare', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'tests'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: {
+      test: 'vitest',
+      typecheck: 'tsc --noEmit',
+      'test:e2e': 'playwright test'
+    },
+    devDependencies: {
+      vitest: '^2.0.0',
+      typescript: '^5.0.0',
+      '@playwright/test': '^1.0.0'
+    }
+  }, null, 2));
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- PR本文に検証証跡が入る
+`);
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const ok = true;\n');
+  await writeFile(path.join(repo, 'tests', 'feature.test.js'), 'import test from "node:test";\ntest("ok", () => {});\n');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'npm test -- tests/feature.test.js',
+    '--summary', 'unit passed'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'typecheck',
+    '--status', 'pass',
+    '--command', 'npm run typecheck',
+    '--summary', 'typecheck passed'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'fail',
+    '--command', 'npm run test:e2e',
+    '--summary', 'button did not navigate'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const unitGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:unit');
+  const integrationGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:integration');
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(unitGate.status, 'passed');
+  assert.match(unitGate.reason, /unit passed/);
+  assert.equal(integrationGate.status, 'passed');
+  assert.match(integrationGate.reason, /typecheck passed/);
+  assert.equal(e2eGate.status, 'failed');
+  assert.match(e2eGate.reason, /button did not navigate/);
+  assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
 });
 
 test('pr prepare flags requirement contradictions from story invariants and code states', async () => {
