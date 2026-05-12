@@ -368,8 +368,9 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
       `(needs_evidence_count=${gateDag.summary?.needs_evidence_count ?? 0}). ` +
       `Unresolved gates: ${formatUnresolvedGateList(unresolved)}. ` +
-      `Provide evidence for required gates (Story/Architecture/Spec/Unit/Integration/E2E/Visual QA) or pass ` +
-      `--allow-needs-verification --verification-waiver <reason> to bypass with an auditable reason.`
+      `Provide evidence for critical gates (Story/Architecture/Spec/Requirement/E2E/Visual QA/failed checks). ` +
+      `Only non-critical unresolved gates can use ` +
+      `--allow-needs-verification --verification-waiver <reason> with an auditable reason.`
     );
   }
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && options.allowNeedsVerification && !options.verificationWaiver) {
@@ -377,6 +378,19 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Pre-create gate waiver missing: --allow-needs-verification requires ` +
       `--verification-waiver <reason> so the PR records why unresolved gates are acceptable.`
     );
+  }
+  if (gateDag && gateDag.overall_status !== 'ready_for_review' && options.allowNeedsVerification && options.verificationWaiver) {
+    const unresolved = collectUnresolvedRequiredGates(gateDag);
+    const critical = unresolved.filter(isCriticalUnresolvedGate);
+    if (critical.length > 0) {
+      throw new Error(
+        `Pre-create critical gate check failed: critical unresolved gates cannot be waived by reason alone. ` +
+        `Critical gates: ${formatUnresolvedGateList(critical)}. ` +
+        `Required evidence: ${formatCriticalGateEvidenceInstructions(critical)}. ` +
+        `Record passing verification with \`vibepro verify record --id ${preparation.story.story_id} --kind <unit|integration|e2e> --status pass --command <cmd>\` ` +
+        `or resolve the Story/Architecture/Spec/Requirement/Visual QA gate, then rerun \`vibepro pr prepare\` and \`vibepro pr create\`.`
+      );
+    }
   }
 
   const baseBranch = stripRemote(options.prBase ?? preparation.git.base_ref);
@@ -2674,7 +2688,7 @@ function renderPrGateEnforcement(gateDag) {
     '- status: blocked_by_gate',
     '- completion: 未完了Gateが残っているため、このPRはVibePro上の完了扱い不可',
     `- unresolved: ${formatUnresolvedGateList(unresolved)}`,
-    '- required action: 対象Gateの証跡を追加するか、`vibepro pr create --allow-needs-verification --verification-waiver <reason>` で理由付きwaiverを記録する',
+    '- required action: critical Gateは証跡で解消する。非critical Gateのみ `vibepro pr create --allow-needs-verification --verification-waiver <reason>` で理由付きwaiverを記録できる',
     '- guardrail: 生の `gh pr create` はVibePro Gateを通らないため、PR作成経路として使わない'
   ].join('\n');
 }
@@ -2722,6 +2736,22 @@ function formatUnresolvedGateList(gates) {
     .join(', ');
 }
 
+function formatCriticalGateEvidenceInstructions(gates) {
+  if (!gates || gates.length === 0) return 'none';
+  return gates
+    .map((gate) => {
+      if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification.';
+      if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence.';
+      if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
+      if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
+      if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
+      if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
+      if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
+      return `${gate.label ?? gate.id} requires evidence before PR creation.`;
+    })
+    .join(' ');
+}
+
 function buildGateOverride(gateDag, options, context = {}) {
   if (!gateDag || gateDag.overall_status === 'ready_for_review') return null;
   if (!options.allowNeedsVerification) return null;
@@ -2731,7 +2761,7 @@ function buildGateOverride(gateDag, options, context = {}) {
   return {
     allowed: true,
     waiver_policy: 'cli_reason',
-    severity: criticalGates.length > 0 || completionQuality?.status === 'needs_quality_closure'
+    severity: criticalGates.length > 0
       ? 'critical'
       : 'warning',
     reason: options.verificationWaiver,

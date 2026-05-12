@@ -2065,7 +2065,48 @@ Weighted semantic/layout residual: **34%**
   assert.equal(missingWaiverResult.exitCode, 1);
   assert.match(waiverStderrOutput, /Pre-create gate waiver missing/);
 
-  // --allow-needs-verification と --verification-waiver を渡せば監査証跡付きで通る
+  // critical gate は --allow-needs-verification と --verification-waiver だけでは通らない
+  let criticalWaiverStderrOutput = '';
+  const criticalWaiverResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'UI影響のないPR本文生成テストのためE2Eは対象外'
+  ], {
+    stderr: { write: (text) => { criticalWaiverStderrOutput += text; } }
+  });
+  assert.equal(criticalWaiverResult.exitCode, 1);
+  assert.match(criticalWaiverStderrOutput, /Pre-create critical gate check failed/);
+  assert.match(criticalWaiverStderrOutput, /E2E Gate:needs_(setup|evidence)/);
+  assert.match(criticalWaiverStderrOutput, /Visual QA Gate:needs_review/);
+  assert.match(criticalWaiverStderrOutput, /vibepro verify record/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E passed'
+  ])).exitCode, 0);
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), `# Visual QA
+
+Weighted semantic/layout residual: **1%**
+`);
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'iteration-1', 'pixel-residual.json'), JSON.stringify({
+    meanAbsResidualPct: 1,
+    rmsResidualPct: 1,
+    pixelChangedPctOver32: 1
+  }, null, 2));
+
+  // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   const createResult = await runCli([
     'pr',
     'create',
@@ -2083,9 +2124,9 @@ Weighted semantic/layout residual: **34%**
   assert.equal(createResult.result.execution.dry_run, true);
   assert.equal(createResult.result.execution.gate_override.allowed, true);
   assert.equal(createResult.result.execution.gate_override.waiver_policy, 'cli_reason');
-  assert.equal(createResult.result.execution.gate_override.severity, 'critical');
+  assert.equal(createResult.result.execution.gate_override.severity, 'warning');
   assert.equal(createResult.result.execution.gate_override.reason, 'UI影響のないPR本文生成テストのためE2Eは対象外');
-  assert.equal(createResult.result.execution.gate_override.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), true);
+  assert.equal(createResult.result.execution.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(createResult.result.execution.gate_override.completion_quality.status, 'needs_quality_closure');
   assert.equal(createResult.result.execution.gate_override.required_evidence.length > 0, true);
   assert.equal(createResult.result.execution.toolchain.package.name, 'vibepro');
@@ -2099,6 +2140,7 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prCreate.dry_run, true);
   assert.equal(prCreate.gate_override.allowed, true);
   assert.equal(prCreate.gate_override.waiver_policy, 'cli_reason');
+  assert.equal(prCreate.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(prCreate.toolchain.package.name, 'vibepro');
   const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
   assert.match(prCreateHtml, /data-vibepro-report="pr-create"/);
@@ -3468,14 +3510,18 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   await stat(path.join(runDir, 'risk-register.md'));
   await stat(path.join(runDir, 'requirement-consistency.md'));
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
+  const summary = await readFile(path.join(runDir, 'summary.md'), 'utf8');
   assert.equal(evidence.graphify.node_count, 2);
   assert.equal(evidence.graphify.edge_count, 2);
   assert.equal(evidence.graphify.edge_source_key, 'links');
   assert.equal(evidence.graphify.extracted_edges.length, 1);
   assert.equal(evidence.graphify.ambiguous_edges.length, 1);
   assert.equal(evidence.requirement_consistency.status, 'not_applicable');
+  assert.equal(evidence.toolchain.package.name, 'vibepro');
+  assert.match(summary, /VibePro Runtime/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_run, '2026-04-28T120000Z');
+  assert.equal(manifest.runs[0].toolchain.package.name, 'vibepro');
   assert.equal(manifest.runs[0].artifacts.summary, '.vibepro/diagnostics/2026-04-28T120000Z/summary.md');
   assert.equal(manifest.runs[0].artifacts.requirement_consistency, '.vibepro/diagnostics/2026-04-28T120000Z/requirement-consistency.md');
 });

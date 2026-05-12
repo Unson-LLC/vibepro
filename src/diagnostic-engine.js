@@ -33,6 +33,7 @@ import { readInferredSpec } from './spec-store.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
+import { collectRuntimeInfo } from './runtime-info.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
@@ -47,7 +48,9 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   const { currentStory } = resolveStoryContext(config);
   const manifest = await readManifest(root);
+  const toolchain = await collectRuntimeInfo();
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
+  evidence.toolchain = toolchain;
   const inferredSpec = await readInferredSpec(root, currentStory.story_id);
   evidence.requirement_consistency = await buildRequirementConsistency(root, {
     story: currentStory,
@@ -137,6 +140,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
     story: currentStory,
     created_at: new Date().toISOString(),
     gate_status: gateStatus,
+    toolchain,
     artifacts: {
       summary: toWorkspaceRelative(root, summaryPath),
       risk_register: toWorkspaceRelative(root, riskPath),
@@ -1249,6 +1253,7 @@ function buildGates(findings) {
 function renderSummary({ runId, evidence, findings }) {
   const profile = evidence.architecture_profile ?? {};
   const applicableChecks = evidence.check_catalog?.applicable_checks ?? [];
+  const runtime = formatRuntimeSummary(evidence.toolchain);
   return `# VibePro 診断サマリー
 
 | 項目 | 内容 |
@@ -1256,6 +1261,7 @@ function renderSummary({ runId, evidence, findings }) {
 | Run ID | ${runId} |
 | Story | ${evidence.story.title} |
 | Story ID | ${evidence.story_id} |
+| VibePro Runtime | ${runtime} |
 | 種別 | ${profile.app_type ?? 'unknown'} |
 | 描画方式 | ${profile.rendering ?? '-'} |
 | 適用チェック | ${applicableChecks.join(', ') || '-'} |
@@ -1332,6 +1338,15 @@ ${renderRefactoringDeltaCompact(evidence.refactoring_delta)}
 
 ${renderActionCandidates(evidence.action_candidates)}
 `;
+}
+
+function formatRuntimeSummary(toolchain) {
+  if (!toolchain) return '-';
+  const name = toolchain.package?.name ?? 'vibepro';
+  const version = toolchain.package?.version ?? 'unknown';
+  const commit = toolchain.source_git?.commit ? String(toolchain.source_git.commit).slice(0, 12) : 'no-git';
+  const dirty = toolchain.source_git?.dirty == null ? '-' : String(toolchain.source_git.dirty);
+  return `${name}@${version} commit=${commit} dirty=${dirty}`;
 }
 
 function renderRequirementConsistencySummary(requirement) {
