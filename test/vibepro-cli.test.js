@@ -1879,6 +1879,16 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
       items: []
     }
   }, null, 2));
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'iteration-1'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), `# Visual QA
+
+Weighted semantic/layout residual: **34%**
+`);
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'iteration-1', 'pixel-residual.json'), JSON.stringify({
+    meanAbsResidualPct: 13.41,
+    rmsResidualPct: 21.47,
+    pixelChangedPctOver32: 46.99
+  }, null, 2));
   const manifestWithDelta = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   manifestWithDelta.latest_run = 'run-refactoring-delta';
   manifestWithDelta.latest_run_by_story = {
@@ -1934,8 +1944,23 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /Task\/HandoffがPR本文に入る/);
   assert.match(prBody, /E2E Gate: needs_setup \(required\) - `npx playwright test`/);
+  assert.match(prBody, /## Visual QA Evidence/);
+  assert.match(prBody, /story-pr-prepare-visual: needs_review/);
+  assert.match(prBody, /MAE 13\.41%/);
+  assert.match(prBody, /## Completion Quality/);
+  assert.match(prBody, /status: needs_quality_closure/);
+  assert.match(prBody, /final_20_auto_closure_rate: 0/);
   assert.equal(prepare.pr_context.story_source.requirement_id, 'BUG-001');
   assert.equal(prepare.pr_context.verification_commands.length, 2);
+  assert.equal(prepare.pr_context.visual_qa.status, 'needs_review');
+  assert.equal(prepare.pr_context.completion_quality.status, 'needs_quality_closure');
+  assert.equal(prepare.pr_context.completion_quality.metrics.e2e_experience_reach_rate, 0);
+  assert.equal(prepare.pr_context.completion_quality.metrics.visual_qa_pass_rate, 0);
+  assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience')), true);
+  assert.equal(prepare.pr_context.visual_qa.threshold_pct, 5);
+  assert.equal(prepare.pr_context.visual_qa.runs[0].qa_id, 'story-pr-prepare-visual');
+  assert.equal(prepare.pr_context.visual_qa.runs[0].latest_residual.meanAbsResidualPct, 13.41);
+  assert.equal(prepare.pr_context.visual_qa.runs[0].semantic_layout_residual_pct, 34);
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
   assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
   assert.equal(prepare.pr_context.refactoring_delta.top_remaining.length, 1);
@@ -1943,6 +1968,7 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   assert.equal(prepare.pr_context.gate_dag.summary.requirement_status, 'not_applicable');
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:requirement'), true);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
+  assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:visual_qa'), true);
   assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
   assert.equal(gateDag.model, 'story-acceptance-verification-dag');
@@ -1959,6 +1985,30 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   assert.match(prepareHtml, /Story -> Architecture -> Spec -> Code -> Gate/);
   assert.match(prepareHtml, /Requirement Consistency/);
   assert.match(prepareHtml, /gate-dag\.html/);
+  const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
+  assert.equal(reviewCockpitHtml, prepareHtml);
+  const architectureReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'architecture-review.json'));
+  assert.equal(architectureReview.story_id, 'story-pr-prepare');
+  assert.equal(architectureReview.status, 'satisfied');
+  assert.equal(architectureReview.required, true);
+  assert.equal(architectureReview.source_artifacts.review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
+  assert.equal(architectureReview.review_record.approved, null);
+  const humanReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'human-review.json'));
+  assert.equal(humanReview.story_id, 'story-pr-prepare');
+  assert.equal(humanReview.recommended_decision, 'add_evidence');
+  assert.equal(humanReview.source_artifacts.review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
+  assert.equal(humanReview.source_artifacts.architecture_review, '.vibepro/pr/story-pr-prepare/architecture-review.json');
+  assert.deepEqual(humanReview.source_artifacts.visual_qa, [
+    '.vibepro/qa/story-pr-prepare-visual/residual-analysis.md',
+    '.vibepro/qa/story-pr-prepare-visual/iteration-1/pixel-residual.json'
+  ]);
+  assert.equal(humanReview.evidence_summary.architecture.status, 'satisfied');
+  assert.equal(humanReview.evidence_summary.spec.status, 'present');
+  assert.equal(humanReview.evidence_summary.visual_qa.status, 'needs_review');
+  assert.equal(humanReview.evidence_summary.visual_qa.needs_review_count, 1);
+  assert.equal(humanReview.evidence_summary.completion_quality.status, 'needs_quality_closure');
+  assert.equal(humanReview.evidence_summary.completion_quality.required_evidence_count > 0, true);
+  assert.equal(humanReview.review_record.selected_decision, null);
   assert.equal(prepare.next_commands.some((command) => command.startsWith('gh pr create')), false);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), true);
 
@@ -2015,6 +2065,9 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_create, '.vibepro/pr/story-pr-prepare/pr-create.json');
   assert.equal(manifest.pr_creations['story-pr-prepare'].latest_report, '.vibepro/pr/story-pr-prepare/pr-create.html');
+  assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
+  assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_human_review, '.vibepro/pr/story-pr-prepare/human-review.json');
+  assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_architecture_review, '.vibepro/pr/story-pr-prepare/architecture-review.json');
 
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
   await git(remote, ['init', '--bare']);

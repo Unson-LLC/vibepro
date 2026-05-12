@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -136,6 +136,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await mkdir(prDir, { recursive: true });
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
+  const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
+  const humanReviewPath = path.join(prDir, 'human-review.json');
+  const architectureReviewPath = path.join(prDir, 'architecture-review.json');
   const bodyPath = path.join(prDir, 'pr-body.md');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
@@ -147,12 +150,27 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag));
   await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`);
   await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan));
-  await writeFile(reportPath, renderPrPrepareHtml({
+  const reviewCockpitHtml = renderPrPrepareHtml({
     preparation,
     bodyPath: toWorkspaceRelative(root, bodyPath),
     gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
     splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath)
-  }));
+  });
+  await writeFile(reportPath, reviewCockpitHtml);
+  await writeFile(reviewCockpitPath, reviewCockpitHtml);
+  await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
+    preparation,
+    reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
+    gateDagPath: toWorkspaceRelative(root, gateDagReportPath)
+  }), null, 2)}\n`);
+  await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
+    preparation,
+    reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
+    architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
+    bodyPath: toWorkspaceRelative(root, bodyPath),
+    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath)
+  }), null, 2)}\n`);
 
   if (workspace.initialized) {
     manifest.pr_preparations = {
@@ -160,6 +178,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       [story.story_id]: {
         latest_prepare: toWorkspaceRelative(root, jsonPath),
         latest_report: toWorkspaceRelative(root, reportPath),
+        latest_review_cockpit: toWorkspaceRelative(root, reviewCockpitPath),
+        latest_human_review: toWorkspaceRelative(root, humanReviewPath),
+        latest_architecture_review: toWorkspaceRelative(root, architectureReviewPath),
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
         latest_gate_dag: toWorkspaceRelative(root, gateDagJsonPath),
         latest_gate_dag_report: toWorkspaceRelative(root, gateDagReportPath),
@@ -181,6 +202,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
     artifacts: {
       json: jsonPath,
       report: reportPath,
+      review_cockpit: reviewCockpitPath,
+      human_review: humanReviewPath,
+      architecture_review: architectureReviewPath,
       pr_body: bodyPath,
       gate_dag: gateDagJsonPath,
       gate_dag_report: gateDagReportPath,
@@ -188,6 +212,132 @@ export async function preparePullRequest(repoRoot, options = {}) {
       split_plan_report: splitPlanReportPath
     }
   };
+}
+
+function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateDagPath }) {
+  const architectureGate = preparation.pr_context?.gate_dag?.nodes?.find((node) => node.id === 'architecture') ?? null;
+  const specGate = preparation.pr_context?.gate_dag?.nodes?.find((node) => node.id === 'spec') ?? null;
+  return {
+    schema_version: '0.1.0',
+    story_id: preparation.story.story_id,
+    created_at: preparation.created_at,
+    status: architectureGate?.status ?? 'needs_review',
+    required: true,
+    architecture_decision: preparation.pr_context?.architecture_decision ?? null,
+    source_artifacts: {
+      story: preparation.pr_context?.story_source?.path ?? null,
+      review_cockpit: reviewCockpitPath,
+      gate_dag: gateDagPath
+    },
+    gates: {
+      architecture: architectureGate ? {
+        status: architectureGate.status,
+        reason: architectureGate.reason ?? null
+      } : null,
+      spec: specGate ? {
+        status: specGate.status,
+        reason: specGate.reason ?? null
+      } : null
+    },
+    review_record: {
+      approved: null,
+      reviewer: null,
+      reason: null,
+      reviewed_at: null,
+      comments: null
+    }
+  };
+}
+
+function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architectureReviewPath, bodyPath, gateDagPath, splitPlanPath }) {
+  const visualQa = preparation.pr_context?.visual_qa ?? null;
+  const completionQuality = preparation.pr_context?.completion_quality ?? null;
+  return {
+    schema_version: '0.1.0',
+    story_id: preparation.story.story_id,
+    created_at: preparation.created_at,
+    recommended_decision: recommendHumanDecision(preparation),
+    recommendation_reason: buildHumanReviewReason(preparation),
+    source_artifacts: {
+      review_cockpit: reviewCockpitPath,
+      architecture_review: architectureReviewPath,
+      pr_body: bodyPath,
+      gate_dag: gateDagPath,
+      split_plan: splitPlanPath,
+      visual_qa: visualQa?.artifacts ?? []
+    },
+    evidence_summary: {
+      architecture: summarizeReviewGate(preparation.pr_context?.gate_dag, 'architecture'),
+      spec: summarizeReviewGate(preparation.pr_context?.gate_dag, 'spec'),
+      visual_qa: visualQa ? {
+        status: visualQa.status,
+        threshold_pct: visualQa.threshold_pct,
+        checked_runs: visualQa.runs.length,
+        needs_review_count: visualQa.runs.filter((run) => run.status === 'needs_review').length
+      } : null,
+      completion_quality: completionQuality ? {
+        status: completionQuality.status,
+        e2e_experience_reach_rate: completionQuality.metrics.e2e_experience_reach_rate,
+        final_20_auto_closure_rate: completionQuality.metrics.final_20_auto_closure_rate,
+        visual_qa_pass_rate: completionQuality.metrics.visual_qa_pass_rate,
+        required_evidence_count: completionQuality.required_evidence.length
+      } : null
+    },
+    decision_options: [
+      'proceed',
+      'split_pr',
+      'add_evidence',
+      'waive_with_reason',
+      'block'
+    ],
+    review_record: {
+      selected_decision: null,
+      reviewer: null,
+      reason: null,
+      reviewed_at: null,
+      comments: null
+    }
+  };
+}
+
+function summarizeReviewGate(gateDag, gateId) {
+  const gate = gateDag?.nodes?.find((node) => node.id === gateId) ?? null;
+  if (!gate) return null;
+  return {
+    status: gate.status,
+    required: gate.required === true,
+    reason: gate.reason ?? null
+  };
+}
+
+function recommendHumanDecision(preparation) {
+  const gateStatus = preparation.pr_context?.gate_dag?.overall_status;
+  if (preparation.split_plan?.status === 'split_recommended') return 'split_pr';
+  if (preparation.pr_context?.visual_qa?.status === 'needs_review') return 'add_evidence';
+  if (gateStatus === 'needs_verification') return 'add_evidence';
+  if (gateStatus === 'ready_for_review') return 'proceed';
+  return 'block';
+}
+
+function buildHumanReviewReason(preparation) {
+  const reasons = [];
+  const gateDag = preparation.pr_context?.gate_dag;
+  const splitPlan = preparation.split_plan;
+  if (gateDag) {
+    reasons.push(`Gate DAG is ${gateDag.overall_status} with ${gateDag.summary?.needs_evidence_count ?? 0} unresolved evidence item(s).`);
+  }
+  if (splitPlan) {
+    reasons.push(`Split Plan is ${splitPlan.status} with strategy ${splitPlan.recommended_strategy}.`);
+  }
+  if (preparation.scope?.status && preparation.scope?.recommended_strategy) {
+    reasons.push(`Scope is ${preparation.scope.status}; recommended strategy is ${preparation.scope.recommended_strategy}.`);
+  }
+  if (preparation.pr_context?.visual_qa) {
+    const visualQa = preparation.pr_context.visual_qa;
+    const needsReviewCount = visualQa.runs.filter((run) => run.status === 'needs_review').length;
+    reasons.push(`Visual QA is ${visualQa.status}; ${needsReviewCount} run(s) exceed the ${visualQa.threshold_pct}% residual threshold.`);
+  }
+  return reasons.join(' ');
 }
 
 export async function createPullRequest(repoRoot, options = {}) {
@@ -208,7 +358,7 @@ export async function createPullRequest(repoRoot, options = {}) {
       `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
       `(needs_evidence_count=${gateDag.summary?.needs_evidence_count ?? 0}). ` +
       `Unresolved gates: ${formatUnresolvedGateList(unresolved)}. ` +
-      `Provide evidence for required gates (Unit/Integration/E2E) or pass ` +
+      `Provide evidence for required gates (Story/Architecture/Spec/Unit/Integration/E2E/Visual QA) or pass ` +
       `--allow-needs-verification --verification-waiver <reason> to bypass with an auditable reason.`
     );
   }
@@ -313,6 +463,9 @@ export function renderPrPrepareSummary(result) {
 ## Artifacts
 
 - report_html: ${toDisplayPath(result.artifacts.report)}
+- review_cockpit_html: ${toDisplayPath(result.artifacts.review_cockpit)}
+- human_review_json: ${toDisplayPath(result.artifacts.human_review)}
+- architecture_review_json: ${toDisplayPath(result.artifacts.architecture_review)}
 - pr_body_markdown: ${toDisplayPath(result.artifacts.pr_body)}
 - gate_dag_json: ${toDisplayPath(result.artifacts.gate_dag)}
 - gate_dag_html: ${toDisplayPath(result.artifacts.gate_dag_report)}
@@ -664,6 +817,8 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const taskSection = renderPrTaskSection(taskContext);
   const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
   const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
+  const visualQaSection = renderPrVisualQaEvidence(prContext.visual_qa);
+  const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
 
   return `${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
@@ -710,6 +865,10 @@ ${gateSummary}
 ${gateEnforcement}
 
 ${flowVerificationSection}
+
+${visualQaSection}
+
+${completionQualitySection}
 
 ${refactoringDeltaSection}
 
@@ -821,6 +980,69 @@ function renderPrFlowVerification(flowVerification) {
 - json: ${artifactPath}
 - report: ${reportPath}
 - log: ${logPath}`;
+}
+
+function renderPrVisualQaEvidence(visualQa) {
+  if (!visualQa) {
+    return `## Visual QA Evidence
+- 未検出: \`.vibepro/qa/<qa-id>/residual-analysis.md\` または \`*residual*.json\` がある場合はPR判断に接続されます`;
+  }
+  const rows = visualQa.runs.map((run) => {
+    const residual = run.latest_residual?.meanAbsResidualPct;
+    const rms = run.latest_residual?.rmsResidualPct;
+    const semantic = run.semantic_layout_residual_pct;
+    return [
+      `- ${run.qa_id}: ${run.status}`,
+      residual != null ? `MAE ${residual}%` : null,
+      rms != null ? `RMS ${rms}%` : null,
+      semantic != null ? `semantic/layout ${semantic}%` : null,
+      run.residual_analysis ? `analysis: ${run.residual_analysis}` : null,
+      run.latest_residual?.path ? `residual: ${run.latest_residual.path}` : null
+    ].filter(Boolean).join(' / ');
+  });
+  return `## Visual QA Evidence
+- status: ${visualQa.status}
+- threshold: residual <= ${visualQa.threshold_pct}%
+${rows.join('\n') || '- なし'}`;
+}
+
+function renderPrCompletionQuality(completionQuality) {
+  if (!completionQuality) {
+    return `## Completion Quality
+- status: not_measured
+- required evidence: Gate DAGを生成してから確認する`;
+  }
+  const metrics = completionQuality.metrics ?? {};
+  const evidence = completionQuality.required_evidence?.length > 0
+    ? completionQuality.required_evidence.map((item) => `- required: ${item}`).join('\n')
+    : '- required: none';
+  return `## Completion Quality
+- status: ${completionQuality.status}
+- e2e_experience_reach_rate: ${formatNullableRate(metrics.e2e_experience_reach_rate)}
+- final_20_auto_closure_rate: ${formatNullableRate(metrics.final_20_auto_closure_rate)}
+- visual_qa_pass_rate: ${formatNullableRate(metrics.visual_qa_pass_rate)}
+- human_usable_quality_rate: ${formatNullableRate(metrics.human_usable_quality_rate)}
+${evidence}`;
+}
+
+function formatNullableRate(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? String(value) : 'not_measured';
+}
+
+function buildVisualQaGateReason(visualQa) {
+  const needsReview = visualQa.runs.filter((run) => run.status === 'needs_review');
+  if (needsReview.length === 0) {
+    return `Visual QA evidence is within ${visualQa.threshold_pct}% residual threshold`;
+  }
+  const summaries = needsReview.map((run) => {
+    const residual = run.latest_residual?.meanAbsResidualPct;
+    const semantic = run.semantic_layout_residual_pct;
+    const parts = [run.qa_id];
+    if (residual != null) parts.push(`MAE ${residual}%`);
+    if (semantic != null) parts.push(`semantic/layout ${semantic}%`);
+    return parts.join(' ');
+  });
+  return `Visual QA needs review: ${summaries.join('; ')}`;
 }
 
 function formatPrDeltaStatus(status) {
@@ -1274,6 +1496,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
+  const visualQaEvidence = await readVisualQaEvidence(repoRoot);
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
   const specDrift = await readDrift(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
@@ -1293,6 +1516,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     review_points: buildReviewPoints(fileGroups, taskContext),
     refactoring_delta: latestEvidence?.refactoring_delta ?? null,
     flow_verification: latestFlowVerification,
+    visual_qa: visualQaEvidence,
     verification_evidence: verificationEvidence,
     risks: []
   };
@@ -1305,9 +1529,15 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     verificationCommands,
     e2eCommand,
     flowVerification: latestFlowVerification,
+    visualQaEvidence,
     verificationEvidence,
     inferredSpec,
     specDrift
+  });
+  context.completion_quality = buildCompletionQuality({
+    gateDag: context.gate_dag,
+    flowVerification: latestFlowVerification,
+    visualQaEvidence
   });
   context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift });
   return context;
@@ -1370,6 +1600,123 @@ async function readLatestFlowVerification(repoRoot, storyId) {
     }
     throw error;
   }
+}
+
+async function readVisualQaEvidence(repoRoot) {
+  const qaRoot = path.join(getWorkspaceDir(repoRoot), 'qa');
+  let entries = [];
+  try {
+    entries = await readdir(qaRoot, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+  const runs = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const qaDir = path.join(qaRoot, entry.name);
+    const run = await readVisualQaRun(repoRoot, qaDir, entry.name);
+    if (run) runs.push(run);
+  }
+  if (runs.length === 0) return null;
+  const thresholdPct = 5;
+  for (const run of runs) {
+    run.status = resolveVisualQaStatus(run, thresholdPct);
+  }
+  const sortedRuns = runs
+    .sort((a, b) => (b.updated_at_ms ?? 0) - (a.updated_at_ms ?? 0))
+    .slice(0, 5);
+  return {
+    schema_version: '0.1.0',
+    status: sortedRuns.some((run) => run.status === 'needs_review') ? 'needs_review' : 'ready_for_review',
+    threshold_pct: thresholdPct,
+    runs: sortedRuns,
+    artifacts: sortedRuns.flatMap((run) => [
+      run.residual_analysis,
+      run.latest_residual?.path
+    ].filter(Boolean))
+  };
+}
+
+async function readVisualQaRun(repoRoot, qaDir, qaId) {
+  const files = await walkFiles(qaDir);
+  const residualAnalysis = files.find((file) => path.basename(file) === 'residual-analysis.md') ?? null;
+  const residualJsonFiles = files.filter((file) => /residual.*\.json$/i.test(path.basename(file)));
+  if (!residualAnalysis && residualJsonFiles.length === 0) return null;
+  const residuals = [];
+  for (const file of residualJsonFiles) {
+    try {
+      const data = JSON.parse(await readFile(file, 'utf8'));
+      const fileStat = await stat(file);
+      residuals.push({
+        path: toWorkspaceRelative(repoRoot, file),
+        updated_at_ms: fileStat.mtimeMs,
+        meanAbsResidualPct: normalizeNumber(data.meanAbsResidualPct),
+        rmsResidualPct: normalizeNumber(data.rmsResidualPct),
+        pixelChangedPctOver32: normalizeNumber(data.pixelChangedPctOver32),
+        pixelChangedPctOver64: normalizeNumber(data.pixelChangedPctOver64)
+      });
+    } catch {
+      // Ignore malformed residual snapshots; the markdown analysis is still useful evidence.
+    }
+  }
+  residuals.sort((a, b) => b.updated_at_ms - a.updated_at_ms);
+  let semanticLayoutResidualPct = null;
+  if (residualAnalysis) {
+    try {
+      const analysis = await readFile(residualAnalysis, 'utf8');
+      semanticLayoutResidualPct = extractSemanticLayoutResidualPct(analysis);
+    } catch {
+      semanticLayoutResidualPct = null;
+    }
+  }
+  const qaStat = await stat(qaDir);
+  return {
+    qa_id: qaId,
+    status: 'unknown',
+    updated_at_ms: Math.max(qaStat.mtimeMs, residuals[0]?.updated_at_ms ?? 0),
+    residual_analysis: residualAnalysis ? toWorkspaceRelative(repoRoot, residualAnalysis) : null,
+    semantic_layout_residual_pct: semanticLayoutResidualPct,
+    latest_residual: residuals[0] ?? null
+  };
+}
+
+async function walkFiles(dir) {
+  let entries = [];
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+  const files = [];
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await walkFiles(fullPath));
+    } else if (entry.isFile()) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+function resolveVisualQaStatus(run, thresholdPct) {
+  const residual = run.latest_residual?.meanAbsResidualPct;
+  const semantic = run.semantic_layout_residual_pct;
+  if (residual != null && residual > thresholdPct) return 'needs_review';
+  if (semantic != null && semantic > thresholdPct) return 'needs_review';
+  return 'ready_for_review';
+}
+
+function extractSemanticLayoutResidualPct(content) {
+  const match = content.match(/semantic\/layout residual:\s*\*\*([0-9]+(?:\.[0-9]+)?)%\*\*/i)
+    ?? content.match(/semantic\s*\/\s*layout\s*residual[^0-9]+([0-9]+(?:\.[0-9]+)?)%/i);
+  return match ? Number(match[1]) : null;
+}
+
+function normalizeNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 async function readStoryDocs(repoRoot, files) {
@@ -1620,6 +1967,58 @@ function buildSpecGateNode({ fileGroups, inferredSpec, specDrift }) {
   };
 }
 
+function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence }) {
+  const unresolved = collectUnresolvedRequiredGates(gateDag);
+  const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e') ?? null;
+  const visualQaGate = gateDag?.nodes?.find((node) => node.id === 'gate:visual_qa') ?? null;
+  const architectureGate = gateDag?.nodes?.find((node) => node.id === 'architecture') ?? null;
+  const specGate = gateDag?.nodes?.find((node) => node.id === 'spec') ?? null;
+  const visualQaPassRate = visualQaEvidence
+    ? (visualQaEvidence.status === 'ready_for_review' ? 1 : 0)
+    : null;
+  const e2eReachRate = e2eGate?.required
+    ? (e2eGate.status === 'passed' ? 1 : 0)
+    : null;
+  const final20Rate = calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate });
+  const knownRates = [e2eReachRate, visualQaPassRate, final20Rate].filter((value) => typeof value === 'number');
+  const requiredEvidence = [];
+  if (architectureGate?.required && isUnresolvedGateStatus(architectureGate.status)) {
+    requiredEvidence.push(`Architecture approval: ${architectureGate.status} - ${architectureGate.reason ?? 'reason missing'}`);
+  }
+  if (specGate?.required && isUnresolvedGateStatus(specGate.status)) {
+    requiredEvidence.push(`Spec confirmation: ${specGate.status} - ${specGate.reason ?? 'reason missing'}`);
+  }
+  if (e2eGate?.required && e2eGate.status !== 'passed') {
+    requiredEvidence.push(`E2E experience: ${e2eGate.status} - ${e2eGate.reason ?? flowVerification?.reason ?? 'flow evidence missing'}`);
+  }
+  if (visualQaGate?.required && visualQaGate.status !== 'ready_for_review') {
+    requiredEvidence.push(`Visual QA polish: ${visualQaGate.status} - ${visualQaGate.reason ?? 'visual residual evidence missing'}`);
+  }
+  for (const gate of unresolved) {
+    if (['architecture', 'spec', 'gate:e2e', 'gate:visual_qa'].includes(gate.id)) continue;
+    requiredEvidence.push(`${gate.label ?? gate.id}: ${gate.status} - ${gate.reason ?? 'reason missing'}`);
+  }
+
+  return {
+    schema_version: '0.1.0',
+    status: requiredEvidence.length === 0 ? 'ready_for_human_acceptance' : 'needs_quality_closure',
+    target_quality_rate: 0.95,
+    metrics: {
+      e2e_experience_reach_rate: e2eReachRate,
+      final_20_auto_closure_rate: final20Rate,
+      visual_qa_pass_rate: visualQaPassRate,
+      human_usable_quality_rate: knownRates.length > 0 ? Math.min(...knownRates) : null
+    },
+    required_evidence: requiredEvidence
+  };
+}
+
+function calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate }) {
+  const knownRates = [e2eReachRate, visualQaPassRate].filter((value) => typeof value === 'number');
+  if (knownRates.length === 0) return null;
+  return Math.min(...knownRates);
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -1629,6 +2028,7 @@ function buildGateDag({
   verificationCommands,
   e2eCommand,
   flowVerification,
+  visualQaEvidence = null,
   verificationEvidence,
   inferredSpec = null,
   specDrift = null
@@ -1651,22 +2051,48 @@ function buildGateDag({
     required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0,
     reason: buildRequirementGateReason(requirementConsistency)
   };
+  const storyGate = {
+    id: 'story',
+    type: 'story',
+    label: `${story.story_id} ${story.title}`,
+    status: storySource.path ? 'present' : 'transient',
+    required: true,
+    artifact: storySource.path,
+    reason: storySource.path
+      ? 'Story source is present'
+      : 'Story source could not be resolved; implementation cannot be treated as human-confirmed scope'
+  };
+  const architectureGate = {
+    id: 'architecture',
+    type: 'architecture_gate',
+    label: 'Architecture Gate',
+    status: architectureDecision.startsWith('ADRあり') || architectureDecision.startsWith('ADR不要') ? 'satisfied' : 'needs_review',
+    required: true,
+    reason: architectureDecision
+  };
+  const specGate = {
+    ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
+    required: true
+  };
+  const visualQaGate = visualQaEvidence ? {
+    id: 'gate:visual_qa',
+    type: 'visual_qa_gate',
+    label: 'Visual QA Gate',
+    status: visualQaEvidence.status,
+    required: true,
+    reason: buildVisualQaGateReason(visualQaEvidence),
+    artifacts: visualQaEvidence.artifacts,
+    runs: visualQaEvidence.runs.map((run) => ({
+      qa_id: run.qa_id,
+      status: run.status,
+      residual_pct: run.latest_residual?.meanAbsResidualPct ?? null,
+      semantic_layout_residual_pct: run.semantic_layout_residual_pct
+    }))
+  } : null;
   const nodes = [
-    {
-      id: 'story',
-      type: 'story',
-      label: `${story.story_id} ${story.title}`,
-      status: storySource.path ? 'present' : 'transient',
-      artifact: storySource.path
-    },
-    {
-      id: 'architecture',
-      type: 'architecture_gate',
-      label: 'Architecture Gate',
-      status: architectureDecision.startsWith('ADRあり') || architectureDecision.startsWith('ADR不要') ? 'satisfied' : 'needs_review',
-      reason: architectureDecision
-    },
-    buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
+    storyGate,
+    architectureGate,
+    specGate,
     {
       id: 'code',
       type: 'code_gate',
@@ -1676,6 +2102,7 @@ function buildGateDag({
     },
     requirementGate,
     ...gates,
+    ...(visualQaGate ? [visualQaGate] : []),
     {
       id: 'pr',
       type: 'pr_gate',
@@ -1708,12 +2135,17 @@ function buildGateDag({
     { from: 'gate:requirement', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
-    { from: 'gate:e2e', to: 'pr' }
+    ...(visualQaGate ? [
+      { from: 'gate:e2e', to: 'gate:visual_qa' },
+      { from: 'gate:visual_qa', to: 'pr' }
+    ] : [
+      { from: 'gate:e2e', to: 'pr' }
+    ])
   ];
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
-  const requiredGates = [requirementGate, ...gates].filter((gate) => gate.required);
-  const needsEvidence = requiredGates.filter((gate) => ['missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted', 'failed'].includes(gate.status));
+  const requiredGates = [storyGate, architectureGate, specGate, requirementGate, ...gates, visualQaGate].filter((gate) => gate?.required);
+  const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
   return {
     schema_version: '0.1.0',
     model: 'story-acceptance-verification-dag',
@@ -1723,6 +2155,9 @@ function buildGateDag({
       acceptance_criteria_count: acceptanceCriteria.length,
       required_gate_count: requiredGates.length,
       needs_evidence_count: needsEvidence.length,
+      story_status: storyGate.status,
+      architecture_status: architectureGate.status,
+      spec_status: specGate.status,
       requirement_status: requirementGate.status
     },
     nodes: allNodes,
@@ -1735,6 +2170,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
   const e2eGateStatus = resolveE2eGateStatus(e2eCommand, flowVerification);
   const e2eReason = buildE2eGateReason(e2eCommand, flowVerification);
+  const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification });
   return [
     {
       id: 'gate:unit',
@@ -1759,13 +2195,22 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       type: 'verification_gate',
       label: 'E2E Gate',
       status: e2eGateStatus,
-      required: fileGroups.source.count > 0,
+      required: e2eRequired,
       command: e2eCommand.command,
       reason: e2eReason,
       flow_verification: flowVerification ? summarizeFlowVerificationForGate(flowVerification) : null,
       artifact_expectation: '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す'
     }
   ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
+}
+
+function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification }) {
+  if (fileGroups.source.count > 0) return true;
+  if (fileGroups.tests.files.some((file) => file.startsWith('e2e/'))) return true;
+  if (fileGroups.repo_control.files.some(isGateInfraPath)) return true;
+  if (e2eCommand?.detected) return true;
+  if (flowVerification) return true;
+  return false;
 }
 
 function applyVerificationEvidence(gate, verificationEvidence) {
@@ -2106,15 +2551,35 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   if (requirementGate?.required && ['needs_review', 'contradicted'].includes(requirementGate.status)) {
     risks.push(`Requirement Gateが ${requirementGate.status}: ${requirementGate.reason}`);
   }
+  const architectureGate = gateDag?.nodes?.find((node) => node.id === 'architecture');
+  if (architectureGate?.required && isUnresolvedGateStatus(architectureGate.status)) {
+    risks.push(`Architecture Gateが ${architectureGate.status}: ${architectureGate.reason}`);
+  }
+  const specGate = gateDag?.nodes?.find((node) => node.id === 'spec');
+  if (specGate?.required && isUnresolvedGateStatus(specGate.status)) {
+    risks.push(`Spec Gateが ${specGate.status}: ${specGate.reason}`);
+  }
   return risks;
 }
 
 function renderPrGateSummary(gateDag) {
   const gates = gateDag.nodes.filter((node) => node.type === 'verification_gate');
+  const storyGate = gateDag.nodes.find((node) => node.id === 'story');
+  const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
+  const specGate = gateDag.nodes.find((node) => node.id === 'spec');
   const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
   const lines = [
     `- overall: ${gateDag.overall_status}`,
     `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
+    storyGate
+      ? `- ${storyGate.label}: ${storyGate.status} (${storyGate.required ? 'required' : 'optional'}) - ${storyGate.reason ?? storyGate.artifact ?? '-'}`
+      : null,
+    architectureGate
+      ? `- ${architectureGate.label}: ${architectureGate.status} (${architectureGate.required ? 'required' : 'optional'}) - ${architectureGate.reason ?? '-'}`
+      : null,
+    specGate
+      ? `- ${specGate.label}: ${specGate.status} (${specGate.required ? 'required' : 'optional'}) - ${specGate.reason ?? '-'}`
+      : null,
     requirementGate
       ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
       : null,
@@ -2180,9 +2645,16 @@ function renderPrGateEnforcement(gateDag) {
 
 function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
-    .filter((node) => node.type === 'verification_gate' || node.type === 'requirement_gate')
+    .filter((node) => [
+      'story',
+      'architecture_gate',
+      'spec_gate',
+      'verification_gate',
+      'requirement_gate',
+      'visual_qa_gate'
+    ].includes(node.type))
     .filter((node) => node.required)
-    .filter((node) => ['candidate', 'missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted', 'failed'].includes(node.status))
+    .filter((node) => isUnresolvedGateStatus(node.status))
     .map((node) => ({
       id: node.id,
       label: node.label,
@@ -2190,6 +2662,21 @@ function collectUnresolvedRequiredGates(gateDag) {
       command: node.command,
       reason: node.reason
     }));
+}
+
+function isUnresolvedGateStatus(status) {
+  return [
+    'candidate',
+    'missing',
+    'transient',
+    'implicit',
+    'inferred_empty',
+    'needs_evidence',
+    'needs_setup',
+    'needs_review',
+    'contradicted',
+    'failed'
+  ].includes(status);
 }
 
 function formatUnresolvedGateList(gates) {

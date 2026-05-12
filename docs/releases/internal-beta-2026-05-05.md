@@ -51,7 +51,7 @@ vibepro --help
 例: vibepro pr prepare . --base origin/develop --story-id <story-id>
 
 【見た成果物】
-pr-body.md / pr-prepare.html / gate-dag.html / split-plan.html / pr-prepare.json など
+pr-body.md / review-cockpit.html / architecture-review.json / human-review.json / gate-dag.html / split-plan.html / pr-prepare.json など
 
 【期待したこと】
 
@@ -99,8 +99,11 @@ vibepro pr prepare . --base origin/develop --story-id <story-id>
 
 初回利用者は次だけ見ればよい。
 
-- `pr-body.md`: 背景、要求、要件整合性、レビュー観点が伝わるか
-- `gate-dag.html`: 未解決Gateが何か分かるか
+- `review-cockpit.html`: PR準備結果、Gate、Split、次コマンドの入口として見る
+- `architecture-review.json`: Storyから出たArchitecture判断を人間が承認できる状態か確認する。ここが未承認ならAI実装完了扱いにしない
+- `human-review.json`: proceed / split_pr / add_evidence / waive_with_reason / block の判断記録を残す。Architecture承認、Completion Quality、`.vibepro/qa/*` のVisual QA残差も確認する
+- `pr-body.md`: 背景、要求、要件整合性、レビュー観点、Completion Qualityが伝わるか
+- `gate-dag.html`: 未解決Gateが何か分かるか。Story / Architecture / Spec が未確定なら必須Gateとして止まり、Visual QA Gateが出ている場合は5%しきい値を超える残差がないか確認する
 - `split-plan.html`: PRを分けるべき単位とGraphify調査範囲が分かるか
 
 実装者は次を見る。
