@@ -1,11 +1,10 @@
 const NEXT_APP_RELEVANT_PATTERNS = [
   /^src\/app\/.+\/(page|route|client)\.[jt]sx?$/,
   /^src\/app\/.+\/_components\/.+\.[jt]sx?$/,
-  /^src\/components\/(auth|hotel|layout|modals|common\/hotel_card)\/.+\.[jt]sx?$/,
+  /^src\/components\/.+\.[jt]sx?$/,
   /^src\/lib\/actions\/.+\.[jt]s$/,
   /^src\/lib\/auth\/.+\.[jt]s$/,
   /^src\/lib\/article\/.+\.[jt]s$/,
-  /^src\/lib\/crawlers\/.+\.[jt]s$/,
   /^src\/lib\/services\/.+\.[jt]s$/,
   /^src\/lib\/api\/.+\.[jt]s$/
 ];
@@ -31,8 +30,7 @@ const COMMON_DOCUMENT_SIGNAL_GROUPS = [
 ];
 
 const NEXT_APP_DOCUMENT_SIGNAL_GROUPS = [
-  { key: 'hotelMapSearch', pattern: /(map[_-]search|map[_-]marker|search-results|REQ-001_map_search_integration|US-001_map_search_display|\/map\/)/i },
-  { key: 'shadowCall', pattern: /(shadow-call|premium-ai-phone-feature)/i },
+  { key: 'authAccountAccess', pattern: /(auth|account|login|sign[-_ ]?in|sso|oauth|session)/i },
   { key: 'premiumBilling', pattern: /(stripe|premium|subscription|billing|webhook-secret)/i },
   { key: 'contentCms', pattern: /(article|cms|sanity)/i },
   { key: 'onboarding', pattern: /(onboarding|profile|preferences)/i },
@@ -42,20 +40,12 @@ const NEXT_APP_DOCUMENT_SIGNAL_GROUPS = [
 
 const NEXT_APP_PRODUCT_SURFACE_SIGNALS = [
   {
-    id: 'story-product-hotel-map-search',
-    title: 'ホテル検索と地図体験を安定化する',
+    id: 'story-product-auth-account-access',
+    title: '認証とアカウント利用開始を成立させる',
     category: 'product',
-    codePattern: /(^src\/app\/.+\/map|api\/map-search|api\/hotels\/search|search-results|mapSearchService|GoogleMapsScript|_components\/search)/,
-    docKey: 'hotelMapSearch',
-    evidenceTokens: ['map', 'hotels', 'hotel services']
-  },
-  {
-    id: 'story-product-shadow-call',
-    title: 'AI電話代行体験を安定化する',
-    category: 'product',
-    codePattern: /shadow-call/,
-    docKey: 'shadowCall',
-    evidenceTokens: ['shadow-call']
+    codePattern: /(^src\/components\/auth\/|^src\/app\/api\/auth\/|^src\/lib\/auth|login|sign[-_]?in|nextauth|session)/i,
+    docKey: 'authAccountAccess',
+    evidenceTokens: ['auth', 'account', 'session']
   },
   {
     id: 'story-product-premium-billing',
@@ -92,29 +82,6 @@ const NEXT_APP_PRODUCT_SURFACE_SIGNALS = [
 ];
 
 const NEXT_APP_COVERAGE_PATTERNS = {
-  'story-product-hotel-map-search': [
-    /^src\/app\/\(app\)\/map\//,
-    /^src\/app\/\(app\)\/_components\/GoogleMapsScript\.tsx$/,
-    /^src\/app\/\(app\)\/_components\/search\//,
-    /^src\/app\/\(app\)\/_components\/PlanDisplay\.tsx$/,
-    /^src\/app\/\(public\)\/search-results\//,
-    /^src\/app\/api\/map-search\//,
-    /^src\/app\/api\/hotels\/search\//,
-    /^src\/lib\/services\/search\/mapSearchService\.ts$/,
-    /^src\/lib\/actions\/search_actions\.ts$/,
-    /^src\/lib\/constants\/map\.ts$/,
-    /^src\/lib\/constants\/search\.ts$/
-  ],
-  'story-product-shadow-call': [
-    /^src\/app\/\(app\)\/_components\/shadow_call\//,
-    /^src\/app\/shadow-call\//,
-    /^src\/app\/api\/twilio/,
-    /^src\/app\/api\/openai\/webhook\/response\/route\.ts$/,
-    /^src\/app\/api\/shadow-call\//,
-    /^src\/lib\/services\/shadow-call\//,
-    /^src\/components\/hotel\/HotelDetailWithShadowCall\.tsx$/,
-    /^src\/components\/hotel\/PhoneMethodDialog\.tsx$/
-  ],
   'story-product-premium-billing': [
     /^src\/app\/\(public\)\/premium\//,
     /^src\/app\/api\/stripe\//,
@@ -128,8 +95,7 @@ const NEXT_APP_COVERAGE_PATTERNS = {
     /^src\/app\/\(public\)\/articles\//,
     /^src\/app\/api\/articles\//,
     /^src\/lib\/article/,
-    /^src\/lib\/article-utils\.ts$/,
-    /^src\/lib\/actions\/sanity_hotel_search\.ts$/
+    /^src\/lib\/article-utils\.ts$/
   ],
   'story-product-onboarding': [
     /^src\/app\/onboarding\//,
@@ -139,18 +105,6 @@ const NEXT_APP_COVERAGE_PATTERNS = {
   'story-product-notification': [
     /^src\/app\/\(app\)\/notification\//,
     /^src\/components\/ui\/UpdateNotification\.tsx$/
-  ],
-  'story-product-hotel-detail-actions': [
-    /^src\/app\/\(app\)\/detail\//,
-    /^src\/app\/\(public\)\/hotel\/\[hotel_id\]\//,
-    /^src\/app\/api\/hotels\/(\[hotelId\]|detail|list-tokyo)\//,
-    /^src\/components\/hotel\//,
-    /^src\/components\/common\/hotel_card\//,
-    /^src\/lib\/services\/hotel\//,
-    /^src\/lib\/services\/search\/detailSearchService\.ts$/,
-    /^src\/lib\/actions\/hotel_actions\.ts$/,
-    /^src\/lib\/actions\/lead_actions\.ts$/,
-    /^src\/lib\/actions\/post_actions\.ts$/
   ],
   'story-product-auth-account-access': [
     /^src\/app\/\(auth\)\//,
@@ -165,28 +119,11 @@ const NEXT_APP_COVERAGE_PATTERNS = {
   ],
   'story-product-profile-personalization': [
     /^src\/app\/\(app\)\/profile\//,
-    /^src\/components\/modals\/HotelSelectModal\.tsx$/,
     /^src\/lib\/services\/profile\//,
     /^src\/lib\/services\/user\/user(Read|Write|Entry)Service\.ts$/,
     /^src\/lib\/actions\/profile_action\.ts$/
   ],
-  'story-product-match-recommendation': [
-    /^src\/app\/\(app\)\/match\//,
-    /^src\/lib\/services\/search\/matchSearchService\.ts$/
-  ],
-  'story-product-timeline-posts': [
-    /^src\/app\/\(app\)\/timeline\//,
-    /^src\/app\/\(app\)\/_components\/post\//,
-    /^src\/components\/modals\/PostCompleteModal\.tsx$/,
-    /^src\/lib\/services\/timeline\//,
-    /^src\/lib\/services\/post\//,
-    /^src\/lib\/services\/reply\//,
-    /^src\/lib\/services\/image\//,
-    /^src\/lib\/actions\/timeline_actions\.ts$/,
-    /^src\/lib\/constants\/post\.ts$/
-  ],
   'story-product-public-discovery-seo': [
-    /^src\/app\/\(public\)\/search-results\//,
     /^src\/app\/\(public\)\/articles\//,
     /^src\/app\/\(public\)\/_components\/landing\//,
     /^src\/app\/\(public\)\/sitemap/,
@@ -208,15 +145,6 @@ const NEXT_APP_COVERAGE_PATTERNS = {
   'story-product-app-navigation-shell': [
     /^src\/app\/\(app\)\/home\//,
     /^src\/components\/layout\//
-  ],
-  'story-ops-hotel-data-ingestion': [
-    /^src\/lib\/crawlers\//,
-    /^src\/app\/api\/crawl\//,
-    /^src\/app\/api\/hotels\/register\//,
-    /^src\/app\/api\/regenerate-sitemap\//,
-    /^src\/app\/\(app\)\/manager\//,
-    /^src\/lib\/services\/vercel-blob-service\.ts$/,
-    /^src\/lib\/api\/backend\.ts$/
   ],
   'story-ops-observability-health': [
     /^src\/app\/api\/health\//,

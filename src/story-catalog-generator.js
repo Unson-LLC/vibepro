@@ -19,26 +19,15 @@ const IGNORED_DIRS = new Set([
 
 const CODE_SURFACE_SIGNATURES = [
   {
-    id: 'story-product-hotel-detail-actions',
-    title: 'ホテル詳細と予約前アクションを成立させる',
-    category: 'product',
-    patterns: [
-      /^src\/app\/\(app\)\/detail\//,
-      /^src\/components\/hotel\//,
-      /^src\/components\/common\/hotel_card\//,
-      /^src\/lib\/services\/hotel\//,
-      /^src\/lib\/services\/search\/detailSearchService\.ts$/,
-      /^src\/lib\/actions\/hotel_actions\.ts$/,
-      /^src\/lib\/actions\/lead_actions\.ts$/,
-      /^src\/lib\/actions\/post_actions\.ts$/
-    ]
-  },
-  {
     id: 'story-product-auth-account-access',
     title: '認証とアカウント利用開始を成立させる',
     category: 'product',
     patterns: [
       /^src\/app\/\(auth\)\//,
+      /^src\/app\/auth\//,
+      /^src\/app\/login\//,
+      /^src\/app\/api\/auth\//,
+      /^src\/app\/api\/sso-logout\//,
       /^src\/components\/auth\//,
       /^src\/lib\/auth/,
       /^src\/lib\/services\/user\//,
@@ -51,36 +40,50 @@ const CODE_SURFACE_SIGNATURES = [
     category: 'product',
     patterns: [
       /^src\/app\/\(app\)\/profile\//,
-      /^src\/components\/modals\/HotelSelectModal\.tsx$/,
+      /^src\/app\/profile\//,
+      /^src\/components\/profile\//,
       /^src\/lib\/services\/profile\//,
       /^src\/lib\/actions\/profile_action\.ts$/,
       /^src\/lib\/constants\/profile-errors\.ts$/
     ]
   },
   {
-    id: 'story-product-match-recommendation',
-    title: 'ユーザーに合うホテル候補を提案する',
+    id: 'story-product-content-cms',
+    title: '記事とCMS運用を整理する',
     category: 'product',
     patterns: [
-      /^src\/app\/\(app\)\/match\//,
-      /^src\/lib\/services\/search\/matchSearchService\.ts$/,
-      /^src\/lib\/constants\/search\.ts$/,
-      /^src\/lib\/actions\/search_actions\.ts$/
+      /^src\/app\/\(public\)\/articles\//,
+      /^src\/app\/articles\//,
+      /^src\/app\/api\/articles\//,
+      /^src\/app\/admin\/content\//,
+      /^src\/lib\/article/,
+      /^src\/lib\/article-utils\.ts$/
     ]
   },
   {
-    id: 'story-product-timeline-posts',
-    title: '投稿とタイムラインでホテル体験を共有する',
+    id: 'story-product-premium-billing',
+    title: 'プレミアム課金導線を安定化する',
     category: 'product',
     patterns: [
-      /^src\/app\/\(app\)\/timeline\//,
-      /^src\/lib\/services\/timeline\//,
-      /^src\/lib\/services\/post\//,
-      /^src\/lib\/services\/reply\//,
-      /^src\/lib\/services\/image\//,
-      /^src\/lib\/actions\/timeline_actions\.ts$/,
-      /^src\/lib\/actions\/post_actions\.ts$/,
-      /^src\/lib\/constants\/post\.ts$/
+      /^src\/app\/\(public\)\/premium\//,
+      /^src\/app\/api\/stripe\//,
+      /^src\/app\/api\/webhook\/stripe\/route\.ts$/,
+      /^src\/components\/ui\/button\/ButtonCheckout\.tsx$/,
+      /^src\/components\/ui\/modal\/PremiumRequiredModal\.tsx$/,
+      /^src\/lib\/constants\/stripe\.ts$/,
+      /^src\/lib\/services\/stripe\//
+    ]
+  },
+  {
+    id: 'story-product-notification',
+    title: '通知体験を安定化する',
+    category: 'product',
+    patterns: [
+      /^src\/app\/\(app\)\/notification\//,
+      /^src\/app\/notification\//,
+      /^src\/components\/notification\//,
+      /^src\/components\/ui\/UpdateNotification\.tsx$/,
+      /^src\/lib\/services\/notification\//
     ]
   },
   {
@@ -88,7 +91,6 @@ const CODE_SURFACE_SIGNATURES = [
     title: '公開検索とSEO導線で新規流入を受け止める',
     category: 'product',
     patterns: [
-      /^src\/app\/\(public\)\/search-results\//,
       /^src\/app\/\(public\)\/articles\//,
       /^src\/app\/\(public\)\/sitemap/,
       /^src\/app\/robots\.ts$/,
@@ -125,20 +127,6 @@ const CODE_SURFACE_SIGNATURES = [
     patterns: [
       /^src\/app\/\(app\)\/home\//,
       /^src\/components\/layout\//
-    ]
-  },
-  {
-    id: 'story-ops-hotel-data-ingestion',
-    title: 'ホテル情報の収集と更新を運用可能にする',
-    category: 'ops',
-    patterns: [
-      /^src\/lib\/crawlers\//,
-      /^src\/lib\/api\/backend\.ts$/,
-      /^src\/lib\/services\/vercel-blob-service\.ts$/,
-      /^src\/app\/\(app\)\/manager\/crawl-result\//,
-      /^src\/app\/\(app\)\/manager\//,
-      /^src\/app\/api\/hotels\/register\/route\.ts$/,
-      /^src\/app\/api\/regenerate-sitemap\/route\.ts$/
     ]
   },
   {
@@ -377,15 +365,18 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset)
   if (signals.length === 0) return [];
   const files = [...fileSet];
   const stories = [];
-  const has = (pattern) => files.some((file) => pattern.test(file));
   const hasDocs = (key) => key && (documentSignals[key] ?? []).length > 0;
 
   for (const signal of signals) {
-    const codeMatch = signal.codePattern && has(signal.codePattern);
+    const codePaths = signal.codePattern
+      ? files.filter((file) => signal.codePattern.test(file)).sort().slice(0, 8)
+      : [];
+    const codeMatch = codePaths.length > 0;
     const docMatch = hasDocs(signal.docKey);
     if (!codeMatch && !docMatch) continue;
     const docs = signal.docKey ? selectDocs(documentSignals, signal.docKey) : [];
-    const paths = signal.docKey ? docPaths(documentSignals, signal.docKey) : [];
+    const paths = uniqueList([...(signal.docKey ? docPaths(documentSignals, signal.docKey) : []), ...codePaths]);
+    if (paths.length === 0) continue;
     stories.push(buildDerivedStory({
       id: signal.id,
       title: signal.title,
@@ -597,17 +588,8 @@ function codeStoryDefinitionFor(storyId, paths, docs = [], preset = null) {
     return applyStoryDocDefinition({ ...presetDefinition, source_synthesis: sourceSynthesis }, docs, sourceSynthesis);
   }
   const definitions = {
-    'story-product-hotel-detail-actions': {
-      who: 'ホテル候補を比較して次の行動を決めたいユーザー',
-      problem: 'ホテル詳細、空き状況、プラン、電話、投稿などの行動が分散すると、予約前の意思決定が途中で途切れる。',
-      want: 'ホテル詳細を見ながら、プラン確認、外部遷移、問い合わせ、訪問・投稿などの行動へ自然に進みたい。',
-      outcome: 'ホテル詳細ページが予約前の意思決定と行動の中心になる。',
-      business_value: '予約導線、問い合わせ、投稿などの主要コンバージョンに近い領域。仕様書とKPIは未確認。',
-      acceptance_focus: ['ホテル情報とプランが一貫して表示される', '主要アクションが状態に応じて利用できる', '外部遷移や電話導線の失敗時の扱いが決まる'],
-      source_synthesis: sourceSynthesis
-    },
     'story-product-auth-account-access': {
-      who: 'Aitleを継続利用したいユーザー',
+      who: 'サービスを継続利用したいユーザー',
       problem: '認証、アカウント切替、退会、OAuth連携が不安定だと、個人化や有料機能の前提が崩れる。',
       want: '安全にログインし、必要に応じてアカウント操作ができ、利用開始後の状態が保たれてほしい。',
       outcome: 'ユーザーが安心してアカウントを作成し、継続利用できる。',
@@ -616,39 +598,30 @@ function codeStoryDefinitionFor(storyId, paths, docs = [], preset = null) {
       source_synthesis: sourceSynthesis
     },
     'story-product-profile-personalization': {
-      who: '自分に合うホテル候補を見つけたいユーザー',
-      problem: 'プロフィールや嗜好が体験に反映されないと、検索・推薦・投稿が汎用的になり、自分向けの価値が弱くなる。',
-      want: 'プロフィール、好み、選択したホテルなどが体験全体に反映されてほしい。',
-      outcome: '検索、推薦、表示、投稿の文脈がユーザーごとに近づく。',
+      who: '自分向けの設定や体験を保ちたいユーザー',
+      problem: 'プロフィールや設定が体験に反映されないと、表示、提案、通知が汎用的になり、自分向けの価値が弱くなる。',
+      want: 'プロフィール、設定、利用目的が体験全体に反映されてほしい。',
+      outcome: '主要画面や通知の文脈がユーザーごとに近づく。',
       business_value: '個人化による活性化と再訪向上が期待できる。具体KPIは未確認。',
       acceptance_focus: ['プロフィール編集が保存される', '保存情報が関連画面で使われる', '未入力やエラー時の体験が決まる'],
       source_synthesis: sourceSynthesis
     },
-    'story-product-match-recommendation': {
-      who: '条件に合うホテルを短時間で見つけたいユーザー',
-      problem: '候補が多すぎると、ユーザーは比較疲れを起こし、予約候補を絞り込めない。',
-      want: '条件や嗜好に合うホテル候補を提案してほしい。',
-      outcome: 'ユーザーが探す負担を減らし、次に見るべき候補へ進める。',
-      business_value: '検索から候補選定への転換率改善が期待できる。推薦精度の評価軸は未確認。',
-      acceptance_focus: ['推薦条件が説明できる', '候補がない場合の代替導線がある', '検索条件との関係が崩れない'],
-      source_synthesis: sourceSynthesis
-    },
-    'story-product-timeline-posts': {
-      who: 'ホテル体験を記録・共有したいユーザー',
-      problem: '投稿やタイムラインが弱いと、利用後の体験が蓄積されず、他ユーザーの判断材料にもなりにくい。',
-      want: 'ホテルに関する投稿を残し、タイムラインで見返したり共有したい。',
-      outcome: 'ユーザー生成情報がホテル選びの補助情報として蓄積される。',
-      business_value: '再訪、UGC、ホテル選定支援の価値が期待できる。モデレーションや品質基準は未確認。',
-      acceptance_focus: ['投稿作成と表示がつながる', 'ホテルやユーザーとの関連が保たれる', '不適切投稿や失敗時の扱いが決まる'],
+    'story-product-content-cms': {
+      who: '公開コンテンツを運用したい担当者と、検索流入から来るユーザー',
+      problem: 'コンテンツ運用と主要導線がつながっていないと、SEO流入を獲得しても登録、問い合わせ、購入などの行動へ接続できない。',
+      want: '非エンジニアでも記事、特集、CTAを作成し、公開ページからプロダクト利用へ誘導したい。',
+      outcome: '記事コンテンツが主要導線へ接続され、運用者が継続的に改善できる。',
+      business_value: 'SEO流入、コンバージョン、コンテンツ運用効率の改善が期待できる。優先KPIは未確定。',
+      acceptance_focus: ['記事内に主要CTAを配置できる', '非エンジニアがCMSで作成、編集、公開できる', 'SEOに必要なメタ情報と構造を持つ'],
       source_synthesis: sourceSynthesis
     },
     'story-product-public-discovery-seo': {
       who: '検索エンジンや公開ページから初めて訪れるユーザー',
       problem: '公開検索、記事、サイトマップ、構造化データが弱いと、アプリの価値がログイン前に伝わらず新規流入も取りこぼす。',
-      want: '検索結果や公開ページからホテル情報や記事に入り、自然にアプリ内導線へ進みたい。',
-      outcome: '未ログインユーザーがAitleの価値を理解し、検索・詳細・登録へ進める。',
-      business_value: 'SEO流入と新規獲得の土台。流入数、登録率、予約導線到達率は未確認。',
-      acceptance_focus: ['公開検索結果が成立する', 'sitemapとrobotsが意図通り出る', '構造化データと記事導線が壊れない'],
+      want: '検索結果や公開ページから価値を理解し、自然に登録、問い合わせ、購入などの導線へ進みたい。',
+      outcome: '未ログインユーザーがサービスの価値を理解し、次の行動へ進める。',
+      business_value: 'SEO流入と新規獲得の土台。流入数、登録率、主要導線到達率は未確認。',
+      acceptance_focus: ['公開ページが成立する', 'sitemapとrobotsが意図通り出る', '構造化データと記事導線が壊れない'],
       source_synthesis: sourceSynthesis
     },
     'story-product-waiting-list-contact': {
@@ -661,30 +634,21 @@ function codeStoryDefinitionFor(storyId, paths, docs = [], preset = null) {
       source_synthesis: sourceSynthesis
     },
     'story-product-qr-offline-access': {
-      who: '現地や通信状態が不安定な場面でAitleを使うユーザー',
-      problem: 'QR読み取りやオフライン時の案内が弱いと、現地接点や再訪のタイミングで利用が途切れる。',
+      who: 'QRや通信状態が不安定な場面でもサービスにアクセスしたいユーザー',
+      problem: 'QR読み取りやオフライン時の案内が弱いと、外部接点や再訪のタイミングで利用が途切れる。',
       want: 'QRから必要な情報へ進み、通信が不安定でも状態が分かる案内を受けたい。',
-      outcome: 'オンライン外の接点でもAitle利用を継続しやすくなる。',
-      business_value: '現地接点、再訪、PWA的利用の下支え。利用場面とKPIは未確認。',
+      outcome: 'オンライン外の接点でもサービス利用を継続しやすくなる。',
+      business_value: '外部接点、再訪、PWA的利用の下支え。利用場面とKPIは未確認。',
       acceptance_focus: ['QR読み取りの成功・失敗状態がある', 'オフライン時の導線がある', '更新通知がユーザー操作を妨げない'],
       source_synthesis: sourceSynthesis
     },
     'story-product-app-navigation-shell': {
-      who: 'Aitleの主要機能を行き来するユーザー',
-      problem: 'ホーム、下部ナビ、共通レイアウトがStoryに紐づかないと、ユーザーがどこから検索、推薦、投稿、設定へ進むのかを引き継げない。',
+      who: 'サービスの主要機能を行き来するユーザー',
+      problem: 'ホーム、ナビゲーション、共通レイアウトがStoryに紐づかないと、ユーザーがどこから主要機能へ進むのかを引き継げない。',
       want: 'アプリの起点と主要導線が一貫し、画面間を迷わず移動できてほしい。',
       outcome: 'ユーザーがログイン後に目的の機能へ自然に進める。',
       business_value: '初回活性化、再訪、主要機能への到達率を支える。具体KPIは未確認。',
       acceptance_focus: ['ホームから主要機能へ到達できる', '下部ナビとレイアウトが画面状態に応じて破綻しない', 'ログイン状態やプラン状態と導線が矛盾しない'],
-      source_synthesis: sourceSynthesis
-    },
-    'story-ops-hotel-data-ingestion': {
-      who: 'ホテル情報の鮮度を維持したい運用者と開発チーム',
-      problem: 'ホテル情報の収集、抽出、変換、保存が運用できないと、検索や詳細表示の価値が古くなる。',
-      want: '外部情報の収集から保存、更新、失敗時の扱いまでを運用可能にしたい。',
-      outcome: 'ホテルデータの更新が継続でき、検索・詳細・SEOの土台が保たれる。',
-      business_value: '検索品質と掲載情報の信頼性を支える。更新頻度、対象サイト、失敗許容は未確認。',
-      acceptance_focus: ['収集対象と更新頻度が定義される', '抽出失敗やレート制限の扱いがある', '保存形式と重複更新のルールがある'],
       source_synthesis: sourceSynthesis
     },
     'story-ops-observability-health': {
@@ -716,31 +680,29 @@ function storyDefinitionFor(storyId, docs = [], preset = null) {
     return applyStoryDocDefinition({ ...presetDefinition, source_synthesis: sourceSynthesis }, docs, sourceSynthesis);
   }
   const definitions = {
-    'story-product-hotel-map-search': {
-      who: 'ホテルを探しているユーザー',
-      problem: '検索結果と地図上の位置関係が分断されると、候補の比較に画面の行き来が必要になり、宿泊先を選ぶ判断が遅くなる。',
-      want: '詳細検索の条件に一致したホテルを地図上のピンと下部スライダーで同時に確認したい。',
-      outcome: 'ユーザーが場所、価格、ホテルの候補を同じ文脈で比較し、予約候補を短時間で絞り込める。',
-      business_value: 'ホテル予約導線の意思決定効率とコンバージョン改善が期待できる。具体KPIは未確定。',
+    'story-product-auth-account-access': {
+      who: 'サービスを継続利用したいユーザー',
+      problem: '認証、アカウント切替、退会、OAuth連携が不安定だと、個人化や有料機能の前提が崩れる。',
+      want: '安全にログインし、必要に応じてアカウント操作ができ、利用開始後の状態が保たれてほしい。',
+      outcome: 'ユーザーが安心してアカウントを作成し、継続利用できる。',
+      business_value: '継続利用、個人化、有料機能の土台。認証完了率や離脱率は未確認。',
       acceptance_focus: [
-        '検索条件に一致したホテルのみが地図と一覧に出る',
-        'ピン選択とカード表示が相互に同期する',
-        '0件、読み込み中、エラー時にユーザーが次の行動を取れる',
-        'モバイルで地図とスライダーを自然に操作できる'
+        '主要ログイン導線が動く',
+        'セッション同期とユーザー情報更新が一貫する',
+        'エラー、退会、アカウント切替の扱いが明確である'
       ],
       source_synthesis: sourceSynthesis
     },
-    'story-product-shadow-call': {
-      who: 'ホテルへの問い合わせを任せたいユーザー',
-      problem: 'AI電話代行の価値があっても、利用条件、実行状態、結果通知が曖昧だと有料機能として信頼されない。',
-      want: 'プレミアムユーザーがShadow Callを使い、非対象ユーザーには自然にアップグレード導線が出てほしい。',
-      outcome: '電話代行の実行から結果確認までが一貫し、有料機能として期待値を満たせる。',
-      business_value: '月額課金の中核機能として収益化を支える。利用率、継続率、問い合わせ成功率は確認が必要。',
+    'story-product-profile-personalization': {
+      who: '自分向けの設定や体験を保ちたいユーザー',
+      problem: 'プロフィールや設定が体験に反映されないと、表示、提案、通知が汎用的になり、自分向けの価値が弱くなる。',
+      want: 'プロフィール、設定、利用目的が体験全体に反映されてほしい。',
+      outcome: '主要画面や通知の文脈がユーザーごとに近づく。',
+      business_value: '個人化による活性化と再訪向上が期待できる。具体KPIは未確認。',
       acceptance_focus: [
-        'プラン権限に応じてShadow Callの利用可否が変わる',
-        '電話代行の受付、実行、結果確認の状態が追跡できる',
-        '非プレミアムユーザーには課金導線が提示される',
-        '月次レポートなど継続利用につながる結果が残る'
+        'プロフィール編集が保存される',
+        '保存情報が関連画面で使われる',
+        '未入力やエラー時の体験が決まる'
       ],
       source_synthesis: sourceSynthesis
     },
@@ -759,39 +721,39 @@ function storyDefinitionFor(storyId, docs = [], preset = null) {
       source_synthesis: sourceSynthesis
     },
     'story-product-content-cms': {
-      who: 'ホテル予約につながるコンテンツを運用したい担当者と、検索流入から来るユーザー',
-      problem: 'コンテンツマーケティングとホテル予約導線がつながっていないと、SEO流入を獲得しても予約行動へ接続できない。',
-      want: '非エンジニアでも記事、特集、ホテルカード、CTAを作成し、検索流入から予約導線へ誘導したい。',
-      outcome: '記事コンテンツがホテル検索、詳細、予約導線へ接続され、運用者が継続的に改善できる。',
-      business_value: 'SEO流入、ホテル予約コンバージョン、コンテンツ運用効率の改善が期待できる。優先KPIは未確定。',
+      who: '公開コンテンツを運用したい担当者と、検索流入から来るユーザー',
+      problem: 'コンテンツ運用と主要導線がつながっていないと、SEO流入を獲得しても登録、問い合わせ、購入などの行動へ接続できない。',
+      want: '非エンジニアでも記事、特集、CTAを作成し、公開ページからプロダクト利用へ誘導したい。',
+      outcome: '記事コンテンツが主要導線へ接続され、運用者が継続的に改善できる。',
+      business_value: 'SEO流入、コンバージョン、コンテンツ運用効率の改善が期待できる。優先KPIは未確定。',
       acceptance_focus: [
-        '記事内にホテルカードや予約導線を配置できる',
+        '記事内に主要CTAを配置できる',
         '非エンジニアがCMSで作成、編集、公開できる',
         'SEOに必要なメタ情報と構造を持つ',
-        '記事からホテル詳細または検索結果へ遷移できる'
+        '記事から主要導線へ遷移できる'
       ],
       source_synthesis: sourceSynthesis
     },
     'story-product-onboarding': {
-      who: '初めてAitleを使うユーザー',
-      problem: '利用目的、予算、好みが分からないままだと、検索や推薦が一般的になり、初回体験で自分向けの価値を感じにくい。',
-      want: '初回利用時に必要な嗜好を短く入力し、ホテル探しや提案に反映してほしい。',
-      outcome: 'ユーザーが最初から自分に合う候補へ近づけ、継続利用の理由が生まれる。',
-      business_value: '初回活性化と個人化精度の改善が期待できる。オンボーディング完了率と初回予約導線到達率は確認が必要。',
+      who: '初めてサービスを使うユーザー',
+      problem: '利用目的や初期設定が分からないままだと、初回体験で自分向けの価値を感じにくい。',
+      want: '初回利用時に必要な情報を短く入力し、次に使うべき機能へ進めてほしい。',
+      outcome: 'ユーザーが最初から価値のある導線へ近づけ、継続利用の理由が生まれる。',
+      business_value: '初回活性化と個人化精度の改善が期待できる。オンボーディング完了率と初回主要導線到達率は確認が必要。',
       acceptance_focus: [
-        '目的、予算、優先条件など必要最小限の嗜好を取得する',
-        '取得した嗜好が検索または推薦に反映される',
+        '目的や初期設定など必要最小限の情報を取得する',
+        '取得した情報が主要導線に反映される',
         '途中離脱しても再開できる',
         '入力負荷が高すぎない'
       ],
       source_synthesis: sourceSynthesis
     },
     'story-product-notification': {
-      who: '旅行やホテル検討の更新を逃したくないユーザー',
-      problem: '予約候補、問い合わせ、重要な更新が分散すると、ユーザーが必要なタイミングで戻ってこられない。',
+      who: '重要な更新を逃したくないユーザー',
+      problem: '重要な更新、問い合わせ、ステータス変化が分散すると、ユーザーが必要なタイミングで戻ってこられない。',
       want: '必要な通知をアプリ、メール、Pushなど適切な経路で受け取り、設定も管理したい。',
-      outcome: '重要な更新が届き、ユーザーが検討を再開しやすくなる。',
-      business_value: '再訪、継続利用、予約導線への復帰が期待できる。通知許諾率と再訪率は確認が必要。',
+      outcome: '重要な更新が届き、ユーザーが利用を再開しやすくなる。',
+      business_value: '再訪、継続利用、主要導線への復帰が期待できる。通知許諾率と再訪率は確認が必要。',
       acceptance_focus: [
         '通知対象イベントが整理されている',
         'ユーザーが通知設定を管理できる',
@@ -1002,23 +964,23 @@ function workflowPositionFor(storyId, preset = null) {
     'story-product-app-navigation-shell': {
       stage: 'entry',
       before: [],
-      after: ['story-product-hotel-map-search', 'story-product-match-recommendation', 'story-product-profile-personalization'],
+      after: ['story-product-auth-account-access', 'story-product-onboarding', 'story-product-profile-personalization'],
       confidence: 'medium',
       rationale: 'ホームと共通ナビはログイン後の主要機能への入口になるため'
     },
     'story-product-public-discovery-seo': {
       stage: 'acquisition',
       before: [],
-      after: ['story-product-hotel-map-search', 'story-product-content-cms', 'story-product-auth-account-access'],
+      after: ['story-product-content-cms', 'story-product-auth-account-access'],
       confidence: 'medium',
       rationale: '公開検索、記事、SEOは未ログイン流入からアプリ利用へ接続するため'
     },
     'story-product-content-cms': {
       stage: 'acquisition',
       before: ['story-product-public-discovery-seo'],
-      after: ['story-product-hotel-detail-actions', 'story-product-hotel-map-search'],
+      after: ['story-product-auth-account-access'],
       confidence: 'medium',
-      rationale: '記事とCMSは公開流入をホテル詳細や検索導線へ送るため'
+      rationale: '記事とCMSは公開流入を主要な利用開始導線へ送るため'
     },
     'story-product-auth-account-access': {
       stage: 'activation',
@@ -1030,65 +992,30 @@ function workflowPositionFor(storyId, preset = null) {
     'story-product-onboarding': {
       stage: 'activation',
       before: ['story-product-auth-account-access'],
-      after: ['story-product-profile-personalization', 'story-product-match-recommendation'],
+      after: ['story-product-profile-personalization'],
       confidence: 'medium',
-      rationale: '初回入力はプロフィールと推薦の材料になるため'
+      rationale: '初回入力はプロフィールと主要導線の材料になるため'
     },
     'story-product-profile-personalization': {
       stage: 'personalization',
       before: ['story-product-auth-account-access', 'story-product-onboarding'],
-      after: ['story-product-match-recommendation', 'story-product-hotel-map-search'],
+      after: ['story-product-notification'],
       confidence: 'medium',
-      rationale: '保存された嗜好は検索や推薦の文脈になるため'
-    },
-    'story-product-hotel-map-search': {
-      stage: 'discovery',
-      before: ['story-product-public-discovery-seo', 'story-product-profile-personalization'],
-      after: ['story-product-hotel-detail-actions', 'story-product-match-recommendation'],
-      confidence: 'medium',
-      rationale: '検索と地図は候補発見から詳細比較へ進む中心導線になるため'
-    },
-    'story-product-match-recommendation': {
-      stage: 'discovery',
-      before: ['story-product-profile-personalization', 'story-product-hotel-map-search'],
-      after: ['story-product-hotel-detail-actions'],
-      confidence: 'medium',
-      rationale: '推薦は候補選定を短縮し、詳細確認へ送るため'
-    },
-    'story-product-hotel-detail-actions': {
-      stage: 'decision',
-      before: ['story-product-hotel-map-search', 'story-product-match-recommendation', 'story-product-content-cms'],
-      after: ['story-product-shadow-call', 'story-product-premium-billing', 'story-product-timeline-posts'],
-      confidence: 'medium',
-      rationale: 'ホテル詳細は予約前の意思決定と次アクションの中心になるため'
+      rationale: '保存された設定は表示や通知の文脈になるため'
     },
     'story-product-premium-billing': {
       stage: 'monetization',
-      before: ['story-product-auth-account-access', 'story-product-hotel-detail-actions'],
-      after: ['story-product-shadow-call'],
+      before: ['story-product-auth-account-access'],
+      after: ['story-product-notification'],
       confidence: 'medium',
       rationale: '課金状態は有料機能の利用可否を決めるため'
     },
-    'story-product-shadow-call': {
-      stage: 'conversion_support',
-      before: ['story-product-hotel-detail-actions', 'story-product-premium-billing'],
-      after: ['story-product-notification'],
-      confidence: 'medium',
-      rationale: 'AI電話代行はホテル詳細後の問い合わせ行動を支援するため'
-    },
-    'story-product-timeline-posts': {
-      stage: 'retention',
-      before: ['story-product-hotel-detail-actions'],
-      after: ['story-product-notification'],
-      confidence: 'medium',
-      rationale: '投稿とタイムラインは利用後の記録と再訪に接続するため'
-    },
     'story-product-notification': {
       stage: 'retention',
-      before: ['story-product-shadow-call', 'story-product-timeline-posts'],
+      before: ['story-product-profile-personalization', 'story-product-premium-billing'],
       after: [],
       confidence: 'medium',
-      rationale: '通知は結果確認や再訪を促すため'
+      rationale: '通知は重要な更新確認や再訪を促すため'
     }
   };
   return positions[storyId] ?? {
@@ -1146,25 +1073,24 @@ function rankStoryCodePath(storyId, filePath) {
       [/sign-in|nextauth|session|userSync|providers/, -8],
       [/account-deleted|error\/page|layout\.tsx$/, 20]
     ],
-    'story-product-hotel-detail-actions': [
-      [/hotelDetailService|HotelDetail|detail\/page|hotel_actions/, -10],
-      [/phone-lookup|lead_actions/, -8]
-    ],
     'story-product-profile-personalization': [
       [/profileService|profile_action|profile\/page|ProfileHeader|ProfileInfo/, -10]
     ],
-    'story-product-match-recommendation': [
-      [/matchSearchService|MatchSearch|comparison-report/, -10]
+    'story-product-content-cms': [
+      [/article|cms|sanity|content/, -10]
     ],
-    'story-product-timeline-posts': [
-      [/timelineService|postService|timeline_actions|post_actions|PostCard/, -10]
+    'story-product-premium-billing': [
+      [/stripe|checkout|premium|subscription|billing/, -10]
+    ],
+    'story-product-notification': [
+      [/notification|push|email/, -10]
+    ],
+    'story-product-onboarding': [
+      [/onboarding|profile-step|preferences-step/, -10]
     ],
     'story-product-public-discovery-seo': [
-      [/search-results\/page|articles\/\[slug\]\/page|sitemap|robots|StructuredData|analytics/, -10],
+      [/articles\/\[slug\]\/page|sitemap|robots|StructuredData|analytics/, -10],
       [/landing/, -6]
-    ],
-    'story-ops-hotel-data-ingestion': [
-      [/orchestrator|crawler|regenerate-sitemap|backend\.ts$/, -10]
     ]
   };
   const adjustment = (storySpecificRank[storyId] ?? [])
@@ -1423,7 +1349,7 @@ function extractBusinessSignals(content) {
   const signals = [];
   const checks = [
     [/SEO|オーガニック検索|検索流入/, 'SEO流入'],
-    [/コンバージョン|予約への誘導|ホテル予約|CVR/i, 'コンバージョン'],
+    [/コンバージョン|CVR/i, 'コンバージョン'],
     [/収益|月額|課金|サブスクリプション|プレミアム|売上/, '収益化'],
     [/効率|効率化|意思決定|選択できる|視覚的に把握/, 'ユーザー効率'],
     [/パーソナライズ|嗜好|マッチング|個人化/, '個人化'],
@@ -1631,7 +1557,6 @@ function documentRank(filePath) {
   if (filePath.startsWith('docs/management/stories/')) return 0;
   if (filePath.startsWith('docs/requirements/')) return 1;
   if (filePath.startsWith('docs/features/')) return 2;
-  if (filePath.startsWith('docs/shadow-call/')) return 3;
   if (filePath.startsWith('docs/architecture/')) return 4;
   if (filePath.startsWith('docs/cms/')) return 5;
   if (filePath.startsWith('docs/dev/')) return 6;
@@ -1689,7 +1614,7 @@ function attachLinkedDocumentSignals(stories, documentSignals) {
 }
 
 function linkedDocsSatisfySpec(docs) {
-  return docs.some((doc) => /docs\/(specs|requirements|features|user_stories|shadow-call)\//.test(doc.path));
+  return docs.some((doc) => /docs\/(specs|requirements|features|user_stories)\//.test(doc.path));
 }
 
 function appendLinkedDocsToStoryDefinition(definition = {}, docs = []) {

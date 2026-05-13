@@ -1211,7 +1211,7 @@ function isStoryDocPath(filePath) {
 }
 
 function isSpecDocPath(filePath) {
-  return /^docs\/(specs|requirements|features|user_stories|shadow-call)\//.test(filePath);
+  return /^docs\/(specs|requirements|features|user_stories)\//.test(filePath);
 }
 
 function isArchitectureDocPath(filePath) {
