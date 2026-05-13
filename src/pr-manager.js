@@ -113,10 +113,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     splitPlan,
     narrative: prBodyNarrative
   });
+  const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const preparation = {
     schema_version: '0.1.0',
     story,
     created_at: new Date().toISOString(),
+    gate_status: gateStatus,
     workspace: {
       initialized: workspace.initialized,
       artifact_location: workspace.initialized ? 'repo' : 'temporary'
@@ -473,20 +475,34 @@ export async function createPullRequest(repoRoot, options = {}) {
 
 export function renderPrPrepareSummary(result) {
   const { preparation } = result;
+  const gateStatus = preparation.gate_status
+    ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
   return `# PR Prepare
 
 | 項目 | 内容 |
 |------|------|
 | Story | ${preparation.story.story_id} |
+| Gate readiness | ${gateStatus.overall_status} |
+| Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
+| Critical unresolved gates | ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)} |
+| Completion quality | ${gateStatus.completion_quality_status ?? '-'} |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
 | Changed files | ${preparation.git.changed_files.length} |
 | Commits | ${preparation.git.commits.length} |
-| Scope | ${preparation.scope.status} |
+| Scope | ${preparation.scope.status} (PR size only; not completion approval) |
 | Recommended strategy | ${preparation.scope.recommended_strategy} |
 | Task | ${preparation.task_context?.task?.id ?? '-'} |
 | Workspace | ${preparation.workspace.initialized ? 'initialized' : 'temporary artifacts'} |
+
+## Gate Decision
+
+- gate_dag.overall_status: ${gateStatus.overall_status}
+- ready_for_pr_create: ${gateStatus.ready_for_pr_create}
+- unresolved_gates: ${formatUnresolvedGateList(gateStatus.unresolved_gates)}
+- critical_unresolved_gates: ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)}
+- agent_instruction: ${gateStatus.agent_instruction}
 
 ## Artifacts
 
@@ -501,6 +517,26 @@ export function renderPrPrepareSummary(result) {
 - split_plan_html: ${toDisplayPath(result.artifacts.split_plan_report)}
 - json: ${toDisplayPath(result.artifacts.json)}
 `;
+}
+
+function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
+  const overallStatus = gateDag?.overall_status ?? 'unknown';
+  const readyForPrCreate = overallStatus === 'ready_for_review';
+  return {
+    schema_version: '0.1.0',
+    overall_status: overallStatus,
+    ready_for_pr_create: readyForPrCreate,
+    completion_quality_status: completionQuality?.status ?? null,
+    unresolved_gate_count: unresolvedGates.length,
+    critical_unresolved_gate_count: criticalGates.length,
+    unresolved_gates: unresolvedGates,
+    critical_unresolved_gates: criticalGates,
+    agent_instruction: readyForPrCreate
+      ? 'Gate DAG is ready_for_review; pr create may proceed if scope and branch checks are acceptable.'
+      : 'Do not treat scope.status=reviewable as completion approval. Resolve Gate DAG evidence before pr create.'
+  };
 }
 
 export function renderPrCreateSummary(result) {

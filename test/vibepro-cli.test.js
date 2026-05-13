@@ -1935,11 +1935,24 @@ Weighted semantic/layout residual: **34%**
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001']);
+  let prepareSummaryOutput = '';
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'], {
+    stdout: { write: (text) => { prepareSummaryOutput += text; } }
+  });
 
   assert.equal(result.exitCode, 0);
+  assert.match(prepareSummaryOutput, /\| Gate readiness \| needs_verification \|/);
+  assert.match(prepareSummaryOutput, /\| Ready for pr create \| no \|/);
+  assert.match(prepareSummaryOutput, /\| Scope \| reviewable \(PR size only; not completion approval\) \|/);
+  assert.match(prepareSummaryOutput, /Do not treat scope\.status=reviewable as completion approval/);
   const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
+  assert.equal(prepare.gate_status.overall_status, 'needs_verification');
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(prepare.gate_status.completion_quality_status, 'needs_quality_closure');
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), true);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+  assert.match(prepare.gate_status.agent_instruction, /Do not treat scope\.status=reviewable/);
   assert.equal(prepare.toolchain.package.name, 'vibepro');
   assert.match(prepare.toolchain.package.version, /^0\.1\.0/);
   assert.equal(typeof prepare.toolchain.package.root, 'string');
