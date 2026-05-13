@@ -476,6 +476,9 @@ function renderStep(step, probe, screenshotDir) {
   if (step.action === 'click') {
     return `  await page.getByText(${JSON.stringify(step.text)}, { exact: false }).first().click();`;
   }
+  if (step.action === 'physicalClick') {
+    return renderPhysicalClickStep(step);
+  }
   if (step.action === 'fill') {
     if (step.selector) return `  await page.locator(${JSON.stringify(step.selector)}).fill(${JSON.stringify(step.value ?? '')});`;
     return `  await page.getByLabel(${JSON.stringify(step.label ?? step.text)}, { exact: false }).fill(${JSON.stringify(step.value ?? '')});`;
@@ -501,6 +504,39 @@ function renderStep(step, probe, screenshotDir) {
     return `  await page.screenshot({ path: ${JSON.stringify(path.join(screenshotDir, fileName))}, fullPage: true });`;
   }
   return null;
+}
+
+function renderPhysicalClickStep(step) {
+  const locatorExpression = step.selector
+    ? `page.locator(${JSON.stringify(step.selector)}).first()`
+    : `page.getByText(${JSON.stringify(step.text ?? step.label)}, { exact: ${step.exact === true ? 'true' : 'false'} }).first()`;
+  const targetLabel = step.selector ?? step.text ?? step.label ?? 'physicalClick target';
+  const assertSelfTarget = step.targetPolicy !== 'closest';
+  const hitAssertion = assertSelfTarget
+    ? `  expect(hit.isSelf, \`Physical click target for ${escapeTemplate(targetLabel)} is intercepted by \${hit.tagName}.\${hit.className}: \${hit.html}\`).toBe(true);`
+    : `  expect(hit.isSelf || hit.isInside, \`Physical click target for ${escapeTemplate(targetLabel)} is outside the locator: \${hit.tagName}.\${hit.className}: \${hit.html}\`).toBe(true);`;
+  return [
+    `  const physicalTarget = ${locatorExpression};`,
+    '  await expect(physicalTarget).toBeVisible();',
+    '  await physicalTarget.scrollIntoViewIfNeeded();',
+    '  const hit = await physicalTarget.evaluate((element) => {',
+    '    const rect = element.getBoundingClientRect();',
+    '    const x = rect.left + rect.width / 2;',
+    '    const y = rect.top + rect.height / 2;',
+    '    const target = document.elementFromPoint(x, y);',
+    '    return {',
+    '      isSelf: target === element,',
+    '      isInside: Boolean(target && element.contains(target)),',
+    '      tagName: target?.tagName ?? null,',
+    '      className: String(target?.className ?? \'\'),',
+    '      html: target?.outerHTML?.slice(0, 240) ?? null',
+    '    };',
+    '  });',
+    hitAssertion,
+    '  const box = await physicalTarget.boundingBox();',
+    `  expect(box, ${JSON.stringify(`Expected a bounding box for ${targetLabel}`)}).not.toBeNull();`,
+    '  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);'
+  ].join('\n');
 }
 
 function renderFlowVerificationReport(verification) {
@@ -547,6 +583,13 @@ function safeFileName(value) {
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'screenshot';
+}
+
+function escapeTemplate(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, '\\`')
+    .replace(/\$\{/g, '\\${');
 }
 
 function toPosix(value) {

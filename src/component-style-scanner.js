@@ -176,13 +176,23 @@ function collectDesignSystemMarkers(markers, file, lineNumber, line) {
 function collectInteractionReliabilityHits(hits, file, content) {
   const rulePattern = /([^{}]+)\{([^{}]*)\}/gm;
   const smallTargetCandidates = new Map();
+  const interactiveSvgChildren = new Map();
+  const svgPointerEventsNone = new Set();
   let match;
   while ((match = rulePattern.exec(content)) !== null) {
     const selector = match[1].trim().replace(/\s+/g, ' ');
     const body = match[2];
+    const lineNumber = lineNumberAt(content, match.index);
+    collectInteractiveSvgChildRule({
+      interactiveSvgChildren,
+      svgPointerEventsNone,
+      selector,
+      body,
+      file,
+      lineNumber
+    });
     if (!INTERACTIVE_SELECTOR_PATTERN.test(selector)) continue;
 
-    const lineNumber = lineNumberAt(content, match.index);
     const excerpt = `${selector} { ${body.trim().replace(/\s+/g, ' ').slice(0, 140)} }`;
 
     if (INTERACTIVE_STATE_PATTERN.test(selector) && MOVING_TRANSFORM_PATTERN.test(body)) {
@@ -233,6 +243,51 @@ function collectInteractionReliabilityHits(hits, file, content) {
       hits.push(candidate);
     }
   }
+
+  for (const [baseSelector, candidate] of interactiveSvgChildren.entries()) {
+    if (svgPointerEventsNone.has(baseSelector)) continue;
+    hits.push(candidate);
+  }
+}
+
+function collectInteractiveSvgChildRule({
+  interactiveSvgChildren,
+  svgPointerEventsNone,
+  selector,
+  body,
+  file,
+  lineNumber
+}) {
+  const hasPointerEventsNone = /pointer-events\s*:\s*none\b/i.test(body);
+  for (const rawPart of selector.split(',')) {
+    const part = rawPart.trim().replace(/\s+/g, ' ');
+    const baseSelector = extractInteractiveSvgBaseSelector(part);
+    if (!baseSelector) continue;
+    if (hasPointerEventsNone) {
+      svgPointerEventsNone.add(baseSelector);
+      continue;
+    }
+    if (interactiveSvgChildren.has(baseSelector)) continue;
+    interactiveSvgChildren.set(baseSelector, {
+      file,
+      line: lineNumber,
+      kind: 'icon_child_captures_click_target',
+      selector: part,
+      base_selector: baseSelector,
+      excerpt: `${selector} { ${body.trim().replace(/\s+/g, ' ').slice(0, 140)} }`,
+      confidence: 'high',
+      gate_effect: 'review',
+      recommendation: 'アイコンボタン配下のsvg/svg *はpointer-events:noneにし、実座標クリックのtargetをbutton本体へ固定する。Playwrightではlocator.clickだけでなくelementFromPoint(center)とpage.mouse.clickで検証する。'
+    });
+  }
+}
+
+function extractInteractiveSvgBaseSelector(selector) {
+  const match = selector.match(/^(.+?)(?:\s*>\s*|\s+)svg(?:\s+\*)?$/i);
+  if (!match) return null;
+  const baseSelector = match[1].trim();
+  if (!baseSelector || !INTERACTIVE_SELECTOR_PATTERN.test(baseSelector)) return null;
+  return baseSelector;
 }
 
 function isInteractiveChildGraphicSelector(selector) {

@@ -439,8 +439,8 @@ function buildFindings(evidence) {
         severity: 'Medium',
         category: 'UI操作信頼性',
         title: 'クリック可能要素のhit targetが不安定になるCSS候補がある',
-        detail: `${interactionReliabilityHits.length} 件のUI sourceで、hover/focus中の移動、小さすぎる操作領域、またはtransition: allを検出した。内訳: ${formatGateSummary(interactionSummary)}。`,
-        recommendation: 'クリック可能要素はhover/focus/press中にhit targetを移動させず、状態表現は色・border・shadowに限定する。高頻度操作のtargetは最低28px程度を確保する。'
+        detail: `${interactionReliabilityHits.length} 件のUI sourceで、hover/focus中の移動、小さすぎる操作領域、transition: all、またはアイコンSVGが実クリックtargetを奪う候補を検出した。内訳: ${formatGateSummary(interactionSummary)}。`,
+        recommendation: 'クリック可能要素はhover/focus/press中にhit targetを移動させず、状態表現は色・border・shadowに限定する。高頻度操作のtargetは最低28px程度を確保する。アイコンボタン配下のsvg/svg *はpointer-events:noneにし、Playwrightではlocator.clickだけでなくelementFromPoint(center)とpage.mouse.clickで物理クリックを確認する。'
       });
     }
   }

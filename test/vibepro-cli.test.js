@@ -418,6 +418,10 @@ test('component style scanner inventories UI components and flags legacy tokens'
   height: 24px;
   transition: all 0.15s ease;
 }
+.task-action-btn svg {
+  width: 12px;
+  height: 12px;
+}
 .task-action-btn:hover { transform: translateY(-1px); }
 .task-card { box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3); }
 `);
@@ -435,7 +439,8 @@ test('component style scanner inventories UI components and flags legacy tokens'
   assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'interactive_target_moves_on_state'), true);
   assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'transition_all_on_interactive_target'), true);
   assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'small_interactive_target'), true);
-  assert.equal(result.risk_summary.interaction_reliability_hits.review, 3);
+  assert.equal(result.interaction_reliability_hits.some((hit) => hit.kind === 'icon_child_captures_click_target'), true);
+  assert.equal(result.risk_summary.interaction_reliability_hits.review, 4);
 });
 
 test('flow design scanner flags unsafe UI journey contracts', async () => {
@@ -689,6 +694,7 @@ test('verify flow writes Playwright evidence and skips mutating probes by defaul
         steps: [
           { action: 'expectVisible', text: '病名' },
           { action: 'expectNotVisible', text: '退院予定日' },
+          { action: 'physicalClick', selector: '.icon-action-button', targetPolicy: 'self' },
           { action: 'screenshot', name: 'new-registration' }
         ]
       },
@@ -738,6 +744,10 @@ console.log('fake playwright ok');
   const verification = await readJson(path.join(runDir, 'flow-verification.json'));
   assert.equal(verification.base_url, 'http://127.0.0.1:3000');
   assert.equal(verification.probes[0].artifacts.screenshot_paths.includes('screenshots/new-registration.png'), true);
+  const generatedSpec = await readFile(path.join(runDir, 'flow-verification.spec.js'), 'utf8');
+  assert.match(generatedSpec, /document\.elementFromPoint\(x, y\)/);
+  assert.equal(generatedSpec.includes('Physical click target for .icon-action-button is intercepted'), true);
+  assert.match(generatedSpec, /page\.mouse\.click\(box\.x \+ box\.width \/ 2, box\.y \+ box\.height \/ 2\)/);
   assert.match(await readFile(path.join(runDir, 'flow-verification.md'), 'utf8'), /new-registration-readonly/);
   assert.match(await readFile(path.join(repo, 'fake-npx.log'), 'utf8'), /playwright test/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
