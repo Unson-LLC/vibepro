@@ -66,6 +66,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     changedFiles: reviewChangedFiles,
     fileGroups,
     dirtyFiles: reviewDirtyFiles,
+    dirtyFilesAffectScope: reviewGit.includes_dirty_in_changed_files,
     commits: reviewGit.commits,
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
@@ -612,16 +613,20 @@ async function collectGitState(repoRoot, options) {
   const currentBranch = await gitOptional(repoRoot, ['branch', '--show-current']);
   const baseRef = options.baseRef ?? await resolveBaseRef(repoRoot);
   const headRef = options.headRef ?? 'HEAD';
+  const includesDirtyInChangedFiles = !options.headRef;
   const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
   const commits = await getCommits(repoRoot, baseRef, headRef);
-  const dirtyFiles = parseStatus(await gitOptional(repoRoot, ['status', '--porcelain']));
-  const changedFiles = mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles);
+  const dirtyFiles = parseStatus(await gitStatus(repoRoot, ['status', '--porcelain']));
+  const changedFiles = includesDirtyInChangedFiles
+    ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
+    : committedChangedFiles;
   return {
     current_branch: currentBranch || null,
     base_ref: baseRef,
     head_ref: headRef,
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
+    includes_dirty_in_changed_files: includesDirtyInChangedFiles,
     commits
   };
 }
@@ -761,7 +766,7 @@ function isSpecificationDocPath(filePath) {
     || /^docs\/.+\/[^/]*(spec|specification)[^/]*\.md$/i.test(filePath);
 }
 
-function assessScope({ changedFiles, fileGroups, dirtyFiles, commits, maxReviewableFiles }) {
+function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, maxReviewableFiles }) {
   const reasons = [];
   if (changedFiles.length > maxReviewableFiles) {
     reasons.push(`差分が ${changedFiles.length} files あり、レビュー可能な目安 ${maxReviewableFiles} files を超えている`);
@@ -770,7 +775,7 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, commits, maxReviewa
     reasons.push('repo制御ファイルやagent設定が差分に含まれている');
   }
   const nonWorkspaceDirty = dirtyFiles.filter((file) => !file.path.startsWith('.vibepro/'));
-  if (nonWorkspaceDirty.length > 0) {
+  if (dirtyFilesAffectScope && nonWorkspaceDirty.length > 0) {
     reasons.push(`未コミット差分が ${nonWorkspaceDirty.length} files 残っている`);
   }
   if (commits.length > 1) {
@@ -3088,6 +3093,18 @@ async function gitRefExists(repoRoot, ref) {
 async function gitOptional(repoRoot, args) {
   try {
     return await git(repoRoot, args);
+  } catch {
+    return '';
+  }
+}
+
+async function gitStatus(repoRoot, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, {
+      cwd: repoRoot,
+      encoding: 'utf8'
+    });
+    return stdout.trimEnd();
   } catch {
     return '';
   }

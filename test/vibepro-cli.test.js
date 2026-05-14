@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -2293,6 +2293,69 @@ title: PR準備
   assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
 });
 
+test('verify record keeps verification evidence valid under concurrent writes', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-concurrent-record', '--title', 'Concurrent verification']);
+
+  const results = await Promise.all([
+    runCli([
+      'verify', 'record', repo,
+      '--id', 'story-concurrent-record',
+      '--kind', 'unit',
+      '--status', 'pass',
+      '--command', 'npm test',
+      '--summary', 'unit passed'
+    ]),
+    runCli([
+      'verify', 'record', repo,
+      '--id', 'story-concurrent-record',
+      '--kind', 'integration',
+      '--status', 'pass',
+      '--command', 'npm run typecheck',
+      '--summary', 'integration passed'
+    ]),
+    runCli([
+      'verify', 'record', repo,
+      '--id', 'story-concurrent-record',
+      '--kind', 'e2e',
+      '--status', 'pass',
+      '--command', 'npm run test:e2e',
+      '--summary', 'e2e passed'
+    ])
+  ]);
+
+  assert.deepEqual(results.map((result) => result.exitCode), [0, 0, 0]);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-concurrent-record', 'verification-evidence.json'));
+  assert.equal(evidence.story_id, 'story-concurrent-record');
+  assert.deepEqual(new Set(evidence.commands.map((command) => command.kind)), new Set(['unit', 'integration', 'e2e']));
+});
+
+test('verify record quarantines corrupt verification evidence instead of overwriting it', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-corrupt-record', '--title', 'Corrupt verification']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-corrupt-record');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), '{ "schema_version": "0.1.0" }\n{ "fragment": true');
+  let stderrOutput = '';
+
+  const result = await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-corrupt-record',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'npm test'
+  ], {
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOutput, /verification evidence JSON is corrupt/);
+  await assert.rejects(stat(path.join(prDir, 'verification-evidence.json')), { code: 'ENOENT' });
+  const backupFile = (await readdir(prDir)).find((file) => /^verification-evidence\.json\.corrupt-.+\.bak$/.test(file));
+  assert.ok(backupFile);
+  assert.match(await readFile(path.join(prDir, backupFile), 'utf8'), /\{ "fragment": true/);
+});
+
 test('pr prepare flags requirement contradictions from story invariants and code states', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -2467,6 +2530,45 @@ test('pr prepare help does not run diagnostics or initialize the repository', as
 
   assert.equal(result.exitCode, 0);
   await assert.rejects(stat(path.join(repo, '.vibepro')), { code: 'ENOENT' });
+});
+
+test('pr prepare with explicit head excludes unrelated dirty files from changed files and scope', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-explicit-head', '--title', 'Explicit head']);
+  await mkdir(path.join(repo, '.claude', 'skills', 'brainbase-infisical-env-management'), { recursive: true });
+  const dirtySkillPath = path.join(repo, '.claude', 'skills', 'brainbase-infisical-env-management', 'SKILL.md');
+  await writeFile(dirtySkillPath, '# Infisical\n\nInitial guidance.\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: init explicit head fixture']);
+  const base = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(repo, ['switch', '-c', 'feature/explicit-head']);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const explicitHead = true;\n');
+  await git(repo, ['add', 'src/feature.js']);
+  await git(repo, ['commit', '-m', 'feat: add explicit head feature']);
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await writeFile(dirtySkillPath, '# Infisical\n\nDirty local guidance.\n');
+
+  const result = await runCli([
+    'pr', 'prepare', repo,
+    '--base', base,
+    '--head', head,
+    '--story-id', 'story-explicit-head',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.deepEqual(prepare.git.changed_files.map((file) => file.path), ['src/feature.js']);
+  assert.equal(prepare.git.dirty_files.some((file) => file.path === '.claude/skills/brainbase-infisical-env-management/SKILL.md'), true);
+  assert.equal(prepare.git.includes_dirty_in_changed_files, false);
+  assert.equal(prepare.scope.status, 'reviewable');
+  assert.equal(prepare.scope.reasons.some((reason) => /未コミット差分/.test(reason)), false);
+  assert.equal(prepare.file_groups.repo_control.files.includes('.claude/skills/brainbase-infisical-env-management/SKILL.md'), false);
+  assert.equal(prepare.split_plan.lanes.some((lane) => lane.files.includes('.claude/skills/brainbase-infisical-env-management/SKILL.md')), false);
 });
 
 test('pr prepare recommends a clean branch for broad session diffs', async () => {
