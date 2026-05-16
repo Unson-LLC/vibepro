@@ -66,6 +66,19 @@ export const DOMAIN_KEYWORDS = [
   'profile'
 ];
 
+const GENERIC_CONDITION_TOKENS = new Set([
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'return',
+  'status',
+  'error',
+  'result',
+  'value',
+  'data'
+]);
+
 export async function buildRequirementConsistency(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const codeFiles = await resolveCodeFiles(root, options);
@@ -80,7 +93,13 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
     ? extractInvariantsFromInferredSpec(options.inferredSpec, storySource)
     : extractInvariants(storySource, requirementSources);
   const codeScenarios = await collectCodeScenarios(root, codeFiles);
-  const scenarioGaps = buildScenarioGaps({ invariants, codeScenarios, storySource, requirementSources });
+  const scenarioGaps = buildScenarioGaps({
+    invariants,
+    codeScenarios,
+    storySource,
+    requirementSources,
+    inferredSpec: options.inferredSpec
+  });
   const contradictions = buildContradictions({ invariants, codeScenarios, storySource });
   const status = contradictions.length > 0
     ? 'contradicted'
@@ -575,22 +594,30 @@ function extractResponseMessages(content) {
     .slice(0, 20);
 }
 
-function buildScenarioGaps({ invariants, codeScenarios, storySource, requirementSources }) {
+function buildScenarioGaps({ invariants, codeScenarios, storySource, requirementSources, inferredSpec = null }) {
   if (invariants.length === 0) return [];
   const gaps = [];
+  const inferredSpecContext = buildInferredSpecContext(inferredSpec);
   const acceptanceText = [
     ...(storySource?.acceptance_criteria ?? []),
     storySource?.policy,
     ...requirementSources.flatMap((source) => [
       ...(source.acceptance_criteria ?? []),
       source.policy
-    ])
+    ]),
+    ...inferredSpecContext.texts
   ].filter(Boolean).join('\n').toLowerCase();
   for (const scenario of codeScenarios) {
     for (const branch of scenario.branches) {
       const condition = branch.condition.toLowerCase();
       if (!isDomainBranch(condition)) continue;
       if (acceptanceText && acceptanceText.includes(condition.slice(0, 24))) continue;
+      if (isBranchCoveredByInferredSpec({
+        branch,
+        scenario,
+        invariants,
+        inferredSpecContext
+      })) continue;
       gaps.push({
         id: `REQ-GAP-${String(gaps.length + 1).padStart(3, '0')}`,
         title: 'Requirement Sourcesに明示されていない重要分岐がある',
@@ -603,6 +630,123 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
     }
   }
   return gaps;
+}
+
+function buildInferredSpecContext(spec) {
+  if (!spec || !Array.isArray(spec.clauses)) {
+    return { clauses: [], texts: [] };
+  }
+  const clauses = spec.clauses
+    .filter((clause) => clause && typeof clause.statement === 'string')
+    .map((clause) => {
+      const codeRefs = Array.isArray(clause.origin?.code_refs) ? clause.origin.code_refs : [];
+      const codePatterns = Array.isArray(clause.verifiable_by?.code_pattern) ? clause.verifiable_by.code_pattern : [];
+      const files = [
+        ...codeRefs.map((ref) => ref?.file),
+        ...codePatterns.map((pattern) => pattern?.file_glob)
+      ].filter(Boolean).map((file) => normalizePath(file));
+      const fragments = [
+        ...codeRefs.map((ref) => ref?.anchor),
+        ...codePatterns.map((pattern) => pattern?.must_contain)
+      ].filter(Boolean).map((value) => String(value));
+      const text = [
+        clause.id,
+        clause.type,
+        clause.statement,
+        ...files,
+        ...fragments
+      ].filter(Boolean).join('\n');
+      return {
+        id: clause.id,
+        type: clause.type ?? 'invariant',
+        statement: clause.statement,
+        files,
+        fragments,
+        text,
+        normalized_text: normalizeComparableText(text)
+      };
+    });
+  return {
+    clauses,
+    texts: clauses.map((clause) => clause.text)
+  };
+}
+
+function isBranchCoveredByInferredSpec({ branch, scenario, invariants, inferredSpecContext }) {
+  if (!inferredSpecContext?.clauses?.length) return false;
+  const inferredInvariants = invariants.filter((invariant) => invariant.source?.kind === 'inferred_spec');
+  const relatedIds = new Set(relatedInvariantIds(inferredInvariants, branch.condition));
+  const condition = normalizeComparableCode(branch.condition);
+  const conditionTokens = meaningfulConditionTokens(branch.condition);
+
+  for (const clause of inferredSpecContext.clauses) {
+    if (!clauseAppliesToScenario(clause, scenario.file)) continue;
+    if (clause.fragments.some((fragment) => codeFragmentCoversCondition(fragment, condition))) {
+      return true;
+    }
+    if (tokensCoveredByClause(conditionTokens, clause.normalized_text)) {
+      return true;
+    }
+    if (relatedIds.has(clause.id) && conditionTokens.some((token) => clause.normalized_text.includes(token))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function clauseAppliesToScenario(clause, scenarioFile) {
+  if (!clause.files.length) return true;
+  return clause.files.some((filePattern) => pathPatternMatches(filePattern, scenarioFile));
+}
+
+function pathPatternMatches(pattern, filePath) {
+  const normalizedPattern = normalizePath(pattern);
+  const normalizedFile = normalizePath(filePath);
+  if (!normalizedPattern) return false;
+  if (normalizedPattern === normalizedFile) return true;
+  if (!normalizedPattern.includes('*')) return normalizedFile.endsWith(normalizedPattern);
+  const regex = new RegExp(`^${escapeRegExp(normalizedPattern)
+    .replace(/\\\*\\\*/g, '.*')
+    .replace(/\\\*/g, '[^/]*')}$`);
+  return regex.test(normalizedFile);
+}
+
+function codeFragmentCoversCondition(fragment, normalizedCondition) {
+  const normalizedFragment = normalizeComparableCode(fragment);
+  if (!normalizedFragment || !normalizedCondition) return false;
+  return normalizedCondition.includes(normalizedFragment) || normalizedFragment.includes(normalizedCondition);
+}
+
+function tokensCoveredByClause(tokens, normalizedClauseText) {
+  if (tokens.length === 0 || !normalizedClauseText) return false;
+  const matches = tokens.filter((token) => normalizedClauseText.includes(token));
+  if (matches.some((token) => token.length >= 8)) return true;
+  return matches.length >= Math.min(2, tokens.length);
+}
+
+function meaningfulConditionTokens(value) {
+  return normalizeComparableText(value)
+    .split(' ')
+    .filter((token) => token.length >= 4 || DOMAIN_KEYWORDS.includes(token))
+    .filter((token) => !GENERIC_CONDITION_TOKENS.has(token))
+    .slice(0, 8);
+}
+
+function normalizeComparableCode(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[?!]/g, '')
+    .replace(/\s+/g, '')
+    .replace(/['"`]/g, '');
+}
+
+function normalizeComparableText(value) {
+  return String(value ?? '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function buildContradictions({ invariants, codeScenarios }) {

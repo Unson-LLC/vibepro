@@ -13,6 +13,7 @@ import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
+import { writeInferredSpec } from '../src/spec-store.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
@@ -3055,6 +3056,71 @@ export async function updateVisited(isAdd: boolean) {
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /Spec Sources: 1/);
   assert.match(prBody, /Architecture Sources: 1/);
+});
+
+test('pr prepare treats internal spec clauses as coverage for changed source scenario gaps', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'app', 'account'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'account', 'page.tsx'), `
+export function AccountPanel({ session, customer }) {
+  if (!session?.user) {
+    return 'sign in required';
+  }
+  if (customer.cancelAtPeriodEnd) {
+    return 'premium until period end';
+  }
+  return 'active';
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-05-16T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'The AccountPanel session.user branch must block unauthenticated access before customer state is shown.',
+        origin: {
+          code_refs: [
+            { file: 'src/app/account/page.tsx', anchor: 'session?.user' }
+          ]
+        },
+        verifiable_by: {
+          code_pattern: [
+            { file_glob: 'src/app/account/page.tsx', must_contain: 'session?.user' }
+          ]
+        }
+      },
+      {
+        id: 'INV-002',
+        type: 'invariant',
+        statement: 'The customer.cancelAtPeriodEnd branch must keep premium access visible until the billing period ends.',
+        origin: {
+          code_refs: [
+            { file: 'src/app/account/page.tsx', anchor: 'customer.cancelAtPeriodEnd' }
+          ]
+        },
+        verifiable_by: {
+          code_pattern: [
+            { file_glob: 'src/app/account/page.tsx', must_contain: 'customer.cancelAtPeriodEnd' }
+          ]
+        }
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: implement account state panel']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const requirement = result.result.preparation.pr_context.requirement_consistency;
+  assert.equal(requirement.status, 'pass');
+  assert.equal(requirement.summary.invariant_count, 2);
+  assert.equal(requirement.summary.scenario_gap_count, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:requirement');
+  assert.equal(gate.status, 'passed');
 });
 
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
