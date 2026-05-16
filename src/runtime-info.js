@@ -41,7 +41,7 @@ export function buildRuntimeDoctorCheck(runtime) {
     };
   }
 
-  const stale = Boolean(git.origin_main_commit && git.commit && git.origin_main_commit !== git.commit);
+  const stale = git.origin_main_relation === 'behind';
   return {
     id: 'VP-DOCTOR-CLI-RUNTIME',
     severity: stale ? 'warning' : 'info',
@@ -91,6 +91,7 @@ async function collectRuntimeGitInfo(packageRoot) {
   const branch = await gitOptional(packageRoot, ['branch', '--show-current']);
   const originUrl = await gitOptional(packageRoot, ['config', '--get', 'remote.origin.url']);
   const originMainCommit = await gitOptional(packageRoot, ['rev-parse', 'origin/main']);
+  const originMainRelation = await resolveOriginMainRelation(packageRoot, commit, originMainCommit);
   const porcelain = await gitOptional(packageRoot, ['status', '--porcelain']);
   return {
     is_git_repo: true,
@@ -98,9 +99,20 @@ async function collectRuntimeGitInfo(packageRoot) {
     branch: branch || null,
     origin_url: originUrl || null,
     origin_main_commit: originMainCommit || null,
+    origin_main_relation: originMainRelation,
     dirty: Boolean(porcelain),
     dirty_summary: porcelain ? porcelain.split('\n').filter(Boolean).slice(0, 20) : []
   };
+}
+
+async function resolveOriginMainRelation(packageRoot, commit, originMainCommit) {
+  if (!commit || !originMainCommit) return null;
+  if (commit === originMainCommit) return 'same';
+  const headBehindOriginMain = await gitExitCode(packageRoot, ['merge-base', '--is-ancestor', commit, originMainCommit]);
+  if (headBehindOriginMain === 0) return 'behind';
+  const originMainBehindHead = await gitExitCode(packageRoot, ['merge-base', '--is-ancestor', originMainCommit, commit]);
+  if (originMainBehindHead === 0) return 'ahead';
+  return 'diverged';
 }
 
 async function gitOptional(cwd, args) {
@@ -109,5 +121,14 @@ async function gitOptional(cwd, args) {
     return stdout.trim();
   } catch {
     return null;
+  }
+}
+
+async function gitExitCode(cwd, args) {
+  try {
+    await execFileAsync('git', args, { cwd });
+    return 0;
+  } catch (error) {
+    return typeof error.code === 'number' ? error.code : 1;
   }
 }

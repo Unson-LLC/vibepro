@@ -15,6 +15,7 @@ import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplit
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
+import { resolveOutputLanguage } from './language.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import {
@@ -30,6 +31,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const toolchain = await collectRuntimeInfo();
   const git = await collectGitState(root, options);
   const workspace = await readWorkspaceState(root);
+  const outputLanguage = resolveOutputLanguage(workspace.config, options.language ?? null);
   const story = resolveStory(workspace.config, options.storyId, {
     allowTransient: !workspace.initialized
   });
@@ -123,6 +125,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
     schema_version: '0.1.0',
     story,
     created_at: new Date().toISOString(),
+    output: {
+      language: outputLanguage
+    },
     gate_status: gateStatus,
     workspace: {
       initialized: workspace.initialized,
@@ -158,14 +163,21 @@ export async function preparePullRequest(repoRoot, options = {}) {
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`);
   await writeFile(bodyPath, prBody);
   await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`);
-  await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag));
+  await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
+    generatedAt: preparation.created_at,
+    language: outputLanguage
+  }));
   await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`);
-  await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan));
+  await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
+    generatedAt: preparation.created_at,
+    language: outputLanguage
+  }));
   const reviewCockpitHtml = renderPrPrepareHtml({
     preparation,
     bodyPath: toWorkspaceRelative(root, bodyPath),
     gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath)
+    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+    language: outputLanguage
   });
   await writeFile(reportPath, reviewCockpitHtml);
   await writeFile(reviewCockpitPath, reviewCockpitHtml);
@@ -442,6 +454,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     workspace_initialized: preparation.workspace.initialized,
     story: preparation.story,
     task_context: preparation.task_context,
+    output: preparation.output,
     gate_dag: gateDag ?? null,
     gate_override: gateOverride,
     toolchain: preparation.toolchain ?? null,
@@ -3046,7 +3059,9 @@ async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
   const jsonPath = path.join(prDir, 'pr-create.json');
   const reportPath = path.join(prDir, 'pr-create.html');
   await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
-  await writeFile(reportPath, renderPrCreateHtml(execution));
+  await writeFile(reportPath, renderPrCreateHtml(execution, {
+    language: execution.output?.language ?? 'ja'
+  }));
 
   if (!execution.workspace_initialized) {
     return {

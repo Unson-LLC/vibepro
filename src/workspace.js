@@ -15,9 +15,10 @@ export const DEFAULT_BRAINBASE_STORIES = [{
   due_at: null
 }];
 
-export async function initWorkspace(repoRoot) {
+export async function initWorkspace(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const workspaceDir = path.join(root, WORKSPACE_DIR);
+  const outputLanguage = options.language === 'en' ? 'en' : 'ja';
   await mkdir(workspaceDir, { recursive: true });
   await mkdir(path.join(workspaceDir, 'graphify'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'diagnostics'), { recursive: true });
@@ -28,6 +29,9 @@ export async function initWorkspace(repoRoot) {
     schema_version: SCHEMA_VERSION,
     tool: 'vibepro',
     workspace: WORKSPACE_DIR,
+    output: {
+      language: outputLanguage
+    },
     brainbase: {
       stories: DEFAULT_BRAINBASE_STORIES
     }

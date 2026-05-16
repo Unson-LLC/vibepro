@@ -41,12 +41,24 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
-async function makeGitRepoWithStory() {
+async function makeGitRepoWithStory(options = {}) {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
   await git(repo, ['config', 'user.email', 'vibepro@example.com']);
   await git(repo, ['config', 'user.name', 'VibePro Test']);
-  await runCli(['init', repo, '--story-id', 'story-pr-prepare', '--title', 'PR準備', '--view', 'dev', '--period', '2026-W18']);
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--title',
+    'PR準備',
+    '--view',
+    'dev',
+    '--period',
+    '2026-W18',
+    ...(options.language ? ['--language', options.language] : [])
+  ]);
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'chore: init test repo']);
   await git(repo, ['switch', '-c', 'feature/test-story']);
@@ -105,6 +117,9 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
+  assert.match(output, /vibepro config language \[repo\].*--language ja\|en/);
+  assert.match(output, /vibepro skills install \[repo\].*--dry-run/);
+  assert.match(output, /vibepro codex install \[repo\].*--dry-run/);
 });
 
 test('check list prints available diagnosis packs', async () => {
@@ -173,6 +188,131 @@ test('init can bootstrap and select a local story', async () => {
   assert.equal(story.status, 'active');
   assert.equal(story.view, 'dev');
   assert.equal(story.period, '2026-W18');
+});
+
+test('init and config language manage human output language', async () => {
+  const repo = await makeRepo();
+
+  const initResult = await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-hardening',
+    '--title',
+    '公開前診断',
+    '--language',
+    'en'
+  ]);
+
+  assert.equal(initResult.exitCode, 0);
+  let config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.output.language, 'en');
+
+  const languageResult = await runCli(['config', 'language', repo, '--language', 'ja']);
+  assert.equal(languageResult.exitCode, 0);
+  config = await readJson(path.join(repo, '.vibepro', 'config.json'));
+  assert.equal(config.output.language, 'ja');
+
+  const invalidResult = await runCli(['config', 'language', repo, '--language', 'fr']);
+  assert.equal(invalidResult.exitCode, 1);
+});
+
+test('skills commands list install and verify bundled VibePro skills', async () => {
+  const repo = await makeRepo();
+
+  const listResult = await runCli(['skills', 'list']);
+  assert.equal(listResult.exitCode, 0);
+  assert.equal(listResult.result.skills.length, 4);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
+
+  const dryRun = await runCli(['skills', 'install', repo, '--dry-run', '--json']);
+  assert.equal(dryRun.exitCode, 0);
+  assert.equal(dryRun.result.dry_run, true);
+  assert.equal(dryRun.result.skills.every((skill) => skill.status === 'would_install'), true);
+  assert.equal(await pathExists(path.join(repo, '.claude', 'skills', 'vibepro-workflow', 'SKILL.md')), false);
+
+  const install = await runCli(['skills', 'install', repo]);
+  assert.equal(install.exitCode, 0);
+  assert.equal(install.result.skills.every((skill) => skill.status === 'installed'), true);
+  const workflowSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-workflow', 'SKILL.md');
+  const reviewSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-human-review', 'SKILL.md');
+  const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check performance/);
+  assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
+  assert.match(await readFile(diagnosisSkillPath, 'utf8'), /vibepro performance compare/);
+
+  const verify = await runCli(['skills', 'verify', repo]);
+  assert.equal(verify.exitCode, 0);
+  assert.equal(verify.result.overall_status, 'ok');
+  assert.equal(verify.result.skills.every((skill) => skill.status === 'ok'), true);
+
+  await writeFile(workflowSkillPath, 'local edit\n');
+  const skipped = await runCli(['skills', 'install', repo]);
+  assert.equal(skipped.result.skills.find((skill) => skill.name === 'vibepro-workflow').status, 'skipped');
+  const outdated = await runCli(['skills', 'verify', repo]);
+  assert.equal(outdated.result.overall_status, 'needs_install');
+  assert.equal(outdated.result.skills.find((skill) => skill.name === 'vibepro-workflow').status, 'outdated');
+
+  const forced = await runCli(['skills', 'install', repo, '--force']);
+  assert.equal(forced.result.skills.find((skill) => skill.name === 'vibepro-workflow').status, 'overwritten');
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
+});
+
+test('codex commands install and verify VibePro AGENTS instructions', async () => {
+  const repo = await makeRepo();
+  const agentsPath = path.join(repo, 'AGENTS.md');
+
+  const missing = await runCli(['codex', 'verify', repo]);
+  assert.equal(missing.exitCode, 0);
+  assert.equal(missing.result.overall_status, 'needs_install');
+  assert.equal(missing.result.status, 'missing');
+
+  const dryRun = await runCli(['codex', 'install', repo, '--dry-run', '--json']);
+  assert.equal(dryRun.exitCode, 0);
+  assert.equal(dryRun.result.status, 'would_install');
+  assert.equal(await pathExists(agentsPath), false);
+
+  const install = await runCli(['codex', 'install', repo]);
+  assert.equal(install.exitCode, 0);
+  assert.equal(install.result.status, 'installed');
+  const installedContent = await readFile(agentsPath, 'utf8');
+  assert.match(installedContent, /VIBEPRO_CODEX_START/);
+  assert.match(installedContent, /review-cockpit\.html/);
+  assert.match(installedContent, /vibepro pr create/);
+  assert.match(installedContent, /vibepro check performance/);
+  assert.match(installedContent, /vibepro performance compare/);
+  assert.match(installedContent, /server logs alone/);
+
+  const ok = await runCli(['codex', 'verify', repo]);
+  assert.equal(ok.result.overall_status, 'ok');
+  assert.equal(ok.result.status, 'ok');
+
+  const repoWithExistingAgents = await makeRepo();
+  const existingAgentsPath = path.join(repoWithExistingAgents, 'AGENTS.md');
+  await writeFile(existingAgentsPath, '# Existing repository rules\n');
+  const append = await runCli(['codex', 'install', repoWithExistingAgents]);
+  assert.equal(append.result.status, 'appended');
+  const appendedContent = await readFile(existingAgentsPath, 'utf8');
+  assert.match(appendedContent, /# Existing repository rules/);
+  assert.match(appendedContent, /VIBEPRO_CODEX_START/);
+
+  await writeFile(agentsPath, '# Existing\n\n<!-- VIBEPRO_CODEX_START -->\nstale\n<!-- VIBEPRO_CODEX_END -->\n');
+  const outdated = await runCli(['codex', 'verify', repo]);
+  assert.equal(outdated.result.overall_status, 'needs_install');
+  assert.equal(outdated.result.status, 'outdated');
+
+  const skipped = await runCli(['codex', 'install', repo]);
+  assert.equal(skipped.result.status, 'skipped');
+  assert.match(await readFile(agentsPath, 'utf8'), /stale/);
+
+  const forced = await runCli(['codex', 'install', repo, '--force']);
+  assert.equal(forced.result.status, 'overwritten');
+  const forcedContent = await readFile(agentsPath, 'utf8');
+  assert.match(forcedContent, /# Existing/);
+  assert.doesNotMatch(forcedContent, /stale/);
+  assert.match(forcedContent, /Story \/ Architecture \/ Spec/);
 });
 
 test('init fails when bootstrapped story already exists', async () => {
@@ -2479,6 +2619,25 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.dry_run, false);
   assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
+});
+
+test('pr prepare carries configured output language into human artifacts', async () => {
+  const repo = await makeGitRepoWithStory({ language: 'en' });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'language-target.js'), 'export const ok = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add language target']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.output.language, 'en');
+  const prepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
+  assert.match(prepareHtml, /<html lang="en">/);
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  assert.match(gateDagHtml, /<html lang="en">/);
+  const splitPlanHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.html'), 'utf8');
+  assert.match(splitPlanHtml, /<html lang="en">/);
 });
 
 test('pr prepare does not require Playwright E2E for CLI-only source changes', async () => {

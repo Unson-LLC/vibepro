@@ -113,6 +113,21 @@ npx vibepro --help
 npx vibepro help
 ```
 
+AI agentにVibeProの運用手順を導入する場合:
+
+```bash
+# Claude / Claude Code向け: .claude/skills/ に同梱Skillを導入
+npx vibepro skills list
+npx vibepro skills install /path/to/repo
+npx vibepro skills verify /path/to/repo
+
+# Codex向け: AGENTS.md にVibePro管理ブロックを導入
+npx vibepro codex install /path/to/repo
+npx vibepro codex verify /path/to/repo
+```
+
+`skills install` は `vibepro-workflow`、`vibepro-story-refactor`、`vibepro-human-review`、`vibepro-diagnosis-packages` を対象repoへ導入する。Codexは `SKILL.md` を読む前提にしないため、`codex install` で `AGENTS.md` に `vibepro check ...` と `vibepro performance ...` を含む運用ルールを入れる。
+
 VibePro の会議、商用化ロードマップ、Brainbase/NocoDB 運用資料は `vibepro-project` で管理する。この `vibepro` リポジトリには、npm/OSS 配布する CLI 本体と公開可能な仕様だけを置く。
 
 ### 1. 初期化
