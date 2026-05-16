@@ -222,8 +222,9 @@ test('skills commands list install and verify bundled VibePro skills', async () 
 
   const listResult = await runCli(['skills', 'list']);
   assert.equal(listResult.exitCode, 0);
-  assert.equal(listResult.result.skills.length, 3);
+  assert.equal(listResult.result.skills.length, 4);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
 
   const dryRun = await runCli(['skills', 'install', repo, '--dry-run', '--json']);
   assert.equal(dryRun.exitCode, 0);
