@@ -45,3 +45,15 @@ vibepro codex verify [repo] [--json]
 - `outdated`: 管理ブロックが存在するが同梱版と異なる
 
 `ok` の場合は `overall_status: ok`、それ以外は `overall_status: needs_install` とする。
+
+## 内容要件
+
+Codex向け管理ブロックは、Codexが `.claude/skills/SKILL.md` を読まない環境でもVibeProの現行運用を再現できるよう、以下を含む。
+
+- Story -> Architecture -> Spec -> Task -> Code -> Gate -> PR の順序
+- `vibepro check list`
+- `vibepro check ui|security|performance|architecture|pr-readiness|launch-readiness`
+- `vibepro performance define|record|compare`
+- DB/server性能とユーザー体感性能を別metricにするルール
+- server logだけでuser-perceived改善を断定しないguardrail
+- performance comparison不能時に改善率不明と不足証跡を明示するルール

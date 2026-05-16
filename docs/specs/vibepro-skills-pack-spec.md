@@ -12,6 +12,7 @@ architecture_ref: docs/architecture/vibepro-skills-pack-architecture.md
 - `vibepro-workflow`
 - `vibepro-story-refactor`
 - `vibepro-human-review`
+- `vibepro-diagnosis-packages`
 
 ## CLI
 
@@ -40,3 +41,16 @@ vibepro skills verify [repo] [--json]
 - `outdated`: 存在するが同梱版と異なる
 
 全Skillが `ok` の場合は `overall_status: ok`、それ以外は `overall_status: needs_install` とする。
+
+## 内容要件
+
+同梱Skillは以下を含む。
+
+- `vibepro check list`
+- `vibepro check ui|security|performance|architecture|pr-readiness|launch-readiness|all`
+- `.vibepro/checks/<pack>/<run-id>/check.json`
+- `.vibepro/checks/<pack>/<run-id>/check.md`
+- `vibepro performance define|record|compare`
+- `.vibepro/pr/<story-id>/performance-runs/*.json`
+- `server_side` と `user_perceived` を別metricにする判断
+- server logだけでユーザー体感改善を断定しないguardrail

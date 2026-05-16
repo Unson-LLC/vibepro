@@ -237,8 +237,11 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.equal(install.result.skills.every((skill) => skill.status === 'installed'), true);
   const workflowSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-workflow', 'SKILL.md');
   const reviewSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-human-review', 'SKILL.md');
+  const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
+  assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check performance/);
   assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
+  assert.match(await readFile(diagnosisSkillPath, 'utf8'), /vibepro performance compare/);
 
   const verify = await runCli(['skills', 'verify', repo]);
   assert.equal(verify.exitCode, 0);
@@ -278,6 +281,9 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   assert.match(installedContent, /VIBEPRO_CODEX_START/);
   assert.match(installedContent, /review-cockpit\.html/);
   assert.match(installedContent, /vibepro pr create/);
+  assert.match(installedContent, /vibepro check performance/);
+  assert.match(installedContent, /vibepro performance compare/);
+  assert.match(installedContent, /server logs alone/);
 
   const ok = await runCli(['codex', 'verify', repo]);
   assert.equal(ok.result.overall_status, 'ok');
