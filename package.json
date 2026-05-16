@@ -18,7 +18,8 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "typecheck": "node --check bin/vibepro.js && node --check src/*.js"
   },
   "engines": {
     "node": ">=20"

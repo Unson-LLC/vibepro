@@ -699,6 +699,7 @@ function groupChangedFiles(files) {
     story_docs: [],
     architecture_docs: [],
     specifications: [],
+    policy_docs: [],
     source: [],
     tests: [],
     repo_control: [],
@@ -711,6 +712,7 @@ function groupChangedFiles(files) {
     if (isStoryDocPath(target)) groups.story_docs.push(file);
     else if (isArchitectureDocPath(target)) groups.architecture_docs.push(file);
     else if (isSpecificationDocPath(target)) groups.specifications.push(file);
+    else if (isPolicyDocPath(target)) groups.policy_docs.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
     else if (isSourcePath(target)) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
@@ -766,6 +768,12 @@ function isSpecificationDocPath(filePath) {
     || /^docs\/.+\/[^/]*(spec|specification)[^/]*\.md$/i.test(filePath);
 }
 
+function isPolicyDocPath(filePath) {
+  return filePath.startsWith('docs/frames/')
+    || filePath.startsWith('docs/management/policies/')
+    || filePath.startsWith('docs/00-glossary/');
+}
+
 function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, maxReviewableFiles }) {
   const reasons = [];
   if (changedFiles.length > maxReviewableFiles) {
@@ -798,6 +806,7 @@ function hasMixedRepoControlChanges(fileGroups) {
     fileGroups.story_docs,
     fileGroups.architecture_docs,
     fileGroups.specifications,
+    fileGroups.policy_docs,
     fileGroups.source,
     fileGroups.other
   ];
@@ -1191,7 +1200,8 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   const repoControlFiles = fileGroups.repo_control.files;
   const e2eFiles = fileGroups.tests.files.filter((file) => file.startsWith('e2e/'));
   const unitTestFiles = fileGroups.tests.files.filter((file) => !file.startsWith('e2e/'));
-  const gateInfraFiles = repoControlFiles.filter(isGateInfraPath);
+  const e2eGateRequired = prContext.gate_dag?.nodes?.some((node) => node.id === 'gate:e2e' && node.required) === true;
+  const gateInfraFiles = repoControlFiles.filter((file) => isE2eInfraPath(file) || (e2eGateRequired && isPackageManifestPath(file)));
   const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
 
   addLane({
@@ -1211,17 +1221,18 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   addLane({
     id: 'requirements-ssot',
     order: 10,
-    title: 'Story / Spec / Architecture SSOT',
+    title: 'Story / Spec / Architecture / Policy SSOT',
     category: 'requirements',
     recommendation: scope.status === 'reviewable' ? 'same_pr_allowed' : 'separate_pr',
     files: [
       ...fileGroups.story_docs.files,
       ...fileGroups.specifications.files,
-      ...fileGroups.architecture_docs.files
+      ...fileGroups.architecture_docs.files,
+      ...fileGroups.policy_docs.files
     ],
     required_gates: ['Requirement Gate'],
     review_focus: [
-      'Story / Spec / Architecture の正本が互いに矛盾していないか',
+      'Story / Spec / Architecture / Policy の正本が互いに矛盾していないか',
       '実装差分が要求の範囲を超えていないか'
     ]
   });
@@ -1961,6 +1972,9 @@ function buildChangeSummary(fileGroups) {
   if (fileGroups.specifications.count > 0) {
     items.push(`仕様文書を更新: ${formatFileList(fileGroups.specifications.files)}`);
   }
+  if (fileGroups.policy_docs.count > 0) {
+    items.push(`方針文書を更新: ${formatFileList(fileGroups.policy_docs.files)}`);
+  }
   if (fileGroups.source.count > 0) {
     items.push(`実装を変更: ${formatFileList(fileGroups.source.files)}`);
   }
@@ -2132,6 +2146,7 @@ function buildGateDag({
     verificationCommands,
     e2eCommand,
     flowVerification,
+    visualQaEvidence,
     verificationEvidence
   });
   const requirementGate = {
@@ -2139,7 +2154,7 @@ function buildGateDag({
     type: 'requirement_gate',
     label: 'Requirement Gate',
     status: resolveRequirementGateStatus(requirementConsistency),
-    required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0,
+    required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0 || fileGroups.policy_docs.count > 0,
     reason: buildRequirementGateReason(requirementConsistency)
   };
   const storyGate = {
@@ -2256,12 +2271,14 @@ function buildGateDag({
   };
 }
 
-function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, verificationEvidence }) {
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, visualQaEvidence, verificationEvidence }) {
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
-  const e2eGateStatus = resolveE2eGateStatus(e2eCommand, flowVerification);
-  const e2eReason = buildE2eGateReason(e2eCommand, flowVerification);
-  const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification });
+  const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
+  const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification) : 'not_required';
+  const e2eReason = e2eRequired
+    ? buildE2eGateReason(e2eCommand, flowVerification)
+    : 'UI/E2E対象の差分ではないため、Unit / Integration証跡で完了判定する';
   return [
     {
       id: 'gate:unit',
@@ -2287,21 +2304,49 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       label: 'E2E Gate',
       status: e2eGateStatus,
       required: e2eRequired,
-      command: e2eCommand.command,
+      command: e2eRequired ? e2eCommand.command : null,
       reason: e2eReason,
       flow_verification: flowVerification ? summarizeFlowVerificationForGate(flowVerification) : null,
-      artifact_expectation: '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す'
+      artifact_expectation: e2eRequired ? '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す' : null
     }
   ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
 }
 
-function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification }) {
-  if (fileGroups.source.count > 0) return true;
+function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence = null }) {
+  if (hasUiExperienceSourceChange(fileGroups)) return true;
   if (fileGroups.tests.files.some((file) => file.startsWith('e2e/'))) return true;
-  if (fileGroups.repo_control.files.some(isGateInfraPath)) return true;
+  if (fileGroups.repo_control.files.some(isE2eInfraPath)) return true;
   if (e2eCommand?.detected) return true;
   if (flowVerification) return true;
+  if (visualQaEvidence) return true;
   return false;
+}
+
+function isE2eInfraPath(filePath) {
+  return filePath.startsWith('e2e/')
+    || /^playwright\.config\.[cm]?[jt]s$/.test(filePath);
+}
+
+function isPackageManifestPath(filePath) {
+  return ['package.json', 'package-lock.json'].includes(filePath);
+}
+
+function hasUiExperienceSourceChange(fileGroups) {
+  return fileGroups.source.files.some((file) => {
+    if (
+      file.startsWith('app/')
+      || file.startsWith('pages/')
+      || file.startsWith('components/')
+      || file.startsWith('public/')
+      || file.startsWith('src/app/')
+      || file.startsWith('src/pages/')
+      || file.startsWith('src/components/')
+      || file.startsWith('src/features/')
+    ) {
+      return true;
+    }
+    return /\.(css|scss|sass|less|html|vue|svelte|tsx)$/.test(file);
+  });
 }
 
 function applyVerificationEvidence(gate, verificationEvidence) {
@@ -2601,6 +2646,7 @@ function buildReviewPoints(fileGroups, taskContext = null) {
   const points = [];
   if (taskContext) points.push(`Task/Handoffの完了条件と差分が対応しているか: ${taskContext.task.id}`);
   if (fileGroups.story_docs.count > 0) points.push('Storyの受け入れ基準と実装差分が対応しているか');
+  if (fileGroups.policy_docs.count > 0) points.push('方針文書とStory / Spec / Architectureが矛盾していないか');
   if (fileGroups.architecture_docs.count === 0) points.push('ADRなしで既存設計の範囲に収まっているか');
   if (fileGroups.source.count > 0) points.push(`主要ソース差分: ${formatFileList(fileGroups.source.files)}`);
   if (fileGroups.tests.count > 0) points.push(`テスト差分: ${formatFileList(fileGroups.tests.files)}`);

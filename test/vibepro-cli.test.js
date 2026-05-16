@@ -1786,6 +1786,7 @@ test('pr prepare writes PR artifacts for the selected story', async () => {
   await mkdir(path.join(repo, 'docs', 'management', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'frames'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
   await mkdir(path.join(repo, 'tests', 'unit'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-001-pr-prepare.md'), `---
@@ -1827,6 +1828,7 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
 ---
 # Spec: story-pr-prepare
 `);
+  await writeFile(path.join(repo, 'docs', 'frames', 'vibepro-operating-philosophy.md'), '# VibePro operating philosophy\n');
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.test.js'), 'export const ok = true;\n');
   await writeFile(path.join(repo, 'tests', 'unit', 'pr-prepare.test.js'), 'export const ok = true;\n');
@@ -1979,8 +1981,10 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.file_groups.story_docs.count, 1);
   assert.equal(prepare.file_groups.architecture_docs.count, 2);
   assert.equal(prepare.file_groups.specifications.count, 1);
+  assert.equal(prepare.file_groups.policy_docs.count, 1);
   assert.equal(prepare.file_groups.architecture_docs.files.includes('docs/architecture/ADR-story-pr-prepare.md'), true);
   assert.equal(prepare.file_groups.specifications.files.includes('docs/specs/story-pr-prepare.md'), true);
+  assert.equal(prepare.file_groups.policy_docs.files.includes('docs/frames/vibepro-operating-philosophy.md'), true);
   assert.equal(prepare.file_groups.source.count, 1);
   assert.equal(prepare.file_groups.tests.count, 2);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
@@ -2220,6 +2224,52 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.dry_run, false);
   assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
+});
+
+test('pr prepare does not require Playwright E2E for CLI-only source changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'cli-only-app',
+    type: 'module',
+    scripts: {
+      test: 'node --test',
+      typecheck: 'node --check src/cli-helper.js'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [x] CLIの補助関数が検証される
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+  await writeFile(path.join(repo, 'test', 'cli-helper.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\nimport { normalize } from "../src/cli-helper.js";\ntest("normalize", () => assert.equal(normalize(" ok "), "ok"));\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: cli helper']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.required, false);
+  assert.equal(e2eGate.status, 'not_required');
+  assert.equal(e2eGate.command, null);
+  assert.match(e2eGate.reason, /UI\/E2E対象の差分ではない/);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), false);
+  assert.equal(prepare.pr_context.completion_quality.metrics.e2e_experience_reach_rate, null);
+  assert.equal(prepare.split_plan.stacked_gate_plan.summary.requires_cumulative_e2e, false);
+  assert.equal(prepare.split_plan.lanes.some((lane) => lane.id === 'e2e-gate'), false);
 });
 
 test('verify record promotes gate evidence into the next pr prepare', async () => {
