@@ -35,6 +35,10 @@ import { resolveStoryContext } from './story-manager.js';
 import { createStoryTasks } from './story-task-generator.js';
 import { collectRuntimeInfo } from './runtime-info.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import {
+  renderPerformanceEvidenceSummary,
+  summarizeStoryPerformanceEvidence
+} from './performance-evidence.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
@@ -51,6 +55,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const toolchain = await collectRuntimeInfo();
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
   evidence.toolchain = toolchain;
+  evidence.performance_evidence = await summarizeStoryPerformanceEvidence(root, currentStory.story_id);
   const inferredSpec = await readInferredSpec(root, currentStory.story_id);
   evidence.requirement_consistency = await buildRequirementConsistency(root, {
     story: currentStory,
@@ -1296,6 +1301,9 @@ function renderSummary({ runId, evidence, findings }) {
 | 要件不変条件 | ${evidence.requirement_consistency?.summary?.invariant_count ?? 0}件 |
 | シナリオ確認候補 | ${evidence.requirement_consistency?.summary?.scenario_gap_count ?? 0}件 |
 | 要件矛盾候補 | ${evidence.requirement_consistency?.summary?.contradiction_count ?? 0}件 |
+| Performance Metrics | ${evidence.performance_evidence?.metric_count ?? 0}件 |
+| Performance Comparable | ${evidence.performance_evidence?.comparable_count ?? 0}件 |
+| Performance Unknown | ${evidence.performance_evidence?.not_comparable_count ?? 0}件 |
 | 検出事項 | ${findings.length}件 |
 
 ## アーキテクチャView
@@ -1317,6 +1325,10 @@ ${renderRequirementConsistencySummary(evidence.requirement_consistency)}
 ## Flow Design
 
 ${renderFlowDesignSummary(evidence.flow_design)}
+
+## Performance Evidence
+
+${renderPerformanceEvidenceSummary(evidence.performance_evidence)}
 
 ## 主な検出事項
 

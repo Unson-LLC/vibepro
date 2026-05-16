@@ -17,6 +17,10 @@ import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import {
+  renderPerformancePrSection,
+  summarizeStoryPerformanceEvidence
+} from './performance-evidence.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -897,6 +901,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
   const visualQaSection = renderPrVisualQaEvidence(prContext.visual_qa);
   const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
+  const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
 
   return `${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
@@ -947,6 +952,8 @@ ${flowVerificationSection}
 ${visualQaSection}
 
 ${completionQualitySection}
+
+${performanceEvidenceSection}
 
 ${refactoringDeltaSection}
 
@@ -1590,6 +1597,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
   const specDrift = await readDrift(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
@@ -1610,6 +1618,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     refactoring_delta: latestEvidence?.refactoring_delta ?? null,
     flow_verification: latestFlowVerification,
     visual_qa: visualQaEvidence,
+    performance_evidence: performanceEvidence,
     verification_evidence: verificationEvidence,
     risks: []
   };

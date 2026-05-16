@@ -15,6 +15,14 @@ import {
   renderPerformanceSummary,
   runPerformanceMeasurement
 } from './performance-measurer.js';
+import {
+  compareStoryPerformance,
+  definePerformanceMetric,
+  recordPerformanceRun,
+  renderPerformanceDefineSummary,
+  renderPerformanceEvidenceSummary,
+  renderPerformanceRecordSummary
+} from './performance-evidence.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
@@ -107,6 +115,9 @@ Usage:
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
   vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
+  vibepro performance define [repo] --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> [--intermediate-marker <id>] [--timeout-ms <ms>] [--failure-classification <class>] [--evidence-source <server_log|browser_e2e|api_log|client_marker|manual_observation>] [--readiness-kind <server_side|user_perceived|external_dependency|system_internal>] [--comparison-policy <json|name>] [--json]
+  vibepro performance record [repo] --id <story-id> --metric-id <id> --label <before|after> --status <completed|blocked|needs_review|timeout|auth_required|resource_unavailable|unknown> [--duration-ms <ms>] [--marker <id=ms>] [--evidence-source <type:ref:summary>] [--completion-condition <text>] [--run-id <id>] [--json]
+  vibepro performance compare [repo] --id <story-id> [--metric-id <id>] [--before-label <label>] [--after-label <label>] [--json]
   vibepro story list [repo] [--all]
   vibepro story add [repo] --id <id> --title <title> [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
   vibepro story select [repo] --id <id>
@@ -320,6 +331,68 @@ export async function runCli(argv, io = {}) {
         ? `${JSON.stringify(result.measurement, null, 2)}\n`
         : renderPerformanceSummary(result));
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'performance') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'define') {
+        const result = await definePerformanceMetric(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          metricId: getOption(rest, '--metric-id'),
+          userStory: getOption(rest, '--user-story'),
+          startCondition: getOption(rest, '--start-condition'),
+          completionCondition: getOption(rest, '--completion-condition'),
+          intermediateMarkers: getOptions(rest, '--intermediate-marker'),
+          timeoutMs: parseNumberOption(rest, '--timeout-ms'),
+          failureClassifications: getOptions(rest, '--failure-classification'),
+          evidenceSources: getOptions(rest, '--evidence-source'),
+          comparisonPolicy: getOption(rest, '--comparison-policy'),
+          readinessKind: getOption(rest, '--readiness-kind')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.metric, null, 2)}\n`
+          : renderPerformanceDefineSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'record') {
+        const result = await recordPerformanceRun(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          metricId: getOption(rest, '--metric-id'),
+          runId: getOption(rest, '--run-id'),
+          label: getOption(rest, '--label'),
+          status: getOption(rest, '--status'),
+          durationMs: parseNumberOption(rest, '--duration-ms'),
+          startedAt: getOption(rest, '--started-at'),
+          completedAt: getOption(rest, '--completed-at'),
+          completionCondition: getOption(rest, '--completion-condition'),
+          markers: getOptions(rest, '--marker'),
+          evidenceSources: getOptions(rest, '--evidence-source'),
+          notes: getOption(rest, '--notes')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.run, null, 2)}\n`
+          : renderPerformanceRecordSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'compare') {
+        const result = await compareStoryPerformance(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          metricId: getOption(rest, '--metric-id'),
+          beforeLabel: getOption(rest, '--before-label'),
+          afterLabel: getOption(rest, '--after-label')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.comparison, null, 2)}\n`
+          : renderPerformanceEvidenceSummary(result.comparison));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown performance command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'story') {

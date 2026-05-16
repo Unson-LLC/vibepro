@@ -99,6 +99,9 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
+  assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
+  assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
+  assert.match(output, /vibepro performance compare \[repo\].*--id <story-id>/);
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
@@ -1156,6 +1159,216 @@ test('measure compare reports before and after deltas', async () => {
   assert.equal(result.result.comparison.prisma_log.delta_query_count, -2);
   assert.match(output, /Performance Comparison/);
   assert.match(output, /-50ms/);
+});
+
+test('performance evidence defines story metrics, records runs, and compares p50 p90 max', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-performance-evidence', '--title', 'セッション切替を速くする', '--view', 'dev', '--period', '2026-05']);
+
+  const defineResult = await runCli([
+    'performance',
+    'define',
+    repo,
+    '--id',
+    'story-performance-evidence',
+    '--metric-id',
+    'session-switch.user-terminal-ready',
+    '--user-story',
+    'ユーザーがセッション行を押してから入力可能になるまで',
+    '--start-condition',
+    'session row click',
+    '--completion-condition',
+    'owner + inputReady=true',
+    '--intermediate-marker',
+    'snapshot-visible',
+    '--intermediate-marker',
+    'connected=true',
+    '--timeout-ms',
+    '5000',
+    '--evidence-source',
+    'browser_e2e',
+    '--readiness-kind',
+    'user_perceived'
+  ]);
+  assert.equal(defineResult.exitCode, 0);
+  assert.equal(defineResult.result.metric.completionCondition.kind, 'interactive_ready');
+
+  for (const [runId, label, duration] of [
+    ['before-1', 'before', '1200'],
+    ['before-2', 'before', '900'],
+    ['after-1', 'after', '600'],
+    ['after-2', 'after', '500']
+  ]) {
+    const result = await runCli([
+      'performance',
+      'record',
+      repo,
+      '--id',
+      'story-performance-evidence',
+      '--metric-id',
+      'session-switch.user-terminal-ready',
+      '--run-id',
+      runId,
+      '--label',
+      label,
+      '--status',
+      'completed',
+      '--duration-ms',
+      duration,
+      '--marker',
+      'snapshot-visible=100',
+      '--marker',
+      'connected=true=300',
+      '--evidence-source',
+      'browser_e2e:tests/session-switch.spec.ts:playwright marker'
+    ]);
+    assert.equal(result.exitCode, 0);
+  }
+
+  const blockedResult = await runCli([
+    'performance',
+    'record',
+    repo,
+    '--id',
+    'story-performance-evidence',
+    '--metric-id',
+    'session-switch.user-terminal-ready',
+    '--run-id',
+    'after-timeout',
+    '--label',
+    'after',
+    '--status',
+    'timeout',
+    '--evidence-source',
+    'browser_e2e:tests/session-switch.spec.ts:timeout'
+  ]);
+  assert.equal(blockedResult.exitCode, 0);
+
+  const comparison = await runCli([
+    'performance',
+    'compare',
+    repo,
+    '--id',
+    'story-performance-evidence',
+    '--metric-id',
+    'session-switch.user-terminal-ready',
+    '--json'
+  ]);
+
+  assert.equal(comparison.exitCode, 0);
+  const metric = comparison.result.comparison.metrics[0];
+  assert.equal(metric.comparison.status, 'comparable');
+  assert.equal(metric.before.p50_ms, 900);
+  assert.equal(metric.before.p90_ms, 1200);
+  assert.equal(metric.after.max_ms, 600);
+  assert.equal(metric.after.incomplete_count, 1);
+  assert.equal(metric.comparison.delta.p50_ms, -400);
+  await stat(path.join(repo, '.vibepro', 'pr', 'story-performance-evidence', 'performance-runs', 'before-1.json'));
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.performance_evidence['story-performance-evidence'].latest_run, 'after-timeout');
+});
+
+test('performance evidence refuses to compare user perceived metrics from server logs only', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-user-perceived', '--title', 'ユーザー体感改善', '--view', 'dev', '--period', '2026-05']);
+  await runCli([
+    'performance',
+    'define',
+    repo,
+    '--id',
+    'story-user-perceived',
+    '--metric-id',
+    'search.user-results-visible',
+    '--user-story',
+    '検索して結果が操作可能になるまで',
+    '--start-condition',
+    'search button click',
+    '--completion-condition',
+    'result DOM visible and clickable',
+    '--evidence-source',
+    'browser_e2e',
+    '--readiness-kind',
+    'user_perceived'
+  ]);
+  for (const [runId, label] of [['before-server', 'before'], ['after-server', 'after']]) {
+    await runCli([
+      'performance',
+      'record',
+      repo,
+      '--id',
+      'story-user-perceived',
+      '--metric-id',
+      'search.user-results-visible',
+      '--run-id',
+      runId,
+      '--label',
+      label,
+      '--status',
+      'completed',
+      '--duration-ms',
+      label === 'before' ? '800' : '400',
+      '--evidence-source',
+      'server_log:server.log:handler complete'
+    ]);
+  }
+
+  const comparison = await runCli(['performance', 'compare', repo, '--id', 'story-user-perceived', '--json']);
+  const metric = comparison.result.comparison.metrics[0];
+  assert.equal(metric.comparison.status, 'not_comparable');
+  assert.equal(metric.comparison.delta.p50_ms, null);
+  assert.equal(metric.comparison.not_comparable_reasons.some((reason) => /server logs alone/.test(reason)), true);
+});
+
+test('pr prepare includes performance evidence summary for the story', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli([
+    'performance',
+    'define',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--metric-id',
+    'session-switch.server-terminal-readiness',
+    '--user-story',
+    'セッション切替のサーバー準備完了',
+    '--start-condition',
+    'TerminalTransport handleUpgrade',
+    '--completion-condition',
+    'tmux check running=true wsState=1',
+    '--evidence-source',
+    'server_log',
+    '--readiness-kind',
+    'server_side'
+  ]);
+  for (const [runId, label, duration] of [['server-before', 'before', '1000'], ['server-after', 'after', '700']]) {
+    await runCli([
+      'performance',
+      'record',
+      repo,
+      '--id',
+      'story-pr-prepare',
+      '--metric-id',
+      'session-switch.server-terminal-readiness',
+      '--run-id',
+      runId,
+      '--label',
+      label,
+      '--status',
+      'completed',
+      '--duration-ms',
+      duration,
+      '--evidence-source',
+      'server_log:server.log:tmux ready'
+    ]);
+  }
+  await writeFile(path.join(repo, 'index.html'), '<!doctype html><title>Changed</title>');
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /## Performance Evidence/);
+  assert.match(prBody, /session-switch\.server-terminal-readiness/);
+  assert.match(prBody, /p50 -300ms/);
 });
 
 test('graph cleans generated graphify-out when graphify fails', async () => {
