@@ -81,6 +81,50 @@ test('spec fingerprint emits story, code, test, schema, and digests', async () =
   assert.ok(typeof fp.instructions === 'string' && fp.instructions.length > 0);
 });
 
+test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-spec-story-id-'));
+  await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'search.ts'), `
+export function searchDetail(params) {
+  if (params.detail === true) return 'detail';
+  return 'basic';
+}
+`);
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-001.md'), `---
+story_id: STR-001
+---
+# Existing STR story
+
+## Acceptance Criteria
+- Existing STR-001 acceptance criterion must not be selected for a new story.
+`);
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-new-network-contract.md'), `---
+story_id: story-new-network-contract
+---
+# New Network Contract Story
+
+## Acceptance Criteria
+- New story acceptance criterion must be selected by explicit --id.
+`);
+
+  const { exitCode, stdout } = await captureRunCli([
+    'spec',
+    'fingerprint',
+    repo,
+    '--id',
+    'story-new-network-contract'
+  ]);
+
+  assert.equal(exitCode, 0);
+  const fp = JSON.parse(stdout);
+  assert.equal(fp.story_id, 'story-new-network-contract');
+  assert.equal(fp.story.story_id, 'story-new-network-contract');
+  assert.equal(fp.story.path, 'docs/management/stories/active/story-new-network-contract.md');
+  assert.equal(fp.story.acceptance_criteria.includes('New story acceptance criterion must be selected by explicit --id.'), true);
+  assert.equal(fp.story.acceptance_criteria.includes('Existing STR-001 acceptance criterion must not be selected for a new story.'), false);
+});
+
 test('spec write rejects clauses whose code_refs do not exist', async () => {
   const repo = await makeSpecRepo();
   const bogus = {

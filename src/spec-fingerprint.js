@@ -29,8 +29,10 @@ export async function buildSpecFingerprint(repoRoot, options = {}) {
   const storyOption = options.story ?? null;
 
   const codeFiles = await resolveCodeFiles(root, options);
+  const storyForResolution = storyOption
+    ?? (storyId ? { story_id: storyId, title: options.storyTitle ?? null } : null);
   const storySource = await resolveStorySource(root, {
-    story: storyOption,
+    story: storyForResolution,
     storySource: options.storySource,
     codeFiles
   });
