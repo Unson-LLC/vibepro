@@ -12,6 +12,7 @@ import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
+import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
 
@@ -632,6 +633,8 @@ test('flow design scanner flags unsafe UI journey contracts', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', 'new'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'app', 'patients', '[id]'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'cases', '[id]', 'notes'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'cases', '[id]', 'notes'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     dependencies: { next: '16.2.1', react: '19.0.0' }
@@ -677,6 +680,11 @@ export default function PatientPage() {
     }
   };
   return <div>退院予定日</div>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'cases', '[id]', 'notes', 'route.ts'), `
+export async function POST() {
+  return Response.json({ ok: true });
 }
 `);
 
@@ -789,6 +797,7 @@ test('diagnose writes flow design evidence, report, findings, and story tasks', 
   ]);
   await mkdir(path.join(repo, 'src', 'app', 'new'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'app', 'patients', '[id]'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'cases', '[id]', 'notes'), { recursive: true });
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     dependencies: { next: '16.2.1', react: '19.0.0' }
   }, null, 2));
@@ -812,6 +821,11 @@ export default function PatientPage() {
     }
   };
   return <div>退院予定日</div>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'cases', '[id]', 'notes', 'route.ts'), `
+export async function POST() {
+  return Response.json({ ok: true });
 }
 `);
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -847,6 +861,37 @@ export default function PatientPage() {
     manifest.runs[0].artifacts.flow_design_check,
     '.vibepro/diagnostics/2026-05-10T000000Z/flow-design-check-result.md'
   );
+});
+
+test('diagnose emits critical network contract finding for missing Next.js API route', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-network-contract', '--title', 'Network contract']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { next: '16.2.1', react: '19.0.0' }
+  }, null, 2));
+  await mkdir(path.join(repo, 'src', 'app', 'detail', '_components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'detail', '_components', 'searchExecutor.ts'), `
+export async function execute(actionParams) {
+  const response = await fetch('/api/detail-search', { method: 'POST', body: JSON.stringify(actionParams) });
+  return response.json();
+}
+`);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'detail-search' }],
+    edges: []
+  }));
+
+  const result = await runCli(['diagnose', repo, '--run-id', 'network-contract-run']);
+
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', 'network-contract-run', 'evidence.json'));
+  assert.equal(evidence.network_contracts.missing_routes.some((item) => item.api_path === '/api/detail-search'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-NET-001' && finding.severity === 'Critical'), true);
+  assert.equal(evidence.gates[0].status, 'block');
+  const summary = await readFile(path.join(repo, '.vibepro', 'diagnostics', 'network-contract-run', 'summary.md'), 'utf8');
+  assert.match(summary, /Network Contract/);
+  assert.match(summary, /\/api\/detail-search/);
 });
 
 test('verify flow writes Playwright evidence and skips mutating probes by default', async () => {
@@ -938,6 +983,60 @@ console.log('fake playwright ok');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_flow_verification_run, 'flow-run-1');
   assert.equal(manifest.flow_verification_runs[0].artifacts.flow_verification_json, '.vibepro/verification/flow-run-1/flow-verification.json');
+});
+
+test('verify flow fails on runtime network contract errors from Playwright output', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-network-flow', '--title', 'Network flow']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { '@playwright/test': '^1.50.0' }
+  }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'detail-search-preview',
+      title: 'detail search preview',
+      path: '/detail?lat=35.75611899231195&lon=139.69929720610875',
+      mutates: false,
+      steps: [{ action: 'expectVisible', text: '検索' }]
+    }]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+console.error('VibePro runtime contract failure: [{"kind":"api_response_error","url":"https://preview.example/api/detail-search","status":404}]');
+process.exit(1);
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'https://preview.example',
+    '--run-id',
+    'flow-network-fail',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'fail');
+  assert.equal(result.result.verification.runtime_contract_failures.length > 0, true);
+  const generatedSpec = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-network-fail', 'flow-verification.spec.js'), 'utf8');
+  assert.match(generatedSpec, /page\.on\('response'/);
+  assert.match(generatedSpec, /api_response_error/);
+  const report = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-network-fail', 'flow-verification.md'), 'utf8');
+  assert.match(report, /Runtime Contract Failures/);
+  assert.match(report, /api_response_error/);
 });
 
 test('verify flow records needs_setup when Playwright is unavailable', async () => {
@@ -3697,6 +3796,91 @@ export async function verifyTwilioFormWebhook(request, formData, env = process.e
     assert.equal(route.protection.evidence.includes('imported_webhook_signature_helper'), true);
     assert.equal(route.risk_hints.includes('webhook_signature_not_detected'), false);
   }
+});
+
+test('network contract scanner detects Aitle-style API route regression and clears after route exists', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils'), { recursive: true });
+  const executorPath = path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils', 'searchExecutor.ts');
+  await writeFile(executorPath, `
+import { searchHotelsDetail } from '../actions';
+export async function execute(actionParams) {
+  return searchHotelsDetail(actionParams);
+}
+`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add detail search server action caller']);
+
+  await writeFile(executorPath, `
+export async function execute(actionParams) {
+  const response = await fetch('/api/detail-search', {
+    method: 'POST',
+    body: JSON.stringify(actionParams)
+  });
+  return response.json();
+}
+`);
+
+  const missing = await scanNetworkContracts(repo, {
+    changedFiles: [{ path: 'src/app/(app)/detail/_components/hooks/utils/searchExecutor.ts', status: 'M' }],
+    baseRef: 'HEAD',
+    headRef: null
+  });
+
+  assert.equal(missing.status, 'block');
+  assert.equal(missing.missing_routes.some((item) => item.api_path === '/api/detail-search' && item.gate_effect === 'block'), true);
+  assert.equal(missing.high_risk_replacements.some((item) => item.removed_calls.includes('searchHotelsDetail')), true);
+
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'detail-search'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'detail-search', 'route.ts'), `
+export async function POST(request) {
+  const body = await request.json();
+  return Response.json({ ok: true, body });
+}
+`);
+
+  const fixed = await scanNetworkContracts(repo, {
+    changedFiles: [
+      { path: 'src/app/(app)/detail/_components/hooks/utils/searchExecutor.ts', status: 'M' },
+      { path: 'src/app/api/detail-search/route.ts', status: 'A' }
+    ],
+    baseRef: 'HEAD',
+    headRef: null
+  });
+
+  assert.equal(fixed.missing_routes.some((item) => item.api_path === '/api/detail-search'), false);
+});
+
+test('pr prepare blocks missing route for newly introduced API client call', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils'), { recursive: true });
+  const executorPath = path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils', 'searchExecutor.ts');
+  await writeFile(executorPath, `
+import { searchHotelsDetail } from '../actions';
+export async function execute(actionParams) {
+  return searchHotelsDetail(actionParams);
+}
+`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add direct detail search']);
+  await writeFile(executorPath, `
+export async function execute(actionParams) {
+  const response = await fetch('/api/detail-search', { method: 'POST', body: JSON.stringify(actionParams) });
+  return response.json();
+}
+`);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.pr_context.network_contracts.missing_routes.some((item) => item.api_path === '/api/detail-search'), true);
+  const networkGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:network_contract');
+  assert.equal(networkGate.status, 'failed');
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:network_contract'), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Network Contract/);
+  assert.match(prBody, /\/api\/detail-search/);
 });
 
 test('task commands list show and create a pre-fix briefing without mutating repository code', async () => {

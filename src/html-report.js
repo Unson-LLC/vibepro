@@ -20,6 +20,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
     ...preparation.pr_context.review_points.map((point) => ({ title: 'Review', detail: point, tone: 'info' }))
   ]);
   const requirementSection = renderRequirementPanel(requirement);
+  const networkSection = renderNetworkContractPanel(preparation.pr_context.network_contracts);
   const fileGroups = renderFileGroups(preparation.file_groups);
   const graphSummary = renderGraphSummary(splitPlan.graph_context);
   const artifacts = renderKeyValueTable([
@@ -50,6 +51,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
       </section>
       ${risks}
       ${requirementSection}
+      ${networkSection}
       <section>
         <h2>Graphify Impact</h2>
         ${graphSummary}
@@ -408,6 +410,53 @@ function renderRequirementPanel(requirement) {
           <p>${escapeHtml(card.detail)}</p>
         </article>
       `).join('') || '<article class="card good"><h3>No findings</h3><p>Story / Architecture / Spec とコード差分の既知矛盾は検出されていません。</p></article>'}</div>
+    </section>
+  `;
+}
+
+function renderNetworkContractPanel(networkContracts) {
+  if (!networkContracts) {
+    return renderCards('Network Contract Findings', [{ title: 'Not generated', detail: 'Network Contract未生成', tone: 'warn' }]);
+  }
+  const missing = networkContracts.missing_routes ?? [];
+  const dynamic = networkContracts.dynamic_calls ?? [];
+  const replacements = networkContracts.high_risk_replacements ?? [];
+  const cards = [
+    ...missing.slice(0, 8).map((item) => ({
+      title: `Missing route: ${item.api_path}`,
+      detail: `${item.method ?? '-'} ${item.callee ?? '-'} in ${item.file}:${item.line ?? '-'}`,
+      meta: item.cause_candidates?.map((candidate) => candidate.commit).join('; ') ?? '',
+      tone: 'danger'
+    })),
+    ...replacements.slice(0, 6).map((item) => ({
+      title: 'Server function replaced by API',
+      detail: `${item.file}: ${item.removed_calls.join(', ')} -> ${item.introduced_api_calls.map((call) => call.api_path.value).join(', ')}`,
+      meta: item.risk,
+      tone: 'warn'
+    })),
+    ...dynamic.slice(0, 6).map((item) => ({
+      title: `Dynamic API path: ${item.api_path}`,
+      detail: `${item.callee ?? '-'} in ${item.file}:${item.line ?? '-'}`,
+      meta: 'route cannot be proven statically',
+      tone: 'warn'
+    }))
+  ];
+  return `
+    <section>
+      <h2>Network Contract Findings</h2>
+      <div class="metrics">
+        ${metricCard('Status', networkContracts.status, 'route contract')}
+        ${metricCard('API Calls', networkContracts.api_client_call_count ?? 0, 'detected')}
+        ${metricCard('Missing Routes', missing.length, 'block')}
+        ${metricCard('Introduced Calls', networkContracts.introduced_api_client_call_count ?? 0, 'diff')}
+      </div>
+      <div class="cards">${cards.map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          <p class="muted">${escapeHtml(card.meta ?? '')}</p>
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('') || '<article class="card good"><h3>No findings</h3><p>API client calls and route files are aligned.</p></article>'}</div>
     </section>
   `;
 }

@@ -19,8 +19,8 @@ vibepro check list
 
 Use these mappings:
 
-- UI quality / user flow: `vibepro check ui <repo> --story-id <story-id>`
-- Security / auth / exposed surface: `vibepro check security <repo> --story-id <story-id>`
+- UI quality / user flow / API contract in UI calls: `vibepro check ui <repo> --story-id <story-id>`
+- Security / auth / exposed surface / API route contracts: `vibepro check security <repo> --story-id <story-id>`
 - Performance readiness / heavy dev / DB access risks: `vibepro check performance <repo> --story-id <story-id>`
 - Architecture / responsibility boundary: `vibepro check architecture <repo> --story-id <story-id>`
 - PR readiness: `vibepro check pr-readiness <repo> --story-id <story-id> --base <ref> --head <ref>`
@@ -96,6 +96,14 @@ Run evidence is written to:
 - Compare only runs with the same `metricId` and `completionCondition`.
 - Keep incomplete runs as evidence: `blocked`, `needs_review`, `timeout`, `auth_required`, `resource_unavailable`, `unknown`.
 - If comparison is not possible, report `改善率不明` and list the missing marker/evidence.
+
+## Network Contract Guardrails
+
+- When UI code introduces `fetch('/api/...')`, axios, or an API wrapper call, confirm the matching Next.js route exists.
+- App Router route example: `/api/foo/bar` -> `src/app/api/foo/bar/route.ts`.
+- Pages Router route example: `/api/foo/bar` -> `src/pages/api/foo/bar.ts`.
+- If a direct server function / Server Action call is replaced by an HTTP API call, treat it as a contract change requiring route, schema, auth/runtime, and network-aware E2E evidence.
+- In `vibepro verify flow`, API 4xx/5xx, API HTML responses, console/page errors, `Failed to fetch`, `Unexpected token '<'`, and visible loading failure text are Gate failures even when the UI appears to render.
 
 ## Review Checklist
 

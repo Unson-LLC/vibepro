@@ -49,6 +49,7 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane.
 - Do not claim user-perceived performance improvement from server logs alone. Use a separate `user_perceived` metric backed by `browser_e2e`, `client_marker`, or `manual_observation`.
 - Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.
+- Do not treat type-check or a superficially rendered UI as enough when UI code introduces `/api/...` calls. Network Contract Gate requires matching Next.js routes and network-aware flow evidence for API 4xx/5xx.
 
 ## Key Artifacts
 

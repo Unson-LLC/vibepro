@@ -59,7 +59,8 @@ export async function runFlowVerification(repoRoot, options = {}) {
       env: options.env
     });
     const setupIssue = commandResult.exit_code === 0 ? null : detectPlaywrightSetupIssue(commandResult);
-    const commandStatus = commandResult.exit_code === 0 ? 'pass' : setupIssue ? 'needs_setup' : 'fail';
+    const runtimeContractFailures = commandResult.runtime_contract_failures ?? [];
+    const commandStatus = commandResult.exit_code === 0 && runtimeContractFailures.length === 0 ? 'pass' : setupIssue ? 'needs_setup' : 'fail';
     for (const probe of runnableProbes) {
       probe.status = commandStatus;
       probe.exit_code = commandResult.exit_code;
@@ -96,6 +97,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
     summary: summarizeProbeResults(probeResults),
     probes: probeResults,
     command: commandResult,
+    runtime_contract_failures: commandResult?.runtime_contract_failures ?? [],
     generated_spec: generatedSpecPath ? toWorkspaceRelative(root, generatedSpecPath) : null,
     generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null
   };
@@ -162,6 +164,7 @@ export function renderFlowVerificationSummary(result) {
     `- fail: ${result.verification.summary.fail}`,
     `- skipped: ${result.verification.summary.skipped}`,
     `- needs_setup: ${result.verification.summary.needs_setup}`,
+    `- runtime_contract_failures: ${result.verification.runtime_contract_failures?.length ?? 0}`,
     ...setupLines
   ];
   return `${lines.join('\n')}\n`;
@@ -322,7 +325,8 @@ async function runPlaywright(root, { specPath, configPath, baseUrl, httpAuth, he
       status: 'pass',
       exit_code: 0,
       stdout: truncate(result.stdout),
-      stderr: truncate(result.stderr)
+      stderr: truncate(result.stderr),
+      runtime_contract_failures: extractRuntimeContractFailures(`${result.stdout ?? ''}\n${result.stderr ?? ''}`)
     };
   } catch (error) {
     await writeFile(logPath, `${error.stdout ?? ''}${error.stderr ?? ''}${error.message ?? ''}`);
@@ -331,7 +335,8 @@ async function runPlaywright(root, { specPath, configPath, baseUrl, httpAuth, he
       status: 'fail',
       exit_code: error.code ?? 1,
       stdout: truncate(error.stdout),
-      stderr: truncate(error.stderr ?? error.message)
+      stderr: truncate(error.stderr ?? error.message),
+      runtime_contract_failures: extractRuntimeContractFailures(`${error.stdout ?? ''}\n${error.stderr ?? ''}\n${error.message ?? ''}`)
     };
   }
 }
@@ -447,9 +452,61 @@ if (BASIC_AUTH_USER && BASIC_AUTH_PASSWORD) {
   });
 }
 
+function installRuntimeContractWatch(page) {
+  const events = [];
+  page.on('response', async (response) => {
+    const url = response.url();
+    if (!url.includes('/api/')) return;
+    const status = response.status();
+    const contentType = response.headers()['content-type'] || '';
+    if (status >= 400) {
+      events.push({ kind: 'api_response_error', url, status, contentType });
+      return;
+    }
+    if (/text\\/html/i.test(contentType)) {
+      events.push({ kind: 'api_html_response', url, status, contentType });
+    }
+  });
+  page.on('requestfailed', (request) => {
+    if (request.url().includes('/api/')) {
+      events.push({ kind: 'api_request_failed', url: request.url(), failure: request.failure()?.errorText || null });
+    }
+  });
+  page.on('console', (message) => {
+    if (message.type() === 'error') events.push({ kind: 'console_error', text: message.text() });
+  });
+  page.on('pageerror', (error) => {
+    events.push({ kind: 'page_error', text: error.message });
+  });
+  return events;
+}
+
+async function assertNoRuntimeContractFailures(page, events) {
+  await page.waitForTimeout(250);
+  const bodyText = await page.locator('body').innerText().catch(() => '');
+  const visibleErrorPatterns = [
+    '情報を取得できませんでした',
+    '読み込みに失敗しました',
+    'Failed to fetch',
+    "Unexpected token '<'",
+    'Server Action'
+  ];
+  for (const pattern of visibleErrorPatterns) {
+    if (bodyText.includes(pattern)) events.push({ kind: 'visible_error_text', text: pattern });
+  }
+  const relevant = events.filter((event) => {
+    const text = [event.text, event.failure, event.url].filter(Boolean).join(' ');
+    return event.kind.startsWith('api_')
+      || /Failed to fetch|Unexpected token '<'|Server Action .*not found|情報を取得できませんでした|読み込みに失敗しました|NEXT_RUNTIME|Unhandled/i.test(text);
+  });
+  expect(relevant, 'VibePro runtime contract failure: ' + JSON.stringify(relevant, null, 2)).toEqual([]);
+}
+
 ${probes.map((probe) => `test(${JSON.stringify(probe.title)}, async ({ page }) => {
+  const runtimeContractEvents = installRuntimeContractWatch(page);
   await page.goto(new URL(${JSON.stringify(probe.path)}, BASE_URL).toString());
 ${probe.steps.map((step) => renderStep(step, probe, screenshotDir)).filter(Boolean).join('\n')}
+  await assertNoRuntimeContractFailures(page, runtimeContractEvents);
 });`).join('\n\n')}
 `;
 }
@@ -557,6 +614,7 @@ function renderFlowVerificationReport(verification) {
 - fail: ${verification.summary.fail}
 - skipped: ${verification.summary.skipped}
 - needs_setup: ${verification.summary.needs_setup}
+- runtime_contract_failures: ${verification.runtime_contract_failures?.length ?? 0}
 
 ## Probes
 
@@ -565,6 +623,10 @@ ${verification.probes.length === 0 ? '- なし' : verification.probes.map((probe
 ## Setup
 
 ${verification.setup?.next_commands?.length > 0 ? verification.setup.next_commands.map((command) => `- \`${command}\``).join('\n') : '- なし'}
+
+## Runtime Contract Failures
+
+${verification.runtime_contract_failures?.length > 0 ? verification.runtime_contract_failures.map((item) => `- ${item.kind}: ${item.detail}`).join('\n') : '- なし'}
 `;
 }
 
@@ -576,6 +638,34 @@ function summarizeProbeResults(probes) {
     skipped: probes.filter((probe) => probe.status === 'skipped').length,
     needs_setup: probes.filter((probe) => probe.status === 'needs_setup').length
   };
+}
+
+function extractRuntimeContractFailures(output) {
+  const text = String(output ?? '');
+  const failures = [];
+  const runtimeFailure = /VibePro runtime contract failure:\s*([\s\S]*?)(?:\n\s*at |\n\s*Error:|$)/m.exec(text);
+  if (runtimeFailure) {
+    failures.push({
+      kind: 'runtime_contract_failure',
+      detail: truncate(runtimeFailure[1].trim(), 2000)
+    });
+  }
+  for (const pattern of [
+    /\/api\/[^\s"'`]+[\s\S]{0,120}\b(404|500|502|503)\b/g,
+    /Unexpected token '<'/g,
+    /Failed to fetch/g,
+    /Server Action [^\n]+ was not found/g,
+    /情報を取得できませんでした/g,
+    /読み込みに失敗しました/g
+  ]) {
+    for (const match of text.matchAll(pattern)) {
+      failures.push({
+        kind: 'runtime_contract_signal',
+        detail: truncate(match[0], 500)
+      });
+    }
+  }
+  return failures.slice(0, 20);
 }
 
 function safeFileName(value) {

@@ -16,6 +16,7 @@ import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
 import { resolveOutputLanguage } from './language.js';
+import { scanNetworkContracts } from './network-contract-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import {
@@ -954,6 +955,9 @@ ${verification}
 ## 要件整合性
 ${renderRequirementPrSection(prContext.requirement_consistency)}
 
+## Network Contract
+${renderNetworkContractPrSection(prContext.network_contracts)}
+
 ## Gate DAG
 ${gateSummary}
 
@@ -1091,6 +1095,27 @@ function renderPrFlowVerification(flowVerification) {
 - json: ${artifactPath}
 - report: ${reportPath}
 - log: ${logPath}`;
+}
+
+function renderNetworkContractPrSection(networkContracts) {
+  if (!networkContracts) return '- 未生成';
+  const missing = networkContracts.missing_routes ?? [];
+  const dynamic = networkContracts.dynamic_calls ?? [];
+  const replacements = networkContracts.high_risk_replacements ?? [];
+  const rows = [
+    ...missing.slice(0, 8).map((item) => `- missing: ${item.method ?? '-'} ${item.api_path} in ${item.file}:${item.line ?? '-'}${item.cause_candidates?.length ? ` / cause: ${item.cause_candidates.map((candidate) => candidate.commit).join('; ')}` : ''}`),
+    ...dynamic.slice(0, 5).map((item) => `- dynamic: ${item.api_path} in ${item.file}:${item.line ?? '-'}`),
+    ...replacements.slice(0, 5).map((item) => `- replacement: ${item.file} removed ${item.removed_calls.join(', ')} -> ${item.introduced_api_calls.map((call) => call.api_path.value).join(', ')}`)
+  ];
+  return [
+    `- status: ${networkContracts.status}`,
+    `- API client calls: ${networkContracts.api_client_call_count ?? 0}`,
+    `- introduced API client calls: ${networkContracts.introduced_api_client_call_count ?? 0}`,
+    `- missing routes: ${missing.length}`,
+    `- dynamic routes: ${dynamic.length}`,
+    `- server function replacements: ${replacements.length}`,
+    rows.join('\n') || '- 問題なし'
+  ].join('\n');
 }
 
 function renderPrVisualQaEvidence(visualQa) {
@@ -1611,6 +1636,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
+  const networkContracts = await scanNetworkContracts(repoRoot, {
+    changedFiles: git.changed_files,
+    baseRef: git.base_ref,
+    headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
+  });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
   const specDrift = await readDrift(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
@@ -1632,6 +1662,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     flow_verification: latestFlowVerification,
     visual_qa: visualQaEvidence,
     performance_evidence: performanceEvidence,
+    network_contracts: networkContracts,
     verification_evidence: verificationEvidence,
     risks: []
   };
@@ -1645,6 +1676,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     e2eCommand,
     flowVerification: latestFlowVerification,
     visualQaEvidence,
+    networkContracts,
     verificationEvidence,
     inferredSpec,
     specDrift
@@ -1654,7 +1686,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     flowVerification: latestFlowVerification,
     visualQaEvidence
   });
-  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift });
+  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift, networkContracts });
   return context;
 }
 
@@ -2156,6 +2188,7 @@ function buildGateDag({
   e2eCommand,
   flowVerification,
   visualQaEvidence = null,
+  networkContracts = null,
   verificationEvidence,
   inferredSpec = null,
   specDrift = null
@@ -2217,6 +2250,7 @@ function buildGateDag({
       semantic_layout_residual_pct: run.semantic_layout_residual_pct
     }))
   } : null;
+  const networkContractGate = buildNetworkContractGate(networkContracts, fileGroups);
   const nodes = [
     storyGate,
     architectureGate,
@@ -2228,6 +2262,7 @@ function buildGateDag({
       status: fileGroups.source.count > 0 ? 'present' : 'not_required',
       files: fileGroups.source.files
     },
+    networkContractGate,
     requirementGate,
     ...gates,
     ...(visualQaGate ? [visualQaGate] : []),
@@ -2259,7 +2294,8 @@ function buildGateDag({
       { from: node.id, to: 'gate:integration' },
       { from: node.id, to: 'gate:e2e' }
     ]),
-    { from: 'code', to: 'gate:requirement' },
+    { from: 'code', to: 'gate:network_contract' },
+    { from: 'gate:network_contract', to: 'gate:requirement' },
     { from: 'gate:requirement', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
@@ -2272,7 +2308,7 @@ function buildGateDag({
   ];
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
-  const requiredGates = [storyGate, architectureGate, specGate, requirementGate, ...gates, visualQaGate].filter((gate) => gate?.required);
+  const requiredGates = [storyGate, architectureGate, specGate, networkContractGate, requirementGate, ...gates, visualQaGate].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
   return {
     schema_version: '0.1.0',
@@ -2290,6 +2326,51 @@ function buildGateDag({
     },
     nodes: allNodes,
     edges
+  };
+}
+
+function buildNetworkContractGate(networkContracts, fileGroups) {
+  if (!networkContracts) {
+    return {
+      id: 'gate:network_contract',
+      type: 'verification_gate',
+      label: 'Network Contract Gate',
+      status: 'not_generated',
+      required: fileGroups.source.count > 0,
+      reason: 'Network contract scan was not generated'
+    };
+  }
+  const missing = networkContracts.missing_routes?.length ?? 0;
+  const dynamic = networkContracts.dynamic_calls?.length ?? 0;
+  const replacements = networkContracts.high_risk_replacements?.length ?? 0;
+  const introduced = networkContracts.introduced_api_client_call_count ?? 0;
+  let status = 'passed';
+  if (missing > 0) status = 'failed';
+  else if (replacements > 0 || dynamic > 0) status = 'needs_review';
+  else if (introduced > 0) status = 'needs_evidence';
+  return {
+    id: 'gate:network_contract',
+    type: 'verification_gate',
+    label: 'Network Contract Gate',
+    status,
+    required: fileGroups.source.count > 0 || introduced > 0,
+    reason: missing > 0
+      ? `${missing} /api client call(s) have no matching Next.js API route`
+      : replacements > 0
+        ? `${replacements} server function to HTTP API replacement(s) need route/schema/auth/runtime evidence`
+        : dynamic > 0
+          ? `${dynamic} dynamic /api client path(s) need explicit route/e2e evidence`
+          : introduced > 0
+            ? 'New API client calls require network-aware E2E or route contract evidence'
+            : 'No broken API client route contracts detected',
+    summary: {
+      api_client_call_count: networkContracts.api_client_call_count ?? 0,
+      introduced_api_client_call_count: introduced,
+      missing_route_count: missing,
+      dynamic_call_count: dynamic,
+      server_action_replacement_count: replacements
+    },
+    missing_routes: networkContracts.missing_routes ?? []
   };
 }
 
@@ -2675,7 +2756,7 @@ function buildReviewPoints(fileGroups, taskContext = null) {
   return points;
 }
 
-function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null, specDrift = null }) {
+function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null, specDrift = null, networkContracts = null }) {
   const risks = [];
   const dirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
   if (Array.isArray(specDrift?.items)) {
@@ -2699,6 +2780,12 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   if (latestStoryRun?.gate_status && !['pass', 'ok'].includes(latestStoryRun.gate_status)) {
     risks.push(`最新診断gateが ${latestStoryRun.gate_status}`);
   }
+  if ((networkContracts?.missing_routes?.length ?? 0) > 0) {
+    risks.push(`Network Contract Gate: 対応routeがない /api client call が ${networkContracts.missing_routes.length} 件`);
+  }
+  if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0 && fileGroups.tests.count === 0) {
+    risks.push('新規API client callがあるが、差分内にネットワーク/E2E/route契約テストがない');
+  }
   const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e');
   if (e2eGate?.required && ['needs_evidence', 'needs_setup'].includes(e2eGate.status)) {
     risks.push('E2E GateのPlaywright CLI証跡が未記録');
@@ -2717,6 +2804,10 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   const specGate = gateDag?.nodes?.find((node) => node.id === 'spec');
   if (specGate?.required && isUnresolvedGateStatus(specGate.status)) {
     risks.push(`Spec Gateが ${specGate.status}: ${specGate.reason}`);
+  }
+  const networkGate = gateDag?.nodes?.find((node) => node.id === 'gate:network_contract');
+  if (networkGate?.required && isUnresolvedGateStatus(networkGate.status)) {
+    risks.push(`Network Contract Gateが ${networkGate.status}: ${networkGate.reason}`);
   }
   return risks;
 }
@@ -2855,6 +2946,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
+      if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })
@@ -2896,6 +2988,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
+  if (gate.id === 'gate:network_contract' && gate.status === 'failed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';
 }
 

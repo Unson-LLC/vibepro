@@ -26,5 +26,6 @@ When the user asks for VibePro work:
   - `vibepro performance compare <repo> --id <story-id>`
 - Do not claim user-perceived speed improvement from server logs alone. Separate `server_side` metrics such as DB query/API readiness from `user_perceived` metrics such as DOM visible or interactive ready.
 - If a performance comparison is not comparable, report improvement as unknown and include the missing marker or evidence source.
+- For UI changes that introduce `/api/...` client calls, confirm the matching Next.js App Router or Pages Router route exists. Server Action/server function -> HTTP API replacements require route contract and network-aware E2E evidence; type-check alone is not enough.
 
 For repository-local work, prefer the target repository's existing `AGENTS.md` instructions first, then apply these VibePro rules for VibePro-specific decisions.

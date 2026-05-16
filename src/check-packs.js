@@ -8,6 +8,7 @@ import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import { scanFlowDesign } from './flow-design-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
+import { scanNetworkContracts } from './network-contract-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
 import { preparePullRequest } from './pr-manager.js';
 import { scanStaticSite } from './static-site-scanner.js';
@@ -17,11 +18,11 @@ import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writ
 export const CHECK_PACKS = {
   ui: {
     title: 'UI experience check',
-    checks: ['component_style', 'flow_design', 'terminal_link_contracts']
+    checks: ['component_style', 'flow_design', 'network_contracts', 'terminal_link_contracts']
   },
   security: {
     title: 'Security boundary check',
-    checks: ['static_site', 'api_boundary', 'code_quality']
+    checks: ['static_site', 'api_boundary', 'network_contracts', 'code_quality']
   },
   performance: {
     title: 'Performance readiness check',
@@ -37,11 +38,11 @@ export const CHECK_PACKS = {
   },
   'launch-readiness': {
     title: 'Launch readiness check',
-    checks: ['static_site', 'api_boundary', 'component_style', 'flow_design', 'database_access', 'local_dev', 'code_quality']
+    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'database_access', 'local_dev', 'code_quality']
   },
   all: {
     title: 'All check packs',
-    checks: ['static_site', 'api_boundary', 'component_style', 'flow_design', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
+    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
   }
 };
 
@@ -143,6 +144,7 @@ async function runNamedCheck(check, context) {
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
+  if (check === 'network_contracts') return scanNetworkContracts(root);
   if (check === 'terminal_link_contracts') return scanTerminalLinkContracts(root);
   if (check === 'database_access') return scanDatabaseAccess(root);
   if (check === 'local_dev') return scanLocalDev(root);
@@ -188,6 +190,9 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
   }
   if (evidence.api_boundary) {
     checks.push(summarizeApiBoundary(evidence.api_boundary));
+  }
+  if (evidence.network_contracts) {
+    checks.push(summarizeNetworkContracts(evidence.network_contracts));
   }
   if (evidence.component_style) {
     checks.push(...summarizeRiskGroups('component_style', 'UI Style', evidence.component_style, [
@@ -270,6 +275,18 @@ function summarizeApiBoundary(apiBoundary) {
     label: 'API Boundary',
     status: riskCount > 0 ? 'needs_review' : 'pass',
     summary: `${apiBoundary.route_count ?? 0} routes; ${riskCount} risk hints`
+  };
+}
+
+function summarizeNetworkContracts(networkContracts) {
+  const missing = networkContracts.missing_routes?.length ?? 0;
+  const dynamic = networkContracts.dynamic_calls?.length ?? 0;
+  const replacements = networkContracts.high_risk_replacements?.length ?? 0;
+  return {
+    id: 'network_contracts',
+    label: 'Network Contracts',
+    status: missing > 0 ? 'fail' : dynamic > 0 || replacements > 0 ? 'needs_review' : 'pass',
+    summary: `${networkContracts.api_client_call_count ?? 0} API client calls; missing=${missing}, dynamic=${dynamic}, server-function-replacements=${replacements}`
   };
 }
 

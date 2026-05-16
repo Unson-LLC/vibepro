@@ -8,6 +8,7 @@ import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import { renderFlowDesignReport, scanFlowDesign } from './flow-design-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
+import { scanNetworkContracts } from './network-contract-scanner.js';
 import { renderTerminalLinkReport, scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import {
   buildRefactoringActionCandidates,
@@ -225,6 +226,7 @@ async function buildEvidence(repoRoot, graph, runId, story, config = {}) {
     api_boundary: architectureProfile.applicable_checks.includes('api-boundary')
       ? await scanApiBoundary(repoRoot, architectureProfile)
       : null,
+    network_contracts: await scanNetworkContracts(repoRoot),
     database_access: architectureProfile.applicable_checks.includes('database-access')
       ? await scanDatabaseAccess(repoRoot)
       : null,
@@ -566,6 +568,47 @@ function buildFindings(evidence) {
         title: 'webhook APIの署名検証が確認できない',
         detail: `${webhooksWithoutSignature.length} 件のwebhook API候補で署名検証らしき実装が確認できない。`,
         recommendation: 'Webhook送信元の署名検証、リプレイ対策、許可イベントの検証を実装または明示する。'
+      });
+    }
+  }
+  if (evidence.network_contracts) {
+    const missingRoutes = evidence.network_contracts.missing_routes ?? [];
+    if (missingRoutes.length > 0) {
+      findings.push({
+        id: 'VP-NET-001',
+        severity: 'Critical',
+        category: 'Network Contract',
+        title: 'UI/API client callに対応するAPI routeが存在しない',
+        detail: `${missingRoutes.length} 件の /api client call が対応する Next.js API route を持っていない。`,
+        recommendation: 'HTTP APIとして呼ぶなら app/api または pages/api にroute実体を追加する。Server Action / server functionのまま使う設計ならfetch置換を戻す。',
+        target_files: uniqueFiles(missingRoutes.map((item) => item.file)),
+        network_contract_hits: missingRoutes
+      });
+    }
+    const highRiskReplacements = evidence.network_contracts.high_risk_replacements ?? [];
+    if (highRiskReplacements.length > 0) {
+      findings.push({
+        id: 'VP-NET-002',
+        severity: 'High',
+        category: 'Network Contract',
+        title: 'server function呼び出しがHTTP API呼び出しへ置換されている',
+        detail: `${highRiskReplacements.length} 件の差分で既存server function呼び出しが新規 /api client call へ置換されている。`,
+        recommendation: 'route実体、入力schema、認証、runtime制約、E2Eネットワーク証跡が揃っているか確認する。',
+        target_files: uniqueFiles(highRiskReplacements.map((item) => item.file)),
+        network_contract_hits: highRiskReplacements
+      });
+    }
+    const dynamicCalls = evidence.network_contracts.dynamic_calls ?? [];
+    if (dynamicCalls.length > 0) {
+      findings.push({
+        id: 'VP-NET-003',
+        severity: 'Medium',
+        category: 'Network Contract',
+        title: '静的にroute実体を確定できないAPI client callがある',
+        detail: `${dynamicCalls.length} 件の動的 /api path を検出した。`,
+        recommendation: 'template literalやwrapper経由のAPI pathは、候補route・テスト・Playwrightネットワーク証跡で契約を補強する。',
+        target_files: uniqueFiles(dynamicCalls.map((item) => item.file)),
+        network_contract_hits: dynamicCalls
       });
     }
   }
@@ -1297,6 +1340,9 @@ function renderSummary({ runId, evidence, findings }) {
 | リファクタリング機会 | ${evidence.refactoring_opportunities?.length ?? 0}件 |
 | リファクタリングcampaign | ${evidence.refactoring_campaigns?.length ?? 0}件 |
 | API route | ${evidence.api_boundary?.route_count ?? 0}件 |
+| Network Contract | ${evidence.network_contracts?.status ?? 'not_generated'} |
+| API client call | ${evidence.network_contracts?.api_client_call_count ?? 0}件 |
+| API route欠落 | ${evidence.network_contracts?.missing_routes?.length ?? 0}件 |
 | Requirement Gate | ${evidence.requirement_consistency?.status ?? 'not_generated'} |
 | 要件不変条件 | ${evidence.requirement_consistency?.summary?.invariant_count ?? 0}件 |
 | シナリオ確認候補 | ${evidence.requirement_consistency?.summary?.scenario_gap_count ?? 0}件 |
@@ -1313,6 +1359,10 @@ ${renderArchitectureViewTable(profile)}
 ## API境界
 
 ${renderApiBoundarySummary(evidence.api_boundary)}
+
+## Network Contract
+
+${renderNetworkContractSummary(evidence.network_contracts)}
 
 ## ゲート状態
 
@@ -1429,6 +1479,37 @@ ${rows || '| - | 0 |'}
 | 保護状態 | 件数 |
 |----------|------|
 ${protectionRows || '| - | 0 |'}`;
+}
+
+function renderNetworkContractSummary(networkContracts) {
+  if (!networkContracts) return '- 未生成';
+  const missing = networkContracts.missing_routes ?? [];
+  const dynamic = networkContracts.dynamic_calls ?? [];
+  const replacements = networkContracts.high_risk_replacements ?? [];
+  const rows = [
+    ...missing.slice(0, 8).map((item) => ['missing_route', item.api_path, item.file, item.line ?? '-']),
+    ...dynamic.slice(0, 5).map((item) => ['dynamic_path', item.api_path, item.file, item.line ?? '-']),
+    ...replacements.slice(0, 5).map((item) => ['server_function_replaced', item.introduced_api_calls?.map((call) => call.api_path?.value).join(', ') || '-', item.file, '-'])
+  ];
+  return [
+    `- Status: ${networkContracts.status}`,
+    `- Routes: ${networkContracts.route_count ?? 0}`,
+    `- API client calls: ${networkContracts.api_client_call_count ?? 0}`,
+    `- Missing routes: ${missing.length}`,
+    `- Dynamic calls: ${dynamic.length}`,
+    `- Server function replacements: ${replacements.length}`,
+    rows.length > 0
+      ? renderSimpleMarkdownTable(['Kind', 'API', 'File', 'Line'], rows)
+      : '- 問題なし'
+  ].join('\n');
+}
+
+function renderSimpleMarkdownTable(headers, rows) {
+  return [
+    `| ${headers.join(' | ')} |`,
+    `| ${headers.map(() => '---').join(' | ')} |`,
+    ...rows.map((row) => `| ${row.map((cell) => String(cell ?? '-').replace(/\|/g, '\\|')).join(' | ')} |`)
+  ].join('\n');
 }
 
 function renderArchitectureViewTable(profile) {
