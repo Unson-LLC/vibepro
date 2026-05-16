@@ -3123,6 +3123,125 @@ export function AccountPanel({ session, customer }) {
   assert.equal(gate.status, 'passed');
 });
 
+test('pr prepare classifies implementation guards and documented inherited behavior without product-specific rules', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'session', 'runtime.js'), `
+export function sendInput(controller, session) {
+  if (typeof controller.terminalIo?.repairCollapsedSessionWindow !== 'function') {
+    return { status: 204 };
+  }
+  if (session.workspaceRotationStatus === 'rotating') {
+    return { status: 409 };
+  }
+  if (session.workspaceRotationStatus === 'blocked') {
+    return { status: 409 };
+  }
+  return { status: 200 };
+}
+
+export function patchState(req) {
+  if (req.body.sessions !== undefined) {
+    return req.body.sessions;
+  }
+  return [];
+}
+`);
+  await writeFile(path.join(repo, 'src', 'session', 'archive-finalizer.js'), `
+export function finalizeArchive(session, sessionId) {
+  if (session.intendedState !== 'archived' || session.archive?.status) {
+    return false;
+  }
+  if (this._running.has(sessionId)) {
+    return false;
+  }
+  if (typeof this.stateStore.patchSession === 'function') {
+    return true;
+  }
+  if (session.id !== sessionId) {
+    return false;
+  }
+  return true;
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-05-16T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'The visible session id must remain stable while the runtime moves to the active workspace generation.',
+        origin: {},
+        verifiable_by: {}
+      },
+      {
+        id: 'S-001',
+        type: 'scenario',
+        statement: 'Terminal input must be rejected while workspace rotation is rotating or blocked.',
+        origin: {},
+        verifiable_by: {}
+      },
+      {
+        id: 'S-002',
+        type: 'scenario',
+        statement: 'Existing archive cleanup behavior remains inherited: archived session finalizers continue to skip non-archived sessions and duplicate running finalizers.',
+        origin: {},
+        verifiable_by: {}
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add generic rotation guards']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const requirement = result.result.preparation.pr_context.requirement_consistency;
+  assert.equal(requirement.status, 'pass');
+  assert.equal(requirement.summary.scenario_gap_count, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:requirement');
+  assert.equal(gate.status, 'passed');
+});
+
+test('pr prepare still flags uncovered product domain branches after generic scope classification', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'session', 'billing.js'), `
+export function resolveAccess(customer) {
+  if (customer.subscriptionTier === 'premium') {
+    return 'premium';
+  }
+  return 'standard';
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-05-16T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'The visible session id must remain stable while runtime state is refreshed.',
+        origin: {},
+        verifiable_by: {}
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add uncovered subscription branch']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const requirement = result.result.preparation.pr_context.requirement_consistency;
+  assert.equal(requirement.status, 'needs_review');
+  assert.equal(requirement.summary.scenario_gap_count, 1);
+  assert.match(requirement.scenario_gaps[0].evidence.condition, /subscriptionTier/);
+});
+
 test('pr prepare does not initialize or dirty an uninitialized PR branch', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);

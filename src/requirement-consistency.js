@@ -73,11 +73,30 @@ const GENERIC_CONDITION_TOKENS = new Set([
   'undefined',
   'return',
   'status',
+  'state',
   'error',
   'result',
   'value',
-  'data'
+  'data',
+  'body',
+  'function'
 ]);
+
+const INHERITED_BEHAVIOR_PATTERNS = [
+  /\binherited\b/i,
+  /\bexisting\b/i,
+  /\bunchanged\b/i,
+  /\bremain(?:s|ed)?\b/i,
+  /\bcontinue(?:s|d)?\b/i,
+  /\bas before\b/i,
+  /\bdo not change\b/i,
+  /\bnot changed\b/i,
+  /既存/,
+  /維持/,
+  /変更しない/,
+  /従来/,
+  /そのまま/
+];
 
 export async function buildRequirementConsistency(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -598,6 +617,7 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
   if (invariants.length === 0) return [];
   const gaps = [];
   const inferredSpecContext = buildInferredSpecContext(inferredSpec);
+  const scopeContext = buildRequirementScopeContext({ storySource, requirementSources, inferredSpecContext });
   const acceptanceText = [
     ...(storySource?.acceptance_criteria ?? []),
     storySource?.policy,
@@ -611,7 +631,9 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
     for (const branch of scenario.branches) {
       const condition = branch.condition.toLowerCase();
       if (!isDomainBranch(condition)) continue;
+      if (isImplementationGuardBranch(branch.condition)) continue;
       if (acceptanceText && acceptanceText.includes(condition.slice(0, 24))) continue;
+      if (isBranchCoveredByRequirementScope({ branch, scopeContext })) continue;
       if (isBranchCoveredByInferredSpec({
         branch,
         scenario,
@@ -630,6 +652,37 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
     }
   }
   return gaps;
+}
+
+function buildRequirementScopeContext({ storySource, requirementSources, inferredSpecContext }) {
+  const texts = [
+    storySource?.background,
+    storySource?.policy,
+    storySource?.content,
+    ...(storySource?.acceptance_criteria ?? []),
+    ...requirementSources.flatMap((source) => [
+      source.background,
+      source.policy,
+      source.content,
+      ...(source.acceptance_criteria ?? [])
+    ]),
+    ...inferredSpecContext.texts
+  ].filter(Boolean);
+  return {
+    texts: texts.map((text) => ({
+      raw: String(text),
+      normalized: normalizeComparableText(text),
+      inherited_behavior: INHERITED_BEHAVIOR_PATTERNS.some((pattern) => pattern.test(String(text)))
+    }))
+  };
+}
+
+function isBranchCoveredByRequirementScope({ branch, scopeContext }) {
+  const conditionTokens = meaningfulConditionTokens(branch.condition);
+  if (conditionTokens.length === 0) return false;
+  return scopeContext.texts.some((entry) => (
+    entry.inherited_behavior && tokensCoveredByText(conditionTokens, entry.normalized)
+  ));
 }
 
 function buildInferredSpecContext(spec) {
@@ -680,14 +733,14 @@ function isBranchCoveredByInferredSpec({ branch, scenario, invariants, inferredS
   const conditionTokens = meaningfulConditionTokens(branch.condition);
 
   for (const clause of inferredSpecContext.clauses) {
-    if (!clauseAppliesToScenario(clause, scenario.file)) continue;
-    if (clause.fragments.some((fragment) => codeFragmentCoversCondition(fragment, condition))) {
+    const appliesToFile = clauseAppliesToScenario(clause, scenario.file);
+    if (appliesToFile && clause.fragments.some((fragment) => codeFragmentCoversCondition(fragment, condition))) {
       return true;
     }
-    if (tokensCoveredByClause(conditionTokens, clause.normalized_text)) {
+    if (tokensCoveredByText(conditionTokens, clause.normalized_text)) {
       return true;
     }
-    if (relatedIds.has(clause.id) && conditionTokens.some((token) => clause.normalized_text.includes(token))) {
+    if (appliesToFile && relatedIds.has(clause.id) && conditionTokens.some((token) => textIncludesToken(clause.normalized_text, token))) {
       return true;
     }
   }
@@ -717,11 +770,30 @@ function codeFragmentCoversCondition(fragment, normalizedCondition) {
   return normalizedCondition.includes(normalizedFragment) || normalizedFragment.includes(normalizedCondition);
 }
 
-function tokensCoveredByClause(tokens, normalizedClauseText) {
-  if (tokens.length === 0 || !normalizedClauseText) return false;
-  const matches = tokens.filter((token) => normalizedClauseText.includes(token));
+function tokensCoveredByText(tokens, normalizedText) {
+  if (tokens.length === 0 || !normalizedText) return false;
+  const matches = tokens.filter((token) => textIncludesToken(normalizedText, token));
   if (matches.some((token) => token.length >= 8)) return true;
   return matches.length >= Math.min(2, tokens.length);
+}
+
+function textIncludesToken(normalizedText, token) {
+  if (normalizedText.includes(token)) return true;
+  return tokenVariants(token).some((variant) => variant.length >= 5 && normalizedText.includes(variant));
+}
+
+function tokenVariants(token) {
+  const variants = new Set();
+  variants.add(token);
+  for (const suffix of ['ing', 'ed', 'ion', 'ions', 'ive', 'ives', 'ed']) {
+    if (token.length > suffix.length + 4 && token.endsWith(suffix)) {
+      variants.add(token.slice(0, -suffix.length));
+    }
+  }
+  if (token.endsWith('ation') && token.length > 9) variants.add(token.slice(0, -5));
+  if (token.endsWith('ating') && token.length > 9) variants.add(token.slice(0, -3));
+  if (token.endsWith('archive') && token.length > 9) variants.add(token.slice(0, -1));
+  return [...variants];
 }
 
 function meaningfulConditionTokens(value) {
@@ -747,6 +819,17 @@ function normalizeComparableText(value) {
     .replace(/[^a-z0-9_]+/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function isImplementationGuardBranch(condition) {
+  const normalized = String(condition ?? '').trim();
+  const compact = normalized.replace(/\s+/g, ' ');
+  const lower = compact.toLowerCase();
+  return /^typeof\s+[\w$.[\]?()]+(?:\?\.[\w$.[\]?()]+)*\s*(?:!==|===)\s*['"]function['"]$/.test(lower)
+    || /^(?:req|request)\.body\.[\w$.[\]?]+\s*!==\s*undefined$/.test(lower)
+    || /^this\.[\w$.[\]?]+\.has\([^)]{1,80}\)?$/.test(lower)
+    || /^typeof\s+this\.[\w$.[\]?]+\s*(?:!==|===)\s*['"]function['"]$/.test(lower)
+    || /^([a-z_$][\w$]*)\.id\s*!==\s*\1id$/.test(lower);
 }
 
 function buildContradictions({ invariants, codeScenarios }) {
