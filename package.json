@@ -7,14 +7,17 @@
     "vibepro": "./bin/vibepro.js"
   },
   "files": [
+    "agent-instructions",
     "bin",
     "src",
-    "docs/architecture/vibepro-cli-graphify-architecture.md",
+    "docs/architecture",
     "docs/frames/vibepro-operating-philosophy.md",
     "docs/frames/vibepro-repo-local-control-plane-frame.md",
     "docs/releases",
-    "docs/specs/vibepro-cli-graphify-spec.md",
+    "docs/specs",
+    "docs/stories",
     "docs/static_site",
+    "skills",
     "README.md"
   ],
   "scripts": {

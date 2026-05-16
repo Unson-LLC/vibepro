@@ -1,4 +1,4 @@
-export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath }) {
+export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
   const gateDag = preparation.pr_context.gate_dag;
   const requirement = preparation.pr_context.requirement_consistency;
   const splitPlan = preparation.split_plan;
@@ -33,6 +33,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
     title: 'VibePro PR Prepare',
     reportType: 'pr-prepare',
     generatedAt: preparation.created_at,
+    language,
     body: `
       <section class="hero" data-overall-status="${escapeAttr(gateDag.overall_status)}">
         <div>
@@ -71,13 +72,14 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   });
 }
 
-export function renderGateDagHtml(gateDag) {
+export function renderGateDagHtml(gateDag, options = {}) {
   const requiredGates = gateDag.nodes.filter((node) => node.required);
   const unresolved = requiredGates.filter((node) => isUnresolvedStatus(node.status));
   return renderDocument({
     title: 'VibePro Gate DAG',
     reportType: 'gate-dag',
-    generatedAt: new Date().toISOString(),
+    generatedAt: options.generatedAt ?? new Date().toISOString(),
+    language: options.language ?? 'ja',
     body: `
       <section class="hero" data-overall-status="${escapeAttr(gateDag.overall_status)}">
         <div>
@@ -111,7 +113,7 @@ export function renderGateDagHtml(gateDag) {
   });
 }
 
-export function renderSplitPlanHtml(splitPlan) {
+export function renderSplitPlanHtml(splitPlan, options = {}) {
   const lanePlans = new Map(splitPlan.stacked_gate_plan.lane_plans.map((lane) => [lane.lane_id, lane]));
   const laneBoard = splitPlan.lanes
     .slice()
@@ -121,7 +123,8 @@ export function renderSplitPlanHtml(splitPlan) {
   return renderDocument({
     title: 'VibePro PR Split Plan',
     reportType: 'split-plan',
-    generatedAt: new Date().toISOString(),
+    generatedAt: options.generatedAt ?? new Date().toISOString(),
+    language: options.language ?? 'ja',
     body: `
       <section class="hero" data-split-status="${escapeAttr(splitPlan.status)}">
         <div>
@@ -163,7 +166,7 @@ export function renderSplitPlanHtml(splitPlan) {
   });
 }
 
-export function renderPrCreateHtml(execution) {
+export function renderPrCreateHtml(execution, options = {}) {
   const results = execution.results.length === 0
     ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
     : execution.results;
@@ -171,6 +174,7 @@ export function renderPrCreateHtml(execution) {
     title: 'VibePro PR Create',
     reportType: 'pr-create',
     generatedAt: execution.created_at,
+    language: options.language ?? execution.output?.language ?? 'ja',
     body: `
       <section class="hero" data-dry-run="${escapeAttr(String(execution.dry_run))}">
         <div>
@@ -208,9 +212,9 @@ export function renderPrCreateHtml(execution) {
   });
 }
 
-function renderDocument({ title, reportType, generatedAt, body }) {
+function renderDocument({ title, reportType, generatedAt, body, language = 'ja' }) {
   return trimTrailingWhitespace(`<!doctype html>
-<html lang="ja">
+<html lang="${escapeAttr(language)}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">

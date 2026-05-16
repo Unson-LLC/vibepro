@@ -3,8 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { initWorkspace } from './workspace.js';
+import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
+import { assertOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
@@ -75,6 +77,14 @@ import {
   renderTaskShow,
   showTask
 } from './task-manager.js';
+import {
+  installBundledSkills,
+  listBundledSkills,
+  renderSkillsInstall,
+  renderSkillsList,
+  renderSkillsVerify,
+  verifyBundledSkills
+} from './skills-manager.js';
 
 const HELP = `VibePro CLI
 
@@ -105,9 +115,15 @@ Usage:
   vibepro help [command]
   vibepro version
   vibepro --version | -v
-  vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>]
+  vibepro init [repo] [--story-id <id> --title <title>] [--horizon <value>] [--view <value>] [--period <value>] [--started-at <date>] [--due-at <date>] [--language ja|en]
+  vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
+  vibepro skills list [--json]
+  vibepro skills install [repo] [--dry-run] [--force] [--json]
+  vibepro skills verify [repo] [--json]
+  vibepro codex install [repo] [--dry-run] [--force] [--json]
+  vibepro codex verify [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--json]
@@ -136,8 +152,8 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
@@ -167,7 +183,9 @@ export async function runCli(argv, io = {}) {
 
     if (command === 'init') {
       const repoRoot = rest[0] ?? process.cwd();
-      const workspace = await initWorkspace(repoRoot);
+      const language = getOption(rest, '--language');
+      if (language) assertOutputLanguage(language);
+      const workspace = await initWorkspace(repoRoot, { language: language ?? undefined });
       write(stdout, `VibePro workspace initialized: ${workspace.workspaceDir}\n`);
       const storyId = getOption(rest, '--story-id');
       if (storyId) {
@@ -182,6 +200,74 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, workspace, story };
       }
       return { exitCode: 0, command, workspace };
+    }
+
+    if (command === 'config') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'language') {
+        const result = await setOutputLanguage(repoRoot, getOption(rest, '--language'));
+        write(stdout, `Output language set: ${result.language}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown config command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'skills') {
+      const subcommand = rest[0] ?? 'list';
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'list') {
+        const skills = await listBundledSkills();
+        const result = { skills };
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSkillsList(skills));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'install') {
+        const result = await installBundledSkills(repoRoot, {
+          dryRun: hasFlag(rest, '--dry-run'),
+          force: hasFlag(rest, '--force')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSkillsInstall(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'verify') {
+        const result = await verifyBundledSkills(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSkillsVerify(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown skills command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'codex') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'install') {
+        const result = await installCodexInstructions(repoRoot, {
+          dryRun: hasFlag(rest, '--dry-run'),
+          force: hasFlag(rest, '--force')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderCodexInstall(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'verify') {
+        const result = await verifyCodexInstructions(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderCodexVerify(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown codex command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'graph') {
@@ -585,7 +671,8 @@ export async function runCli(argv, io = {}) {
           branchName: getOption(rest, '--branch'),
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
           strict: hasFlag(rest, '--strict'),
-          allowExtraFiles: hasFlag(rest, '--allow-extra-files')
+          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
+          language: getOption(rest, '--language')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
@@ -609,6 +696,7 @@ export async function runCli(argv, io = {}) {
           verificationWaiver: getOption(rest, '--verification-waiver'),
           strict: hasFlag(rest, '--strict'),
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
+          language: getOption(rest, '--language'),
           env: io.env
         });
         write(stdout, hasFlag(rest, '--json')
