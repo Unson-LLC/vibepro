@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { initWorkspace } from './workspace.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
+import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
@@ -101,6 +102,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
@@ -207,6 +209,43 @@ export async function runCli(argv, io = {}) {
       const result = await runDiagnosis(repoRoot, { runId });
       write(stdout, `diagnosis created: ${result.runDir}\n`);
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'check') {
+      const packId = rest[0];
+      if (!packId || packId === 'list' || packId === '--help' || packId === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        const packs = listCheckPacks();
+        const lines = [
+          'Available check packs:',
+          '',
+          ...packs.map((pack) => `- ${pack.id}: ${pack.title} (${pack.checks.join(', ')})`)
+        ];
+        write(stdout, `${lines.join('\n')}\n`);
+        return { exitCode: 0, command, subcommand: packId ?? 'list', packs };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const result = await runCheckPack(repoRoot, {
+        packId,
+        runId: getOption(rest, '--run-id'),
+        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+        baseRef: getOption(rest, '--base'),
+        headRef: getOption(rest, '--head'),
+        strict: hasFlag(rest, '--strict'),
+        measure: hasFlag(rest, '--measure'),
+        baseUrl: getOption(rest, '--base-url'),
+        pages: parseCsvOption(rest, '--pages'),
+        apis: parseCsvOption(rest, '--apis'),
+        samples: parseNumberOption(rest, '--samples') ?? 5,
+        build: hasFlag(rest, '--build'),
+        typecheck: !hasFlag(rest, '--no-typecheck'),
+        commands: getOptions(rest, '--command'),
+        startups: buildStartupOptions(rest),
+        prismaLog: getOption(rest, '--prisma-log')
+      });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result.check, null, 2)}\n`
+        : renderCheckPackSummary(result));
+      return { exitCode: 0, command, subcommand: packId, result };
     }
 
     if (command === 'verify') {

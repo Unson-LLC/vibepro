@@ -97,10 +97,52 @@ test('help command prints discoverable usage', async () => {
   assert.equal(result.command, 'help');
   assert.match(output, /vibepro help \[command\]/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
+  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro story derive \[repo\].*--run-graphify/);
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
+});
+
+test('check list prints available diagnosis packs', async () => {
+  let output = '';
+
+  const result = await runCli(['check', 'list'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.match(output, /ui: UI experience check/);
+  assert.match(output, /security: Security boundary check/);
+  assert.match(output, /performance: Performance readiness check/);
+  assert.equal(result.packs.some((pack) => pack.id === 'launch-readiness'), true);
+});
+
+test('check security runs a purpose-level diagnosis pack and writes evidence', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'security-pack-fixture',
+    dependencies: {
+      next: '^15.0.0'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'admin', 'users'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'admin', 'users', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, 'src', 'page.tsx'), 'export default function Page() { return <div dangerouslySetInnerHTML={{ __html: "<b>x</b>" }} />; }\n');
+  await runCli(['init', repo, '--story-id', 'story-security-pack', '--title', 'Security pack']);
+
+  const result = await runCli(['check', 'security', repo, '--run-id', 'security-pack-test']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.pack_id, 'security');
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.checks.some((check) => check.id === 'api_boundary' && check.status === 'needs_review'), true);
+  assert.equal(result.result.check.checks.some((check) => check.id === 'static_site.xss_risk_hits'), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.md')), true);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.latest_check_run_by_pack.security, 'security-pack-test');
 });
 
 test('init can bootstrap and select a local story', async () => {

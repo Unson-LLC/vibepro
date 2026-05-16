@@ -1,0 +1,364 @@
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+
+import { scanApiBoundary } from './api-boundary-scanner.js';
+import { profileArchitecture } from './architecture-profiler.js';
+import { scanCodeQuality } from './code-quality-scanner.js';
+import { scanComponentStyle } from './component-style-scanner.js';
+import { scanDatabaseAccess } from './database-access-scanner.js';
+import { scanFlowDesign } from './flow-design-scanner.js';
+import { scanLocalDev } from './local-dev-scanner.js';
+import { runPerformanceMeasurement } from './performance-measurer.js';
+import { preparePullRequest } from './pr-manager.js';
+import { scanStaticSite } from './static-site-scanner.js';
+import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
+import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+
+export const CHECK_PACKS = {
+  ui: {
+    title: 'UI experience check',
+    checks: ['component_style', 'flow_design', 'terminal_link_contracts']
+  },
+  security: {
+    title: 'Security boundary check',
+    checks: ['static_site', 'api_boundary', 'code_quality']
+  },
+  performance: {
+    title: 'Performance readiness check',
+    checks: ['database_access', 'local_dev', 'code_quality']
+  },
+  architecture: {
+    title: 'Architecture boundary check',
+    checks: ['architecture_profile', 'code_quality', 'api_boundary', 'database_access']
+  },
+  'pr-readiness': {
+    title: 'PR readiness check',
+    checks: ['pr_prepare']
+  },
+  'launch-readiness': {
+    title: 'Launch readiness check',
+    checks: ['static_site', 'api_boundary', 'component_style', 'flow_design', 'database_access', 'local_dev', 'code_quality']
+  },
+  all: {
+    title: 'All check packs',
+    checks: ['static_site', 'api_boundary', 'component_style', 'flow_design', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
+  }
+};
+
+export function listCheckPacks() {
+  return Object.entries(CHECK_PACKS).map(([id, pack]) => ({
+    id,
+    title: pack.title,
+    checks: pack.checks
+  }));
+}
+
+export async function runCheckPack(repoRoot, options = {}) {
+  await initWorkspace(repoRoot);
+  const root = path.resolve(repoRoot);
+  const packId = options.packId ?? 'all';
+  const pack = CHECK_PACKS[packId];
+  if (!pack) {
+    throw new Error(`Unknown check pack: ${packId}. Available packs: ${Object.keys(CHECK_PACKS).join(', ')}`);
+  }
+
+  const runId = options.runId ?? new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '');
+  const runDir = path.join(getWorkspaceDir(root), 'checks', packId, runId);
+  await mkdir(runDir, { recursive: true });
+
+  const architectureProfile = await profileArchitecture(root);
+  const context = { root, pack, options, architectureProfile };
+  const evidence = {};
+  for (const check of pack.checks) {
+    evidence[check] = await runNamedCheck(check, context);
+  }
+  if (packId === 'performance' && options.measure === true) {
+    evidence.performance_measurement = (await runPerformanceMeasurement(root, {
+      runId: `${runId}-measure`,
+      baseUrl: options.baseUrl,
+      pages: options.pages ?? [],
+      apis: options.apis ?? [],
+      samples: options.samples ?? 5,
+      build: options.build === true,
+      typecheck: options.typecheck !== false,
+      commands: options.commands ?? [],
+      startups: options.startups ?? [],
+      prismaLog: options.prismaLog
+    })).measurement;
+  }
+
+  const checks = summarizeChecks({ packId, evidence, architectureProfile });
+  const status = aggregateStatus(checks);
+  const result = {
+    schema_version: '0.1.0',
+    run_id: runId,
+    created_at: new Date().toISOString(),
+    pack_id: packId,
+    title: pack.title,
+    status,
+    repo: { root: '.' },
+    checks,
+    evidence
+  };
+
+  const jsonPath = path.join(runDir, 'check.json');
+  const markdownPath = path.join(runDir, 'check.md');
+  await writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`);
+  await writeFile(markdownPath, renderCheckPack(result));
+
+  const manifest = await readManifest(root);
+  manifest.latest_check_run = runId;
+  manifest.latest_check_run_by_pack = {
+    ...(manifest.latest_check_run_by_pack ?? {}),
+    [packId]: runId
+  };
+  manifest.check_runs = [
+    {
+      run_id: runId,
+      pack_id: packId,
+      created_at: result.created_at,
+      status,
+      artifacts: {
+        check_json: toWorkspaceRelative(root, jsonPath),
+        check_report: toWorkspaceRelative(root, markdownPath)
+      }
+    },
+    ...(manifest.check_runs ?? []).filter((item) => item.run_id !== runId)
+  ];
+  await writeManifest(root, manifest);
+
+  return {
+    runDir,
+    artifacts: {
+      json: toWorkspaceRelative(root, jsonPath),
+      markdown: toWorkspaceRelative(root, markdownPath)
+    },
+    check: result
+  };
+}
+
+async function runNamedCheck(check, context) {
+  const { root, architectureProfile, options } = context;
+  if (check === 'architecture_profile') return architectureProfile;
+  if (check === 'static_site') return scanStaticSite(root);
+  if (check === 'component_style') return scanComponentStyle(root);
+  if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
+  if (check === 'terminal_link_contracts') return scanTerminalLinkContracts(root);
+  if (check === 'database_access') return scanDatabaseAccess(root);
+  if (check === 'local_dev') return scanLocalDev(root);
+  if (check === 'code_quality') return scanCodeQuality(root);
+  if (check === 'api_boundary') {
+    return architectureProfile.applicable_checks.includes('api-boundary')
+      ? scanApiBoundary(root, architectureProfile)
+      : { route_count: 0, routes: [], summary: {}, protection_summary: {}, skipped: true, reason: 'api-boundary is not applicable to this repository' };
+  }
+  if (check === 'pr_prepare') {
+    if (!options.baseRef && !options.headRef) {
+      return {
+        status: 'needs_setup',
+        reason: 'pr-readiness requires --base <ref> or --head <ref> to prepare PR evidence'
+      };
+    }
+    const preparation = await preparePullRequest(root, {
+      storyId: options.storyId,
+      baseRef: options.baseRef,
+      headRef: options.headRef,
+      strict: options.strict === true
+    });
+    return preparation.preparation;
+  }
+  return { status: 'skipped', reason: `unknown check ${check}` };
+}
+
+function summarizeChecks({ packId, evidence, architectureProfile }) {
+  const checks = [];
+  if (evidence.architecture_profile) {
+    checks.push({
+      id: 'architecture_profile',
+      label: 'Architecture Profile',
+      status: 'pass',
+      summary: `${architectureProfile.app_type ?? 'unknown'} / checks: ${(architectureProfile.applicable_checks ?? []).join(', ') || '-'}`
+    });
+  }
+  if (evidence.static_site) {
+    checks.push(...summarizeRiskGroups('static_site', 'Static/Security', evidence.static_site, [
+      ['secret_hits', 'Secret candidates'],
+      ['xss_risk_hits', 'XSS candidates']
+    ]));
+  }
+  if (evidence.api_boundary) {
+    checks.push(summarizeApiBoundary(evidence.api_boundary));
+  }
+  if (evidence.component_style) {
+    checks.push(...summarizeRiskGroups('component_style', 'UI Style', evidence.component_style, [
+      ['legacy_style_hits', 'Legacy style tokens'],
+      ['interaction_reliability_hits', 'Interaction reliability']
+    ]));
+  }
+  if (evidence.flow_design) {
+    checks.push(summarizeFlowDesign(evidence.flow_design));
+  }
+  if (evidence.terminal_link_contracts) {
+    checks.push(...summarizeRiskGroups('terminal_link_contracts', 'Terminal/File viewer', evidence.terminal_link_contracts, [
+      ['dot_directory_link_hits', 'Dot directory links'],
+      ['wrapped_terminal_link_hits', 'Wrapped terminal links'],
+      ['dot_directory_tree_hits', 'Dot directory tree'],
+      ['image_preview_extension_hits', 'Image preview extensions']
+    ]));
+  }
+  if (evidence.database_access) {
+    checks.push(...summarizeRiskGroups('database_access', 'Database access', evidence.database_access, [
+      ['unbounded_find_many', 'Unbounded findMany']
+    ]));
+  }
+  if (evidence.local_dev) {
+    checks.push(...summarizeRiskGroups('local_dev', 'Local development', evidence.local_dev, [
+      ['heavy_dev_scripts', 'Heavy dev scripts']
+    ]));
+  }
+  if (evidence.code_quality) {
+    checks.push(...summarizeRiskGroups('code_quality', 'Code quality', evidence.code_quality, [
+      ['authorization_order_risks', 'Authorization order'],
+      ['duplicate_query_shapes', 'Duplicate query shapes'],
+      ['responsibility_hotspots', 'Responsibility hotspots']
+    ]));
+  }
+  if (evidence.performance_measurement) {
+    checks.push({
+      id: 'performance_measurement',
+      label: 'Performance Measurement',
+      status: evidence.performance_measurement.summary?.items?.some((item) => /fail/i.test(String(item.value))) ? 'fail' : 'pass',
+      summary: `${evidence.performance_measurement.summary?.items?.length ?? 0} measurement summaries`
+    });
+  }
+  if (evidence.pr_prepare) {
+    checks.push({
+      id: 'pr_prepare',
+      label: 'PR Readiness',
+      status: normalizeCheckStatus(evidence.pr_prepare.gate_status?.overall_status ?? evidence.pr_prepare.status),
+      summary: evidence.pr_prepare.gate_status
+        ? `${evidence.pr_prepare.gate_status.overall_status}; ready=${evidence.pr_prepare.gate_status.ready_for_pr_create}`
+        : evidence.pr_prepare.reason
+    });
+  }
+  if (checks.length === 0) {
+    checks.push({ id: packId, label: 'Check Pack', status: 'skipped', summary: 'No checks were applicable.' });
+  }
+  return checks;
+}
+
+function summarizeRiskGroups(prefix, labelPrefix, evidence, groups) {
+  return groups.map(([key, label]) => {
+    const hits = Array.isArray(evidence[key]) ? evidence[key] : [];
+    const summary = evidence.risk_summary?.[key] ?? summarizeGateEffects(hits);
+    return {
+      id: `${prefix}.${key}`,
+      label: `${labelPrefix}: ${label}`,
+      status: statusFromRiskSummary(summary),
+      summary: formatRiskSummary(summary, hits.length)
+    };
+  });
+}
+
+function summarizeApiBoundary(apiBoundary) {
+  if (apiBoundary.skipped) {
+    return { id: 'api_boundary', label: 'API Boundary', status: 'skipped', summary: apiBoundary.reason };
+  }
+  const riskCount = (apiBoundary.routes ?? []).reduce((count, route) => count + (route.risk_hints?.length ?? 0), 0);
+  return {
+    id: 'api_boundary',
+    label: 'API Boundary',
+    status: riskCount > 0 ? 'needs_review' : 'pass',
+    summary: `${apiBoundary.route_count ?? 0} routes; ${riskCount} risk hints`
+  };
+}
+
+function summarizeFlowDesign(flowDesign) {
+  const count = [
+    flowDesign.silent_noop_hits,
+    flowDesign.ambiguous_primary_action_hits,
+    flowDesign.selection_side_effect_hits,
+    flowDesign.question_dead_end_hits,
+    flowDesign.dead_ui_state_hits,
+    flowDesign.value_alignment_hits
+  ].reduce((total, items) => total + (Array.isArray(items) ? items.length : 0), 0);
+  return {
+    id: 'flow_design',
+    label: 'Flow Design',
+    status: normalizeCheckStatus(flowDesign.status),
+    summary: `${flowDesign.summary?.scanned_ui_files ?? 0} UI files; ${count} flow findings`
+  };
+}
+
+function summarizeGateEffects(hits) {
+  const summary = { block: 0, review: 0, info: 0 };
+  for (const hit of hits) {
+    const effect = ['block', 'review', 'info'].includes(hit.gate_effect) ? hit.gate_effect : 'info';
+    summary[effect] += 1;
+  }
+  return summary;
+}
+
+function statusFromRiskSummary(summary) {
+  if ((summary.block ?? 0) > 0) return 'fail';
+  if ((summary.review ?? 0) > 0) return 'needs_review';
+  return 'pass';
+}
+
+function formatRiskSummary(summary, total) {
+  return `${total} hits; block=${summary.block ?? 0}, review=${summary.review ?? 0}, info=${summary.info ?? 0}`;
+}
+
+function normalizeCheckStatus(status) {
+  if (['pass', 'passed', 'ready_for_review', 'ready'].includes(status)) return 'pass';
+  if (['fail', 'failed', 'blocked'].includes(status)) return 'fail';
+  if (['needs_setup', 'missing', 'skipped', 'not_required'].includes(status)) return status;
+  if (['needs_verification', 'needs_review', 'needs_quality_closure'].includes(status)) return 'needs_review';
+  return status ?? 'unknown';
+}
+
+function aggregateStatus(checks) {
+  const statuses = checks.map((check) => check.status);
+  if (statuses.includes('fail')) return 'fail';
+  if (statuses.includes('needs_setup')) return 'needs_setup';
+  if (statuses.includes('needs_review') || statuses.includes('needs_verification')) return 'needs_review';
+  if (statuses.every((status) => ['pass', 'skipped', 'not_required'].includes(status))) return 'pass';
+  return 'unknown';
+}
+
+export function renderCheckPack(result) {
+  const lines = [
+    '# VibePro Check Pack',
+    '',
+    `Run ID: ${result.run_id}`,
+    `Pack: ${result.pack_id} - ${result.title}`,
+    `Status: ${result.status}`,
+    '',
+    '## Checks',
+    '',
+    '| Check | Status | Summary |',
+    '| ----- | ------ | ------- |'
+  ];
+  for (const check of result.checks) {
+    lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+export function renderCheckPackSummary(result) {
+  const lines = [
+    `check pack created: ${result.artifacts.markdown}`,
+    `status: ${result.check.status}`,
+    '',
+    '| Check | Status | Summary |',
+    '| ----- | ------ | ------- |'
+  ];
+  for (const check of result.check.checks) {
+    lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function escapeTable(value) {
+  return String(value).replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
+}
