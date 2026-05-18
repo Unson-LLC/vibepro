@@ -15,7 +15,7 @@ import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplit
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
-import { resolveOutputLanguage } from './language.js';
+import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -123,7 +123,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     scope,
     prContext,
     splitPlan,
-    narrative: prBodyNarrative
+    narrative: prBodyNarrative,
+    language: outputLanguage
   });
   const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const preparation = {
@@ -499,9 +500,13 @@ export async function createPullRequest(repoRoot, options = {}) {
 
 export function renderPrPrepareSummary(result) {
   const { preparation } = result;
+  const language = preparation.output?.language ?? 'ja';
   const gateStatus = preparation.gate_status
     ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+  const firstLook = renderPrPrepareFirstLook({ preparation, gateStatus, result, language });
   return `# PR Prepare
+
+${firstLook}
 
 | 項目 | 内容 |
 |------|------|
@@ -543,6 +548,42 @@ export function renderPrPrepareSummary(result) {
 - split_plan_html: ${toDisplayPath(result.artifacts.split_plan_report)}
 - json: ${toDisplayPath(result.artifacts.json)}
 `;
+}
+
+function renderPrPrepareFirstLook({ preparation, gateStatus, result, language }) {
+  const unresolvedCount = gateStatus.unresolved_gate_count ?? gateStatus.unresolved_gates?.length ?? 0;
+  const artifactHint = [
+    `review-cockpit: ${toDisplayPath(result.artifacts.review_cockpit)}`,
+    `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
+    `gate-dag: ${toDisplayPath(result.artifacts.gate_dag_report)}`,
+    `split-plan: ${toDisplayPath(result.artifacts.split_plan_report)}`
+  ].join('\n- ');
+  return localizedText(language, {
+    ja: `## まず見る場所
+
+- 状態: ${gateStatus.ready_for_pr_create ? 'PR作成可能' : '未解決Gateあり'}
+- 未解決Gate: ${unresolvedCount}
+- base branch: ${preparation.git.base_ref}
+- .vibepro は診断・Story・PR gate・レビュー証跡を保存する作業台です。
+
+## AIエージェントへの渡し方
+
+- ${artifactHint}
+- 実装依頼には pr-body.md を渡し、完了条件は gate-dag.html、PR分割は split-plan.html を参照させてください。
+`,
+    en: `## Where To Look First
+
+- Status: ${gateStatus.ready_for_pr_create ? 'ready for PR creation' : 'unresolved gates remain'}
+- Unresolved gates: ${unresolvedCount}
+- base branch: ${preparation.git.base_ref}
+- .vibepro is the workspace for diagnosis, Story, PR gate, and review evidence.
+
+## Agent Handoff
+
+- ${artifactHint}
+- Hand pr-body.md to the coding agent, use gate-dag.html as the completion contract, and use split-plan.html for PR splitting.
+`
+  });
 }
 
 function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
@@ -966,7 +1007,7 @@ function renderPrNarrative(narrative) {
   return `${sections.join('\n\n')}\n\n`;
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
@@ -992,6 +1033,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
   const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
   const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
+  const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
 
   return `${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
@@ -1029,7 +1071,7 @@ ${acceptance}
 ${verification}
 
 ## 要件整合性
-${renderRequirementPrSection(prContext.requirement_consistency)}
+${renderRequirementPrSection(prContext.requirement_consistency, language)}
 
 ## Network Contract
 ${renderNetworkContractPrSection(prContext.network_contracts)}
@@ -1044,6 +1086,8 @@ ${gateSummary}
 ${gateEnforcement}
 
 ${executionGateSection}
+
+${handoffSection}
 
 ${flowVerificationSection}
 
@@ -1086,6 +1130,24 @@ function renderPrExecutionGate(executionGate) {
 - pr_create_allowed: ${executionGate.pr_create_allowed}
 - blocking_gate_count: ${executionGate.blocking_gate_count}
 ${actions}`;
+}
+
+function renderPrAgentHandoff({ prContext, splitPlan, language = 'ja' }) {
+  const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
+  return localizedText(language, {
+    ja: `## AI Agent Handoff
+- 目的: Story / Spec / Gate DAG に沿って実装し、未解決Gateを解消する
+- 最初に見る: このPR本文、review-cockpit.html、gate-dag.html、split-plan.html
+- 未解決Gate: ${formatUnresolvedGateList(unresolved)}
+- PR分割方針: ${splitPlan?.recommended_strategy ?? '-'}
+- 注意: scope.status=reviewable は完了承認ではありません。Execution Gateがreadyになるまで証跡を追加してください。`,
+    en: `## AI Agent Handoff
+- Goal: implement against Story / Spec / Gate DAG and resolve unresolved gates
+- Read first: this PR body, review-cockpit.html, gate-dag.html, split-plan.html
+- Unresolved gates: ${formatUnresolvedGateList(unresolved)}
+- PR split strategy: ${splitPlan?.recommended_strategy ?? '-'}
+- Note: scope.status=reviewable is not completion approval. Add evidence until Execution Gate is ready.`
+  });
 }
 
 function renderRuntimeSummary(prContext, story) {
@@ -3104,8 +3166,13 @@ function renderPrGateSummary(gateDag) {
   return lines.join('\n');
 }
 
-function renderRequirementPrSection(requirement) {
-  if (!requirement) return '- Requirement Consistency未生成';
+function renderRequirementPrSection(requirement, language = 'ja') {
+  if (!requirement) {
+    return localizedText(language, {
+      ja: '- Requirement Consistency未生成\n- 次に足すもの: Storyに受け入れ基準、Specに守るべき挙動、Architectureに境界/ADR要否を追加すると判定できます。',
+      en: '- Requirement Consistency not generated\n- What to add next: add Story acceptance criteria, Spec behavioral invariants, and Architecture boundary/ADR notes.'
+    });
+  }
   const summary = requirement.summary ?? {};
   const sources = [
     `- Requirement Sources: ${summary.requirement_source_count ?? 0}`,
@@ -3130,12 +3197,38 @@ function renderRequirementPrSection(requirement) {
     .join('\n');
   return [
     renderRequirementGateSummary(requirement),
+    renderRequirementPrHint(requirement, language),
     sources,
     sourceRefs,
     invariants,
     gaps,
     contradictions
   ].filter(Boolean).join('\n');
+}
+
+function renderRequirementPrHint(requirement, language = 'ja') {
+  if (requirement.status === 'not_applicable') {
+    return localizedText(language, {
+      ja: '- 次に足すもの: Story/Spec/Architectureから判定に使える不変条件が十分に取れていません。Storyに受け入れ基準、Specに守るべき挙動、Architectureに境界やADR要否を書くと有効になります。',
+      en: '- What to add next: VibePro could not extract enough invariants from Story/Spec/Architecture. Add acceptance criteria to Story, behavioral invariants to Spec, and boundary/ADR notes to Architecture.'
+    });
+  }
+  if (requirement.status === 'needs_review') {
+    return localizedText(language, {
+      ja: '- 次に見るもの: Story未明示シナリオを確認し、意図した挙動ならStory/Specへ追記、意図しないなら実装かテストを修正してください。',
+      en: '- Review next: scenario gaps. If intended, add them to Story/Spec; otherwise fix implementation or tests.'
+    });
+  }
+  if (requirement.status === 'contradicted') {
+    return localizedText(language, {
+      ja: '- 次に直すもの: Story/Spec/Architectureと実装の矛盾候補を解消してください。',
+      en: '- Fix next: resolve potential contradictions between Story/Spec/Architecture and implementation.'
+    });
+  }
+  return localizedText(language, {
+    ja: '- 補足: Story/Spec/Architectureと既知の実装分岐に明確な矛盾はありません。',
+    en: '- Note: no clear contradiction was found between Story/Spec/Architecture and known implementation branches.'
+  });
 }
 
 function renderPrGateEnforcement(gateDag) {
