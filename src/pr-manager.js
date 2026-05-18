@@ -1775,7 +1775,7 @@ function normalizeGraphPath(filePath) {
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
-  if (!primaryStory.path) {
+  if (!storyDocMatchesStory(primaryStory, story)) {
     const filesystemStory = await findStorySource(repoRoot, story);
     if (filesystemStory?.path) {
       try {
@@ -2328,6 +2328,15 @@ function pickPrimaryStory(storyDocs, story) {
     };
 }
 
+function storyDocMatchesStory(doc, story) {
+  if (!doc?.path) return false;
+  if (doc.story_id === story.story_id || doc.vibepro_story_id === story.story_id) return true;
+  if (doc.path.includes(story.story_id)) return true;
+  if (doc.title && doc.title === story.title) return true;
+  if (doc.requirement_title && doc.requirement_title === story.title) return true;
+  return false;
+}
+
 function resolveArchitectureDecision(storyDoc, fileGroups) {
   if (fileGroups.architecture_docs.count > 0) {
     return `ADRあり (${fileGroups.architecture_docs.files.join(', ')})`;
@@ -2591,6 +2600,7 @@ function buildGateDag({
     verificationEvidence
   });
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
+  const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
   const nodes = [
     storyGate,
     architectureGate,
@@ -2606,6 +2616,7 @@ function buildGateDag({
     requirementGate,
     ...gates,
     ...(visualQaGate ? [visualQaGate] : []),
+    ...agentReviewDag.nodes,
     agentReviewGate,
     {
       id: 'pr',
@@ -2642,15 +2653,25 @@ function buildGateDag({
     { from: 'gate:integration', to: 'gate:e2e' },
     ...(visualQaGate ? [
       { from: 'gate:e2e', to: 'gate:visual_qa' },
-      { from: 'gate:visual_qa', to: 'gate:agent_review' }
+      ...buildAgentReviewProcessEdges('gate:visual_qa', agentReviewDag)
     ] : [
-      { from: 'gate:e2e', to: 'gate:agent_review' }
+      ...buildAgentReviewProcessEdges('gate:e2e', agentReviewDag)
     ]),
     { from: 'gate:agent_review', to: 'pr' }
   ];
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
-  const requiredGates = [storyGate, architectureGate, specGate, networkContractGate, requirementGate, ...gates, visualQaGate, agentReviewGate].filter((gate) => gate?.required);
+  const requiredGates = [
+    storyGate,
+    architectureGate,
+    specGate,
+    networkContractGate,
+    requirementGate,
+    ...gates,
+    visualQaGate,
+    ...agentReviewDag.nodes,
+    agentReviewGate
+  ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
   return {
     schema_version: '0.1.0',
@@ -2669,6 +2690,94 @@ function buildGateDag({
     nodes: allNodes,
     edges
   };
+}
+
+function buildAgentReviewProcessDag(agentReviews) {
+  const stages = agentReviews?.parallel_dispatch?.required_stages ?? [];
+  if (!agentReviews?.required || stages.length === 0) return { nodes: [], terminal_nodes: [] };
+  const stageLookup = new Map((agentReviews.stages ?? []).map((stage) => [stage.stage, stage]));
+  const nodes = [];
+  const terminalNodes = [];
+  for (const requiredStage of stages) {
+    const stage = stageLookup.get(requiredStage.stage);
+    const prepareId = `review:prepare:${requiredStage.stage}`;
+    const dispatch = stage?.parallel_dispatch ?? {};
+    const dispatchPrepared = Boolean(dispatch.prepared || stage?.roles?.some((role) => role.artifact));
+    nodes.push({
+      id: prepareId,
+      type: 'agent_review_prepare_gate',
+      label: `Review Prepare: ${requiredStage.stage}`,
+      status: dispatchPrepared ? 'passed' : 'needs_review',
+      required: true,
+      command: requiredStage.prepare_command,
+      artifact: requiredStage.dispatch_artifact,
+      reason: dispatchPrepared
+        ? 'Parallel subagent dispatch instructions were generated'
+        : 'Parallel subagent dispatch instructions have not been generated'
+    });
+
+    for (const role of stage?.roles ?? []) {
+      const reviewId = `review:${requiredStage.stage}:${role.role}`;
+      const recordId = `review:record:${requiredStage.stage}:${role.role}`;
+      const reviewStatus = normalizeAgentReviewNodeStatus(role.effective_status);
+      const recordStatus = normalizeAgentReviewRecordStatus(role.effective_status);
+      nodes.push({
+        id: reviewId,
+        type: 'agent_review_role_gate',
+        label: `Subagent Review: ${role.role}`,
+        status: reviewStatus,
+        required: true,
+        reason: role.summary ?? role.stale_reason ?? `Run the ${requiredStage.stage}:${role.role} subagent review`
+      });
+      nodes.push({
+        id: recordId,
+        type: 'agent_review_record_gate',
+        label: `Review Record: ${role.role}`,
+        status: recordStatus,
+        required: true,
+        artifact: role.artifact,
+        reason: role.artifact
+          ? `Recorded ${requiredStage.stage}:${role.role} review for the current git state`
+          : `Record ${requiredStage.stage}:${role.role} with vibepro review record`
+      });
+      terminalNodes.push(recordId);
+    }
+  }
+  return { nodes, terminal_nodes: terminalNodes };
+}
+
+function buildAgentReviewProcessEdges(upstreamNodeId, agentReviewDag) {
+  if (!agentReviewDag.nodes.length) return [{ from: upstreamNodeId, to: 'gate:agent_review' }];
+  const edges = [];
+  const prepareNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_prepare_gate');
+  for (const prepareNode of prepareNodes) {
+    edges.push({ from: upstreamNodeId, to: prepareNode.id });
+    const [, , stage] = prepareNode.id.split(':');
+    const roleNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_role_gate' && node.id.startsWith(`review:${stage}:`));
+    for (const roleNode of roleNodes) {
+      const role = roleNode.id.slice(`review:${stage}:`.length);
+      const recordId = `review:record:${stage}:${role}`;
+      edges.push({ from: prepareNode.id, to: roleNode.id });
+      edges.push({ from: roleNode.id, to: recordId });
+    }
+  }
+  for (const terminalNode of agentReviewDag.terminal_nodes) {
+    edges.push({ from: terminalNode, to: 'gate:agent_review' });
+  }
+  return edges;
+}
+
+function normalizeAgentReviewNodeStatus(status) {
+  if (status === 'pass') return 'passed';
+  if (status === 'block') return 'failed';
+  if (status === 'needs_changes') return 'needs_review';
+  return status ?? 'missing';
+}
+
+function normalizeAgentReviewRecordStatus(status) {
+  if (status === 'pass') return 'passed';
+  if (status === 'block') return 'failed';
+  return 'needs_review';
 }
 
 function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext = {}) {
@@ -2748,8 +2857,9 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       ? 'Required staged agent reviews passed for the current git state'
       : status === 'not_required'
         ? 'No source/API/UI/performance policy required staged agent reviews'
-        : `${unmet.length} required agent review role(s) are missing, stale, or blocking`,
+        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; run the parallel dispatch instructions from vibepro review prepare`,
     summary: agentReviews.summary,
+    parallel_dispatch: agentReviews.parallel_dispatch,
     unmet_required_reviews: unmet.slice(0, 20)
   };
 }
@@ -3384,6 +3494,9 @@ function collectUnresolvedRequiredGates(gateDag) {
       'verification_gate',
       'requirement_gate',
       'visual_qa_gate',
+      'agent_review_prepare_gate',
+      'agent_review_role_gate',
+      'agent_review_record_gate',
       'agent_review_gate'
     ].includes(node.type))
     .filter((node) => node.required)
@@ -3407,7 +3520,10 @@ function isUnresolvedGateStatus(status) {
     'needs_evidence',
     'needs_setup',
     'needs_review',
+    'needs_changes',
     'contradicted',
+    'stale',
+    'block',
     'failed'
   ].includes(status);
 }
@@ -3430,7 +3546,10 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
-      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires required review roles to pass for the current git head and dirty fingerprint.';
+      if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and dispatching the generated parallel subagent review requests.`;
+      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the subagent result with \`vibepro review record\` for the current git head and dirty fingerprint.`;
+      if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned parallel subagent review.`;
+      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires parallel subagent review dispatch via `vibepro review prepare` and passing `vibepro review record` results for the current git head and dirty fingerprint.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })

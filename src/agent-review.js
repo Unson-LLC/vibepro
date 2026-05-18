@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -40,10 +40,20 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     git_context: gitContext,
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: [
-      'Run the listed role reviews independently with separate AI subagents or human reviewers.',
+      'Dispatch the listed role reviews in parallel with separate AI subagents or human reviewers.',
       'VibePro records the review results, but does not execute subagents itself.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
+    parallel_dispatch: {
+      required: true,
+      mode: 'manual_parallel_subagents',
+      subagent_count: roles.length,
+      artifact: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
+      record_commands: Object.fromEntries(roles.map((role) => [
+        role,
+        buildReviewRecordCommand({ storyId, stage, role })
+      ]))
+    },
     requests: roles.map((role) => ({
       role,
       artifact: toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role)),
@@ -52,6 +62,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   };
 
   await writeJson(path.join(reviewDir, 'review-plan.json'), plan);
+  await writeFile(getParallelDispatchPath(reviewDir), renderParallelDispatchMarkdown({ storyId, stage, roles, plan }));
   for (const role of roles) {
     await writeFile(getReviewRequestPath(reviewDir, role), renderReviewRequestMarkdown({ storyId, stage, role, plan }));
   }
@@ -62,6 +73,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     summary,
     artifacts: {
       plan: toWorkspaceRelative(root, path.join(reviewDir, 'review-plan.json')),
+      parallel_dispatch: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
       summary_json: toWorkspaceRelative(root, path.join(reviewDir, 'review-summary.json')),
       summary_markdown: toWorkspaceRelative(root, path.join(reviewDir, 'review-summary.md')),
       requests: Object.fromEntries(roles.map((role) => [role, toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role))]))
@@ -187,6 +199,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     required_reviews: requiredReviews,
     unmet_required_reviews: unmetRequiredReviews,
     stages: stageSummaries,
+    parallel_dispatch: buildParallelDispatchSummary(root, storyId, stageSummaries, requiredReviews),
     summary: {
       required_review_count: requiredReviews.length,
       unmet_required_review_count: unmetRequiredReviews.length,
@@ -204,6 +217,7 @@ export function renderAgentReviewPrepareSummary(result) {
 - stage: ${result.plan.stage}
 - roles: ${result.plan.roles.join(', ')}
 - plan: ${result.artifacts.plan}
+- parallel dispatch: ${result.artifacts.parallel_dispatch}
 - summary: ${result.artifacts.summary_markdown}
 `;
 }
@@ -247,6 +261,7 @@ export function renderAgentReviewPrSection(agentReviews) {
     `- status: ${agentReviews.status}`,
     `- required reviews: ${agentReviews.summary?.required_review_count ?? 0}`,
     `- unmet required reviews: ${agentReviews.summary?.unmet_required_review_count ?? 0}`,
+    renderParallelDispatchPrRows(agentReviews.parallel_dispatch),
     unmetRows.join('\n') || '- required roles passed or not required',
     '### Stage Summary',
     stageRows.join('\n') || '- no review stages recorded'
@@ -342,6 +357,7 @@ function buildRolePromptSummary(stage, role) {
 }
 
 function renderReviewRequestMarkdown({ storyId, stage, role, plan }) {
+  const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   return `# VibePro Agent Review Request
 
 - Story: ${storyId}
@@ -359,6 +375,8 @@ ${buildRolePromptSummary(stage, role)}
 - Use \`block\` for release-blocking bugs, broken contracts, or unverified critical paths.
 - Use \`needs_changes\` when the work may proceed after specific fixes/evidence.
 - Use \`pass\` only when this role's concern is adequately covered for the current head.
+- Return the result to the coordinator. The coordinator records it with:
+  \`${recordCommand}\`
 
 ## Result Shape
 \`\`\`json
@@ -373,8 +391,83 @@ ${buildRolePromptSummary(stage, role)}
 `;
 }
 
+function renderParallelDispatchMarkdown({ storyId, stage, roles, plan }) {
+  const items = roles.map((role, index) => {
+    const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
+    const command = buildReviewRecordCommand({ storyId, stage, role });
+    return `## Subagent ${index + 1}: ${stage}:${role}
+
+Review request:
+\`${request}\`
+
+Prompt:
+Read the review request above and perform only the \`${stage}:${role}\` review. Return JSON with \`status\`, \`summary\`, and \`findings\`. Do not edit files.
+
+Record command after the subagent returns:
+\`${command}\`
+`;
+  }).join('\n');
+  return `# VibePro Parallel Agent Review Dispatch
+
+- Story: ${storyId}
+- Stage: ${stage}
+- Mode: manual parallel subagents
+- Required subagents: ${roles.length}
+- Current head: ${plan.git_context.head_sha ?? '-'}
+- Dirty: ${plan.git_context.dirty}
+
+## Coordinator Instructions
+
+1. Start all subagents below in parallel.
+2. Give each subagent only its own review request.
+3. Do not let subagents edit files during review.
+4. Record each result with the listed \`vibepro review record\` command.
+5. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\`.
+
+${items}
+`;
+}
+
+function buildReviewRecordCommand({ storyId, stage, role }) {
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>"`;
+}
+
+function buildReviewPrepareCommand({ storyId, stage }) {
+  return `vibepro review prepare . --id ${storyId} --stage ${stage}`;
+}
+
+function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
+  const requiredStages = [...new Set(requiredReviews.map((item) => item.stage))];
+  return {
+    required: requiredStages.length > 0,
+    mode: 'manual_parallel_subagents',
+    required_stages: requiredStages.map((stage) => {
+      const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+      const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
+      return {
+        stage,
+        role_count: REVIEW_STAGE_ROLES[stage]?.length ?? 0,
+        status: summary?.status ?? 'missing',
+        prepared: summary?.parallel_dispatch?.prepared ?? false,
+        prepare_command: buildReviewPrepareCommand({ storyId, stage }),
+        dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
+      };
+    })
+  };
+}
+
+function renderParallelDispatchPrRows(parallelDispatch) {
+  if (!parallelDispatch?.required) return '- parallel dispatch: not required';
+  const rows = parallelDispatch.required_stages.map((stage) => (
+    `- parallel dispatch: ${stage.stage} (${stage.status}) - ${stage.prepare_command} -> ${stage.dispatch_artifact}`
+  ));
+  return rows.join('\n');
+}
+
 async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }) {
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  const parallelDispatchPath = getParallelDispatchPath(reviewDir);
+  const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const roles = [];
   for (const role of REVIEW_STAGE_ROLES[stage]) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
@@ -409,8 +502,24 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
     updated_at: new Date().toISOString(),
-    current_git_context: currentGitContext
+    current_git_context: currentGitContext,
+    parallel_dispatch: {
+      mode: 'manual_parallel_subagents',
+      prepared: parallelDispatchPrepared,
+      artifact: toWorkspaceRelative(repoRoot, parallelDispatchPath),
+      prepare_command: buildReviewPrepareCommand({ storyId, stage })
+    }
   };
+}
+
+async function pathExists(filePath) {
+  try {
+    await stat(filePath);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 function resolveStageStatus(roles) {
@@ -531,6 +640,10 @@ function getReviewStageDir(repoRoot, storyId, stage) {
 
 function getReviewRequestPath(reviewDir, role) {
   return path.join(reviewDir, `review-request-${role}.md`);
+}
+
+function getParallelDispatchPath(reviewDir) {
+  return path.join(reviewDir, 'parallel-dispatch.md');
 }
 
 function getReviewResultPath(reviewDir, role) {

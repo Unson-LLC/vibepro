@@ -2894,11 +2894,20 @@ test('review prepare generates stage role requests', async () => {
 
   assert.equal(result.exitCode, 0);
   assert.deepEqual(result.result.plan.roles, ['unit_integration', 'e2e_ux', 'gate_coverage']);
+  assert.equal(result.result.plan.parallel_dispatch.mode, 'manual_parallel_subagents');
+  assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
+  const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md'), 'utf8');
+  assert.match(dispatch, /Start all subagents below in parallel/);
+  assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
+  assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
+  assert.match(request, /coordinator records it/);
 });
 
 test('review record updates status summary and marks stale after source change', async () => {
@@ -2961,12 +2970,30 @@ architecture_docs:
   const missingGate = missingResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   assert.equal(missingGate.required, true);
   assert.equal(missingGate.status, 'needs_review');
+  assert.equal(missingGate.parallel_dispatch.required, true);
+  assert.equal(missingGate.parallel_dispatch.required_stages.some((stage) => stage.prepare_command.includes('vibepro review prepare')), true);
+  assert.match(missingGate.reason, /parallel dispatch/);
+  const missingDag = missingResult.result.preparation.pr_context.gate_dag;
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:record:test_plan:e2e_ux' && node.type === 'agent_review_record_gate'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:test_plan' && edge.to === 'review:test_plan:e2e_ux'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);
+  assert.match(gateDagHtml, /data-node-id="review:test_plan:e2e_ux"/);
+  assert.match(gateDagHtml, /data-node-id="review:record:test_plan:e2e_ux"/);
   assert.equal(missingResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:agent_review'), true);
 
   await recordRequiredAgentReviews(repo);
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const passedGate = passedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
+  const passedDag = passedResult.result.preparation.pr_context.gate_dag;
   assert.equal(passedGate.status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:prepare:test_plan').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:test_plan:e2e_ux').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:record:test_plan:e2e_ux').status, 'passed');
   assert.equal(passedResult.result.preparation.pr_context.agent_reviews.summary.unmet_required_review_count, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## Agent Review/);
