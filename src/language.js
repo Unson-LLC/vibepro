@@ -20,6 +20,11 @@ export function resolveOutputLanguage(config, override = null) {
   return normalizeOutputLanguage(config?.output?.language);
 }
 
+export function localizedText(language, values) {
+  const normalized = normalizeOutputLanguage(language);
+  return values[normalized] ?? values[DEFAULT_OUTPUT_LANGUAGE] ?? values.en ?? '';
+}
+
 export async function setOutputLanguage(repoRoot, language) {
   const normalized = assertOutputLanguage(language);
   await initWorkspace(repoRoot);

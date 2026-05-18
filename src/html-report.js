@@ -1,32 +1,53 @@
+import { localizedText } from './language.js';
+
 export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
   const gateDag = preparation.pr_context.gate_dag;
   const requirement = preparation.pr_context.requirement_consistency;
   const splitPlan = preparation.split_plan;
   const executionGate = preparation.pr_context.execution_gate ?? preparation.gate_status?.execution_gate ?? null;
   const agentReviews = preparation.pr_context.agent_reviews ?? null;
+  const labels = prPrepareLabels(language);
   const cards = [
-    metricCard('Scope', preparation.scope.status, preparation.scope.recommended_strategy),
-    metricCard('Gate DAG', gateDag.overall_status, `${gateDag.summary.needs_evidence_count} unresolved`),
-    metricCard('Execution Gate', executionGate?.status ?? 'unknown', executionGate?.pr_create_allowed ? 'pr create allowed' : 'pr create blocked'),
-    metricCard('Agent Reviews', agentReviews?.status ?? 'not_generated', `${agentReviews?.summary?.unmet_required_review_count ?? 0} unmet`),
-    metricCard('Requirement', requirement?.status ?? 'not_generated', `${requirement?.summary?.contradiction_count ?? 0} contradictions`),
-    metricCard('Split Plan', splitPlan.status, `${splitPlan.lanes.length} lanes`)
+    metricCard(labels.scope, preparation.scope.status, preparation.scope.recommended_strategy),
+    metricCard('Gate DAG', gateDag.overall_status, localizedText(language, {
+      ja: `${gateDag.summary.needs_evidence_count}件 未解決`,
+      en: `${gateDag.summary.needs_evidence_count} unresolved`
+    })),
+    metricCard(labels.executionGate, executionGate?.status ?? 'unknown', executionGate?.pr_create_allowed ? labels.prCreateAllowed : labels.prCreateBlocked),
+    metricCard(labels.agentReviews, agentReviews?.status ?? 'not_generated', localizedText(language, {
+      ja: `${agentReviews?.summary?.unmet_required_review_count ?? 0}件 未充足`,
+      en: `${agentReviews?.summary?.unmet_required_review_count ?? 0} unmet`
+    })),
+    metricCard(labels.requirement, requirement?.status ?? 'not_generated', localizedText(language, {
+      ja: `${requirement?.summary?.contradiction_count ?? 0}件 矛盾`,
+      en: `${requirement?.summary?.contradiction_count ?? 0} contradictions`
+    })),
+    metricCard(labels.splitPlan, splitPlan.status, localizedText(language, {
+      ja: `${splitPlan.lanes.length}レーン`,
+      en: `${splitPlan.lanes.length} lanes`
+    }))
   ].join('');
   const flow = renderFlow([
-    flowStep('Story', preparation.story.story_id, preparation.pr_context.story_source.path ? 'present' : 'transient'),
-    flowStep('Architecture', preparation.pr_context.architecture_decision, gateStatus(gateDag, 'architecture')),
-    flowStep('Spec', `${preparation.file_groups.specifications.count} files`, gateStatus(gateDag, 'spec')),
-    flowStep('Code', `${preparation.file_groups.source.count} files`, gateStatus(gateDag, 'code')),
-    flowStep('Gates', gateDag.overall_status, gateDag.overall_status)
+    flowStep(labels.story, preparation.story.story_id, preparation.pr_context.story_source.path ? 'present' : 'transient'),
+    flowStep(labels.architecture, preparation.pr_context.architecture_decision, gateStatus(gateDag, 'architecture')),
+    flowStep(labels.spec, localizedText(language, {
+      ja: `${preparation.file_groups.specifications.count}ファイル`,
+      en: `${preparation.file_groups.specifications.count} files`
+    }), gateStatus(gateDag, 'spec')),
+    flowStep(labels.code, localizedText(language, {
+      ja: `${preparation.file_groups.source.count}ファイル`,
+      en: `${preparation.file_groups.source.count} files`
+    }), gateStatus(gateDag, 'code')),
+    flowStep(labels.gates, gateDag.overall_status, gateDag.overall_status)
   ]);
-  const risks = renderCards('Human Review Focus', [
+  const risks = renderCards(localizedText(language, { ja: '人間レビューの焦点', en: 'Human Review Focus' }), [
     ...preparation.pr_context.risks.map((risk) => ({ title: 'Risk', detail: risk, tone: 'danger' })),
     ...preparation.pr_context.review_points.map((point) => ({ title: 'Review', detail: point, tone: 'info' }))
   ]);
-  const requirementSection = renderRequirementPanel(requirement);
-  const networkSection = renderNetworkContractPanel(preparation.pr_context.network_contracts);
-  const fileGroups = renderFileGroups(preparation.file_groups);
-  const graphSummary = renderGraphSummary(splitPlan.graph_context);
+  const requirementSection = renderRequirementPanel(requirement, language);
+  const networkSection = renderNetworkContractPanel(preparation.pr_context.network_contracts, language);
+  const fileGroups = renderFileGroups(preparation.file_groups, language);
+  const graphSummary = renderGraphSummary(splitPlan.graph_context, language);
   const artifacts = renderKeyValueTable([
     ['PR body draft', bodyPath],
     ['Gate DAG HTML', gateDagPath],
@@ -42,37 +63,38 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
     body: `
       <section class="hero" data-overall-status="${escapeAttr(gateDag.overall_status)}">
         <div>
-          <p class="eyebrow">Story-driven review artifact</p>
+          <p class="eyebrow">${escapeHtml(labels.eyebrow)}</p>
           <h2>${escapeHtml(preparation.story.title)}</h2>
           <p class="muted">${escapeHtml(preparation.story.story_id)} / ${escapeHtml(preparation.git.base_ref)} -> ${escapeHtml(preparation.git.head_ref)}</p>
         </div>
         <span class="${statusClass(gateDag.overall_status)}">${escapeHtml(gateDag.overall_status)}</span>
       </section>
       <section class="metrics">${cards}</section>
+      ${renderPrPrepareGuide({ preparation, bodyPath, gateDagPath, splitPlanPath, language })}
       <section>
-        <h2>Story -> Architecture -> Spec -> Code -> Gate</h2>
+        <h2>${labels.flowTitle}</h2>
         ${flow}
       </section>
       ${risks}
-      ${renderExecutionGatePanel(executionGate)}
-      ${renderAgentReviewPanel(agentReviews)}
+      ${renderExecutionGatePanel(executionGate, language)}
+      ${renderAgentReviewPanel(agentReviews, language)}
       ${requirementSection}
       ${networkSection}
       <section>
-        <h2>Graphify Impact</h2>
+        <h2>${escapeHtml(labels.graphifyImpact)}</h2>
         ${graphSummary}
       </section>
       <section>
-        <h2>Changed File Groups</h2>
+        <h2>${escapeHtml(labels.changedFileGroups)}</h2>
         ${fileGroups}
       </section>
       <section class="grid-2">
         <div>
-          <h2>Artifacts</h2>
+          <h2>${escapeHtml(localizedText(language, { ja: '成果物', en: 'Artifacts' }))}</h2>
           ${artifacts}
         </div>
         <div>
-          <h2>Next Commands</h2>
+          <h2>${escapeHtml(localizedText(language, { ja: '次のコマンド', en: 'Next Commands' }))}</h2>
           ${nextCommands}
         </div>
       </section>
@@ -218,6 +240,74 @@ export function renderPrCreateHtml(execution, options = {}) {
       </section>
     `
   });
+}
+
+function renderPrPrepareGuide({ preparation, bodyPath, gateDagPath, splitPlanPath, language }) {
+  const gateDag = preparation.pr_context.gate_dag;
+  const requirement = preparation.pr_context.requirement_consistency;
+  const requirementHint = buildRequirementGuide(requirement, language);
+  const unresolved = gateDag.summary?.needs_evidence_count ?? 0;
+  const agentHandoff = [
+    bodyPath,
+    gateDagPath,
+    splitPlanPath
+  ].filter(Boolean).join(' / ');
+  return `
+    <section>
+      <h2>${escapeHtml(localizedText(language, { ja: 'まず見る場所', en: 'Where To Look First' }))}</h2>
+      <div class="cards">
+        <article class="card ${escapeAttr(unresolved > 0 ? 'warn' : 'good')}">
+          <h3>${escapeHtml(localizedText(language, { ja: '1. Gateの未解決', en: '1. Gate blockers' }))}</h3>
+          <p>${escapeHtml(localizedText(language, {
+            ja: unresolved > 0
+              ? `${unresolved}件の未解決Gateがあります。Execution GateとUnresolved Gatesから先に確認してください。`
+              : '未解決Gateはありません。PR作成前にscopeとbranchだけ確認してください。',
+            en: unresolved > 0
+              ? `${unresolved} unresolved gate(s). Start from Execution Gate and Unresolved Gates.`
+              : 'No unresolved gates. Check scope and branch before PR creation.'
+          }))}</p>
+        </article>
+        <article class="card info">
+          <h3>${escapeHtml(localizedText(language, { ja: '2. AIエージェントへの渡し方', en: '2. Agent handoff' }))}</h3>
+          <p>${escapeHtml(localizedText(language, {
+            ja: `実装エージェントには ${agentHandoff} を渡してください。pr-body.mdが要約、gate-dagが完了条件、split-planがPR分割方針です。`,
+            en: `Hand ${agentHandoff} to the coding agent. pr-body.md is the summary, gate-dag is the completion contract, and split-plan is the PR split guide.`
+          }))}</p>
+        </article>
+        <article class="card ${escapeAttr(requirementHint.tone)}">
+          <h3>${escapeHtml(localizedText(language, { ja: '3. Requirement Consistency', en: '3. Requirement Consistency' }))}</h3>
+          <p>${escapeHtml(requirementHint.text)}</p>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+function prPrepareLabels(language) {
+  return {
+    eyebrow: localizedText(language, {
+      ja: 'StoryからPR前確認までのレビュー成果物',
+      en: 'Story-driven review artifact'
+    }),
+    scope: localizedText(language, { ja: 'スコープ', en: 'Scope' }),
+    executionGate: localizedText(language, { ja: '実行Gate', en: 'Execution Gate' }),
+    agentReviews: localizedText(language, { ja: 'Agent Review', en: 'Agent Reviews' }),
+    requirement: localizedText(language, { ja: '要件整合性', en: 'Requirement' }),
+    splitPlan: localizedText(language, { ja: '分割計画', en: 'Split Plan' }),
+    prCreateAllowed: localizedText(language, { ja: 'PR作成可能', en: 'pr create allowed' }),
+    prCreateBlocked: localizedText(language, { ja: 'PR作成ブロック', en: 'pr create blocked' }),
+    story: localizedText(language, { ja: 'Story', en: 'Story' }),
+    architecture: localizedText(language, { ja: 'Architecture', en: 'Architecture' }),
+    spec: localizedText(language, { ja: 'Spec', en: 'Spec' }),
+    code: localizedText(language, { ja: 'Code', en: 'Code' }),
+    gates: localizedText(language, { ja: 'Gate', en: 'Gates' }),
+    flowTitle: localizedText(language, {
+      ja: 'Story -> Architecture -> Spec -> Code -> Gate',
+      en: 'Story -> Architecture -> Spec -> Code -> Gate'
+    }),
+    graphifyImpact: localizedText(language, { ja: 'Graphify影響範囲', en: 'Graphify Impact' }),
+    changedFileGroups: localizedText(language, { ja: '変更ファイル分類', en: 'Changed File Groups' })
+  };
 }
 
 function renderDocument({ title, reportType, generatedAt, body, language = 'ja' }) {
@@ -376,10 +466,15 @@ function renderCards(title, cards) {
   `;
 }
 
-function renderRequirementPanel(requirement) {
+function renderRequirementPanel(requirement, language = 'ja') {
   if (!requirement) {
-    return renderCards('Requirement Consistency', [{ title: 'Not generated', detail: 'Requirement Consistency未生成', tone: 'warn' }]);
+    return renderCards('Requirement Consistency', [{
+      title: localizedText(language, { ja: '未生成', en: 'Not generated' }),
+      detail: buildRequirementGuide(requirement, language).text,
+      tone: 'warn'
+    }]);
   }
+  const guide = buildRequirementGuide(requirement, language);
   const cards = [
     ...(requirement.contradictions ?? []).slice(0, 6).map((item) => ({
       title: item.title ?? 'Potential Contradiction',
@@ -409,6 +504,10 @@ function renderRequirementPanel(requirement) {
         ${metricCard('Scenario Gaps', requirement.summary?.scenario_gap_count ?? 0, 'needs review')}
         ${metricCard('Contradictions', requirement.summary?.contradiction_count ?? 0, 'potential bugs')}
       </div>
+      <article class="card ${escapeAttr(guide.tone)}">
+        <h3>${escapeHtml(localizedText(language, { ja: '次に足すもの', en: 'What To Add Next' }))}</h3>
+        <p>${escapeHtml(guide.text)}</p>
+      </article>
       <div class="cards">${cards.map((card) => `
         <article class="card ${escapeAttr(card.tone)}">
           <h3>${escapeHtml(card.title)}</h3>
@@ -420,9 +519,59 @@ function renderRequirementPanel(requirement) {
   `;
 }
 
-function renderExecutionGatePanel(executionGate) {
+function buildRequirementGuide(requirement, language = 'ja') {
+  if (!requirement) {
+    return {
+      tone: 'warn',
+      text: localizedText(language, {
+        ja: 'Requirement Consistencyは未生成です。まずStoryに受け入れ基準を置き、必要に応じてSpec/Architectureを追加してから `vibepro pr prepare` を再実行してください。',
+        en: 'Requirement Consistency was not generated. Add Story acceptance criteria, then add Spec/Architecture when needed, and rerun `vibepro pr prepare`.'
+      })
+    };
+  }
+  if (requirement.status === 'not_applicable') {
+    return {
+      tone: 'warn',
+      text: localizedText(language, {
+        ja: 'Story/Spec/Architectureから判定に使える不変条件が十分に取れていません。Storyに受け入れ基準、Specに守るべき挙動、Architectureに境界やADR要否を書くと、このGateが有効になります。',
+        en: 'VibePro could not extract enough invariants from Story/Spec/Architecture. Add acceptance criteria to the Story, behavioral invariants to the Spec, and boundary/ADR notes to Architecture to activate this gate.'
+      })
+    };
+  }
+  if (requirement.status === 'needs_review') {
+    return {
+      tone: 'warn',
+      text: localizedText(language, {
+        ja: 'Storyに明示されていないシナリオがあります。意図した挙動ならStory/Specへ追記し、意図しないなら実装かテストを直してください。',
+        en: 'Some scenarios are not explicit in the Story. If intended, add them to Story/Spec; otherwise fix the implementation or tests.'
+      })
+    };
+  }
+  if (requirement.status === 'contradicted') {
+    return {
+      tone: 'danger',
+      text: localizedText(language, {
+        ja: 'Story/Spec/Architectureと実装の矛盾候補があります。PR前に矛盾を解消し、必要ならSpecを更新してください。',
+        en: 'Potential contradictions exist between Story/Spec/Architecture and implementation. Resolve them before PR and update Spec when needed.'
+      })
+    };
+  }
+  return {
+    tone: 'good',
+    text: localizedText(language, {
+      ja: 'Story/Spec/Architectureと既知の実装分岐に明確な矛盾はありません。',
+      en: 'No clear contradiction was found between Story/Spec/Architecture and known implementation branches.'
+    })
+  };
+}
+
+function renderExecutionGatePanel(executionGate, language = 'ja') {
   if (!executionGate) {
-    return renderCards('Execution Gate', [{ title: 'Unknown', detail: 'Execution Gate未生成', tone: 'warn' }]);
+    return renderCards(localizedText(language, { ja: '実行Gate', en: 'Execution Gate' }), [{
+      title: localizedText(language, { ja: '未生成', en: 'Unknown' }),
+      detail: localizedText(language, { ja: 'Execution Gateは未生成です。', en: 'Execution Gate was not generated.' }),
+      tone: 'warn'
+    }]);
   }
   const cards = executionGate.blocking_gates?.length > 0
     ? executionGate.blocking_gates.map((gate) => ({
@@ -431,17 +580,24 @@ function renderExecutionGatePanel(executionGate) {
       meta: gate.id,
       tone: 'danger'
     }))
-    : [{ title: 'Ready', detail: 'Critical blockers are resolved for VibePro PR creation.', tone: 'good' }];
+    : [{
+      title: localizedText(language, { ja: '準備完了', en: 'Ready' }),
+      detail: localizedText(language, {
+        ja: 'VibePro PR作成に対するCritical blockerは解消されています。',
+        en: 'Critical blockers are resolved for VibePro PR creation.'
+      }),
+      tone: 'good'
+    }];
   const actions = executionGate.required_actions?.length > 0
     ? renderList(executionGate.required_actions)
-    : '<p class="muted">No blocking actions.</p>';
+    : `<p class="muted">${escapeHtml(localizedText(language, { ja: 'ブロック中の対応はありません。', en: 'No blocking actions.' }))}</p>`;
   return `
     <section>
-      <h2>Execution Gate</h2>
+      <h2>${escapeHtml(localizedText(language, { ja: '実行Gate', en: 'Execution Gate' }))}</h2>
       <div class="metrics">
-        ${metricCard('Status', executionGate.status, executionGate.pr_create_allowed ? 'pr create allowed' : 'pr create blocked')}
-        ${metricCard('Blocking Gates', executionGate.blocking_gate_count ?? 0, 'critical')}
-        ${metricCard('PR Create', executionGate.pr_create_allowed ? 'allowed' : 'blocked', 'VibePro gate')}
+        ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), executionGate.status, executionGate.pr_create_allowed ? localizedText(language, { ja: 'PR作成可能', en: 'pr create allowed' }) : localizedText(language, { ja: 'PR作成ブロック', en: 'pr create blocked' }))}
+        ${metricCard(localizedText(language, { ja: 'Blocking Gate', en: 'Blocking Gates' }), executionGate.blocking_gate_count ?? 0, 'critical')}
+        ${metricCard(localizedText(language, { ja: 'PR作成', en: 'PR Create' }), executionGate.pr_create_allowed ? localizedText(language, { ja: 'allowed', en: 'allowed' }) : localizedText(language, { ja: 'blocked', en: 'blocked' }), 'VibePro gate')}
         ${metricCard('Schema', executionGate.schema_version ?? '-', 'execution gate')}
       </div>
       <div class="cards">${cards.map((card) => `
@@ -451,15 +607,19 @@ function renderExecutionGatePanel(executionGate) {
           <p>${escapeHtml(card.detail)}</p>
         </article>
       `).join('')}</div>
-      <h3>Required Actions</h3>
+      <h3>${escapeHtml(localizedText(language, { ja: '必要な対応', en: 'Required Actions' }))}</h3>
       ${actions}
     </section>
   `;
 }
 
-function renderAgentReviewPanel(agentReviews) {
+function renderAgentReviewPanel(agentReviews, language = 'ja') {
   if (!agentReviews) {
-    return renderCards('Agent Review Gate', [{ title: 'Not generated', detail: 'Agent Review未生成', tone: 'warn' }]);
+    return renderCards(localizedText(language, { ja: 'Agent Review Gate', en: 'Agent Review Gate' }), [{
+      title: localizedText(language, { ja: '未生成', en: 'Not generated' }),
+      detail: localizedText(language, { ja: 'Agent Reviewは未生成です。', en: 'Agent Review was not generated.' }),
+      tone: 'warn'
+    }]);
   }
   const unmet = agentReviews.unmet_required_reviews ?? [];
   const stageCards = (agentReviews.stages ?? []).map((stage) => ({
@@ -476,23 +636,34 @@ function renderAgentReviewPanel(agentReviews) {
   }));
   return `
     <section>
-      <h2>Agent Review Gate</h2>
+      <h2>${escapeHtml(localizedText(language, { ja: 'Agent Review Gate', en: 'Agent Review Gate' }))}</h2>
       <div class="metrics">
-        ${metricCard('Status', agentReviews.status, agentReviews.required ? 'required' : 'not required')}
-        ${metricCard('Required Roles', agentReviews.summary?.required_review_count ?? 0, 'policy')}
-        ${metricCard('Unmet Roles', agentReviews.summary?.unmet_required_review_count ?? 0, 'missing/stale/block')}
-        ${metricCard('Stale Results', agentReviews.summary?.stale_result_count ?? 0, 'current git binding')}
+        ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), agentReviews.status, agentReviews.required ? localizedText(language, { ja: 'required', en: 'required' }) : localizedText(language, { ja: 'not required', en: 'not required' }))}
+        ${metricCard(localizedText(language, { ja: '必須ロール', en: 'Required Roles' }), agentReviews.summary?.required_review_count ?? 0, 'policy')}
+        ${metricCard(localizedText(language, { ja: '未充足ロール', en: 'Unmet Roles' }), agentReviews.summary?.unmet_required_review_count ?? 0, 'missing/stale/block')}
+        ${metricCard(localizedText(language, { ja: '古い結果', en: 'Stale Results' }), agentReviews.summary?.stale_result_count ?? 0, 'current git binding')}
       </div>
-      <h3>Unmet Required Reviews</h3>
-      <div class="cards">${(unmetCards.length > 0 ? unmetCards : [{ title: 'No unmet reviews', detail: 'Required agent review roles passed for the current git state.', tone: 'good' }]).map((card) => `
+      <h3>${escapeHtml(localizedText(language, { ja: '未充足の必須レビュー', en: 'Unmet Required Reviews' }))}</h3>
+      <div class="cards">${(unmetCards.length > 0 ? unmetCards : [{
+        title: localizedText(language, { ja: '未充足レビューなし', en: 'No unmet reviews' }),
+        detail: localizedText(language, {
+          ja: '現在のgit状態に対する必須agent review roleは通過しています。',
+          en: 'Required agent review roles passed for the current git state.'
+        }),
+        tone: 'good'
+      }]).map((card) => `
         <article class="card ${escapeAttr(card.tone)}">
           <h3>${escapeHtml(card.title)}</h3>
           ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
           <p>${escapeHtml(card.detail)}</p>
         </article>
       `).join('')}</div>
-      <h3>Stage Summary</h3>
-      <div class="cards">${(stageCards.length > 0 ? stageCards : [{ title: 'No stages', detail: 'No agent review stages recorded.', tone: 'neutral' }]).map((card) => `
+      <h3>${escapeHtml(localizedText(language, { ja: 'ステージ概要', en: 'Stage Summary' }))}</h3>
+      <div class="cards">${(stageCards.length > 0 ? stageCards : [{
+        title: localizedText(language, { ja: 'ステージなし', en: 'No stages' }),
+        detail: localizedText(language, { ja: 'Agent review stageは記録されていません。', en: 'No agent review stages recorded.' }),
+        tone: 'neutral'
+      }]).map((card) => `
         <article class="card ${escapeAttr(card.tone)}">
           <h3>${escapeHtml(card.title)}</h3>
           ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
@@ -503,9 +674,13 @@ function renderAgentReviewPanel(agentReviews) {
   `;
 }
 
-function renderNetworkContractPanel(networkContracts) {
+function renderNetworkContractPanel(networkContracts, language = 'ja') {
   if (!networkContracts) {
-    return renderCards('Network Contract Findings', [{ title: 'Not generated', detail: 'Network Contract未生成', tone: 'warn' }]);
+    return renderCards(localizedText(language, { ja: 'Network Contract検出', en: 'Network Contract Findings' }), [{
+      title: localizedText(language, { ja: '未生成', en: 'Not generated' }),
+      detail: localizedText(language, { ja: 'Network Contractは未生成です。', en: 'Network Contract was not generated.' }),
+      tone: 'warn'
+    }]);
   }
   const missing = networkContracts.missing_routes ?? [];
   const dynamic = networkContracts.dynamic_calls ?? [];
@@ -532,12 +707,12 @@ function renderNetworkContractPanel(networkContracts) {
   ];
   return `
     <section>
-      <h2>Network Contract Findings</h2>
+      <h2>${escapeHtml(localizedText(language, { ja: 'Network Contract検出', en: 'Network Contract Findings' }))}</h2>
       <div class="metrics">
-        ${metricCard('Status', networkContracts.status, 'route contract')}
-        ${metricCard('API Calls', networkContracts.api_client_call_count ?? 0, 'detected')}
-        ${metricCard('Missing Routes', missing.length, 'block')}
-        ${metricCard('Introduced Calls', networkContracts.introduced_api_client_call_count ?? 0, 'diff')}
+        ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), networkContracts.status, 'route contract')}
+        ${metricCard(localizedText(language, { ja: 'API呼び出し', en: 'API Calls' }), networkContracts.api_client_call_count ?? 0, 'detected')}
+        ${metricCard(localizedText(language, { ja: 'Route不足', en: 'Missing Routes' }), missing.length, 'block')}
+        ${metricCard(localizedText(language, { ja: '新規呼び出し', en: 'Introduced Calls' }), networkContracts.introduced_api_client_call_count ?? 0, 'diff')}
       </div>
       <div class="cards">${cards.map((card) => `
         <article class="card ${escapeAttr(card.tone)}">
@@ -545,37 +720,45 @@ function renderNetworkContractPanel(networkContracts) {
           <p class="muted">${escapeHtml(card.meta ?? '')}</p>
           <p>${escapeHtml(card.detail)}</p>
         </article>
-      `).join('') || '<article class="card good"><h3>No findings</h3><p>API client calls and route files are aligned.</p></article>'}</div>
+      `).join('') || `<article class="card good"><h3>${escapeHtml(localizedText(language, { ja: '検出なし', en: 'No findings' }))}</h3><p>${escapeHtml(localizedText(language, { ja: 'API client callとroute fileは整合しています。', en: 'API client calls and route files are aligned.' }))}</p></article>`}</div>
     </section>
   `;
 }
 
-function renderFileGroups(fileGroups) {
+function renderFileGroups(fileGroups, language = 'ja') {
   const rows = Object.entries(fileGroups)
     .filter(([, group]) => group.count > 0)
     .map(([name, group]) => [name, group.count, group.files.slice(0, 10).join('<br>')]);
-  return renderTable(['Group', 'Count', 'Files'], rows.length > 0 ? rows : [['-', 0, '-']]);
+  return renderTable([
+    localizedText(language, { ja: '分類', en: 'Group' }),
+    localizedText(language, { ja: '件数', en: 'Count' }),
+    localizedText(language, { ja: 'ファイル', en: 'Files' })
+  ], rows.length > 0 ? rows : [['-', 0, '-']]);
 }
 
-function renderGraphSummary(graphContext) {
+function renderGraphSummary(graphContext, language = 'ja') {
   return `
     <div class="metrics">
       ${metricCard('Graph', graphContext.available ? 'available' : 'missing', graphContext.graph_path ?? '-')}
-      ${metricCard('Matched Files', graphContext.matched_file_count, 'changed files')}
-      ${metricCard('Related Files', graphContext.related_file_count, 'inspect candidates')}
-      ${metricCard('Graph Size', `${graphContext.node_count}/${graphContext.edge_count}`, 'nodes / edges')}
+      ${metricCard(localizedText(language, { ja: '一致ファイル', en: 'Matched Files' }), graphContext.matched_file_count, localizedText(language, { ja: '変更ファイル', en: 'changed files' }))}
+      ${metricCard(localizedText(language, { ja: '関連ファイル', en: 'Related Files' }), graphContext.related_file_count, localizedText(language, { ja: '確認候補', en: 'inspect candidates' }))}
+      ${metricCard(localizedText(language, { ja: 'Graphサイズ', en: 'Graph Size' }), `${graphContext.node_count}/${graphContext.edge_count}`, 'nodes / edges')}
     </div>
-    ${graphContext.available ? renderGraphImpactTable(graphContext.impact_by_file.slice(0, 8)) : `<p class="muted">${escapeHtml(graphContext.reason)}</p>`}
+    ${graphContext.available ? renderGraphImpactTable(graphContext.impact_by_file.slice(0, 8), language) : `<p class="muted">${escapeHtml(graphContext.reason)}</p>`}
   `;
 }
 
-function renderGraphImpactTable(items) {
+function renderGraphImpactTable(items, language = 'ja') {
   const rows = items.map((item) => [
     item.file,
     item.matched_nodes.join('<br>') || '-',
     item.related_files.join('<br>') || '-'
   ]);
-  return renderTable(['Changed file', 'Matched graph nodes', 'Related files to inspect'], rows.length > 0 ? rows : [['-', '-', '-']]);
+  return renderTable([
+    localizedText(language, { ja: '変更ファイル', en: 'Changed file' }),
+    localizedText(language, { ja: '一致したgraph node', en: 'Matched graph nodes' }),
+    localizedText(language, { ja: '確認する関連ファイル', en: 'Related files to inspect' })
+  ], rows.length > 0 ? rows : [['-', '-', '-']]);
 }
 
 function renderKeyValueTable(rows) {

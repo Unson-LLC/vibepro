@@ -66,7 +66,10 @@ async function runGraphify(repoRoot, outputArg, env) {
     env: env ?? process.env
   }).catch((error) => {
     if (error.code === 'ENOENT') {
-      throw new Error('graphify is not installed. Install with: uv tool install graphifyy');
+      throw new Error(
+        'graphify is not installed. Graphify is optional but recommended for impact-scope discovery. ' +
+        'You can continue without --run-graphify, or install it with: uv tool install graphifyy'
+      );
     }
     throw error;
   });

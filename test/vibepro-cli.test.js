@@ -141,6 +141,8 @@ test('help command prints discoverable usage', async () => {
   assert.equal(result.exitCode, 0);
   assert.equal(result.command, 'help');
   assert.match(output, /vibepro help \[command\]/);
+  assert.match(output, /まず人間が使う基本コマンド/);
+  assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
@@ -155,6 +157,14 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro config language \[repo\].*--language ja\|en/);
   assert.match(output, /vibepro skills install \[repo\].*--dry-run/);
   assert.match(output, /vibepro codex install \[repo\].*--dry-run/);
+
+  let englishOutput = '';
+  const englishResult = await runCli(['help', '--language', 'en'], {
+    stdout: { write: (text) => { englishOutput += text; } }
+  });
+  assert.equal(englishResult.exitCode, 0);
+  assert.match(englishOutput, /VibePro is a Story \/ Architecture \/ Spec/);
+  assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
 });
 
 test('check list prints available diagnosis packs', async () => {
@@ -228,6 +238,7 @@ test('init can bootstrap and select a local story', async () => {
 test('init and config language manage human output language', async () => {
   const repo = await makeRepo();
 
+  let initOutput = '';
   const initResult = await runCli([
     'init',
     repo,
@@ -237,9 +248,14 @@ test('init and config language manage human output language', async () => {
     '公開前診断',
     '--language',
     'en'
-  ]);
+  ], {
+    stdout: { write: (text) => { initOutput += text; } }
+  });
 
   assert.equal(initResult.exitCode, 0);
+  assert.match(initOutput, /VibePro workspace initialized/);
+  assert.match(initOutput, /Human output language: en/);
+  assert.match(initOutput, /coding agent/);
   let config = await readJson(path.join(repo, '.vibepro', 'config.json'));
   assert.equal(config.output.language, 'en');
 
@@ -247,6 +263,14 @@ test('init and config language manage human output language', async () => {
   assert.equal(languageResult.exitCode, 0);
   config = await readJson(path.join(repo, '.vibepro', 'config.json'));
   assert.equal(config.output.language, 'ja');
+  const jaInitRepo = await makeRepo();
+  let jaInitOutput = '';
+  const jaInitResult = await runCli(['init', jaInitRepo, '--language', 'ja'], {
+    stdout: { write: (text) => { jaInitOutput += text; } }
+  });
+  assert.equal(jaInitResult.exitCode, 0);
+  assert.match(jaInitOutput, /VibePro workspaceを初期化しました/);
+  assert.match(jaInitOutput, /次にやること/);
 
   const invalidResult = await runCli(['config', 'language', repo, '--language', 'fr']);
   assert.equal(invalidResult.exitCode, 1);
@@ -615,13 +639,17 @@ writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n
 
 test('graph reports install guidance when graphify is missing', async () => {
   const repo = await makeRepo();
+  let stderrOutput = '';
 
   const result = await runCli(['graph', repo, '--run-graphify'], {
-    env: { ...process.env, PATH: '' }
+    env: { ...process.env, PATH: '' },
+    stderr: { write: (text) => { stderrOutput += text; } }
   });
 
   assert.equal(result.exitCode, 1);
   assert.equal(result.command, 'graph');
+  assert.match(stderrOutput, /optional but recommended/);
+  assert.match(stderrOutput, /uv tool install graphifyy/);
 });
 
 test('component style scanner inventories UI components and flags legacy tokens', async () => {
@@ -2529,6 +2557,8 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /## Gate Enforcement/);
   assert.match(prBody, /blocked_by_gate/);
   assert.match(prBody, /生の `gh pr create` はVibePro Gateを通らない/);
+  assert.match(prBody, /## AI Agent Handoff/);
+  assert.match(prBody, /最初に見る: このPR本文/);
   assert.match(prBody, /## VibePro refactoring delta/);
   assert.match(prBody, /runtime: vibepro@0\.1\.0/);
   assert.match(prBody, /5ファイル \/ 8出現 -> 3ファイル \/ 5出現/);
@@ -2578,6 +2608,12 @@ Weighted semantic/layout residual: **34%**
   assert.match(prepareHtml, /data-vibepro-report="pr-prepare"/);
   assert.match(prepareHtml, /VibePro PR Prepare/);
   assert.match(prepareHtml, /Story -> Architecture -> Spec -> Code -> Gate/);
+  assert.match(prepareHtml, /まず見る場所/);
+  assert.match(prepareHtml, /AIエージェントへの渡し方/);
+  assert.match(prepareHtml, /次に足すもの/);
+  assert.match(prepareHtml, /Graphify影響範囲/);
+  assert.match(prepareHtml, /変更ファイル分類/);
+  assert.match(prepareHtml, /実行Gate/);
   assert.match(prepareHtml, /Requirement Consistency/);
   assert.match(prepareHtml, /gate-dag\.html/);
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
@@ -2770,6 +2806,12 @@ test('pr prepare carries configured output language into human artifacts', async
   assert.equal(result.result.preparation.output.language, 'en');
   const prepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
   assert.match(prepareHtml, /<html lang="en">/);
+  assert.match(prepareHtml, /Where To Look First/);
+  assert.match(prepareHtml, /Agent handoff/);
+  assert.match(prepareHtml, /Graphify Impact/);
+  assert.match(prepareHtml, /Changed File Groups/);
+  assert.doesNotMatch(prepareHtml, /まず見る場所/);
+  assert.doesNotMatch(prepareHtml, /Graphify影響範囲/);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /<html lang="en">/);
   const splitPlanHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.html'), 'utf8');

@@ -48,7 +48,7 @@ vibepro --help
 
 【実行コマンド】
 例: vibepro story diagnose . --id <story-id> --run-graphify
-例: vibepro pr prepare . --base origin/develop --story-id <story-id>
+例: vibepro pr prepare . --base <base-branch> --story-id <story-id>
 
 【見た成果物】
 pr-body.md / review-cockpit.html / architecture-review.json / human-review.json / gate-dag.html / split-plan.html / pr-prepare.json など
@@ -85,14 +85,14 @@ vibepro story derive . --run-graphify
 vibepro story map .
 vibepro story plan .
 vibepro task create . --from-plan --id story-vibepro-internal-beta --limit 5
-vibepro pr prepare . --base origin/develop --story-id story-vibepro-internal-beta
+vibepro pr prepare . --base <base-branch> --story-id story-vibepro-internal-beta
 ```
 
 既にStoryがあるrepoでは、既存Storyを使う。
 
 ```bash
 vibepro graph . --run-graphify
-vibepro pr prepare . --base origin/develop --story-id <story-id>
+vibepro pr prepare . --base <base-branch> --story-id <story-id>
 ```
 
 ## Review Checklist
@@ -153,7 +153,7 @@ VibeProは、AIにコードを直させるツールではなく、Story / Archit
 
 最初に試すコマンド:
 vibepro story diagnose . --id <story-id> --run-graphify
-vibepro pr prepare . --base origin/develop --story-id <story-id>
+vibepro pr prepare . --base <base-branch> --story-id <story-id>
 
 フィードバックは #0230-vibepro に集約します。
 特に、概念が伝わるか、コマンドで迷うか、Requirement Consistency / Gate DAG / split-plan がレビューに使えるかを見たいです。
