@@ -1794,6 +1794,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const networkContracts = await scanNetworkContracts(repoRoot, {
     changedFiles: git.changed_files,
@@ -1828,6 +1829,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     review_points: buildReviewPoints(fileGroups, taskContext),
     refactoring_delta: latestEvidence?.refactoring_delta ?? null,
     flow_verification: latestFlowVerification,
+    acceptance_e2e_coverage: e2eCoverage,
     visual_qa: visualQaEvidence,
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
@@ -1844,6 +1846,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     verificationCommands,
     e2eCommand,
     flowVerification: latestFlowVerification,
+    e2eCoverage,
     visualQaEvidence,
     networkContracts,
     agentReviews,
@@ -2022,6 +2025,96 @@ async function readVisualQaEvidence(repoRoot) {
       run.latest_residual?.path
     ].filter(Boolean))
   };
+}
+
+async function buildStoryE2eCoverage(repoRoot, story, storySource) {
+  const acceptanceCriteria = storySource?.acceptance_criteria ?? [];
+  const storySlug = slugifyStoryId(story.story_id);
+  const expectedFilePatterns = [
+    `tests/e2e/${storySlug}-*.spec.ts`,
+    `test/e2e/${storySlug}-*.spec.ts`,
+    `e2e/${storySlug}-*.spec.ts`
+  ];
+  const allFiles = (await Promise.all([
+    walkFiles(path.join(repoRoot, 'tests', 'e2e')),
+    walkFiles(path.join(repoRoot, 'test', 'e2e')),
+    walkFiles(path.join(repoRoot, 'e2e'))
+  ])).flat()
+    .filter((file) => /\.(spec|test)\.[cm]?[jt]sx?$/.test(file));
+  const candidates = [];
+  for (const file of allFiles) {
+    const relativePath = normalizeRepoPath(path.relative(repoRoot, file));
+    const content = await readFile(file, 'utf8').catch(() => '');
+    if (isStoryE2eCandidate(relativePath, content, story.story_id, storySlug)) {
+      candidates.push({ path: relativePath, content });
+    }
+  }
+  const covered = acceptanceCriteria.map((criterion, index) => {
+    const id = `ac:${index + 1}`;
+    const files = candidates
+      .filter((candidate) => e2eCandidateCoversAcceptance(candidate, story.story_id, criterion, index))
+      .map((candidate) => candidate.path);
+    return {
+      id,
+      criterion,
+      covered: files.length > 0,
+      files
+    };
+  });
+  const missing = covered.filter((item) => !item.covered);
+  return {
+    schema_version: '0.1.0',
+    story_id: story.story_id,
+    required: acceptanceCriteria.length > 0,
+    status: acceptanceCriteria.length === 0
+      ? 'not_applicable'
+      : missing.length === 0
+        ? 'passed'
+        : 'needs_evidence',
+    expected_file_patterns: expectedFilePatterns,
+    matched_files: candidates.map((candidate) => candidate.path),
+    acceptance_criteria_count: acceptanceCriteria.length,
+    covered_acceptance_criteria_count: covered.length - missing.length,
+    covered_acceptance_criteria: covered.filter((item) => item.covered),
+    missing_acceptance_criteria: missing
+  };
+}
+
+function isStoryE2eCandidate(relativePath, content, storyId, storySlug) {
+  const lowerPath = relativePath.toLowerCase();
+  return lowerPath.includes(storySlug)
+    || normalizeCoverageText(content).includes(normalizeCoverageText(storyId));
+}
+
+function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
+  const content = normalizeCoverageText(candidate.content);
+  const markers = [
+    `${storyId} ac:${index + 1}`,
+    `${storyId} ac-${index + 1}`,
+    `ac:${index + 1}`,
+    `ac-${index + 1}`,
+    `acceptance:${index + 1}`,
+    criterion
+  ].map(normalizeCoverageText);
+  return markers.some((marker) => marker.length > 0 && content.includes(marker));
+}
+
+function slugifyStoryId(storyId) {
+  return String(storyId)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeCoverageText(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[\s"'`*_()[\]{}:;,.!?/\\|]+/g, '');
+}
+
+function normalizeRepoPath(value) {
+  return String(value).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
 async function readVisualQaRun(repoRoot, qaDir, qaId) {
@@ -2417,6 +2510,7 @@ function buildGateDag({
   verificationCommands,
   e2eCommand,
   flowVerification,
+  e2eCoverage = null,
   visualQaEvidence = null,
   networkContracts = null,
   agentReviews = null,
@@ -2432,6 +2526,7 @@ function buildGateDag({
     verificationCommands,
     e2eCommand,
     flowVerification,
+    e2eCoverage,
     visualQaEvidence,
     verificationEvidence
   });
@@ -2671,13 +2766,13 @@ function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
   });
 }
 
-function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, visualQaEvidence, verificationEvidence }) {
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence }) {
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
   const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
-  const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification) : 'not_required';
+  const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage) : 'not_required';
   const e2eReason = e2eRequired
-    ? buildE2eGateReason(e2eCommand, flowVerification)
+    ? buildE2eGateReason(e2eCommand, flowVerification, e2eCoverage)
     : 'UI/E2E対象の差分ではないため、Unit / Integration証跡で完了判定する';
   return [
     {
@@ -2707,6 +2802,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       command: e2eRequired ? e2eCommand.command : null,
       reason: e2eReason,
       flow_verification: flowVerification ? summarizeFlowVerificationForGate(flowVerification) : null,
+      acceptance_e2e_coverage: e2eCoverage,
       artifact_expectation: e2eRequired ? '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す' : null
     }
   ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
@@ -2752,14 +2848,24 @@ function hasUiExperienceSourceChange(fileGroups) {
 function applyVerificationEvidence(gate, verificationEvidence) {
   const evidence = findVerificationEvidenceForGate(gate, verificationEvidence);
   if (!evidence) return gate;
-  const status = normalizeVerificationEvidenceStatus(evidence.status);
+  const evidenceStatus = normalizeVerificationEvidenceStatus(evidence.status);
   const artifact = evidence.artifact ?? verificationEvidence?.artifact ?? null;
   const summary = evidence.summary ?? evidence.reason ?? evidence.status ?? 'verification evidence recorded';
+  const coverageReason = gate.id === 'gate:e2e'
+    && evidenceStatus === 'passed'
+    && requiresStoryE2eCoverage(gate.acceptance_e2e_coverage)
+    && gate.acceptance_e2e_coverage.status !== 'passed'
+    ? buildE2eCoverageReason(gate.acceptance_e2e_coverage)
+    : null;
+  const status = coverageReason ? 'needs_evidence' : evidenceStatus;
+  const reason = [summary, coverageReason, artifact ? `evidence: ${artifact}` : null]
+    .filter(Boolean)
+    .join('; ');
   return {
     ...gate,
     status,
     command: evidence.command ?? gate.command,
-    reason: artifact ? `${summary}; evidence: ${artifact}` : summary,
+    reason,
     evidence: {
       kind: evidence.kind ?? null,
       status: evidence.status ?? null,
@@ -2810,33 +2916,53 @@ function normalizeVerificationEvidenceStatus(status) {
   return 'needs_evidence';
 }
 
-function resolveE2eGateStatus(e2eCommand, flowVerification) {
+function resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage = null) {
   const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
-  if (status === 'pass') return 'passed';
   if (status === 'fail') return 'failed';
   if (status === 'needs_setup') return 'needs_setup';
   if (status === 'skipped') return 'needs_evidence';
   if (e2eCommand.reliable_exit === false) return 'needs_setup';
+  if (requiresStoryE2eCoverage(e2eCoverage) && e2eCoverage.status !== 'passed') return 'needs_evidence';
+  if (status === 'pass') return 'passed';
   return e2eCommand.detected ? 'needs_evidence' : 'needs_setup';
 }
 
-function buildE2eGateReason(e2eCommand, flowVerification) {
+function buildE2eGateReason(e2eCommand, flowVerification, e2eCoverage = null) {
   const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
   const runId = flowVerification?.verification?.run_id ?? flowVerification?.run_id ?? null;
   const artifact = flowVerification?.artifact ?? flowVerification?.artifacts?.flow_verification_json ?? null;
+  const coverageReason = buildE2eCoverageReason(e2eCoverage);
   if (status === 'pass') {
-    return `Flow Verification passed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+    const flowReason = `Flow Verification passed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+    return coverageReason ? `${flowReason}; ${coverageReason}` : flowReason;
   }
   if (status === 'fail') {
-    return `Flow Verification failed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+    const flowReason = `Flow Verification failed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
+    return coverageReason ? `${flowReason}; ${coverageReason}` : flowReason;
   }
   if (status === 'needs_setup') {
-    return `Flow Verification needs setup${runId ? ` (${runId})` : ''}: ${flowVerification?.verification?.reason ?? flowVerification?.reason ?? e2eCommand.reason}`;
+    const flowReason = `Flow Verification needs setup${runId ? ` (${runId})` : ''}: ${flowVerification?.verification?.reason ?? flowVerification?.reason ?? e2eCommand.reason}`;
+    return coverageReason ? `${flowReason}; ${coverageReason}` : flowReason;
   }
   if (status === 'skipped') {
-    return `Flow Verification skipped${runId ? ` (${runId})` : ''}; runnable non-mutating probes are required for PR evidence.`;
+    const flowReason = `Flow Verification skipped${runId ? ` (${runId})` : ''}; runnable non-mutating probes are required for PR evidence.`;
+    return coverageReason ? `${flowReason}; ${coverageReason}` : flowReason;
   }
-  return e2eCommand.reason;
+  return coverageReason ? `${e2eCommand.reason}; ${coverageReason}` : e2eCommand.reason;
+}
+
+function requiresStoryE2eCoverage(e2eCoverage) {
+  return Boolean(e2eCoverage?.required);
+}
+
+function buildE2eCoverageReason(e2eCoverage) {
+  if (!requiresStoryE2eCoverage(e2eCoverage)) return null;
+  if (e2eCoverage.status === 'passed') {
+    return `Story E2E coverage passed: ${e2eCoverage.matched_files.join(', ')}`;
+  }
+  const missing = e2eCoverage.missing_acceptance_criteria ?? [];
+  const missingLabel = missing.map((item) => item.id).join(', ') || 'acceptance criteria';
+  return `Story E2E coverage needs evidence: ${missingLabel} must be covered by ${e2eCoverage.expected_file_patterns.join(' or ')}`;
 }
 
 function summarizeFlowVerificationForGate(flowVerification) {
@@ -3297,7 +3423,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
   if (!gates || gates.length === 0) return 'none';
   return gates
     .map((gate) => {
-      if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification.';
+      if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification, plus Story acceptance coverage in tests/e2e/<story-id>-*.spec.ts.';
       if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence.';
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';

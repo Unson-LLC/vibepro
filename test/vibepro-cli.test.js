@@ -2567,7 +2567,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /## Task \/ Handoff/);
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /Task\/HandoffがPR本文に入る/);
-  assert.match(prBody, /E2E Gate: needs_setup \(required\) - `npx playwright test`/);
+  assert.match(prBody, /E2E Gate: needs_(setup|evidence) \(required\) - `npx playwright test`/);
   assert.match(prBody, /## Visual QA Evidence/);
   assert.match(prBody, /story-pr-prepare-visual: needs_review/);
   assert.match(prBody, /MAE 13\.41%/);
@@ -2704,6 +2704,29 @@ Weighted semantic/layout residual: **1%**
     rmsResidualPct: 1,
     pixelChangedPctOver32: 1
   }, null, 2));
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-pr-artifacts.spec.ts'), `
+// story-pr-prepare ac:1
+// story-pr-prepare ac:2
+// story-pr-prepare ac:3
+import { test } from '@playwright/test';
+test('story-pr-prepare PR artifacts acceptance coverage', async () => {});
+`);
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test tests/e2e/story-pr-prepare-pr-artifacts.spec.ts',
+    '--summary',
+    'Story acceptance E2E coverage passed'
+  ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
@@ -3044,6 +3067,67 @@ test('pr prepare rejects stale verification evidence recorded before a dirty UI 
   assert.equal(e2eGate.status, 'needs_evidence');
   assert.match(e2eGate.evidence.binding.reason, /dirty worktree fingerprint/);
   assert.equal(result.result.preparation.gate_status.execution_gate.status, 'blocked');
+});
+
+test('pr prepare requires story acceptance criteria coverage in E2E specs', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [ ] ユーザーが保存ボタンを押すと完了画面へ遷移する
+- [ ] APIが失敗したらエラー表示から再試行できる
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), 'export default function Page() { return <button>Save</button>; }\n');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E command passed'
+  ])).exitCode, 0);
+
+  const missingCoverageResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(missingCoverageResult.exitCode, 0);
+  const missingCoverageGate = missingCoverageResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(missingCoverageGate.status, 'needs_evidence');
+  assert.equal(missingCoverageGate.acceptance_e2e_coverage.status, 'needs_evidence');
+  assert.deepEqual(missingCoverageGate.acceptance_e2e_coverage.missing_acceptance_criteria.map((item) => item.id), ['ac:1', 'ac:2']);
+  assert.match(missingCoverageGate.reason, /Story E2E coverage needs evidence/);
+
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-main.spec.ts'), `
+// story-pr-prepare ac:1
+// story-pr-prepare ac:2
+import { test } from '@playwright/test';
+test('story-pr-prepare acceptance criteria', async () => {});
+`);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E command passed with story acceptance spec coverage'
+  ])).exitCode, 0);
+
+  const coveredResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(coveredResult.exitCode, 0);
+  const coveredGate = coveredResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(coveredGate.status, 'passed');
+  assert.equal(coveredGate.acceptance_e2e_coverage.status, 'passed');
+  assert.equal(coveredGate.acceptance_e2e_coverage.covered_acceptance_criteria_count, 2);
+  assert.deepEqual(coveredGate.acceptance_e2e_coverage.matched_files, ['tests/e2e/story-pr-prepare-main.spec.ts']);
 });
 
 test('pr prepare requires Visual QA evidence when UI source changes', async () => {
