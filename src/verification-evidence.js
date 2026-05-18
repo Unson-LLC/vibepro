@@ -1,9 +1,12 @@
+import { execFile } from 'node:child_process';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
+const execFileAsync = promisify(execFile);
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
 const EVIDENCE_LOCK_TIMEOUT_MS = 10000;
@@ -24,6 +27,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');
+  const gitContext = await collectEvidenceGitContext(root);
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
     const command = {
@@ -32,7 +36,8 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       command: options.command ?? null,
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
-      executed_at: options.executedAt ?? new Date().toISOString()
+      executed_at: options.executedAt ?? new Date().toISOString(),
+      git_context: gitContext
     };
     const commands = [
       command,
@@ -171,4 +176,71 @@ function normalizeKind(kind) {
 function normalizeArtifact(repoRoot, artifact) {
   const resolved = path.resolve(repoRoot, artifact);
   return toWorkspaceRelative(repoRoot, resolved);
+}
+
+async function collectEvidenceGitContext(repoRoot) {
+  const [headSha, currentBranch, statusOutput] = await Promise.all([
+    gitOptional(repoRoot, ['rev-parse', 'HEAD']),
+    gitOptional(repoRoot, ['branch', '--show-current']),
+    gitStatus(repoRoot)
+  ]);
+  const dirtyDiff = await collectDirtyDiff(repoRoot);
+  return {
+    head_sha: headSha || null,
+    current_branch: currentBranch || null,
+    dirty: statusOutput.length > 0,
+    status_fingerprint: fingerprintStatus(statusOutput, dirtyDiff),
+    recorded_at: new Date().toISOString()
+  };
+}
+
+async function gitOptional(repoRoot, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trim();
+  } catch {
+    return '';
+  }
+}
+
+async function gitStatus(repoRoot) {
+  try {
+    const { stdout } = await execFileAsync('git', ['status', '--porcelain', '-uall'], { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trimEnd();
+  } catch {
+    return '';
+  }
+}
+
+async function collectDirtyDiff(repoRoot) {
+  const [unstaged, staged, untracked] = await Promise.all([
+    gitOptional(repoRoot, ['diff', '--binary']),
+    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
+    collectUntrackedFileFingerprint(repoRoot)
+  ]);
+  return [staged, unstaged, untracked].filter(Boolean).join('\n');
+}
+
+async function collectUntrackedFileFingerprint(repoRoot) {
+  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
+  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
+  const chunks = [];
+  for (const file of files) {
+    try {
+      const content = await readFile(path.join(repoRoot, file), 'utf8');
+      chunks.push(`untracked:${file}\n${content}`);
+    } catch {
+      chunks.push(`untracked:${file}\n<unreadable>`);
+    }
+  }
+  return chunks.join('\n');
+}
+
+function fingerprintStatus(statusOutput, dirtyDiff = '') {
+  return [String(statusOutput ?? ''), String(dirtyDiff ?? '')].join('\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .sort()
+    .join('\n');
 }

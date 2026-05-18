@@ -23,6 +23,10 @@ import {
   renderPerformancePrSection,
   summarizeStoryPerformanceEvidence
 } from './performance-evidence.js';
+import {
+  renderAgentReviewPrSection,
+  summarizeAgentReviewsForPr
+} from './agent-review.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -382,13 +386,14 @@ export async function createPullRequest(repoRoot, options = {}) {
   // Gate DAG enforcement: overall_status が ready_for_review でなければ拒否
   // Memory rule: テスト/検証証跡なしの PR を機械的に防ぐ（CLAUDE.md 0.6 Deterministic Guards）
   const gateDag = preparation.pr_context?.gate_dag;
+  const executionGate = preparation.pr_context?.execution_gate ?? buildExecutionGateStatus(gateDag);
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectUnresolvedRequiredGates(gateDag);
     throw new Error(
       `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
       `(needs_evidence_count=${gateDag.summary?.needs_evidence_count ?? 0}). ` +
       `Unresolved gates: ${formatUnresolvedGateList(unresolved)}. ` +
-      `Provide evidence for critical gates (Story/Architecture/Spec/Requirement/E2E/Visual QA/failed checks). ` +
+      `Provide evidence for critical gates (Story/Architecture/Spec/Requirement/E2E/Visual QA/Agent Review/failed checks). ` +
       `Only non-critical unresolved gates can use ` +
       `--allow-needs-verification --verification-waiver <reason> with an auditable reason.`
     );
@@ -400,15 +405,14 @@ export async function createPullRequest(repoRoot, options = {}) {
     );
   }
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && options.allowNeedsVerification && options.verificationWaiver) {
-    const unresolved = collectUnresolvedRequiredGates(gateDag);
-    const critical = unresolved.filter(isCriticalUnresolvedGate);
+    const critical = executionGate.blocking_gates ?? [];
     if (critical.length > 0) {
       throw new Error(
         `Pre-create critical gate check failed: critical unresolved gates cannot be waived by reason alone. ` +
         `Critical gates: ${formatUnresolvedGateList(critical)}. ` +
         `Required evidence: ${formatCriticalGateEvidenceInstructions(critical)}. ` +
         `Record passing verification with \`vibepro verify record --id ${preparation.story.story_id} --kind <unit|integration|e2e> --status pass --command <cmd>\` ` +
-        `or resolve the Story/Architecture/Spec/Requirement/Visual QA gate, then rerun \`vibepro pr prepare\` and \`vibepro pr create\`.`
+        `or resolve the Story/Architecture/Spec/Requirement/Visual QA/Agent Review gate, then rerun \`vibepro pr prepare\` and \`vibepro pr create\`.`
       );
     }
   }
@@ -457,6 +461,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     task_context: preparation.task_context,
     output: preparation.output,
     gate_dag: gateDag ?? null,
+    execution_gate: executionGate,
     gate_override: gateOverride,
     toolchain: preparation.toolchain ?? null,
     base: baseBranch,
@@ -502,6 +507,7 @@ export function renderPrPrepareSummary(result) {
 |------|------|
 | Story | ${preparation.story.story_id} |
 | Gate readiness | ${gateStatus.overall_status} |
+| Execution gate | ${gateStatus.execution_gate?.status ?? '-'} |
 | Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
 | Critical unresolved gates | ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)} |
 | Completion quality | ${gateStatus.completion_quality_status ?? '-'} |
@@ -519,6 +525,7 @@ export function renderPrPrepareSummary(result) {
 
 - gate_dag.overall_status: ${gateStatus.overall_status}
 - ready_for_pr_create: ${gateStatus.ready_for_pr_create}
+- execution_gate: ${gateStatus.execution_gate?.status ?? '-'}
 - unresolved_gates: ${formatUnresolvedGateList(gateStatus.unresolved_gates)}
 - critical_unresolved_gates: ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)}
 - agent_instruction: ${gateStatus.agent_instruction}
@@ -542,11 +549,13 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const overallStatus = gateDag?.overall_status ?? 'unknown';
-  const readyForPrCreate = overallStatus === 'ready_for_review';
+  const executionGate = buildExecutionGateStatus(gateDag);
+  const readyForPrCreate = executionGate.pr_create_allowed === true;
   return {
     schema_version: '0.1.0',
     overall_status: overallStatus,
     ready_for_pr_create: readyForPrCreate,
+    execution_gate: executionGate,
     completion_quality_status: completionQuality?.status ?? null,
     unresolved_gate_count: unresolvedGates.length,
     critical_unresolved_gate_count: criticalGates.length,
@@ -556,6 +565,32 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
       ? 'Gate DAG is ready_for_review; pr create may proceed if scope and branch checks are acceptable.'
       : 'Do not treat scope.status=reviewable as completion approval. Resolve Gate DAG evidence before pr create.'
   };
+}
+
+function buildExecutionGateStatus(gateDag) {
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
+  const status = blockingGates.length > 0 ? 'blocked' : 'ready';
+  return {
+    schema_version: '0.1.0',
+    status,
+    pr_create_allowed: status === 'ready',
+    blocking_gate_count: blockingGates.length,
+    blocking_gates: blockingGates,
+    required_actions: blockingGates.map(formatExecutionGateAction)
+  };
+}
+
+function formatExecutionGateAction(gate) {
+  if (gate.id === 'gate:e2e') return `Record current-head E2E evidence for ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:visual_qa') return `Record Visual QA evidence for UI changes: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:network_contract') return `Resolve Network Contract evidence: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:agent_review') return `Record required Agent Review roles for the current git state: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'story') return `Attach a resolvable Story source: ${gate.reason ?? gate.status}`;
+  return `Resolve ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
 }
 
 export function renderPrCreateSummary(result) {
@@ -632,9 +667,12 @@ async function collectGitState(repoRoot, options) {
   const baseRef = options.baseRef ?? await resolveBaseRef(repoRoot);
   const headRef = options.headRef ?? 'HEAD';
   const includesDirtyInChangedFiles = !options.headRef;
+  const headSha = await gitOptional(repoRoot, ['rev-parse', headRef]);
   const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
   const commits = await getCommits(repoRoot, baseRef, headRef);
-  const dirtyFiles = parseStatus(await gitStatus(repoRoot, ['status', '--porcelain']));
+  const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
+  const dirtyDiff = await collectDirtyDiff(repoRoot);
+  const dirtyFiles = parseStatus(statusOutput);
   const changedFiles = includesDirtyInChangedFiles
     ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
     : committedChangedFiles;
@@ -642,6 +680,9 @@ async function collectGitState(repoRoot, options) {
     current_branch: currentBranch || null,
     base_ref: baseRef,
     head_ref: headRef,
+    head_sha: headSha || null,
+    dirty: dirtyFiles.length > 0,
+    status_fingerprint: fingerprintStatus(statusOutput, dirtyDiff),
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
@@ -710,6 +751,39 @@ function parseStatus(output) {
       status: line.slice(0, 2).trim(),
       path: line.slice(3)
     }));
+}
+
+function fingerprintStatus(statusOutput, dirtyDiff = '') {
+  return [String(statusOutput ?? ''), String(dirtyDiff ?? '')].join('\n')
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .sort()
+    .join('\n');
+}
+
+async function collectDirtyDiff(repoRoot) {
+  const [unstaged, staged, untracked] = await Promise.all([
+    gitOptional(repoRoot, ['diff', '--binary']),
+    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
+    collectUntrackedFileFingerprint(repoRoot)
+  ]);
+  return [staged, unstaged, untracked].filter(Boolean).join('\n');
+}
+
+async function collectUntrackedFileFingerprint(repoRoot) {
+  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
+  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
+  const chunks = [];
+  for (const file of files) {
+    try {
+      const content = await readFile(path.join(repoRoot, file), 'utf8');
+      chunks.push(`untracked:${file}\n${content}`);
+    } catch {
+      chunks.push(`untracked:${file}\n<unreadable>`);
+    }
+  }
+  return chunks.join('\n');
 }
 
 function groupChangedFiles(files) {
@@ -910,12 +984,14 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     : prContext.risks.map((item) => `- ${item}`).join('\n');
   const gateSummary = renderPrGateSummary(prContext.gate_dag);
   const gateEnforcement = renderPrGateEnforcement(prContext.gate_dag);
+  const executionGateSection = renderPrExecutionGate(prContext.execution_gate);
   const taskSection = renderPrTaskSection(taskContext);
   const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
   const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
   const visualQaSection = renderPrVisualQaEvidence(prContext.visual_qa);
   const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
   const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
+  const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
 
   return `${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
@@ -958,11 +1034,16 @@ ${renderRequirementPrSection(prContext.requirement_consistency)}
 ## Network Contract
 ${renderNetworkContractPrSection(prContext.network_contracts)}
 
+## Agent Review
+${agentReviewSection}
+
 ## Gate DAG
 ${gateSummary}
 
 ## Gate Enforcement
 ${gateEnforcement}
+
+${executionGateSection}
 
 ${flowVerificationSection}
 
@@ -989,6 +1070,22 @@ ${risks}
 - PR strategy: ${scope.recommended_strategy}
 - runtime: ${renderRuntimeSummary(prContext, story)}
 `;
+}
+
+function renderPrExecutionGate(executionGate) {
+  if (!executionGate) {
+    return `## Execution Gate
+- status: unknown
+- pr_create_allowed: false`;
+  }
+  const actions = executionGate.required_actions?.length > 0
+    ? executionGate.required_actions.map((item) => `- required: ${item}`).join('\n')
+    : '- required: none';
+  return `## Execution Gate
+- status: ${executionGate.status}
+- pr_create_allowed: ${executionGate.pr_create_allowed}
+- blocking_gate_count: ${executionGate.blocking_gate_count}
+${actions}`;
 }
 
 function renderRuntimeSummary(prContext, story) {
@@ -1649,6 +1746,15 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     fileGroups,
     inferredSpec
   });
+  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
+    storyId: story.story_id,
+    story,
+    fileGroups,
+    networkContracts,
+    performanceEvidence,
+    git
+  });
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
@@ -1663,7 +1769,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     visual_qa: visualQaEvidence,
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
-    verification_evidence: verificationEvidence,
+    agent_reviews: agentReviews,
+    verification_evidence: boundVerificationEvidence,
     risks: []
   };
   context.gate_dag = buildGateDag({
@@ -1677,7 +1784,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     flowVerification: latestFlowVerification,
     visualQaEvidence,
     networkContracts,
-    verificationEvidence,
+    agentReviews,
+    verificationEvidence: boundVerificationEvidence,
     inferredSpec,
     specDrift
   });
@@ -1686,7 +1794,13 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     flowVerification: latestFlowVerification,
     visualQaEvidence
   });
-  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift, networkContracts });
+  context.execution_gate = buildExecutionGateStatus(context.gate_dag);
+  context.gate_status = {
+    schema_version: '0.1.0',
+    overall_status: context.gate_dag.overall_status,
+    execution_gate: context.execution_gate
+  };
+  context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift, networkContracts, agentReviews });
   return context;
 }
 
@@ -1722,6 +1836,60 @@ async function readVerificationEvidenceIfExists(repoRoot, storyId) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+function bindVerificationEvidenceToGit(verificationEvidence, git) {
+  if (!verificationEvidence) return null;
+  const commands = Array.isArray(verificationEvidence.commands)
+    ? verificationEvidence.commands.map((command) => bindVerificationCommandToGit(command, git))
+    : [];
+  return {
+    ...verificationEvidence,
+    commands,
+    binding: {
+      current_head_sha: git.head_sha ?? null,
+      current_dirty: git.dirty === true,
+      current_status_fingerprint: git.status_fingerprint ?? '',
+      stale_command_count: commands.filter((command) => command.binding?.status !== 'current').length
+    }
+  };
+}
+
+function bindVerificationCommandToGit(command, git) {
+  const context = command?.git_context ?? null;
+  const binding = resolveVerificationBinding(context, git);
+  return {
+    ...command,
+    binding,
+    stale: binding.status !== 'current'
+  };
+}
+
+function resolveVerificationBinding(context, git) {
+  if (!context?.head_sha) {
+    return {
+      status: 'legacy',
+      reason: 'legacy verification evidence is not bound to a git head'
+    };
+  }
+  if (git.head_sha && context.head_sha !== git.head_sha) {
+    return {
+      status: 'stale',
+      reason: `verification evidence was recorded for ${context.head_sha.slice(0, 12)}, current head is ${git.head_sha.slice(0, 12)}`
+    };
+  }
+  const recordedFingerprint = context.status_fingerprint ?? '';
+  const currentFingerprint = git.status_fingerprint ?? '';
+  if (context.dirty === true && recordedFingerprint !== currentFingerprint) {
+    return {
+      status: 'stale',
+      reason: 'verification evidence was recorded with a different dirty worktree fingerprint'
+    };
+  }
+  return {
+    status: 'current',
+    reason: 'verification evidence is bound to the current git state'
+  };
 }
 
 async function readLatestFlowVerification(repoRoot, storyId) {
@@ -2132,8 +2300,8 @@ function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence })
   const visualQaGate = gateDag?.nodes?.find((node) => node.id === 'gate:visual_qa') ?? null;
   const architectureGate = gateDag?.nodes?.find((node) => node.id === 'architecture') ?? null;
   const specGate = gateDag?.nodes?.find((node) => node.id === 'spec') ?? null;
-  const visualQaPassRate = visualQaEvidence
-    ? (visualQaEvidence.status === 'ready_for_review' ? 1 : 0)
+  const visualQaPassRate = visualQaGate?.required
+    ? (visualQaGate.status === 'ready_for_review' ? 1 : 0)
     : null;
   const e2eReachRate = e2eGate?.required
     ? (e2eGate.status === 'passed' ? 1 : 0)
@@ -2189,6 +2357,7 @@ function buildGateDag({
   flowVerification,
   visualQaEvidence = null,
   networkContracts = null,
+  agentReviews = null,
   verificationEvidence,
   inferredSpec = null,
   specDrift = null
@@ -2235,6 +2404,7 @@ function buildGateDag({
     ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
     required: true
   };
+  const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const visualQaGate = visualQaEvidence ? {
     id: 'gate:visual_qa',
     type: 'visual_qa_gate',
@@ -2249,8 +2419,21 @@ function buildGateDag({
       residual_pct: run.latest_residual?.meanAbsResidualPct ?? null,
       semantic_layout_residual_pct: run.semantic_layout_residual_pct
     }))
+  } : uiExperienceChange ? {
+    id: 'gate:visual_qa',
+    type: 'visual_qa_gate',
+    label: 'Visual QA Gate',
+    status: 'needs_evidence',
+    required: true,
+    reason: 'UI experience source changed but Visual QA evidence was not recorded',
+    artifacts: [],
+    runs: []
   } : null;
-  const networkContractGate = buildNetworkContractGate(networkContracts, fileGroups);
+  const networkContractGate = buildNetworkContractGate(networkContracts, fileGroups, {
+    flowVerification,
+    verificationEvidence
+  });
+  const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const nodes = [
     storyGate,
     architectureGate,
@@ -2266,6 +2449,7 @@ function buildGateDag({
     requirementGate,
     ...gates,
     ...(visualQaGate ? [visualQaGate] : []),
+    agentReviewGate,
     {
       id: 'pr',
       type: 'pr_gate',
@@ -2301,14 +2485,15 @@ function buildGateDag({
     { from: 'gate:integration', to: 'gate:e2e' },
     ...(visualQaGate ? [
       { from: 'gate:e2e', to: 'gate:visual_qa' },
-      { from: 'gate:visual_qa', to: 'pr' }
+      { from: 'gate:visual_qa', to: 'gate:agent_review' }
     ] : [
-      { from: 'gate:e2e', to: 'pr' }
-    ])
+      { from: 'gate:e2e', to: 'gate:agent_review' }
+    ]),
+    { from: 'gate:agent_review', to: 'pr' }
   ];
 
   const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
-  const requiredGates = [storyGate, architectureGate, specGate, networkContractGate, requirementGate, ...gates, visualQaGate].filter((gate) => gate?.required);
+  const requiredGates = [storyGate, architectureGate, specGate, networkContractGate, requirementGate, ...gates, visualQaGate, agentReviewGate].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
   return {
     schema_version: '0.1.0',
@@ -2329,7 +2514,7 @@ function buildGateDag({
   };
 }
 
-function buildNetworkContractGate(networkContracts, fileGroups) {
+function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext = {}) {
   if (!networkContracts) {
     return {
       id: 'gate:network_contract',
@@ -2344,10 +2529,11 @@ function buildNetworkContractGate(networkContracts, fileGroups) {
   const dynamic = networkContracts.dynamic_calls?.length ?? 0;
   const replacements = networkContracts.high_risk_replacements?.length ?? 0;
   const introduced = networkContracts.introduced_api_client_call_count ?? 0;
+  const networkEvidence = hasNetworkAwareEvidence(evidenceContext);
   let status = 'passed';
   if (missing > 0) status = 'failed';
-  else if (replacements > 0 || dynamic > 0) status = 'needs_review';
-  else if (introduced > 0) status = 'needs_evidence';
+  else if ((replacements > 0 || dynamic > 0) && !networkEvidence) status = 'needs_review';
+  else if (introduced > 0 && !networkEvidence) status = 'needs_evidence';
   return {
     id: 'gate:network_contract',
     type: 'verification_gate',
@@ -2361,7 +2547,9 @@ function buildNetworkContractGate(networkContracts, fileGroups) {
         : dynamic > 0
           ? `${dynamic} dynamic /api client path(s) need explicit route/e2e evidence`
           : introduced > 0
-            ? 'New API client calls require network-aware E2E or route contract evidence'
+            ? networkEvidence
+              ? 'New API client calls have network-aware E2E or flow evidence'
+              : 'New API client calls require network-aware E2E or route contract evidence'
             : 'No broken API client route contracts detected',
     summary: {
       api_client_call_count: networkContracts.api_client_call_count ?? 0,
@@ -2372,6 +2560,53 @@ function buildNetworkContractGate(networkContracts, fileGroups) {
     },
     missing_routes: networkContracts.missing_routes ?? []
   };
+}
+
+function buildAgentReviewGate(agentReviews, fileGroups) {
+  if (!agentReviews) {
+    return {
+      id: 'gate:agent_review',
+      type: 'agent_review_gate',
+      label: 'Agent Review Gate',
+      status: 'not_generated',
+      required: fileGroups.source.count > 0,
+      reason: 'Agent Review summary was not generated'
+    };
+  }
+  const status = agentReviews.status === 'pass'
+    ? 'passed'
+    : agentReviews.status === 'block'
+      ? 'failed'
+      : agentReviews.status === 'not_required'
+        ? 'not_required'
+        : 'needs_review';
+  const unmet = agentReviews.unmet_required_reviews ?? [];
+  return {
+    id: 'gate:agent_review',
+    type: 'agent_review_gate',
+    label: 'Agent Review Gate',
+    status,
+    required: agentReviews.required === true,
+    reason: status === 'passed'
+      ? 'Required staged agent reviews passed for the current git state'
+      : status === 'not_required'
+        ? 'No source/API/UI/performance policy required staged agent reviews'
+        : `${unmet.length} required agent review role(s) are missing, stale, or blocking`,
+    summary: agentReviews.summary,
+    unmet_required_reviews: unmet.slice(0, 20)
+  };
+}
+
+function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
+  const flowStatus = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  if (flowStatus === 'pass') return true;
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.some((item) => {
+    const kind = item.kind === 'flow' ? 'e2e' : item.kind;
+    return kind === 'e2e'
+      && item.binding?.status === 'current'
+      && ['pass', 'passed', 'success', 'ok'].includes(item.status);
+  });
 }
 
 function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, visualQaEvidence, verificationEvidence }) {
@@ -2468,7 +2703,8 @@ function applyVerificationEvidence(gate, verificationEvidence) {
       status: evidence.status ?? null,
       summary,
       artifact,
-      executed_at: evidence.executed_at ?? null
+      executed_at: evidence.executed_at ?? null,
+      binding: evidence.binding ?? null
     }
   };
 }
@@ -2484,9 +2720,25 @@ function findVerificationEvidenceForGate(gate, verificationEvidence) {
   const expectedKinds = kindMap[gate.id] ?? [];
   const matches = items.filter((item) => expectedKinds.includes(item.kind));
   if (matches.length === 0) return null;
-  return matches.find((item) => ['fail', 'failed', 'error'].includes(item.status))
-    ?? matches.find((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status))
-    ?? matches[0];
+  const currentMatches = matches.filter((item) => item.binding?.status === 'current');
+  if (currentMatches.length > 0) {
+    return currentMatches.find((item) => ['fail', 'failed', 'error'].includes(item.status))
+      ?? currentMatches.find((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status))
+      ?? currentMatches[0];
+  }
+  const stale = matches[0];
+  return {
+    kind: stale.kind,
+    status: 'needs_evidence',
+    command: stale.command,
+    summary: stale.binding?.reason ?? 'verification evidence is not bound to the current git state',
+    artifact: stale.artifact,
+    executed_at: stale.executed_at,
+    binding: stale.binding ?? {
+      status: 'legacy',
+      reason: 'legacy verification evidence is not bound to a git head'
+    }
+  };
 }
 
 function normalizeVerificationEvidenceStatus(status) {
@@ -2756,7 +3008,7 @@ function buildReviewPoints(fileGroups, taskContext = null) {
   return points;
 }
 
-function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null, specDrift = null, networkContracts = null }) {
+function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = null, specDrift = null, networkContracts = null, agentReviews = null }) {
   const risks = [];
   const dirtyFiles = git.dirty_files.filter((file) => !isWorkspaceArtifactPath(file.path));
   if (Array.isArray(specDrift?.items)) {
@@ -2786,6 +3038,9 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0 && fileGroups.tests.count === 0) {
     risks.push('新規API client callがあるが、差分内にネットワーク/E2E/route契約テストがない');
   }
+  if ((agentReviews?.unmet_required_reviews?.length ?? 0) > 0) {
+    risks.push(`Agent Review Gate: required review role が ${agentReviews.unmet_required_reviews.length} 件未解決`);
+  }
   const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e');
   if (e2eGate?.required && ['needs_evidence', 'needs_setup'].includes(e2eGate.status)) {
     risks.push('E2E GateのPlaywright CLI証跡が未記録');
@@ -2809,6 +3064,10 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   if (networkGate?.required && isUnresolvedGateStatus(networkGate.status)) {
     risks.push(`Network Contract Gateが ${networkGate.status}: ${networkGate.reason}`);
   }
+  const agentReviewGate = gateDag?.nodes?.find((node) => node.id === 'gate:agent_review');
+  if (agentReviewGate?.required && isUnresolvedGateStatus(agentReviewGate.status)) {
+    risks.push(`Agent Review Gateが ${agentReviewGate.status}: ${agentReviewGate.reason}`);
+  }
   return risks;
 }
 
@@ -2818,6 +3077,7 @@ function renderPrGateSummary(gateDag) {
   const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
   const specGate = gateDag.nodes.find((node) => node.id === 'spec');
   const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
+  const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
   const lines = [
     `- overall: ${gateDag.overall_status}`,
     `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
@@ -2832,6 +3092,9 @@ function renderPrGateSummary(gateDag) {
       : null,
     requirementGate
       ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
+      : null,
+    agentReviewGate
+      ? `- ${agentReviewGate.label}: ${agentReviewGate.status} (${agentReviewGate.required ? 'required' : 'optional'}) - ${agentReviewGate.reason}`
       : null,
     ...gates.map((gate) => {
       const required = gate.required ? 'required' : 'optional';
@@ -2901,7 +3164,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       'spec_gate',
       'verification_gate',
       'requirement_gate',
-      'visual_qa_gate'
+      'visual_qa_gate',
+      'agent_review_gate'
     ].includes(node.type))
     .filter((node) => node.required)
     .filter((node) => isUnresolvedGateStatus(node.status))
@@ -2947,6 +3211,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
+      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires required review roles to pass for the current git head and dirty fingerprint.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })
@@ -2988,7 +3253,8 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
-  if (gate.id === 'gate:network_contract' && gate.status === 'failed') return true;
+  if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';
 }
 

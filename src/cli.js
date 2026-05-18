@@ -25,6 +25,14 @@ import {
   renderPerformanceEvidenceSummary,
   renderPerformanceRecordSummary
 } from './performance-evidence.js';
+import {
+  getAgentReviewStatus,
+  prepareAgentReview,
+  recordAgentReview,
+  renderAgentReviewPrepareSummary,
+  renderAgentReviewRecordSummary,
+  renderAgentReviewStatusSummary
+} from './agent-review.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
@@ -129,6 +137,9 @@ Usage:
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
+  vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--json]
+  vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
   vibepro measure compare [repo] --before <performance.json> --after <performance.json> [--json]
   vibepro performance define [repo] --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> [--intermediate-marker <id>] [--timeout-ms <ms>] [--failure-classification <class>] [--evidence-source <server_log|browser_e2e|api_log|client_marker|manual_observation>] [--readiness-kind <server_side|user_perceived|external_dependency|system_internal>] [--comparison-policy <json|name>] [--json]
@@ -384,6 +395,59 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown verify command: ${subcommand ?? ''}\n\n${HELP}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'review') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, HELP);
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'prepare') {
+        const result = await prepareAgentReview(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewPrepareSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'record') {
+        const inputPath = getOption(rest, '--input');
+        const stdinText = hasFlag(rest, '--from-stdin')
+          ? inputPath
+            ? await readFile(path.resolve(inputPath), 'utf8')
+            : await readStdin(io.stdin ?? process.stdin)
+          : '';
+        const result = await recordAgentReview(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'),
+          role: getOption(rest, '--role'),
+          status: getOption(rest, '--status'),
+          summary: getOption(rest, '--summary'),
+          findings: getOptions(rest, '--finding'),
+          artifacts: getOptions(rest, '--artifact'),
+          stdinText
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewRecordSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await getAgentReviewStatus(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewStatusSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${HELP}`);
       return { exitCode: 1, command };
     }
 

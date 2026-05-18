@@ -2,9 +2,13 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   const gateDag = preparation.pr_context.gate_dag;
   const requirement = preparation.pr_context.requirement_consistency;
   const splitPlan = preparation.split_plan;
+  const executionGate = preparation.pr_context.execution_gate ?? preparation.gate_status?.execution_gate ?? null;
+  const agentReviews = preparation.pr_context.agent_reviews ?? null;
   const cards = [
     metricCard('Scope', preparation.scope.status, preparation.scope.recommended_strategy),
     metricCard('Gate DAG', gateDag.overall_status, `${gateDag.summary.needs_evidence_count} unresolved`),
+    metricCard('Execution Gate', executionGate?.status ?? 'unknown', executionGate?.pr_create_allowed ? 'pr create allowed' : 'pr create blocked'),
+    metricCard('Agent Reviews', agentReviews?.status ?? 'not_generated', `${agentReviews?.summary?.unmet_required_review_count ?? 0} unmet`),
     metricCard('Requirement', requirement?.status ?? 'not_generated', `${requirement?.summary?.contradiction_count ?? 0} contradictions`),
     metricCard('Split Plan', splitPlan.status, `${splitPlan.lanes.length} lanes`)
   ].join('');
@@ -50,6 +54,8 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${renderExecutionGatePanel(executionGate)}
+      ${renderAgentReviewPanel(agentReviews)}
       ${requirementSection}
       ${networkSection}
       <section>
@@ -410,6 +416,89 @@ function renderRequirementPanel(requirement) {
           <p>${escapeHtml(card.detail)}</p>
         </article>
       `).join('') || '<article class="card good"><h3>No findings</h3><p>Story / Architecture / Spec とコード差分の既知矛盾は検出されていません。</p></article>'}</div>
+    </section>
+  `;
+}
+
+function renderExecutionGatePanel(executionGate) {
+  if (!executionGate) {
+    return renderCards('Execution Gate', [{ title: 'Unknown', detail: 'Execution Gate未生成', tone: 'warn' }]);
+  }
+  const cards = executionGate.blocking_gates?.length > 0
+    ? executionGate.blocking_gates.map((gate) => ({
+      title: `${gate.label ?? gate.id}: ${gate.status}`,
+      detail: gate.reason ?? gate.command ?? gate.id,
+      meta: gate.id,
+      tone: 'danger'
+    }))
+    : [{ title: 'Ready', detail: 'Critical blockers are resolved for VibePro PR creation.', tone: 'good' }];
+  const actions = executionGate.required_actions?.length > 0
+    ? renderList(executionGate.required_actions)
+    : '<p class="muted">No blocking actions.</p>';
+  return `
+    <section>
+      <h2>Execution Gate</h2>
+      <div class="metrics">
+        ${metricCard('Status', executionGate.status, executionGate.pr_create_allowed ? 'pr create allowed' : 'pr create blocked')}
+        ${metricCard('Blocking Gates', executionGate.blocking_gate_count ?? 0, 'critical')}
+        ${metricCard('PR Create', executionGate.pr_create_allowed ? 'allowed' : 'blocked', 'VibePro gate')}
+        ${metricCard('Schema', executionGate.schema_version ?? '-', 'execution gate')}
+      </div>
+      <div class="cards">${cards.map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('')}</div>
+      <h3>Required Actions</h3>
+      ${actions}
+    </section>
+  `;
+}
+
+function renderAgentReviewPanel(agentReviews) {
+  if (!agentReviews) {
+    return renderCards('Agent Review Gate', [{ title: 'Not generated', detail: 'Agent Review未生成', tone: 'warn' }]);
+  }
+  const unmet = agentReviews.unmet_required_reviews ?? [];
+  const stageCards = (agentReviews.stages ?? []).map((stage) => ({
+    title: `${stage.stage}: ${stage.status}`,
+    detail: `pass=${stage.pass_count}, missing=${stage.missing_count}, stale=${stage.stale_count}, block=${stage.block_count}`,
+    meta: stage.stage,
+    tone: toneForStatus(stage.status)
+  }));
+  const unmetCards = unmet.slice(0, 8).map((item) => ({
+    title: `${item.stage}:${item.role}`,
+    detail: item.detail ?? item.reason,
+    meta: `${item.status} / ${item.policy}`,
+    tone: item.status === 'block' ? 'danger' : 'warn'
+  }));
+  return `
+    <section>
+      <h2>Agent Review Gate</h2>
+      <div class="metrics">
+        ${metricCard('Status', agentReviews.status, agentReviews.required ? 'required' : 'not required')}
+        ${metricCard('Required Roles', agentReviews.summary?.required_review_count ?? 0, 'policy')}
+        ${metricCard('Unmet Roles', agentReviews.summary?.unmet_required_review_count ?? 0, 'missing/stale/block')}
+        ${metricCard('Stale Results', agentReviews.summary?.stale_result_count ?? 0, 'current git binding')}
+      </div>
+      <h3>Unmet Required Reviews</h3>
+      <div class="cards">${(unmetCards.length > 0 ? unmetCards : [{ title: 'No unmet reviews', detail: 'Required agent review roles passed for the current git state.', tone: 'good' }]).map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('')}</div>
+      <h3>Stage Summary</h3>
+      <div class="cards">${(stageCards.length > 0 ? stageCards : [{ title: 'No stages', detail: 'No agent review stages recorded.', tone: 'neutral' }]).map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('')}</div>
     </section>
   `;
 }
