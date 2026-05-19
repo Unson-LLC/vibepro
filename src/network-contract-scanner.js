@@ -162,6 +162,7 @@ function extractApiClientCalls(content, file) {
     const detector = detectClientCall(before);
     if (!detector) continue;
     const rawPath = match[2];
+    if (isExternalAbsoluteUrl(rawPath)) continue;
     const apiPath = parseApiPath(rawPath);
     calls.push({
       file,
@@ -206,6 +207,10 @@ function parseApiPath(rawPath) {
     value: normalizeApiPath(value),
     dynamic: value.includes('${') || value.includes('*') || /\[[^\]]+\]/.test(value)
   };
+}
+
+function isExternalAbsoluteUrl(rawPath) {
+  return /^https?:\/\//i.test(String(rawPath ?? ''));
 }
 
 function normalizeApiPath(value) {

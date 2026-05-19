@@ -4431,6 +4431,28 @@ export async function POST(request) {
   assert.equal(fixed.missing_routes.some((item) => item.api_path === '/api/detail-search'), false);
 });
 
+test('network contract scanner ignores external absolute URLs that contain /api/', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components', 'mypage'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'mypage', 'AddressInfoCard.tsx'), `
+export async function searchPostalCode(normalizedPostalCode) {
+  const response = await fetch(
+    \`https://zipcloud.ibsnet.co.jp/api/search?zipcode=\${normalizedPostalCode}\`,
+  );
+  return response.json();
+}
+`);
+
+  const result = await scanNetworkContracts(repo, {
+    changedFiles: [{ path: 'src/components/mypage/AddressInfoCard.tsx', status: 'M' }]
+  });
+
+  assert.equal(result.status, 'pass');
+  assert.equal(result.api_client_calls.some((item) => item.raw_argument.includes('zipcloud.ibsnet.co.jp')), false);
+  assert.equal(result.missing_routes.some((item) => item.api_path === '/api/search'), false);
+  assert.equal(result.dynamic_calls.some((item) => item.api_path === '/api/search'), false);
+});
+
 test('pr prepare blocks missing route for newly introduced API client call', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils'), { recursive: true });
