@@ -519,11 +519,22 @@ function buildFindings(evidence) {
         recommendation: '保存や遷移の直前にしか設定されない表示stateは削除するか、確認画面として実際に見える順序へ移動する。'
       }));
     }
+    const interactiveContracts = evidence.flow_design.interactive_contract_hits ?? [];
+    if (interactiveContracts.length > 0) {
+      findings.push(buildFlowFinding({
+        id: 'VP-FLOW-006',
+        severity: 'High',
+        title: 'クリック可能に見えるUIに操作契約がない候補がある',
+        hits: interactiveContracts,
+        detail: `${interactiveContracts.length} 件のinteractive element contract違反候補を検出した。`,
+        recommendation: 'クリック可能に見える要素は、保存、表示変化、画面遷移、scroll/focus、disabled、または準備中表示のいずれかに分類できるようにする。画面単位で全クリック可能要素を棚卸しし、Playwrightでは主要導線だけでなく押せそうなUIの反応も確認する。'
+      }));
+    }
     const valueAlignmentHits = (evidence.flow_design.value_alignment_hits ?? [])
       .filter((hit) => hit.kind !== 'ui_story_without_code_scan');
     if (valueAlignmentHits.length > 0) {
       findings.push(buildFlowFinding({
-        id: 'VP-FLOW-006',
+        id: 'VP-FLOW-007',
         severity: 'High',
         title: 'Storyの価値観contractから逸脱する表示候補がある',
         hits: valueAlignmentHits,

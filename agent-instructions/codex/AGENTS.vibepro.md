@@ -9,6 +9,12 @@ When the user asks for VibePro work:
 - Use Graphify evidence before changing auth, data flow, runtime boundaries, UI state machines, or shared services.
 - Treat `review-cockpit.html` as the human control plane and `human-review.json` as the machine-readable decision record.
 - After implementation, run `vibepro pr prepare <repo> --story-id <story-id>` or the task-scoped equivalent.
+- If `vibepro pr prepare` reports `gate_status.agent_review_instruction` or unresolved `gate:agent_review`, treat that as an explicit user instruction to use parallel subagents for VibePro review:
+  - Run every listed `vibepro review prepare <repo> --id <story-id> --stage <stage>` command.
+  - Open `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
+  - Start the listed role reviews in parallel, one subagent per role, with no file edits.
+  - Record each returned result with the listed `vibepro review record` command.
+  - Rerun `vibepro pr prepare` and do not call the work complete until `gate:agent_review` passes or a blocking result is explicitly reported.
 - Do not call raw `gh pr create` directly for VibePro work. Use `vibepro pr create` so Gate evidence and waiver checks are preserved.
 - If Gates are unresolved, either add evidence, split the PR, block the PR, or record an explicit waiver reason.
 - Keep JSON outputs as source-of-truth artifacts and HTML outputs as human review artifacts.

@@ -533,6 +533,7 @@ ${firstLook}
 - execution_gate: ${gateStatus.execution_gate?.status ?? '-'}
 - unresolved_gates: ${formatUnresolvedGateList(gateStatus.unresolved_gates)}
 - critical_unresolved_gates: ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)}
+- next_required_actions: ${formatRequiredActions(gateStatus.next_required_actions)}
 - agent_instruction: ${gateStatus.agent_instruction}
 
 ## Artifacts
@@ -550,8 +551,19 @@ ${firstLook}
 `;
 }
 
+function formatRequiredActions(actions) {
+  if (!actions || actions.length === 0) return 'none';
+  return actions.join(' | ');
+}
+
 function renderPrPrepareFirstLook({ preparation, gateStatus, result, language }) {
   const unresolvedCount = gateStatus.unresolved_gate_count ?? gateStatus.unresolved_gates?.length ?? 0;
+  const agentReviewLine = gateStatus.agent_review_instruction
+    ? localizedText(language, {
+        ja: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}\n`,
+        en: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}\n`
+      })
+    : '';
   const artifactHint = [
     `review-cockpit: ${toDisplayPath(result.artifacts.review_cockpit)}`,
     `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
@@ -570,6 +582,7 @@ function renderPrPrepareFirstLook({ preparation, gateStatus, result, language })
 
 - ${artifactHint}
 - 実装依頼には pr-body.md を渡し、完了条件は gate-dag.html、PR分割は split-plan.html を参照させてください。
+${agentReviewLine}
 `,
     en: `## Where To Look First
 
@@ -582,6 +595,7 @@ function renderPrPrepareFirstLook({ preparation, gateStatus, result, language })
 
 - ${artifactHint}
 - Hand pr-body.md to the coding agent, use gate-dag.html as the completion contract, and use split-plan.html for PR splitting.
+${agentReviewLine}
 `
   });
 }
@@ -592,6 +606,7 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
   const overallStatus = gateDag?.overall_status ?? 'unknown';
   const executionGate = buildExecutionGateStatus(gateDag);
   const readyForPrCreate = executionGate.pr_create_allowed === true;
+  const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
   return {
     schema_version: '0.1.0',
     overall_status: overallStatus,
@@ -602,9 +617,14 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     critical_unresolved_gate_count: criticalGates.length,
     unresolved_gates: unresolvedGates,
     critical_unresolved_gates: criticalGates,
+    next_required_actions: executionGate.required_actions,
+    agent_review_instruction: agentReviewAction,
     agent_instruction: readyForPrCreate
       ? 'Gate DAG is ready_for_review; pr create may proceed if scope and branch checks are acceptable.'
-      : 'Do not treat scope.status=reviewable as completion approval. Resolve Gate DAG evidence before pr create.'
+      : [
+          'Do not treat scope.status=reviewable as completion approval. Resolve Gate DAG evidence before pr create.',
+          agentReviewAction
+        ].filter(Boolean).join(' ')
   };
 }
 
@@ -626,12 +646,24 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:e2e') return `Record current-head E2E evidence for ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:visual_qa') return `Record Visual QA evidence for UI changes: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:network_contract') return `Resolve Network Contract evidence: ${gate.reason ?? gate.status}`;
-  if (gate.id === 'gate:agent_review') return `Record required Agent Review roles for the current git state: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:agent_review') {
+    return (gate.required_actions?.length ?? 0) > 0
+      ? gate.required_actions.join(' ')
+      : `Run VibePro Agent Review workflow for the current git state: ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
   if (gate.id === 'story') return `Attach a resolvable Story source: ${gate.reason ?? gate.status}`;
   return `Resolve ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
+}
+
+function buildAgentReviewGateInstruction(unresolvedGates) {
+  const agentGate = unresolvedGates.find((gate) => gate.id === 'gate:agent_review');
+  if (!agentGate) return null;
+  const actions = agentGate.required_actions ?? [];
+  const actionText = actions.length > 0 ? ` Required actions: ${actions.join(' ')}` : '';
+  return `Agent Review Gate is a mandatory parallel subagent review instruction, not an optional note. Codex/Claude coordinators must run the listed \`vibepro review prepare\` command(s), dispatch the generated parallel subagent requests, record each result with \`vibepro review record\`, and rerun \`vibepro pr prepare\` before calling the work complete.${actionText}`;
 }
 
 export function renderPrCreateSummary(result) {
@@ -2836,7 +2868,10 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       label: 'Agent Review Gate',
       status: 'not_generated',
       required: fileGroups.source.count > 0,
-      reason: 'Agent Review summary was not generated'
+      reason: 'Agent Review summary was not generated',
+      required_actions: [
+        'Run `vibepro pr prepare` after initializing VibePro agent review support so required review stages can be calculated.'
+      ]
     };
   }
   const status = agentReviews.status === 'pass'
@@ -2847,6 +2882,7 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
         ? 'not_required'
         : 'needs_review';
   const unmet = agentReviews.unmet_required_reviews ?? [];
+  const requiredActions = buildAgentReviewRequiredActions(agentReviews, status, unmet);
   return {
     id: 'gate:agent_review',
     type: 'agent_review_gate',
@@ -2857,11 +2893,35 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       ? 'Required staged agent reviews passed for the current git state'
       : status === 'not_required'
         ? 'No source/API/UI/performance policy required staged agent reviews'
-        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; run the parallel dispatch instructions from vibepro review prepare`,
+        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; this is a mandatory parallel subagent review step. Run the listed vibepro review prepare command(s), dispatch the generated parallel-dispatch.md requests, record results, and rerun pr prepare.`,
     summary: agentReviews.summary,
     parallel_dispatch: agentReviews.parallel_dispatch,
+    required_actions: requiredActions,
     unmet_required_reviews: unmet.slice(0, 20)
   };
+}
+
+function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
+  if (status === 'passed' || status === 'not_required') return [];
+  const requiredStages = agentReviews.parallel_dispatch?.required_stages ?? [];
+  const actions = [];
+  const missingOrUnpreparedStages = requiredStages
+    .filter((stage) => stage.status !== 'pass' || stage.prepared !== true)
+    .map((stage) => ({
+      stage: stage.stage,
+      command: stage.prepare_command,
+      artifact: stage.dispatch_artifact,
+      prepared: stage.prepared
+    }));
+  for (const stage of missingOrUnpreparedStages) {
+    actions.push(`Run \`${stage.command}\` and dispatch every request in ${stage.artifact}.`);
+  }
+  if (unmet.length > 0) {
+    const roleList = unmet.slice(0, 12).map((item) => `${item.stage}:${item.role}(${item.status})`).join(', ');
+    actions.push(`Complete and record current-git review results for: ${roleList}.`);
+  }
+  actions.push('After recording all roles, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
+  return actions;
 }
 
 function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
@@ -3506,6 +3566,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       label: node.label,
       status: node.status,
       command: node.command,
+      artifact: node.artifact,
+      required_actions: node.required_actions,
       reason: node.reason
     }));
 }

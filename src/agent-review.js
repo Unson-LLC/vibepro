@@ -42,6 +42,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     instructions: [
       'Dispatch the listed role reviews in parallel with separate AI subagents or human reviewers.',
       'VibePro records the review results, but does not execute subagents itself.',
+      'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to launch the parallel reviews.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
     parallel_dispatch: {
@@ -417,6 +418,8 @@ Record command after the subagent returns:
 - Dirty: ${plan.git_context.dirty}
 
 ## Coordinator Instructions
+
+Agent Review Gate treats this file as required execution guidance. If you are coordinating Codex or Claude Code work, this is an explicit instruction to start the listed parallel review subagents before declaring the work complete.
 
 1. Start all subagents below in parallel.
 2. Give each subagent only its own review request.

@@ -297,6 +297,7 @@ function summarizeFlowDesign(flowDesign) {
     flowDesign.selection_side_effect_hits,
     flowDesign.question_dead_end_hits,
     flowDesign.dead_ui_state_hits,
+    flowDesign.interactive_contract_hits,
     flowDesign.value_alignment_hits
   ].reduce((total, items) => total + (Array.isArray(items) ? items.length : 0), 0);
   return {

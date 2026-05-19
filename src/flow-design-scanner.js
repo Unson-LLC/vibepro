@@ -54,6 +54,7 @@ export async function scanFlowDesign(repoRoot, options = {}) {
       selection_side_effect_count: 0,
       question_dead_end_count: 0,
       dead_ui_state_count: 0,
+      interactive_contract_count: 0,
       value_alignment_count: 0
     },
     contracts: flowConfig.contracts ?? [],
@@ -63,6 +64,7 @@ export async function scanFlowDesign(repoRoot, options = {}) {
     selection_side_effect_hits: [],
     question_dead_end_hits: [],
     dead_ui_state_hits: [],
+    interactive_contract_hits: [],
     value_alignment_hits: [],
     runtime_probe_plan: buildRuntimeProbePlan({ profile, story, flowConfig })
   };
@@ -88,6 +90,7 @@ export async function scanFlowDesign(repoRoot, options = {}) {
     collectSelectionSideEffects(result.selection_side_effect_hits, file.relativePath, content);
     collectQuestionDeadEnds(result.question_dead_end_hits, file.relativePath, content);
     collectDeadUiStates(result.dead_ui_state_hits, file.relativePath, content);
+    collectInteractiveContractHits(result.interactive_contract_hits, file.relativePath, content);
     collectValueAlignmentHits(result.value_alignment_hits, file.relativePath, content, valueContract);
   }
 
@@ -97,6 +100,7 @@ export async function scanFlowDesign(repoRoot, options = {}) {
   result.summary.selection_side_effect_count = result.selection_side_effect_hits.length;
   result.summary.question_dead_end_count = result.question_dead_end_hits.length;
   result.summary.dead_ui_state_count = result.dead_ui_state_hits.length;
+  result.summary.interactive_contract_count = result.interactive_contract_hits.length;
   result.summary.value_alignment_count = result.value_alignment_hits.length;
   result.status = resolveStatus(result);
   return result;
@@ -125,6 +129,7 @@ export function renderFlowDesignReport({ runId, flowDesign }) {
 | Selection side effect | ${flowDesign.summary?.selection_side_effect_count ?? 0}件 |
 | Question dead end | ${flowDesign.summary?.question_dead_end_count ?? 0}件 |
 | Dead UI state | ${flowDesign.summary?.dead_ui_state_count ?? 0}件 |
+| Interactive contract | ${flowDesign.summary?.interactive_contract_count ?? 0}件 |
 | Value alignment | ${flowDesign.summary?.value_alignment_count ?? 0}件 |
 
 ## Silent noop
@@ -142,6 +147,10 @@ ${formatHits(flowDesign.question_dead_end_hits)}
 ## Dead UI state
 
 ${formatHits(flowDesign.dead_ui_state_hits)}
+
+## Interactive contract
+
+${formatHits(flowDesign.interactive_contract_hits)}
 
 ## Value alignment
 
@@ -303,6 +312,57 @@ function collectDeadUiStates(hits, file, content) {
   }
 }
 
+function collectInteractiveContractHits(hits, file, content) {
+  const code = stripComments(content);
+  const functions = extractFunctions(code);
+  const functionLookup = new Map(functions.map((fn) => [fn.name, fn]));
+  const elementPattern = /<([A-Za-z][A-Za-z0-9_.]*)\b([^<>]*?)(?:\/>|>)/g;
+  for (const match of code.matchAll(elementPattern)) {
+    const tag = match[1];
+    const attrs = match[2] ?? '';
+    if (isClosingOrNonInteractiveTag(tag, attrs)) continue;
+    const after = code.slice(match.index + match[0].length, Math.min(code.length, match.index + match[0].length + 240));
+    const label = extractElementLabel(after);
+    if (!looksInteractive(tag, attrs, label)) continue;
+    if (hasExplicitUnavailableState(attrs, label, after)) continue;
+
+    const directContract = classifyDirectInteractiveContract(tag, attrs);
+    if (directContract) continue;
+
+    const handler = extractHandlerName(attrs);
+    if (handler) {
+      const fn = functionLookup.get(handler);
+      if (!fn) continue;
+      if (handlerBodyHasUserVisibleContract(fn.body)) continue;
+      hits.push({
+        kind: 'interactive_handler_without_user_visible_effect',
+        severity: 'High',
+        gate_effect: 'review',
+        file,
+        line: lineNumberAt(code, match.index),
+        element: tag,
+        handler,
+        label,
+        excerpt: cleanup(match[0]).slice(0, 180),
+        detail: `クリック可能に見える \`${label || tag}\` のhandler \`${handler}\` に、保存・表示変化・遷移・scroll/focus・準備中表示のいずれも静的に確認できない。`
+      });
+      continue;
+    }
+
+    hits.push({
+      kind: 'interactive_element_without_contract',
+      severity: 'High',
+      gate_effect: 'review',
+      file,
+      line: lineNumberAt(code, match.index),
+      element: tag,
+      label,
+      excerpt: cleanup(match[0]).slice(0, 180),
+      detail: `クリック可能に見える \`${label || tag}\` が、onClick/href/submit/disabled/準備中表示などの操作契約を持っていない。`
+    });
+  }
+}
+
 function collectValueAlignmentHits(hits, file, content, valueContract) {
   for (const label of valueContract.forbidden_labels ?? []) {
     for (const match of content.matchAll(new RegExp(escapeRegExp(label), 'g'))) {
@@ -445,11 +505,69 @@ function resolveStatus(result) {
     ...(result.selection_side_effect_hits ?? []),
     ...(result.question_dead_end_hits ?? []),
     ...(result.dead_ui_state_hits ?? []),
+    ...(result.interactive_contract_hits ?? []),
     ...(result.value_alignment_hits ?? [])
   ];
   if (allHits.some((hit) => hit.severity === 'Critical')) return 'block';
   if (allHits.length > 0) return 'needs_review';
   return 'pass';
+}
+
+function isClosingOrNonInteractiveTag(tag, attrs) {
+  if (!tag || tag.startsWith('/')) return true;
+  if (/^(Fragment|React\.Fragment|form|input|select|textarea|option|label|img|svg|path|p|h[1-6]|ul|ol|li|section|main|header|footer)$/i.test(tag)) {
+    return !/\bonClick\s*=|\brole\s*=\s*["']button["']/.test(attrs);
+  }
+  return false;
+}
+
+function looksInteractive(tag, attrs, label) {
+  if (/^(button|a)$/i.test(tag)) return true;
+  if (/\brole\s*=\s*["']button["']/.test(attrs)) return true;
+  if (/\bonClick\s*=|\bonMouseDown\s*=|\bonKeyDown\s*=/.test(attrs)) return true;
+  if (/\b(className|class)\s*=\s*["'`{][^"'`}]*\b(button|btn|action|clickable|link|tab|trigger|menu|detail|summary)\b/i.test(attrs)) return true;
+  if (/[A-Z][A-Za-z0-9_.]*(Button|Link|Action|Trigger|Tab|MenuItem)$/.test(tag)) return true;
+  return /(詳細を見る|音声入力|AI要約|保存|登録|検索|開始|編集|削除|開く|閉じる|もっと見る|追加|送信|選択|見る|View|Save|Submit|Search|Open|Close|Edit|Delete|More|Start|Add)/i.test(label ?? '');
+}
+
+function classifyDirectInteractiveContract(tag, attrs) {
+  if (/\bdisabled(?:\s*=\s*(?:\{?true\}?|["']true["']))?/.test(attrs)) return 'disabled';
+  if (/\baria-disabled\s*=\s*(?:\{?true\}?|["']true["'])/.test(attrs)) return 'disabled';
+  if (/\bhref\s*=|\bto\s*=/.test(attrs)) return 'navigation';
+  if (/\bformAction\s*=/.test(attrs)) return 'submit';
+  if (/^button$/i.test(tag) && /\btype\s*=\s*["']submit["']/.test(attrs)) return 'submit';
+  if (/\bonClick\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/.test(attrs)) return 'inline-handler';
+  if (/\bonMouseDown\s*=|\bonKeyDown\s*=|\bonSubmit\s*=|\bonChange\s*=/.test(attrs)) return 'handler';
+  return null;
+}
+
+function extractHandlerName(attrs) {
+  const match = attrs.match(/\bonClick\s*=\s*\{\s*([A-Za-z_$][\w$]*)\s*\}/);
+  return match?.[1] ?? null;
+}
+
+function handlerBodyHasUserVisibleContract(body) {
+  const normalized = cleanup(body);
+  if (!normalized || /^\{\s*\}$/.test(normalized)) return false;
+  if (/\b(fetch|axios|mutate|save|create|update|delete|submit|post|put|patch)\b/i.test(body)) return true;
+  if (/\b(router\.push|router\.replace|navigate\s*\(|location\.href|window\.open|history\.pushState)\b/.test(body)) return true;
+  if (/\bset[A-Z][A-Za-z0-9_]*\s*\(/.test(body)) return true;
+  if (/\b(scrollIntoView|focus\s*\(|document\.getElementById|location\.hash)\b/.test(body)) return true;
+  if (/(準備中|未実装|近日|coming soon|not implemented|disabled|toast|setError|alert\s*\()/i.test(body)) return true;
+  if (/^\{\s*(?:event\.)?preventDefault\s*\(\s*\)\s*;?\s*\}$/.test(normalized)) return false;
+  if (/^\{\s*(?:console\.(log|warn|error)\s*\([^)]*\)\s*;?\s*)+\}$/.test(normalized)) return false;
+  return !/(TODO|noop|no-op|placeholder|仮置き)/i.test(body);
+}
+
+function hasExplicitUnavailableState(attrs, label, after) {
+  const text = `${attrs} ${label ?? ''} ${after.match(/^([^<]{0,120})/)?.[1] ?? ''}`;
+  return /(disabled|aria-disabled|準備中|未実装|近日公開|coming soon|not implemented|placeholder|工事中)/i.test(text);
+}
+
+function extractElementLabel(after) {
+  const text = (after.match(/^([^<]{0,160})/)?.[1] ?? '')
+    .replace(/\{[^}]*\}/g, ' ');
+  return cleanup(text).slice(0, 80);
 }
 
 function isUiStory(story, flowConfig) {

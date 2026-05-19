@@ -714,6 +714,9 @@ story_id: U-020
   await writeFile(path.join(repo, 'src', 'app', 'new', 'page.tsx'), `
 "use client";
 export default function NewPage() {
+  const handleVoiceInput = () => {
+    console.log('voice input placeholder');
+  };
   const searchByName = async () => {
     if (!searchQuery.trim()) return;
     await fetch('/api/dpc-lookup?q=' + searchQuery);
@@ -729,7 +732,13 @@ export default function NewPage() {
     setDpcCode(result.dpc_code);
     router.push('/patients/' + result.id);
   };
-  return <>{lookupResult && <div>退院目標日 preview</div>}<button onClick={selectDpc}>DPC候補を選択</button></>;
+  return <>
+    {lookupResult && <div>退院目標日 preview</div>}
+    <button onClick={selectDpc}>DPC候補を選択</button>
+    <button onClick={handleVoiceInput}>音声入力</button>
+    <button>詳細を見る</button>
+    <button disabled>AI要約 準備中</button>
+  </>;
 }
 `);
   await writeFile(path.join(repo, 'src', 'app', 'patients', '[id]', 'page.tsx'), `
@@ -768,8 +777,35 @@ export async function POST() {
   assert.equal(result.selection_side_effect_hits.some((hit) => hit.kind === 'selection_triggers_navigation'), true);
   assert.equal(result.question_dead_end_hits.some((hit) => hit.question_key === 'dpc_target_date'), true);
   assert.equal(result.dead_ui_state_hits.some((hit) => hit.state === 'lookupResult'), true);
+  assert.equal(result.interactive_contract_hits.some((hit) => hit.kind === 'interactive_handler_without_user_visible_effect' && hit.handler === 'handleVoiceInput'), true);
+  assert.equal(result.interactive_contract_hits.some((hit) => hit.kind === 'interactive_element_without_contract' && hit.label === '詳細を見る'), true);
+  assert.equal(result.interactive_contract_hits.some((hit) => /AI要約/.test(hit.label ?? '')), false);
   assert.equal(result.value_alignment_hits.some((hit) => hit.kind === 'forbidden_label' && hit.label === '退院予定日'), true);
   assert.equal(result.status, 'needs_review');
+});
+
+test('check ui gates interactive element contract violations', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+"use client";
+export default function Page() {
+  const summarize = () => {
+    console.log('placeholder');
+  };
+  return <main>
+    <button onClick={summarize}>AI要約</button>
+    <button>詳細を見る</button>
+  </main>;
+}
+`);
+
+  const result = await runCli(['check', 'ui', repo, '--story-id', 'U-031', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.evidence.flow_design.interactive_contract_hits.length, 2);
+  assert.equal(result.result.check.checks.some((check) => check.id === 'flow_design' && check.status === 'needs_review'), true);
 });
 
 test('terminal link scanner flags dot directory HTML preview gaps', async () => {
@@ -2972,7 +3008,9 @@ architecture_docs:
   assert.equal(missingGate.status, 'needs_review');
   assert.equal(missingGate.parallel_dispatch.required, true);
   assert.equal(missingGate.parallel_dispatch.required_stages.some((stage) => stage.prepare_command.includes('vibepro review prepare')), true);
-  assert.match(missingGate.reason, /parallel dispatch/);
+  assert.match(missingGate.reason, /mandatory parallel subagent review step/);
+  assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
+  assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
@@ -2980,11 +3018,19 @@ architecture_docs:
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:test_plan' && edge.to === 'review:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
+  assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /mandatory parallel subagent review instruction/);
+  assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);
   assert.match(gateDagHtml, /data-node-id="review:test_plan:e2e_ux"/);
   assert.match(gateDagHtml, /data-node-id="review:record:test_plan:e2e_ux"/);
   assert.equal(missingResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:agent_review'), true);
+  let summaryStdout = '';
+  const summaryOutput = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'], {
+    stdout: { write: (text) => { summaryStdout += text; } }
+  });
+  assert.equal(summaryOutput.exitCode, 0);
+  assert.match(summaryStdout, /Agent Review Gate is a mandatory parallel subagent review instruction/);
 
   await recordRequiredAgentReviews(repo);
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);

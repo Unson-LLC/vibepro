@@ -35,8 +35,14 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 9. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
 10. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
 11. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
-12. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
-13. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+12. If `gate_status.agent_review_instruction` is present, treat it as an explicit instruction to run parallel subagent review:
+   - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
+   - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
+   - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
+   - Record every result with `vibepro review record`.
+   - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
+13. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
+14. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
 
 ## Guardrails
 
@@ -46,10 +52,12 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
 - Do not ignore unresolved Gates. Add evidence, split the PR, block, or record a waiver reason.
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
+- Do not treat Agent Review Gate as optional. When it is unresolved, the coordinator must prepare, dispatch, record, and rerun the VibePro review flow before calling the work complete.
 - Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane.
 - Do not claim user-perceived performance improvement from server logs alone. Use a separate `user_perceived` metric backed by `browser_e2e`, `client_marker`, or `manual_observation`.
 - Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.
 - Do not treat type-check or a superficially rendered UI as enough when UI code introduces `/api/...` calls. Network Contract Gate requires matching Next.js routes and network-aware flow evidence for API 4xx/5xx.
+- Do not treat Story-level E2E existence as enough for UI-heavy changes. Clickable-looking controls on the changed screen need an interaction contract: save/mutate, visible state change, navigation, scroll/focus, disabled, or explicit unfinished state.
 
 ## Key Artifacts
 
@@ -60,6 +68,8 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - `.vibepro/pr/<story-id>/human-review.json`: machine-readable human decision template.
 - `.vibepro/pr/<story-id>/gate-dag.html`: Gate dependency view.
 - `.vibepro/pr/<story-id>/split-plan.html`: split lanes and Graphify investigation scope.
+- `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`: required parallel subagent dispatch instructions when Agent Review Gate is unresolved.
 - `.vibepro/checks/<pack>/<run-id>/check.json`: purpose-level diagnosis package evidence.
 - `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.
+- `.vibepro/checks/ui/<run-id>/check.json`: UI check evidence, including `flow_design.interactive_contract_hits`.
 - `.vibepro/pr/<story-id>/performance-runs/*.json`: Story-level performance evidence runs.
