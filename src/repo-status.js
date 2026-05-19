@@ -27,8 +27,48 @@ export async function getRepoStatus(repoRoot) {
     };
   }
 
-  const config = JSON.parse(await readFile(configPath, 'utf8'));
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const configRead = await readJsonWithStatus(configPath, 'config');
+  const manifestRead = await readJsonWithStatus(manifestPath, 'manifest');
+  if (!configRead.ok || !manifestRead.ok) {
+    const issues = [configRead, manifestRead]
+      .filter((item) => !item.ok)
+      .map((item) => ({
+        id: `VP-STATUS-${item.label.toUpperCase()}-INVALID`,
+        severity: 'block',
+        file: toWorkspacePath(root, item.filePath),
+        detail: `${item.label} JSON is invalid: ${item.error}`
+      }));
+    return {
+      initialized: true,
+      repo_root: root,
+      workspace: '.vibepro',
+      workspace_status: 'needs_repair',
+      current_story_id: null,
+      active_stories: [],
+      latest_run: null,
+      selected_story_latest_run: null,
+      gate_status: 'blocked',
+      finding_count: issues.length,
+      artifacts: {},
+      doctor: {
+        overall_status: 'needs_repair',
+        check_count: issues.length,
+        blocking_check_ids: issues.map((issue) => issue.id),
+        next_actions: [{
+          command: `repair ${toWorkspacePath(root, configRead.ok ? manifestPath : configPath)}`,
+          reason: 'VibePro workspace JSON must be valid before status, diagnose, or PR gates can be trusted.'
+        }]
+      },
+      issues,
+      next_commands: [
+        `repair ${toWorkspacePath(root, configRead.ok ? manifestPath : configPath)}`,
+        `vibepro status ${root} --json`
+      ]
+    };
+  }
+
+  const config = configRead.value;
+  const manifest = manifestRead.value;
   const currentStoryId = config.brainbase?.current_story_id ?? null;
   const activeStories = prioritizeStory(normalizeStatusStories(config.brainbase?.stories), currentStoryId);
   const selectedStory = activeStories.find((story) => story.story_id === currentStoryId) ?? null;
@@ -80,6 +120,7 @@ export function renderRepoStatus(status) {
 |------|------|
 | Initialized | ${status.initialized ? 'yes' : 'no'} |
 | Workspace | ${status.workspace} |
+| Workspace Status | ${status.workspace_status ?? 'ok'} |
 | Selected Story | ${status.current_story_id ?? '-'} |
 | Active Stories | ${status.active_stories.length} |
 | Latest Run | ${latestRun?.run_id ?? '-'} |
@@ -114,6 +155,31 @@ async function exists(filePath) {
     if (error.code === 'ENOENT') return false;
     throw error;
   }
+}
+
+async function readJsonWithStatus(filePath, label) {
+  try {
+    return {
+      ok: true,
+      label,
+      filePath,
+      value: JSON.parse(await readFile(filePath, 'utf8'))
+    };
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return {
+        ok: false,
+        label,
+        filePath,
+        error: error.message
+      };
+    }
+    throw error;
+  }
+}
+
+function toWorkspacePath(repoRoot, filePath) {
+  return path.relative(repoRoot, filePath).split(path.sep).join('/');
 }
 
 function findRun(runs, runId) {

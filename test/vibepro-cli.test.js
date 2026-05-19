@@ -113,6 +113,34 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
+test('init fails explicitly instead of masking corrupt VibePro config', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), '{ "schema_version": "0.1.0",');
+  let stderrOutput = '';
+
+  const result = await runCli(['init', repo], {
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOutput, /VibePro config is invalid JSON/);
+});
+
+test('status reports corrupt VibePro config as needs_repair', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), '{ "schema_version": "0.1.0",');
+
+  const result = await runCli(['status', repo, '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.status.workspace_status, 'needs_repair');
+  assert.equal(result.status.gate_status, 'blocked');
+  assert.equal(result.status.issues[0].file, '.vibepro/config.json');
+  assert.match(result.status.issues[0].detail, /invalid/);
+});
+
 test('init ignores all VibePro workspace artifacts from git status', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
@@ -799,6 +827,11 @@ export default function Page() {
     <button>詳細を見る</button>
     <button onClick={() => setOpen(!open)}>開く</button>
     <Link href="/patients"><Button>患者一覧</Button></Link>
+    <LikeButton itemId="p1" />
+    <DialogTrigger asChild><Button>検索条件を開く</Button></DialogTrigger>
+    <DialogClose asChild><Button>閉じる</Button></DialogClose>
+    <AlertDialogAction>削除</AlertDialogAction>
+    <AccordionTrigger>詳細条件</AccordionTrigger>
     <details><summary className="cursor-pointer">詳細設定を開く</summary><p>設定</p></details>
     <span className="text-success">保存しました</span>
     <label htmlFor="file" className="btn">ファイルを選択</label><input id="file" type="file" />
@@ -996,6 +1029,28 @@ export async function execute(actionParams) {
   const summary = await readFile(path.join(repo, '.vibepro', 'diagnostics', 'network-contract-run', 'summary.md'), 'utf8');
   assert.match(summary, /Network Contract/);
   assert.match(summary, /\/api\/detail-search/);
+});
+
+test('network contract scanner resolves query strings and Next.js dynamic route segments', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'companies', 'search'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'companies', '[companyId]'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'companies'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', 'search', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'companies', '[companyId]', 'route.ts'), 'export async function GET() { return Response.json({ ok: true }); }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'companies', 'page.tsx'), `
+export async function loadCompanies(query, companyId) {
+  await fetch(\`/api/companies/search?q=\${query}\`);
+  await fetch(\`/api/companies/\${companyId}?include=details\`);
+}
+`);
+
+  const result = await scanNetworkContracts(repo);
+
+  assert.equal(result.status, 'pass');
+  assert.equal(result.missing_routes.length, 0);
+  assert.equal(result.dynamic_calls.length, 0);
+  assert.equal(result.api_client_calls.every((call) => call.route_status === 'present'), true);
 });
 
 test('verify flow writes Playwright evidence and skips mutating probes by default', async () => {
@@ -3107,6 +3162,10 @@ title: PR準備
     '--command', 'npm run test:e2e',
     '--summary', 'button did not navigate'
   ])).exitCode, 0);
+
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(evidence.commands.some((command) => command.kind === 'typecheck' && command.summary === 'typecheck passed'), true);
+  assert.equal(evidence.commands.some((command) => command.kind === 'integration' && command.summary === 'typecheck passed'), false);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
   assert.equal(result.exitCode, 0);

@@ -30,6 +30,41 @@ const DEFAULT_SENPAINURSE_VALUE_CONTRACT = {
 };
 const JSX_ARROW_TOKEN = '=$';
 const NATIVE_INTERACTIVE_TAGS = new Set(['button', 'a', 'summary', 'details']);
+const KNOWN_INTERACTION_CONTRACT_COMPONENTS = new Set([
+  'DialogTrigger',
+  'DialogClose',
+  'AlertDialogTrigger',
+  'AlertDialogCancel',
+  'AlertDialogAction',
+  'AccordionTrigger',
+  'SheetTrigger',
+  'SheetClose',
+  'PopoverTrigger',
+  'PopoverClose',
+  'DropdownMenuTrigger',
+  'DropdownMenuItem',
+  'SelectTrigger',
+  'TabsTrigger',
+  'CollapsibleTrigger'
+]);
+const KNOWN_INTERACTION_NAMESPACES = new Set([
+  'Dialog',
+  'AlertDialog',
+  'Accordion',
+  'Sheet',
+  'Popover',
+  'DropdownMenu',
+  'Select',
+  'Tabs',
+  'Collapsible'
+]);
+const KNOWN_INTERACTION_LOCALS = new Set([
+  'Trigger',
+  'Close',
+  'Cancel',
+  'Action',
+  'Item'
+]);
 
 export async function scanFlowDesign(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -320,6 +355,7 @@ function collectInteractiveContractHits(hits, file, content) {
   const functions = extractFunctions(source);
   const functionLookup = new Map(functions.map((fn) => [fn.name, fn]));
   const parentLinkRanges = collectParentLinkRanges(code);
+  const contractWrapperRanges = collectContractWrapperRanges(code);
   const elementPattern = /<([A-Za-z][A-Za-z0-9_.]*)\b([^<>]*?)(?:\/>|>)/g;
   for (const match of code.matchAll(elementPattern)) {
     const tag = match[1];
@@ -330,6 +366,7 @@ function collectInteractiveContractHits(hits, file, content) {
     if (!looksInteractive(tag, attrs, label)) continue;
     if (hasExplicitUnavailableState(attrs, label, after)) continue;
     if (isInsideParentLink(match.index, parentLinkRanges)) continue;
+    if (isInsideContractWrapper(match.index, contractWrapperRanges)) continue;
 
     const directContract = classifyDirectInteractiveContract(tag, attrs);
     if (directContract) continue;
@@ -537,6 +574,7 @@ function looksInteractive(tag, attrs, label) {
   if (/^(button|a)$/i.test(tag)) return true;
   if (hasExplicitInteractiveSignal(attrs)) return true;
   if (/[A-Z][A-Za-z0-9_.]*(Button|Link|Action|Trigger|Tab|MenuItem)$/.test(tag)) return true;
+  if (isKnownInteractionContractComponent(tag)) return true;
   return false;
 }
 
@@ -545,6 +583,8 @@ function classifyDirectInteractiveContract(tag, attrs) {
   if (/\baria-disabled\s*=\s*(?:\{?true\}?|["']true["'])/.test(attrs)) return 'disabled';
   if (/\bhref\s*=|\bto\s*=/.test(attrs)) return 'navigation';
   if (/^label$/i.test(tag) && /\bhtmlFor\s*=|\bfor\s*=/.test(attrs)) return 'label_for_control';
+  if (isKnownInteractionContractComponent(tag)) return 'component_wrapper_contract';
+  if (isCustomInteractiveComponentWithOwnContract(tag)) return 'custom_component_contract';
   if (/\bformAction\s*=/.test(attrs)) return 'submit';
   if (/^button$/i.test(tag) && /\btype\s*=\s*["']submit["']/.test(attrs)) return 'submit';
   if (/\bonClick\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*(?:=>|=\$)/.test(attrs)) return 'inline-handler';
@@ -606,6 +646,44 @@ function collectParentLinkRanges(code) {
 
 function isInsideParentLink(index, ranges) {
   return ranges.some((range) => index > range.start && index < range.end);
+}
+
+function collectContractWrapperRanges(code) {
+  const ranges = [];
+  const pattern = /<([A-Za-z][A-Za-z0-9_.]*)\b([^<>]*?)>/g;
+  for (const match of code.matchAll(pattern)) {
+    const tag = match[1];
+    if (!isKnownInteractionContractComponent(tag)) continue;
+    const closeIndex = findClosingTagIndex(code, tag, match.index + match[0].length);
+    if (closeIndex < 0) continue;
+    ranges.push({ start: match.index, end: closeIndex + tag.length + 3 });
+  }
+  return ranges;
+}
+
+function findClosingTagIndex(code, tag, fromIndex) {
+  const closeTag = `</${tag}>`;
+  return code.indexOf(closeTag, fromIndex);
+}
+
+function isInsideContractWrapper(index, ranges) {
+  return ranges.some((range) => index > range.start && index < range.end);
+}
+
+function isKnownInteractionContractComponent(tag) {
+  const normalized = tag.replace(/^.*\./, '');
+  if (KNOWN_INTERACTION_CONTRACT_COMPONENTS.has(tag) || KNOWN_INTERACTION_CONTRACT_COMPONENTS.has(normalized)) {
+    return true;
+  }
+  const [namespace, local] = tag.split('.');
+  return Boolean(namespace && local && KNOWN_INTERACTION_NAMESPACES.has(namespace) && KNOWN_INTERACTION_LOCALS.has(local));
+}
+
+function isCustomInteractiveComponentWithOwnContract(tag) {
+  if (!/^[A-Z]/.test(tag)) return false;
+  if (/^(Button|Link|Action|Trigger|Tab|MenuItem)$/.test(tag)) return false;
+  if (/^(button|a)$/i.test(tag)) return false;
+  return /(Button|Link|Action|Trigger|MenuItem)$/.test(tag);
 }
 
 function isUiStory(story, flowConfig) {

@@ -35,9 +35,9 @@ export async function initWorkspace(repoRoot, options = {}) {
     brainbase: {
       stories: DEFAULT_BRAINBASE_STORIES
     }
-  });
+  }, 'VibePro config');
 
-  await writeJsonIfMissing(path.join(workspaceDir, MANIFEST_FILE), createManifest(root));
+  await writeJsonIfMissing(path.join(workspaceDir, MANIFEST_FILE), createManifest(root), 'VibePro manifest');
   await ensureGitIgnore(root);
 
   return { repoRoot: root, workspaceDir };
@@ -87,11 +87,16 @@ function createManifest(repoRoot) {
   };
 }
 
-async function writeJsonIfMissing(filePath, value) {
+async function writeJsonIfMissing(filePath, value, label = 'VibePro JSON') {
   try {
-    await readFile(filePath, 'utf8');
+    JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
+    if (error.code !== 'ENOENT') {
+      if (error instanceof SyntaxError) {
+        throw new Error(`${label} is invalid JSON: ${filePath}. Repair or remove it before running vibepro init.`);
+      }
+      throw error;
+    }
     await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
   }
 }

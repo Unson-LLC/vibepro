@@ -31,7 +31,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
     const command = {
-      kind: normalizeKind(options.kind),
+      kind: options.kind,
       status: options.status,
       command: options.command ?? null,
       summary: options.summary ?? options.status,
@@ -41,7 +41,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     };
     const commands = [
       command,
-      ...existing.commands.filter((item) => normalizeKind(item.kind) !== command.kind)
+      ...existing.commands.filter((item) => item.kind !== command.kind)
     ];
     const nextEvidence = {
       schema_version: '0.1.0',
@@ -166,11 +166,6 @@ async function assertInitializedWorkspace(repoRoot) {
     }
     throw error;
   }
-}
-
-function normalizeKind(kind) {
-  if (kind === 'typecheck' || kind === 'build') return 'integration';
-  return kind;
 }
 
 function normalizeArtifact(repoRoot, artifact) {

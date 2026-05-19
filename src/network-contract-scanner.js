@@ -134,10 +134,17 @@ function collectApiRoutes(files) {
 }
 
 function matchApiRoute(apiPath, routes) {
-  if (!apiPath || apiPath.dynamic) return { status: 'dynamic_unresolved', route: null };
+  if (!apiPath) return { status: 'dynamic_unresolved', route: null };
   const normalized = normalizeApiPath(apiPath.value);
   const match = routes.find((route) => route.matcher.test(normalized));
-  return match ? { status: 'present', route: match } : { status: 'missing', route: null };
+  if (match) return { status: 'present', route: match };
+  if (apiPath.dynamic) {
+    const dynamicMatch = routes.find((route) => routeMatchesApiPathPattern(normalized, route.route_path));
+    return dynamicMatch
+      ? { status: 'present', route: dynamicMatch }
+      : { status: 'dynamic_unresolved', route: null };
+  }
+  return { status: 'missing', route: null };
 }
 
 function routeMatcherFromSegments(segments) {
@@ -203,9 +210,10 @@ function inferHttpMethod(content, matchIndex, detector) {
 function parseApiPath(rawPath) {
   const apiIndex = rawPath.indexOf('/api/');
   const value = apiIndex >= 0 ? rawPath.slice(apiIndex) : rawPath;
+  const normalized = normalizeApiPath(value);
   return {
-    value: normalizeApiPath(value),
-    dynamic: value.includes('${') || value.includes('*') || /\[[^\]]+\]/.test(value)
+    value: normalized,
+    dynamic: hasDynamicPathSegment(normalized)
   };
 }
 
@@ -217,6 +225,71 @@ function normalizeApiPath(value) {
   const withoutOrigin = String(value ?? '').replace(/^https?:\/\/[^/]+/, '');
   const withoutQuery = withoutOrigin.split(/[?#]/)[0];
   return withoutQuery.replace(/\/+$/, '') || '/api';
+}
+
+function hasDynamicPathSegment(apiPath) {
+  return splitApiSegments(apiPath).some((segment) => (
+    segment.includes('${')
+    || segment.includes('*')
+    || /^\[[^\]]+\]$/.test(segment)
+  ));
+}
+
+function routeMatchesApiPathPattern(apiPath, routePath) {
+  const callSegments = splitApiSegments(apiPath);
+  const routeSegments = splitApiSegments(routePath);
+  return matchSegments(callSegments, routeSegments);
+}
+
+function matchSegments(callSegments, routeSegments) {
+  let callIndex = 0;
+  let routeIndex = 0;
+  while (routeIndex < routeSegments.length) {
+    const routeSegment = routeSegments[routeIndex];
+    const callSegment = callSegments[callIndex];
+    if (isOptionalCatchAllSegment(routeSegment)) {
+      return true;
+    }
+    if (callSegment === undefined) return false;
+    if (isCatchAllSegment(routeSegment)) {
+      return callIndex < callSegments.length;
+    }
+    if (!segmentsMatch(callSegment, routeSegment)) return false;
+    callIndex += 1;
+    routeIndex += 1;
+  }
+  return callIndex === callSegments.length;
+}
+
+function segmentsMatch(callSegment, routeSegment) {
+  if (isDynamicCallSegment(callSegment)) return isDynamicRouteSegment(routeSegment);
+  if (isDynamicRouteSegment(routeSegment)) return true;
+  return callSegment === routeSegment;
+}
+
+function splitApiSegments(apiPath) {
+  return normalizeApiPath(apiPath)
+    .replace(/^\/api\/?/, '')
+    .split('/')
+    .filter(Boolean);
+}
+
+function isDynamicCallSegment(segment) {
+  return /^\$\{[^}]+\}$/.test(segment)
+    || segment === '*'
+    || /^\[[^\]]+\]$/.test(segment);
+}
+
+function isDynamicRouteSegment(segment) {
+  return /^\[[^\]]+\]$/.test(segment);
+}
+
+function isCatchAllSegment(segment) {
+  return /^\[\.\.\.[^\]]+\]$/.test(segment);
+}
+
+function isOptionalCatchAllSegment(segment) {
+  return /^\[\[\.\.\.[^\]]+\]\]$/.test(segment);
 }
 
 function detectRemovedServerFunctionCalls(oldContent, currentContent) {
