@@ -28,6 +28,8 @@ const DEFAULT_SENPAINURSE_VALUE_CONTRACT = {
   required_labels: ['退院目標日'],
   forbidden_new_registration_labels: ['退院先を選択', 'タスクを追加']
 };
+const JSX_ARROW_TOKEN = '=$';
+const NATIVE_INTERACTIVE_TAGS = new Set(['button', 'a', 'summary', 'details']);
 
 export async function scanFlowDesign(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -313,9 +315,11 @@ function collectDeadUiStates(hits, file, content) {
 }
 
 function collectInteractiveContractHits(hits, file, content) {
-  const code = stripComments(content);
-  const functions = extractFunctions(code);
+  const source = stripComments(content);
+  const code = normalizeJsxForTagScan(source);
+  const functions = extractFunctions(source);
   const functionLookup = new Map(functions.map((fn) => [fn.name, fn]));
+  const parentLinkRanges = collectParentLinkRanges(code);
   const elementPattern = /<([A-Za-z][A-Za-z0-9_.]*)\b([^<>]*?)(?:\/>|>)/g;
   for (const match of code.matchAll(elementPattern)) {
     const tag = match[1];
@@ -325,6 +329,7 @@ function collectInteractiveContractHits(hits, file, content) {
     const label = extractElementLabel(after);
     if (!looksInteractive(tag, attrs, label)) continue;
     if (hasExplicitUnavailableState(attrs, label, after)) continue;
+    if (isInsideParentLink(match.index, parentLinkRanges)) continue;
 
     const directContract = classifyDirectInteractiveContract(tag, attrs);
     if (directContract) continue;
@@ -515,28 +520,34 @@ function resolveStatus(result) {
 
 function isClosingOrNonInteractiveTag(tag, attrs) {
   if (!tag || tag.startsWith('/')) return true;
-  if (/^(Fragment|React\.Fragment|form|input|select|textarea|option|label|img|svg|path|p|h[1-6]|ul|ol|li|section|main|header|footer)$/i.test(tag)) {
-    return !/\bonClick\s*=|\brole\s*=\s*["']button["']/.test(attrs);
+  if (/^(summary|details)$/i.test(tag)) return true;
+  if (/^[a-z]/.test(tag) && !NATIVE_INTERACTIVE_TAGS.has(tag.toLowerCase())) {
+    return !hasExplicitInteractiveSignal(attrs);
+  }
+  if (/^(Fragment|React\.Fragment|form|input|select|textarea|option|img|svg|path|p|h[1-6]|ul|ol|li|section|main|header|footer)$/i.test(tag)) {
+    return !hasExplicitInteractiveSignal(attrs);
+  }
+  if (/^label$/i.test(tag)) {
+    return !hasExplicitInteractiveSignal(attrs) && !/\bhtmlFor\s*=|\bfor\s*=/.test(attrs);
   }
   return false;
 }
 
 function looksInteractive(tag, attrs, label) {
   if (/^(button|a)$/i.test(tag)) return true;
-  if (/\brole\s*=\s*["']button["']/.test(attrs)) return true;
-  if (/\bonClick\s*=|\bonMouseDown\s*=|\bonKeyDown\s*=/.test(attrs)) return true;
-  if (/\b(className|class)\s*=\s*["'`{][^"'`}]*\b(button|btn|action|clickable|link|tab|trigger|menu|detail|summary)\b/i.test(attrs)) return true;
+  if (hasExplicitInteractiveSignal(attrs)) return true;
   if (/[A-Z][A-Za-z0-9_.]*(Button|Link|Action|Trigger|Tab|MenuItem)$/.test(tag)) return true;
-  return /(詳細を見る|音声入力|AI要約|保存|登録|検索|開始|編集|削除|開く|閉じる|もっと見る|追加|送信|選択|見る|View|Save|Submit|Search|Open|Close|Edit|Delete|More|Start|Add)/i.test(label ?? '');
+  return false;
 }
 
 function classifyDirectInteractiveContract(tag, attrs) {
   if (/\bdisabled(?:\s*=\s*(?:\{?true\}?|["']true["']))?/.test(attrs)) return 'disabled';
   if (/\baria-disabled\s*=\s*(?:\{?true\}?|["']true["'])/.test(attrs)) return 'disabled';
   if (/\bhref\s*=|\bto\s*=/.test(attrs)) return 'navigation';
+  if (/^label$/i.test(tag) && /\bhtmlFor\s*=|\bfor\s*=/.test(attrs)) return 'label_for_control';
   if (/\bformAction\s*=/.test(attrs)) return 'submit';
   if (/^button$/i.test(tag) && /\btype\s*=\s*["']submit["']/.test(attrs)) return 'submit';
-  if (/\bonClick\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/.test(attrs)) return 'inline-handler';
+  if (/\bonClick\s*=\s*\{\s*(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*(?:=>|=\$)/.test(attrs)) return 'inline-handler';
   if (/\bonMouseDown\s*=|\bonKeyDown\s*=|\bonSubmit\s*=|\bonChange\s*=/.test(attrs)) return 'handler';
   return null;
 }
@@ -568,6 +579,33 @@ function extractElementLabel(after) {
   const text = (after.match(/^([^<]{0,160})/)?.[1] ?? '')
     .replace(/\{[^}]*\}/g, ' ');
   return cleanup(text).slice(0, 80);
+}
+
+function normalizeJsxForTagScan(content) {
+  return content.replace(/=>/g, JSX_ARROW_TOKEN);
+}
+
+function hasExplicitInteractiveSignal(attrs) {
+  return /\brole\s*=\s*["']button["']/.test(attrs)
+    || /\bonClick\s*=|\bonMouseDown\s*=|\bonKeyDown\s*=/.test(attrs)
+    || /\b(className|class)\s*=\s*["'`{][^"'`}]*\b(button|btn|action|clickable|link|tab|trigger|menu|detail|summary)\b/i.test(attrs);
+}
+
+function collectParentLinkRanges(code) {
+  const ranges = [];
+  const pattern = /<Link\b([^<>]*?)>/g;
+  for (const match of code.matchAll(pattern)) {
+    const attrs = match[1] ?? '';
+    if (!/\bhref\s*=|\bto\s*=/.test(attrs)) continue;
+    const closeIndex = code.indexOf('</Link>', match.index + match[0].length);
+    if (closeIndex < 0) continue;
+    ranges.push({ start: match.index, end: closeIndex + '</Link>'.length });
+  }
+  return ranges;
+}
+
+function isInsideParentLink(index, ranges) {
+  return ranges.some((range) => index > range.start && index < range.end);
 }
 
 function isUiStory(story, flowConfig) {

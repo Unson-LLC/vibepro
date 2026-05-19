@@ -790,12 +790,18 @@ test('check ui gates interactive element contract violations', async () => {
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
 "use client";
 export default function Page() {
+  const [open, setOpen] = useState(false);
   const summarize = () => {
     console.log('placeholder');
   };
   return <main>
     <button onClick={summarize}>AI要約</button>
     <button>詳細を見る</button>
+    <button onClick={() => setOpen(!open)}>開く</button>
+    <Link href="/patients"><Button>患者一覧</Button></Link>
+    <details><summary className="cursor-pointer">詳細設定を開く</summary><p>設定</p></details>
+    <span className="text-success">保存しました</span>
+    <label htmlFor="file" className="btn">ファイルを選択</label><input id="file" type="file" />
   </main>;
 }
 `);
@@ -945,7 +951,7 @@ export async function POST() {
   assert.equal(evidence.flow_design.summary.scanned_ui_files, 2);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-004'), true);
-  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-006'), true);
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-007'), true);
   assert.equal(evidence.gates[0].status, 'needs_review');
   const report = await readFile(path.join(runDir, 'flow-design-check-result.md'), 'utf8');
   assert.match(report, /Flow Design Check/);
