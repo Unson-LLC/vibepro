@@ -35,7 +35,11 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 9. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
 10. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
 11. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
-12. If `gate_status.agent_review_instruction` is present, treat it as an explicit instruction to run parallel subagent review:
+12. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Follow the active agent runtime's subagent permission policy:
+   - If the user already explicitly asked to use subagents, do not ask again.
+   - If explicit permission is still required before spawning subagents, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
+   - A sufficient authorization phrase is: `VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。`
+13. After authorization, run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
@@ -43,8 +47,8 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
      - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id>` plus `--agent-thread-id` or `--agent-call-id` when available.
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id>` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
-13. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
-14. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+14. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
+15. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
 
 ## Guardrails
 

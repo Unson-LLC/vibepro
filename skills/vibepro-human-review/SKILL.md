@@ -13,11 +13,12 @@ Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifac
 
 1. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status`.
 2. Confirm `gate_status.overall_status`, `ready_for_pr_create`, unresolved Gates, and critical unresolved Gates.
-3. If `gate_status.agent_review_instruction` is present, block human approval until the coordinator has:
+3. If `gate_status.agent_review_instruction` is present, block human approval until the coordinator has authorization to use subagents and then has:
    - run the listed `vibepro review prepare` commands,
    - dispatched the generated `parallel-dispatch.md` requests to parallel subagents,
    - recorded each result with `vibepro review record` including Codex/Claude Code subagent provenance,
    - rerun `vibepro pr prepare` and cleared `gate:agent_review`.
+   If the coordinator does not yet have explicit subagent authorization, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
 4. Open `.vibepro/pr/<story-id>/review-cockpit.html`.
 5. Read the recommended decision and reason.
 6. Check split lanes and Graphify investigation scope.

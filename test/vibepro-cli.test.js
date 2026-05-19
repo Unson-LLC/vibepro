@@ -3068,6 +3068,8 @@ test('review prepare generates stage role requests', async () => {
   assert.deepEqual(result.result.plan.roles, ['unit_integration', 'e2e_ux', 'gate_coverage']);
   assert.equal(result.result.plan.parallel_dispatch.mode, 'manual_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
+  assert.equal(result.result.plan.parallel_dispatch.authorization_bridge.ask_if_not_authorized, 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？');
+  assert.match(result.result.plan.parallel_dispatch.authorization_bridge.user_authorization_phrase, /必要なサブエージェントレビューを並列で実行/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
@@ -3075,6 +3077,8 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
   const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md'), 'utf8');
   assert.match(dispatch, /Start all subagents below in parallel/);
+  assert.match(dispatch, /If your agent runtime requires explicit user authorization/);
+  assert.match(dispatch, /サブエージェントレビューを実行していいですか/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
   assert.match(dispatch, /Required provenance/);
@@ -3236,6 +3240,9 @@ architecture_docs:
   assert.match(missingGate.reason, /mandatory parallel subagent review step/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
+  assert.equal(missingGate.authorization_bridge.ask_if_not_authorized, 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？');
+  assert.match(missingGate.authorization_bridge.user_authorization_phrase, /必要なサブエージェントレビューを並列で実行/);
+  assert.equal(missingGate.required_actions.some((action) => action.includes('サブエージェントレビューを実行していいですか')), true);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
@@ -3244,6 +3251,8 @@ architecture_docs:
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
   assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /mandatory parallel subagent review instruction/);
+  assert.equal(missingResult.result.preparation.gate_status.agent_review_authorization_question, 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？');
+  assert.match(missingResult.result.preparation.gate_status.agent_review_authorization_request, /vibepro review recordで記録/);
   assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);

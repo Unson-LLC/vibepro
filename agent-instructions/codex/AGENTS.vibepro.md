@@ -9,7 +9,11 @@ When the user asks for VibePro work:
 - Use Graphify evidence before changing auth, data flow, runtime boundaries, UI state machines, or shared services.
 - Treat `review-cockpit.html` as the human control plane and `human-review.json` as the machine-readable decision record.
 - After implementation, run `vibepro pr prepare <repo> --story-id <story-id>` or the task-scoped equivalent.
-- If `vibepro pr prepare` reports `gate_status.agent_review_instruction` or unresolved `gate:agent_review`, treat that as an explicit user instruction to use parallel subagents for VibePro review:
+- If `vibepro pr prepare` reports `gate_status.agent_review_instruction` or unresolved `gate:agent_review`, treat Agent Review as mandatory. Respect the host runtime's subagent permission policy:
+  - If the user already explicitly asked to use subagents, run the review workflow below without asking again.
+  - If explicit user authorization is still required before spawning subagents, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
+  - A sufficient authorization phrase is: `VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。`
+- After authorization, run the parallel review workflow:
   - Run every listed `vibepro review prepare <repo> --id <story-id> --stage <stage>` command.
   - Open `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
   - Start the listed role reviews in parallel, one subagent per role, with no file edits.
