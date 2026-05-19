@@ -99,6 +99,63 @@ story_id: US-002
   assert.ok(source.acceptance_criteria.some((line) => line.includes('期待される受け入れ基準')));
 });
 
+test('findStorySource does not fall back to another story for an explicit story_id', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-no-wrong-story-'));
+  await runCli(['init', repo]);
+  const dir = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'STR-005-admin-inquiry-api-permission-error.md'), `---
+story_id: STR-005
+title: 管理画面：お問い合わせ詳細APIで権限エラー
+---
+# 管理画面：お問い合わせ詳細APIで権限エラー
+
+## 受け入れ基準
+- 管理画面からお問い合わせ詳細APIにアクセスできる
+`);
+
+  const source = await findStorySource(repo, { story_id: 'STR-047', title: 'サンプル承認後の本生成絵文字混入を防ぐ' });
+
+  assert.equal(source.path, null);
+  assert.equal(source.title, 'サンプル承認後の本生成絵文字混入を防ぐ');
+  assert.deepEqual(source.acceptance_criteria, []);
+});
+
+test('pr prepare does not attach a mismatched story source for an explicit story_id', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-no-wrong-story-'));
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-005-admin-inquiry-api-permission-error.md'), `---
+story_id: STR-005
+title: 管理画面：お問い合わせ詳細APIで権限エラー
+---
+# 管理画面：お問い合わせ詳細APIで権限エラー
+
+## 受け入れ基準
+- 管理画面からお問い合わせ詳細APIにアクセスできる
+`);
+  await writeFile(path.join(repo, 'src', 'index.ts'), 'export const noop = true;\n');
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'STR-047', '--title', 'サンプル承認後の本生成絵文字混入を防ぐ']);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: bootstrap']);
+  await git(repo, ['switch', '-c', 'feature/str-047']);
+  await writeFile(path.join(repo, 'src', 'index.ts'), 'export const noop = false;\n');
+  await git(repo, ['add', 'src/index.ts']);
+  await git(repo, ['commit', '-m', 'fix: prevent emoji drift']);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'STR-047', '--allow-extra-files', '--json']);
+
+  assert.equal(prepare.exitCode, 0, `pr prepare failed: ${prepare.stderr}`);
+  const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'STR-047', 'pr-prepare.json'), 'utf8'));
+  const source = artifact.pr_context.story_source;
+  assert.equal(source.path, null);
+  assert.equal(source.story_id, 'STR-047');
+  assert.deepEqual(source.acceptance_criteria, []);
+});
+
 test('pr prepare reads Story from docs/user_stories/active when PR diff does not include the story file', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-aitle-'));
   await mkdir(path.join(repo, 'docs', 'user_stories', 'active'), { recursive: true });

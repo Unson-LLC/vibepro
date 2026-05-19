@@ -1816,7 +1816,12 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
       } catch {
         // keep the default primaryStory if the file disappeared between scans
       }
+    } else if (filesystemStory) {
+      primaryStory = filesystemStory;
     }
+  }
+  if (!storyDocMatchesStory(primaryStory, story)) {
+    primaryStory = buildUnresolvedStorySource(story);
   }
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const typecheckCommand = await detectTypecheckCommand(repoRoot);
@@ -2358,6 +2363,22 @@ function pickPrimaryStory(storyDocs, story) {
       acceptance_criteria: [],
       architecture_reason: null
     };
+}
+
+function buildUnresolvedStorySource(story) {
+  return {
+    path: null,
+    title: story.title,
+    story_id: story.story_id,
+    vibepro_story_id: null,
+    requirement_id: null,
+    requirement_title: story.title,
+    requirement_url: null,
+    background: null,
+    policy: null,
+    acceptance_criteria: [],
+    architecture_reason: null
+  };
 }
 
 function storyDocMatchesStory(doc, story) {

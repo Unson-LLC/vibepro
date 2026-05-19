@@ -239,6 +239,14 @@ export async function findStorySource(repoRoot, story) {
     if (byFrontmatter) return parseStoryLikeDocument(repoRoot, byFrontmatter, 'story');
     const bySubstring = candidates.find((file) => normalizePath(file).includes(storyId));
     if (bySubstring) return parseStoryLikeDocument(repoRoot, bySubstring, 'story');
+    return {
+      path: null,
+      title: story?.title ?? null,
+      content: '',
+      acceptance_criteria: [],
+      background: null,
+      policy: null
+    };
   }
   return parseStoryLikeDocument(repoRoot, candidates[0], 'story');
 }
