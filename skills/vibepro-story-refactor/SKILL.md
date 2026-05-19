@@ -31,7 +31,7 @@ Use this Skill when VibePro is driving a refactor. The goal is to find and fix c
 10. If Agent Review Gate is unresolved, run the VibePro parallel subagent review workflow before finalizing:
    - `vibepro review prepare <repo> --id <story-id> --stage <stage>`
    - dispatch each role in `parallel-dispatch.md` as a separate parallel subagent review,
-   - `vibepro review record` each result,
+   - `vibepro review record` each result with Codex/Claude Code provenance (`--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>` plus thread/session/call/transcript evidence),
    - rerun `vibepro pr prepare`.
 11. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
 
@@ -55,6 +55,7 @@ Prioritize candidates that VibePro surfaces as:
 - Do not merge or create a PR unless `gate_status.ready_for_pr_create=true` and `gate_status.overall_status=ready_for_review`.
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not call a VibePro refactor complete while `gate:agent_review` is `needs_review`, `missing`, `stale`, `block`, or `failed`; complete the parallel subagent reviews first.
+- Do not satisfy Agent Review Gate with a manual `pass`. A passing review must include Codex or Claude Code parallel subagent provenance so later audits can distinguish real subagent review from coordinator self-approval.
 - Do not clean dirty repository worktrees by reflexively stashing. First inspect `git status --short --branch`, unstaged diff, cached diff, and branch/HEAD reflog.
 - If a branch was advanced by external sync, merge, rebase, or another worktree, check whether the dirty state is a stale reverse diff from the previous branch commit to `HEAD`. Compare `git diff --stat <old> HEAD` with `git diff --cached --stat` / `git diff --stat` before deciding.
 - Only classify dirty state as safe to clean after proving it is already represented in `HEAD` and contains no extra user hunks. Otherwise report the exact files and keep the work intact.

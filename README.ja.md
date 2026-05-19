@@ -174,8 +174,19 @@ npx vibepro review record /path/to/repo \
   --stage implementation \
   --role regression_risk \
   --status pass \
-  --summary "変更フローに回帰リスクは見つからなかった。"
+  --summary "変更フローに回帰リスクは見つからなかった。" \
+  --agent-system codex \
+  --execution-mode parallel_subagent \
+  --agent-id <spawned-subagent-id> \
+  --agent-thread-id <thread-id> \
+  --agent-model <model>
 ```
+
+`gate:agent_review` は、Codex または Claude Code の並列サブエージェント証跡が
+入った `pass` だけを検証済みレビューとして扱います。Claude Code の場合は
+`--agent-system claude_code` と Task/subagent id、session id、または transcript
+artifact を渡してください。サブエージェント証跡のない手入力 `pass` はレビュー記録には
+残りますが、Agent Review Gate は通しません。
 
 ### Performance を測る
 

@@ -174,8 +174,19 @@ npx vibepro review record /path/to/repo \
   --stage implementation \
   --role regression_risk \
   --status pass \
-  --summary "No regression risk found in the changed flow."
+  --summary "No regression risk found in the changed flow." \
+  --agent-system codex \
+  --execution-mode parallel_subagent \
+  --agent-id <spawned-subagent-id> \
+  --agent-thread-id <thread-id> \
+  --agent-model <model>
 ```
+
+`gate:agent_review` only treats a passing review as verified when the review result
+contains Codex or Claude Code parallel subagent provenance. For Claude Code, use
+`--agent-system claude_code` with the Task/subagent id, session id, or transcript
+artifact. A manual `pass` without subagent provenance remains review evidence, but
+does not satisfy the Agent Review Gate.
 
 ### Measure Performance
 

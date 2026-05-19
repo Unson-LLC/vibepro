@@ -91,7 +91,17 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
         '--status',
         'pass',
         '--summary',
-        `${stage}:${role} passed`
+        `${stage}:${role} passed`,
+        '--agent-system',
+        'codex',
+        '--execution-mode',
+        'parallel_subagent',
+        '--agent-id',
+        `codex-${stage}-${role}`,
+        '--agent-thread-id',
+        `thread-${stage}-${role}`,
+        '--agent-model',
+        'gpt-5.5'
       ]);
       assert.equal(result.exitCode, 0);
     }
@@ -385,20 +395,20 @@ test('codex commands install and verify VibePro AGENTS instructions', async () =
   assert.match(appendedContent, /# Existing repository rules/);
   assert.match(appendedContent, /VIBEPRO_CODEX_START/);
 
-  await writeFile(agentsPath, '# Existing\n\n<!-- VIBEPRO_CODEX_START -->\nstale\n<!-- VIBEPRO_CODEX_END -->\n');
+  await writeFile(agentsPath, '# Existing\n\n<!-- VIBEPRO_CODEX_START -->\nSTALE_VIBEPRO_BLOCK\n<!-- VIBEPRO_CODEX_END -->\n');
   const outdated = await runCli(['codex', 'verify', repo]);
   assert.equal(outdated.result.overall_status, 'needs_install');
   assert.equal(outdated.result.status, 'outdated');
 
   const skipped = await runCli(['codex', 'install', repo]);
   assert.equal(skipped.result.status, 'skipped');
-  assert.match(await readFile(agentsPath, 'utf8'), /stale/);
+  assert.match(await readFile(agentsPath, 'utf8'), /STALE_VIBEPRO_BLOCK/);
 
   const forced = await runCli(['codex', 'install', repo, '--force']);
   assert.equal(forced.result.status, 'overwritten');
   const forcedContent = await readFile(agentsPath, 'utf8');
   assert.match(forcedContent, /# Existing/);
-  assert.doesNotMatch(forcedContent, /stale/);
+  assert.doesNotMatch(forcedContent, /STALE_VIBEPRO_BLOCK/);
   assert.match(forcedContent, /Story \/ Architecture \/ Spec/);
 });
 
@@ -2994,6 +3004,7 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.parallel_dispatch.mode, 'manual_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
@@ -3001,10 +3012,15 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Start all subagents below in parallel/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
+  assert.match(dispatch, /Required provenance/);
+  assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
+  assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
   assert.match(request, /coordinator records it/);
+  assert.match(request, /Codex coordinators must include/);
+  assert.match(request, /Claude Code coordinators must include/);
 });
 
 test('review record updates status summary and marks stale after source change', async () => {
@@ -3027,6 +3043,16 @@ test('review record updates status summary and marks stale after source change',
     'pass',
     '--summary',
     'runtime contract reviewed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-runtime-contract-agent',
+    '--agent-thread-id',
+    'thread-runtime-contract',
+    '--agent-model',
+    'gpt-5.5',
     '--finding',
     'low:note:no blocking issue'
   ]);
@@ -3041,6 +3067,79 @@ test('review record updates status summary and marks stale after source change',
   const roleAfter = after.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
   assert.equal(roleAfter.effective_status, 'stale');
   assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
+});
+
+test('review pass without Codex or Claude Code subagent provenance does not satisfy agent review gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'agent-review-provenance.js'), 'export const value = 1;\n');
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const manualRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'manual pass without subagent proof'
+  ]);
+  assert.equal(manualRecord.exitCode, 0);
+  assert.equal(manualRecord.result.review.agent_provenance.system, 'unknown');
+  assert.equal(manualRecord.result.review.agent_provenance.evidence_strength, 'missing');
+
+  const statusWithoutProvenance = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithoutProvenance = statusWithoutProvenance.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithoutProvenance.effective_status, 'unverified_agent');
+  assert.match(roleWithoutProvenance.provenance_reason, /not Codex\/Claude Code subagent review/);
+
+  const prWithoutProvenance = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const missingRuntime = prWithoutProvenance.result.preparation.pr_context.agent_reviews.unmet_required_reviews.find((item) => (
+    item.stage === 'implementation' && item.role === 'runtime_contract'
+  ));
+  assert.equal(missingRuntime.status, 'unverified_agent');
+  assert.match(missingRuntime.detail, /not Codex\/Claude Code subagent review/);
+
+  const claudeRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'Claude Code subagent reviewed runtime contract',
+    '--agent-system',
+    'claude-code',
+    '--execution-mode',
+    'parallel-subagent',
+    '--agent-id',
+    'claude-task-runtime-contract',
+    '--agent-session-id',
+    'claude-session-123',
+    '--agent-model',
+    'claude-sonnet'
+  ]);
+  assert.equal(claudeRecord.exitCode, 0);
+  assert.equal(claudeRecord.result.review.agent_provenance.system, 'claude_code');
+  assert.equal(claudeRecord.result.review.agent_provenance.execution_mode, 'parallel_subagent');
+  assert.equal(claudeRecord.result.review.agent_provenance.evidence_strength, 'strong');
+
+  const statusWithProvenance = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithProvenance = statusWithProvenance.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithProvenance.effective_status, 'pass');
+  assert.equal(roleWithProvenance.provenance_status, 'verified_agent');
 });
 
 test('pr prepare requires agent reviews for source changes and passes the agent gate when recorded', async () => {

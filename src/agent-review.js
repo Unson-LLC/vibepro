@@ -20,6 +20,9 @@ export const REVIEW_STAGE_ROLES = {
 export const REVIEW_STAGES = new Set(Object.keys(REVIEW_STAGE_ROLES));
 const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block']);
 const PASSING_ROLE_STATUS = new Set(['pass']);
+const REVIEW_PROVENANCE_SYSTEMS = new Set(['codex', 'claude_code', 'human', 'other', 'unknown']);
+const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
+const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
 
 export async function prepareAgentReview(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review prepare');
@@ -111,7 +114,11 @@ export async function recordAgentReview(repoRoot, options = {}) {
     artifacts: (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact)),
     recorded_at: new Date().toISOString(),
     git_context: gitContext,
-    source_fingerprint: sourceFingerprint
+    source_fingerprint: sourceFingerprint,
+    agent_provenance: buildAgentProvenance(root, {
+      ...options,
+      defaultRequestPath: getReviewRequestPath(reviewDir, role)
+    })
   };
   const resultPath = getReviewResultPath(reviewDir, role);
   await writeJson(resultPath, result);
@@ -180,7 +187,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     return {
       ...requirement,
       status: role?.effective_status ?? 'missing',
-      detail: role?.stale ? role.stale_reason : role?.summary ?? null
+      detail: role?.stale ? role.stale_reason : role?.provenance_reason ?? role?.summary ?? null
     };
   });
 
@@ -230,6 +237,7 @@ export function renderAgentReviewRecordSummary(result) {
 - stage: ${result.review.stage}
 - role: ${result.review.role}
 - status: ${result.review.status}
+- agent provenance: ${result.review.agent_provenance.system}/${result.review.agent_provenance.execution_mode}/${result.review.agent_provenance.evidence_strength}
 - artifact: ${result.artifact}
 `;
 }
@@ -378,6 +386,8 @@ ${buildRolePromptSummary(stage, role)}
 - Use \`pass\` only when this role's concern is adequately covered for the current head.
 - Return the result to the coordinator. The coordinator records it with:
   \`${recordCommand}\`
+- Codex coordinators must include the spawned subagent id/thread/call id when recording the result.
+- Claude Code coordinators must include the Task/subagent id or transcript/session artifact when recording the result.
 
 ## Result Shape
 \`\`\`json
@@ -406,6 +416,10 @@ Read the review request above and perform only the \`${stage}:${role}\` review. 
 
 Record command after the subagent returns:
 \`${command}\`
+
+Required provenance:
+- Codex: keep the spawned subagent id plus thread/call id when available and pass them with \`--agent-system codex --execution-mode parallel_subagent\`.
+- Claude Code: keep the Task/subagent id, session id, or transcript artifact and pass them with \`--agent-system claude_code --execution-mode parallel_subagent\`.
 `;
   }).join('\n');
   return `# VibePro Parallel Agent Review Dispatch
@@ -432,7 +446,7 @@ ${items}
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>"`;
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact>`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage }) {
@@ -475,10 +489,13 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
   for (const role of REVIEW_STAGE_ROLES[stage]) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
     const binding = result ? bindReviewResult(result, currentGitContext) : null;
+    const provenance = result ? validateAgentProvenance(result) : null;
     const effectiveStatus = !result
       ? 'missing'
       : binding.status === 'current'
-        ? result.status
+        ? result.status === 'pass' && provenance.status !== 'verified_agent'
+          ? 'unverified_agent'
+          : result.status
         : 'stale';
     roles.push({
       role,
@@ -486,6 +503,9 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
       effective_status: effectiveStatus,
       stale: Boolean(result && binding.status !== 'current'),
       stale_reason: binding?.reason ?? null,
+      provenance_status: provenance?.status ?? null,
+      provenance_reason: provenance?.reason ?? null,
+      agent_provenance: result?.agent_provenance ?? null,
       summary: result?.summary ?? null,
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
@@ -502,6 +522,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
     pass_count: roles.filter((role) => role.effective_status === 'pass').length,
     stale_count: roles.filter((role) => role.effective_status === 'stale').length,
     missing_count: roles.filter((role) => role.effective_status === 'missing').length,
+    unverified_agent_count: roles.filter((role) => role.effective_status === 'unverified_agent').length,
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
     updated_at: new Date().toISOString(),
@@ -576,7 +597,7 @@ async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
 
 function renderReviewSummaryMarkdown(summary) {
   const rows = summary.roles.map((role) => (
-    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}`
+    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}`
   ));
   return `# Agent Review Summary
 
@@ -586,10 +607,106 @@ function renderReviewSummaryMarkdown(summary) {
 - pass: ${summary.pass_count}
 - stale: ${summary.stale_count}
 - missing: ${summary.missing_count}
+- unverified_agent: ${summary.unverified_agent_count}
 - block: ${summary.block_count}
 
 ${rows.join('\n')}
 `;
+}
+
+function buildAgentProvenance(repoRoot, options = {}) {
+  const system = normalizeReviewSystem(options.agentSystem ?? options.reviewerSystem);
+  const executionMode = normalizeExecutionMode(options.executionMode);
+  const transcriptArtifact = options.agentTranscript
+    ? normalizeArtifact(repoRoot, options.agentTranscript)
+    : null;
+  const requestArtifact = options.agentRequest
+    ? normalizeArtifact(repoRoot, options.agentRequest)
+    : options.defaultRequestPath
+      ? toWorkspaceRelative(repoRoot, options.defaultRequestPath)
+      : null;
+  const provenance = {
+    schema_version: '0.1.0',
+    system,
+    execution_mode: executionMode,
+    agent_id: normalizeNullable(options.agentId),
+    agent_role: normalizeNullable(options.agentRole),
+    model: normalizeNullable(options.agentModel),
+    thread_id: normalizeNullable(options.agentThreadId),
+    session_id: normalizeNullable(options.agentSessionId),
+    tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId),
+    transcript_artifact: transcriptArtifact,
+    request_artifact: requestArtifact,
+    recorded_by: normalizeNullable(options.recordedBy),
+    evidence_strength: 'missing'
+  };
+  provenance.evidence_strength = classifyAgentProvenance(provenance);
+  return provenance;
+}
+
+function normalizeReviewSystem(value) {
+  const normalized = String(value ?? 'unknown').trim().toLowerCase().replace(/-/g, '_');
+  return REVIEW_PROVENANCE_SYSTEMS.has(normalized) ? normalized : 'other';
+}
+
+function normalizeExecutionMode(value) {
+  const normalized = String(value ?? 'unknown').trim().toLowerCase().replace(/-/g, '_');
+  return REVIEW_EXECUTION_MODES.has(normalized) ? normalized : 'unknown';
+}
+
+function normalizeNullable(value) {
+  const normalized = String(value ?? '').trim();
+  return normalized ? normalized : null;
+}
+
+function classifyAgentProvenance(provenance) {
+  if (AGENT_REVIEW_SYSTEMS.has(provenance.system) && provenance.execution_mode === 'parallel_subagent') {
+    return hasAgentCorrelationEvidence(provenance) ? 'strong' : 'declared';
+  }
+  if (provenance.system === 'human' || provenance.execution_mode === 'manual_review') return 'manual';
+  return 'missing';
+}
+
+function hasAgentCorrelationEvidence(provenance) {
+  return Boolean(
+    provenance.agent_id
+    || provenance.thread_id
+    || provenance.session_id
+    || provenance.tool_call_id
+    || provenance.transcript_artifact
+  );
+}
+
+function validateAgentProvenance(result) {
+  const provenance = result.agent_provenance;
+  if (!provenance) {
+    return {
+      status: 'missing_agent_provenance',
+      reason: 'review result does not include Codex/Claude Code subagent provenance'
+    };
+  }
+  if (!AGENT_REVIEW_SYSTEMS.has(provenance.system)) {
+    return {
+      status: 'non_agent_reviewer',
+      reason: `review was recorded by ${provenance.system}, not Codex/Claude Code subagent review`
+    };
+  }
+  if (provenance.execution_mode !== 'parallel_subagent') {
+    return {
+      status: 'not_parallel_subagent',
+      reason: `review execution mode is ${provenance.execution_mode}, not parallel_subagent`
+    };
+  }
+  if (provenance.evidence_strength !== 'strong') {
+    return {
+      status: 'weak_agent_provenance',
+      reason: 'review provenance lacks subagent id, thread/session/call id, or transcript artifact'
+    };
+  }
+  return {
+    status: 'verified_agent',
+    reason: `${provenance.system} parallel subagent provenance is recorded`
+  };
 }
 
 function parseFindings(values) {
