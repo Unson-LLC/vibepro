@@ -7,6 +7,7 @@ import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import { renderFlowDesignReport, scanFlowDesign } from './flow-design-scanner.js';
+import { renderGestureInteractionReport, scanGestureInteraction } from './gesture-interaction-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { renderTerminalLinkReport, scanTerminalLinkContracts } from './terminal-link-scanner.js';
@@ -94,6 +95,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const staticSitePath = path.join(runDir, 'static-site-check-result.md');
   const componentStylePath = path.join(runDir, 'component-style-check-result.md');
   const flowDesignPath = path.join(runDir, 'flow-design-check-result.md');
+  const gestureInteractionPath = path.join(runDir, 'gesture-interaction-check-result.md');
   const terminalLinkPath = path.join(runDir, 'terminal-link-check-result.md');
   const architectureProfilePath = path.join(runDir, 'architecture-profile.md');
   const findingReviewPath = path.join(runDir, 'finding-review.md');
@@ -122,6 +124,10 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await writeFile(flowDesignPath, renderFlowDesignReport({
     runId,
     flowDesign: evidence.flow_design
+  }));
+  await writeFile(gestureInteractionPath, renderGestureInteractionReport({
+    runId,
+    gestureInteraction: evidence.gesture_interaction
   }));
   await writeFile(terminalLinkPath, renderTerminalLinkReport({
     runId,
@@ -154,6 +160,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
       static_site_check: toWorkspaceRelative(root, staticSitePath),
       component_style_check: toWorkspaceRelative(root, componentStylePath),
       flow_design_check: toWorkspaceRelative(root, flowDesignPath),
+      gesture_interaction_check: toWorkspaceRelative(root, gestureInteractionPath),
       terminal_link_check: toWorkspaceRelative(root, terminalLinkPath),
       architecture_profile: toWorkspaceRelative(root, architectureProfilePath),
       finding_review: toWorkspaceRelative(root, findingReviewPath),
@@ -239,6 +246,9 @@ async function buildEvidence(repoRoot, graph, runId, story, config = {}) {
       ? await scanComponentStyle(repoRoot)
       : null,
     flow_design: await scanFlowDesign(repoRoot, { story, config }),
+    gesture_interaction: architectureProfile.applicable_checks.includes('component-style')
+      ? await scanGestureInteraction(repoRoot)
+      : null,
     terminal_link_contracts: await scanTerminalLinkContracts(repoRoot),
     refactoring_opportunities: [],
     refactoring_campaigns: [],
@@ -448,6 +458,28 @@ function buildFindings(evidence) {
         title: 'クリック可能要素のhit targetが不安定になるCSS候補がある',
         detail: `${interactionReliabilityHits.length} 件のUI sourceで、hover/focus中の移動、小さすぎる操作領域、transition: all、またはアイコンSVGが実クリックtargetを奪う候補を検出した。内訳: ${formatGateSummary(interactionSummary)}。`,
         recommendation: 'クリック可能要素はhover/focus/press中にhit targetを移動させず、状態表現は色・border・shadowに限定する。高頻度操作のtargetは最低28px程度を確保する。アイコンボタン配下のsvg/svg *はpointer-events:noneにし、Playwrightではlocator.clickだけでなくelementFromPoint(center)とpage.mouse.clickで物理クリックを確認する。'
+      });
+    }
+  }
+  if (evidence.gesture_interaction) {
+    const gestureHits = filterGateRelevant([
+      ...(evidence.gesture_interaction.touch_action_hits ?? []),
+      ...(evidence.gesture_interaction.overlay_pointer_hits ?? []),
+      ...(evidence.gesture_interaction.drag_tap_hits ?? []),
+      ...(evidence.gesture_interaction.carousel_hits ?? []),
+      ...(evidence.gesture_interaction.map_marker_hits ?? [])
+    ]);
+    if (gestureHits.length > 0) {
+      const gestureSummary = summarizeGateEffects(gestureHits);
+      findings.push({
+        id: 'VP-GESTURE-001',
+        severity: 'Medium',
+        category: 'ジェスチャー操作品質',
+        title: 'map/carousel/touch操作の契約不足候補がある',
+        detail: `${gestureHits.length} 件のUI sourceで、touch-action、overlay pointer-events、drag/tap抑止、carousel hit area、またはmap marker layeringの確認候補を検出した。内訳: ${formatGateSummary(gestureSummary)}。`,
+        recommendation: 'スワイプ、地図移動、tap、scrollの優先順位をStory/E2Eに明示し、Playwrightではdrag後のURL不変、scrollLeft/active card変化、elementFromPointでのhit targetを確認する。',
+        target_files: uniqueFiles(gestureHits.map((hit) => hit.file)),
+        gesture_hits: gestureHits
       });
     }
   }
@@ -1332,6 +1364,14 @@ function renderSummary({ runId, evidence, findings }) {
 | UI旧トークン候補 | ${formatRiskCount(evidence.component_style?.legacy_style_hits ?? [], evidence.component_style?.risk_summary?.legacy_style_hits)} |
 | UI操作信頼性候補 | ${formatRiskCount(evidence.component_style?.interaction_reliability_hits ?? [], evidence.component_style?.risk_summary?.interaction_reliability_hits)} |
 | UIコンポーネント種別 | ${(evidence.component_style?.component_kinds ?? []).join(', ') || '-'} |
+| Gesture Interaction Gate | ${evidence.gesture_interaction?.status ?? 'not_generated'} |
+| Gesture Interaction候補 | ${formatRiskCount([
+  ...(evidence.gesture_interaction?.touch_action_hits ?? []),
+  ...(evidence.gesture_interaction?.overlay_pointer_hits ?? []),
+  ...(evidence.gesture_interaction?.drag_tap_hits ?? []),
+  ...(evidence.gesture_interaction?.carousel_hits ?? []),
+  ...(evidence.gesture_interaction?.map_marker_hits ?? [])
+])} |
 | Terminal Link契約 | ${evidence.terminal_link_contracts?.status ?? 'not_generated'} |
 | Terminal Link候補 | ${formatRiskCount([
   ...(evidence.terminal_link_contracts?.dot_directory_link_hits ?? []),

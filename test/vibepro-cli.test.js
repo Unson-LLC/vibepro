@@ -10,6 +10,7 @@ import { promisify } from 'node:util';
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { scanFlowDesign } from '../src/flow-design-scanner.js';
+import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
@@ -857,6 +858,64 @@ export default function Page() {
   assert.equal(result.result.check.checks.some((check) => check.id === 'flow_design' && check.status === 'needs_review'), true);
 });
 
+test('gesture interaction scanner flags touch, overlay, drag, carousel, and map marker risks', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.css'), `
+.map-carousel {
+  touch-action: pan-x pan-y pinch-zoom;
+  overflow-x: auto;
+}
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+.hotel-card {
+  width: 36px;
+  height: 40px;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+"use client";
+export default function Page({ router }) {
+  const [isDragging, setIsDragging] = useState(false);
+  return <div className="carousel" onPointerDown={() => setIsDragging(true)}>
+    <button onClick={() => router.push('/detail')}>宿を見る</button>
+    <AdvancedMarkerElement position={{ lat: 35, lng: 139 }} />
+  </div>;
+}
+`);
+
+  const result = await scanGestureInteraction(repo);
+
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.touch_action_hits.some((hit) => hit.kind === 'ambiguous_touch_action_on_gesture_surface'), true);
+  assert.equal(result.overlay_pointer_hits.some((hit) => hit.kind === 'map_overlay_may_capture_touch'), true);
+  assert.equal(result.drag_tap_hits.some((hit) => hit.kind === 'drag_state_not_connected_to_click_suppression'), true);
+  assert.equal(result.carousel_hits.some((hit) => hit.kind === 'carousel_missing_scroll_snap_contract'), true);
+  assert.equal(result.carousel_hits.some((hit) => hit.kind === 'small_gesture_hit_area'), true);
+  assert.equal(result.map_marker_hits.some((hit) => hit.kind === 'map_marker_layering_contract_missing'), true);
+});
+
+test('check ui includes gesture interaction as a review gate', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'page.css'), `
+.map-carousel {
+  touch-action: pan-x pan-y pinch-zoom;
+  overflow-x: auto;
+}
+`);
+
+  const result = await runCli(['check', 'ui', repo, '--story-id', 'U-gesture', '--run-id', 'gesture-check', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.evidence.gesture_interaction.status, 'needs_review');
+  assert.equal(result.result.check.checks.some((check) => check.id === 'gesture_interaction.touch_action_hits' && check.status === 'needs_review'), true);
+});
+
 test('terminal link scanner flags dot directory HTML preview gaps', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'public', 'modules'), { recursive: true });
@@ -1094,6 +1153,8 @@ test('verify flow writes Playwright evidence and skips mutating probes by defaul
           { action: 'expectVisible', text: '病名' },
           { action: 'expectNotVisible', text: '退院予定日' },
           { action: 'physicalClick', selector: '.icon-action-button', targetPolicy: 'self' },
+          { action: 'drag', selector: '.card-carousel', deltaX: -120, expectScrollLeftChanged: true, expectUrlUnchanged: true, activeSelector: '.card[aria-selected="true"]', expectActiveChanged: true },
+          { action: 'expectElementFromPoint', selector: '.map-marker' },
           { action: 'screenshot', name: 'new-registration' }
         ]
       },
@@ -1147,6 +1208,10 @@ console.log('fake playwright ok');
   assert.match(generatedSpec, /document\.elementFromPoint\(x, y\)/);
   assert.equal(generatedSpec.includes('Physical click target for .icon-action-button is intercepted'), true);
   assert.match(generatedSpec, /page\.mouse\.click\(box\.x \+ box\.width \/ 2, box\.y \+ box\.height \/ 2\)/);
+  assert.match(generatedSpec, /gestureScrollBefore/);
+  assert.match(generatedSpec, /Expected drag not to navigate for \.card-carousel/);
+  assert.match(generatedSpec, /Expected active item state to change for \.card/);
+  assert.match(generatedSpec, /Hit target for \.map-marker is intercepted/);
   assert.match(await readFile(path.join(runDir, 'flow-verification.md'), 'utf8'), /new-registration-readonly/);
   assert.match(await readFile(path.join(repo, 'fake-npx.log'), 'utf8'), /playwright test/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));

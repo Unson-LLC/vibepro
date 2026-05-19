@@ -1807,7 +1807,8 @@ function normalizeGraphPath(filePath) {
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
-  if (!storyDocMatchesStory(primaryStory, story)) {
+  const hasSingleChangedStoryDoc = storyDocs.length === 1 && Boolean(primaryStory?.path);
+  if (!storyDocMatchesStory(primaryStory, story) && !hasSingleChangedStoryDoc) {
     const filesystemStory = await findStorySource(repoRoot, story);
     if (filesystemStory?.path) {
       try {
@@ -1820,7 +1821,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
       primaryStory = filesystemStory;
     }
   }
-  if (!storyDocMatchesStory(primaryStory, story)) {
+  if (!storyDocMatchesStory(primaryStory, story) && !hasSingleChangedStoryDoc) {
     primaryStory = buildUnresolvedStorySource(story);
   }
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);

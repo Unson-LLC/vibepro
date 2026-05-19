@@ -7,6 +7,7 @@ import { scanCodeQuality } from './code-quality-scanner.js';
 import { scanComponentStyle } from './component-style-scanner.js';
 import { scanDatabaseAccess } from './database-access-scanner.js';
 import { scanFlowDesign } from './flow-design-scanner.js';
+import { scanGestureInteraction } from './gesture-interaction-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
@@ -18,7 +19,7 @@ import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writ
 export const CHECK_PACKS = {
   ui: {
     title: 'UI experience check',
-    checks: ['component_style', 'flow_design', 'network_contracts', 'terminal_link_contracts']
+    checks: ['component_style', 'flow_design', 'gesture_interaction', 'network_contracts', 'terminal_link_contracts']
   },
   security: {
     title: 'Security boundary check',
@@ -38,11 +39,11 @@ export const CHECK_PACKS = {
   },
   'launch-readiness': {
     title: 'Launch readiness check',
-    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'database_access', 'local_dev', 'code_quality']
+    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'gesture_interaction', 'database_access', 'local_dev', 'code_quality']
   },
   all: {
     title: 'All check packs',
-    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
+    checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'gesture_interaction', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
   }
 };
 
@@ -144,6 +145,7 @@ async function runNamedCheck(check, context) {
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
+  if (check === 'gesture_interaction') return scanGestureInteraction(root);
   if (check === 'network_contracts') return scanNetworkContracts(root);
   if (check === 'terminal_link_contracts') return scanTerminalLinkContracts(root);
   if (check === 'database_access') return scanDatabaseAccess(root);
@@ -202,6 +204,15 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
   }
   if (evidence.flow_design) {
     checks.push(summarizeFlowDesign(evidence.flow_design));
+  }
+  if (evidence.gesture_interaction) {
+    checks.push(...summarizeRiskGroups('gesture_interaction', 'Gesture Interaction', evidence.gesture_interaction, [
+      ['touch_action_hits', 'Touch action'],
+      ['overlay_pointer_hits', 'Overlay pointer'],
+      ['drag_tap_hits', 'Drag/tap suppression'],
+      ['carousel_hits', 'Carousel and hit area'],
+      ['map_marker_hits', 'Map marker layering']
+    ]));
   }
   if (evidence.terminal_link_contracts) {
     checks.push(...summarizeRiskGroups('terminal_link_contracts', 'Terminal/File viewer', evidence.terminal_link_contracts, [

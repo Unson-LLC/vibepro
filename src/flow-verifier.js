@@ -505,7 +505,8 @@ async function assertNoRuntimeContractFailures(page, events) {
 ${probes.map((probe) => `test(${JSON.stringify(probe.title)}, async ({ page }) => {
   const runtimeContractEvents = installRuntimeContractWatch(page);
   await page.goto(new URL(${JSON.stringify(probe.path)}, BASE_URL).toString());
-${probe.steps.map((step) => renderStep(step, probe, screenshotDir)).filter(Boolean).join('\n')}
+  const vibeproProbeState = { urls: { initial: page.url() }, scrollLeft: {} };
+${probe.steps.map((step, index) => renderStep(step, probe, screenshotDir, index)).filter(Boolean).join('\n')}
   await assertNoRuntimeContractFailures(page, runtimeContractEvents);
 });`).join('\n\n')}
 `;
@@ -523,7 +524,7 @@ function renderPlaywrightConfig() {
 `;
 }
 
-function renderStep(step, probe, screenshotDir) {
+function renderStep(step, probe, screenshotDir, index = 0) {
   if (step.action === 'expectVisible') {
     return `  await expect(page.getByText(${JSON.stringify(step.text)}, { exact: false }).first()).toBeVisible();`;
   }
@@ -535,6 +536,31 @@ function renderStep(step, probe, screenshotDir) {
   }
   if (step.action === 'physicalClick') {
     return renderPhysicalClickStep(step);
+  }
+  if (step.action === 'expectElementFromPoint') {
+    return renderElementFromPointStep(step);
+  }
+  if (step.action === 'captureUrl') {
+    const key = safeStateKey(step.name ?? step.key ?? 'checkpoint');
+    return `  vibeproProbeState.urls[${JSON.stringify(key)}] = page.url();`;
+  }
+  if (step.action === 'expectUrlUnchanged') {
+    const key = safeStateKey(step.name ?? step.key ?? 'initial');
+    return [
+      `  const expectedUrl${index} = vibeproProbeState.urls[${JSON.stringify(key)}] ?? vibeproProbeState.urls.initial;`,
+      `  expect(page.url(), ${JSON.stringify(`Expected URL to remain unchanged from ${key}`)}).toBe(expectedUrl${index});`
+    ].join('\n');
+  }
+  if (step.action === 'drag' || step.action === 'touchDrag') {
+    return renderGestureDragStep(step, index);
+  }
+  if (step.action === 'expectScrollLeftChanged') {
+    const key = safeStateKey(step.name ?? step.key ?? step.selector ?? `gesture-${index}`);
+    return [
+      `  const scrollState${index} = vibeproProbeState.scrollLeft[${JSON.stringify(key)}];`,
+      `  expect(scrollState${index}, ${JSON.stringify(`Expected recorded scrollLeft state for ${key}`)}).toBeTruthy();`,
+      `  expect(scrollState${index}.after, ${JSON.stringify(`Expected scrollLeft to change for ${key}`)}).not.toBe(scrollState${index}.before);`
+    ].join('\n');
   }
   if (step.action === 'fill') {
     if (step.selector) return `  await page.locator(${JSON.stringify(step.selector)}).fill(${JSON.stringify(step.value ?? '')});`;
@@ -561,6 +587,79 @@ function renderStep(step, probe, screenshotDir) {
     return `  await page.screenshot({ path: ${JSON.stringify(path.join(screenshotDir, fileName))}, fullPage: true });`;
   }
   return null;
+}
+
+function renderElementFromPointStep(step) {
+  const locatorExpression = step.selector
+    ? `page.locator(${JSON.stringify(step.selector)}).first()`
+    : `page.getByText(${JSON.stringify(step.text ?? step.label)}, { exact: ${step.exact === true ? 'true' : 'false'} }).first()`;
+  const targetLabel = step.selector ?? step.text ?? step.label ?? 'elementFromPoint target';
+  return [
+    `  const hitTarget = ${locatorExpression};`,
+    '  await expect(hitTarget).toBeVisible();',
+    '  await hitTarget.scrollIntoViewIfNeeded();',
+    '  const hit = await hitTarget.evaluate((element) => {',
+    '    const rect = element.getBoundingClientRect();',
+    '    const x = rect.left + rect.width / 2;',
+    '    const y = rect.top + rect.height / 2;',
+    '    const target = document.elementFromPoint(x, y);',
+    '    return {',
+    '      isSelf: target === element,',
+    '      isInside: Boolean(target && element.contains(target)),',
+    '      tagName: target?.tagName ?? null,',
+    '      className: String(target?.className ?? \'\'),',
+    '      html: target?.outerHTML?.slice(0, 240) ?? null',
+    '    };',
+    '  });',
+    `  expect(hit.isSelf || hit.isInside, \`Hit target for ${escapeTemplate(targetLabel)} is intercepted by \${hit.tagName}.\${hit.className}: \${hit.html}\`).toBe(true);`
+  ].join('\n');
+}
+
+function renderGestureDragStep(step, index) {
+  const selector = step.selector ?? step.text ?? step.label;
+  if (!selector) return null;
+  const locatorExpression = step.selector
+    ? `page.locator(${JSON.stringify(step.selector)}).first()`
+    : `page.getByText(${JSON.stringify(step.text ?? step.label)}, { exact: ${step.exact === true ? 'true' : 'false'} }).first()`;
+  const key = safeStateKey(step.name ?? step.key ?? step.selector ?? `gesture-${index}`);
+  const deltaX = Number.isFinite(step.deltaX) ? step.deltaX : -160;
+  const deltaY = Number.isFinite(step.deltaY) ? step.deltaY : 0;
+  const steps = Number.isInteger(step.steps) && step.steps > 0 ? step.steps : 8;
+  const expectsScroll = step.expectScrollLeftChanged === true || step.expectScrollChange === true;
+  const expectsActiveChange = step.expectActiveChanged === true || step.expectActiveCardChanged === true;
+  const lines = [
+    `  const gestureTarget${index} = ${locatorExpression};`,
+    `  await expect(gestureTarget${index}).toBeVisible();`,
+    `  await gestureTarget${index}.scrollIntoViewIfNeeded();`,
+    `  const gestureScrollBefore${index} = await gestureTarget${index}.evaluate((element) => element.scrollLeft);`
+  ];
+  if (step.activeSelector) {
+    lines.push(`  const gestureActiveBefore${index} = await page.locator(${JSON.stringify(step.activeSelector)}).first().evaluate((element) => ({ text: element.textContent, className: String(element.className), ariaSelected: element.getAttribute('aria-selected') })).catch(() => null);`);
+  }
+  lines.push(
+    `  const gestureBox${index} = await gestureTarget${index}.boundingBox();`,
+    `  expect(gestureBox${index}, ${JSON.stringify(`Expected a bounding box for ${selector}`)}).not.toBeNull();`,
+    `  await page.mouse.move(gestureBox${index}.x + gestureBox${index}.width / 2, gestureBox${index}.y + gestureBox${index}.height / 2);`,
+    '  await page.mouse.down();',
+    `  await page.mouse.move(gestureBox${index}.x + gestureBox${index}.width / 2 + ${deltaX}, gestureBox${index}.y + gestureBox${index}.height / 2 + ${deltaY}, { steps: ${steps} });`,
+    '  await page.mouse.up();',
+    '  await page.waitForTimeout(100);',
+    `  const gestureScrollAfter${index} = await gestureTarget${index}.evaluate((element) => element.scrollLeft);`,
+    `  vibeproProbeState.scrollLeft[${JSON.stringify(key)}] = { before: gestureScrollBefore${index}, after: gestureScrollAfter${index} };`
+  );
+  if (step.activeSelector) {
+    lines.push(`  const gestureActiveAfter${index} = await page.locator(${JSON.stringify(step.activeSelector)}).first().evaluate((element) => ({ text: element.textContent, className: String(element.className), ariaSelected: element.getAttribute('aria-selected') })).catch(() => null);`);
+  }
+  if (expectsScroll) {
+    lines.push(`  expect(gestureScrollAfter${index}, ${JSON.stringify(`Expected scrollLeft to change for ${selector}`)}).not.toBe(gestureScrollBefore${index});`);
+  }
+  if (expectsActiveChange && step.activeSelector) {
+    lines.push(`  expect(JSON.stringify(gestureActiveAfter${index}), ${JSON.stringify(`Expected active item state to change for ${step.activeSelector}`)}).not.toBe(JSON.stringify(gestureActiveBefore${index}));`);
+  }
+  if (step.expectUrlUnchanged === true) {
+    lines.push(`  expect(page.url(), ${JSON.stringify(`Expected drag not to navigate for ${selector}`)}).toBe(vibeproProbeState.urls.initial);`);
+  }
+  return lines.join('\n');
 }
 
 function renderPhysicalClickStep(step) {
@@ -594,6 +693,10 @@ function renderPhysicalClickStep(step) {
     `  expect(box, ${JSON.stringify(`Expected a bounding box for ${targetLabel}`)}).not.toBeNull();`,
     '  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);'
   ].join('\n');
+}
+
+function safeStateKey(value) {
+  return String(value ?? 'default').replace(/[^a-zA-Z0-9_.:-]+/g, '-').slice(0, 80) || 'default';
 }
 
 function renderFlowVerificationReport(verification) {

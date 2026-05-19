@@ -19,7 +19,7 @@ vibepro check list
 
 Use these mappings:
 
-- UI quality / user flow / API contract in UI calls: `vibepro check ui <repo> --story-id <story-id>`
+- UI quality / user flow / API contract in UI calls / gesture UX: `vibepro check ui <repo> --story-id <story-id>`
 - Security / auth / exposed surface / API route contracts: `vibepro check security <repo> --story-id <story-id>`
 - Performance readiness / heavy dev / DB access risks: `vibepro check performance <repo> --story-id <story-id>`
 - Architecture / responsibility boundary: `vibepro check architecture <repo> --story-id <story-id>`
@@ -112,6 +112,14 @@ Run evidence is written to:
 - Treat normal-looking placeholder buttons as findings when they only `console.log`, TODO, no-op, or have no `onClick` / `href` / submit / disabled / unfinished-state marker.
 - Story E2E coverage is not enough when the changed screen has additional clickable-looking controls. Require a screen-level clickable element inventory for UI-heavy changes.
 - For Playwright flow checks, click not only the main happy path but also controls that appear actionable: secondary buttons, detail links, icon buttons, tabs, menu triggers, AI/voice actions, and expandable rows.
+
+## Gesture Interaction Guardrails
+
+- For mobile-heavy UI, map UI, carousel UI, drag/drop, swipe, or touch changes, inspect the `Gesture Interaction` section from `vibepro check ui/all/launch-readiness`.
+- Treat these as review-required signals: ambiguous `touch-action`, map overlays without clear `pointer-events`, drag state not connected to click suppression, carousel surfaces without snap/threshold evidence, small gesture hit areas, and map markers without collision/zIndex/contrast/hit-area contract.
+- Static gesture findings are review candidates, not automatic proof of an app bug. Convert them to block-level evidence when Playwright/runtime probes show wrong navigation, no scroll/active-card movement, intercepted hit targets, or visible interaction failure.
+- In `vibepro verify flow`, add gesture probes for changed surfaces. Useful steps include `drag`, `touchDrag`, `expectUrlUnchanged`, `expectScrollLeftChanged`, active item change via `activeSelector` + `expectActiveChanged`, and `expectElementFromPoint`.
+- For “swipe becomes tap” regressions, verify that drag after a card/map interaction does not change URL and does update the expected scroll or active item state.
 
 ## Review Checklist
 
