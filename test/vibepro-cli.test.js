@@ -183,7 +183,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /まず人間が使う基本コマンド/);
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
-  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|all>/);
+  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
@@ -217,7 +217,55 @@ test('check list prints available diagnosis packs', async () => {
   assert.match(output, /ui: UI experience check/);
   assert.match(output, /security: Security boundary check/);
   assert.match(output, /performance: Performance readiness check/);
+  assert.match(output, /agent-harness: AI agent harness readiness check/);
   assert.equal(result.packs.some((pack) => pack.id === 'launch-readiness'), true);
+});
+
+test('check all leaves agent harness optional unless explicitly included', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({ name: 'harness-optional-fixture' }, null, 2));
+  await runCli(['init', repo, '--story-id', 'story-harness-optional', '--title', 'Harness optional']);
+
+  const defaultResult = await runCli(['check', 'all', repo, '--run-id', 'all-no-harness', '--json']);
+
+  assert.equal(defaultResult.exitCode, 0);
+  assert.equal(defaultResult.result.check.pack_id, 'all');
+  assert.equal(defaultResult.result.check.evidence.agent_harness, undefined);
+  assert.equal(defaultResult.result.check.checks.some((check) => check.id === 'agent_harness'), false);
+  const defaultMarkdown = await readFile(path.join(repo, '.vibepro', 'checks', 'all', 'all-no-harness', 'check.md'), 'utf8');
+  assert.match(defaultMarkdown, /vibepro check agent-harness <repo>/);
+
+  const includedResult = await runCli(['check', 'all', repo, '--include-harness', '--run-id', 'all-with-harness', '--json']);
+
+  assert.equal(includedResult.exitCode, 0);
+  assert.equal(includedResult.result.check.evidence.agent_harness.summary.codex_status, 'missing');
+  assert.equal(includedResult.result.check.checks.some((check) => check.id === 'agent_harness' && check.status === 'needs_review'), true);
+});
+
+test('check agent-harness diagnoses codex claude skills hooks and ignore noise', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await mkdir(path.join(repo, '.claude'), { recursive: true });
+  await writeFile(path.join(repo, '.claude', 'settings.json'), JSON.stringify({
+    hooks: {
+      UserPromptSubmit: [
+        { command: 'npx tsx scripts/missing-hook.ts' }
+      ]
+    }
+  }, null, 2));
+  await writeFile(path.join(repo, '.gitignore'), 'node_modules/\n');
+  await runCli(['init', repo, '--story-id', 'story-agent-harness', '--title', 'Agent harness']);
+
+  const result = await runCli(['check', 'agent-harness', repo, '--run-id', 'agent-harness-test', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.evidence.agent_harness.codex.status, 'missing');
+  assert.equal(result.result.check.evidence.agent_harness.claude.has_claude_file, false);
+  assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'hook_command_target_missing'), true);
+  assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'ai_exploration_noise_ignores_incomplete'), true);
+  assert.equal(result.result.check.checks.some((check) => check.id === 'agent_harness' && check.status === 'needs_review'), true);
 });
 
 test('check security runs a purpose-level diagnosis pack and writes evidence', async () => {

@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { scanAgentHarness } from './agent-harness-scanner.js';
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
 import { scanCodeQuality } from './code-quality-scanner.js';
@@ -41,6 +42,10 @@ export const CHECK_PACKS = {
     title: 'Launch readiness check',
     checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'gesture_interaction', 'database_access', 'local_dev', 'code_quality']
   },
+  'agent-harness': {
+    title: 'AI agent harness readiness check',
+    checks: ['agent_harness']
+  },
   all: {
     title: 'All check packs',
     checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'gesture_interaction', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
@@ -69,9 +74,12 @@ export async function runCheckPack(repoRoot, options = {}) {
   await mkdir(runDir, { recursive: true });
 
   const architectureProfile = await profileArchitecture(root);
-  const context = { root, pack, options, architectureProfile };
+  const checksToRun = packId === 'all' && options.includeHarness === true
+    ? [...pack.checks, 'agent_harness']
+    : pack.checks;
+  const context = { root, pack: { ...pack, checks: checksToRun }, options, architectureProfile };
   const evidence = {};
-  for (const check of pack.checks) {
+  for (const check of checksToRun) {
     evidence[check] = await runNamedCheck(check, context);
   }
   if (packId === 'performance' && options.measure === true) {
@@ -146,6 +154,7 @@ export async function runCheckPack(repoRoot, options = {}) {
 async function runNamedCheck(check, context) {
   const { root, architectureProfile, options } = context;
   if (check === 'architecture_profile') return architectureProfile;
+  if (check === 'agent_harness') return scanAgentHarness(root);
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -187,6 +196,9 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       status: 'pass',
       summary: `${architectureProfile.app_type ?? 'unknown'} / checks: ${(architectureProfile.applicable_checks ?? []).join(', ') || '-'}`
     });
+  }
+  if (evidence.agent_harness) {
+    checks.push(summarizeAgentHarness(evidence.agent_harness));
   }
   if (evidence.static_site) {
     checks.push(...summarizeRiskGroups('static_site', 'Static/Security', evidence.static_site, [
@@ -302,6 +314,16 @@ function summarizeNetworkContracts(networkContracts) {
     label: 'Network Contracts',
     status: missing > 0 ? 'fail' : dynamic > 0 || replacements > 0 ? 'needs_review' : 'pass',
     summary: `${networkContracts.api_client_call_count ?? 0} API client calls; missing=${missing}, dynamic=${dynamic}, server-function-replacements=${replacements}`
+  };
+}
+
+function summarizeAgentHarness(agentHarness) {
+  const summary = agentHarness.risk_summary?.findings ?? { block: 0, review: 0, info: 0 };
+  return {
+    id: 'agent_harness',
+    label: 'AI Agent Harness Readiness',
+    status: statusFromRiskSummary(summary),
+    summary: `${agentHarness.summary?.findings ?? 0} findings; codex=${agentHarness.summary?.codex_status ?? '-'}, claude=${agentHarness.summary?.claude_status ?? '-'}, skills=${agentHarness.summary?.skills_status ?? '-'}`
   };
 }
 
@@ -421,6 +443,9 @@ function renderCheckPackOnboarding({ result, reviewItems, artifacts = null }) {
     `- Machine-readable evidence: ${jsonPath}`,
     '- If this is only a first diagnosis, share the Status and the checks listed under needs_review / fail.',
     '- If this is PR work, run `vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` after addressing or classifying findings.',
+    ...(result.pack_id === 'all' && !result.evidence?.agent_harness
+      ? ['- If you also want to standardize AI-driven development in this repo, run `vibepro check agent-harness <repo>` or `vibepro check all <repo> --include-harness`.']
+      : []),
     '',
     '## Share Template / 共有テンプレート',
     '',
