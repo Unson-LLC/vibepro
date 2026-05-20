@@ -454,18 +454,21 @@
           <div class="eyebrow">使い方</div>
           <h2>まず覚えるコマンド</h2>
         </div>
-        <pre class="terminal"># リポジトリにVibePro作業領域を作る
-node bin/vibepro.js init /path/to/repo \
+        <pre class="terminal"># まず全体診断だけ回す。Story IDがなくてもよい
+vibepro check all /path/to/repo --base &lt;base-branch&gt;
+
+# 特定の機能・不具合に紐づける場合はStoryを作る
+vibepro init /path/to/repo \
   --story-id story-local-hardening \
   --title "公開前診断"
 
 # Story単位で診断する
-node bin/vibepro.js story diagnose /path/to/repo \
-  --id story-local-hardening --run-graphify
+vibepro check all /path/to/repo \
+  --story-id story-local-hardening --base &lt;base-branch&gt;
 
 # PR前に差分とPR本文を準備する
-node bin/vibepro.js pr prepare /path/to/repo \
-  --base origin/develop --story-id STR-022</pre>
+vibepro pr prepare /path/to/repo \
+  --base &lt;base-branch&gt; --story-id story-local-hardening</pre>
         <div class="footer"><span>VibePro Internal Onboarding</span><span>06</span></div>
       </section>
 

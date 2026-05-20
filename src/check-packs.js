@@ -91,6 +91,8 @@ export async function runCheckPack(repoRoot, options = {}) {
 
   const checks = summarizeChecks({ packId, evidence, architectureProfile });
   const status = aggregateStatus(checks);
+  const jsonPath = path.join(runDir, 'check.json');
+  const markdownPath = path.join(runDir, 'check.md');
   const result = {
     schema_version: '0.1.0',
     run_id: runId,
@@ -100,11 +102,13 @@ export async function runCheckPack(repoRoot, options = {}) {
     status,
     repo: { root: '.' },
     checks,
+    artifacts: {
+      check_json: toWorkspaceRelative(root, jsonPath),
+      check_report: toWorkspaceRelative(root, markdownPath)
+    },
     evidence
   };
 
-  const jsonPath = path.join(runDir, 'check.json');
-  const markdownPath = path.join(runDir, 'check.md');
   await writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`);
   await writeFile(markdownPath, renderCheckPack(result));
 
@@ -121,8 +125,8 @@ export async function runCheckPack(repoRoot, options = {}) {
       created_at: result.created_at,
       status,
       artifacts: {
-        check_json: toWorkspaceRelative(root, jsonPath),
-        check_report: toWorkspaceRelative(root, markdownPath)
+        check_json: result.artifacts.check_json,
+        check_report: result.artifacts.check_report
       }
     },
     ...(manifest.check_runs ?? []).filter((item) => item.run_id !== runId)
@@ -356,6 +360,7 @@ function aggregateStatus(checks) {
 }
 
 export function renderCheckPack(result) {
+  const reviewItems = checksNeedingAttention(result.checks);
   const lines = [
     '# VibePro Check Pack',
     '',
@@ -371,10 +376,15 @@ export function renderCheckPack(result) {
   for (const check of result.checks) {
     lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
   }
+  lines.push(...renderCheckPackOnboarding({
+    result,
+    reviewItems
+  }));
   return `${lines.join('\n')}\n`;
 }
 
 export function renderCheckPackSummary(result) {
+  const reviewItems = checksNeedingAttention(result.check.checks);
   const lines = [
     `check pack created: ${result.artifacts.markdown}`,
     `status: ${result.check.status}`,
@@ -385,7 +395,44 @@ export function renderCheckPackSummary(result) {
   for (const check of result.check.checks) {
     lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
   }
+  lines.push(...renderCheckPackOnboarding({
+    result: result.check,
+    reviewItems,
+    artifacts: result.artifacts
+  }));
   return `${lines.join('\n')}\n`;
+}
+
+function checksNeedingAttention(checks) {
+  return checks.filter((check) => !['pass', 'skipped', 'not_required'].includes(check.status));
+}
+
+function renderCheckPackOnboarding({ result, reviewItems, artifacts = null }) {
+  const markdownPath = artifacts?.markdown ?? result.artifacts?.check_report ?? '.vibepro/checks/<pack>/<run-id>/check.md';
+  const jsonPath = artifacts?.json ?? result.artifacts?.check_json ?? '.vibepro/checks/<pack>/<run-id>/check.json';
+  const attentionSummary = reviewItems.length === 0
+    ? ['- none']
+    : reviewItems.map((check) => `- ${check.label}: ${check.status} - ${check.summary ?? ''}`);
+  return [
+    '',
+    '## Next Steps / 次に見る場所',
+    '',
+    `- Human-readable report: ${markdownPath}`,
+    `- Machine-readable evidence: ${jsonPath}`,
+    '- If this is only a first diagnosis, share the Status and the checks listed under needs_review / fail.',
+    '- If this is PR work, run `vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` after addressing or classifying findings.',
+    '',
+    '## Share Template / 共有テンプレート',
+    '',
+    '```text',
+    `VibePro check ${result.pack_id} completed.`,
+    `Run ID: ${result.run_id}`,
+    `Status: ${result.status}`,
+    `Report: ${markdownPath}`,
+    'Needs review / fail:',
+    ...attentionSummary,
+    '```'
+  ];
 }
 
 function escapeTable(value) {

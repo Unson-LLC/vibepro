@@ -239,10 +239,17 @@ test('check security runs a purpose-level diagnosis pack and writes evidence', a
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.check.pack_id, 'security');
   assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.artifacts.check_report, '.vibepro/checks/security/security-pack-test/check.md');
+  assert.equal(result.result.check.artifacts.check_json, '.vibepro/checks/security/security-pack-test/check.json');
   assert.equal(result.result.check.checks.some((check) => check.id === 'api_boundary' && check.status === 'needs_review'), true);
   assert.equal(result.result.check.checks.some((check) => check.id === 'static_site.xss_risk_hits'), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.md')), true);
+  const checkMarkdown = await readFile(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.md'), 'utf8');
+  assert.match(checkMarkdown, /## Next Steps \/ 次に見る場所/);
+  assert.match(checkMarkdown, /## Share Template \/ 共有テンプレート/);
+  assert.match(checkMarkdown, /Report: \.vibepro\/checks\/security\/security-pack-test\/check\.md/);
+  assert.match(checkMarkdown, /Needs review \/ fail:/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_check_run_by_pack.security, 'security-pack-test');
 });

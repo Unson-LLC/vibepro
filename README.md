@@ -46,15 +46,32 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 
 VibePro requires Node.js 20 or newer.
 
+VibePro is currently an internal beta. If it is not available in the public npm registry yet, do not run `npm install -D vibepro` or `pnpm add -D vibepro` and expect it to resolve from npm.
+
+Use one of these installation modes:
+
 ```bash
+# From a local clone of this repository
+cd /path/to/vibepro
 npm install
 node bin/vibepro.js --help
+
+# Or install the internal beta from GitHub if you have repository access
+npm install -g git+ssh://git@github.com/Unson-LLC/vibepro.git
+vibepro --help
 ```
 
-When installed as a package:
+After VibePro is published to npm, the package form is:
 
 ```bash
 npx vibepro --help
+```
+
+For local development of VibePro itself:
+
+```bash
+npm install
+node bin/vibepro.js --help
 ```
 
 Graphify is optional but recommended for impact-scope discovery:
@@ -64,6 +81,59 @@ uv tool install graphifyy
 ```
 
 You can still use most story, diagnosis, and PR gate workflows without Graphify. Impact discovery will simply be less complete.
+
+The examples below use `vibepro`. If you are running from a local clone instead of a global install, replace `vibepro` with `node /path/to/vibepro/bin/vibepro.js`.
+
+## First Run: Choose Your Path
+
+If you only want to diagnose a repository for the first time, start here. You do not need an existing Story ID.
+
+```bash
+vibepro check all /path/to/repo --base <base-branch>
+```
+
+Then share:
+
+- `.vibepro/checks/all/<run-id>/check.md`
+- the top `Status`
+- every `needs_review` / `fail` item
+
+If you are working on a known feature or bug, create a local Story first:
+
+```bash
+vibepro init /path/to/repo \
+  --story-id story-<short-name> \
+  --title "<feature or bug title>" \
+  --language en
+
+vibepro check all /path/to/repo \
+  --story-id story-<short-name> \
+  --base <base-branch>
+```
+
+If the repository already has VibePro Stories, list or map them before choosing one:
+
+```bash
+vibepro story list /path/to/repo
+vibepro story map /path/to/repo
+```
+
+For PR work, the main artifact is not the check report. Run PR preparation and open the generated cockpit:
+
+```bash
+vibepro pr prepare /path/to/repo \
+  --story-id <story-id> \
+  --base <base-branch>
+```
+
+Open in this order:
+
+1. `.vibepro/pr/<story-id>/review-cockpit.html`
+2. `.vibepro/pr/<story-id>/gate-dag.html`
+3. `.vibepro/pr/<story-id>/split-plan.html`
+4. `.vibepro/pr/<story-id>/pr-body.md`
+
+`<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`.
 
 ## Quick Start
 
