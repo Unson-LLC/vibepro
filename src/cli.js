@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { initWorkspace } from './workspace.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
+import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
 import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
@@ -138,6 +139,7 @@ Usage:
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
+  vibepro harness map [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -226,6 +228,7 @@ Usage:
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
+  vibepro harness map [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -380,6 +383,13 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentHarnessStatus(result));
         return { exitCode: 0, command, subcommand: 'status', result };
+      }
+      if (subcommand === 'map') {
+        const result = await generateAgentHarnessMap(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentHarnessMapSummary(result));
+        return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown harness command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };

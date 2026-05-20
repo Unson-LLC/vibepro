@@ -184,6 +184,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro harness status \[repo\]/);
+  assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
@@ -291,6 +292,35 @@ test('harness status summarizes installed missing outdated and invalid areas', a
   assert.equal(jsonResult.exitCode, 0);
   assert.equal(jsonResult.result.hooks.findings.some((finding) => finding.kind === 'invalid_hook_settings_json'), true);
   assert.equal(jsonResult.result.ignore_noise.status, 'pass');
+});
+
+test('harness map writes codebase entrypoints and test command map', async () => {
+  const repo = await makeRepo();
+  await writeFile(path.join(repo, 'README.md'), '# Harness fixture\n');
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'harness-map-fixture',
+    scripts: {
+      typecheck: 'tsc --noEmit',
+      test: 'node --test',
+      'test:e2e': 'playwright test',
+      build: 'next build'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+
+  const result = await runCli(['harness', 'map', repo, '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.status, 'created');
+  assert.equal(result.result.artifacts.codebase_map, '.vibepro/harness/codebase-map.md');
+  assert.equal(result.result.test_command_map.by_category.typecheck.includes('typecheck'), true);
+  assert.equal(result.result.test_command_map.by_category.e2e.includes('test:e2e'), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'codebase-map.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'agent-entrypoints.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'test-command-map.json')), true);
+  const entrypoints = await readFile(path.join(repo, '.vibepro', 'harness', 'agent-entrypoints.md'), 'utf8');
+  assert.match(entrypoints, /Avoid By Default/);
 });
 
 test('check security runs a purpose-level diagnosis pack and writes evidence', async () => {
