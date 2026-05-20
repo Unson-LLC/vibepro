@@ -158,7 +158,7 @@ Usage:
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
@@ -252,7 +252,7 @@ Usage:
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
@@ -503,6 +503,7 @@ export async function runCli(argv, io = {}) {
         strict: hasFlag(rest, '--strict'),
         measure: hasFlag(rest, '--measure'),
         includeHarness: hasFlag(rest, '--include-harness'),
+        includePublicDiscovery: hasFlag(rest, '--include-public-discovery'),
         baseUrl: getOption(rest, '--base-url'),
         pages: parseCsvOption(rest, '--pages'),
         apis: parseCsvOption(rest, '--apis'),

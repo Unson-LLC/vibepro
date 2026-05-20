@@ -14,6 +14,7 @@ import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
+import { scanPublicDiscovery } from '../src/public-discovery-scanner.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
@@ -186,7 +187,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro harness learn \[repo\]/);
-  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|all>/);
+  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
@@ -221,10 +222,11 @@ test('check list prints available diagnosis packs', async () => {
   assert.match(output, /security: Security boundary check/);
   assert.match(output, /performance: Performance readiness check/);
   assert.match(output, /agent-harness: AI agent harness readiness check/);
+  assert.match(output, /public-discovery: Public discovery \/ AI search readiness check/);
   assert.equal(result.packs.some((pack) => pack.id === 'launch-readiness'), true);
 });
 
-test('check all leaves agent harness optional unless explicitly included', async () => {
+test('check all leaves optional agent harness and public discovery checks out unless explicitly included', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({ name: 'harness-optional-fixture' }, null, 2));
@@ -235,15 +237,47 @@ test('check all leaves agent harness optional unless explicitly included', async
   assert.equal(defaultResult.exitCode, 0);
   assert.equal(defaultResult.result.check.pack_id, 'all');
   assert.equal(defaultResult.result.check.evidence.agent_harness, undefined);
+  assert.equal(defaultResult.result.check.evidence.public_discovery, undefined);
   assert.equal(defaultResult.result.check.checks.some((check) => check.id === 'agent_harness'), false);
+  assert.equal(defaultResult.result.check.checks.some((check) => check.id.startsWith('public_discovery.')), false);
   const defaultMarkdown = await readFile(path.join(repo, '.vibepro', 'checks', 'all', 'all-no-harness', 'check.md'), 'utf8');
   assert.match(defaultMarkdown, /vibepro check agent-harness <repo>/);
+  assert.match(defaultMarkdown, /vibepro check public-discovery <repo>/);
 
   const includedResult = await runCli(['check', 'all', repo, '--include-harness', '--run-id', 'all-with-harness', '--json']);
 
   assert.equal(includedResult.exitCode, 0);
   assert.equal(includedResult.result.check.evidence.agent_harness.summary.codex_status, 'missing');
   assert.equal(includedResult.result.check.checks.some((check) => check.id === 'agent_harness' && check.status === 'needs_review'), true);
+
+  const publicDiscoveryResult = await runCli(['check', 'all', repo, '--include-public-discovery', '--run-id', 'all-with-public-discovery', '--json']);
+
+  assert.equal(publicDiscoveryResult.exitCode, 0);
+  assert.equal(publicDiscoveryResult.result.check.evidence.public_discovery.summary.scanned_files, 1);
+  assert.equal(publicDiscoveryResult.result.check.checks.some((check) => check.id === 'public_discovery.metadata_findings'), true);
+});
+
+test('check public-discovery reports LLMO and public page readiness findings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-public-discovery-'));
+  await writeFile(path.join(repo, 'index.html'), '<!doctype html><main><img src="/hero.png"><p>Short</p></main>');
+  await mkdir(path.join(repo, 'public'), { recursive: true });
+  await writeFile(path.join(repo, 'public', 'robots.txt'), 'User-agent: *\nAllow: /\n');
+
+  const scan = await scanPublicDiscovery(repo);
+
+  assert.equal(scan.status, 'needs_review');
+  assert.equal(scan.summary.scanned_files, 1);
+  assert.equal(scan.metadata_findings.some((finding) => finding.kind === 'missing_title'), true);
+  assert.equal(scan.structured_data_findings.some((finding) => finding.kind === 'missing_structured_data_hint'), true);
+  assert.equal(scan.image_findings.some((finding) => finding.kind === 'image_missing_alt'), true);
+  assert.equal(scan.ai_bot_findings.some((finding) => finding.kind === 'ai_bot_policy_missing'), true);
+
+  const result = await runCli(['check', 'public-discovery', repo, '--run-id', 'public-discovery-test', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.evidence.public_discovery.summary.finding_count > 0, true);
+  assert.equal(result.result.check.checks.some((check) => check.label === 'Public discovery: AI bot access'), true);
 });
 
 test('check agent-harness diagnoses codex claude skills hooks and ignore noise', async () => {

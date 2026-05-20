@@ -13,6 +13,7 @@ import { scanLocalDev } from './local-dev-scanner.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
 import { preparePullRequest } from './pr-manager.js';
+import { scanPublicDiscovery } from './public-discovery-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -46,6 +47,10 @@ export const CHECK_PACKS = {
     title: 'AI agent harness readiness check',
     checks: ['agent_harness']
   },
+  'public-discovery': {
+    title: 'Public discovery / AI search readiness check',
+    checks: ['public_discovery']
+  },
   all: {
     title: 'All check packs',
     checks: ['static_site', 'api_boundary', 'network_contracts', 'component_style', 'flow_design', 'gesture_interaction', 'terminal_link_contracts', 'database_access', 'local_dev', 'code_quality', 'architecture_profile']
@@ -74,9 +79,13 @@ export async function runCheckPack(repoRoot, options = {}) {
   await mkdir(runDir, { recursive: true });
 
   const architectureProfile = await profileArchitecture(root);
-  const checksToRun = packId === 'all' && options.includeHarness === true
-    ? [...pack.checks, 'agent_harness']
-    : pack.checks;
+  const optionalChecks = packId === 'all'
+    ? [
+        ...(options.includeHarness === true ? ['agent_harness'] : []),
+        ...(options.includePublicDiscovery === true ? ['public_discovery'] : [])
+      ]
+    : [];
+  const checksToRun = [...pack.checks, ...optionalChecks];
   const context = { root, pack: { ...pack, checks: checksToRun }, options, architectureProfile };
   const evidence = {};
   for (const check of checksToRun) {
@@ -155,6 +164,7 @@ async function runNamedCheck(check, context) {
   const { root, architectureProfile, options } = context;
   if (check === 'architecture_profile') return architectureProfile;
   if (check === 'agent_harness') return scanAgentHarness(root);
+  if (check === 'public_discovery') return scanPublicDiscovery(root);
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -199,6 +209,17 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
   }
   if (evidence.agent_harness) {
     checks.push(summarizeAgentHarness(evidence.agent_harness));
+  }
+  if (evidence.public_discovery) {
+    checks.push(...summarizeRiskGroups('public_discovery', 'Public discovery', evidence.public_discovery, [
+      ['structured_data_findings', 'Structured data'],
+      ['metadata_findings', 'Metadata'],
+      ['eeat_findings', 'E-E-A-T'],
+      ['image_findings', 'Images'],
+      ['content_findings', 'Content quality'],
+      ['ai_bot_findings', 'AI bot access'],
+      ['response_header_findings', 'Response headers']
+    ]));
   }
   if (evidence.static_site) {
     checks.push(...summarizeRiskGroups('static_site', 'Static/Security', evidence.static_site, [
@@ -445,6 +466,9 @@ function renderCheckPackOnboarding({ result, reviewItems, artifacts = null }) {
     '- If this is PR work, run `vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` after addressing or classifying findings.',
     ...(result.pack_id === 'all' && !result.evidence?.agent_harness
       ? ['- If you also want to standardize AI-driven development in this repo, run `vibepro check agent-harness <repo>` or `vibepro check all <repo> --include-harness`.']
+      : []),
+    ...(result.pack_id === 'all' && !result.evidence?.public_discovery
+      ? ['- If you also want public page / AI-search readiness diagnostics, run `vibepro check public-discovery <repo>` or `vibepro check all <repo> --include-public-discovery`.']
       : []),
     '',
     '## Share Template / 共有テンプレート',
