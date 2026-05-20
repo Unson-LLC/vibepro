@@ -3281,6 +3281,67 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /Claude Code coordinators must include/);
 });
 
+test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'explore-target.js'), 'export const value = 1;\n');
+
+  const prepareResult = await runCli([
+    'explore',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--topic',
+    'map risky entrypoints',
+    '--role',
+    'codebase_context',
+    '--role',
+    'test_surface',
+    '--json'
+  ]);
+
+  assert.equal(prepareResult.exitCode, 0);
+  assert.deepEqual(prepareResult.result.plan.roles, ['codebase_context', 'test_surface']);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'explore', 'story-pr-prepare', 'parallel-dispatch.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'explore', 'story-pr-prepare', 'requests', 'codebase_context.md')), true);
+
+  const recordResult = await runCli([
+    'explore',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--role',
+    'codebase_context',
+    '--status',
+    'pass',
+    '--summary',
+    'entrypoints mapped',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-explore-agent',
+    '--finding',
+    'info:entrypoints:src explored'
+  ]);
+
+  assert.equal(recordResult.exitCode, 0);
+  assert.equal(recordResult.result.summary.status, 'needs_review');
+  const statusResult = await runCli(['explore', 'status', repo, '--id', 'story-pr-prepare', '--json']);
+  assert.equal(statusResult.result.summary.recorded_role_count, 1);
+  assert.equal(statusResult.result.roles.find((role) => role.role === 'test_surface').status, 'missing');
+
+  const prResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(prResult.exitCode, 0);
+  assert.equal(prResult.result.preparation.pr_context.explore_evidence.summary.recorded_role_count, 1);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /## Explore Evidence/);
+  assert.match(prBody, /codebase_context: pass - entrypoints mapped/);
+});
+
 test('review record updates status summary and marks stale after source change', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

@@ -27,6 +27,10 @@ import {
   renderAgentReviewPrSection,
   summarizeAgentReviewsForPr
 } from './agent-review.js';
+import {
+  renderExplorePrSection,
+  summarizeExploreEvidenceForPr
+} from './explore-evidence.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -1103,6 +1107,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
   const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
   const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
+  const exploreEvidenceSection = renderExplorePrSection(prContext.explore_evidence);
   const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
 
   return `${narrativeSection}## 概要
@@ -1148,6 +1153,9 @@ ${renderNetworkContractPrSection(prContext.network_contracts)}
 
 ## Agent Review
 ${agentReviewSection}
+
+## Explore Evidence
+${exploreEvidenceSection}
 
 ## Gate DAG
 ${gateSummary}
@@ -1894,6 +1902,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     performanceEvidence,
     git
   });
+  const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
+    storyId: story.story_id
+  });
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
@@ -1910,6 +1921,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
     agent_reviews: agentReviews,
+    explore_evidence: exploreEvidence,
     verification_evidence: boundVerificationEvidence,
     risks: []
   };
