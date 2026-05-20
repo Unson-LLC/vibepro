@@ -3013,6 +3013,29 @@ test('pr prepare carries configured output language into human artifacts', async
   assert.match(splitPlanHtml, /<html lang="en">/);
 });
 
+test('pr prepare flags empty commit messages in the PR range', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'empty-message.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/empty-message.js']);
+  await git(repo, ['commit', '--allow-empty-message', '-m', '']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.git.commits.length, 1);
+  assert.equal(prepare.git.commits[0].message, '');
+  assert.equal(prepare.git.commits[0].message_empty, true);
+  assert.equal(prepare.git.commit_message_health.status, 'needs_review');
+  assert.equal(prepare.git.commit_message_health.scope, 'base_head');
+  assert.equal(prepare.git.commit_message_health.empty_message_count, 1);
+  assert.deepEqual(prepare.git.commit_message_health.ignored_internal_ref_patterns, ['refs/jj/keep/*']);
+  assert.equal(prepare.scope.status, 'needs_clean_branch');
+  assert.equal(prepare.scope.reasons.some((reason) => reason.includes('commit messageが空')), true);
+  assert.equal(prepare.pr_context.risks.some((risk) => risk.includes('commit messageが空')), true);
+});
+
 test('pr prepare does not require Playwright E2E for CLI-only source changes', async () => {
   const repo = await makeGitRepoWithStory();
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({

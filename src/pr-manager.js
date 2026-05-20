@@ -748,6 +748,7 @@ async function collectGitState(repoRoot, options) {
   const headSha = await gitOptional(repoRoot, ['rev-parse', headRef]);
   const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
   const commits = await getCommits(repoRoot, baseRef, headRef);
+  const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
   const dirtyDiff = await collectDirtyDiff(repoRoot);
   const dirtyFiles = parseStatus(statusOutput);
@@ -764,6 +765,7 @@ async function collectGitState(repoRoot, options) {
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
+    commit_message_health: commitMessageHealth,
     commits
   };
 }
@@ -800,15 +802,42 @@ async function getChangedFiles(repoRoot, baseRef, headRef) {
 }
 
 async function getCommits(repoRoot, baseRef, headRef) {
-  const output = await gitOptional(repoRoot, ['log', '--oneline', `${baseRef}..${headRef}`]);
+  const output = await gitOptional(repoRoot, ['log', '--format=%H%x09%s', `${baseRef}..${headRef}`]);
   return output
     .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean)
+    .map((line) => line.trimEnd())
+    .filter((line) => line.length > 0)
     .map((line) => {
-      const [sha, ...messageParts] = line.split(' ');
-      return { sha, message: messageParts.join(' ') };
+      const separatorIndex = line.indexOf('\t');
+      const sha = separatorIndex === -1 ? line.trim() : line.slice(0, separatorIndex).trim();
+      const message = separatorIndex === -1 ? '' : line.slice(separatorIndex + 1);
+      return {
+        sha,
+        short_sha: sha.slice(0, 12),
+        message,
+        message_empty: message.trim().length === 0
+      };
     });
+}
+
+function buildCommitMessageHealth(commits, { baseRef, headRef }) {
+  const emptyMessageCommits = commits.filter((commit) => commit.message_empty);
+  return {
+    schema_version: '0.1.0',
+    range: `${baseRef}..${headRef}`,
+    scope: 'base_head',
+    commit_count: commits.length,
+    empty_message_count: emptyMessageCommits.length,
+    empty_message_commits: emptyMessageCommits.map((commit) => ({
+      sha: commit.sha,
+      short_sha: commit.short_sha
+    })),
+    status: emptyMessageCommits.length > 0 ? 'needs_review' : 'pass',
+    ignored_internal_ref_patterns: [
+      'refs/jj/keep/*'
+    ],
+    note: 'PR readiness uses the explicit base..head range; internal refs such as refs/jj/keep/* are not treated as PR commits.'
+  };
 }
 
 function parseNameStatus(line) {
@@ -958,6 +987,10 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
   }
   if (commits.length > 1) {
     reasons.push(`baseからのcommitが ${commits.length} 件あり、Story外の変更混入を確認する必要がある`);
+  }
+  const emptyMessageCommits = commits.filter((commit) => commit.message_empty);
+  if (emptyMessageCommits.length > 0) {
+    reasons.push(`commit messageが空のcommitが ${emptyMessageCommits.length} 件あり、PR履歴として意味を確認できない`);
   }
 
   const needsCleanBranch = reasons.length > 0;
@@ -3417,6 +3450,13 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   }
   if (dirtyFiles.length > 0) {
     risks.push(`未コミット差分が ${dirtyFiles.length} files ある`);
+  }
+  if ((git.commit_message_health?.empty_message_count ?? 0) > 0) {
+    const shas = git.commit_message_health.empty_message_commits
+      .map((commit) => commit.short_sha ?? commit.sha)
+      .filter(Boolean)
+      .join(', ');
+    risks.push(`commit messageが空のcommitが ${git.commit_message_health.empty_message_count} 件ある${shas ? ` (${shas})` : ''}`);
   }
   if (fileGroups.repo_control.count > 0) {
     risks.push('repo制御ファイルが差分に含まれるため、アプリ変更と分けてレビューする');
