@@ -21,6 +21,12 @@ import { runDiagnosis } from './diagnostic-engine.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
+import {
+  recordSessionLearning,
+  renderSessionLearningRecordSummary,
+  renderSessionLearningsReviewSummary,
+  reviewSessionLearnings
+} from './session-learning.js';
 import { createBrainbaseImport } from './brainbase-importer.js';
 import { publishStatusToNocoDB, syncStoriesFromNocoDB } from './nocodb-story-sync.js';
 import { getRepoStatus, renderRepoStatus } from './repo-status.js';
@@ -148,6 +154,8 @@ Usage:
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
   vibepro harness map [repo] [--json]
+  vibepro harness learn [repo] --summary <text> [--kind <kind>] [--source <source>] [--evidence <ref>] [--pattern <text>] [--skill-candidate <text>] [--target <surface>] [--json]
+  vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -240,6 +248,8 @@ Usage:
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
   vibepro harness map [repo] [--json]
+  vibepro harness learn [repo] --summary <text> [--kind <kind>] [--source <source>] [--evidence <ref>] [--pattern <text>] [--skill-candidate <text>] [--target <surface>] [--json]
+  vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -403,6 +413,30 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentHarnessMapSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'learn') {
+        const result = await recordSessionLearning(repoRoot, {
+          id: getOption(rest, '--learning-id') ?? getOption(rest, '--id'),
+          kind: getOption(rest, '--kind'),
+          summary: getOption(rest, '--summary'),
+          source: getOption(rest, '--source'),
+          evidence: getOption(rest, '--evidence'),
+          pattern: getOption(rest, '--pattern'),
+          status: getOption(rest, '--status'),
+          skillCandidate: getOption(rest, '--skill-candidate'),
+          targets: getOptions(rest, '--target')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSessionLearningRecordSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'review-learnings') {
+        const result = await reviewSessionLearnings(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSessionLearningsReviewSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown harness command: ${subcommand ?? ''}\n\n${renderHelp()}`);

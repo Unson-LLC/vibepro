@@ -185,6 +185,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
+  assert.match(output, /vibepro harness learn \[repo\]/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
@@ -321,6 +322,46 @@ test('harness map writes codebase entrypoints and test command map', async () =>
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'test-command-map.json')), true);
   const entrypoints = await readFile(path.join(repo, '.vibepro', 'harness', 'agent-entrypoints.md'), 'utf8');
   assert.match(entrypoints, /Avoid By Default/);
+});
+
+test('harness learn records session learning candidates for human skill review', async () => {
+  const repo = await makeRepo();
+
+  const record = await runCli([
+    'harness',
+    'learn',
+    repo,
+    '--summary',
+    'Repeatedly used stale checkout before running VibePro',
+    '--source',
+    'codex-log',
+    '--evidence',
+    'sessions/example.jsonl',
+    '--pattern',
+    'runtime path was not checked',
+    '--skill-candidate',
+    'Always verify the active VibePro executable and checkout before diagnosing results.',
+    '--target',
+    'AGENTS.md',
+    '--target',
+    'CLAUDE.md',
+    '--json'
+  ]);
+
+  assert.equal(record.exitCode, 0);
+  assert.equal(record.result.learning.status, 'candidate');
+  assert.equal(record.result.learning.target_surfaces.includes('AGENTS.md'), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'session-learnings.json')), true);
+
+  const review = await runCli(['harness', 'review-learnings', repo, '--json']);
+
+  assert.equal(review.exitCode, 0);
+  assert.equal(review.result.store.candidate, 1);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'harness', 'session-learnings-review.md')), true);
+  const markdown = await readFile(path.join(repo, '.vibepro', 'harness', 'session-learnings-review.md'), 'utf8');
+  assert.match(markdown, /Session Learnings Review/);
+  assert.match(markdown, /does not modify those files automatically/);
+  assert.match(markdown, /Always verify the active VibePro executable/);
 });
 
 test('check security runs a purpose-level diagnosis pack and writes evidence', async () => {
