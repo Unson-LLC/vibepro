@@ -183,6 +183,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /まず人間が使う基本コマンド/);
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
+  assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
@@ -266,6 +267,30 @@ test('check agent-harness diagnoses codex claude skills hooks and ignore noise',
   assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'hook_command_target_missing'), true);
   assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'ai_exploration_noise_ignores_incomplete'), true);
   assert.equal(result.result.check.checks.some((check) => check.id === 'agent_harness' && check.status === 'needs_review'), true);
+});
+
+test('harness status summarizes installed missing outdated and invalid areas', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, '.claude'), { recursive: true });
+  await writeFile(path.join(repo, '.claude', 'settings.json'), '{');
+  await writeFile(path.join(repo, '.gitignore'), '.vibepro/\nnode_modules/\n');
+
+  let output = '';
+  const textResult = await runCli(['harness', 'status', repo], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(textResult.exitCode, 0);
+  assert.equal(textResult.result.status, 'needs_review');
+  assert.match(output, /VibePro Agent Harness Status/);
+  assert.match(output, /Codex instructions/);
+  assert.match(output, /invalid_hook_settings_json/);
+
+  const jsonResult = await runCli(['harness', 'status', repo, '--json']);
+
+  assert.equal(jsonResult.exitCode, 0);
+  assert.equal(jsonResult.result.hooks.findings.some((finding) => finding.kind === 'invalid_hook_settings_json'), true);
+  assert.equal(jsonResult.result.ignore_noise.status, 'pass');
 });
 
 test('check security runs a purpose-level diagnosis pack and writes evidence', async () => {

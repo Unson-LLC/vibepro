@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { initWorkspace } from './workspace.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
+import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
@@ -136,6 +137,7 @@ Usage:
   vibepro skills verify [repo] [--json]
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
+  vibepro harness status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -223,6 +225,7 @@ Usage:
   vibepro skills verify [repo] [--json]
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
+  vibepro harness status [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--json]
@@ -365,6 +368,20 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown codex command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'harness') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === 'status' || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        const result = await scanAgentHarness(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentHarnessStatus(result));
+        return { exitCode: 0, command, subcommand: 'status', result };
+      }
+      write(stderr, `Unknown harness command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

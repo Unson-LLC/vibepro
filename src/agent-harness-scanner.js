@@ -57,6 +57,51 @@ export async function scanAgentHarness(repoRoot) {
   };
 }
 
+export function renderAgentHarnessStatus(result) {
+  const lines = [
+    '# VibePro Agent Harness Status',
+    '',
+    `Status: ${result.status}`,
+    '',
+    '| Area | Status | Detail |',
+    '| ---- | ------ | ------ |',
+    `| Codex instructions | ${normalizeHarnessStatus(result.codex?.status)} | ${result.codex?.target_path ?? 'AGENTS.md'} |`,
+    `| Claude Code instructions | ${normalizeHarnessStatus(result.claude?.has_claude_file ? 'ok' : 'missing')} | ${result.claude?.target_path ?? 'CLAUDE.md'} |`,
+    `| Claude Code skills dir | ${normalizeHarnessStatus(result.claude?.has_skills_dir ? 'ok' : 'missing')} | ${result.claude?.skills_dir ?? '.claude/skills'} |`,
+    `| VibePro bundled skills | ${normalizeHarnessStatus(result.skills?.overall_status)} | ${formatSkillSummary(result.skills?.summary)} |`,
+    `| Hooks | ${normalizeHarnessStatus(result.hooks?.status)} | ${(result.hooks?.settings_files ?? []).join(', ') || 'no hook settings'} |`,
+    `| Ignore noise | ${normalizeHarnessStatus(result.ignore_noise?.status)} | missing: ${(result.ignore_noise?.missing_patterns ?? []).join(', ') || '-'} |`,
+    ''
+  ];
+  if ((result.findings ?? []).length > 0) {
+    lines.push('## Findings', '');
+    for (const finding of result.findings) {
+      const detail = finding.skill ?? finding.file ?? finding.target ?? finding.area ?? finding.kind;
+      lines.push(`- [${finding.gate_effect ?? 'info'}] ${finding.kind}: ${detail}`);
+    }
+    lines.push('');
+  }
+  lines.push('## Next Actions', '');
+  if ((result.next_actions ?? []).length === 0) {
+    lines.push('- none');
+  } else {
+    for (const action of result.next_actions) lines.push(`- ${action}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function normalizeHarnessStatus(status) {
+  if (['ok', 'pass'].includes(status)) return 'installed';
+  if (status === 'needs_install') return 'missing_or_outdated';
+  return status ?? 'unknown';
+}
+
+function formatSkillSummary(summary = {}) {
+  const entries = Object.entries(summary);
+  if (entries.length === 0) return '-';
+  return entries.map(([key, value]) => `${key}=${value}`).join(', ');
+}
+
 async function inspectClaudeHarness(root) {
   const claudePath = path.join(root, 'CLAUDE.md');
   const skillsDir = path.join(root, '.claude', 'skills');
