@@ -2204,6 +2204,62 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.match(briefing, /graph: matched=/);
 });
 
+test('story plan creates task candidates from explicit story task sections', async () => {
+  const repo = await makeRepo();
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-agent-harness',
+    '--title',
+    'Agent harness readiness',
+    '--view',
+    'dev'
+  ]);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-agent-harness.md'), `---
+story_id: story-agent-harness
+title: Agent harness readiness
+view: dev
+---
+
+# Agent harness readiness
+
+## 受け入れ基準
+
+- [ ] harness status can run
+
+## 初期タスク
+
+1. Harness診断パッケージ
+   - \`agent-harness\` check packを追加する
+   - \`check all\` ではデフォルト任意案内にする
+2. Harness status
+   - \`vibepro harness status\` を追加する
+   - installed / missing / outdated を一覧化する
+`);
+
+  await runCli(['story', 'derive', repo]);
+  const planResult = await runCli(['story', 'plan', repo, '--limit', '10']);
+
+  assert.equal(planResult.exitCode, 0);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const explicitTasks = plan.task_candidates.filter((task) => task.source_type === 'story_explicit_task');
+  assert.equal(explicitTasks.length, 2);
+  assert.equal(explicitTasks[0].id, 'story-agent-harness-01-harness');
+  assert.equal(explicitTasks[0].title, 'Harness診断パッケージ');
+  assert.equal(explicitTasks[0].priority, 'medium');
+  assert.equal(explicitTasks[0].acceptance.some((item) => item.includes('agent-harness')), true);
+  assert.equal(explicitTasks[1].id, 'story-agent-harness-02-harness-status');
+  assert.equal(explicitTasks[1].implementation_steps.length, 2);
+
+  const createResult = await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-agent-harness']);
+  assert.equal(createResult.exitCode, 0);
+  const tasks = await readJson(path.join(repo, '.vibepro', 'stories', 'story-agent-harness', 'tasks', 'tasks.json'));
+  assert.equal(tasks.tasks.some((task) => task.id === 'story-agent-harness-01-harness'), true);
+  assert.equal(tasks.tasks.find((task) => task.id === 'story-agent-harness-02-harness-status').source_type, 'story_explicit_task');
+});
+
 test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

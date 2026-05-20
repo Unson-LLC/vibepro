@@ -213,7 +213,8 @@ export async function createStoryPlan(repoRoot, options = {}) {
   const { catalog, catalogPath } = await readStoryMap(root);
   const graphIndex = await readStoryPlanGraphIndex(root);
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
-  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex });
+  const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
+  const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const planPath = path.join(storyDir, 'story-plan.json');
@@ -622,6 +623,135 @@ function formatInlineSummary(summary = {}) {
   return entries.map(([key, count]) => `${key}: ${count}件`).join(', ');
 }
 
+async function readExplicitStoryTasks(root, catalog) {
+  const tasks = [];
+  for (const story of catalog?.stories ?? []) {
+    const docs = story.derived?.meaning?.evidence_by_type?.docs_evidence ?? [];
+    const storyDocs = docs.filter((file) => /^docs\/management\/stories\//.test(file));
+    for (const file of storyDocs) {
+      try {
+        const content = await readFile(path.join(root, file), 'utf8');
+        tasks.push(...extractExplicitStoryTasks(content, { story, file }));
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+  return tasks;
+}
+
+function extractExplicitStoryTasks(content, { story, file }) {
+  const section = extractRawMarkdownSection(content, [
+    '初期タスク',
+    '実装タスク',
+    'タスク',
+    'Initial Tasks',
+    'Implementation Tasks',
+    'Tasks'
+  ]);
+  if (!section) return [];
+  const items = [];
+  let current = null;
+  const flush = () => {
+    if (!current) return;
+    const title = cleanMarkdownInline(current.title);
+    if (!title) return;
+    const acceptance = current.details
+      .map((line) => cleanMarkdownInline(line.replace(/^[-*]\s+/, '').trim()))
+      .filter(Boolean);
+    const id = `${story.story_id}-${String(items.length + 1).padStart(2, '0')}-${slugifyTaskId(title)}`;
+    items.push({
+      id,
+      story_id: story.story_id,
+      title,
+      purpose: acceptance[0] ?? `${title}を実装可能なタスクとして進める`,
+      acceptance,
+      priority: 'medium',
+      source_type: 'story_explicit_task',
+      source_file: file,
+      target_files: [],
+      read_first_files: [{ file, reason: 'Story本文の明示タスク定義' }],
+      graph_context: null,
+      recommended_strategy: {
+        id: 'story-explicit-task',
+        reason: 'Story本文の明示タスクとして定義されている'
+      },
+      implementation_steps: acceptance.length === 0
+        ? [{ id: 'implement-task', title, detail: `${title}を実装し、Storyの受け入れ基準と対応させる` }]
+        : acceptance.map((detail, index) => ({
+            id: `step-${index + 1}`,
+            title: detail,
+            detail
+          })),
+      suggested_command: `vibepro task create . --from-plan --id ${story.story_id} --task ${id}`,
+      execution_policy: 'proposal_only',
+      mutates_repository: false
+    });
+    current = null;
+  };
+  for (const line of section.split(/\r?\n/)) {
+    const ordered = line.match(/^\s*(\d+)[.)]\s+(.+?)\s*$/);
+    if (ordered) {
+      flush();
+      current = { title: ordered[2], details: [] };
+      continue;
+    }
+    const bullet = line.match(/^\s{1,}[-*]\s+(.+?)\s*$/);
+    if (bullet && current) {
+      current.details.push(bullet[1]);
+    }
+  }
+  flush();
+  return dedupeBy(items, (item) => item.id);
+}
+
+function extractRawMarkdownSection(content, headings) {
+  const body = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  const escaped = headings.map(escapeRegExp).join('|');
+  const pattern = new RegExp(`^#{2,4}\\s+(?:${escaped})\\s*\\n([\\s\\S]*?)(?=^#{2,4}\\s+|(?![\\s\\S]))`, 'im');
+  const match = body.match(pattern);
+  return match?.[1]?.trim() ?? null;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function cleanMarkdownInline(value) {
+  return String(value ?? '')
+    .replace(/\*\*/g, '')
+    .replace(/`/g, '')
+    .replace(/^\[[ xX]\]\s+/, '')
+    .trim();
+}
+
+function slugifyTaskId(value) {
+  const ascii = String(value ?? '')
+    .replace(/`/g, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (ascii) return ascii;
+  let hash = 0;
+  for (const char of String(value ?? 'task')) {
+    hash = ((hash << 5) - hash + char.codePointAt(0)) | 0;
+  }
+  return `task-${Math.abs(hash).toString(36)}`;
+}
+
+function dedupeBy(items, keyFn) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const key = keyFn(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
 function buildStoryExecutionPlan(catalog, options = {}) {
   const stories = Array.isArray(catalog?.stories) ? catalog.stories : [];
   const scoredStories = stories
@@ -630,7 +760,8 @@ function buildStoryExecutionPlan(catalog, options = {}) {
   const priorityStories = scoredStories.slice(0, options.limit ?? 5);
   const baseTaskCandidates = [
     ...buildWarningTaskCandidates(catalog),
-    ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story))
+    ...priorityStories.flatMap((story) => buildTaskCandidatesForStory(story)),
+    ...selectExplicitStoryTasks(options.explicitStoryTasks ?? [], scoredStories)
   ];
   const warnings = catalog.source?.warnings ?? [];
   const sourceConsistency = summarizeSourceConsistency(scoredStories);
@@ -1183,6 +1314,13 @@ function buildSourceAlignmentTaskCandidates(findings, stories) {
         mutates_repository: false
       };
     });
+}
+
+function selectExplicitStoryTasks(explicitTasks, stories) {
+  const storyIds = new Set(stories.map((story) => story.story_id));
+  return explicitTasks
+    .filter((task) => storyIds.has(task.story_id))
+    .sort((a, b) => a.story_id.localeCompare(b.story_id) || a.id.localeCompare(b.id));
 }
 
 function groupSourceAlignmentFindingsByStory(findings) {
