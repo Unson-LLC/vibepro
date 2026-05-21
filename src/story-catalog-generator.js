@@ -188,7 +188,10 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
 
   const derivedStories = attachLinkedDocumentSignals([
     ...productSurfaceResult.stories,
-    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
+    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset, {
+      repoProfile,
+      presetExplicit: Boolean(explicitPresetId)
+    }),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
   ], documentSignals);
@@ -448,7 +451,7 @@ function evaluateProductSurfaceApplicability({ signal, codePaths, docMatch, pres
   };
 }
 
-function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
+function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, context = {}) {
   const files = [...fileSet];
   const signatures = preset.codeSurfaceSignatures ?? CODE_SURFACE_SIGNATURES;
   return signatures
@@ -458,8 +461,11 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
         .sort((a, b) => rankStoryCodePath(signature.id, a) - rankStoryCodePath(signature.id, b) || a.localeCompare(b))
         .slice(0, 8);
       const docs = selectDocsForStory(documentSignals, signature.id);
+      const codePathsAllowed = isCodeSurfaceStoryApplicable(signature, context);
+      const effectiveCodePaths = codePathsAllowed ? codePaths : [];
       if (codePaths.length === 0 && docs.length === 0) return null;
-      const paths = uniqueList([...docs.map((doc) => doc.path), ...codePaths]);
+      if (effectiveCodePaths.length === 0 && docs.length === 0) return null;
+      const paths = uniqueList([...docs.map((doc) => doc.path), ...effectiveCodePaths]);
       return buildDerivedStory({
         id: signature.id,
         title: signature.title,
@@ -474,6 +480,12 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
       });
     })
     .filter(Boolean);
+}
+
+function isCodeSurfaceStoryApplicable(signature, context = {}) {
+  if (signature.category !== 'product') return true;
+  if (context.presetExplicit) return true;
+  return context.repoProfile?.product_surface_applicable === true;
 }
 
 function deriveDocumentationStories(fileSet, documentSignals, defaults) {

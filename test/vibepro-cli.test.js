@@ -7245,9 +7245,11 @@ test('story derive suppresses next-app product stories for non-web repositories 
 
   await mkdir(path.join(repo, 'src', 'pkg', 'trading_dag'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'pkg', 'decision_dag'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
   await mkdir(path.join(repo, 'scripts'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'backtest_engine.py'), 'class BacktestEngine: pass\n');
   await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'auth.py'), 'def auth_score(): return 0\n');
   await writeFile(path.join(repo, 'src', 'pkg', 'trading_dag', 'signals.py'), 'def emit_entry_signal(): pass\n');
   await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
   await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
@@ -7256,6 +7258,7 @@ test('story derive suppresses next-app product stories for non-web repositories 
     nodes: [
       { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
+      { id: 'auth', source_file: 'src/lib/auth.py', label: 'auth_score' },
       { id: 'signals', source_file: 'src/pkg/trading_dag/signals.py', label: 'emit_entry_signal' },
       { id: 'notification', source_file: 'src/pkg/decision_dag/notification_score.py', label: 'notification_score' },
       { id: 'script', source_file: 'scripts/run_ctrader_shadow_trade.py', label: 'run_ctrader' }
