@@ -71,11 +71,9 @@ async function makeGitRepoWithStory(options = {}) {
 
 async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
   const stageRoles = {
-    requirement: ['product_requirement', 'scope_risk', 'acceptance_e2e'],
-    architecture_spec: ['architecture_boundary', 'spec_consistency', 'regression_risk'],
+    planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
     test_plan: ['unit_integration', 'e2e_ux', 'gate_coverage'],
-    implementation: ['code_spec_alignment', 'runtime_contract', 'ux_completion'],
-    gate: ['gate_evidence', 'pr_split_scope', 'release_risk']
+    implementation: ['code_spec_alignment', 'runtime_contract', 'ux_completion']
   };
   for (const [stage, roles] of Object.entries(stageRoles)) {
     await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', stage]);
@@ -3568,6 +3566,11 @@ architecture_docs:
   assert.equal(missingGate.status, 'needs_review');
   assert.equal(missingGate.parallel_dispatch.required, true);
   assert.equal(missingGate.parallel_dispatch.required_stages.some((stage) => stage.prepare_command.includes('vibepro review prepare')), true);
+  assert.deepEqual(
+    missingGate.parallel_dispatch.required_stages.map((stage) => stage.stage),
+    ['planning_spec', 'test_plan', 'implementation']
+  );
+  assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 9);
   assert.match(missingGate.reason, /mandatory parallel subagent review step/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);

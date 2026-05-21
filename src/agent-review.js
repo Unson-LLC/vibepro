@@ -9,6 +9,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 const execFileAsync = promisify(execFile);
 
 export const REVIEW_STAGE_ROLES = {
+  planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
   requirement: ['product_requirement', 'scope_risk', 'acceptance_e2e'],
   architecture_spec: ['architecture_boundary', 'spec_consistency', 'regression_risk'],
   test_plan: ['unit_integration', 'e2e_ux', 'gate_coverage'],
@@ -311,8 +312,8 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
 
   const hasSourceChanges = (fileGroups?.source?.count ?? 0) > 0;
   if (hasSourceChanges) {
-    for (const stage of ['requirement', 'architecture_spec', 'test_plan', 'implementation', 'gate']) {
-      addStage(stage, 'source changes require staged AI review before PR readiness', 'source_change');
+    for (const stage of ['planning_spec', 'test_plan', 'implementation']) {
+      addStage(stage, 'source changes require three-phase AI review before PR readiness', 'source_change');
     }
   }
   if (hasUiExperienceSourceChange(fileGroups)) {
@@ -334,12 +335,6 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
       stage: 'implementation',
       role: 'runtime_contract',
       reason: 'API/network contract changes require runtime contract review',
-      policy: 'network_contract'
-    });
-    addRequirement({
-      stage: 'gate',
-      role: 'gate_evidence',
-      reason: 'API/network contract changes require gate evidence review',
       policy: 'network_contract'
     });
   }
