@@ -24,8 +24,6 @@ const PASSING_ROLE_STATUS = new Set(['pass']);
 const REVIEW_PROVENANCE_SYSTEMS = new Set(['codex', 'claude_code', 'human', 'other', 'unknown']);
 const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
 const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
-const AGENT_REVIEW_AUTHORIZATION_QUESTION = 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？';
-const AGENT_REVIEW_AUTHORIZATION_REQUEST = 'VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。';
 const MANDATORY_REVIEW_LENSES = [
   {
     id: 'regression_guard',
@@ -59,7 +57,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       'VibePro records the review results, but does not execute subagents itself.',
       'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to launch the parallel reviews.',
       'Every role review must include the mandatory regression_guard lens; passing a role only means both the role concern and the regression lens are adequately covered.',
-      `If Codex/Claude Code policy requires explicit user permission before spawning subagents, ask exactly: ${AGENT_REVIEW_AUTHORIZATION_QUESTION}`,
+      'If the coordinator has subagent capability, it should dispatch the listed reviewers directly as part of this gate workflow instead of asking the user for another confirmation.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
     mandatory_review_lenses: MANDATORY_REVIEW_LENSES,
@@ -68,10 +66,10 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       mode: 'manual_parallel_subagents',
       subagent_count: roles.length,
       artifact: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
-      authorization_bridge: {
-        required_for: ['codex', 'claude_code'],
-        ask_if_not_authorized: AGENT_REVIEW_AUTHORIZATION_QUESTION,
-        user_authorization_phrase: AGENT_REVIEW_AUTHORIZATION_REQUEST
+      coordinator_behavior: {
+        expected: 'dispatch_parallel_subagents',
+        user_confirmation_required_by_vibepro: false,
+        fallback: 'If the runtime cannot spawn subagents, continue with manual parallel reviewers and record provenance.'
       },
       record_commands: Object.fromEntries(roles.map((role) => [
         role,
@@ -456,13 +454,7 @@ Required provenance:
 
 Agent Review Gate treats this file as required execution guidance. If you are coordinating Codex or Claude Code work, this is an explicit instruction to start the listed parallel review subagents before declaring the work complete.
 
-If your agent runtime requires explicit user authorization before spawning subagents, do not guess. Ask exactly:
-
-\`${AGENT_REVIEW_AUTHORIZATION_QUESTION}\`
-
-If the user has already authorized subagent review, or replies with the authorization phrase below, proceed without asking again:
-
-\`${AGENT_REVIEW_AUTHORIZATION_REQUEST}\`
+If your coordinator runtime supports subagents, start them now as part of this gate workflow. VibePro does not require a separate user confirmation prompt for this dispatch step.
 
 1. Start all subagents below in parallel.
 2. Give each subagent only its own review request.
