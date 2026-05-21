@@ -7355,6 +7355,7 @@ test('story derive uses document evidence without weak non-web code paths', asyn
 
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
   await writeFile(path.join(repo, 'docs', 'features', 'auth.md'), `---
 story_id: story-product-auth-account-access
@@ -7364,10 +7365,19 @@ story_id: story-product-auth-account-access
 
 User-facing account access is an explicit product requirement.
 `);
+  await writeFile(path.join(repo, 'docs', 'specs', 'profile.md'), `---
+story_id: story-product-profile-personalization
+---
+
+# Profile Story
+
+Profile personalization is an explicit product requirement.
+`);
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
-      { id: 'auth_doc', source_file: 'docs/features/auth.md', label: 'Auth Story' }
+      { id: 'auth_doc', source_file: 'docs/features/auth.md', label: 'Auth Story' },
+      { id: 'profile_doc', source_file: 'docs/specs/profile.md', label: 'Profile Story' }
     ],
     links: []
   }));
@@ -7381,6 +7391,12 @@ User-facing account access is an explicit product requirement.
   assert.ok(story, `expected doc-promoted auth story, got ${catalog.stories.map((item) => item.story_id).join(', ')}`);
   assert.equal(story.source.paths.includes('docs/features/auth.md'), true);
   assert.equal(story.source.paths.includes('src/session_learning.py'), false);
+
+  const profileStory = catalog.stories.find((item) => item.story_id === 'story-product-profile-personalization');
+  assert.ok(profileStory, `expected doc-promoted profile story, got ${catalog.stories.map((item) => item.story_id).join(', ')}`);
+  assert.equal(profileStory.source.paths.includes('docs/specs/profile.md'), true);
+  assert.equal(profileStory.source.paths.some((item) => item.startsWith('src/')), false);
+  assert.equal(JSON.stringify(profileStory.derived?.story_definition ?? {}).includes('src/session_learning.py'), false);
 });
 
 test('pr prepare --strict requires --task option', async () => {

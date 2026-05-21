@@ -492,7 +492,7 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, co
         sourceType: 'code_surface',
         paths,
         evidence: paths,
-        storyDefinition: codeStoryDefinitionFor(signature.id, codePaths, docs, preset),
+        storyDefinition: codeStoryDefinitionFor(signature.id, effectiveCodePaths, docs, preset),
         docs,
         codeDerived: true,
         defaults
