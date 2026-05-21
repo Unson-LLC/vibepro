@@ -7354,9 +7354,11 @@ test('story derive uses document evidence without weak non-web code paths', asyn
   await runCli(['init', repo]);
 
   await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services', 'profile'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'profile', 'profile_score.py'), 'def score_profile(): return 0\n');
   await writeFile(path.join(repo, 'docs', 'features', 'auth.md'), `---
 story_id: story-product-auth-account-access
 ---
@@ -7376,6 +7378,7 @@ Profile personalization is an explicit product requirement.
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
+      { id: 'profile_code', source_file: 'src/lib/services/profile/profile_score.py', label: 'profile_score' },
       { id: 'auth_doc', source_file: 'docs/features/auth.md', label: 'Auth Story' },
       { id: 'profile_doc', source_file: 'docs/specs/profile.md', label: 'Profile Story' }
     ],
@@ -7396,6 +7399,7 @@ Profile personalization is an explicit product requirement.
   assert.ok(profileStory, `expected doc-promoted profile story, got ${catalog.stories.map((item) => item.story_id).join(', ')}`);
   assert.equal(profileStory.source.paths.includes('docs/specs/profile.md'), true);
   assert.equal(profileStory.source.paths.some((item) => item.startsWith('src/')), false);
+  assert.equal(JSON.stringify(profileStory.derived?.story_definition ?? {}).includes('src/lib/services/profile/profile_score.py'), false);
   assert.equal(JSON.stringify(profileStory.derived?.story_definition ?? {}).includes('src/session_learning.py'), false);
 });
 
