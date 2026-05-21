@@ -2085,6 +2085,58 @@ writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n
   await stat(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
 });
 
+test('story derive handles medium cyclic graphify graphs without stack overflow', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'demo', '--title', 'demo']);
+  await mkdir(path.join(repo, 'src', 'pkg'), { recursive: true });
+  for (let index = 0; index < 60; index += 1) {
+    await writeFile(path.join(repo, 'src', 'pkg', `module-${index}.ts`), `export const value${index} = ${index};\n`);
+  }
+  const nodes = [];
+  const links = [];
+  for (let index = 0; index < 4334; index += 1) {
+    nodes.push({
+      id: `node-${index}`,
+      label: `Node ${index}`,
+      source_file: `src/pkg/module-${index % 60}.ts`,
+      community: `community-${index % 17}`
+    });
+    links.push({ source: `node-${index}`, target: `node-${(index + 1) % 4334}`, confidence: 'EXTRACTED' });
+    if (index % 4 === 0) {
+      links.push({ source: `node-${index}`, target: `node-${(index + 997) % 4334}`, confidence: 'INFERRED' });
+    }
+  }
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links }));
+
+  const result = await runCli(['story', 'derive', repo, '--preset', 'modular-web', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.catalog.source.graphify.node_count, 4334);
+  assert.equal(result.result.catalog.source.graphify.edge_count, links.length);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'stories', 'story-catalog.json')), true);
+});
+
+test('story derive writes failure evidence when graph processing fails', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'demo', '--title', 'demo']);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), '{ invalid json');
+
+  const result = await runCli(['story', 'derive', repo], {
+    stderr: { write: () => {} }
+  });
+
+  assert.equal(result.exitCode, 1);
+  const diagnostics = await readdir(path.join(repo, '.vibepro', 'diagnostics'));
+  const failureDir = diagnostics.find((entry) => entry.startsWith('story-derive-failure-'));
+  assert.equal(Boolean(failureDir), true);
+  const failure = await readJson(path.join(repo, '.vibepro', 'diagnostics', failureDir, 'failure.json'));
+  assert.equal(failure.status, 'failed');
+  assert.match(failure.error.message, /JSON/);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'diagnostics', failureDir, 'failure.md')), true);
+});
+
 test('story add list select and archive manage local stories without NocoDB', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

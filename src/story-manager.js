@@ -149,12 +149,21 @@ export async function deriveStories(repoRoot, options = {}) {
   const config = await readConfig(root);
   const manifest = await readManifest(root);
   const previousCatalog = await readExistingStoryCatalog(root);
-  const catalog = await generateStoryCatalog(root, {
-    config,
-    manifest,
-    fromRunId: options.fromRunId,
-    preset: options.preset
-  });
+  let catalog;
+  try {
+    catalog = await generateStoryCatalog(root, {
+      config,
+      manifest,
+      fromRunId: options.fromRunId,
+      preset: options.preset
+    });
+  } catch (error) {
+    await writeStoryDeriveFailure(root, error, {
+      fromRunId: options.fromRunId,
+      preset: options.preset
+    });
+    throw error;
+  }
   const storyDir = path.join(getWorkspaceDir(root), 'stories');
   await mkdir(storyDir, { recursive: true });
   const catalogPath = path.join(storyDir, 'story-catalog.json');
@@ -190,6 +199,65 @@ export async function deriveStories(repoRoot, options = {}) {
     updated_count: mergeResult.updated_count,
     skipped_count: mergeResult.skipped_count
   };
+}
+
+async function writeStoryDeriveFailure(root, error, options = {}) {
+  const runId = `story-derive-failure-${new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '')}`;
+  const runDir = path.join(getWorkspaceDir(root), 'diagnostics', runId);
+  await mkdir(runDir, { recursive: true });
+  const graphStats = await readGraphStatsForFailure(root);
+  const failure = {
+    schema_version: '0.1.0',
+    run_id: runId,
+    command: 'story derive',
+    status: 'failed',
+    created_at: new Date().toISOString(),
+    options,
+    error: {
+      name: error?.name ?? 'Error',
+      message: error?.message ?? String(error),
+      stack: error?.stack ?? null
+    },
+    graphify: graphStats
+  };
+  const jsonPath = path.join(runDir, 'failure.json');
+  const markdownPath = path.join(runDir, 'failure.md');
+  await writeFile(jsonPath, `${JSON.stringify(failure, null, 2)}\n`);
+  await writeFile(markdownPath, renderStoryDeriveFailure(failure));
+}
+
+async function readGraphStatsForFailure(root) {
+  try {
+    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const edges = Array.isArray(graph?.edges) ? graph.edges : Array.isArray(graph?.links) ? graph.links : [];
+    return {
+      available: true,
+      node_count: Array.isArray(graph?.nodes) ? graph.nodes.length : 0,
+      edge_count: edges.length,
+      edge_source_key: Array.isArray(graph?.edges) ? 'edges' : Array.isArray(graph?.links) ? 'links' : null
+    };
+  } catch (graphError) {
+    return {
+      available: false,
+      reason: graphError.code === 'ENOENT' ? 'graphify graph.json not found' : graphError.message
+    };
+  }
+}
+
+function renderStoryDeriveFailure(failure) {
+  return `# Story Derive Failure
+
+- run_id: ${failure.run_id}
+- status: ${failure.status}
+- error: ${failure.error.message}
+- graph nodes: ${failure.graphify?.node_count ?? '-'}
+- graph edges: ${failure.graphify?.edge_count ?? '-'}
+
+## Next Actions
+
+- Re-run \`vibepro story derive\` after fixing the reported error.
+- If this happened on a graphify graph with cycles or many nodes, attach this failure directory to the issue.
+`;
 }
 
 export async function readStoryMap(repoRoot) {

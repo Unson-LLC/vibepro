@@ -11,10 +11,12 @@ const IGNORED_DIRS = new Set([
   '.next',
   '.turbo',
   '.vibepro',
+  '.venv',
   'coverage',
   'dist',
   'graphify-out',
-  'node_modules'
+  'node_modules',
+  'venv'
 ]);
 
 const CODE_SURFACE_SIGNATURES = [
@@ -1128,21 +1130,31 @@ function inferCodeRole(filePath) {
   return 'コード根拠';
 }
 
-async function collectRepoFiles(repoRoot, currentRelative = '') {
-  const dir = path.join(repoRoot, currentRelative);
-  const entries = await readdir(dir, { withFileTypes: true });
+async function collectRepoFiles(repoRoot) {
+  const pending = [''];
   const files = [];
-  for (const entry of entries) {
-    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
-    const relativePath = path.posix.join(currentRelative.split(path.sep).join('/'), entry.name);
-    const fullPath = path.join(repoRoot, relativePath);
-    if (entry.isDirectory()) {
-      files.push(...await collectRepoFiles(repoRoot, relativePath));
-      continue;
+  while (pending.length > 0) {
+    const currentRelative = pending.pop();
+    const dir = path.join(repoRoot, currentRelative);
+    let entries;
+    try {
+      entries = await readdir(dir, { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw error;
     }
-    if (!entry.isFile()) continue;
-    const fileStat = await stat(fullPath);
-    files.push({ relativePath, size: fileStat.size });
+    for (const entry of entries) {
+      if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
+      const relativePath = path.posix.join(currentRelative.split(path.sep).join('/'), entry.name);
+      const fullPath = path.join(repoRoot, relativePath);
+      if (entry.isDirectory()) {
+        pending.push(relativePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      const fileStat = await stat(fullPath);
+      files.push({ relativePath, size: fileStat.size });
+    }
   }
   return files;
 }
