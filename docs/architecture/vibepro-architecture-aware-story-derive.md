@@ -21,6 +21,7 @@ The Story derivation pipeline has three separate responsibilities.
 | Repo Profile | Classify the repository shape from files, package metadata, framework evidence, language mix, and graph paths | Infer product capabilities from isolated words such as `session` or `notification` |
 | Preset Applicability | Decide whether a preset family can promote template Stories as validated Stories | Apply Web/SaaS product templates to non-Web repositories by default |
 | Story Promotion | Emit validated Stories only when code/doc evidence matches the Story domain | Present suppressed templates as `story_cluster (N paths)` evidence |
+| Source Recovery Evidence | Keep backward-compatible implementation hints such as middleware fallback files for older/lightweight source recovery flows | Treat fallback implementation evidence as a replacement for explicit Story, Architecture, or Spec sources on design-first Stories |
 
 ## Repo Profiles
 
@@ -53,3 +54,7 @@ VibePro starts with a lightweight profile for Story derivation. The profile is i
 - enough suppressed Story metadata for a user to decide whether to rerun with `--preset`
 
 This keeps the user-facing distinction clear: validated Stories are evidence-backed, while suppressed templates are candidate context that requires domain confirmation.
+
+## Regression Boundary
+
+Architecture-aware Story derivation must not weaken existing source recovery behavior. Existing recovery helpers can still select representative implementation files, including middleware fallback files when no signature helper exists. That evidence is only implementation context. For design-first Stories, source consistency remains unresolved until explicit Story, Architecture, and Spec sources are linked.

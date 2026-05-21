@@ -2539,6 +2539,74 @@ source:
   assert.equal(created.tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-architecture-recovery'), true);
 });
 
+test('story plan treats linked architecture and spec as source consistency for design-first stories', async () => {
+  const repo = await makeRepo();
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-vibepro-architecture-aware-story-derive',
+    '--title',
+    '非WebリポジトリへWeb/SaaSストーリーを誤生成しない',
+    '--view',
+    'dev'
+  ]);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-vibepro-architecture-aware-story-derive.md'), `---
+story_id: story-vibepro-architecture-aware-story-derive
+title: 非WebリポジトリへWeb/SaaSストーリーを誤生成しない
+view: dev
+category: architecture
+source:
+  type: github_issue
+  id: "#46"
+architecture_docs:
+  - ../../architecture/vibepro-architecture-aware-story-derive.md
+spec_docs:
+  - ../../specs/vibepro-architecture-aware-story-derive.md
+---
+
+# 非WebリポジトリへWeb/SaaSストーリーを誤生成しない
+
+## 受け入れ基準
+
+- [ ] story derive は repo profile を判定してから preset applicability を決める
+- [ ] Python CLI repoでは auth/CMS/notification のWeb/SaaS Storyを生成しない
+- [ ] 明示 preset では従来互換を保つ
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'vibepro-architecture-aware-story-derive.md'), `---
+story_id: story-vibepro-architecture-aware-story-derive
+---
+
+# Architecture-Aware Story Derive
+
+Repo profile, preset applicability, Story promotion, and source recovery evidence are separate boundaries.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'vibepro-architecture-aware-story-derive.md'), `---
+story_id: story-vibepro-architecture-aware-story-derive
+---
+
+# Architecture-Aware Story Derive Spec
+
+- INV-ASD-1: story derive must classify repo profile before promoting product surface Stories.
+- INV-ASD-7: source recovery hints do not satisfy design-first source consistency without explicit links.
+`);
+
+  await runCli(['story', 'derive', repo]);
+  const planResult = await runCli(['story', 'plan', repo, '--limit', '10']);
+
+  assert.equal(planResult.exitCode, 0);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const tasks = plan.task_candidates.filter((task) => task.story_id === 'story-vibepro-architecture-aware-story-derive');
+  assert.equal(tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-spec-recovery'), false);
+  assert.equal(tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-architecture-recovery'), false);
+  const row = plan.source_recovery_map.rows.find((item) => item.story_id === 'story-vibepro-architecture-aware-story-derive');
+  assert.equal(row.spec.status, 'present');
+  assert.equal(row.architecture.status, 'present');
+});
+
 test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

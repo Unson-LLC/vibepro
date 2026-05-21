@@ -18,6 +18,7 @@ related_architecture:
 - `INV-ASD-4`: Suppressed template Stories must be represented as warnings or candidates, never as validated `story_cluster` Stories.
 - `INV-ASD-5`: `story-catalog.json` must include selected preset, preset resolution mode, repo profile, and suppression warnings.
 - `INV-ASD-6`: `story-map.md` must expose repo profile and warning codes so a human can understand why Stories were omitted.
+- `INV-ASD-7`: Source recovery implementation hints must not satisfy design-first Story source consistency unless explicit Story, Architecture, and Spec sources are linked.
 
 ## Contracts
 
@@ -62,6 +63,7 @@ Suppressed template Stories use warning code `needs_domain_confirmation` and inc
 - `S-ASD-2`: The same non-Web repo run with `--preset next-app` may emit Next.js product surface Stories because the operator explicitly opted in.
 - `S-ASD-3`: A Web/Next.js repo with `src/components/auth/LoginForm.tsx` and auto preset selection continues to classify relevant files and may emit Web product Stories.
 - `S-ASD-4`: A non-Web repo with suppressed template matches emits `needs_domain_confirmation` in JSON and Markdown outputs.
+- `S-ASD-5`: Source briefing without a signature helper still keeps middleware files as fallback evidence for older or lightweight source recovery flows. Design-first Stories remain incomplete until their Architecture and Spec sources are explicitly linked.
 
 ## Anti-patterns
 
