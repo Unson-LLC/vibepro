@@ -25,6 +25,15 @@ const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
 const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
 const AGENT_REVIEW_AUTHORIZATION_QUESTION = 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？';
 const AGENT_REVIEW_AUTHORIZATION_REQUEST = 'VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。';
+const MANDATORY_REVIEW_LENSES = [
+  {
+    id: 'regression_guard',
+    title: 'Regression / デグレ確認',
+    prompt: 'この変更で、今回のStory対象外を含む既存のユーザー導線・API契約・データ状態・運用手順・性能・アクセシビリティ・セキュリティ境界が壊れていないか確認する。',
+    pass_condition: '既存挙動への影響範囲が説明され、必要な自動テスト・E2E・手動確認・証跡、または非該当理由がある。',
+    block_condition: '既存挙動の破壊、互換性のないAPI/DB/UI変更、主要導線の未検証、または「通った」根拠がStory対象の新規導線だけに偏っている。'
+  }
+];
 
 export async function prepareAgentReview(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review prepare');
@@ -48,9 +57,11 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       'Dispatch the listed role reviews in parallel with separate AI subagents or human reviewers.',
       'VibePro records the review results, but does not execute subagents itself.',
       'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to launch the parallel reviews.',
+      'Every role review must include the mandatory regression_guard lens; passing a role only means both the role concern and the regression lens are adequately covered.',
       `If Codex/Claude Code policy requires explicit user permission before spawning subagents, ask exactly: ${AGENT_REVIEW_AUTHORIZATION_QUESTION}`,
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
+    mandatory_review_lenses: MANDATORY_REVIEW_LENSES,
     parallel_dispatch: {
       required: true,
       mode: 'manual_parallel_subagents',
@@ -356,7 +367,7 @@ function buildRolePromptSummary(stage, role) {
     acceptance_e2e: 'Check that acceptance criteria can be proven by user-level flows.',
     architecture_boundary: 'Review boundaries, ownership, dependency direction, and ADR needs.',
     spec_consistency: 'Check Story, Spec, Architecture, and code invariants for contradictions.',
-    regression_risk: 'Identify likely regressions around adjacent behavior and migration paths.',
+    regression_risk: 'Identify likely regressions around adjacent behavior, compatibility, and migration paths; do not limit the review to the new happy path.',
     unit_integration: 'Review unit/integration test coverage and missing assertions.',
     e2e_ux: 'Review UI journeys, transitions, interaction readiness, and visible errors.',
     gate_coverage: 'Check whether gates measure the promised outcome and failure modes.',
@@ -375,6 +386,7 @@ function buildRolePromptSummary(stage, role) {
 
 function renderReviewRequestMarkdown({ storyId, stage, role, plan }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
+  const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   return `# VibePro Agent Review Request
 
 - Story: ${storyId}
@@ -386,8 +398,13 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan }) {
 ## Review Focus
 ${buildRolePromptSummary(stage, role)}
 
+## Mandatory Review Lenses
+${mandatoryLenses}
+
 ## Instructions
 - Review only this role's concern; do not broaden into unrelated cleanup.
+- A \`pass\` must cover both the role focus and every mandatory review lens above.
+- If regression coverage is missing or only proves the new happy path, return \`needs_changes\` or \`block\` with a concrete finding.
 - Return concrete findings tied to files, behavior, gates, or missing evidence.
 - Use \`block\` for release-blocking bugs, broken contracts, or unverified critical paths.
 - Use \`needs_changes\` when the work may proceed after specific fixes/evidence.
@@ -411,6 +428,7 @@ ${buildRolePromptSummary(stage, role)}
 }
 
 function renderParallelDispatchMarkdown({ storyId, stage, roles, plan }) {
+  const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   const items = roles.map((role, index) => {
     const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
     const command = buildReviewRecordCommand({ storyId, stage, role });
@@ -420,7 +438,7 @@ Review request:
 \`${request}\`
 
 Prompt:
-Read the review request above and perform only the \`${stage}:${role}\` review. Return JSON with \`status\`, \`summary\`, and \`findings\`. Do not edit files.
+Read the review request above and perform only the \`${stage}:${role}\` review, including the mandatory regression_guard lens. Return JSON with \`status\`, \`summary\`, and \`findings\`. Do not edit files.
 
 Record command after the subagent returns:
 \`${command}\`
@@ -457,8 +475,21 @@ If the user has already authorized subagent review, or replies with the authoriz
 4. Record each result with the listed \`vibepro review record\` command.
 5. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\`.
 
+## Mandatory Review Lenses
+${mandatoryLenses}
+
 ${items}
 `;
+}
+
+function renderMandatoryReviewLenses(lenses) {
+  return lenses.map((lens) => [
+    `### ${lens.id}: ${lens.title}`,
+    lens.prompt,
+    '',
+    `- Pass condition: ${lens.pass_condition}`,
+    `- Block condition: ${lens.block_condition}`
+  ].join('\n')).join('\n\n');
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {

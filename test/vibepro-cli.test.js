@@ -3332,6 +3332,7 @@ test('review prepare generates stage role requests', async () => {
   assert.deepEqual(result.result.plan.roles, ['unit_integration', 'e2e_ux', 'gate_coverage']);
   assert.equal(result.result.plan.parallel_dispatch.mode, 'manual_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
+  assert.equal(result.result.plan.mandatory_review_lenses.some((lens) => lens.id === 'regression_guard'), true);
   assert.equal(result.result.plan.parallel_dispatch.authorization_bridge.ask_if_not_authorized, 'VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？');
   assert.match(result.result.plan.parallel_dispatch.authorization_bridge.user_authorization_phrase, /必要なサブエージェントレビューを並列で実行/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
@@ -3344,6 +3345,8 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /If your agent runtime requires explicit user authorization/);
   assert.match(dispatch, /サブエージェントレビューを実行していいですか/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
+  assert.match(dispatch, /regression_guard/);
+  assert.match(dispatch, /mandatory regression_guard lens/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
@@ -3351,6 +3354,9 @@ test('review prepare generates stage role requests', async () => {
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
+  assert.match(request, /Mandatory Review Lenses/);
+  assert.match(request, /regression_guard/);
+  assert.match(request, /A `pass` must cover both the role focus and every mandatory review lens/);
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);
   assert.match(request, /Claude Code coordinators must include/);
