@@ -7349,6 +7349,40 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
     `default preset must classify src/components/** as 'component', got ${JSON.stringify(roles)}`);
 });
 
+test('story derive uses document evidence without weak non-web code paths', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'features'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
+  await writeFile(path.join(repo, 'docs', 'features', 'auth.md'), `---
+story_id: story-product-auth-account-access
+---
+
+# Auth Story
+
+User-facing account access is an explicit product requirement.
+`);
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
+      { id: 'auth_doc', source_file: 'docs/features/auth.md', label: 'Auth Story' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.repo_profile.product_surface_applicable, false);
+  const story = catalog.stories.find((item) => item.story_id === 'story-product-auth-account-access');
+  assert.ok(story, `expected doc-promoted auth story, got ${catalog.stories.map((item) => item.story_id).join(', ')}`);
+  assert.equal(story.source.paths.includes('docs/features/auth.md'), true);
+  assert.equal(story.source.paths.includes('src/session_learning.py'), false);
+});
+
 test('pr prepare --strict requires --task option', async () => {
   const repo = await makeGitRepoWithStory();
   let stderrOut = '';

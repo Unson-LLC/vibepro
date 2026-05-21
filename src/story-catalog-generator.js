@@ -412,7 +412,8 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset,
       continue;
     }
     const docs = signal.docKey ? selectDocs(documentSignals, signal.docKey) : [];
-    const paths = uniqueList([...(signal.docKey ? docPaths(documentSignals, signal.docKey) : []), ...codePaths]);
+    const effectiveCodePaths = isProductSurfaceCodeEvidenceApplicable(context) ? codePaths : [];
+    const paths = uniqueList([...(signal.docKey ? docPaths(documentSignals, signal.docKey) : []), ...effectiveCodePaths]);
     if (paths.length === 0) continue;
     stories.push(buildDerivedStory({
       id: signal.id,
@@ -453,6 +454,11 @@ function evaluateProductSurfaceApplicability({ signal, codePaths, docMatch, pres
     required_profile: ['next-app', 'web'],
     evidence_paths: codePaths
   };
+}
+
+function isProductSurfaceCodeEvidenceApplicable(context = {}) {
+  if (context.presetExplicit) return true;
+  return context.repoProfile?.product_surface_applicable === true;
 }
 
 function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, context = {}) {
