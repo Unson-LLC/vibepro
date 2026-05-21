@@ -7287,6 +7287,18 @@ test('story derive suppresses next-app product stories for non-web repositories 
   const explicitIds = explicitCatalog.stories.map((story) => story.story_id);
   assert.equal(explicitCatalog.source.preset_resolution.mode, 'explicit');
   assert.equal(explicitIds.includes('story-product-auth-account-access'), true);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.story_catalog = { ...(config.story_catalog ?? {}), preset: 'next-app' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const configPresetResult = await runCli(['story', 'derive', repo]);
+  assert.equal(configPresetResult.exitCode, 0);
+  const configPresetCatalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const configPresetIds = configPresetCatalog.stories.map((story) => story.story_id);
+  assert.equal(configPresetCatalog.source.preset_resolution.mode, 'explicit');
+  assert.equal(configPresetCatalog.source.preset_resolution.requested, 'next-app');
+  assert.equal(configPresetIds.includes('story-product-auth-account-access'), true);
 });
 
 test('story derive keeps next-app preset behavior when preset is unset', async () => {
@@ -7311,6 +7323,8 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
   assert.equal(catalog.source.preset, 'next-app');
   assert.equal(catalog.source.preset_resolution.mode, 'auto');
   assert.equal(catalog.source.repo_profile.id, 'web');
+  const storyIds = catalog.stories.map((story) => story.story_id);
+  assert.equal(storyIds.includes('story-product-auth-account-access'), true);
   assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
     `default preset must keep classifying src/ files as relevant`);
   const roles = catalog.coverage.by_role.map((entry) => entry.role);
