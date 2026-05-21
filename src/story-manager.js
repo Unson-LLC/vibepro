@@ -937,15 +937,16 @@ function buildSourceRecoveryForStory(story, graphContext = null) {
   const architectureDocs = docs.filter(isArchitectureDocPath);
   const hasMissingSpec = openQuestions.some((item) => item.field === 'missing_spec');
   const boundarySignals = inferArchitectureBoundarySignals(story, codeFiles);
+  const requiresDesignFirstSources = isDesignFirstStory(story);
   const storyStatus = storyDocs.length > 0 ? 'present' : story.source?.type === 'code_surface' ? 'derived' : 'implicit';
   const specStatus = specDocs.length > 0
     ? 'present'
-    : storyDocs.length > 0 && !hasMissingSpec
+    : storyDocs.length > 0 && !hasMissingSpec && !requiresDesignFirstSources
       ? 'story_backed'
       : 'needs_recovery';
-  const architectureStatus = architectureDocs.length > 0 || story.category === 'architecture'
+  const architectureStatus = architectureDocs.length > 0
     ? 'present'
-    : boundarySignals.length > 0
+    : boundarySignals.length > 0 || requiresDesignFirstSources
       ? 'needs_decision'
       : 'implicit';
   const status = specStatus === 'needs_recovery' || architectureStatus === 'needs_decision'
@@ -982,9 +983,28 @@ function buildSourceRecoveryForStory(story, graphContext = null) {
     checks: [
       'Storyのwho/problem/outcomeが人間レビュー済みか',
       'Specの受け入れ基準がコード分岐と対応しているか',
-      'Architecture/ADRの境界判断がGraphと変更範囲に対応しているか'
+      'Architecture/ADRの境界判断がGraphと変更範囲に対応しているか',
+      ...(requiresDesignFirstSources ? ['設計変更Storyでは、実装前にArchitecture判断とSpec契約を正本化しているか'] : [])
     ]
   };
+}
+
+function isDesignFirstStory(story) {
+  const text = [
+    story.story_id,
+    story.title,
+    story.category,
+    story.source?.type,
+    ...(story.derived?.story_definition?.acceptance_focus ?? []),
+    ...(story.derived?.meaning?.counter_evidence ?? []),
+    ...(story.derived?.open_questions ?? []).map((item) => item.question)
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+  if (story.category === 'architecture') return true;
+  if (/(architecture|adr|spec|contract|gate|preset|story derive|repo profile|applicability|boundary|design[-_ ]?first)/i.test(text)) return true;
+  return false;
 }
 
 function buildSpecRecoveryDraft({ story, definition, codeFiles, graphContext }) {

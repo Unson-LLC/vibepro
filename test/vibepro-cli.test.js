@@ -2488,6 +2488,57 @@ view: dev
   assert.equal(tasks.tasks.find((task) => task.id === 'story-agent-harness-02-harness-status').source_type, 'story_explicit_task');
 });
 
+test('story plan requires architecture and spec tasks for design-first stories', async () => {
+  const repo = await makeRepo();
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-vibepro-architecture-aware-story-derive',
+    '--title',
+    '非WebリポジトリへWeb/SaaSストーリーを誤生成しない',
+    '--view',
+    'dev'
+  ]);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-vibepro-architecture-aware-story-derive.md'), `---
+story_id: story-vibepro-architecture-aware-story-derive
+title: 非WebリポジトリへWeb/SaaSストーリーを誤生成しない
+view: dev
+category: architecture
+source:
+  type: github_issue
+  id: "#46"
+---
+
+# 非WebリポジトリへWeb/SaaSストーリーを誤生成しない
+
+## 受け入れ基準
+
+- [ ] story derive は repo profile を判定してから preset applicability を決める
+- [ ] Python CLI repoでは auth/CMS/notification のWeb/SaaS Storyを生成しない
+- [ ] 明示 preset では従来互換を保つ
+`);
+
+  await runCli(['story', 'derive', repo]);
+  const planResult = await runCli(['story', 'plan', repo, '--limit', '10']);
+
+  assert.equal(planResult.exitCode, 0);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  const tasks = plan.task_candidates.filter((task) => task.story_id === 'story-vibepro-architecture-aware-story-derive');
+  assert.equal(tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-spec-recovery'), true);
+  assert.equal(tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-architecture-recovery'), true);
+  const row = plan.source_recovery_map.missing.find((item) => item.story_id === 'story-vibepro-architecture-aware-story-derive');
+  assert.equal(row.spec.status, 'needs_recovery');
+  assert.equal(row.architecture.status, 'needs_decision');
+
+  const createResult = await runCli(['task', 'create', repo, '--from-plan', '--id', 'story-vibepro-architecture-aware-story-derive']);
+  assert.equal(createResult.exitCode, 0);
+  const created = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-architecture-aware-story-derive', 'tasks', 'tasks.json'));
+  assert.equal(created.tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-spec-recovery'), true);
+  assert.equal(created.tasks.some((task) => task.id === 'story-vibepro-architecture-aware-story-derive-architecture-recovery'), true);
+});
+
 test('story plan creates architecture recovery tasks for boundary code without ADR', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
