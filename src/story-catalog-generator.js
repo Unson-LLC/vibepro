@@ -159,20 +159,35 @@ const CODE_SURFACE_SIGNATURES = [
 
 export async function generateStoryCatalog(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const activePreset = getPreset(resolvePresetId(options.config, options.preset));
   const files = await collectRepoFiles(root);
   const fileSet = new Set(files.map((file) => file.relativePath));
   const evidenceResult = await readEvidence(root, options.manifest, options.fromRunId);
   const evidence = evidenceResult.evidence;
   const architectureProfile = evidence?.architecture_profile ?? await profileArchitecture(root);
+  const repoProfile = detectStoryRepoProfile(fileSet, architectureProfile, files);
+  const explicitPresetId = options.preset ?? options.config?.story_catalog?.preset ?? null;
+  const activePreset = getPreset(resolvePresetId(options.config, options.preset));
+  const presetResolution = {
+    mode: explicitPresetId ? 'explicit' : 'auto',
+    requested: explicitPresetId,
+    selected: activePreset.id,
+    repo_profile: repoProfile.id,
+    reason: explicitPresetId
+      ? 'Preset was explicitly selected by CLI or repo config.'
+      : 'Preset was selected by VibePro default with repo profile applicability gates.'
+  };
   const currentStory = findCurrentStory(options.config);
   const defaults = buildDefaultStoryFields(currentStory, activePreset);
   const graph = await readGraph(root);
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files, activePreset);
+  const productSurfaceResult = deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset, {
+    repoProfile,
+    presetExplicit: Boolean(explicitPresetId)
+  });
 
   const derivedStories = attachLinkedDocumentSignals([
-    ...deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset),
+    ...productSurfaceResult.stories,
     ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset),
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
@@ -194,8 +209,10 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
       run_id: evidence?.run_id ?? null,
       evidence: evidence ? evidencePathForRun(options.manifest, evidence.run_id) : null,
       preset: activePreset.id,
+      preset_resolution: presetResolution,
+      repo_profile: repoProfile,
       graphify: graphSummary,
-      warnings: evidenceResult.warnings
+      warnings: [...evidenceResult.warnings, ...productSurfaceResult.warnings]
     },
     story_count: stories.length,
     coverage,
@@ -362,11 +379,12 @@ function deriveArchitectureStories(profile, evidence, defaults, documentSignals)
   return stories;
 }
 
-function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset) {
+function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset, context = {}) {
   const signals = preset?.productSurfaceSignals ?? [];
-  if (signals.length === 0) return [];
+  if (signals.length === 0) return { stories: [], warnings: [] };
   const files = [...fileSet];
   const stories = [];
+  const suppressed = [];
   const hasDocs = (key) => key && (documentSignals[key] ?? []).length > 0;
 
   for (const signal of signals) {
@@ -376,6 +394,16 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset)
     const codeMatch = codePaths.length > 0;
     const docMatch = hasDocs(signal.docKey);
     if (!codeMatch && !docMatch) continue;
+    const applicability = evaluateProductSurfaceApplicability({ signal, codePaths, docMatch, preset, context });
+    if (!applicability.allowed) {
+      suppressed.push({
+        story_id: signal.id,
+        reason: applicability.reason,
+        evidence_paths: codePaths,
+        required_profile: applicability.required_profile
+      });
+      continue;
+    }
     const docs = signal.docKey ? selectDocs(documentSignals, signal.docKey) : [];
     const paths = uniqueList([...(signal.docKey ? docPaths(documentSignals, signal.docKey) : []), ...codePaths]);
     if (paths.length === 0) continue;
@@ -392,7 +420,32 @@ function deriveProductSurfaceStories(fileSet, defaults, documentSignals, preset)
     }));
   }
 
-  return stories;
+  return {
+    stories,
+    warnings: suppressed.length === 0 ? [] : [{
+      severity: 'warning',
+      code: 'needs_domain_confirmation',
+      message: 'story derive suppressed template product stories because repo profile does not provide matching Web/SaaS evidence. Use --preset or story_catalog.preset to opt in explicitly.',
+      repo_profile: context.repoProfile?.id ?? 'unknown',
+      preset: preset?.id ?? null,
+      suppressed_story_ids: suppressed.map((item) => item.story_id),
+      suppressed
+    }]
+  };
+}
+
+function evaluateProductSurfaceApplicability({ signal, codePaths, docMatch, preset, context }) {
+  if (context.presetExplicit) return { allowed: true, reason: 'explicit_preset' };
+  if (docMatch) return { allowed: true, reason: 'document_signal' };
+  if (preset?.id !== 'next-app') return { allowed: true, reason: 'non_next_app_preset' };
+  const repoProfile = context.repoProfile;
+  if (repoProfile?.product_surface_applicable === true) return { allowed: true, reason: 'repo_profile' };
+  return {
+    allowed: false,
+    reason: 'repo_profile_not_web_product',
+    required_profile: ['next-app', 'web'],
+    evidence_paths: codePaths
+  };
 }
 
 function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset) {
@@ -1874,6 +1927,134 @@ function currentQuarter(date = new Date()) {
   return `${date.getFullYear()}Q${Math.floor(date.getMonth() / 3) + 1}`;
 }
 
+function detectStoryRepoProfile(fileSet, architectureProfile = {}, files = []) {
+  const paths = [...fileSet];
+  const languageCounts = countFileLanguages(files);
+  const evidence = [];
+  const has = (pattern) => paths.some((file) => pattern.test(file));
+  const addEvidence = (label, pattern) => {
+    const matches = paths.filter((file) => pattern.test(file)).slice(0, 8);
+    if (matches.length > 0) evidence.push({ label, paths: matches });
+    return matches.length > 0;
+  };
+
+  const hasNextEvidence = architectureProfile.rendering === 'nextjs'
+    || addEvidence('next_app_router', /^(src\/)?app\/.+\/(page|route)\.[jt]sx?$/)
+    || addEvidence('next_config', /^next\.config\.[cm]?[jt]s$/);
+  if (hasNextEvidence) {
+    return buildRepoProfile({
+      id: 'next-app',
+      confidence: 'high',
+      productSurfaceApplicable: true,
+      evidence,
+      languageCounts,
+      architectureProfile
+    });
+  }
+
+  const pythonFiles = languageCounts.python ?? 0;
+  const jsTsFiles = (languageCounts.javascript ?? 0) + (languageCounts.typescript ?? 0);
+  const hasPythonCliEvidence = pythonFiles > 0
+    && (pythonFiles >= Math.max(3, jsTsFiles * 2) || has(/^scripts\/.+\.py$/) || has(/^src\/.+\.py$/) || has(/^pyproject\.toml$/));
+  if (hasPythonCliEvidence) {
+    addEvidence('python_source', /^(src|scripts|pkg)\/.+\.py$|^pyproject\.toml$/);
+    return buildRepoProfile({
+      id: has(/^scripts\/.+\.py$/) ? 'data-pipeline' : 'python-cli',
+      confidence: 'medium',
+      productSurfaceApplicable: false,
+      evidence,
+      languageCounts,
+      architectureProfile
+    });
+  }
+
+  const hasWebEvidence = architectureProfile.app_type === 'web_app'
+    || architectureProfile.app_type === 'static_site'
+    || addEvidence('web_component', /^(src\/)?components\/.+\.[jt]sx$/)
+    || addEvidence('web_entry', /^(src\/)?(main|App)\.[jt]sx?$|^index\.html$/);
+  if (hasWebEvidence) {
+    return buildRepoProfile({
+      id: 'web',
+      confidence: architectureProfile.app_type === 'web_app' ? 'high' : 'medium',
+      productSurfaceApplicable: true,
+      evidence,
+      languageCounts,
+      architectureProfile
+    });
+  }
+
+  const hasApiEvidence = architectureProfile.has_api_routes === true
+    || addEvidence('api_route', /^(src\/)?(server|api|routes)\//);
+  if (hasApiEvidence) {
+    return buildRepoProfile({
+      id: 'api-service',
+      confidence: 'medium',
+      productSurfaceApplicable: false,
+      evidence,
+      languageCounts,
+      architectureProfile
+    });
+  }
+
+  const hasLibraryEvidence = has(/^src\/.+\.(js|ts|py|go|rs)$/) || has(/^lib\/.+\.(js|ts|py|go|rs)$/);
+  if (hasLibraryEvidence) {
+    addEvidence('library_source', /^(src|lib)\/.+\.(js|ts|py|go|rs)$/);
+    return buildRepoProfile({
+      id: 'library',
+      confidence: 'low',
+      productSurfaceApplicable: false,
+      evidence,
+      languageCounts,
+      architectureProfile
+    });
+  }
+
+  return buildRepoProfile({
+    id: 'unknown',
+    confidence: 'low',
+    productSurfaceApplicable: false,
+    evidence,
+    languageCounts,
+    architectureProfile
+  });
+}
+
+function countFileLanguages(files) {
+  const counts = {};
+  for (const file of files) {
+    const ext = path.extname(file.relativePath).toLowerCase();
+    const language = {
+      '.ts': 'typescript',
+      '.tsx': 'typescript',
+      '.js': 'javascript',
+      '.jsx': 'javascript',
+      '.mjs': 'javascript',
+      '.py': 'python',
+      '.go': 'go',
+      '.rs': 'rust',
+      '.rb': 'ruby',
+      '.php': 'php'
+    }[ext];
+    if (!language) continue;
+    counts[language] = (counts[language] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function buildRepoProfile({ id, confidence, productSurfaceApplicable, evidence, languageCounts, architectureProfile }) {
+  return {
+    id,
+    confidence,
+    product_surface_applicable: productSurfaceApplicable,
+    app_type: architectureProfile.app_type ?? 'unknown',
+    rendering: architectureProfile.rendering ?? null,
+    frameworks: architectureProfile.frameworks ?? [],
+    languages: architectureProfile.languages ?? Object.keys(languageCounts).sort(),
+    language_counts: languageCounts,
+    evidence
+  };
+}
+
 function evidencePathForRun(manifest, runId) {
   const run = (manifest?.runs ?? []).find((item) => item.run_id === runId);
   return run?.artifacts?.evidence ?? null;
@@ -1898,6 +2079,8 @@ function renderExecutiveSummary(catalog, stories) {
   return [
     `- 生成日時: ${catalog.generated_at ?? '-'}`,
     `- 診断run: ${catalog.source?.run_id ?? '-'}`,
+    `- Repo profile: ${catalog.source?.repo_profile?.id ?? 'unknown'} (${catalog.source?.repo_profile?.confidence ?? 'unknown'})`,
+    `- Preset: ${catalog.source?.preset ?? '-'} / ${catalog.source?.preset_resolution?.mode ?? 'unknown'}`,
     `- 警告: ${warnings.length > 0 ? warnings.map((warning) => warning.code).join(', ') : '-'}`,
     `- Story数: ${stories.length}`,
     `- View: ${formatCounts(viewCounts)}`,

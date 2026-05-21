@@ -7171,6 +7171,56 @@ test('story derive omits singletons from story_candidates', async () => {
     `singletons must not be emitted as candidates, got ${JSON.stringify(cliCandidates)}`);
 });
 
+test('story derive suppresses next-app product stories for non-web repositories by default', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  await mkdir(path.join(repo, 'src', 'pkg', 'trading_dag'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'pkg', 'decision_dag'), { recursive: true });
+  await mkdir(path.join(repo, 'scripts'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'backtest_engine.py'), 'class BacktestEngine: pass\n');
+  await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
+  await writeFile(path.join(repo, 'src', 'pkg', 'trading_dag', 'signals.py'), 'def emit_entry_signal(): pass\n');
+  await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
+  await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
+
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
+      { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
+      { id: 'signals', source_file: 'src/pkg/trading_dag/signals.py', label: 'emit_entry_signal' },
+      { id: 'notification', source_file: 'src/pkg/decision_dag/notification_score.py', label: 'notification_score' },
+      { id: 'script', source_file: 'scripts/run_ctrader_shadow_trade.py', label: 'run_ctrader' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const storyIds = catalog.stories.map((story) => story.story_id);
+  assert.equal(catalog.source.repo_profile.id, 'data-pipeline');
+  assert.equal(storyIds.includes('story-product-auth-account-access'), false);
+  assert.equal(storyIds.includes('story-product-content-cms'), false);
+  assert.equal(storyIds.includes('story-product-notification'), false);
+  const warning = catalog.source.warnings.find((item) => item.code === 'needs_domain_confirmation');
+  assert.ok(warning, `expected needs_domain_confirmation warning, got ${JSON.stringify(catalog.source.warnings)}`);
+  assert.equal(warning.suppressed_story_ids.includes('story-product-auth-account-access'), true);
+  assert.equal(warning.suppressed_story_ids.includes('story-product-notification'), true);
+
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /Repo profile: data-pipeline/);
+  assert.match(map, /needs_domain_confirmation/);
+
+  const explicitResult = await runCli(['story', 'derive', repo, '--preset', 'next-app']);
+  assert.equal(explicitResult.exitCode, 0);
+  const explicitCatalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  const explicitIds = explicitCatalog.stories.map((story) => story.story_id);
+  assert.equal(explicitCatalog.source.preset_resolution.mode, 'explicit');
+  assert.equal(explicitIds.includes('story-product-auth-account-access'), true);
+});
+
 test('story derive keeps next-app preset behavior when preset is unset', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -7191,6 +7241,8 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
 
   const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
   assert.equal(catalog.source.preset, 'next-app');
+  assert.equal(catalog.source.preset_resolution.mode, 'auto');
+  assert.equal(catalog.source.repo_profile.id, 'web');
   assert.ok(catalog.coverage.totals.graph_story_relevant_files > 0,
     `default preset must keep classifying src/ files as relevant`);
   const roles = catalog.coverage.by_role.map((entry) => entry.role);
