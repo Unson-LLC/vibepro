@@ -7246,10 +7246,12 @@ test('story derive suppresses next-app product stories for non-web repositories 
   await mkdir(path.join(repo, 'src', 'pkg', 'trading_dag'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'pkg', 'decision_dag'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services', 'profile'), { recursive: true });
   await mkdir(path.join(repo, 'scripts'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'backtest_engine.py'), 'class BacktestEngine: pass\n');
   await writeFile(path.join(repo, 'src', 'session_learning.py'), 'def load_session(): return None\n');
   await writeFile(path.join(repo, 'src', 'lib', 'auth.py'), 'def auth_score(): return 0\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'profile', 'profile_score.py'), 'def score_profile(): return 0\n');
   await writeFile(path.join(repo, 'src', 'pkg', 'trading_dag', 'signals.py'), 'def emit_entry_signal(): pass\n');
   await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
   await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
@@ -7259,6 +7261,7 @@ test('story derive suppresses next-app product stories for non-web repositories 
       { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
       { id: 'auth', source_file: 'src/lib/auth.py', label: 'auth_score' },
+      { id: 'profile', source_file: 'src/lib/services/profile/profile_score.py', label: 'profile_score' },
       { id: 'signals', source_file: 'src/pkg/trading_dag/signals.py', label: 'emit_entry_signal' },
       { id: 'notification', source_file: 'src/pkg/decision_dag/notification_score.py', label: 'notification_score' },
       { id: 'script', source_file: 'scripts/run_ctrader_shadow_trade.py', label: 'run_ctrader' }
@@ -7275,10 +7278,12 @@ test('story derive suppresses next-app product stories for non-web repositories 
   assert.equal(storyIds.includes('story-product-auth-account-access'), false);
   assert.equal(storyIds.includes('story-product-content-cms'), false);
   assert.equal(storyIds.includes('story-product-notification'), false);
+  assert.equal(storyIds.includes('story-product-profile-personalization'), false);
   const warning = catalog.source.warnings.find((item) => item.code === 'needs_domain_confirmation');
   assert.ok(warning, `expected needs_domain_confirmation warning, got ${JSON.stringify(catalog.source.warnings)}`);
   assert.equal(warning.suppressed_story_ids.includes('story-product-auth-account-access'), true);
   assert.equal(warning.suppressed_story_ids.includes('story-product-notification'), true);
+  assert.equal(warning.suppressed_story_ids.includes('story-product-profile-personalization'), true);
 
   const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
   assert.match(map, /Repo profile: data-pipeline/);

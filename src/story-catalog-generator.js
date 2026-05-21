@@ -185,13 +185,14 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
     repoProfile,
     presetExplicit: Boolean(explicitPresetId)
   });
+  const codeSurfaceResult = deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset, {
+    repoProfile,
+    presetExplicit: Boolean(explicitPresetId)
+  });
 
   const derivedStories = attachLinkedDocumentSignals([
     ...productSurfaceResult.stories,
-    ...deriveCodeSurfaceStories(fileSet, defaults, documentSignals, activePreset, {
-      repoProfile,
-      presetExplicit: Boolean(explicitPresetId)
-    }),
+    ...codeSurfaceResult.stories,
     ...deriveArchitectureStories(architectureProfile, evidence, defaults, documentSignals),
     ...deriveDocumentationStories(fileSet, documentSignals, defaults)
   ], documentSignals);
@@ -215,7 +216,10 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
       preset_resolution: presetResolution,
       repo_profile: repoProfile,
       graphify: graphSummary,
-      warnings: [...evidenceResult.warnings, ...productSurfaceResult.warnings]
+      warnings: [...evidenceResult.warnings, ...mergeDomainConfirmationWarnings([
+        ...productSurfaceResult.warnings,
+        ...codeSurfaceResult.warnings
+      ])]
     },
     story_count: stories.length,
     coverage,
@@ -454,7 +458,8 @@ function evaluateProductSurfaceApplicability({ signal, codePaths, docMatch, pres
 function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, context = {}) {
   const files = [...fileSet];
   const signatures = preset.codeSurfaceSignatures ?? CODE_SURFACE_SIGNATURES;
-  return signatures
+  const suppressed = [];
+  const stories = signatures
     .map((signature) => {
       const codePaths = files
         .filter((file) => signature.patterns.some((pattern) => pattern.test(file)))
@@ -464,6 +469,14 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, co
       const codePathsAllowed = isCodeSurfaceStoryApplicable(signature, context);
       const effectiveCodePaths = codePathsAllowed ? codePaths : [];
       if (codePaths.length === 0 && docs.length === 0) return null;
+      if (!codePathsAllowed && codePaths.length > 0 && docs.length === 0) {
+        suppressed.push({
+          story_id: signature.id,
+          reason: 'repo_profile_not_web_product',
+          evidence_paths: codePaths,
+          required_profile: ['next-app', 'web']
+        });
+      }
       if (effectiveCodePaths.length === 0 && docs.length === 0) return null;
       const paths = uniqueList([...docs.map((doc) => doc.path), ...effectiveCodePaths]);
       return buildDerivedStory({
@@ -480,12 +493,48 @@ function deriveCodeSurfaceStories(fileSet, defaults, documentSignals, preset, co
       });
     })
     .filter(Boolean);
+  return {
+    stories,
+    warnings: suppressed.length === 0 ? [] : [buildDomainConfirmationWarning({ suppressed, preset, repoProfile: context.repoProfile })]
+  };
 }
 
 function isCodeSurfaceStoryApplicable(signature, context = {}) {
   if (signature.category !== 'product') return true;
   if (context.presetExplicit) return true;
   return context.repoProfile?.product_surface_applicable === true;
+}
+
+function buildDomainConfirmationWarning({ suppressed, preset, repoProfile }) {
+  return {
+    severity: 'warning',
+    code: 'needs_domain_confirmation',
+    message: 'story derive suppressed template product stories because repo profile does not provide matching Web/SaaS evidence. Use --preset or story_catalog.preset to opt in explicitly.',
+    repo_profile: repoProfile?.id ?? 'unknown',
+    preset: preset?.id ?? null,
+    suppressed_story_ids: uniqueList(suppressed.map((item) => item.story_id)),
+    suppressed
+  };
+}
+
+function mergeDomainConfirmationWarnings(warnings) {
+  const domainWarnings = warnings.filter((warning) => warning.code === 'needs_domain_confirmation');
+  const otherWarnings = warnings.filter((warning) => warning.code !== 'needs_domain_confirmation');
+  if (domainWarnings.length <= 1) return warnings;
+  const suppressedByStory = new Map();
+  for (const warning of domainWarnings) {
+    for (const item of warning.suppressed ?? []) {
+      if (!suppressedByStory.has(item.story_id)) suppressedByStory.set(item.story_id, item);
+    }
+  }
+  return [
+    ...otherWarnings,
+    buildDomainConfirmationWarning({
+      suppressed: [...suppressedByStory.values()],
+      preset: { id: domainWarnings[0].preset },
+      repoProfile: { id: domainWarnings[0].repo_profile }
+    })
+  ];
 }
 
 function deriveDocumentationStories(fileSet, documentSignals, defaults) {
