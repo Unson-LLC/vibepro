@@ -3515,7 +3515,8 @@ test('review prepare generates stage role requests', async () => {
   assert.doesNotMatch(dispatch, /サブエージェントレビューを実行していいですか/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /regression_guard/);
-  assert.match(dispatch, /mandatory regression_guard lens/);
+  assert.match(dispatch, /path_surface_coverage/);
+  assert.match(dispatch, /every mandatory review lens/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
@@ -3525,6 +3526,9 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /Role: e2e_ux/);
   assert.match(request, /Mandatory Review Lenses/);
   assert.match(request, /regression_guard/);
+  assert.match(request, /path_surface_coverage/);
+  assert.match(request, /pre-fix/);
+  assert.match(request, /silent/);
   assert.match(request, /A `pass` must cover both the role focus and every mandatory review lens/);
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);

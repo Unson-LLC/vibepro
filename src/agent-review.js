@@ -31,6 +31,13 @@ const MANDATORY_REVIEW_LENSES = [
     prompt: 'この変更で、今回のStory対象外を含む既存のユーザー導線・API契約・データ状態・運用手順・性能・アクセシビリティ・セキュリティ境界が壊れていないか確認する。',
     pass_condition: '既存挙動への影響範囲が説明され、必要な自動テスト・E2E・手動確認・証跡、または非該当理由がある。',
     block_condition: '既存挙動の破壊、互換性のないAPI/DB/UI変更、主要導線の未検証、または「通った」根拠がStory対象の新規導線だけに偏っている。'
+  },
+  {
+    id: 'path_surface_coverage',
+    title: 'Path & Surface Coverage / 経路と出力面の網羅',
+    prompt: '変更対象の全入力経路、派生経路、出力面を列挙し、主要経路だけでなくlegacy/fallback/document/config/API/UI/report/gate artifactなどの別経路に同じ契約が効いているか確認する。抑止・除外・候補化する挙動はsilentにせず、ユーザーが判断できるwarning/candidate/finding/evidenceとして残るか確認する。',
+    pass_condition: '影響する入力経路と出力面が説明され、各経路に対する実装・証跡・非該当理由がある。テストはpre-fix実装なら失敗する具体的なfixture/assertionを含み、source artifactだけでなくsummary/report/gate/internal synthesisなど利用者が読む面も検証している。',
+    block_condition: '主要経路だけを直して別経路が未確認、suppressionがsilent、出力artifact間で矛盾、または追加テストがpre-fixを落とせない形になっている。'
   }
 ];
 
@@ -56,7 +63,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       'Dispatch the listed role reviews in parallel with separate AI subagents or human reviewers.',
       'VibePro records the review results, but does not execute subagents itself.',
       'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to launch the parallel reviews.',
-      'Every role review must include the mandatory regression_guard lens; passing a role only means both the role concern and the regression lens are adequately covered.',
+      'Every role review must include all mandatory review lenses; passing a role only means the role concern, regression_guard, and path_surface_coverage are adequately covered.',
       'If the coordinator has subagent capability, it should dispatch the listed reviewers directly as part of this gate workflow instead of asking the user for another confirmation.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
@@ -397,7 +404,7 @@ ${mandatoryLenses}
 ## Instructions
 - Review only this role's concern; do not broaden into unrelated cleanup.
 - A \`pass\` must cover both the role focus and every mandatory review lens above.
-- If regression coverage is missing or only proves the new happy path, return \`needs_changes\` or \`block\` with a concrete finding.
+- If regression coverage is missing, only proves the new happy path, omits affected input/output paths, hides suppression silently, or relies on a test that would pass before the fix, return \`needs_changes\` or \`block\` with a concrete finding.
 - Return concrete findings tied to files, behavior, gates, or missing evidence.
 - Use \`block\` for release-blocking bugs, broken contracts, or unverified critical paths.
 - Use \`needs_changes\` when the work may proceed after specific fixes/evidence.
@@ -431,7 +438,7 @@ Review request:
 \`${request}\`
 
 Prompt:
-Read the review request above and perform only the \`${stage}:${role}\` review, including the mandatory regression_guard lens. Return JSON with \`status\`, \`summary\`, and \`findings\`. Do not edit files.
+Read the review request above and perform only the \`${stage}:${role}\` review, including every mandatory review lens. Return JSON with \`status\`, \`summary\`, and \`findings\`. Do not edit files.
 
 Record command after the subagent returns:
 \`${command}\`
