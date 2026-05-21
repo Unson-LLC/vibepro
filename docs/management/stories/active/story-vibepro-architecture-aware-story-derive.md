@@ -5,6 +5,10 @@ source:
   type: github_issue
   id: "#46"
   title: "story_cluster source matches unrelated web/SaaS preset templates to non-web projects"
+architecture_docs:
+  - ../../architecture/vibepro-architecture-aware-story-derive.md
+spec_docs:
+  - ../../specs/vibepro-architecture-aware-story-derive.md
 status: active
 view: dev
 horizon: month
