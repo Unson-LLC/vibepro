@@ -51,6 +51,7 @@ import {
   renderAgentReviewRecordSummary,
   renderAgentReviewStatusSummary
 } from './agent-review.js';
+import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
@@ -164,6 +165,7 @@ Usage:
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
+  vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -258,6 +260,7 @@ Usage:
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
+  vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -624,6 +627,35 @@ export async function runCli(argv, io = {}) {
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
+    }
+
+    if (command === 'checkpoint') {
+      const stage = rest[0] && !rest[0].startsWith('--') ? rest[0] : null;
+      const repoIndex = stage ? 1 : 0;
+      const repoRoot = rest[repoIndex] && !rest[repoIndex].startsWith('--') ? rest[repoIndex] : process.cwd();
+      if (!stage || stage === '--help' || stage === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        const result = { checkpoints: listCheckpointStages() };
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderCheckpointList(result));
+        return { exitCode: 0, command, subcommand: stage ?? 'help', result };
+      }
+      const result = await runCheckpoint(repoRoot, {
+        stage,
+        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+        taskId: getOption(rest, '--task'),
+        groupId: getOption(rest, '--group'),
+        baseRef: getOption(rest, '--base'),
+        headRef: getOption(rest, '--head'),
+        branchName: getOption(rest, '--branch'),
+        strict: hasFlag(rest, '--strict'),
+        allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
+        language: getOption(rest, '--language')
+      });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderCheckpointSummary(result));
+      return { exitCode: result.status === 'passed' ? 0 : 2, command, subcommand: stage, result };
     }
 
     if (command === 'explore') {
@@ -1223,6 +1255,18 @@ function getOption(args, name) {
 
 function renderHelp(language = null) {
   return normalizeOutputLanguage(language) === 'en' ? HELP_EN : HELP_JA;
+}
+
+function renderCheckpointList(result) {
+  return [
+    '# VibePro Checkpoints',
+    '',
+    ...result.checkpoints.flatMap((checkpoint) => [
+      `- ${checkpoint.stage}: ${checkpoint.label}`,
+      `  ${checkpoint.description}`
+    ]),
+    ''
+  ].join('\n');
 }
 
 function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {

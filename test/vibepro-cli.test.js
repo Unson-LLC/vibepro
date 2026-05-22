@@ -3812,6 +3812,37 @@ test('review pass without Codex or Claude Code subagent provenance does not sati
   assert.equal(roleWithProvenance.provenance_status, 'verified_agent');
 });
 
+test('checkpoint lists available phase gates', async () => {
+  const result = await runCli(['checkpoint', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.checkpoints.some((checkpoint) => checkpoint.stage === 'implementation-start'), true);
+  assert.equal(result.result.checkpoints.some((checkpoint) => checkpoint.stage === 'test-plan'), true);
+  assert.equal(result.result.checkpoints.some((checkpoint) => checkpoint.stage === 'implementation-complete'), true);
+});
+
+test('checkpoint blocks implementation start before design gates and staged reviews pass', async () => {
+  const repo = await makeGitRepoWithStory();
+
+  const result = await runCli([
+    'checkpoint',
+    'implementation-start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.status, 'blocked');
+  assert.equal(result.result.findings.some((finding) => finding.gate_id === 'architecture'), true);
+  assert.equal(result.result.findings.some((finding) => finding.gate_id === 'spec'), true);
+  assert.equal(result.result.findings.some((finding) => finding.review_stage === 'planning_spec'), true);
+  assert.equal(result.result.findings.some((finding) => finding.review_stage === 'architecture_spec'), true);
+});
+
 test('pr prepare requires agent reviews for source changes and passes the agent gate when recorded', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
