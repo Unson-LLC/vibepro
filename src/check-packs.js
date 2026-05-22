@@ -220,6 +220,14 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       ['ai_bot_findings', 'AI bot access'],
       ['response_header_findings', 'Response headers']
     ]));
+    if (evidence.public_discovery.suppressions) {
+      checks.push({
+        id: 'public_discovery.suppressions',
+        label: 'Public discovery: Suppressions',
+        status: evidence.public_discovery.suppressions.warnings.length > 0 ? 'needs_review' : 'pass',
+        summary: `${evidence.public_discovery.suppressions.suppressed_findings.length} suppressed; warnings=${evidence.public_discovery.suppressions.warnings.length}`
+      });
+    }
   }
   if (evidence.static_site) {
     checks.push(...summarizeRiskGroups('static_site', 'Static/Security', evidence.static_site, [

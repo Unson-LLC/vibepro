@@ -18,6 +18,8 @@ const AI_BOTS = ['GPTBot', 'ClaudeBot', 'PerplexityBot'];
 export async function scanPublicDiscovery(repoRoot) {
   const root = path.resolve(repoRoot);
   const files = await collectPublicFiles(root);
+  const metadataContext = await buildAppRouterMetadataContext(root);
+  const suppressionConfig = await readPublicDiscoverySuppressions(root);
   const robots = await readFirstExisting(root, ['robots.txt', 'public/robots.txt']);
   const llms = await readFirstExisting(root, ['llms.txt', 'public/llms.txt']);
   const headerConfig = await inspectHeaderConfig(root);
@@ -35,6 +37,7 @@ export async function scanPublicDiscovery(repoRoot) {
       ai_bot_findings: 0,
       response_header_findings: 0
     },
+    route_targets: [],
     structured_data_findings: [],
     metadata_findings: [],
     eeat_findings: [],
@@ -59,19 +62,35 @@ export async function scanPublicDiscovery(repoRoot) {
       path: llms?.relativePath ?? null,
       present: Boolean(llms)
     },
-    header_config: headerConfig
+    header_config: headerConfig,
+    suppressions: {
+      path: suppressionConfig.path,
+      entries: suppressionConfig.entries,
+      suppressed_findings: [],
+      warnings: suppressionConfig.warnings
+    }
   };
 
   for (const file of files) {
     const content = await readFile(file.absolutePath, 'utf8');
-    inspectPage(result, file.relativePath, content);
+    const target = classifyPublicDiscoveryTarget(file.relativePath, content);
+    result.route_targets.push(target);
+    if (target.scan_mode === 'skip') continue;
+    inspectPage(result, file.relativePath, content, {
+      target,
+      metadata: resolvePageMetadataContext(file.relativePath, content, metadataContext)
+    });
   }
   inspectRepositoryPublicDiscovery(result, { robots, llms, headerConfig });
+  applySuppressions(result, suppressionConfig);
 
   for (const key of Object.keys(result.risk_summary)) {
     result.risk_summary[key] = summarizeGateEffects(result[key]);
     result.summary[key] = result[key].length;
   }
+  result.summary.route_targets = summarizeRouteTargets(result.route_targets);
+  result.summary.suppressed_findings = result.suppressions.suppressed_findings.length;
+  result.summary.suppression_warnings = result.suppressions.warnings.length;
   result.summary.finding_count = Object.keys(result.risk_summary)
     .reduce((total, key) => total + result[key].length, 0);
   result.status = Object.values(result.risk_summary).some((summary) => summary.block > 0)
@@ -82,28 +101,29 @@ export async function scanPublicDiscovery(repoRoot) {
   return result;
 }
 
-function inspectPage(result, file, content) {
+function inspectPage(result, file, content, context = {}) {
   const plainText = stripMarkup(content);
-  if (!hasTitle(content)) {
-    result.metadata_findings.push(finding('missing_title', file, firstLine(content), 'review', '公開ページには検索結果とAI要約の基準になるtitleを明示する。'));
+  const metadata = context.metadata ?? resolvePageMetadataContext(file, content, { layouts: [] });
+  if (metadata.title === 'absent') {
+    result.metadata_findings.push(finding('missing_title', file, firstLine(content), 'review', '公開ページには検索結果とAI要約の基準になるtitleを明示する。', { evidence: 'absent', target_type: context.target?.target_type }));
   }
-  if (!hasMetaDescription(content)) {
-    result.metadata_findings.push(finding('missing_meta_description', file, firstLine(content), 'review', '公開ページには内容を説明するmeta descriptionを明示する。'));
+  if (metadata.description === 'absent') {
+    result.metadata_findings.push(finding('missing_meta_description', file, firstLine(content), 'review', '公開ページには内容を説明するmeta descriptionを明示する。', { evidence: 'absent', target_type: context.target?.target_type }));
   }
   if (!/rel=["']canonical["']|alternates\s*:/i.test(content)) {
-    result.metadata_findings.push(finding('missing_canonical_hint', file, firstLine(content), 'info', 'canonical URLまたはNext metadata alternatesを明示すると、引用元URLの揺れを減らせる。'));
+    result.metadata_findings.push(finding('missing_canonical_hint', file, firstLine(content), 'info', 'canonical URLまたはNext metadata alternatesを明示すると、引用元URLの揺れを減らせる。', { target_type: context.target?.target_type }));
   }
-  if (!/property=["']og:|twitter:/i.test(content)) {
-    result.metadata_findings.push(finding('missing_social_metadata', file, firstLine(content), 'info', 'OGP/Twitter metadataがないため、共有時の文脈が弱くなる可能性がある。'));
+  if (metadata.social === 'absent') {
+    result.metadata_findings.push(finding('missing_social_metadata', file, firstLine(content), 'info', 'OGP/Twitter metadataがないため、共有時の文脈が弱くなる可能性がある。', { evidence: 'absent', target_type: context.target?.target_type }));
   }
-  if (!/application\/ld\+json|schema\.org|jsonLd|structuredData/i.test(content)) {
-    result.structured_data_findings.push(finding('missing_structured_data_hint', file, firstLine(content), 'review', 'Organization、Article、FAQPage、Productなど、ページ目的に合うschema.org構造化データを検討する。'));
+  if (metadata.structured_data === 'absent') {
+    result.structured_data_findings.push(finding('missing_structured_data_hint', file, firstLine(content), 'review', 'Organization、Article、FAQPage、Productなど、ページ目的に合うschema.org構造化データを検討する。', { evidence: 'absent', target_type: context.target?.target_type }));
   }
   if (!/\b(author|著者|監修|editor|published|datePublished|updated|dateModified)\b/i.test(content)) {
-    result.eeat_findings.push(finding('missing_author_or_date_signal', file, firstLine(content), 'review', '著者、公開日、更新日、監修者などのE-E-A-Tシグナルが静的に確認できない。'));
+    result.eeat_findings.push(finding('missing_author_or_date_signal', file, firstLine(content), 'review', '著者、公開日、更新日、監修者などのE-E-A-Tシグナルが静的に確認できない。', { target_type: context.target?.target_type }));
   }
   if (!/\b(company|about|contact|privacy|terms|運営会社|会社概要|問い合わせ|プライバシー|利用規約)\b/i.test(content)) {
-    result.eeat_findings.push(finding('missing_operator_trust_signal', file, firstLine(content), 'info', '運営者、問い合わせ、ポリシー導線などの信頼シグナルを確認する。'));
+    result.eeat_findings.push(finding('missing_operator_trust_signal', file, firstLine(content), 'info', '運営者、問い合わせ、ポリシー導線などの信頼シグナルを確認する。', { target_type: context.target?.target_type }));
   }
   inspectImages(result, file, content);
   if (plainText.length > 0 && plainText.length < 600) {
@@ -176,6 +196,114 @@ function isPublicPageFile(relativePath) {
   return false;
 }
 
+function classifyPublicDiscoveryTarget(relativePath, content) {
+  const segments = relativePath.split('/');
+  const route = routePathForFile(relativePath);
+  if (isVerificationHtml(relativePath, content)) {
+    return target(relativePath, route, 'verification_file', 'skip', 'site_verification_file');
+  }
+  if (segments.some((segment) => /^(demo|test|sandbox|playground)$/i.test(segment))) {
+    return target(relativePath, route, 'internal_dev_route', 'skip', 'demo_or_dev_segment');
+  }
+  if (segments.includes('(auth)') || /(^|\/)api\/auth(\/|$)|(^|\/)auth(\/|$)|sign[_-]?in|sign[_-]?up|login/i.test(relativePath)) {
+    return target(relativePath, route, 'auth_flow', 'skip', 'auth_route');
+  }
+  if (segments.includes('(app)') || /(^|\/)(profile|manager|admin|dashboard|mypage)(\/|$)/i.test(relativePath)) {
+    return target(relativePath, route, 'private_app_route', 'skip', 'private_app_route');
+  }
+  if (/log[_-]?viewer|shadow-call|internal|debug|legacy/i.test(relativePath)) {
+    return target(relativePath, route, 'internal_dev_route', 'skip', 'internal_route');
+  }
+  if (/robots\s*:\s*{[^}]*noIndex\s*:\s*true|noindex/i.test(content)) {
+    return target(relativePath, route, 'private_app_route', 'skip', 'noindex');
+  }
+  if (/support|help|faq|contact/i.test(relativePath)) {
+    return target(relativePath, route, 'public_utility', 'scan', 'public_utility_route');
+  }
+  return target(relativePath, route, 'public_seo_target', 'scan', 'public_page');
+}
+
+function target(file, route, targetType, scanMode, reason) {
+  return { file, route, target_type: targetType, scan_mode: scanMode, reason };
+}
+
+function isVerificationHtml(relativePath, content) {
+  if (!/^public\/.*\.html?$/i.test(relativePath)) return false;
+  const basename = path.basename(relativePath).toLowerCase();
+  if (/^google[a-z0-9_-]*\.html$/i.test(basename) && /google-site-verification|google site verification/i.test(content)) return true;
+  return /verification/i.test(basename);
+}
+
+function routePathForFile(relativePath) {
+  let route = relativePath
+    .replace(/^src\/app\//, '/')
+    .replace(/^app\//, '/')
+    .replace(/^src\/pages\//, '/')
+    .replace(/^pages\//, '/')
+    .replace(/^public\//, '/')
+    .replace(/\/page\.(jsx|tsx|mdx)$/i, '')
+    .replace(/\.(jsx|tsx|mdx|md|html?)$/i, '')
+    .replace(/\/index$/i, '/')
+    .replace(/\/\([^/)]+\)/g, '');
+  if (!route.startsWith('/')) route = `/${route}`;
+  return route.replace(/\/+/g, '/');
+}
+
+async function buildAppRouterMetadataContext(root) {
+  const files = await walk(root);
+  const layouts = [];
+  for (const file of files) {
+    if (!/^(src\/)?app\/.*\/layout\.(jsx|tsx|mdx)$/i.test(file.relativePath) && !/^(src\/)?app\/layout\.(jsx|tsx|mdx)$/i.test(file.relativePath)) continue;
+    const content = await readFile(file.absolutePath, 'utf8');
+    layouts.push({
+      file: file.relativePath,
+      dir: file.relativePath.replace(/\/layout\.(jsx|tsx|mdx)$/i, ''),
+      metadata: extractMetadataSignals(content)
+    });
+  }
+  return { layouts };
+}
+
+function resolvePageMetadataContext(relativePath, content, context) {
+  const local = extractMetadataSignals(content);
+  const inherited = matchingLayouts(relativePath, context.layouts ?? [])
+    .map((layout) => layout.metadata)
+    .reduce((merged, signals) => mergeMetadataSignals(merged, signals), emptyMetadataSignals());
+  return {
+    title: local.title ? 'local' : inherited.title ? 'inherited' : 'absent',
+    description: local.description ? 'local' : inherited.description ? 'inherited' : 'absent',
+    social: local.social ? 'local' : inherited.social ? 'inherited' : 'absent',
+    structured_data: local.structured_data ? 'local' : inherited.structured_data ? 'inherited' : 'absent'
+  };
+}
+
+function matchingLayouts(relativePath, layouts) {
+  const pageDir = relativePath.replace(/\/page\.(jsx|tsx|mdx)$/i, '');
+  return layouts.filter((layout) => pageDir === layout.dir || pageDir.startsWith(`${layout.dir}/`));
+}
+
+function extractMetadataSignals(content) {
+  return {
+    title: hasTitle(content),
+    description: hasMetaDescription(content),
+    social: /property=["']og:|twitter:|openGraph\s*:|twitter\s*:/i.test(content),
+    structured_data: /application\/ld\+json|schema\.org|jsonLd|structuredData/i.test(content)
+  };
+}
+
+function emptyMetadataSignals() {
+  return { title: false, description: false, social: false, structured_data: false };
+}
+
+function mergeMetadataSignals(a, b) {
+  return {
+    title: a.title || b.title,
+    description: a.description || b.description,
+    social: a.social || b.social,
+    structured_data: a.structured_data || b.structured_data
+  };
+}
+
 async function walk(root, dir = root) {
   const entries = await safeReaddir(dir);
   const files = [];
@@ -224,6 +352,116 @@ async function readOptional(filePath) {
   }
 }
 
+async function readPublicDiscoverySuppressions(root) {
+  const relativePath = '.vibepro/public-discovery-suppressions.json';
+  const content = await readOptional(path.join(root, relativePath));
+  if (content === null) return { path: null, entries: [], warnings: [] };
+  let parsed;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    return {
+      path: relativePath,
+      entries: [],
+      warnings: [suppressionWarning('invalid_json', relativePath, `Suppression file is not valid JSON: ${error.message}`)]
+    };
+  }
+  if (!Array.isArray(parsed)) {
+    return {
+      path: relativePath,
+      entries: [],
+      warnings: [suppressionWarning('invalid_shape', relativePath, 'Suppression file must be an array')]
+    };
+  }
+  const entries = [];
+  const warnings = [];
+  for (const [index, entry] of parsed.entries()) {
+    if (!entry?.file || !Array.isArray(entry.finding_kinds) || !entry.reason) {
+      warnings.push(suppressionWarning('invalid_entry', relativePath, `Suppression entry ${index} requires file, finding_kinds, and reason`));
+      continue;
+    }
+    entries.push({
+      file: entry.file,
+      finding_kinds: entry.finding_kinds,
+      reason: entry.reason,
+      expires_at: entry.expires_at ?? null
+    });
+  }
+  return { path: relativePath, entries, warnings };
+}
+
+function applySuppressions(result, suppressionConfig) {
+  if (suppressionConfig.entries.length === 0) return;
+  const knownKinds = new Set();
+  const matchedEntries = new Set();
+  for (const group of findingGroups()) {
+    const kept = [];
+    for (const item of result[group]) {
+      knownKinds.add(item.kind);
+      const suppression = suppressionConfig.entries.find((entry, index) => {
+        const matched = globMatches(entry.file, item.file) && entry.finding_kinds.includes(item.kind);
+        if (matched) matchedEntries.add(index);
+        return matched;
+      });
+      if (suppression) {
+        result.suppressions.suppressed_findings.push({
+          ...item,
+          suppression: {
+            file: suppression.file,
+            reason: suppression.reason,
+            expires_at: suppression.expires_at
+          }
+        });
+      } else {
+        kept.push(item);
+      }
+    }
+    result[group] = kept;
+  }
+  for (const [index, entry] of suppressionConfig.entries.entries()) {
+    for (const kind of entry.finding_kinds) {
+      if (!knownKinds.has(kind)) {
+        result.suppressions.warnings.push(suppressionWarning('unknown_finding_kind', entry.file, `Suppression entry ${index} references unknown finding kind: ${kind}`));
+      }
+    }
+    if (!matchedEntries.has(index)) {
+      result.suppressions.warnings.push(suppressionWarning('unmatched_suppression', entry.file, `Suppression entry ${index} did not match any finding`));
+    }
+  }
+}
+
+function findingGroups() {
+  return [
+    'structured_data_findings',
+    'metadata_findings',
+    'eeat_findings',
+    'image_findings',
+    'content_findings',
+    'ai_bot_findings',
+    'response_header_findings'
+  ];
+}
+
+function suppressionWarning(kind, file, message) {
+  return { kind, file, message };
+}
+
+function globMatches(pattern, value) {
+  const escaped = pattern
+    .split('*')
+    .map((part) => escapeRegExp(part))
+    .join('.*');
+  return new RegExp(`^${escaped}$`).test(value);
+}
+
+function summarizeRouteTargets(routeTargets) {
+  const summary = {};
+  for (const item of routeTargets) {
+    summary[item.target_type] = (summary[item.target_type] ?? 0) + 1;
+  }
+  return summary;
+}
+
 async function safeReaddir(dir) {
   try {
     return await readdir(dir, { withFileTypes: true });
@@ -237,8 +475,8 @@ function inspectAiBotPolicy(content) {
   return Object.fromEntries(AI_BOTS.map((bot) => [bot, new RegExp(`User-agent:\\s*${escapeRegExp(bot)}\\b`, 'i').test(content) ? 'explicit' : 'not_detected']));
 }
 
-function finding(kind, file, line, gateEffect, recommendation) {
-  return { kind, file, line, gate_effect: gateEffect, recommendation };
+function finding(kind, file, line, gateEffect, recommendation, extra = {}) {
+  return { kind, file, line, gate_effect: gateEffect, recommendation, ...extra };
 }
 
 function summarizeGateEffects(hits) {

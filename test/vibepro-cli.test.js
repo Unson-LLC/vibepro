@@ -278,6 +278,103 @@ test('check public-discovery reports LLMO and public page readiness findings', a
   assert.equal(result.result.check.checks.some((check) => check.label === 'Public discovery: AI bot access'), true);
 });
 
+test('public-discovery classifies private routes and inherits App Router metadata', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-public-discovery-next-'));
+  await mkdir(path.join(repo, 'src', 'app', '(public)', 'articles'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(public)', 'articles', 'demo'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(public)', 'override'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(auth)', 'login'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'profile'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'log_viewer'), { recursive: true });
+  await mkdir(path.join(repo, 'public'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'layout.tsx'), `
+export const metadata = {
+  title: 'Aitle',
+  description: 'Public hotel search'
+};
+export default function Layout({ children }) {
+  return <html><body>{children}</body></html>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(public)', 'layout.tsx'), `
+export const metadata = {
+  openGraph: { title: 'Aitle' }
+};
+export default function Layout({ children }) {
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'Organization' };
+  return <section>{children}</section>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(public)', 'articles', 'page.tsx'), 'export default function Page() { return <main><h1>Article</h1><p>Public article content.</p></main>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', '(public)', 'override', 'page.tsx'), `
+export const metadata = {
+  title: 'Override',
+  description: 'Page level override',
+  openGraph: { title: 'Override' }
+};
+export default function Page() {
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'Article' };
+  return <main><h1>Override</h1><p>Public override content.</p></main>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', '(public)', 'articles', 'demo', 'page.tsx'), 'export default function Page() { return <button>Demo</button>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', '(auth)', 'login', 'page.tsx'), 'export default function Page() { return <form>Login</form>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'profile', 'page.tsx'), 'export default function Page() { return <main>Profile</main>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'log_viewer', 'page.tsx'), 'export default function Page() { return <main>Logs</main>; }\n');
+  await writeFile(path.join(repo, 'public', 'googleb7a465fcaf621318.html'), 'google-site-verification: googleb7a465fcaf621318.html\n');
+  await writeFile(path.join(repo, 'public', 'robots.txt'), 'User-agent: *\nAllow: /\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\n');
+  await writeFile(path.join(repo, 'public', 'llms.txt'), '# Aitle\n');
+
+  const scan = await scanPublicDiscovery(repo);
+
+  assert.equal(scan.route_targets.some((item) => item.file === 'public/googleb7a465fcaf621318.html' && item.target_type === 'verification_file' && item.scan_mode === 'skip'), true);
+  assert.equal(scan.route_targets.some((item) => item.file.includes('/(auth)/') && item.target_type === 'auth_flow' && item.scan_mode === 'skip'), true);
+  assert.equal(scan.route_targets.some((item) => item.file.includes('/(app)/') && item.target_type === 'private_app_route' && item.scan_mode === 'skip'), true);
+  assert.equal(scan.route_targets.some((item) => item.file.includes('/demo/') && item.target_type === 'internal_dev_route' && item.scan_mode === 'skip'), true);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/articles/page.tsx' && finding.kind === 'missing_title'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/articles/page.tsx' && finding.kind === 'missing_meta_description'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/articles/page.tsx' && finding.kind === 'missing_social_metadata'), false);
+  assert.equal(scan.structured_data_findings.some((finding) => finding.file === 'src/app/(public)/articles/page.tsx' && finding.kind === 'missing_structured_data_hint'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/override/page.tsx' && finding.kind === 'missing_title'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/override/page.tsx' && finding.kind === 'missing_meta_description'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file === 'src/app/(public)/override/page.tsx' && finding.kind === 'missing_social_metadata'), false);
+  assert.equal(scan.structured_data_findings.some((finding) => finding.file === 'src/app/(public)/override/page.tsx' && finding.kind === 'missing_structured_data_hint'), false);
+  assert.equal(scan.metadata_findings.some((finding) => finding.file.includes('/(auth)/') || finding.file.includes('/(app)/') || finding.file.includes('/demo/') || finding.file.includes('google')), false);
+});
+
+test('public-discovery applies documented suppressions and reports warnings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-public-discovery-suppress-'));
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, 'index.html'), '<!doctype html><main><p>Short</p></main>');
+  await writeFile(path.join(repo, '.vibepro', 'public-discovery-suppressions.json'), JSON.stringify([
+    {
+      file: 'index.html',
+      finding_kinds: ['missing_title'],
+      reason: 'Legacy static entry keeps title outside generated HTML',
+      expires_at: null
+    },
+    {
+      file: 'missing.html',
+      finding_kinds: ['not_a_real_finding_kind'],
+      reason: 'Exercise suppression warnings',
+      expires_at: null
+    }
+  ], null, 2));
+
+  const scan = await scanPublicDiscovery(repo);
+
+  assert.equal(scan.metadata_findings.some((finding) => finding.kind === 'missing_title'), false);
+  assert.equal(scan.suppressions.suppressed_findings.some((finding) => finding.kind === 'missing_title' && finding.suppression.reason.includes('Legacy static entry')), true);
+  assert.equal(scan.suppressions.warnings.some((warning) => warning.kind === 'unknown_finding_kind'), true);
+  assert.equal(scan.suppressions.warnings.some((warning) => warning.kind === 'unmatched_suppression'), true);
+
+  const result = await runCli(['check', 'public-discovery', repo, '--run-id', 'public-discovery-suppressions', '--json']);
+  assert.equal(result.exitCode, 0);
+  const suppressionCheck = result.result.check.checks.find((check) => check.id === 'public_discovery.suppressions');
+  assert.equal(suppressionCheck.status, 'needs_review');
+  assert.match(suppressionCheck.summary, /1 suppressed/);
+});
+
 test('check agent-harness diagnoses codex claude skills hooks and ignore noise', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
