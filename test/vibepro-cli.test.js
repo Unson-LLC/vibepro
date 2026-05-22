@@ -289,7 +289,7 @@ test('public-discovery classifies private routes and inherits App Router metadat
   await mkdir(path.join(repo, 'public'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'layout.tsx'), `
 export const metadata = {
-  title: 'Aitle',
+  title: 'ExampleTravel',
   description: 'Public hotel search'
 };
 export default function Layout({ children }) {
@@ -298,7 +298,7 @@ export default function Layout({ children }) {
 `);
   await writeFile(path.join(repo, 'src', 'app', '(public)', 'layout.tsx'), `
 export const metadata = {
-  openGraph: { title: 'Aitle' }
+  openGraph: { title: 'ExampleTravel' }
 };
 export default function Layout({ children }) {
   const jsonLd = { '@context': 'https://schema.org', '@type': 'Organization' };
@@ -323,7 +323,7 @@ export default function Page() {
   await writeFile(path.join(repo, 'src', 'app', 'log_viewer', 'page.tsx'), 'export default function Page() { return <main>Logs</main>; }\n');
   await writeFile(path.join(repo, 'public', 'googleb7a465fcaf621318.html'), 'google-site-verification: googleb7a465fcaf621318.html\n');
   await writeFile(path.join(repo, 'public', 'robots.txt'), 'User-agent: *\nAllow: /\nUser-agent: GPTBot\nAllow: /\nUser-agent: ClaudeBot\nAllow: /\nUser-agent: PerplexityBot\nAllow: /\n');
-  await writeFile(path.join(repo, 'public', 'llms.txt'), '# Aitle\n');
+  await writeFile(path.join(repo, 'public', 'llms.txt'), '# ExampleTravel\n');
 
   const scan = await scanPublicDiscovery(repo);
 
@@ -1082,7 +1082,7 @@ export async function POST() {
     story: { story_id: 'U-020', title: '新規登録でタスクを量産せず不足情報を質問化する', view: 'user' },
     config: {
       flow_design: {
-        profile: 'senpainurse',
+        profile: 'configured-case-management',
         value_contract: {
           forbidden_labels: ['退院予定日'],
           required_labels: ['退院目標日']
@@ -1316,7 +1316,13 @@ export async function POST() {
 `);
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = await readJson(configPath);
-  config.flow_design = { profile: 'senpainurse' };
+  config.flow_design = {
+    profile: 'configured-case-management',
+    value_contract: {
+      forbidden_labels: ['退院予定日'],
+      required_labels: ['退院目標日']
+    }
+  };
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
@@ -1329,7 +1335,7 @@ export async function POST() {
   assert.equal(result.exitCode, 0);
   const runDir = path.join(repo, '.vibepro', 'diagnostics', '2026-05-10T000000Z');
   const evidence = await readJson(path.join(runDir, 'evidence.json'));
-  assert.equal(evidence.flow_design.profile, 'senpainurse');
+  assert.equal(evidence.flow_design.profile, 'configured-case-management');
   assert.equal(evidence.flow_design.summary.scanned_ui_files, 2);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-003'), true);
   assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-004'), true);
@@ -1422,7 +1428,7 @@ test('verify flow writes Playwright evidence and skips mutating probes by defaul
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = await readJson(configPath);
   config.flow_design = {
-    profile: 'senpainurse',
+    profile: 'configured-case-management',
     runtime_probes: [
       {
         id: 'new-registration-readonly',
@@ -1581,6 +1587,18 @@ test('verify flow records browser install guidance when Playwright browser is mi
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     devDependencies: { '@playwright/test': '^1.59.1' }
   }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'auth-smoke',
+      title: 'Authenticated smoke probe',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'auth-smoke' }]
+    }]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   const binDir = path.join(repo, 'fake-bin');
   await mkdir(binDir, { recursive: true });
   await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
@@ -1621,6 +1639,18 @@ test('verify flow supports basic auth from env without persisting the password',
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     devDependencies: { '@playwright/test': '^1.59.1' }
   }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'basic-auth-smoke',
+      title: 'Basic auth smoke probe',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'basic-auth-smoke' }]
+    }]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   const binDir = path.join(repo, 'fake-bin');
   await mkdir(binDir, { recursive: true });
   await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
@@ -1640,7 +1670,7 @@ console.log('fake playwright ok');
     '--base-url',
     'http://54.221.232.92',
     '--basic-auth-env',
-    'SENPAI_BASIC_AUTH',
+    'APP_BASIC_AUTH',
     '--run-id',
     'flow-basic-auth',
     '--json'
@@ -1649,7 +1679,7 @@ console.log('fake playwright ok');
       ...process.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH}`,
       FAKE_NPX_LOG: path.join(repo, 'fake-npx-basic-auth.log'),
-      SENPAI_BASIC_AUTH: 'nurse:super-secret'
+      APP_BASIC_AUTH: 'nurse:super-secret'
     }
   });
 
@@ -1657,7 +1687,7 @@ console.log('fake playwright ok');
   assert.equal(result.result.verification.status, 'pass');
   assert.deepEqual(result.result.verification.http_auth, {
     enabled: true,
-    source: 'env:SENPAI_BASIC_AUTH',
+    source: 'env:APP_BASIC_AUTH',
     username: 'nurse',
     password_redacted: true
   });
@@ -1677,7 +1707,7 @@ test('verify flow can fill a value captured from visible page text', async () =>
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = await readJson(configPath);
   config.flow_design = {
-    profile: 'senpainurse',
+    profile: 'configured-case-management',
     runtime_probes: [{
       id: 'login-to-new',
       title: 'ログインして新規登録を見る',
@@ -2344,7 +2374,7 @@ test('story derive creates a repo-wide story catalog and local stories', async (
   assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-content-cms'), true);
   assert.equal(catalog.stories.some((story) => story.story_id === 'story-architecture-api-surface'), true);
   assert.equal(catalog.stories.some((story) => story.story_id === 'story-security-auth-boundary'), true);
-  assert.doesNotMatch(JSON.stringify(catalog), /Aitle|ホテル|旅行|hotel|shadow-call/i);
+  assert.doesNotMatch(JSON.stringify(catalog), /ExampleTravel|ホテル|旅行|hotel|shadow-call/i);
   const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
   assert.match(map, /# Story Map/);
   assert.match(map, /## サマリー/);
@@ -2357,7 +2387,7 @@ test('story derive creates a repo-wide story catalog and local stories', async (
   assert.match(map, /位置づけ: activation/);
   assert.match(map, /付録: 不明点/);
   assert.match(map, /認証とアカウント利用開始を成立させる/);
-  assert.doesNotMatch(map, /Aitle|ホテル|旅行|hotel|shadow-call/i);
+  assert.doesNotMatch(map, /ExampleTravel|ホテル|旅行|hotel|shadow-call/i);
   const config = await readJson(path.join(repo, '.vibepro', 'config.json'));
   assert.equal(config.brainbase.stories.some((story) => story.story_id === 'story-product-auth-account-access'), true);
   assert.equal(config.brainbase.stories.find((story) => story.story_id === 'story-product-auth-account-access').view, 'business');
@@ -2928,7 +2958,7 @@ test('story derive does not emit domain-specific next-app stories from generic a
   assert.equal(result.exitCode, 0);
   const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
   assert.equal(catalog.stories.some((story) => story.story_id === 'story-product-auth-account-access'), true);
-  assert.doesNotMatch(JSON.stringify(catalog), /Aitle|ホテル|旅行|hotel|shadow-call/i);
+  assert.doesNotMatch(JSON.stringify(catalog), /ExampleTravel|ホテル|旅行|hotel|shadow-call/i);
 });
 
 test('story coverage keeps all uncovered graph files in the catalog', async () => {
@@ -5247,7 +5277,7 @@ export async function verifyTwilioFormWebhook(request, formData, env = process.e
   }
 });
 
-test('network contract scanner detects Aitle-style API route regression and clears after route exists', async () => {
+test('network contract scanner detects ExampleTravel-style API route regression and clears after route exists', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils'), { recursive: true });
   const executorPath = path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils', 'searchExecutor.ts');
@@ -6095,7 +6125,7 @@ ${Array.from({ length: 155 }, (_, index) => `const workflowLine${index} = ${inde
 `);
   await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
 const api_secret = "runtimeReviewToken123";
-export default function Page() { return <main>SalesTailor</main>; }
+export default function Page() { return <main>OutreachSuite</main>; }
 `);
   await writeFile(path.join(repo, 'src', 'middleware.ts'), `
 export const config = {
@@ -6609,7 +6639,7 @@ test('brainbase creates an import state from the latest VibePro manifest run', a
   assert.equal(importState.signals.check_catalog.applicable_checks.includes('static-entry'), true);
   assert.equal(importState.signals.static_site.xss_risk_hits_count, 1);
   assert.equal(importState.findings.some((finding) => finding.id === 'VP-STATIC-003'), true);
-  assert.match(await readFile(importSummaryPath, 'utf8'), /Brainbase 取り込み状態/);
+  assert.match(await readFile(importSummaryPath, 'utf8'), /Portfolio Dashboard import state/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.artifacts.brainbase_import_state, '.vibepro/brainbase/import-state.json');
 });
@@ -6632,7 +6662,7 @@ test('brainbase import state supports multiple stories with NocoDB horizon, view
       },
       {
         story_id: 'story-vibepro-brainbase-rollup',
-        title: 'Brainbase 横断取り込み',
+        title: 'Portfolio dashboard import',
         horizon: 'quarter',
         view: 'business',
         period: '2026Q2',
@@ -7109,7 +7139,7 @@ test('story derive uses salestailor preset without next-app product story leakag
   await mkdir(path.join(repo, 'src', 'lib', 'services', 'prompt-improvement'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib', 'services', 'formSubmission'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'sample-review', 'page.tsx'),
-    'export default function Page() { return <main>SalesTailor</main>; }\n');
+    'export default function Page() { return <main>OutreachSuite</main>; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'projects', '[projectId]', 'sample-review', 'regenerate', 'route.ts'),
     'export async function POST() {}\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'prompt-improvement', 'promptFeedbackService.ts'),
@@ -7140,7 +7170,7 @@ test('story derive uses salestailor preset without next-app product story leakag
     `salestailor preset must not emit next-app story ids, got ${JSON.stringify(storyIds)}`);
 
   const serialized = JSON.stringify(catalog);
-  assert.doesNotMatch(serialized, /Aitle|ホテル|旅行|hotel|shadow-call/i);
+  assert.doesNotMatch(serialized, /ExampleTravel|ホテル|旅行|hotel|shadow-call/i);
 });
 
 test('story derive emits story_candidates clustering uncovered files', async () => {
@@ -7585,6 +7615,24 @@ test('--version prints the package version', async () => {
     versions.push(out.trim());
   }
   assert.equal(new Set(versions).size, 1);
+});
+
+test('package metadata and README are ready for Apache-2.0 OSS publication', async () => {
+  const packageJson = await readJson(path.resolve('package.json'));
+  const readme = await readFile(path.resolve('README.md'), 'utf8');
+  const readmeJa = await readFile(path.resolve('README.ja.md'), 'utf8');
+  const license = await readFile(path.resolve('LICENSE'), 'utf8');
+
+  assert.equal(packageJson.license, 'Apache-2.0');
+  assert.equal(packageJson.version, '0.1.0-alpha.0');
+  assert.equal(packageJson.publishConfig.access, 'public');
+  assert.equal(packageJson.files.includes('docs/releases'), false);
+  assert.equal(packageJson.files.some((entry) => entry === 'docs' || entry.startsWith('docs/')), false);
+  assert.match(license, /Apache License[\s\S]*Version 2\.0/);
+  assert.match(readme, /Graphify is optional/);
+  assert.match(readme, /does not bundle Graphify/);
+  assert.match(readmeJa, /Graphify は任意/);
+  assert.match(readmeJa, /Graphify 本体や Graphify のコードを同梱しません/);
 });
 
 test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async () => {

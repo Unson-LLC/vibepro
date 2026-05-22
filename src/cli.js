@@ -1044,10 +1044,10 @@ export async function runCli(argv, io = {}) {
           env: io.env,
           fetch: io.fetch
         });
-        write(stdout, `Brainbase stories synced: ${syncResult.stories.length}\n`);
+        write(stdout, `Portfolio dashboard stories synced: ${syncResult.stories.length}\n`);
       }
       const result = await createBrainbaseImport(repoRoot);
-      write(stdout, `Brainbase import state created: ${result.importStatePath}\n`);
+      write(stdout, `Portfolio dashboard import state created: ${result.importStatePath}\n`);
       if (hasFlag(rest, '--publish-status')) {
         const publishResult = await publishStatusToNocoDB(repoRoot, {
           env: io.env,
@@ -1056,8 +1056,8 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--story-id')
         });
         write(stdout, publishResult.dryRun
-          ? `Brainbase story status preview created: ${publishResult.storyId}\n`
-          : `Brainbase story status published: ${publishResult.storyId}\n`);
+          ? `Portfolio dashboard story status preview created: ${publishResult.storyId}\n`
+          : `Portfolio dashboard story status published: ${publishResult.storyId}\n`);
       }
       return { exitCode: 0, command, result };
     }

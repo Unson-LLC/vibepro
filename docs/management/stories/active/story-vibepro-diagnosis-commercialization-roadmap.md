@@ -22,7 +22,7 @@ updated_at: 2026-05-13
 
 ## Background
 
-SalesTailorは `.env.fly.preview`、`.env.fly.production`、`.env.vercel.preview`、`.env.vercel.production` をdotenvx暗号化済みファイルとして追跡している。既存のVibePro static scannerはenvファイルの非コメント行を一律 `env_file_value` としてblock扱いにしていたため、`KEY=encrypted:...` と `KEY="encrypted:..."` 形式まで秘密情報候補として検出していた。
+example outreach appは `.env.fly.preview`、`.env.fly.production`、`.env.vercel.preview`、`.env.vercel.production` をdotenvx暗号化済みファイルとして追跡している。既存のVibePro static scannerはenvファイルの非コメント行を一律 `env_file_value` としてblock扱いにしていたため、`KEY=encrypted:...` と `KEY="encrypted:..."` 形式まで秘密情報候補として検出していた。
 
 ## Acceptance Criteria
 

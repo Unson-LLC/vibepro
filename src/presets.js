@@ -441,7 +441,7 @@ const SALES_TAILOR_STORY_DEFINITIONS = {
     acceptance_focus: ['送信結果と反応イベントが保存される', '対象企業・レター・プロジェクトへ紐づく', 'webhookや外部イベントの信頼境界が明確である']
   },
   'story-salestailor-admin-operations': {
-    who: 'SalesTailorを運用する管理者',
+    who: 'OutreachSuiteを運用する管理者',
     problem: 'テンプレート、ユーザー、LLM判定、利用状況の管理が弱いと、プロダクト全体の品質と安全な運用を保てない。',
     want: '管理者がテンプレート、ユーザー、評価、利用状況を確認・調整できるようにしたい。',
     outcome: '営業生成システムを管理者が継続運用できる。',

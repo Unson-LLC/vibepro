@@ -130,12 +130,12 @@ Required behavior:
 Generic diagnosis/story generation must pass fixtures for at least:
 
 - empty Next.js app
-- DialogAI-like AI chat app
-- SalesTailor-like B2B SaaS app
+- example dialog app-like AI chat app
+- example outreach app-like B2B SaaS app
 
 Forbidden generic leakage examples:
 
-- Aitle
+- example travel app
 - hotel-specific operations
 - shadow-call
 - project-specific customer names

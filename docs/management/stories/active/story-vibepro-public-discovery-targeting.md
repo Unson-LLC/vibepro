@@ -27,7 +27,7 @@ updated_at: 2026-05-22
 
 ## Background
 
-Aitle dogfood run `llmo-public-discovery-fix6-20260522T034240Z` で、Google verification file、demo page、auth/private app route、metadataをlayoutから継承しているApp Router pageが public-discovery のLLMO findingsとして出続けた。
+example travel app dogfood run `llmo-public-discovery-fix6-20260522T034240Z` で、Google verification file、demo page、auth/private app route、metadataをlayoutから継承しているApp Router pageが public-discovery のLLMO findingsとして出続けた。
 
 これは公開発見診断としてはノイズが大きく、ユーザーが正しく維持すべきファイルを編集したり、private app画面をSEO対象として扱ったりする原因になる。
 

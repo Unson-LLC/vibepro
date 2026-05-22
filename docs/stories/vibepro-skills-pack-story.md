@@ -14,7 +14,7 @@ spec_ref: docs/specs/vibepro-skills-pack-spec.md
 
 VibePro CLIは単体でも診断、Graphify連携、PR準備、レビューCockpitを生成できる。一方で、AI agentがVibeProの意図通りに動くには、Story -> Architecture -> Spec の順序、Graphifyの使いどころ、Gate未解決時の判断、`human-review.json` の扱いを毎回正しく思い出す必要がある。
 
-さらに、VibePro本体に `vibepro check ...` の診断パッケージと `vibepro performance ...` のperformance evidence frameworkが追加されたため、Skills Packもその最新版に追随していなければならない。Brainbase側のローカルSkillだけを更新しても、別repoへVibeProを導入した時にAI agentが古い運用手順で動く。
+さらに、VibePro本体に `vibepro check ...` の診断パッケージと `vibepro performance ...` のperformance evidence frameworkが追加されたため、Skills Packもその最新版に追随していなければならない。external portfolio dashboard側のローカルSkillだけを更新しても、別repoへVibeProを導入した時にAI agentが古い運用手順で動く。
 
 ## ユーザー価値
 

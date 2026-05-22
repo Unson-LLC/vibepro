@@ -17,4 +17,4 @@ status: active
 ## Verification
 
 - `npm test`
-- SalesTailor diagnosis run `post-vibepro-dotenvx-secret-detector` no longer reports `VP-STATIC-002` for dotenvx encrypted env files.
+- example outreach app diagnosis run `post-vibepro-dotenvx-secret-detector` no longer reports `VP-STATIC-002` for dotenvx encrypted env files.

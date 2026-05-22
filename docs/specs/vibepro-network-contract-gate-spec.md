@@ -32,6 +32,6 @@ title: Network Contract Gate Spec
 
 ## Anti-patterns
 
-- Do not special-case Aitle paths or hotel search names in production logic.
+- Do not special-case example travel app paths or hotel search names in production logic.
 - Do not treat `npm run type-check` as sufficient evidence for API route availability.
 - Do not infer user-perceived success from a superficially rendered UI when network calls fail.
