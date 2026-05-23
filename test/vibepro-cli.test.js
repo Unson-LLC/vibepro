@@ -7990,12 +7990,25 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   const readme = await readFile(path.resolve('README.md'), 'utf8');
   const readmeJa = await readFile(path.resolve('README.ja.md'), 'utf8');
   const license = await readFile(path.resolve('LICENSE'), 'utf8');
+  const requiredOpsFiles = [
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'CODE_OF_CONDUCT.md',
+    'CHANGELOG.md',
+    '.github/PULL_REQUEST_TEMPLATE.md',
+    '.github/ISSUE_TEMPLATE/bug_report.yml',
+    '.github/ISSUE_TEMPLATE/feature_request.yml',
+    '.github/ISSUE_TEMPLATE/false_positive.yml',
+    '.github/workflows/ci.yml'
+  ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
   assert.equal(packageJson.version, '0.1.0-alpha.0');
   assert.equal(packageJson.publishConfig.access, 'public');
   assert.equal(packageJson.files.includes('docs/releases'), false);
   assert.equal(packageJson.files.some((entry) => entry === 'docs' || entry.startsWith('docs/')), false);
+  assert.equal(packageJson.files.includes('.vibepro'), false);
+  assert.equal(packageJson.files.includes('node_modules'), false);
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
   assert.match(readme, /Graphify is optional/);
   assert.match(readme, /does not bundle Graphify/);
@@ -8007,6 +8020,29 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.match(readmeJa, /Apache License 2\.0/);
   assert.doesNotMatch(readmeJa, /現在 license file は含まれていません/);
   assert.doesNotMatch(readmeJa, /社内βリリースノート/);
+  for (const file of requiredOpsFiles) {
+    assert.equal(await pathExists(path.resolve(file)), true, `${file} should exist for OSS operations`);
+  }
+});
+
+test('npm dry-run package excludes VibePro workspace and internal artifacts', async () => {
+  const { stdout } = await execFileAsync('npm', ['pack', '--dry-run', '--json'], {
+    cwd: path.resolve('.'),
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 10
+  });
+  const pack = JSON.parse(stdout)[0];
+  const files = pack.files.map((file) => file.path);
+
+  assert.equal(files.includes('LICENSE'), true);
+  assert.equal(files.includes('README.md'), true);
+  assert.equal(files.includes('README.ja.md'), true);
+  assert.equal(files.includes('bin/vibepro.js'), true);
+  assert.equal(files.some((file) => file === '.vibepro' || file.startsWith('.vibepro/')), false);
+  assert.equal(files.some((file) => file === 'node_modules' || file.startsWith('node_modules/')), false);
+  assert.equal(files.some((file) => file === 'docs/releases' || file.startsWith('docs/releases/')), false);
+  assert.equal(files.some((file) => file.startsWith('docs/')), false);
+  assert.equal(files.some((file) => file.toLowerCase().includes('graphify') && !file.startsWith('src/') && !file.startsWith('README')), false);
 });
 
 test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async () => {

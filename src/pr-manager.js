@@ -2534,7 +2534,7 @@ function extractSectionText(content, headings) {
 
 function extractStoryIntro(content) {
   const withoutFrontmatter = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
-  const storySection = extractRawSection(withoutFrontmatter, ['Story', 'ストーリー']) ?? withoutFrontmatter;
+  const storySection = extractTopLevelStorySection(withoutFrontmatter) ?? withoutFrontmatter;
   const paragraph = storySection
     .split('\n')
     .map((line) => line.trim())
@@ -2550,6 +2550,15 @@ function extractStoryIntro(content) {
     .replace(/\s+/g, ' ')
     .slice(0, 320);
   return paragraph || null;
+}
+
+function extractTopLevelStorySection(content) {
+  for (const heading of ['Story', 'ストーリー']) {
+    const escaped = escapeRegExp(heading);
+    const match = content.match(new RegExp(`^#\\s+.*${escaped}.*\\n([\\s\\S]*?)(?=^#{1,6}\\s+|(?![\\s\\S]))`, 'm'));
+    if (match) return match[1];
+  }
+  return null;
 }
 
 function extractAcceptanceCriteria(content) {
