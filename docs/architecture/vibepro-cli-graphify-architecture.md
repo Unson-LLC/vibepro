@@ -23,8 +23,8 @@ Story SSOT は NocoDB とする。この Architecture は、NocoDB の既存 Sto
 | `番号=2` | M1: VibePro 診断→商用化ロードマップ | 採用 | graphify / CLI 化は診断とアーキテクチャ分析の拡張である |
 | `番号=1` | M0: Next.js + SPA診断パターン作成 | M1へ吸収してアーカイブ済み | Next.js + SPA 診断に狭すぎるため、M1の診断標準化へ吸収 |
 | `番号=3` | Story Driven DevelopmentのLearnフェーズを完全自動化 | 不採用 | Learn 自動化であり、リポジトリ単位の本番化診断ではない |
-| `番号=4` | 雲孫全プロダクトでのNPS計測基盤確立 | 不採用 | NPS 基盤展開であり、今回の graphify / CLI と無関係 |
-| `番号=5` | Phase 1完成とmana/Zeims導入 | 不採用 | プロダクト展開のマイルストーンであり、診断特化ではない |
+| `番号=4` | organization全プロダクトでのNPS計測基盤確立 | 不採用 | NPS 基盤展開であり、今回の graphify / CLI と無関係 |
+| `番号=5` | Phase 1完成とmana/example Slack integration導入 | 不採用 | プロダクト展開のマイルストーンであり、診断特化ではない |
 | `番号=6` | Slack Bot統合とNPS質問送信 | 不採用 | Slack / NPS 機能開発 |
 | `番号=7` | Convex DB設計と集計ロジック実装 | 不採用 | NPS データ実装 |
 | `番号=8` | brainbase連携とNPS可視化 | 不採用 | NPS 可視化連携 |
@@ -39,13 +39,13 @@ Story SSOT は NocoDB とする。この Architecture は、NocoDB の既存 Sto
 
 ## アーキテクチャ意図
 
-VibePro を、CLI で動くリポジトリ内制御基盤にする。graphify は VibePro の文脈 DAG に入力を渡す文脈抽出アダプターとして統合する。VibePro は本番化準備度の解釈、ゲート、証跡、Brainbase 連携を持ち続ける。
+VibePro を、CLI で動くリポジトリ内制御基盤にする。graphify は VibePro の文脈 DAG に入力を渡す文脈抽出アダプターとして統合する。VibePro は本番化準備度の解釈、ゲート、証跡、external portfolio dashboard 連携を持ち続ける。
 
 ## Story 投影（非正本）
 
 この投影は、NocoDB レコードと Architecture の対応をレビューしやすくするための補助であり、正本ではない。
 
-AI で作られたプロダクトを本番化する責任者が、VibePro でリポジトリ内の本番化作業領域を初期化・維持できる。これにより、人間、AI assistant、Brainbase が、繰り返しの診断・実装サイクルで同じ文脈、証跡、ゲート状態を参照できる。
+AI で作られたプロダクトを本番化する責任者が、VibePro でリポジトリ内の本番化作業領域を初期化・維持できる。これにより、人間、AI assistant、external portfolio dashboard が、繰り返しの診断・実装サイクルで同じ文脈、証跡、ゲート状態を参照できる。
 
 受け入れ条件の投影:
 
@@ -56,7 +56,7 @@ AI で作られたプロダクトを本番化する責任者が、VibePro でリ
 - 文脈グラフを入力として本番化診断を実行できる
 - 人間向けレポートと機械可読状態の両方を出せる
 - 機密性の高い生証跡はデフォルトでコミット対象にしない
-- Brainbase は安定した管理目録から最新実行とゲート状態を発見できる
+- external portfolio dashboard は安定した管理目録から最新実行とゲート状態を発見できる
 - graphify 連携を無効化または置換しても、既存の VibePro 実行が無効にならない
 
 ## 境界モデル
@@ -69,7 +69,7 @@ AI で作られたプロダクトを本番化する責任者が、VibePro でリ
   -> 診断エンジン
   -> ゲートエンジン
   -> レポート / 連携レイヤー
-  -> Brainbase 集約
+  -> external portfolio dashboard 集約
 ```
 
 ## 責務境界
@@ -84,7 +84,7 @@ AI で作られたプロダクトを本番化する責任者が、VibePro でリ
 | ゲートエンジン | 構造化された検出事項から経路とゲート状態を決める | 必須の人間ゲートを迂回する |
 | レポート / 連携レイヤー | Markdown と機械可読状態を生成する | 自分自身を正本にする |
 | PR準備レイヤー | Story単位の差分範囲、PR本文ドラフト、クリーンブランチ推奨を生成する | 対象リポジトリを自動修正する、無断でPRを作る |
-| Brainbase import | リポジトリ状態を複数 project で集約する | リポジトリ文脈を生ソースから毎回再導出する |
+| external portfolio dashboard import | リポジトリ状態を複数 project で集約する | リポジトリ文脈を生ソースから毎回再導出する |
 
 ## データフロー
 
@@ -97,7 +97,7 @@ AI で作られたプロダクトを本番化する責任者が、VibePro でリ
   -> 検出事項とゲート
   -> レポートと管理目録
   -> PR準備
-  -> Brainbase import
+  -> external portfolio dashboard import
 ```
 
 文脈グラフは診断への入力であり、診断そのものではない。
@@ -127,9 +127,9 @@ VibePro はリポジトリ内に作業領域を 1 つ予約し、その中に成
 | 文脈グラフの元成果物 | 文脈アダプターの成果物領域 |
 | 本番化準備度の解釈 | VibePro 診断実行結果 |
 | ゲート状態 | VibePro ゲート状態 |
-| 複数リポジトリをまたぐプロジェクト管理 | Brainbase |
+| 複数リポジトリをまたぐプロジェクト管理 | external portfolio dashboard |
 
-人間向け Markdown レポートは投影である。機械可読な管理目録と実行状態が、VibePro と Brainbase の連携口になる。
+人間向け Markdown レポートは投影である。機械可読な管理目録と実行状態が、VibePro と external portfolio dashboard の連携口になる。
 
 ## graphify の役割
 
@@ -143,11 +143,11 @@ graphify が提供するもの:
 
 VibePro はこれらを文脈品質と依存関係の信号として使う。曖昧または推論された graph の関係は診断質問へ回し、受け入れ済み事実として扱わない。
 
-## Brainbase の役割
+## external portfolio dashboard の役割
 
-Brainbase は、複数リポジトリの VibePro 連携口を読む。
+external portfolio dashboard は、複数リポジトリの VibePro 連携口を読む。
 
-Brainbase が持つもの:
+external portfolio dashboard が持つもの:
 
 - 顧客 / プロジェクト関係
 - Story / Decision の紐付け
@@ -155,11 +155,11 @@ Brainbase が持つもの:
 - 診断結果と実装結果をまたいだ学習
 - 推進案件と商用フォローアップ
 
-Brainbase は graphify の生出力形式に依存しない。VibePro の連携モデルに依存する。
+external portfolio dashboard は graphify の生出力形式に依存しない。VibePro の連携モデルに依存する。
 
-VibePro CLI は Brainbase 連携口として、最新の管理目録と診断証跡を `.vibepro/brainbase/import-state.json` に正規化する。Brainbase は任意の Markdown レポートや graphify の生出力を直接読まず、この取り込み状態を読む。
+VibePro CLI は external portfolio dashboard 連携口として、最新の管理目録と診断証跡を `.vibepro/brainbase/import-state.json` に正規化する。external portfolio dashboard は任意の Markdown レポートや graphify の生出力を直接読まず、この取り込み状態を読む。
 
-Brainbase 取り込み状態は、単一Story固定ではなく複数Story、NocoDB ストーリーテーブルの `Horizon`、`View`、`Period`、`開始日`、`期限日` を持つ。これにより、同じ診断runをマイルストーン、顧客別ビュー、月次集計など複数の管理文脈へ対応づけられる。
+external portfolio dashboard 取り込み状態は、単一Story固定ではなく複数Story、NocoDB ストーリーテーブルの `Horizon`、`View`、`Period`、`開始日`、`期限日` を持つ。これにより、同じ診断runをマイルストーン、顧客別ビュー、月次集計など複数の管理文脈へ対応づけられる。
 
 ## 人間ゲート
 
@@ -180,7 +180,7 @@ Brainbase 取り込み状態は、単一Story固定ではなく複数Story、Noc
 |----------|-----------|
 | リポジトリ内作業領域を使う | 証跡とゲート履歴をプロダクトリポジトリに紐付けるため |
 | graphify をアダプターの後ろに置く | graphify を VibePro の領域モデルにしないため |
-| 管理目録を Brainbase 連携口にする | レポート本文の読み取りに依存せず安定集約できるようにするため |
+| 管理目録を external portfolio dashboard 連携口にする | レポート本文の読み取りに依存せず安定集約できるようにするため |
 | PR準備を診断後の非破壊レイヤーにする | Story外差分やPR肥大化を検出しつつ、branch作成やPR公開は人間または上位agentの明示操作に残すため |
 | assistant 導入は明示コマンドに分ける | AGENTS、hooks、project instructions を予期せず変更しないため |
 | 推論された graph edge は診断質問として扱う | 推論された文脈が誤った権威になるのを防ぐため |
@@ -193,9 +193,9 @@ Brainbase 取り込み状態は、単一Story固定ではなく複数Story、Noc
 | graphify の出力形式が変わる | アダプターが VibePro 文脈モデルに正規化する |
 | リポジトリ内成果物が侵襲的に見える | VibePro 作業領域の中だけに書く |
 | session branch に過去作業が混ざりPRが肥大化する | `pr prepare` が差分範囲、repo制御ファイル混入、複数commit混在を検出し、クリーンブランチ切り出しを推奨する |
-| Brainbase が graphify の生ファイルに密結合する | Brainbase は VibePro の連携口だけを読む |
+| external portfolio dashboard が graphify の生ファイルに密結合する | external portfolio dashboard は VibePro の連携口だけを読む |
 | 診断がグラフ依存に偏る | 静的チェック、LLMOps チェック、ゲート、証跡は VibePro が持つ |
-| Brainbase 側の取り込み実装が Markdown 解析に依存する | VibePro が `import-state.json` を生成し、構造化JSONを連携口にする |
+| external portfolio dashboard 側の取り込み実装が Markdown 解析に依存する | VibePro が `import-state.json` を生成し、構造化JSONを連携口にする |
 
 ## Architecture 確認
 

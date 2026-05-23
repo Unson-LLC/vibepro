@@ -625,6 +625,7 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     agent_review_instruction: agentReviewAction,
     agent_review_dispatch_required: Boolean(agentReviewAction),
     agent_review_user_confirmation_required_by_vibepro: false,
+    agent_review_runner_policy_may_require_user_delegation: Boolean(agentReviewAction),
     agent_instruction: readyForPrCreate
       ? 'Gate DAG is ready_for_review; pr create may proceed if scope and branch checks are acceptable.'
       : [
@@ -669,7 +670,7 @@ function buildAgentReviewGateInstruction(unresolvedGates) {
   if (!agentGate) return null;
   const actions = agentGate.required_actions ?? [];
   const actionText = actions.length > 0 ? ` Required actions: ${actions.join(' ')}` : '';
-  return `Agent Review Gate is a mandatory parallel subagent review instruction/checkpoint, not an optional note. Run the listed \`vibepro review prepare\` command(s), dispatch the generated parallel subagent requests, record each result with \`vibepro review record\`, and rerun \`vibepro pr prepare\`. VibePro does not require a separate user confirmation prompt for this dispatch step.${actionText}`;
+  return `Agent Review Gate requires staged role reviews, but VibePro does not grant subagent capability or override the coordinator runner policy. Run the listed \`vibepro review prepare\` command(s), then dispatch subagents only when the runtime policy permits it; if explicit user delegation is required, use the generated permission-request.md, or record independent manual reviews with \`--execution-mode manual_review\`. Record each result with \`vibepro review record\`, then rerun \`vibepro pr prepare\`.${actionText}`;
 }
 
 export function renderPrCreateSummary(result) {
@@ -2813,8 +2814,8 @@ function buildAgentReviewProcessDag(agentReviews) {
       command: requiredStage.prepare_command,
       artifact: requiredStage.dispatch_artifact,
       reason: dispatchPrepared
-        ? 'Parallel subagent dispatch instructions were generated'
-        : 'Parallel subagent dispatch instructions have not been generated'
+        ? 'Policy-aware agent review dispatch instructions were generated'
+        : 'Policy-aware agent review dispatch instructions have not been generated'
     });
 
     for (const role of stage?.roles ?? []) {
@@ -2825,10 +2826,10 @@ function buildAgentReviewProcessDag(agentReviews) {
       nodes.push({
         id: reviewId,
         type: 'agent_review_role_gate',
-        label: `Subagent Review: ${role.role}`,
+        label: `Agent Review: ${role.role}`,
         status: reviewStatus,
         required: true,
-        reason: role.summary ?? role.stale_reason ?? `Run the ${requiredStage.stage}:${role.role} subagent review`
+        reason: role.summary ?? role.stale_reason ?? `Run the ${requiredStage.stage}:${role.role} agent review`
       });
       nodes.push({
         id: recordId,
@@ -2962,13 +2963,15 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       ? 'Required staged agent reviews passed for the current git state'
       : status === 'not_required'
         ? 'No source/API/UI/performance policy required staged agent reviews'
-        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; this is a mandatory parallel subagent review step. Run the listed vibepro review prepare command(s), dispatch the generated parallel-dispatch.md requests, record results, and rerun pr prepare.`,
+        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; run the listed vibepro review prepare command(s), then use parallel subagents when runner policy permits or independent manual reviews when it does not.`,
     summary: agentReviews.summary,
     parallel_dispatch: agentReviews.parallel_dispatch,
     dispatch_contract: {
       required: status !== 'passed' && status !== 'not_required',
-      expected: 'dispatch_parallel_subagents',
+      expected: 'dispatch_parallel_subagents_if_runner_policy_permits',
       user_confirmation_required_by_vibepro: false,
+      runner_policy_may_require_user_delegation: true,
+      manual_review_fallback: true,
       applies_to: ['codex', 'claude_code']
     },
     required_actions: requiredActions,
@@ -2989,13 +2992,13 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
       prepared: stage.prepared
     }));
   for (const stage of missingOrUnpreparedStages) {
-    actions.push(`Run \`${stage.command}\` and dispatch every request in ${stage.artifact}.`);
+    actions.push(`Run \`${stage.command}\` and use ${stage.artifact}; if the runner requires explicit delegation, use the generated permission-request.md before spawning subagents, or record manual_review results.`);
   }
   if (unmet.length > 0) {
     const roleList = unmet.slice(0, 12).map((item) => `${item.stage}:${item.role}(${item.status})`).join(', ');
     actions.push(`Complete and record current-git review results for: ${roleList}.`);
   }
-  actions.push('After recording all roles, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
+  actions.push('After recording all roles with either parallel_subagent or manual_review provenance, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
   return actions;
 }
 
@@ -3690,10 +3693,10 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
-      if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and dispatching the generated parallel subagent review requests.`;
-      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the subagent result with \`vibepro review record\` for the current git head and dirty fingerprint.`;
-      if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned parallel subagent review.`;
-      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires parallel subagent review dispatch via `vibepro review prepare` and passing `vibepro review record` results for the current git head and dirty fingerprint.';
+      if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and using the generated review requests with permitted subagents or manual reviewers.`;
+      if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record\` for the current git head and dirty fingerprint.`;
+      if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned review role.`;
+      if (gate.id === 'gate:agent_review') return 'Agent Review Gate requires `vibepro review prepare` plus passing `vibepro review record` results from permitted subagents or manual reviewers for the current git head and dirty fingerprint.';
       if (gate.status === 'failed' || gate.status === 'contradicted') return `${gate.label ?? gate.id} requires a passing or non-contradicted state.`;
       return `${gate.label ?? gate.id} requires evidence before PR creation.`;
     })

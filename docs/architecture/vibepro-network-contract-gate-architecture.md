@@ -17,7 +17,7 @@ title: Network Contract Gate Architecture
 
 The scanner is framework-aware but product-agnostic. It understands Next.js App Router and Pages Router route conventions, dynamic route segments, and common API client call shapes such as `fetch`, `axios`, `apiFetch`, `requestJson`, and method wrappers.
 
-Aitle's `/api/detail-search` incident is only a regression fixture. Production logic must not depend on Aitle file names, route names, Japanese error copy, or hotel-search domain concepts beyond the generic visible-error pattern list used by flow verification.
+example travel app's `/api/detail-search` incident is only a regression fixture. Production logic must not depend on example travel app file names, route names, Japanese error copy, or hotel-search domain concepts beyond the generic visible-error pattern list used by flow verification.
 
 ## Gate Policy
 

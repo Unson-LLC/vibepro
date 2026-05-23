@@ -1,0 +1,34 @@
+name: False positive / false negative
+description: Report a VibePro gate or diagnosis signal that is too noisy or missed a real issue.
+title: "diagnosis: "
+labels:
+  - diagnosis
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Finding type
+      options:
+        - False positive
+        - False negative
+    validations:
+      required: true
+  - type: textarea
+    id: finding
+    attributes:
+      label: Finding or missed issue
+      description: Include the check pack, gate, finding id, or artifact path if available.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Explain why the finding should or should not have fired.
+    validations:
+      required: true
+  - type: textarea
+    id: repository_shape
+    attributes:
+      label: Repository shape
+      description: Framework, language, routing style, test setup, or relevant file layout.

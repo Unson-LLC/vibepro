@@ -23,11 +23,6 @@ const IGNORED_DIRS = new Set([
   'node_modules',
   'graphify-out'
 ]);
-const DEFAULT_SENPAINURSE_VALUE_CONTRACT = {
-  forbidden_labels: ['退院予定日'],
-  required_labels: ['退院目標日'],
-  forbidden_new_registration_labels: ['退院先を選択', 'タスクを追加']
-};
 const JSX_ARROW_TOKEN = '=$';
 const NATIVE_INTERACTIVE_TAGS = new Set(['button', 'a', 'summary', 'details']);
 const KNOWN_INTERACTION_CONTRACT_COMPONENTS = new Set([
@@ -478,16 +473,12 @@ function buildFunctionHit(kind, file, content, fn, detail) {
 }
 
 function buildValueContract({ profile, flowConfig }) {
-  const base = profile === 'senpainurse' ? DEFAULT_SENPAINURSE_VALUE_CONTRACT : {};
   const configured = flowConfig.value_contract ?? {};
   return {
-    forbidden_labels: [...new Set([...(base.forbidden_labels ?? []), ...(configured.forbidden_labels ?? [])])],
-    required_labels: [...new Set([...(base.required_labels ?? []), ...(configured.required_labels ?? [])])],
+    forbidden_labels: [...new Set(configured.forbidden_labels ?? [])],
+    required_labels: [...new Set(configured.required_labels ?? [])],
     forbidden_new_registration_labels: [
-      ...new Set([
-        ...(base.forbidden_new_registration_labels ?? []),
-        ...(configured.forbidden_new_registration_labels ?? [])
-      ])
+      ...new Set(configured.forbidden_new_registration_labels ?? [])
     ]
   };
 }
@@ -506,36 +497,9 @@ function buildRuntimeProbePlan({ profile, story, flowConfig }) {
       story_id: story?.story_id ?? null
     };
   }
-  if (profile !== 'senpainurse') {
-    return { status: 'available', commands: [] };
-  }
   return {
     status: 'available',
-    commands: [
-      {
-        id: 'new-registration-dpc-flow',
-        intent: '新規登録で病名検索、候補選択、明示登録、患者詳細遷移を確認する。',
-        path: '/new',
-        mutates: false,
-        steps: [
-          { action: 'expectVisible', text: '病名' },
-          { action: 'expectVisible', text: '仮登録' },
-          { action: 'expectNotVisible', text: '退院予定日' },
-          { action: 'screenshot', name: 'new-registration-dpc-flow' }
-        ]
-      },
-      {
-        id: 'patient-detail-dpc-question',
-        intent: 'DPC未入力患者で質問カードからDPC入力UIへ進めることを確認する。',
-        path: '/patients/demo',
-        mutates: false,
-        steps: [
-          { action: 'expectVisible', text: '？' },
-          { action: 'expectVisible', text: '病名' },
-          { action: 'screenshot', name: 'patient-detail-dpc-question' }
-        ]
-      }
-    ],
+    commands: [],
     story_id: story?.story_id ?? null
   };
 }
@@ -693,8 +657,6 @@ function isUiStory(story, flowConfig) {
 }
 
 function inferProfile(story) {
-  const text = [story?.story_id, story?.title].filter(Boolean).join(' ');
-  if (/senpai|センパイ|退院支援|DPC|患者/.test(text)) return 'senpainurse';
   return 'generic';
 }
 

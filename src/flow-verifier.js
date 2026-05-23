@@ -209,22 +209,7 @@ function latestFlowDesignProbes(config, manifest) {
 }
 
 function defaultProbesForProfile(profile, story) {
-  const text = [profile, story?.story_id, story?.title].filter(Boolean).join(' ');
-  if (!/senpainurse|U-0|センパイ|退院支援|患者/.test(text)) return [];
-  return [{
-    id: 'senpainurse-new-registration-readonly',
-    title: 'センパイナース新規登録の非破壊導線',
-    path: '/new',
-    mutates: false,
-    steps: [
-      { action: 'expectVisible', text: '病名' },
-      { action: 'expectVisible', text: '仮登録' },
-      { action: 'expectNotVisible', text: '退院予定日' },
-      { action: 'expectNotVisible', text: '退院先を選択' },
-      { action: 'expectNotVisible', text: 'タスクを追加' },
-      { action: 'screenshot', name: 'senpainurse-new-registration' }
-    ]
-  }];
+  return [];
 }
 
 function normalizeProbe(probe) {

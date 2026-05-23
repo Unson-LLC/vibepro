@@ -117,11 +117,11 @@ function selectPublishStory(importState, storyId) {
   const stories = Array.isArray(importState.stories) ? importState.stories : [];
   if (storyId) {
     const story = stories.find((item) => item.story_id === storyId);
-    if (!story) throw new Error(`Story ID is not included in Brainbase import state: ${storyId}`);
+    if (!story) throw new Error(`Story ID is not included in portfolio dashboard import state: ${storyId}`);
     return story;
   }
   const story = importState.story ?? stories[0];
-  if (!story?.story_id) throw new Error('Brainbase import state does not contain a publishable story');
+  if (!story?.story_id) throw new Error('portfolio dashboard import state does not contain a publishable story');
   return story;
 }
 
@@ -129,8 +129,8 @@ function resolveNocoDBSource(config, env) {
   const storySource = config.brainbase?.story_source ?? {};
   const url = env.NOCODB_URL ?? storySource.url;
   const token = env.NOCODB_TOKEN ?? storySource.token;
-  if (!url) throw new Error('NOCODB_URL is required to sync Brainbase stories');
-  if (!token) throw new Error('NOCODB_TOKEN is required to sync Brainbase stories');
+  if (!url) throw new Error('NOCODB_URL is required to sync portfolio dashboard stories');
+  if (!token) throw new Error('NOCODB_TOKEN is required to sync portfolio dashboard stories');
   return {
     url: url.replace(/\/$/, ''),
     token,

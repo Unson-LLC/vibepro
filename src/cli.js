@@ -163,7 +163,7 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
@@ -219,7 +219,7 @@ VibeProは、AI駆動開発のために Story / Architecture / Spec / Gate 証�
       pr-body / gate-dag / split-plan / review-cockpit を作ります。
   vibepro review prepare <repo> --id <id> --stage implementation
       サブエージェントや人間に渡すレビュー依頼を作ります。
-  vibepro review record <repo> --id <id> --stage implementation --role <role> --status pass --summary <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>
+  vibepro review record <repo> --id <id> --stage implementation --role <role> --status pass --summary <text> --agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>
       レビュー結果を現在のgit状態とサブエージェント証跡に紐づけて記録します。
 
 .vibepro/ の意味:
@@ -258,7 +258,7 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
@@ -1044,10 +1044,10 @@ export async function runCli(argv, io = {}) {
           env: io.env,
           fetch: io.fetch
         });
-        write(stdout, `Brainbase stories synced: ${syncResult.stories.length}\n`);
+        write(stdout, `Portfolio dashboard stories synced: ${syncResult.stories.length}\n`);
       }
       const result = await createBrainbaseImport(repoRoot);
-      write(stdout, `Brainbase import state created: ${result.importStatePath}\n`);
+      write(stdout, `Portfolio dashboard import state created: ${result.importStatePath}\n`);
       if (hasFlag(rest, '--publish-status')) {
         const publishResult = await publishStatusToNocoDB(repoRoot, {
           env: io.env,
@@ -1056,8 +1056,8 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--story-id')
         });
         write(stdout, publishResult.dryRun
-          ? `Brainbase story status preview created: ${publishResult.storyId}\n`
-          : `Brainbase story status published: ${publishResult.storyId}\n`);
+          ? `Portfolio dashboard story status preview created: ${publishResult.storyId}\n`
+          : `Portfolio dashboard story status published: ${publishResult.storyId}\n`);
       }
       return { exitCode: 0, command, result };
     }

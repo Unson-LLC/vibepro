@@ -269,7 +269,7 @@ function buildImportState({ manifest, storyContext, latestRun, evidence, taskSta
 }
 
 function renderImportSummary(importState) {
-  return `# Brainbase 取り込み状態
+  return `# Portfolio Dashboard import state
 
 | 項目 | 内容 |
 |------|------|

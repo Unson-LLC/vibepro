@@ -106,5 +106,5 @@ Claude Codeの大規模コードベース運用ベストプラクティスでは
 
 - VibeProがCodex / Claude Codeのsubagentを直接起動するrunnerになること
 - hooksやskillsを人間確認なしに自動上書きすること
-- Brainbase固有の運用をVibePro本体に埋め込むこと
+- external portfolio dashboard固有の運用をVibePro本体に埋め込むこと
 - Claude Codeだけ、またはCodexだけに依存した設計にすること

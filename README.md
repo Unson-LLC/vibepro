@@ -3,6 +3,7 @@
 [![Language: English](https://img.shields.io/badge/Language-English-blue)](README.md)
 [![Language: Japanese](https://img.shields.io/badge/Language-%E6%97%A5%E6%9C%AC%E8%AA%9E-green)](README.ja.md)
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
 VibePro is a CLI control plane for AI-driven development. It turns a feature story into reviewable architecture, spec, task, verification, and PR evidence so humans can safely delegate implementation work to AI agents.
 
@@ -46,7 +47,7 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 
 VibePro requires Node.js 20 or newer.
 
-VibePro is currently an internal beta. If it is not available in the public npm registry yet, do not run `npm install -D vibepro` or `pnpm add -D vibepro` and expect it to resolve from npm.
+VibePro is currently an alpha OSS release candidate. If it is not available in the public npm registry yet, do not run `npm install -D vibepro` or `pnpm add -D vibepro` and expect it to resolve from npm.
 
 Use one of these installation modes:
 
@@ -56,12 +57,12 @@ cd /path/to/vibepro
 npm install
 node bin/vibepro.js --help
 
-# Or install the internal beta from GitHub if you have repository access
-npm install -g git+ssh://git@github.com/Unson-LLC/vibepro.git
+# Or install from GitHub before the npm package is published
+npm install -g git+https://github.com/Unson-LLC/vibepro.git
 vibepro --help
 ```
 
-After VibePro is published to npm, the package form is:
+After VibePro is published to npm:
 
 ```bash
 npx vibepro --help
@@ -74,13 +75,15 @@ npm install
 node bin/vibepro.js --help
 ```
 
-Graphify is optional but recommended for impact-scope discovery:
+## Optional Integration: Graphify
+
+Graphify is optional but recommended for impact-scope discovery. VibePro does not bundle Graphify or redistribute Graphify code. When `--run-graphify` is used, VibePro invokes an externally installed `graphify` command. When `--from graphify-out` is used, VibePro imports artifacts that Graphify already generated.
 
 ```bash
 uv tool install graphifyy
 ```
 
-You can still use most story, diagnosis, and PR gate workflows without Graphify. Impact discovery will simply be less complete.
+Install and use Graphify under Graphify's own license. You can still use most Story, diagnosis, checkpoint, and PR gate workflows without Graphify. Impact discovery will simply be less complete.
 
 The examples below use `vibepro`. If you are running from a local clone instead of a global install, replace `vibepro` with `node /path/to/vibepro/bin/vibepro.js`.
 
@@ -158,6 +161,14 @@ Prepare PR evidence:
 
 ```bash
 npx vibepro pr prepare /path/to/repo \
+  --base <base-branch> \
+  --story-id story-internal-beta
+```
+
+Run a checkpoint before treating implementation as ready:
+
+```bash
+npx vibepro checkpoint verification /path/to/repo \
   --base <base-branch> \
   --story-id story-internal-beta
 ```
@@ -252,11 +263,26 @@ npx vibepro review record /path/to/repo \
   --agent-model <model>
 ```
 
-`gate:agent_review` only treats a passing review as verified when the review result
-contains Codex or Claude Code parallel subagent provenance. For Claude Code, use
-`--agent-system claude_code` with the Task/subagent id, session id, or transcript
-artifact. A manual `pass` without subagent provenance remains review evidence, but
-does not satisfy the Agent Review Gate.
+`gate:agent_review` treats a passing review as verified when the review result
+contains either Codex/Claude Code parallel subagent provenance or explicit
+`manual_review` provenance. For Claude Code, use `--agent-system claude_code`
+with the Task/subagent id, session id, or transcript artifact. For runtimes that
+cannot spawn subagents, record an independent reviewer instead:
+
+```bash
+npx vibepro review record /path/to/repo \
+  --id <story-id> \
+  --stage implementation \
+  --role regression_risk \
+  --status pass \
+  --summary "Manual review passed." \
+  --agent-system human \
+  --execution-mode manual_review \
+  --recorded-by <reviewer>
+```
+
+A manual `pass` without subagent provenance or `manual_review` reviewer
+provenance remains review evidence, but does not satisfy the Agent Review Gate.
 
 ### Measure Performance
 
