@@ -21,6 +21,7 @@ export const REVIEW_STAGE_ROLES = {
 export const REVIEW_STAGES = new Set(Object.keys(REVIEW_STAGE_ROLES));
 const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block']);
 const PASSING_ROLE_STATUS = new Set(['pass']);
+const VERIFIED_REVIEW_PROVENANCE_STATUSES = new Set(['verified_agent', 'verified_manual']);
 const REVIEW_PROVENANCE_SYSTEMS = new Set(['codex', 'claude_code', 'human', 'other', 'unknown']);
 const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
 const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
@@ -60,23 +61,25 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     git_context: gitContext,
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: [
-      'Dispatch the listed role reviews in parallel with separate AI subagents or human reviewers.',
+      'Dispatch the listed role reviews with separate AI subagents when the coordinator runtime policy permits it; otherwise use manual reviewers and record manual_review provenance.',
       'VibePro records the review results, but does not execute subagents itself.',
-      'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to launch the parallel reviews.',
+      'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to obtain the listed reviews; it is not a capability grant that overrides the runner policy.',
       'Every role review must include all mandatory review lenses; passing a role only means the role concern, regression_guard, and path_surface_coverage are adequately covered.',
-      'If the coordinator has subagent capability, it should dispatch the listed reviewers directly as part of this gate workflow instead of asking the user for another confirmation.',
+      'If the coordinator has subagent capability and policy permission, it should dispatch the listed reviewers directly. If explicit delegation permission is required, use permission-request.md before spawning subagents.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
     mandatory_review_lenses: MANDATORY_REVIEW_LENSES,
     parallel_dispatch: {
       required: true,
-      mode: 'manual_parallel_subagents',
+      mode: 'policy_aware_parallel_reviews',
       subagent_count: roles.length,
       artifact: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
+      permission_request: toWorkspaceRelative(root, getPermissionRequestPath(reviewDir)),
       coordinator_behavior: {
-        expected: 'dispatch_parallel_subagents',
+        expected: 'dispatch_parallel_subagents_if_runner_policy_permits',
         user_confirmation_required_by_vibepro: false,
-        fallback: 'If the runtime cannot spawn subagents, continue with manual parallel reviewers and record provenance.'
+        runner_policy_may_require_user_delegation: true,
+        fallback: 'If the runtime cannot spawn subagents, use manual_review reviewers and record provenance.'
       },
       record_commands: Object.fromEntries(roles.map((role) => [
         role,
@@ -92,6 +95,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
 
   await writeJson(path.join(reviewDir, 'review-plan.json'), plan);
   await writeFile(getParallelDispatchPath(reviewDir), renderParallelDispatchMarkdown({ storyId, stage, roles, plan }));
+  await writeFile(getPermissionRequestPath(reviewDir), renderPermissionRequestMarkdown({ storyId, stage, roles }));
   for (const role of roles) {
     await writeFile(getReviewRequestPath(reviewDir, role), renderReviewRequestMarkdown({ storyId, stage, role, plan }));
   }
@@ -103,6 +107,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     artifacts: {
       plan: toWorkspaceRelative(root, path.join(reviewDir, 'review-plan.json')),
       parallel_dispatch: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
+      permission_request: toWorkspaceRelative(root, getPermissionRequestPath(reviewDir)),
       summary_json: toWorkspaceRelative(root, path.join(reviewDir, 'review-summary.json')),
       summary_markdown: toWorkspaceRelative(root, path.join(reviewDir, 'review-summary.md')),
       requests: Object.fromEntries(roles.map((role) => [role, toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role))]))
@@ -446,24 +451,25 @@ Record command after the subagent returns:
 Required provenance:
 - Codex: keep the spawned subagent id plus thread/call id when available and pass them with \`--agent-system codex --execution-mode parallel_subagent\`.
 - Claude Code: keep the Task/subagent id, session id, or transcript artifact and pass them with \`--agent-system claude_code --execution-mode parallel_subagent\`.
+- Manual fallback: when the runner cannot spawn subagents, record an independent human or non-subagent review with \`--agent-system human --execution-mode manual_review --recorded-by "<reviewer>"\`.
 `;
   }).join('\n');
   return `# VibePro Parallel Agent Review Dispatch
 
 - Story: ${storyId}
 - Stage: ${stage}
-- Mode: manual parallel subagents
+- Mode: policy-aware parallel review dispatch
 - Required subagents: ${roles.length}
 - Current head: ${plan.git_context.head_sha ?? '-'}
 - Dirty: ${plan.git_context.dirty}
 
 ## Coordinator Instructions
 
-Agent Review Gate treats this file as required execution guidance. If you are coordinating Codex or Claude Code work, this is an explicit instruction to start the listed parallel review subagents before declaring the work complete.
+Agent Review Gate treats this file as required execution guidance. VibePro requires the listed reviews before completion, but it does not grant capabilities or override the coordinator runtime policy.
 
-If your coordinator runtime supports subagents, start them now as part of this gate workflow. VibePro does not require a separate user confirmation prompt for this dispatch step.
+If your coordinator runtime supports subagents and policy permits delegation, start them as part of this gate workflow. If the runtime requires explicit user delegation permission, use \`permission-request.md\` to request it before spawning subagents. If subagents are unavailable, use independent manual reviewers and record each result with \`--execution-mode manual_review\`.
 
-1. Start all subagents below in parallel.
+1. Start all permitted subagents below in parallel, or assign independent manual reviewers when subagents are unavailable.
 2. Give each subagent only its own review request.
 3. Do not let subagents edit files during review.
 4. Record each result with the listed \`vibepro review record\` command.
@@ -473,6 +479,29 @@ If your coordinator runtime supports subagents, start them now as part of this g
 ${mandatoryLenses}
 
 ${items}
+`;
+}
+
+function renderPermissionRequestMarkdown({ storyId, stage, roles }) {
+  return `# VibePro Agent Review Permission Request
+
+Story: ${storyId}
+Stage: ${stage}
+Roles: ${roles.join(', ')}
+
+Use this text only when the coordinator runtime policy requires explicit user permission before spawning subagents:
+
+\`\`\`text
+VibePro Agent Review Gate requires parallel role reviews for ${storyId} (${stage}).
+I authorize this coordinator to spawn subagents for these review roles: ${roles.join(', ')}.
+Each subagent must read only its own review request, must not edit files, and must return status, summary, and findings for vibepro review record.
+\`\`\`
+
+If the user does not grant subagent permission, record independent manual reviews instead:
+
+\`\`\`bash
+vibepro review record . --id ${storyId} --stage ${stage} --role <role> --status <pass|needs_changes|block> --summary "<summary>" --agent-system human --execution-mode manual_review --recorded-by "<reviewer>"
+\`\`\`
 `;
 }
 
@@ -487,7 +516,7 @@ function renderMandatoryReviewLenses(lenses) {
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact>`;
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code|human> --execution-mode <parallel_subagent|manual_review> --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact>`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage }) {
@@ -498,7 +527,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
   const requiredStages = [...new Set(requiredReviews.map((item) => item.stage))];
   return {
     required: requiredStages.length > 0,
-    mode: 'manual_parallel_subagents',
+    mode: 'policy_aware_parallel_reviews',
     required_stages: requiredStages.map((stage) => {
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
@@ -508,7 +537,8 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
         status: summary?.status ?? 'missing',
         prepared: summary?.parallel_dispatch?.prepared ?? false,
         prepare_command: buildReviewPrepareCommand({ storyId, stage }),
-        dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
+        dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir)),
+        permission_request: toWorkspaceRelative(repoRoot, getPermissionRequestPath(reviewDir))
       };
     })
   };
@@ -534,7 +564,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
     const effectiveStatus = !result
       ? 'missing'
       : binding.status === 'current'
-        ? result.status === 'pass' && provenance.status !== 'verified_agent'
+        ? result.status === 'pass' && !VERIFIED_REVIEW_PROVENANCE_STATUSES.has(provenance.status)
           ? 'unverified_agent'
           : result.status
         : 'stale';
@@ -554,6 +584,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
     });
   }
   const status = resolveStageStatus(roles);
+  const permissionRequestPath = getPermissionRequestPath(reviewDir);
   return {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -569,9 +600,10 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }
     updated_at: new Date().toISOString(),
     current_git_context: currentGitContext,
     parallel_dispatch: {
-      mode: 'manual_parallel_subagents',
+      mode: 'policy_aware_parallel_reviews',
       prepared: parallelDispatchPrepared,
       artifact: toWorkspaceRelative(repoRoot, parallelDispatchPath),
+      permission_request: toWorkspaceRelative(repoRoot, permissionRequestPath),
       prepare_command: buildReviewPrepareCommand({ storyId, stage })
     }
   };
@@ -726,6 +758,18 @@ function validateAgentProvenance(result) {
       reason: 'review result does not include Codex/Claude Code subagent provenance'
     };
   }
+  if (provenance.execution_mode === 'manual_review') {
+    if (provenance.system === 'unknown' || !provenance.recorded_by) {
+      return {
+        status: 'missing_manual_reviewer',
+        reason: 'manual review requires --agent-system human|codex|claude_code|other and --recorded-by reviewer provenance'
+      };
+    }
+    return {
+      status: 'verified_manual',
+      reason: `${provenance.system} manual review provenance is recorded`
+    };
+  }
   if (!AGENT_REVIEW_SYSTEMS.has(provenance.system)) {
     return {
       status: 'non_agent_reviewer',
@@ -805,6 +849,10 @@ function getReviewRequestPath(reviewDir, role) {
 
 function getParallelDispatchPath(reviewDir) {
   return path.join(reviewDir, 'parallel-dispatch.md');
+}
+
+function getPermissionRequestPath(reviewDir) {
+  return path.join(reviewDir, 'permission-request.md');
 }
 
 function getReviewResultPath(reviewDir, role) {

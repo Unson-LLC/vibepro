@@ -3626,20 +3626,24 @@ test('review prepare generates stage role requests', async () => {
 
   assert.equal(result.exitCode, 0);
   assert.deepEqual(result.result.plan.roles, ['unit_integration', 'e2e_ux', 'gate_coverage']);
-  assert.equal(result.result.plan.parallel_dispatch.mode, 'manual_parallel_subagents');
+  assert.equal(result.result.plan.parallel_dispatch.mode, 'policy_aware_parallel_reviews');
   assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
   assert.equal(result.result.plan.mandatory_review_lenses.some((lens) => lens.id === 'regression_guard'), true);
-  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents');
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents_if_runner_policy_permits');
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.user_confirmation_required_by_vibepro, false);
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.runner_policy_may_require_user_delegation, true);
+  assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
-  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code\|human>/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
   const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md'), 'utf8');
-  assert.match(dispatch, /Start all subagents below in parallel/);
-  assert.match(dispatch, /VibePro does not require a separate user confirmation prompt/);
-  assert.doesNotMatch(dispatch, /サブエージェントレビューを実行していいですか/);
+  assert.match(dispatch, /policy permits delegation/);
+  assert.match(dispatch, /permission-request\.md/);
+  assert.match(dispatch, /--execution-mode manual_review/);
+  assert.doesNotMatch(dispatch, /VibePro does not require a separate user confirmation prompt/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /regression_guard/);
   assert.match(dispatch, /path_surface_coverage/);
@@ -3648,6 +3652,9 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
+  const permissionRequest = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md'), 'utf8');
+  assert.match(permissionRequest, /I authorize this coordinator to spawn subagents/);
+  assert.match(permissionRequest, /manual_review/);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
@@ -3769,7 +3776,7 @@ test('review record updates status summary and marks stale after source change',
   assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
 });
 
-test('review pass without Codex or Claude Code subagent provenance does not satisfy agent review gate', async () => {
+test('review pass requires verified subagent or explicit manual review provenance', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'agent-review-provenance.js'), 'export const value = 1;\n');
@@ -3805,6 +3812,64 @@ test('review pass without Codex or Claude Code subagent provenance does not sati
   ));
   assert.equal(missingRuntime.status, 'unverified_agent');
   assert.match(missingRuntime.detail, /not Codex\/Claude Code subagent review/);
+
+  const anonymousManualRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'Manual review without reviewer identity',
+    '--agent-system',
+    'human',
+    '--execution-mode',
+    'manual_review'
+  ]);
+  assert.equal(anonymousManualRecord.exitCode, 0);
+
+  const statusWithAnonymousManualReview = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithAnonymousManualReview = statusWithAnonymousManualReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithAnonymousManualReview.effective_status, 'unverified_agent');
+  assert.equal(roleWithAnonymousManualReview.provenance_status, 'missing_manual_reviewer');
+  assert.match(roleWithAnonymousManualReview.provenance_reason, /--recorded-by reviewer provenance/);
+
+  const humanRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'Human manual review passed runtime contract',
+    '--agent-system',
+    'human',
+    '--execution-mode',
+    'manual_review',
+    '--recorded-by',
+    'reviewer@example.com'
+  ]);
+  assert.equal(humanRecord.exitCode, 0);
+  assert.equal(humanRecord.result.review.agent_provenance.system, 'human');
+  assert.equal(humanRecord.result.review.agent_provenance.execution_mode, 'manual_review');
+  assert.equal(humanRecord.result.review.agent_provenance.evidence_strength, 'manual');
+
+  const statusWithManualReview = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithManualReview = statusWithManualReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithManualReview.effective_status, 'pass');
+  assert.equal(roleWithManualReview.provenance_status, 'verified_manual');
 
   const claudeRecord = await runCli([
     'review',
@@ -3904,12 +3969,15 @@ architecture_docs:
     ['planning_spec', 'test_plan', 'implementation']
   );
   assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 9);
-  assert.match(missingGate.reason, /mandatory parallel subagent review step/);
+  assert.match(missingGate.reason, /parallel subagents when runner policy permits or independent manual reviews/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
-  assert.equal(missingGate.dispatch_contract.expected, 'dispatch_parallel_subagents');
+  assert.equal(missingGate.required_actions.some((action) => action.includes('permission-request.md')), true);
+  assert.equal(missingGate.required_actions.some((action) => action.includes('manual_review')), true);
+  assert.equal(missingGate.dispatch_contract.expected, 'dispatch_parallel_subagents_if_runner_policy_permits');
   assert.equal(missingGate.dispatch_contract.user_confirmation_required_by_vibepro, false);
-  assert.equal(missingGate.required_actions.some((action) => action.includes('サブエージェントレビューを実行していいですか')), false);
+  assert.equal(missingGate.dispatch_contract.runner_policy_may_require_user_delegation, true);
+  assert.equal(missingGate.dispatch_contract.manual_review_fallback, true);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
@@ -3917,9 +3985,10 @@ architecture_docs:
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:test_plan' && edge.to === 'review:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
-  assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /mandatory parallel subagent review instruction/);
+  assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /does not grant subagent capability/);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_dispatch_required, true);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_user_confirmation_required_by_vibepro, false);
+  assert.equal(missingResult.result.preparation.gate_status.agent_review_runner_policy_may_require_user_delegation, true);
   assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);
@@ -3931,7 +4000,7 @@ architecture_docs:
     stdout: { write: (text) => { summaryStdout += text; } }
   });
   assert.equal(summaryOutput.exitCode, 0);
-  assert.match(summaryStdout, /Agent Review Gate is a mandatory parallel subagent review instruction/);
+  assert.match(summaryStdout, /Agent Review Gate requires staged role reviews/);
 
   await recordRequiredAgentReviews(repo);
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
