@@ -9,16 +9,14 @@ When the user asks for VibePro work:
 - Use Graphify evidence before changing auth, data flow, runtime boundaries, UI state machines, or shared services.
 - Treat `review-cockpit.html` as the human control plane and `human-review.json` as the machine-readable decision record.
 - After implementation, run `vibepro pr prepare <repo> --story-id <story-id>` or the task-scoped equivalent.
-- If `vibepro pr prepare` reports `gate_status.agent_review_instruction` or unresolved `gate:agent_review`, treat Agent Review as mandatory. Respect the host runtime's subagent permission policy:
-  - If the user already explicitly asked to use subagents, run the review workflow below without asking again.
-  - If explicit user authorization is still required before spawning subagents, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
-  - A sufficient authorization phrase is: `VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。`
-- After authorization, run the parallel review workflow:
+- If `vibepro pr prepare` reports `gate_status.agent_review_instruction` or unresolved `gate:agent_review`, treat Agent Review as mandatory. The generated review plan is an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability; do not convert it into a user-permission wait or silently skip it.
+- Run the parallel review workflow:
   - Run every listed `vibepro review prepare <repo> --id <story-id> --stage <stage>` command.
   - Open `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
   - Start the listed role reviews in parallel, one subagent per role, with no file edits.
   - Record each returned result with the listed `vibepro review record` command, including Codex provenance: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id>` and `--agent-thread-id` or `--agent-call-id` when available.
   - Rerun `vibepro pr prepare` and do not call the work complete until `gate:agent_review` passes or a blocking result is explicitly reported.
+  - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 - Do not record a passing Agent Review as if it came from a subagent unless a subagent was actually spawned. A `pass` without Codex/Claude Code provenance is intentionally kept from satisfying `gate:agent_review`.
 - Do not call raw `gh pr create` directly for VibePro work. Use `vibepro pr create` so Gate evidence and waiver checks are preserved.
 - If Gates are unresolved, either add evidence, split the PR, block the PR, or record an explicit waiver reason.

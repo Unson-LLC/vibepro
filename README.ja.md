@@ -263,11 +263,11 @@ npx vibepro review record /path/to/repo \
   --agent-model <model>
 ```
 
-`gate:agent_review` は、Codex/Claude Code の並列サブエージェント証跡、または
-明示的な `manual_review` 証跡が入った `pass` だけを検証済みレビューとして扱います。
-Claude Code の場合は `--agent-system claude_code` と Task/subagent id、session id、
-または transcript artifact を渡してください。実行環境がサブエージェントを起動できない
-場合は、独立したレビュアーによる手動レビューとして記録します。
+`gate:agent_review` は、required review に Codex/Claude Code の並列サブエージェント
+証跡がある場合だけ検証済みレビューとして扱います。Claude Code の場合は
+`--agent-system claude_code` と Task/subagent id、session id、または transcript artifact
+を渡してください。人間レビューは監査用の文脈として記録できますが、required subagent
+review の代替にはなりません。
 
 ```bash
 npx vibepro review record /path/to/repo \
@@ -281,8 +281,9 @@ npx vibepro review record /path/to/repo \
   --recorded-by <reviewer>
 ```
 
-サブエージェント証跡または `manual_review` のレビュアー証跡がない手入力 `pass` は
-レビュー記録には残りますが、Agent Review Gate は通しません。
+手動レビュー証跡は監査文脈としては有用ですが、required Agent Review Gate は通しません。
+実行環境がサブエージェントを起動できない場合、coordinator は gate を通した扱いにせず、
+block するか別の waiver decision として記録します。
 
 ### Performance を測る
 

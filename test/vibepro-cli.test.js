@@ -185,7 +185,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro harness learn \[repo\]/);
-  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|all>/);
+  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|self-dogfood\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
@@ -221,7 +221,245 @@ test('check list prints available diagnosis packs', async () => {
   assert.match(output, /performance: Performance readiness check/);
   assert.match(output, /agent-harness: AI agent harness readiness check/);
   assert.match(output, /public-discovery: Public discovery \/ AI search readiness check/);
+  assert.match(output, /self-dogfood: VibePro self-dogfood gate readiness check/);
   assert.equal(result.packs.some((pack) => pack.id === 'launch-readiness'), true);
+});
+
+test('help documents check fail-on-findings enforcement mode', async () => {
+  let output = '';
+
+  const result = await runCli(['help'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.match(output, /--fail-on-findings/);
+});
+
+test('check self-dogfood detects verify evidence without final gate artifacts', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  await mkdir(path.join(repo, '.vibepro', 'pr', 'story-self-dogfood'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'pr', 'story-self-dogfood', 'verification-evidence.json'), JSON.stringify({
+    story_id: 'story-self-dogfood',
+    commands: [
+      { kind: 'unit', status: 'pass', command: 'npm test' }
+    ]
+  }, null, 2));
+  await mkdir(path.join(repo, 'agent-instructions', 'codex'), { recursive: true });
+  await writeFile(path.join(repo, 'agent-instructions', 'codex', 'AGENTS.vibepro.md'), 'Do not call raw `gh pr create`; use `vibepro pr create`.\n');
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-test', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'needs_review');
+  assert.equal(result.result.check.evidence.self_dogfood.findings.length, 1);
+  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate-dag artifacts are missing/);
+  assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
+});
+
+test('check self-dogfood surfaces PR create bypass and finding details in markdown', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-self-dogfood');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    story_id: 'story-self-dogfood',
+    commands: [
+      { kind: 'unit', status: 'pass', command: 'npm test' }
+    ]
+  }, null, 2));
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    gate_dag: { overall_status: 'needs_verification' }
+  }, null, 2));
+  const standalonePrDir = path.join(repo, '.vibepro', 'pr', 'story-standalone-bypass');
+  await mkdir(standalonePrDir, { recursive: true });
+  await writeFile(path.join(standalonePrDir, 'gate-dag.json'), JSON.stringify({
+    overall_status: 'needs_verification'
+  }, null, 2));
+  await writeFile(path.join(standalonePrDir, 'pr-create.json'), JSON.stringify({
+    mode: 'pr_create'
+  }, null, 2));
+  const weakWaiverDir = path.join(repo, '.vibepro', 'pr', 'story-weak-waiver');
+  await mkdir(weakWaiverDir, { recursive: true });
+  await writeFile(path.join(weakWaiverDir, 'pr-create.json'), JSON.stringify({
+    gate_dag: { overall_status: 'needs_verification' },
+    gate_override: { allowed: true }
+  }, null, 2));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-bypass', '--json']);
+  const standaloneResult = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-standalone-bypass', '--run-id', 'self-dogfood-standalone-bypass', '--json']);
+  const weakWaiverResult = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-weak-waiver', '--run-id', 'self-dogfood-weak-waiver', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('final_gate_missing')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('pr_create_without_gate_override')), true);
+  const markdown = await readFile(path.join(repo, '.vibepro', 'checks', 'self-dogfood', 'self-dogfood-bypass', 'check.md'), 'utf8');
+  assert.match(markdown, /## Findings \/ 検出事項/);
+  assert.match(markdown, /self_dogfood\.pr_create_without_gate_override\.story-self-dogfood/);
+  assert.match(markdown, /Use vibepro pr create/);
+  assert.equal(standaloneResult.exitCode, 0);
+  assert.equal(standaloneResult.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('pr_create_without_gate_override.story-standalone-bypass')), true);
+  assert.equal(weakWaiverResult.exitCode, 0);
+  assert.equal(weakWaiverResult.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('pr_create_without_gate_override.story-weak-waiver')), true);
+});
+
+test('check --fail-on-findings exits non-zero for non-pass check packs', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-self-dogfood');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    story_id: 'story-self-dogfood',
+    commands: [
+      { kind: 'unit', status: 'pass', command: 'npm test' }
+    ]
+  }, null, 2));
+
+  const defaultResult = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-default-exit', '--json']);
+  const failOnFindingsResult = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-fail-exit', '--fail-on-findings', '--json']);
+
+  assert.equal(defaultResult.exitCode, 0);
+  assert.equal(defaultResult.result.check.status, 'needs_review');
+  assert.equal(failOnFindingsResult.exitCode, 1);
+  assert.equal(failOnFindingsResult.result.check.status, 'needs_review');
+});
+
+test('check self-dogfood accepts auditable gate_override and scans docs guidance', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-waived');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    gate_dag: { overall_status: 'needs_verification' },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'non-critical waiver recorded'
+    }
+  }, null, 2));
+  const executionWaiverPrDir = path.join(repo, '.vibepro', 'pr', 'story-execution-waived');
+  await mkdir(executionWaiverPrDir, { recursive: true });
+  await writeFile(path.join(executionWaiverPrDir, 'pr-create.json'), JSON.stringify({
+    execution: {
+      gate_dag: { overall_status: 'needs_verification' },
+      gate_override: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'non-critical execution waiver recorded'
+      }
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'release.md'), 'Use `gh pr create` directly for release PRs.\n');
+  await writeFile(path.join(repo, 'docs', 'bypass.md'), 'Use gh pr create directly to bypass VibePro final gates.\n');
+  await writeFile(path.join(repo, 'docs', 'detector.md'), [
+    'raw `gh pr create` guidance should be detected by self-dogfood.',
+    '否定文の「raw gh pr createを使わない」はfalse positiveにしない。',
+    'VibePro `pr create` records the planned external `gh pr create` command.'
+  ].join('\n'));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--run-id', 'self-dogfood-docs', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('pr_create_without_gate_override')), false);
+  assert.equal(findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance.docs/release.md')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance.docs/bypass.md')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance.docs/detector.md')), false);
+});
+
+test('check self-dogfood detects unresolved gate DAG and bypass-oriented instructions', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-self-dogfood');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'gate-dag.json'), JSON.stringify({
+    overall_status: 'needs_verification',
+    nodes: [
+      { type: 'agent_review_gate', required: true, status: 'missing' }
+    ]
+  }, null, 2));
+  await mkdir(path.join(repo, 'skills', 'vibepro-workflow'), { recursive: true });
+  await writeFile(path.join(repo, 'skills', 'vibepro-workflow', 'SKILL.md'), [
+    'story-self-dogfood guidance:',
+    'Agent Review Gate skip is fine for small changes.',
+    'Ask exactly whether explicit user authorization is still required before subagent dispatch.'
+  ].join('\n'));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-gate-instructions', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('unresolved_gate_dag')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('agent_review_skip_language')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('subagent_permission_waiting_language')), true);
+});
+
+test('check self-dogfood blocks malformed gate DAG and scopes instruction findings by story id', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-self-dogfood', '--title', 'Self dogfood']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-self-dogfood');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    story_id: 'story-self-dogfood',
+    commands: [
+      { kind: 'unit', status: 'pass', command: 'npm test' }
+    ]
+  }, null, 2));
+  await writeFile(path.join(prDir, 'pr-prepare.json'), JSON.stringify({ story_id: 'story-self-dogfood' }, null, 2));
+  await writeFile(path.join(prDir, 'gate-dag.json'), '{ "overall_status": ');
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'unrelated.md'), 'Use `gh pr create` directly for an unrelated workflow.\n');
+  await writeFile(path.join(repo, 'docs', 'story-self-dogfood.md'), 'story-self-dogfood should not say: Use `gh pr create` directly.\n');
+
+  const scopedResult = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-self-dogfood', '--run-id', 'self-dogfood-malformed-scoped', '--json']);
+
+  assert.equal(scopedResult.exitCode, 0);
+  assert.equal(scopedResult.result.check.status, 'fail');
+  const scopedFindings = scopedResult.result.check.evidence.self_dogfood.findings;
+  assert.equal(scopedFindings.some((finding) => finding.id.includes('invalid_gate_dag.story-self-dogfood')), true);
+  assert.equal(scopedFindings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance.docs/story-self-dogfood.md')), true);
+  assert.equal(scopedFindings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance.docs/unrelated.md')), false);
+});
+
+test('pr prepare resolves explicit story id from local Story docs even when config catalog is stale', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyDir = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(storyDir, { recursive: true });
+  await writeFile(path.join(storyDir, 'story-doc-only-gate.md'), `---
+story_id: story-doc-only-gate
+title: Docs-only gate Story
+status: active
+---
+
+# Docs-only gate Story
+
+Docs-only Story should be usable before story derive refreshes config.
+
+## Acceptance Criteria
+
+- pr prepare resolves this explicit Story ID from local docs.
+`);
+  await writeFile(path.join(repo, 'src.js'), 'export const value = 1;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-doc-only-gate', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story.story_id, 'story-doc-only-gate');
+  assert.equal(result.result.story.title, 'Docs-only gate Story');
+  assert.equal(result.result.story.ssot.endsWith('story-doc-only-gate.md'), true);
+  const prBody = await readFile(result.result.artifacts.pr_body, 'utf8');
+  assert.match(prBody, /Docs-only gate Story/);
 });
 
 test('check all leaves optional agent harness and public discovery checks out unless explicitly included', async () => {
@@ -3404,6 +3642,8 @@ Weighted semantic/layout residual: **34%**
   assert.match(criticalWaiverStderrOutput, /Visual QA Gate:needs_review/);
   assert.match(criticalWaiverStderrOutput, /Agent Review Gate:needs_review/);
   assert.match(criticalWaiverStderrOutput, /vibepro verify record/);
+  assert.match(criticalWaiverStderrOutput, /parallel_subagent/);
+  assert.doesNotMatch(criticalWaiverStderrOutput, /manual reviewers/);
 
   assert.equal((await runCli([
     'verify', 'record', repo,
@@ -3638,21 +3878,22 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.parallel_dispatch.mode, 'policy_aware_parallel_reviews');
   assert.equal(result.result.plan.parallel_dispatch.subagent_count, 3);
   assert.equal(result.result.plan.mandatory_review_lenses.some((lens) => lens.id === 'regression_guard'), true);
-  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents_if_runner_policy_permits');
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.user_confirmation_required_by_vibepro, false);
-  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.runner_policy_may_require_user_delegation, true);
-  assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review/);
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.runner_policy_may_require_user_delegation, false);
+  assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review does not satisfy/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
-  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code\|human>/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--execution-mode parallel_subagent/);
+  assert.doesNotMatch(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /manual_review/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md')), true);
-  assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md')), false);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
   const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md'), 'utf8');
-  assert.match(dispatch, /policy permits delegation/);
-  assert.match(dispatch, /permission-request\.md/);
-  assert.match(dispatch, /--execution-mode manual_review/);
-  assert.doesNotMatch(dispatch, /VibePro does not require a separate user confirmation prompt/);
+  assert.match(dispatch, /If your coordinator runtime supports subagents/);
+  assert.doesNotMatch(dispatch, /permission-request\.md/);
+  assert.match(dispatch, /manual_review as satisfying required subagent review/);
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /regression_guard/);
   assert.match(dispatch, /path_surface_coverage/);
@@ -3661,9 +3902,6 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
-  const permissionRequest = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md'), 'utf8');
-  assert.match(permissionRequest, /I authorize this coordinator to spawn subagents/);
-  assert.match(permissionRequest, /manual_review/);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
@@ -3877,7 +4115,7 @@ test('review pass requires verified subagent or explicit manual review provenanc
 
   const statusWithManualReview = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
   const roleWithManualReview = statusWithManualReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
-  assert.equal(roleWithManualReview.effective_status, 'pass');
+  assert.equal(roleWithManualReview.effective_status, 'unverified_agent');
   assert.equal(roleWithManualReview.provenance_status, 'verified_manual');
 
   const claudeRecord = await runCli([
@@ -3978,15 +4216,15 @@ architecture_docs:
     ['planning_spec', 'test_plan', 'implementation']
   );
   assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 9);
-  assert.match(missingGate.reason, /parallel subagents when runner policy permits or independent manual reviews/);
+  assert.match(missingGate.reason, /dispatch the generated Codex\/Claude Code subagent reviews in parallel/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
-  assert.equal(missingGate.required_actions.some((action) => action.includes('permission-request.md')), true);
-  assert.equal(missingGate.required_actions.some((action) => action.includes('manual_review')), true);
-  assert.equal(missingGate.dispatch_contract.expected, 'dispatch_parallel_subagents_if_runner_policy_permits');
+  assert.equal(missingGate.required_actions.some((action) => action.includes('permission-request.md')), false);
+  assert.equal(missingGate.required_actions.some((action) => action.includes('manual_review')), false);
+  assert.equal(missingGate.dispatch_contract.expected, 'dispatch_parallel_subagents');
   assert.equal(missingGate.dispatch_contract.user_confirmation_required_by_vibepro, false);
-  assert.equal(missingGate.dispatch_contract.runner_policy_may_require_user_delegation, true);
-  assert.equal(missingGate.dispatch_contract.manual_review_fallback, true);
+  assert.equal(missingGate.dispatch_contract.runner_policy_may_require_user_delegation, false);
+  assert.equal(missingGate.dispatch_contract.manual_review_fallback, false);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
@@ -3994,10 +4232,10 @@ architecture_docs:
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:test_plan' && edge.to === 'review:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
-  assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /does not grant subagent capability/);
+  assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /dispatch the generated Codex\/Claude Code subagent reviews in parallel/);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_dispatch_required, true);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_user_confirmation_required_by_vibepro, false);
-  assert.equal(missingResult.result.preparation.gate_status.agent_review_runner_policy_may_require_user_delegation, true);
+  assert.equal(missingResult.result.preparation.gate_status.agent_review_runner_policy_may_require_user_delegation, false);
   assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);

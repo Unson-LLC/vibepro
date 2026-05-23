@@ -18,7 +18,7 @@ Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifac
    - dispatched the generated `parallel-dispatch.md` requests to parallel subagents,
    - recorded each result with `vibepro review record` including Codex/Claude Code subagent provenance,
    - rerun `vibepro pr prepare` and cleared `gate:agent_review`.
-   If the coordinator does not yet have explicit subagent authorization, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
+   If the coordinator runtime cannot spawn subagents, treat that as a blocker or require a human waiver decision. Do not accept manual review records as a substitute for required Codex/Claude Code subagent provenance.
 4. Open `.vibepro/pr/<story-id>/review-cockpit.html`.
 5. Read the recommended decision and reason.
 6. Check split lanes and Graphify investigation scope.

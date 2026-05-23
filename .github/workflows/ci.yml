@@ -25,4 +25,5 @@ jobs:
       - run: npm run pack:dry-run
       - run: node bin/vibepro.js --version
       - run: node bin/vibepro.js help --language en
+      - run: node bin/vibepro.js check self-dogfood . --run-id ci-self-dogfood --json
       - run: node bin/vibepro.js checkpoint --json

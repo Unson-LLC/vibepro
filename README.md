@@ -263,11 +263,11 @@ npx vibepro review record /path/to/repo \
   --agent-model <model>
 ```
 
-`gate:agent_review` treats a passing review as verified when the review result
-contains either Codex/Claude Code parallel subagent provenance or explicit
-`manual_review` provenance. For Claude Code, use `--agent-system claude_code`
-with the Task/subagent id, session id, or transcript artifact. For runtimes that
-cannot spawn subagents, record an independent reviewer instead:
+`gate:agent_review` treats a passing review as verified only when required
+reviews include Codex/Claude Code parallel subagent provenance. For Claude Code,
+use `--agent-system claude_code` with the Task/subagent id, session id, or
+transcript artifact. A human review can be recorded as audit context, but it is
+not a substitute for a required subagent review:
 
 ```bash
 npx vibepro review record /path/to/repo \
@@ -281,8 +281,10 @@ npx vibepro review record /path/to/repo \
   --recorded-by <reviewer>
 ```
 
-A manual `pass` without subagent provenance or `manual_review` reviewer
-provenance remains review evidence, but does not satisfy the Agent Review Gate.
+Manual review evidence remains useful audit context, but it does not satisfy a
+required Agent Review Gate. If a runtime cannot spawn subagents, the coordinator
+should block or record a separate waiver decision instead of marking the gate as
+passed.
 
 ### Measure Performance
 
