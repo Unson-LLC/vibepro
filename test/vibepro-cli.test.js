@@ -3774,6 +3774,53 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
 });
 
+test('pr prepare uses story source title and intro when explicit background heading is absent', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-oss-readiness';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: Apache-2.0でVibeProをOSS公開できる状態にする
+source:
+  type: user_request
+  id: oss-apache2-readiness
+---
+
+# Story
+
+VibeProをOSSとして公開するために、Apache-2.0ライセンス、公開用package metadata、README、CI、GitHub運用テンプレート、配布物の安全確認を揃える。
+
+Graphifyは任意の外部CLIとして扱い、VibeProの配布物には同梱しない。
+
+## Acceptance Criteria
+
+- Apache-2.0ライセンスで公開できる
+- READMEが公開利用者向けになっている
+`);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase.current_story_id = storyId;
+  config.brainbase.stories.push({
+    story_id: storyId,
+    title: 'Story',
+    ssot: 'local',
+    status: 'active'
+  });
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Public README\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'docs: add oss readiness story']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId]);
+
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Story: story-oss-readiness - Apache-2\.0でVibeProをOSS公開できる状態にする/);
+  assert.doesNotMatch(prBody, /Story: story-oss-readiness Story/);
+  assert.doesNotMatch(prBody, /Story文書から抽出できませんでした/);
+  assert.match(prBody, /VibeProをOSSとして公開するために/);
+});
+
 test('pr prepare carries configured output language into human artifacts', async () => {
   const repo = await makeGitRepoWithStory({ language: 'en' });
   await mkdir(path.join(repo, 'src'), { recursive: true });

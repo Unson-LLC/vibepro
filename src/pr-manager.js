@@ -1085,6 +1085,8 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const reviewerChangeMap = renderReviewerChangeMap(fileGroups);
   const explicitNonGoals = renderExplicitNonGoals({ git, fileGroups });
   const source = prContext.story_source;
+  const storyLabel = formatPrStoryLabel(story, source);
+  const requirementTitle = source.requirement_title ?? source.title ?? story.title ?? story.story_id;
   const changeSummary = prContext.change_summary.length === 0
     ? '- 差分なし'
     : prContext.change_summary.map((item) => `- ${item}`).join('\n');
@@ -1114,14 +1116,14 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   return `${decisionSection}
 
 ${narrativeSection}## 概要
-- Story: ${story.story_id} ${story.title}
+- Story: ${storyLabel}
 - VibePro scope: ${scope.status}
 - PR strategy: ${scope.recommended_strategy}
 - 変更ファイル: ${git.changed_files.length} files
 
 ## 背景・要求
 - 正本: ${source.path ?? 'Story未検出'}
-- 要求: ${source.requirement_title ?? source.title ?? story.title}
+- 要求: ${requirementTitle}
 ${source.requirement_id ? `- 要求ID: ${source.requirement_id}` : ''}
 ${source.requirement_url ? `- 要求URL: ${source.requirement_url}` : ''}
 ${source.background ? `- 背景: ${source.background}` : '- 背景: Story文書から抽出できませんでした'}
@@ -1212,17 +1214,25 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
   const decision = buildHumanMergeDecision({ executionGate, unresolved, scope });
   const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
+  const storyLabel = formatPrStoryLabel(story, prContext.story_source);
   const gateNote = unresolved.length === 0
     ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
     : `未解決Gateがあります: ${formatUnresolvedGateList(unresolved)}。これは監査ログではなく、マージ前の判断材料です。`;
   const scopeNote = buildScopeDecisionNote(scope, splitPlan);
   return `## このPRで決めたいこと
-- Story: ${story.story_id} ${story.title}
+- Story: ${storyLabel}
 - 判断: ${decision}
 - レビュー入口: ${primaryReviewAreas}
 - Gate状況: ${gateNote}
 - Scope判断: ${scopeNote}
 - 変更規模: ${git.changed_files.length} files`;
+}
+
+function formatPrStoryLabel(story, source = {}) {
+  const storyId = story?.story_id ?? source?.story_id ?? 'unknown-story';
+  const title = source?.requirement_title ?? source?.title ?? story?.title ?? null;
+  if (!title || title === storyId) return storyId;
+  return `${storyId} - ${title}`;
 }
 
 function buildHumanMergeDecision({ executionGate, unresolved, scope }) {
@@ -2465,7 +2475,8 @@ function parseStoryDoc(file, content) {
     requirement_id: frontmatter.id ?? frontmatter.requirement_id ?? frontmatter.source_id ?? null,
     requirement_title: frontmatter.requirement_title ?? frontmatter.source_title ?? frontmatter.title ?? title,
     requirement_url: frontmatter.url ?? frontmatter.source_url ?? null,
-    background: extractSectionText(content, ['背景', '現状', '課題']),
+    background: extractSectionText(content, ['背景', '現状', '課題'])
+      ?? extractStoryIntro(content),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
     acceptance_criteria: extractAcceptanceCriteria(content),
     architecture_reason: frontmatter.reason ?? extractFrontmatterBlockReason(content, 'architecture_docs')
@@ -2519,6 +2530,26 @@ function extractSectionText(content, headings) {
     if (paragraph) return paragraph;
   }
   return null;
+}
+
+function extractStoryIntro(content) {
+  const withoutFrontmatter = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+  const storySection = extractRawSection(withoutFrontmatter, ['Story', 'ストーリー']) ?? withoutFrontmatter;
+  const paragraph = storySection
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => {
+      if (!line) return false;
+      if (line.startsWith('#')) return false;
+      if (line.startsWith('|')) return false;
+      if (line.startsWith('---')) return false;
+      if (/^-\s+/.test(line)) return false;
+      return true;
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 320);
+  return paragraph || null;
 }
 
 function extractAcceptanceCriteria(content) {
