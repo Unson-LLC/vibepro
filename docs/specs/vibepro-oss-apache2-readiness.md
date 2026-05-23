@@ -44,3 +44,12 @@ The repository SHOULD include:
 - GitHub issue templates
 - PR template
 - CI workflow
+
+## Reviewable PR Evidence
+
+VibePro-generated PR bodies MUST use canonical story source fields for reviewer-facing context:
+
+- Story labels MUST prefer `story_source.requirement_title` or `story_source.title` over stale local config titles such as `Story`.
+- Requirement titles MUST use the same canonical source title fallback.
+- When no explicit `## Background` / `## 背景` section exists, VibePro SHOULD extract a concise background from the prose directly under `# Story`.
+- VibePro MUST NOT emit `背景: Story文書から抽出できませんでした` when the story document contains usable introductory prose.

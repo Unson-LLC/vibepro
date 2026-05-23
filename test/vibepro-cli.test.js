@@ -3774,6 +3774,56 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   assert.equal(actualCreateResult.result.execution.results.length, 2);
 });
 
+test('pr prepare uses story source title and intro when explicit background heading is absent', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-oss-readiness';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: Apache-2.0でVibeProをOSS公開できる状態にする
+source:
+  type: user_request
+  id: oss-apache2-readiness
+---
+
+# Story
+
+VibeProをOSSとして公開するために、Apache-2.0ライセンス、公開用package metadata、README、CI、GitHub運用テンプレート、配布物の安全確認を揃える。
+
+Graphifyは任意の外部CLIとして扱い、VibeProの配布物には同梱しない。
+
+## Acceptance Criteria
+
+- Apache-2.0ライセンスで公開できる
+- READMEが公開利用者向けになっている
+`);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase.current_story_id = storyId;
+  config.brainbase.stories.push({
+    story_id: storyId,
+    title: 'Story',
+    ssot: 'local',
+    status: 'active'
+  });
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await writeFile(path.join(repo, 'README.md'), '# Public README\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'docs: add oss readiness story']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId]);
+
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Story: story-oss-readiness - Apache-2\.0でVibeProをOSS公開できる状態にする/);
+  assert.doesNotMatch(prBody, /Story: story-oss-readiness Story/);
+  assert.doesNotMatch(prBody, /story-oss-readiness Story: present/);
+  assert.doesNotMatch(prBody, /Story文書から抽出できませんでした/);
+  assert.match(prBody, /VibeProをOSSとして公開するために/);
+  const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json'));
+  assert.equal(gateDag.nodes.find((node) => node.id === 'story')?.label, 'story-oss-readiness - Apache-2.0でVibeProをOSS公開できる状態にする');
+});
+
 test('pr prepare carries configured output language into human artifacts', async () => {
   const repo = await makeGitRepoWithStory({ language: 'en' });
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -7943,12 +7993,25 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   const readme = await readFile(path.resolve('README.md'), 'utf8');
   const readmeJa = await readFile(path.resolve('README.ja.md'), 'utf8');
   const license = await readFile(path.resolve('LICENSE'), 'utf8');
+  const requiredOpsFiles = [
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'CODE_OF_CONDUCT.md',
+    'CHANGELOG.md',
+    '.github/PULL_REQUEST_TEMPLATE.md',
+    '.github/ISSUE_TEMPLATE/bug_report.yml',
+    '.github/ISSUE_TEMPLATE/feature_request.yml',
+    '.github/ISSUE_TEMPLATE/false_positive.yml',
+    '.github/workflows/ci.yml'
+  ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
   assert.equal(packageJson.version, '0.1.0-alpha.0');
   assert.equal(packageJson.publishConfig.access, 'public');
   assert.equal(packageJson.files.includes('docs/releases'), false);
   assert.equal(packageJson.files.some((entry) => entry === 'docs' || entry.startsWith('docs/')), false);
+  assert.equal(packageJson.files.includes('.vibepro'), false);
+  assert.equal(packageJson.files.includes('node_modules'), false);
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
   assert.match(readme, /Graphify is optional/);
   assert.match(readme, /does not bundle Graphify/);
@@ -7960,6 +8023,29 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.match(readmeJa, /Apache License 2\.0/);
   assert.doesNotMatch(readmeJa, /現在 license file は含まれていません/);
   assert.doesNotMatch(readmeJa, /社内βリリースノート/);
+  for (const file of requiredOpsFiles) {
+    assert.equal(await pathExists(path.resolve(file)), true, `${file} should exist for OSS operations`);
+  }
+});
+
+test('npm dry-run package excludes VibePro workspace and internal artifacts', async () => {
+  const { stdout } = await execFileAsync('npm', ['pack', '--dry-run', '--json'], {
+    cwd: path.resolve('.'),
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 10
+  });
+  const pack = JSON.parse(stdout)[0];
+  const files = pack.files.map((file) => file.path);
+
+  assert.equal(files.includes('LICENSE'), true);
+  assert.equal(files.includes('README.md'), true);
+  assert.equal(files.includes('README.ja.md'), true);
+  assert.equal(files.includes('bin/vibepro.js'), true);
+  assert.equal(files.some((file) => file === '.vibepro' || file.startsWith('.vibepro/')), false);
+  assert.equal(files.some((file) => file === 'node_modules' || file.startsWith('node_modules/')), false);
+  assert.equal(files.some((file) => file === 'docs/releases' || file.startsWith('docs/releases/')), false);
+  assert.equal(files.some((file) => file.startsWith('docs/')), false);
+  assert.equal(files.some((file) => file.toLowerCase().includes('graphify') && !file.startsWith('src/') && !file.startsWith('README')), false);
 });
 
 test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async () => {
