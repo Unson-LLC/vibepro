@@ -3254,6 +3254,15 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.file_groups.tests.count, 2);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
+  assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 概要'));
+  assert.match(prBody, /レビュー入口: Runtime \/ Contract Docs \/ Tests/);
+  assert.match(prBody, /## レビュアー向け差分分類/);
+  assert.match(prBody, /- Runtime: 1 files/);
+  assert.match(prBody, /- Contract Docs: 5 files/);
+  assert.match(prBody, /- Tests: 2 files/);
+  assert.match(prBody, /## 明示的にやらないこと/);
+  assert.match(prBody, /変更ファイル外の既存挙動は、このPRの完了保証対象外/);
+  assert.match(prBody, /## 監査ログ/);
   assert.match(prBody, /## 背景・要求/);
   assert.match(prBody, /PR本文がファイル数だけでは/);
   assert.match(prBody, /ADRあり \(docs\/architecture\/ADR-story-pr-prepare.md, docs\/management\/architecture\/ADR-001-pr-prepare.md\)/);
@@ -4089,6 +4098,11 @@ title: PR準備
   assert.equal(e2eGate.status, 'failed');
   assert.match(e2eGate.reason, /button did not navigate/);
   assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[x\] `npm test -- tests\/feature\.test\.js`/);
+  assert.match(prBody, /- \[x\] `npm run typecheck`/);
+  assert.match(prBody, /- \[ \] `npm run test:e2e`/);
+  assert.match(prBody, /gate: failed/);
 });
 
 test('pr prepare rejects stale verification evidence recorded before a dirty UI change', async () => {

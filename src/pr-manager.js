@@ -1081,6 +1081,9 @@ function renderPrNarrative(narrative) {
 
 function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
+  const decisionSection = renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan });
+  const reviewerChangeMap = renderReviewerChangeMap(fileGroups);
+  const explicitNonGoals = renderExplicitNonGoals({ git, fileGroups });
   const source = prContext.story_source;
   const changeSummary = prContext.change_summary.length === 0
     ? '- 差分なし'
@@ -1090,7 +1093,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     : source.acceptance_criteria.map((item) => `- ${item}`).join('\n');
   const verification = prContext.verification_commands.length === 0
     ? '- [ ] 手動確認または対象テストを追記する'
-    : prContext.verification_commands.map((item) => `- [ ] \`${item.command}\` - ${item.reason}`).join('\n');
+    : renderVerificationChecklist(prContext.verification_commands, prContext.gate_dag);
   const reviewPoints = prContext.review_points.map((item) => `- ${item}`).join('\n');
   const risks = prContext.risks.length === 0
     ? '- 特記事項なし'
@@ -1108,7 +1111,9 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const exploreEvidenceSection = renderExplorePrSection(prContext.explore_evidence);
   const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
 
-  return `${narrativeSection}## 概要
+  return `${decisionSection}
+
+${narrativeSection}## 概要
 - Story: ${story.story_id} ${story.title}
 - VibePro scope: ${scope.status}
 - PR strategy: ${scope.recommended_strategy}
@@ -1130,6 +1135,12 @@ ${taskSection}
 
 ## 変更内容
 ${changeSummary}
+
+## レビュアー向け差分分類
+${reviewerChangeMap}
+
+## 明示的にやらないこと
+${explicitNonGoals}
 
 ## 差分分類
 ${Object.entries(fileGroups)
@@ -1154,6 +1165,10 @@ ${agentReviewSection}
 
 ## Explore Evidence
 ${exploreEvidenceSection}
+
+## 監査ログ
+- Gate / Agent Review / split plan は以下に詳細を残します。
+- 上部の「このPRで決めたいこと」「レビュアー向け差分分類」「明示的にやらないこと」を先に読めば、レビュー範囲を判断できます。
 
 ## Gate DAG
 ${gateSummary}
@@ -1190,6 +1205,148 @@ ${risks}
 - PR strategy: ${scope.recommended_strategy}
 - runtime: ${renderRuntimeSummary(prContext, story)}
 `;
+}
+
+function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan }) {
+  const executionGate = prContext.execution_gate;
+  const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
+  const decision = buildHumanMergeDecision({ executionGate, unresolved, scope });
+  const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
+  const gateNote = unresolved.length === 0
+    ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
+    : `未解決Gateがあります: ${formatUnresolvedGateList(unresolved)}。これは監査ログではなく、マージ前の判断材料です。`;
+  const scopeNote = buildScopeDecisionNote(scope, splitPlan);
+  return `## このPRで決めたいこと
+- Story: ${story.story_id} ${story.title}
+- 判断: ${decision}
+- レビュー入口: ${primaryReviewAreas}
+- Gate状況: ${gateNote}
+- Scope判断: ${scopeNote}
+- 変更規模: ${git.changed_files.length} files`;
+}
+
+function buildHumanMergeDecision({ executionGate, unresolved, scope }) {
+  if (executionGate?.pr_create_allowed === true && unresolved.length === 0) {
+    return 'VibePro Gate上はPR作成可能。人間レビューでは設計判断・スコープ・運用影響を確認する。';
+  }
+  const blocking = executionGate?.blocking_gate_count ?? unresolved.length;
+  if (blocking > 0) {
+    return `まだマージ判断前。${blocking}件のblocking/required Gateを解消するか、非criticalのみ理由付きwaiverを記録する。`;
+  }
+  if (scope.status === 'needs_clean_branch') {
+    return '差分範囲の説明が必要。PRを分割するか、同一PRに含める理由を本文で確認する。';
+  }
+  return '実装差分とStory/Spec/Architectureの対応を確認し、残る注意事項が許容できるか判断する。';
+}
+
+function buildScopeDecisionNote(scope, splitPlan) {
+  const reasons = scope.reasons?.length > 0 ? scope.reasons.join('; ') : 'current branchのままPR化可能';
+  const split = splitPlan?.recommended_strategy ? `split=${splitPlan.recommended_strategy}` : 'split=-';
+  if (scope.status === 'needs_clean_branch') {
+    return `needs_clean_branch。ただし機械的警告だけで判断せず、理由: ${reasons} / ${split}`;
+  }
+  return `${scope.status}: ${reasons} / ${split}`;
+}
+
+function buildPrimaryReviewAreas(fileGroups) {
+  const areas = [];
+  if (fileGroups.source?.count > 0) areas.push('Runtime');
+  if (fileGroups.architecture_docs?.count > 0 || fileGroups.specifications?.count > 0 || fileGroups.story_docs?.count > 0) {
+    areas.push('Contract Docs');
+  }
+  if (collectCapabilityFiles(fileGroups).length > 0) areas.push('Capability Map');
+  if (fileGroups.tests?.count > 0) areas.push('Tests');
+  if (fileGroups.repo_control?.count > 0) areas.push('Repo Control');
+  return areas.length > 0 ? areas.join(' / ') : '差分なし';
+}
+
+function renderReviewerChangeMap(fileGroups) {
+  const rows = [
+    ['Runtime', fileGroups.source?.files ?? [], '実装・実行時挙動の変更'],
+    ['Contract Docs', collectContractDocFiles(fileGroups), 'Story / Spec / Architecture / 方針の変更'],
+    ['Capability Map', collectCapabilityFiles(fileGroups), '能力定義・運用境界の変更'],
+    ['Tests', fileGroups.tests?.files ?? [], '自動テスト・E2E・検証コード'],
+    ['Repo Control', fileGroups.repo_control?.files ?? [], 'package / CI / repository control']
+  ];
+  const rendered = rows
+    .filter(([, files]) => files.length > 0)
+    .map(([label, files, description]) => `- ${label}: ${files.length} files - ${description}: ${formatFileList(files)}`);
+  return rendered.join('\n') || '- なし';
+}
+
+function collectContractDocFiles(fileGroups) {
+  return [
+    ...(fileGroups.story_docs?.files ?? []),
+    ...(fileGroups.architecture_docs?.files ?? []),
+    ...(fileGroups.specifications?.files ?? []),
+    ...(fileGroups.policy_docs?.files ?? [])
+  ];
+}
+
+function collectCapabilityFiles(fileGroups) {
+  const files = Object.values(fileGroups)
+    .flatMap((group) => group?.files ?? []);
+  return [...new Set(files.filter((file) => /(^|\/)(capabilit(?:y|ies)|capability-map|capabilities)(\/|\.|-|$)/i.test(file)))];
+}
+
+function renderExplicitNonGoals({ git, fileGroups }) {
+  const changed = git.changed_files.map((file) => file.path);
+  const lines = [
+    '- 変更ファイル外の既存挙動は、このPRの完了保証対象外',
+    '- Gate / Agent Review の詳細証跡は監査ログとして残すが、本文上部のレビュー範囲を広げるものではない'
+  ];
+  if (!changed.some(isApiRoutePath)) {
+    lines.push('- API route / external API contract の追加・置換はスコープ外');
+  }
+  if (!hasUiExperienceSourceChange(fileGroups)) {
+    lines.push('- Browser UI の表示・操作体験変更はスコープ外');
+  }
+  if ((fileGroups.tests?.count ?? 0) === 0) {
+    lines.push('- 新規/更新テストは差分に含まれていないため、検証欄の未完了項目を確認する');
+  }
+  return lines.join('\n');
+}
+
+function isApiRoutePath(filePath) {
+  return /(^|\/)(api|routes)(\/|$)/.test(filePath)
+    || /(^|\/)route\.[cm]?[jt]sx?$/.test(filePath)
+    || /(^|\/)controller(s)?\//.test(filePath);
+}
+
+function renderVerificationChecklist(commands, gateDag) {
+  const seenCommands = new Set(commands.map((item) => item.command).filter(Boolean));
+  const commandItems = commands.map((item) => {
+    const gate = findGateForVerificationCommand(item, gateDag);
+    const checked = gate && ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
+    const status = gate?.status ? ` / gate: ${gate.status}` : '';
+    const evidence = gate?.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
+    return `- [${checked}] \`${item.command}\` - ${item.reason}${status}${evidence}`;
+  });
+  const evidenceOnlyItems = (gateDag?.nodes ?? [])
+    .filter((gate) => gate.type === 'verification_gate')
+    .filter((gate) => gate.command && gate.evidence && !seenCommands.has(gate.command))
+    .map((gate) => {
+      const checked = ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
+      const evidence = gate.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
+      return `- [${checked}] \`${gate.command}\` - ${gate.reason ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
+    });
+  return [...commandItems, ...evidenceOnlyItems].join('\n');
+}
+
+function findGateForVerificationCommand(command, gateDag) {
+  const kind = command.kind === 'flow' ? 'e2e' : command.kind;
+  const gateIdByKind = {
+    unit: 'gate:unit',
+    test: 'gate:unit',
+    integration: 'gate:integration',
+    typecheck: 'gate:integration',
+    build: 'gate:integration',
+    e2e: 'gate:e2e'
+  };
+  const expectedId = gateIdByKind[kind];
+  const gates = gateDag?.nodes ?? [];
+  if (expectedId) return gates.find((gate) => gate.id === expectedId) ?? null;
+  return gates.find((gate) => gate.command === command.command) ?? null;
 }
 
 function renderPrExecutionGate(executionGate) {
@@ -3541,7 +3698,8 @@ function renderPrGateSummary(gateDag) {
       : null,
     ...gates.map((gate) => {
       const required = gate.required ? 'required' : 'optional';
-      return `- ${gate.label}: ${gate.status} (${required}) - \`${gate.command}\``;
+      const detail = gate.command ? `\`${gate.command}\`` : (gate.reason ?? '-');
+      return `- ${gate.label}: ${gate.status} (${required}) - ${detail}`;
     })
   ].filter(Boolean);
   return lines.join('\n');
