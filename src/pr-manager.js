@@ -2849,7 +2849,7 @@ function buildGateDag({
   const storyGate = {
     id: 'story',
     type: 'story',
-    label: `${story.story_id} ${story.title}`,
+    label: formatPrStoryLabel(story, storySource),
     status: storySource.path ? 'present' : 'transient',
     required: true,
     artifact: storySource.path,
@@ -4054,7 +4054,7 @@ async function filterExistingArtifacts(repoRoot, artifacts) {
 function buildPrTitle(preparation) {
   const task = preparation.task_context?.task;
   if (task) return `${task.id} ${task.title}`;
-  return `${preparation.story.story_id} ${preparation.story.title}`;
+  return formatPrStoryLabel(preparation.story, preparation.pr_context?.story_source);
 }
 
 function mapArtifactPaths(repoRoot, artifacts) {
