@@ -1,0 +1,248 @@
+import { access, readdir, readFile } from 'node:fs/promises';
+import path from 'node:path';
+
+import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+
+const TEXT_TARGETS = [
+  'docs',
+  'skills',
+  'agent-instructions',
+  '.github'
+];
+
+export async function scanSelfDogfood(root, options = {}) {
+  const repoRoot = path.resolve(root);
+  const workspaceDir = getWorkspaceDir(repoRoot);
+  const storyFindings = await scanStoryGateArtifacts(repoRoot, workspaceDir, {
+    storyId: options.storyId
+  });
+  const instructionFindings = await scanInstructionBypassLanguage(repoRoot, {
+    storyId: options.storyId
+  });
+  const findings = [...storyFindings, ...instructionFindings];
+  const riskSummary = summarizeFindings(findings);
+  return {
+    schema_version: '0.1.0',
+    status: riskSummary.block > 0 ? 'fail' : riskSummary.review > 0 ? 'needs_review' : 'pass',
+    summary: {
+      findings: findings.length,
+      block: riskSummary.block,
+      review: riskSummary.review,
+      info: riskSummary.info
+    },
+    findings,
+    risk_summary: {
+      findings: riskSummary
+    }
+  };
+}
+
+async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
+  const prDir = path.join(workspaceDir, 'pr');
+  if (!(await exists(prDir))) return [];
+  const entries = await readdir(prDir, { withFileTypes: true });
+  const findings = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const storyId = entry.name;
+    if (options.storyId && storyId !== options.storyId) continue;
+    const storyPrDir = path.join(prDir, storyId);
+    const verificationPath = path.join(storyPrDir, 'verification-evidence.json');
+    const preparePath = path.join(storyPrDir, 'pr-prepare.json');
+    const gateDagPath = path.join(storyPrDir, 'gate-dag.json');
+    const createPath = path.join(storyPrDir, 'pr-create.json');
+    const hasVerification = await exists(verificationPath);
+    const hasPrepare = await exists(preparePath);
+    const hasGateDag = await exists(gateDagPath);
+    const hasCreate = await exists(createPath);
+    if (hasVerification && (!hasPrepare || !hasGateDag)) {
+      findings.push({
+        id: `self_dogfood.final_gate_missing.${storyId}`,
+        severity: 'high',
+        gate_effect: 'review',
+        story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, storyPrDir),
+        detail: 'Verification evidence exists, but final pr-prepare/gate-dag artifacts are missing. Do not treat verify record as completion.',
+        required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence.`
+      });
+    }
+    if (hasGateDag) {
+      const gateDag = await readJson(gateDagPath);
+      if (!gateDag) {
+        findings.push({
+          id: `self_dogfood.invalid_gate_dag.${storyId}`,
+          severity: 'critical',
+          gate_effect: 'block',
+          story_id: storyId,
+          path: toWorkspaceRelative(repoRoot, gateDagPath),
+          detail: 'Final Gate DAG artifact exists but is not valid JSON. Do not treat malformed gate evidence as completion.',
+          required_action: 'Regenerate the final gate evidence with `vibepro pr prepare` and inspect any corrupt artifact before PR creation.'
+        });
+        continue;
+      }
+      if (gateDag.overall_status !== 'ready_for_review') {
+        findings.push({
+          id: `self_dogfood.unresolved_gate_dag.${storyId}`,
+          severity: isCriticalGateDag(gateDag) ? 'critical' : 'medium',
+          gate_effect: isCriticalGateDag(gateDag) ? 'block' : 'review',
+          story_id: storyId,
+          path: toWorkspaceRelative(repoRoot, gateDagPath),
+          detail: `Final Gate DAG is ${gateDag.overall_status}; unresolved required gates remain.`,
+          required_action: 'Resolve required gates, split scope, or record an auditable non-critical waiver through vibepro pr create.'
+        });
+      }
+    }
+    if (hasCreate) {
+      const prCreate = await readJson(createPath);
+      const gateDag = hasGateDag ? await readJson(gateDagPath) : null;
+      const gate = prCreate?.execution?.gate_dag?.overall_status
+        ?? prCreate?.gate_dag?.overall_status
+        ?? gateDag?.overall_status
+        ?? null;
+      const gateOverrideAllowed = isAuditableGateOverride(prCreate?.execution?.gate_override)
+        || isAuditableGateOverride(prCreate?.gate_override);
+      if (gate && gate !== 'ready_for_review' && !gateOverrideAllowed) {
+        findings.push({
+          id: `self_dogfood.pr_create_without_gate_override.${storyId}`,
+          severity: 'critical',
+          gate_effect: 'block',
+          story_id: storyId,
+          path: toWorkspaceRelative(repoRoot, createPath),
+          detail: `PR create evidence exists while Gate DAG is ${gate} and no VibePro waiver was recorded.`,
+          required_action: 'Use vibepro pr create so unresolved gates and waiver reasons are captured.'
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+function isAuditableGateOverride(override) {
+  if (!override || override.allowed !== true) return false;
+  const reason = typeof override.reason === 'string' ? override.reason.trim() : '';
+  const policy = typeof override.waiver_policy === 'string' ? override.waiver_policy.trim() : '';
+  return reason.length > 0 && policy.length > 0;
+}
+
+async function scanInstructionBypassLanguage(repoRoot, options = {}) {
+  const files = [];
+  for (const target of TEXT_TARGETS) {
+    const targetPath = path.join(repoRoot, target);
+    if (await exists(targetPath)) {
+      await collectTextFiles(targetPath, files);
+    }
+  }
+  const findings = [];
+  for (const file of files) {
+    const text = await readFile(file, 'utf8');
+    const rel = toWorkspaceRelative(repoRoot, file);
+    if (options.storyId && !text.includes(options.storyId) && !rel.includes(options.storyId)) continue;
+    const checks = [
+      {
+        id: 'self_dogfood.agent_review_skip_language',
+        pattern: /Agent Review Gate[^\n]{0,80}\b(skip|スキップ)\b/i,
+        severity: 'critical',
+        gate_effect: 'block',
+        detail: 'Instruction text suggests skipping Agent Review Gate.'
+      },
+      {
+        id: 'self_dogfood.raw_gh_pr_create_guidance',
+        pattern: /(?:^|\n)[^\n]*(?:raw\s+)?`?gh pr create`?[^\n]*(?:use|使|作成|direct|直接)/i,
+        severity: 'high',
+        gate_effect: 'review',
+        detail: 'Instruction text can route PR creation through raw gh pr create instead of VibePro.'
+      },
+      {
+        id: 'self_dogfood.subagent_permission_waiting_language',
+        pattern: /(ask exactly|明示.*許可|explicit user authorization|explicit permission is still required|permission-request\.md)/i,
+        severity: 'high',
+        gate_effect: 'review',
+        detail: 'Instruction text can make Agent Review Gate look like a user-permission wait instead of an autonomous subagent dispatch contract.'
+      }
+    ];
+    for (const check of checks) {
+      if (hasInstructionFinding(text, check.pattern)) {
+        findings.push({
+          id: `${check.id}.${rel}`,
+          severity: check.severity,
+          gate_effect: check.gate_effect,
+          path: rel,
+          detail: check.detail,
+          required_action: 'Rewrite the instruction to dispatch permitted Codex/Claude Code subagents by default and reserve human approval for policy blockers or waivers.'
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+function hasInstructionFinding(text, pattern) {
+  return text.split(/\r?\n/).some((line) => {
+    if (!pattern.test(line)) return false;
+    if (/\b(do not|don't|never|禁止|使わない|使わず|直接.*使わない|バイパスしない)\b/i.test(line)) return false;
+    if (/(使わない|使わず|直接.*使わない|ではなく|instead of|rather than|検出|検査|診断|finding|scanner|diagnostic|detect|flag|実行予定|標準出力|外部コマンド)/i.test(line)) return false;
+    return true;
+  });
+}
+
+async function collectTextFiles(dir, files) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules' || entry.name === '.git') continue;
+      await collectTextFiles(fullPath, files);
+      continue;
+    }
+    if (/\.(md|txt|yml|yaml|json)$/.test(entry.name)) files.push(fullPath);
+  }
+}
+
+function isCriticalGateDag(gateDag) {
+  return (gateDag.nodes ?? []).some((node) => node.required === true && [
+    'story',
+    'architecture_gate',
+    'spec_gate',
+    'verification_gate',
+    'requirement_gate',
+    'visual_qa_gate',
+    'agent_review_gate'
+  ].includes(node.type) && [
+    'missing',
+    'implicit',
+    'inferred_empty',
+    'needs_evidence',
+    'needs_setup',
+    'needs_review',
+    'needs_changes',
+    'contradicted',
+    'stale',
+    'block',
+    'failed'
+  ].includes(node.status));
+}
+
+function summarizeFindings(findings) {
+  return findings.reduce((summary, finding) => {
+    const effect = ['block', 'review', 'info'].includes(finding.gate_effect) ? finding.gate_effect : 'info';
+    summary[effect] += 1;
+    return summary;
+  }, { block: 0, review: 0, info: 0 });
+}
+
+async function readJson(file) {
+  try {
+    return JSON.parse(await readFile(file, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+async function exists(file) {
+  try {
+    await access(file);
+    return true;
+  } catch {
+    return false;
+  }
+}

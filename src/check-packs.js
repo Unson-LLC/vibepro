@@ -14,6 +14,7 @@ import { scanNetworkContracts } from './network-contract-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
 import { preparePullRequest } from './pr-manager.js';
 import { scanPublicDiscovery } from './public-discovery-scanner.js';
+import { scanSelfDogfood } from './self-dogfood-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -50,6 +51,10 @@ export const CHECK_PACKS = {
   'public-discovery': {
     title: 'Public discovery / AI search readiness check',
     checks: ['public_discovery']
+  },
+  'self-dogfood': {
+    title: 'VibePro self-dogfood gate readiness check',
+    checks: ['self_dogfood']
   },
   all: {
     title: 'All check packs',
@@ -165,6 +170,7 @@ async function runNamedCheck(check, context) {
   if (check === 'architecture_profile') return architectureProfile;
   if (check === 'agent_harness') return scanAgentHarness(root);
   if (check === 'public_discovery') return scanPublicDiscovery(root);
+  if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId });
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -228,6 +234,15 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
         summary: `${evidence.public_discovery.suppressions.suppressed_findings.length} suppressed; warnings=${evidence.public_discovery.suppressions.warnings.length}`
       });
     }
+  }
+  if (evidence.self_dogfood) {
+    const summary = evidence.self_dogfood.risk_summary?.findings ?? { block: 0, review: 0, info: 0 };
+    checks.push({
+      id: 'self_dogfood',
+      label: 'VibePro Self-Dogfood Gate Readiness',
+      status: statusFromRiskSummary(summary),
+      summary: `${evidence.self_dogfood.summary?.findings ?? 0} findings; block=${summary.block ?? 0}, review=${summary.review ?? 0}, info=${summary.info ?? 0}`
+    });
   }
   if (evidence.static_site) {
     checks.push(...summarizeRiskGroups('static_site', 'Static/Security', evidence.static_site, [
@@ -427,6 +442,7 @@ export function renderCheckPack(result) {
   for (const check of result.checks) {
     lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
   }
+  lines.push(...renderCheckPackFindings(result));
   lines.push(...renderCheckPackOnboarding({
     result,
     reviewItems
@@ -446,6 +462,7 @@ export function renderCheckPackSummary(result) {
   for (const check of result.check.checks) {
     lines.push(`| ${check.label} | ${check.status} | ${escapeTable(check.summary ?? '')} |`);
   }
+  lines.push(...renderCheckPackFindings(result.check));
   lines.push(...renderCheckPackOnboarding({
     result: result.check,
     reviewItems,
@@ -456,6 +473,43 @@ export function renderCheckPackSummary(result) {
 
 function checksNeedingAttention(checks) {
   return checks.filter((check) => !['pass', 'skipped', 'not_required'].includes(check.status));
+}
+
+function renderCheckPackFindings(result) {
+  const findings = collectCheckPackFindings(result);
+  if (findings.length === 0) return [];
+  const lines = [
+    '',
+    '## Findings / 検出事項',
+    '',
+    '| Severity | Finding | Path | Action |',
+    '| -------- | ------- | ---- | ------ |'
+  ];
+  for (const finding of findings.slice(0, 50)) {
+    const label = [
+      finding.id,
+      finding.detail
+    ].filter(Boolean).join(' - ');
+    lines.push(`| ${finding.severity ?? 'info'} | ${escapeTable(label)} | ${escapeTable(finding.path ?? finding.story_id ?? '')} | ${escapeTable(finding.required_action ?? '')} |`);
+  }
+  if (findings.length > 50) {
+    lines.push(`| info | ${findings.length - 50} additional findings omitted from markdown; see JSON evidence. |  | See machine-readable evidence. |`);
+  }
+  return lines;
+}
+
+function collectCheckPackFindings(result) {
+  const evidence = result.evidence ?? {};
+  const findings = [];
+  for (const value of Object.values(evidence)) {
+    if (Array.isArray(value?.findings)) findings.push(...value.findings);
+    if (value && typeof value === 'object') {
+      for (const nested of Object.values(value)) {
+        if (Array.isArray(nested?.findings)) findings.push(...nested.findings);
+      }
+    }
+  }
+  return findings;
 }
 
 function renderCheckPackOnboarding({ result, reviewItems, artifacts = null }) {

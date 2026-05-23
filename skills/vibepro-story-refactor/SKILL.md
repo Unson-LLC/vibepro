@@ -28,15 +28,13 @@ Use this Skill when VibePro is driving a refactor. The goal is to find and fix c
 7. Implement with focused tests. Prefer small changes tied to the task target files.
 8. Run project verification and then `vibepro pr prepare`.
 9. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
-10. If Agent Review Gate is unresolved, it must be cleared before finalizing. Follow the active runtime's subagent permission policy:
-   - If the user already explicitly asked to use subagents, do not ask again.
-   - If explicit permission is still required before spawning subagents, ask exactly: `VibePro Agent Review Gateを解消するため、サブエージェントレビューを実行していいですか？`
-   - A sufficient authorization phrase is: `VibePro Agent Review Gateを解消するため、必要なサブエージェントレビューを並列で実行して、結果をvibepro review recordで記録して。`
-11. After authorization, run the VibePro parallel subagent review workflow:
+10. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+11. Run the VibePro parallel subagent review workflow:
    - `vibepro review prepare <repo> --id <story-id> --stage <stage>`
    - dispatch each role in `parallel-dispatch.md` as a separate parallel subagent review,
    - `vibepro review record` each result with Codex/Claude Code provenance (`--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>` plus thread/session/call/transcript evidence),
    - rerun `vibepro pr prepare`.
+   If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 12. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
 
 ## Refactor Target Criteria
