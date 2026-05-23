@@ -350,14 +350,16 @@ Machine-readable JSON keys remain stable and English-oriented.
 ## Documentation
 
 - [Japanese README](README.ja.md)
-- [Internal beta release notes](docs/releases/internal-beta-2026-05-05.md)
-- [Operating philosophy](docs/frames/vibepro-operating-philosophy.md)
-- [Repo-local control plane frame](docs/frames/vibepro-repo-local-control-plane-frame.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [OSS readiness architecture](https://github.com/Unson-LLC/vibepro/blob/main/docs/architecture/vibepro-oss-apache2-readiness.md)
+- [OSS readiness spec](https://github.com/Unson-LLC/vibepro/blob/main/docs/specs/vibepro-oss-apache2-readiness.md)
 
 ## Project Status
 
-VibePro is currently an internal beta. APIs, report schemas, and diagnosis packs may change before a stable public release.
+VibePro is currently an alpha OSS release candidate. APIs, report schemas, and diagnosis packs may change before a stable public release.
 
 ## License
 
-No license file is currently included. Add a license before distributing VibePro as an OSS package.
+VibePro is licensed under the [Apache License 2.0](LICENSE).

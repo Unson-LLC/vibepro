@@ -7952,8 +7952,14 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
   assert.match(readme, /Graphify is optional/);
   assert.match(readme, /does not bundle Graphify/);
+  assert.match(readme, /Apache License 2\.0/);
+  assert.doesNotMatch(readme, /No license file is currently included/);
+  assert.doesNotMatch(readme, /Internal beta release notes/);
   assert.match(readmeJa, /Graphify は任意/);
   assert.match(readmeJa, /Graphify 本体や Graphify のコードを同梱しません/);
+  assert.match(readmeJa, /Apache License 2\.0/);
+  assert.doesNotMatch(readmeJa, /現在 license file は含まれていません/);
+  assert.doesNotMatch(readmeJa, /社内βリリースノート/);
 });
 
 test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async () => {

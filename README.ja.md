@@ -349,14 +349,16 @@ npx vibepro pr prepare /path/to/repo --language en --base <base-branch>
 ## ドキュメント
 
 - [English README](README.md)
-- [社内βリリースノート](docs/releases/internal-beta-2026-05-05.md)
-- [Operating philosophy](docs/frames/vibepro-operating-philosophy.md)
-- [Repo-local control plane frame](docs/frames/vibepro-repo-local-control-plane-frame.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [OSS readiness architecture](https://github.com/Unson-LLC/vibepro/blob/main/docs/architecture/vibepro-oss-apache2-readiness.md)
+- [OSS readiness spec](https://github.com/Unson-LLC/vibepro/blob/main/docs/specs/vibepro-oss-apache2-readiness.md)
 
 ## プロジェクト状態
 
-VibePro は現在 internal beta です。安定版公開前に API、report schema、diagnosis pack は変わる可能性があります。
+VibePro は現在 alpha OSS 公開候補です。安定版公開前に API、report schema、diagnosis pack は変わる可能性があります。
 
 ## License
 
-現在 license file は含まれていません。OSS として配布する前に license を追加してください。
+VibePro は [Apache License 2.0](LICENSE) で公開されています。

@@ -23,6 +23,8 @@ README files MUST state:
 
 ## Package Contents
 
+The npm package SHOULD stay focused on runtime CLI contents. Public design docs may live in the GitHub repository without being bundled into the npm tarball.
+
 `npm pack --dry-run` MUST NOT include:
 
 - `.vibepro/`

@@ -17,9 +17,13 @@ GraphifyはVibeProのoptional integrationであり、VibePro packageには同梱
 - source code
 - bundled skills
 - agent instructions
-- public architecture/spec/story docs
 - README
 - LICENSE / NOTICE
+
+公開packageには含めず、GitHub repository上で公開する:
+
+- public architecture/spec/story docs
+- contributor and security operation docs
 
 公開packageから外す:
 
@@ -27,6 +31,7 @@ GraphifyはVibeProのoptional integrationであり、VibePro packageには同梱
 - `node_modules/`
 - local logs
 - internal release/audit notes
+- `docs/releases/`
 - customer or dogfood project evidence
 - Graphify implementation code
 
