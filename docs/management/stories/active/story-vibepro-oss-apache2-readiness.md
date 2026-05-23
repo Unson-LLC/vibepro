@@ -26,3 +26,5 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
 - `CONTRIBUTING.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md`、`CHANGELOG.md` がある。
 - GitHub issue / PR template と CI がある。
 - CI相当の `typecheck`、`test`、`npm pack --dry-run` が通る。
+- VibeProが生成するPR本文は、内部状態の汎用title (`Story` など) ではなくStory正本のtitle / requirement titleを優先して表示する。
+- Story正本に `## 背景` がない場合でも、`# Story` 直下の導入文からレビュー可能な背景を抽出し、`背景: Story文書から抽出できませんでした` を不要に出さない。

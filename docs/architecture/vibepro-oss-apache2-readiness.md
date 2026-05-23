@@ -45,3 +45,9 @@ CI and release preparation must run:
 - CLI smoke commands
 
 Package contents are controlled by `package.json#files`.
+
+## PR Evidence Boundary
+
+PR evidence generation is part of the VibePro CLI runtime, not an OSS-specific release script. Reviewer-facing PR context must be derived from the canonical Story source whenever it is available, so `.vibepro/config.json` or other cached internal state cannot downgrade a clear Story title to a generic label such as `Story`.
+
+Story parsing remains generic: explicit background sections are preferred, and otherwise the prose directly under `# Story` / `# ストーリー` is treated as the review background. This keeps the behavior reusable for OSS readiness, customer projects, and ordinary feature stories.
