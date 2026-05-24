@@ -12,14 +12,17 @@ VibePro keeps the machine evidence sections in `pr-body.md`, but adds a human de
 The PR body is organized as:
 
 1. Decision brief: what this PR asks the reviewer to decide.
-2. Human review map: Runtime / Contract Docs / Capability Map / Tests / Repo Control.
-3. Explicit non-goals: what the PR does not claim to change or verify.
+2. Change and rationale summary: what changed and why.
+3. Human review map: focused reviewer questions and Runtime / Contract Docs / Capability Map / Tests / Repo Control classification.
 4. Verification checklist: commands with `[x]` only when bound Gate evidence has passed.
-5. Audit log: Gate DAG, Agent Review, split plan, and detailed evidence.
+5. Risks and explicit non-goals: what the PR does not claim to change or verify.
+6. Audit log: Gate DAG, Agent Review, split plan, runtime metadata, and detailed evidence.
 
 ## Rationale
 
 Gate artifacts are necessary for auditability, but they should not be the first thing a human has to parse. The reviewer needs a narrow mental model first, then the evidence trail.
+
+Raw machine states such as `needs_clean_branch` are still preserved in audit details, but the first screen translates them into the human decision they imply: split the PR, explain the scope, or waive a non-critical warning with reason.
 
 ## Boundaries
 

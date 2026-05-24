@@ -260,14 +260,17 @@ npx vibepro review record /path/to/repo \
   --execution-mode parallel_subagent \
   --agent-id <spawned-subagent-id> \
   --agent-thread-id <thread-id> \
-  --agent-model <model>
+  --agent-model <model> \
+  --agent-closed
 ```
 
 `gate:agent_review` treats a passing review as verified only when required
-reviews include Codex/Claude Code parallel subagent provenance. For Claude Code,
-use `--agent-system claude_code` with the Task/subagent id, session id, or
-transcript artifact. A human review can be recorded as audit context, but it is
-not a substitute for a required subagent review:
+reviews include Codex/Claude Code parallel subagent provenance and closed
+subagent lifecycle evidence. After receiving each result, close/shutdown the
+review subagent before recording it, then pass `--agent-closed`. For Claude Code, use
+`--agent-system claude_code` with the Task/subagent id, session id, or transcript
+artifact. A human review can be recorded as audit context, but it is not a
+substitute for a required subagent review:
 
 ```bash
 npx vibepro review record /path/to/repo \
