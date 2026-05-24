@@ -52,6 +52,16 @@ import {
   renderAgentReviewStatusSummary
 } from './agent-review.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
+import {
+  getExecutionNext,
+  getExecutionStatus,
+  reconcileExecutionState,
+  renderExecutionNextSummary,
+  renderExecutionStateSummary,
+  startExecution,
+  updateExecutionStateFromPrCreate,
+  updateExecutionStateFromPrPrepare
+} from './execution-state.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
@@ -166,6 +176,7 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
+  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -262,6 +273,7 @@ Usage:
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
+  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
@@ -559,6 +571,10 @@ export async function runCli(argv, io = {}) {
           summary: getOption(rest, '--summary'),
           artifact: getOption(rest, '--artifact')
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.evidence.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.evidence, null, 2)}\n`
           : renderVerificationEvidenceSummary(result));
@@ -580,6 +596,10 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           stage: getOption(rest, '--stage')
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.review?.story_id ?? result.summary?.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewPrepareSummary(result));
@@ -616,6 +636,10 @@ export async function runCli(argv, io = {}) {
           recordedBy: getOption(rest, '--recorded-by'),
           stdinText
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewRecordSummary(result));
@@ -626,6 +650,10 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           stage: getOption(rest, '--stage')
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewStatusSummary(result));
@@ -662,6 +690,52 @@ export async function runCli(argv, io = {}) {
         ? `${JSON.stringify(result, null, 2)}\n`
         : renderCheckpointSummary(result));
       return { exitCode: result.status === 'passed' ? 0 : 2, command, subcommand: stage, result };
+    }
+
+    if (command === 'execute') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const executionOptions = {
+        storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+        target: getOption(rest, '--target') ?? 'pr_create',
+        baseRef: getOption(rest, '--base'),
+        taskId: getOption(rest, '--task'),
+        groupId: getOption(rest, '--group')
+      };
+      if (subcommand === 'start') {
+        const result = await startExecution(repoRoot, executionOptions);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.state, null, 2)}\n`
+          : renderExecutionStateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await getExecutionStatus(repoRoot, executionOptions);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.state, null, 2)}\n`
+          : renderExecutionStateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'next') {
+        const result = await getExecutionNext(repoRoot, executionOptions);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.next, null, 2)}\n`
+          : renderExecutionNextSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'reconcile') {
+        const result = await reconcileExecutionState(repoRoot, executionOptions);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.state, null, 2)}\n`
+          : renderExecutionStateSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown execute command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'explore') {
@@ -1016,6 +1090,10 @@ export async function runCli(argv, io = {}) {
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
           : renderPrPrepareSummary(result));
+        await updateExecutionStateFromPrPrepare(repoRoot, result, {
+          target: 'pr_create',
+          baseRef: getOption(rest, '--base')
+        }).catch(() => null);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'create') {
@@ -1045,6 +1123,10 @@ export async function runCli(argv, io = {}) {
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.execution, null, 2)}\n`
           : renderPrCreateSummary(result));
+        await updateExecutionStateFromPrCreate(repoRoot, result, {
+          target: 'pr_create',
+          baseRef: getOption(rest, '--base')
+        }).catch(() => null);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown pr command: ${subcommand ?? ''}\n\n${renderHelp()}`);
