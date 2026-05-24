@@ -4714,6 +4714,165 @@ test('checkpoint blocks implementation start before design gates and staged revi
   assert.equal(result.result.findings.some((finding) => finding.review_stage === 'architecture_spec'), true);
 });
 
+test('execute state tracks next action before and after pr prepare', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+spec_docs:
+  - docs/specs/story-pr-prepare-spec.md
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- CLIの補助関数が検証される
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare-spec.md'), `---
+story_id: story-pr-prepare
+title: PR準備 Spec
+---
+
+# Spec
+
+- \`INV-EXEC-1\`: CLI helper changes must be covered by unit and typecheck evidence.
+`);
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  assert.equal(started.result.state.completion_status, 'not_prepared');
+  assert.equal(started.result.state.current_phase, 'prepare_pr');
+  assert.equal(started.result.state.next_actions[0], 'vibepro pr prepare . --story-id story-pr-prepare --base main');
+
+  const statePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
+  assert.equal(await pathExists(statePath), true);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const blocked = await readJson(statePath);
+  assert.equal(blocked.completion_status, 'blocked');
+  assert.equal(blocked.current_phase, 'agent_review');
+  assert.equal(blocked.blocking_gate.id, 'gate:agent_review');
+  assert.equal(blocked.next_actions.some((action) => action.includes('vibepro review prepare')), true);
+
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed'
+  ]);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'typecheck',
+    '--status',
+    'pass',
+    '--command',
+    'npm run typecheck',
+    '--summary',
+    'typecheck passed'
+  ]);
+  const passed = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(passed.exitCode, 0);
+  const ready = await readJson(statePath);
+  assert.equal(ready.completion_status, 'ready_for_pr_create');
+  assert.equal(ready.current_phase, 'create_pr');
+  assert.equal(ready.next_actions[0], 'vibepro pr create . --story-id story-pr-prepare --base main');
+
+  const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(next.exitCode, 0);
+  assert.equal(next.result.next.current_phase, 'create_pr');
+});
+
+test('execute start does not initialize or dirty an uninitialized repository', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const result = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 1);
+  assert.equal(await pathExists(path.join(repo, '.vibepro')), false);
+});
+
+test('execute start quarantines corrupt existing execution state before writing', async () => {
+  const repo = await makeGitRepoWithStory();
+  const stateDir = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare');
+  const statePath = path.join(stateDir, 'state.json');
+  await mkdir(stateDir, { recursive: true });
+  await writeFile(statePath, '{not json');
+
+  const result = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 1);
+  assert.equal(await pathExists(statePath), false);
+  const files = await readdir(stateDir);
+  assert.equal(files.some((file) => file.startsWith('state.json.corrupt-') && file.endsWith('.bak')), true);
+});
+
+test('execute state reads standalone gate dag with pr gate semantics', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+  await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
+  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+
+  const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'ac:1',
+        type: 'acceptance_criteria',
+        label: 'Acceptance Criteria',
+        required: true,
+        status: 'missing',
+        reason: 'Non-gate node should not block execution state'
+      },
+      {
+        id: 'gate:e2e',
+        type: 'verification_gate',
+        label: 'E2E Gate',
+        required: true,
+        status: 'needs_evidence',
+        reason: 'E2E evidence is missing'
+      }
+    ]
+  }, null, 2)}\n`);
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.blocking_gate.id, 'gate:e2e');
+  assert.equal(result.result.state.blocking_gate.reason, 'E2E evidence is missing');
+  assert.equal(result.result.state.completion_status, 'blocked');
+  assert.deepEqual(result.result.state.next_actions, ['E2E evidence is missing']);
+});
+
 test('pr prepare requires only final agent review gates; phase reviews are checkpoint-gated', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
