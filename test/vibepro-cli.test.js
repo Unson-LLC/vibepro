@@ -14,6 +14,7 @@ import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli } from '../src/cli.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
+import { preparePullRequest } from '../src/pr-manager.js';
 import { scanPublicDiscovery } from '../src/public-discovery-scanner.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
@@ -3876,6 +3877,56 @@ test('pr prepare carries configured output language into human artifacts', async
   assert.match(gateDagHtml, /<html lang="en">/);
   const splitPlanHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.html'), 'utf8');
   assert.match(splitPlanHtml, /<html lang="en">/);
+});
+
+test('pr prepare json emits progress on stderr and records stage diagnostics', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src.js'), 'export const changed = true;\n');
+  await git(repo, ['add', 'src.js']);
+  await git(repo, ['commit', '-m', 'feat: change source']);
+
+  let stdoutOutput = '';
+  let stderrOutput = '';
+  const result = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--json'
+  ], {
+    stdout: { write: (text) => { stdoutOutput += text; } },
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 0, stderrOutput);
+  assert.match(stderrOutput, /\[vibepro pr prepare\] start collect_runtime_info/);
+  assert.match(stderrOutput, /\[vibepro pr prepare\] done build_pr_context/);
+  const parsed = JSON.parse(stdoutOutput);
+  assert.equal(parsed.story.story_id, 'story-pr-prepare');
+  assert.equal(parsed.diagnostics.pr_prepare_stages.some((stage) => stage.name === 'collect_git_state' && stage.status === 'completed'), true);
+  assert.equal(parsed.diagnostics.pr_prepare_stages.some((stage) => stage.name === 'write_pr_prepare_artifacts' && stage.status === 'completed'), true);
+});
+
+test('pr prepare fails clearly when a stage exceeds the configured timeout', async () => {
+  const repo = await makeRepo();
+  await assert.rejects(
+    () => preparePullRequest(repo, {
+      stageTimeoutMs: 5,
+      __testStageDelayMs: {
+        collect_runtime_info: 25
+      }
+    }),
+    (error) => {
+      assert.equal(error.code, 'VIBEPRO_PR_PREPARE_STAGE_TIMEOUT');
+      assert.equal(error.stage, 'collect_runtime_info');
+      assert.match(error.message, /timed out during stage "collect_runtime_info"/);
+      assert.match(error.message, /--stage-timeout-ms/);
+      return true;
+    }
+  );
 });
 
 test('pr prepare flags empty commit messages in the PR range', async () => {

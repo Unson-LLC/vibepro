@@ -192,8 +192,8 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
@@ -274,8 +274,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
-  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
@@ -993,6 +993,8 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
       if (subcommand === 'prepare') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
         const result = await preparePullRequest(repoRoot, {
           storyId: getOption(rest, '--story-id'),
           taskId: getOption(rest, '--task'),
@@ -1001,16 +1003,20 @@ export async function runCli(argv, io = {}) {
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
+          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           strict: hasFlag(rest, '--strict'),
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language')
         });
-        write(stdout, hasFlag(rest, '--json')
+        write(stdout, jsonOutput
           ? `${JSON.stringify(result.preparation, null, 2)}\n`
           : renderPrPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'create') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
         const result = await createPullRequest(repoRoot, {
           storyId: getOption(rest, '--story-id'),
           taskId: getOption(rest, '--task'),
@@ -1021,6 +1027,8 @@ export async function runCli(argv, io = {}) {
           headBranch: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
+          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           title: getOption(rest, '--title'),
           dryRun: hasFlag(rest, '--dry-run'),
           allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
@@ -1030,7 +1038,7 @@ export async function runCli(argv, io = {}) {
           language: getOption(rest, '--language'),
           env: io.env
         });
-        write(stdout, hasFlag(rest, '--json')
+        write(stdout, jsonOutput
           ? `${JSON.stringify(result.execution, null, 2)}\n`
           : renderPrCreateSummary(result));
         return { exitCode: 0, command, subcommand, result };
@@ -1371,6 +1379,25 @@ function parseNumberOption(args, name) {
   const number = Number(value);
   if (!Number.isFinite(number)) throw new Error(`${name} must be a number`);
   return number;
+}
+
+function renderPrPrepareProgressEvent(event) {
+  const stage = event.stage ?? 'unknown';
+  if (event.event === 'stage_start') {
+    return event.timeout_ms
+      ? `[vibepro pr prepare] start ${stage} timeout_ms=${event.timeout_ms}`
+      : `[vibepro pr prepare] start ${stage} timeout_ms=disabled`;
+  }
+  if (event.event === 'stage_complete') {
+    return `[vibepro pr prepare] done ${stage} duration_ms=${event.duration_ms}`;
+  }
+  if (event.event === 'stage_timeout') {
+    return `[vibepro pr prepare] timeout ${stage} duration_ms=${event.duration_ms}: ${event.error}`;
+  }
+  if (event.event === 'stage_failed') {
+    return `[vibepro pr prepare] failed ${stage} duration_ms=${event.duration_ms}: ${event.error}`;
+  }
+  return `[vibepro pr prepare] ${event.event ?? 'progress'} ${stage}`;
 }
 
 function buildStartupOptions(args) {

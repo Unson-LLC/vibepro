@@ -34,18 +34,133 @@ import {
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
+const DEFAULT_PR_PREPARE_STAGE_TIMEOUT_MS = 600000;
+
+function createPrPrepareProgress(options = {}) {
+  const timeoutMs = Number.isFinite(options.stageTimeoutMs) && options.stageTimeoutMs > 0
+    ? options.stageTimeoutMs
+    : DEFAULT_PR_PREPARE_STAGE_TIMEOUT_MS;
+  const reporter = typeof options.progressReporter === 'function'
+    ? options.progressReporter
+    : null;
+  const stages = [];
+
+  async function stage(name, fn, stageOptions = {}) {
+    const timeoutEnabled = stageOptions.timeout !== false;
+    const startedAt = new Date();
+    const record = {
+      name,
+      status: 'running',
+      started_at: startedAt.toISOString(),
+      timeout_ms: timeoutEnabled ? timeoutMs : null
+    };
+    stages.push(record);
+    reporter?.({
+      event: 'stage_start',
+      stage: name,
+      started_at: record.started_at,
+      timeout_ms: record.timeout_ms
+    });
+    let timeoutHandle = null;
+    const abortController = new AbortController();
+    try {
+      const work = Promise.resolve().then(async () => {
+        if (options.__testStageDelayMs?.[name]) {
+          await new Promise((resolve) => setTimeout(resolve, options.__testStageDelayMs[name]));
+        }
+        return fn({ signal: abortController.signal });
+      });
+      const value = timeoutEnabled
+        ? await Promise.race([
+          work,
+          new Promise((_, reject) => {
+            timeoutHandle = setTimeout(() => {
+              const elapsedMs = Date.now() - startedAt.getTime();
+              const error = new Error(
+                `vibepro pr prepare timed out during stage "${name}" after ${elapsedMs}ms ` +
+                `(stage timeout ${timeoutMs}ms). Rerun with progress output, inspect the last stage, ` +
+                `or raise --stage-timeout-ms if the repository legitimately needs more time.`
+              );
+              error.code = 'VIBEPRO_PR_PREPARE_STAGE_TIMEOUT';
+              error.stage = name;
+              error.elapsed_ms = elapsedMs;
+              error.timeout_ms = timeoutMs;
+              abortController.abort(error);
+              reject(error);
+            }, timeoutMs);
+          })
+        ])
+        : await work;
+      record.status = 'completed';
+      record.finished_at = new Date().toISOString();
+      record.duration_ms = Date.now() - startedAt.getTime();
+      reporter?.({
+        event: 'stage_complete',
+        stage: name,
+        duration_ms: record.duration_ms
+      });
+      return value;
+    } catch (error) {
+      record.status = error.code === 'VIBEPRO_PR_PREPARE_STAGE_TIMEOUT' ? 'timeout' : 'failed';
+      record.finished_at = new Date().toISOString();
+      record.duration_ms = Date.now() - startedAt.getTime();
+      record.error = error.message;
+      reporter?.({
+        event: record.status === 'timeout' ? 'stage_timeout' : 'stage_failed',
+        stage: name,
+        duration_ms: record.duration_ms,
+        error: error.message
+      });
+      throw error;
+    } finally {
+      if (timeoutHandle) clearTimeout(timeoutHandle);
+    }
+  }
+
+  return {
+    stage,
+    timeoutMs,
+    snapshot: () => stages.map((item) => ({ ...item }))
+  };
+}
+
+async function writeFileWithTimeout(filePath, content, { timeoutMs, stage }) {
+  const abortController = new AbortController();
+  const timeoutHandle = setTimeout(() => {
+    const error = new Error(
+      `vibepro pr prepare timed out during stage "${stage}" ` +
+      `(stage timeout ${timeoutMs}ms). Rerun with progress output, inspect the last stage, ` +
+      `or raise --stage-timeout-ms if the repository legitimately needs more time.`
+    );
+    error.code = 'VIBEPRO_PR_PREPARE_STAGE_TIMEOUT';
+    error.stage = stage;
+    error.timeout_ms = timeoutMs;
+    abortController.abort(error);
+  }, timeoutMs);
+  try {
+    await writeFile(filePath, content, { signal: abortController.signal });
+  } catch (error) {
+    if (abortController.signal.aborted) {
+      throw abortController.signal.reason ?? error;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
+}
 
 export async function preparePullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const toolchain = await collectRuntimeInfo();
-  const git = await collectGitState(root, options);
-  const workspace = await readWorkspaceState(root);
+  const progress = createPrPrepareProgress(options);
+  const toolchain = await progress.stage('collect_runtime_info', () => collectRuntimeInfo());
+  const git = await progress.stage('collect_git_state', () => collectGitState(root, options));
+  const workspace = await progress.stage('read_workspace_state', () => readWorkspaceState(root));
   const outputLanguage = resolveOutputLanguage(workspace.config, options.language ?? null);
-  const story = await resolveStory(root, workspace.config, options.storyId, {
+  const story = await progress.stage('resolve_story', () => resolveStory(root, workspace.config, options.storyId, {
     allowTransient: !workspace.initialized
-  });
+  }));
   const manifest = workspace.initialized
-    ? await readManifest(root)
+    ? await progress.stage('read_manifest', () => readManifest(root))
     : createTransientManifest();
 
   // DAG strict mode: task必須・target_files一致・handoff/execute artifacts存在を要求
@@ -57,11 +172,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
   }
 
   const taskContext = workspace.initialized && options.taskId
-    ? await loadPrTaskContext(root, story.story_id, options.taskId, options.groupId)
+    ? await progress.stage('load_task_context', () => loadPrTaskContext(root, story.story_id, options.taskId, options.groupId))
     : null;
 
   if (options.strict && taskContext) {
-    await assertStrictTaskArtifacts(root, story.story_id, taskContext.task.id, taskContext.group?.id);
+    await progress.stage('assert_strict_task_artifacts', () => assertStrictTaskArtifacts(root, story.story_id, taskContext.task.id, taskContext.group?.id));
     assertStrictTargetFiles(taskContext, git.changed_files, options);
   }
 
@@ -87,26 +202,26 @@ export async function preparePullRequest(repoRoot, options = {}) {
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
   const verificationEvidence = workspace.initialized
-    ? await readVerificationEvidenceIfExists(root, story.story_id)
+    ? await progress.stage('read_verification_evidence', () => readVerificationEvidenceIfExists(root, story.story_id))
     : null;
-  const prContext = await buildPrContext(root, {
+  const prContext = await progress.stage('build_pr_context', () => buildPrContext(root, {
     story,
     taskContext,
     git: reviewGit,
     fileGroups,
     latestStoryRun,
     verificationEvidence
-  });
+  }));
   prContext.toolchain = toolchain;
   const suggestedBranch = options.branchName ?? buildBranchName(story);
-  const splitPlan = await buildPrSplitPlan(root, {
+  const splitPlan = await progress.stage('build_split_plan', () => buildPrSplitPlan(root, {
     story,
     git: reviewGit,
     fileGroups,
     scope,
     prContext,
     suggestedBranch
-  });
+  }));
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: reviewGit.current_branch,
@@ -117,8 +232,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     taskId: taskContext?.task?.id ?? options.taskId ?? null,
     groupId: taskContext?.group?.id ?? options.groupId ?? null
   });
-  const prBodyNarrative = await readNarrative(root, story.story_id, 'pr-body');
-  const prBody = renderPrBody({
+  const prBodyNarrative = await progress.stage('read_pr_body_narrative', () => readNarrative(root, story.story_id, 'pr-body'));
+  const prBody = await progress.stage('render_pr_body', () => renderPrBody({
     story,
     taskContext,
     git: reviewGit,
@@ -129,7 +244,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     splitPlan,
     narrative: prBodyNarrative,
     language: outputLanguage
-  });
+  }));
   const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const preparation = {
     schema_version: '0.1.0',
@@ -152,7 +267,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
     task_context: taskContext,
     latest_story_run: latestStoryRun,
     suggested_branch: suggestedBranch,
-    next_commands: nextCommands
+    next_commands: nextCommands,
+    diagnostics: {
+      pr_prepare_stages: progress.snapshot()
+    }
   };
 
   const prRoot = workspace.initialized
@@ -170,44 +288,46 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
-  await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`);
-  await writeFile(bodyPath, prBody);
-  await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`);
-  await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
-    generatedAt: preparation.created_at,
-    language: outputLanguage
-  }));
-  await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`);
-  await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
-    generatedAt: preparation.created_at,
-    language: outputLanguage
-  }));
-  const reviewCockpitHtml = renderPrPrepareHtml({
-    preparation,
-    bodyPath: toWorkspaceRelative(root, bodyPath),
-    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
-    language: outputLanguage
+  await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
+    await writeFile(bodyPath, prBody, { signal });
+    await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
+    await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
+      generatedAt: preparation.created_at,
+      language: outputLanguage
+    }), { signal });
+    await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
+    await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
+      generatedAt: preparation.created_at,
+      language: outputLanguage
+    }), { signal });
+    const reviewCockpitHtml = renderPrPrepareHtml({
+      preparation,
+      bodyPath: toWorkspaceRelative(root, bodyPath),
+      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+      splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+      language: outputLanguage
+    });
+    await writeFile(reportPath, reviewCockpitHtml, { signal });
+    await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+    const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
+    const existingHumanReview = await readJsonIfExists(humanReviewPath);
+    await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
+      preparation,
+      reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
+      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+      existingReview: existingArchitectureReview
+    }), null, 2)}\n`, { signal });
+    await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
+      preparation,
+      reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
+      architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
+      bodyPath: toWorkspaceRelative(root, bodyPath),
+      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+      splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+      existingReview: existingHumanReview
+    }), null, 2)}\n`, { signal });
   });
-  await writeFile(reportPath, reviewCockpitHtml);
-  await writeFile(reviewCockpitPath, reviewCockpitHtml);
-  const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
-  const existingHumanReview = await readJsonIfExists(humanReviewPath);
-  await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
-    preparation,
-    reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
-    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-    existingReview: existingArchitectureReview
-  }), null, 2)}\n`);
-  await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
-    preparation,
-    reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
-    architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
-    bodyPath: toWorkspaceRelative(root, bodyPath),
-    gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-    splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
-    existingReview: existingHumanReview
-  }), null, 2)}\n`);
+  preparation.diagnostics.pr_prepare_stages = progress.snapshot();
 
   if (workspace.initialized) {
     manifest.pr_preparations = {
@@ -230,8 +350,13 @@ export async function preparePullRequest(repoRoot, options = {}) {
       manifest.pr_preparations[story.story_id].latest_task_id = taskContext.task.id;
       manifest.pr_preparations[story.story_id].latest_task_handoff = taskContext.artifacts.handoff_json;
     }
-    await writeManifest(root, manifest);
+    await progress.stage('write_manifest', ({ signal }) => writeManifest(root, manifest, { signal }));
   }
+  preparation.diagnostics.pr_prepare_stages = progress.snapshot();
+  await writeFileWithTimeout(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, {
+    timeoutMs: progress.timeoutMs,
+    stage: 'write_pr_prepare_json'
+  });
 
   return {
     story,

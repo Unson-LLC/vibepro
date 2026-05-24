@@ -56,8 +56,8 @@ export async function readManifest(repoRoot) {
   }
 }
 
-export async function writeManifest(repoRoot, manifest) {
-  await writeFile(getManifestPath(repoRoot), `${JSON.stringify(manifest, null, 2)}\n`);
+export async function writeManifest(repoRoot, manifest, options = {}) {
+  await writeFile(getManifestPath(repoRoot), `${JSON.stringify(manifest, null, 2)}\n`, options);
 }
 
 export function getWorkspaceDir(repoRoot) {
