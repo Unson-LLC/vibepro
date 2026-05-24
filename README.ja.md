@@ -260,14 +260,16 @@ npx vibepro review record /path/to/repo \
   --execution-mode parallel_subagent \
   --agent-id <spawned-subagent-id> \
   --agent-thread-id <thread-id> \
-  --agent-model <model>
+  --agent-model <model> \
+  --agent-closed
 ```
 
 `gate:agent_review` は、required review に Codex/Claude Code の並列サブエージェント
-証跡がある場合だけ検証済みレビューとして扱います。Claude Code の場合は
-`--agent-system claude_code` と Task/subagent id、session id、または transcript artifact
-を渡してください。人間レビューは監査用の文脈として記録できますが、required subagent
-review の代替にはなりません。
+証跡と close 済み lifecycle 証跡がある場合だけ検証済みレビューとして扱います。
+各レビュー結果を受け取ったら、記録前にレビューに使ったサブエージェントを close/shutdown し、
+`--agent-closed` を渡して記録してください。Claude Code の場合は `--agent-system claude_code`
+と Task/subagent id、session id、または transcript artifact を渡してください。
+人間レビューは監査用の文脈として記録できますが、required subagent review の代替にはなりません。
 
 ```bash
 npx vibepro review record /path/to/repo \

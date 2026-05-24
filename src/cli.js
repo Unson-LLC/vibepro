@@ -163,7 +163,7 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
@@ -219,8 +219,9 @@ VibeProは、AI駆動開発のために Story / Architecture / Spec / Gate 証�
       pr-body / gate-dag / split-plan / review-cockpit を作ります。
   vibepro review prepare <repo> --id <id> --stage implementation
       Codex / Claude Code の並列サブエージェントへ渡すレビュー依頼を作ります。
-  vibepro review record <repo> --id <id> --stage implementation --role <role> --status pass --summary <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>
-      required Agent Review Gate を通すレビュー結果を、現在のgit状態とサブエージェント証跡に紐づけて記録します。
+  vibepro review record <repo> --id <id> --stage implementation --role <role> --status pass --summary <text> --agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed
+      required Agent Review Gate を通すレビュー結果を、現在のgit状態・サブエージェント証跡・close済みlifecycleに紐づけて記録します。
+      サブエージェントの結果を受け取った後、review record を実行する前にそのサブエージェントを close/shutdown してください。
       人間レビューは監査文脈として記録できますが、required gate のpass代替にはなりません。
 
 .vibepro/ の意味:
@@ -259,7 +260,7 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
@@ -609,6 +610,9 @@ export async function runCli(argv, io = {}) {
           agentModel: getOption(rest, '--agent-model'),
           agentTranscript: getOption(rest, '--agent-transcript'),
           agentRequest: getOption(rest, '--agent-request'),
+          agentClosed: hasFlag(rest, '--agent-closed') || hasFlag(rest, '--subagent-closed'),
+          agentCloseEvidence: getOption(rest, '--agent-close-evidence') ?? getOption(rest, '--subagent-close-evidence'),
+          agentCloseNote: getOption(rest, '--agent-close-note') ?? getOption(rest, '--subagent-close-note'),
           recordedBy: getOption(rest, '--recorded-by'),
           stdinText
         });

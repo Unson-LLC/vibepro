@@ -9,9 +9,12 @@ title: Human-reviewable PR body spec
 
 - `vibepro pr prepare` MUST render `## このPRで決めたいこと` before `## 概要`.
 - The decision brief MUST include Story, human merge decision, review entry points, Gate status, scope decision, and changed file count.
+- The human-facing top section MUST render `## 変更内容`, `## なぜこの変更か`, `## レビューしてほしい観点`, `## 検証`, `## リスク・確認事項`, and `## 明示的にやらないこと` before `## 監査ログ`.
 - The PR body MUST render a reviewer-oriented change map with Runtime, Contract Docs, Capability Map, Tests, and Repo Control categories when applicable.
 - The PR body MUST render explicit non-goals so reviewers can keep the review scope narrow.
 - The PR body MUST keep Gate DAG, Gate Enforcement, Agent Review, split plan, and evidence sections available as audit logs.
+- Gate DAG, Gate Enforcement, Agent Review, Explore Evidence, split plan, and runtime metadata MUST render after `## 監査ログ`.
+- The human-facing top section MUST NOT expose raw internal scope labels such as `needs_clean_branch`; it MUST translate them into an actionable reviewer decision.
 - Verification commands MUST render `[x]` only when the matching Gate status is `passed` or `pass`.
 - Verification commands with missing, failed, stale, or needs-evidence Gates MUST remain unchecked.
 

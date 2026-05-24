@@ -40,9 +40,10 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
-   - Record every result with `vibepro review record` and include subagent provenance:
-     - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id>` plus `--agent-thread-id` or `--agent-call-id` when available.
-     - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id>` plus `--agent-session-id` or `--agent-transcript` when available.
+   - After each subagent returns, close/shutdown that review subagent before recording the result. Do not leave review subagents running.
+   - Record every result with `vibepro review record` and include subagent provenance plus closed lifecycle evidence:
+     - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id> --agent-closed` plus `--agent-thread-id` or `--agent-call-id` when available.
+     - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 14. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
@@ -57,7 +58,7 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - Do not ignore unresolved Gates. Add evidence, split the PR, block, or record a waiver reason.
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not treat Agent Review Gate as optional. When it is unresolved, the coordinator must prepare, dispatch, record, and rerun the VibePro review flow before calling the work complete.
-- Do not record a passing Agent Review result without Codex/Claude Code parallel subagent provenance. Manual `pass` records are audit notes, not enough to satisfy `gate:agent_review`.
+- Do not record a passing Agent Review result without Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`). Manual `pass` records are audit notes, not enough to satisfy `gate:agent_review`.
 - Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane.
 - Do not claim user-perceived performance improvement from server logs alone. Use a separate `user_perceived` metric backed by `browser_e2e`, `client_marker`, or `manual_observation`.
 - Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.

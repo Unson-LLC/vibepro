@@ -14,7 +14,8 @@ When the user asks for VibePro work:
   - Run every listed `vibepro review prepare <repo> --id <story-id> --stage <stage>` command.
   - Open `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
   - Start the listed role reviews in parallel, one subagent per role, with no file edits.
-  - Record each returned result with the listed `vibepro review record` command, including Codex provenance: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id>` and `--agent-thread-id` or `--agent-call-id` when available.
+  - When each subagent returns, close/shutdown that subagent thread before recording the result. Do not leave review subagents running.
+  - Record each returned result with the listed `vibepro review record` command, including Codex provenance and lifecycle evidence: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id> --agent-closed` and `--agent-thread-id` or `--agent-call-id` when available.
   - Rerun `vibepro pr prepare` and do not call the work complete until `gate:agent_review` passes or a blocking result is explicitly reported.
   - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 - Do not record a passing Agent Review as if it came from a subagent unless a subagent was actually spawned. A `pass` without Codex/Claude Code provenance is intentionally kept from satisfying `gate:agent_review`.

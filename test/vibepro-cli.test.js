@@ -102,7 +102,8 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
         '--agent-thread-id',
         `thread-${stage}-${role}`,
         '--agent-model',
-        'gpt-5.5'
+        'gpt-5.5',
+        '--agent-closed'
       ]);
       assert.equal(result.exitCode, 0);
     }
@@ -131,7 +132,8 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
       '--execution-mode',
       'parallel_subagent',
       '--agent-id',
-      `${stage}-${role}-agent`
+      `${stage}-${role}-agent`,
+      '--agent-closed'
     ]);
     assert.equal(result.exitCode, 0);
   }
@@ -3522,6 +3524,24 @@ Weighted semantic/layout residual: **34%**
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 概要'));
+  assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
+  assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
+  assert.ok(prBody.indexOf('## 変更内容') < prBody.indexOf('## なぜこの変更か'));
+  assert.ok(prBody.indexOf('## なぜこの変更か') < prBody.indexOf('## レビューしてほしい観点'));
+  assert.ok(prBody.indexOf('## レビューしてほしい観点') < prBody.indexOf('## 検証'));
+  assert.ok(prBody.indexOf('## 検証') < prBody.indexOf('## リスク・確認事項'));
+  assert.ok(prBody.indexOf('## リスク・確認事項') < prBody.indexOf('## 明示的にやらないこと'));
+  assert.ok(prBody.indexOf('## 明示的にやらないこと') < prBody.indexOf('## 監査ログ'));
+  assert.ok(prBody.indexOf('## 監査ログ') < prBody.indexOf('## 概要'));
+  assert.ok(prBody.indexOf('## 監査ログ') < prBody.indexOf('## Agent Review'));
+  assert.ok(prBody.indexOf('## 監査ログ') < prBody.indexOf('## Explore Evidence'));
+  assert.ok(prBody.indexOf('## 監査ログ') < prBody.indexOf('## Gate DAG'));
+  assert.ok(prBody.indexOf('## 監査ログ') < prBody.indexOf('## VibePro'));
+  const humanPrBody = prBody.slice(0, prBody.indexOf('## 監査ログ'));
+  assert.doesNotMatch(humanPrBody, /## Gate DAG/);
+  assert.doesNotMatch(humanPrBody, /## Agent Review/);
+  assert.doesNotMatch(humanPrBody, /## Explore Evidence/);
+  assert.doesNotMatch(humanPrBody, /runtime: vibepro/);
   assert.match(prBody, /レビュー入口: Runtime \/ Contract Docs \/ Tests/);
   assert.match(prBody, /## レビュアー向け差分分類/);
   assert.match(prBody, /- Runtime: 1 files/);
@@ -4011,10 +4031,13 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.expected, 'dispatch_parallel_subagents');
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.user_confirmation_required_by_vibepro, false);
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.runner_policy_may_require_user_delegation, false);
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.subagent_lifecycle, 'close_before_record');
+  assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.closure_required_for_pass, true);
   assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review does not satisfy/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--execution-mode parallel_subagent/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-closed/);
   assert.doesNotMatch(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /manual_review/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-plan.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md')), true);
@@ -4032,6 +4055,8 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
+  assert.match(dispatch, /close\/shutdown that subagent/i);
+  assert.match(dispatch, /--agent-closed/);
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
@@ -4040,6 +4065,7 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /path_surface_coverage/);
   assert.match(request, /pre-fix/);
   assert.match(request, /silent/);
+  assert.match(request, /Required Agent Review Gate pass requires `--agent-closed` evidence/);
   assert.match(request, /A `pass` must cover both the role focus and every mandatory review lens/);
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);
@@ -4137,6 +4163,7 @@ test('review record updates status summary and marks stale after source change',
     'thread-runtime-contract',
     '--agent-model',
     'gpt-5.5',
+    '--agent-closed',
     '--finding',
     'low:note:no blocking issue'
   ]);
@@ -4265,7 +4292,7 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithManualReview.effective_status, 'unverified_agent');
   assert.equal(roleWithManualReview.provenance_status, 'verified_manual');
 
-  const claudeRecord = await runCli([
+  const openClaudeRecord = await runCli([
     'review',
     'record',
     repo,
@@ -4290,9 +4317,48 @@ test('review pass requires verified subagent or explicit manual review provenanc
     '--agent-model',
     'claude-sonnet'
   ]);
+  assert.equal(openClaudeRecord.exitCode, 0);
+  assert.equal(openClaudeRecord.result.review.agent_provenance.lifecycle.agent_closed, false);
+
+  const statusWithOpenSubagent = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithOpenSubagent = statusWithOpenSubagent.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithOpenSubagent.effective_status, 'unverified_agent');
+  assert.equal(roleWithOpenSubagent.provenance_status, 'agent_not_closed');
+  assert.match(roleWithOpenSubagent.provenance_reason, /--agent-closed/);
+
+  const claudeRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'Claude Code subagent reviewed runtime contract and was closed',
+    '--agent-system',
+    'claude-code',
+    '--execution-mode',
+    'parallel-subagent',
+    '--agent-id',
+    'claude-task-runtime-contract',
+    '--agent-session-id',
+    'claude-session-123',
+    '--agent-model',
+    'claude-sonnet',
+    '--agent-closed',
+    '--agent-close-evidence',
+    'subagent_notification:shutdown'
+  ]);
   assert.equal(claudeRecord.exitCode, 0);
   assert.equal(claudeRecord.result.review.agent_provenance.system, 'claude_code');
   assert.equal(claudeRecord.result.review.agent_provenance.execution_mode, 'parallel_subagent');
+  assert.equal(claudeRecord.result.review.agent_provenance.lifecycle.agent_closed, true);
+  assert.equal(claudeRecord.result.review.agent_provenance.lifecycle.close_evidence, 'subagent_notification:shutdown');
   assert.equal(claudeRecord.result.review.agent_provenance.evidence_strength, 'strong');
 
   const statusWithProvenance = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
@@ -4460,7 +4526,7 @@ title: PR準備
     '--id', 'story-pr-prepare',
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'npm test -- tests/feature.test.js',
+    '--command', 'node --test tests/feature.test.js',
     '--summary', 'unit passed'
   ])).exitCode, 0);
   assert.equal((await runCli([
@@ -4498,7 +4564,8 @@ title: PR準備
   assert.match(e2eGate.reason, /button did not navigate/);
   assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- \[x\] `npm test -- tests\/feature\.test\.js`/);
+  assert.match(prBody, /- \[ \] `npm test -- tests\/feature\.test\.js`.*gate: passed via `node --test tests\/feature\.test\.js`/);
+  assert.match(prBody, /- \[x\] `node --test tests\/feature\.test\.js`/);
   assert.match(prBody, /- \[x\] `npm run typecheck`/);
   assert.match(prBody, /- \[ \] `npm run test:e2e`/);
   assert.match(prBody, /gate: failed/);
@@ -5128,6 +5195,11 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   assert.equal(result.result.preparation.split_plan.lanes.some((lane) => lane.id === 'runtime-behavior' && lane.graph_investigation_files.includes('src/shared/security.js')), true);
   assert.equal(result.result.preparation.split_plan.lanes.some((lane) => lane.id === 'repo-control' && lane.files.includes('.claude/commands/commit.md')), true);
   assert.match(result.result.preparation.next_commands.join('\n'), /git switch -c feat\/pr-prepare main/);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const humanPrBody = prBody.slice(0, prBody.indexOf('## 監査ログ'));
+  assert.match(humanPrBody, /Scope判断: 差分範囲の説明または分割判断が必要/);
+  assert.doesNotMatch(humanPrBody, /needs_clean_branch/);
+  assert.match(prBody.slice(prBody.indexOf('## 監査ログ')), /VibePro scope: needs_clean_branch/);
   const splitPlan = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.json'));
   assert.equal(splitPlan.model, 'story-pr-split-plan-v1');
   const splitPlanHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.html'), 'utf8');

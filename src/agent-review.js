@@ -66,6 +66,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to obtain the listed reviews; if the runtime cannot spawn subagents, block or record a human waiver decision instead of silently skipping the gate.',
       'Every role review must include all mandatory review lenses; passing a role only means the role concern, regression_guard, and path_surface_coverage are adequately covered.',
       'If the coordinator has subagent capability, dispatch the listed reviewers directly and record parallel_subagent provenance.',
+      'After receiving a subagent result, close or shut down that subagent thread/session before recording the review, then record the lifecycle closure with --agent-closed.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ],
     mandatory_review_lenses: MANDATORY_REVIEW_LENSES,
@@ -78,6 +79,8 @@ export async function prepareAgentReview(repoRoot, options = {}) {
         expected: 'dispatch_parallel_subagents',
         user_confirmation_required_by_vibepro: false,
         runner_policy_may_require_user_delegation: false,
+        subagent_lifecycle: 'close_before_record',
+        closure_required_for_pass: true,
         fallback: 'If the runtime cannot spawn subagents, block or record a human waiver decision; manual_review does not satisfy Agent Review Gate.'
       },
       record_commands: Object.fromEntries(roles.map((role) => [
@@ -396,6 +399,7 @@ ${mandatoryLenses}
   \`${recordCommand}\`
 - Codex coordinators must include the spawned subagent id/thread/call id when recording the result.
 - Claude Code coordinators must include the Task/subagent id or transcript/session artifact when recording the result.
+- After receiving the result, the coordinator must close/shutdown the subagent thread or session before recording the review. Required Agent Review Gate pass requires \`--agent-closed\` evidence.
 
 ## Result Shape
 \`\`\`json
@@ -429,6 +433,7 @@ Record command after the subagent returns:
 Required provenance:
 - Codex: keep the spawned subagent id plus thread/call id when available and pass them with \`--agent-system codex --execution-mode parallel_subagent\`.
 - Claude Code: keep the Task/subagent id, session id, or transcript artifact and pass them with \`--agent-system claude_code --execution-mode parallel_subagent\`.
+- Lifecycle: after receiving the result, close/shutdown the subagent thread/session before running the record command. Required Agent Review Gate pass requires \`--agent-closed\`; if a runtime cannot close agents, return \`needs_changes\` or record a waiver outside the required Agent Review Gate.
 - Human waiver: if subagents are unavailable, report the blocker or record a human waiver decision outside Agent Review Gate. Do not record manual_review as a passing substitute for required subagent review.
 `;
   }).join('\n');
@@ -450,8 +455,9 @@ If your coordinator runtime supports subagents, start them as part of this gate 
 1. Start all subagents below in parallel when the runtime provides subagent capability.
 2. Give each subagent only its own review request.
 3. Do not let subagents edit files during review.
-4. Record each result with the listed \`vibepro review record\` command.
-5. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\`.
+4. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
+5. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`.
+6. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\`.
 
 ## Mandatory Review Lenses
 ${mandatoryLenses}
@@ -471,7 +477,7 @@ function renderMandatoryReviewLenses(lenses) {
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact>`;
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage }) {
@@ -663,6 +669,11 @@ function buildAgentProvenance(repoRoot, options = {}) {
     transcript_artifact: transcriptArtifact,
     request_artifact: requestArtifact,
     recorded_by: normalizeNullable(options.recordedBy),
+    lifecycle: {
+      agent_closed: Boolean(options.agentClosed),
+      close_evidence: normalizeNullable(options.agentCloseEvidence),
+      close_note: normalizeNullable(options.agentCloseNote)
+    },
     evidence_strength: 'missing'
   };
   provenance.evidence_strength = classifyAgentProvenance(provenance);
@@ -740,9 +751,15 @@ function validateAgentProvenance(result) {
       reason: 'review provenance lacks subagent id, thread/session/call id, or transcript artifact'
     };
   }
+  if (!provenance.lifecycle?.agent_closed) {
+    return {
+      status: 'agent_not_closed',
+      reason: 'parallel subagent review was recorded without --agent-closed lifecycle evidence'
+    };
+  }
   return {
     status: 'verified_agent',
-    reason: `${provenance.system} parallel subagent provenance is recorded`
+    reason: `${provenance.system} parallel subagent provenance is recorded and the subagent lifecycle is closed`
   };
 }
 

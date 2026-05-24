@@ -193,7 +193,7 @@ async function collectCheckpointReviewFindings(root, storyId, policy) {
       reason: stageSummary
         ? `${stageSummary.missing_count ?? 0} missing, ${stageSummary.stale_count ?? 0} stale, ${stageSummary.block_count ?? 0} blocking review role(s)`
         : 'Agent review stage was not generated',
-      action: `Run \`vibepro review prepare . --id ${storyId} --stage ${stage}\`, dispatch the generated Codex/Claude Code subagents in parallel, record every role with parallel_subagent provenance, then rerun this checkpoint.`
+      action: `Run \`vibepro review prepare . --id ${storyId} --stage ${stage}\`, dispatch the generated Codex/Claude Code subagents in parallel, close/shutdown every review subagent after receiving its result, record every role with parallel_subagent provenance and --agent-closed, then rerun this checkpoint.`
     });
   }
   return findings;
@@ -209,6 +209,6 @@ function buildGateAction(gate) {
   if (gate.id === 'gate:e2e') return 'Record current-head E2E evidence and Story acceptance coverage.';
   if (gate.id === 'gate:visual_qa') return 'Record Visual QA evidence for the current UI state.';
   if (gate.id === 'gate:network_contract') return 'Resolve API route/network contract findings or record network-aware E2E evidence.';
-  if (gate.id === 'gate:agent_review') return 'Run and record required Agent Review stages with Codex/Claude Code parallel subagent provenance.';
+  if (gate.id === 'gate:agent_review') return 'Run required Agent Review stages with Codex/Claude Code parallel subagents, close/shutdown every review subagent after receiving its result, then record provenance with --agent-closed.';
   return `Resolve ${gate.label ?? gate.id}.`;
 }

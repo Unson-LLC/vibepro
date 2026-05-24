@@ -16,7 +16,8 @@ Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifac
 3. If `gate_status.agent_review_instruction` is present, block human approval until the coordinator has authorization to use subagents and then has:
    - run the listed `vibepro review prepare` commands,
    - dispatched the generated `parallel-dispatch.md` requests to parallel subagents,
-   - recorded each result with `vibepro review record` including Codex/Claude Code subagent provenance,
+   - closed/shutdown each review subagent after receiving its result,
+   - recorded each result with `vibepro review record` including Codex/Claude Code subagent provenance and `--agent-closed`,
    - rerun `vibepro pr prepare` and cleared `gate:agent_review`.
    If the coordinator runtime cannot spawn subagents, treat that as a blocker or require a human waiver decision. Do not accept manual review records as a substitute for required Codex/Claude Code subagent provenance.
 4. Open `.vibepro/pr/<story-id>/review-cockpit.html`.
@@ -51,7 +52,7 @@ Fill these fields in `human-review.json`:
 - Do not approve a PR only from the PR body. The cockpit and Gate DAG are the review control plane.
 - Do not use raw `gh pr create`; it bypasses VibePro Gate enforcement and waiver recording.
 - Do not approve with unresolved Agent Review Gate. Missing, stale, or blocking required roles mean the parallel subagent review workflow has not completed for the current git state.
-- Do not approve a `pass` review result that lacks Codex/Claude Code parallel subagent provenance when `gate:agent_review` is required. It is a coordinator note, not verified subagent review evidence.
+- Do not approve a `pass` review result that lacks Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) when `gate:agent_review` is required. It is a coordinator note, not verified subagent review evidence.
 - If a waiver is chosen, include the exact waiver reason in `vibepro pr create --allow-needs-verification --verification-waiver <reason>`.
 - Do not approve a performance claim when the comparison says `改善率不明` / `not_comparable`.
 - Do not accept server-side readiness as evidence for user-perceived readiness. User-perceived metrics need `browser_e2e`, `client_marker`, or `manual_observation`.
