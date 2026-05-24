@@ -319,44 +319,25 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
 
   const hasSourceChanges = (fileGroups?.source?.count ?? 0) > 0;
   if (hasSourceChanges) {
-    for (const stage of ['planning_spec', 'test_plan', 'implementation']) {
-      addStage(stage, 'source changes require three-phase AI review before PR readiness', 'source_change');
-    }
+    addStage('gate', 'source changes require final gate/release review before PR readiness', 'source_change_pr_final');
   }
   if (hasUiExperienceSourceChange(fileGroups)) {
-    addRequirement({
-      stage: 'test_plan',
-      role: 'e2e_ux',
-      reason: 'UI changes require E2E/UX review',
-      policy: 'ui_change'
-    });
-    addRequirement({
-      stage: 'implementation',
-      role: 'ux_completion',
-      reason: 'UI changes require final usability/completion review',
-      policy: 'ui_change'
-    });
+    addStage('preview', 'UI changes require preview/runtime/human-usability review before PR readiness', 'ui_preview');
   }
   if (hasNetworkContractRisk(networkContracts)) {
     addRequirement({
-      stage: 'implementation',
-      role: 'runtime_contract',
-      reason: 'API/network contract changes require runtime contract review',
-      policy: 'network_contract'
+      stage: 'preview',
+      role: 'network_runtime',
+      reason: 'API/network contract changes require preview/runtime network review before PR readiness',
+      policy: 'network_contract_pr_final'
     });
   }
   if (isPerformanceStory({ story, performanceEvidence })) {
     addRequirement({
-      stage: 'test_plan',
-      role: 'gate_coverage',
-      reason: 'performance stories require measurable gate coverage review',
-      policy: 'performance_story'
-    });
-    addRequirement({
-      stage: 'implementation',
-      role: 'runtime_contract',
-      reason: 'performance stories require runtime/internal-vs-user readiness review',
-      policy: 'performance_story'
+      stage: 'gate',
+      role: 'gate_evidence',
+      reason: 'performance stories require measurable gate coverage review before PR readiness',
+      policy: 'performance_story_pr_final'
     });
   }
   return requirements;

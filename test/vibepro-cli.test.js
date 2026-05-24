@@ -108,6 +108,34 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
   }
 }
 
+async function recordAgentReviewStage(repo, storyId, stage, roles) {
+  await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', stage]);
+  for (const role of roles) {
+    const result = await runCli([
+      'review',
+      'record',
+      repo,
+      '--id',
+      storyId,
+      '--stage',
+      stage,
+      '--role',
+      role,
+      '--status',
+      'pass',
+      '--summary',
+      `${stage}:${role} passed`,
+      '--agent-system',
+      'codex',
+      '--execution-mode',
+      'parallel_subagent',
+      '--agent-id',
+      `${stage}-${role}-agent`
+    ]);
+    assert.equal(result.exitCode, 0);
+  }
+}
+
 test('init creates a repo-local VibePro workspace and updates gitignore only', async () => {
   const repo = await makeRepo();
 
@@ -3686,6 +3714,7 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {});
     'Story acceptance E2E coverage passed'
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   const createResult = await runCli([
@@ -4103,12 +4132,29 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithoutProvenance.effective_status, 'unverified_agent');
   assert.match(roleWithoutProvenance.provenance_reason, /not Codex\/Claude Code subagent review/);
 
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+  const gateManualRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'manual gate pass without subagent proof'
+  ]);
+  assert.equal(gateManualRecord.exitCode, 0);
   const prWithoutProvenance = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  const missingRuntime = prWithoutProvenance.result.preparation.pr_context.agent_reviews.unmet_required_reviews.find((item) => (
-    item.stage === 'implementation' && item.role === 'runtime_contract'
+  const missingGateEvidence = prWithoutProvenance.result.preparation.pr_context.agent_reviews.unmet_required_reviews.find((item) => (
+    item.stage === 'gate' && item.role === 'gate_evidence'
   ));
-  assert.equal(missingRuntime.status, 'unverified_agent');
-  assert.match(missingRuntime.detail, /not Codex\/Claude Code subagent review/);
+  assert.equal(missingGateEvidence.status, 'unverified_agent');
+  assert.match(missingGateEvidence.detail, /not Codex\/Claude Code subagent review/);
 
   const anonymousManualRecord = await runCli([
     'review',
@@ -4235,7 +4281,7 @@ test('checkpoint blocks implementation start before design gates and staged revi
   assert.equal(result.result.findings.some((finding) => finding.review_stage === 'architecture_spec'), true);
 });
 
-test('pr prepare requires agent reviews for source changes and passes the agent gate when recorded', async () => {
+test('pr prepare requires only final agent review gates; phase reviews are checkpoint-gated', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
@@ -4263,9 +4309,9 @@ architecture_docs:
   assert.equal(missingGate.parallel_dispatch.required_stages.some((stage) => stage.prepare_command.includes('vibepro review prepare')), true);
   assert.deepEqual(
     missingGate.parallel_dispatch.required_stages.map((stage) => stage.stage),
-    ['planning_spec', 'test_plan', 'implementation']
+    ['gate']
   );
-  assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 9);
+  assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 3);
   assert.match(missingGate.reason, /dispatch the generated Codex\/Claude Code subagent reviews in parallel/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
@@ -4276,21 +4322,24 @@ architecture_docs:
   assert.equal(missingGate.dispatch_contract.runner_policy_may_require_user_delegation, false);
   assert.equal(missingGate.dispatch_contract.manual_review_fallback, false);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
-  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan' && node.type === 'agent_review_prepare_gate'), true);
-  assert.equal(missingDag.nodes.some((node) => node.id === 'review:test_plan:e2e_ux' && node.type === 'agent_review_role_gate'), true);
-  assert.equal(missingDag.nodes.some((node) => node.id === 'review:record:test_plan:e2e_ux' && node.type === 'agent_review_record_gate'), true);
-  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:test_plan' && edge.to === 'review:test_plan:e2e_ux'), true);
-  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:test_plan:e2e_ux' && edge.to === 'review:record:test_plan:e2e_ux'), true);
-  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:test_plan:e2e_ux' && edge.to === 'gate:agent_review'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:gate' && node.type === 'agent_review_prepare_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:gate:gate_evidence' && node.type === 'agent_review_role_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:record:gate:gate_evidence' && node.type === 'agent_review_record_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:planning_spec'), false);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan'), false);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:implementation'), false);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:gate' && edge.to === 'review:gate:gate_evidence'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:gate:gate_evidence' && edge.to === 'review:record:gate:gate_evidence'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:gate:gate_evidence' && edge.to === 'gate:agent_review'), true);
   assert.match(missingResult.result.preparation.gate_status.agent_review_instruction, /dispatch the generated Codex\/Claude Code subagent reviews in parallel/);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_dispatch_required, true);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_user_confirmation_required_by_vibepro, false);
   assert.equal(missingResult.result.preparation.gate_status.agent_review_runner_policy_may_require_user_delegation, false);
   assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
-  assert.match(gateDagHtml, /data-node-id="review:prepare:test_plan"/);
-  assert.match(gateDagHtml, /data-node-id="review:test_plan:e2e_ux"/);
-  assert.match(gateDagHtml, /data-node-id="review:record:test_plan:e2e_ux"/);
+  assert.match(gateDagHtml, /data-node-id="review:prepare:gate"/);
+  assert.match(gateDagHtml, /data-node-id="review:gate:gate_evidence"/);
+  assert.match(gateDagHtml, /data-node-id="review:record:gate:gate_evidence"/);
   assert.equal(missingResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:agent_review'), true);
   let summaryStdout = '';
   const summaryOutput = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'], {
@@ -4299,14 +4348,25 @@ architecture_docs:
   assert.equal(summaryOutput.exitCode, 0);
   assert.match(summaryStdout, /Agent Review Gate requires staged role reviews/);
 
-  await recordRequiredAgentReviews(repo);
+  const implementationStart = await runCli(['checkpoint', 'implementation-start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(implementationStart.exitCode, 2);
+  assert.equal(implementationStart.result.findings.some((finding) => finding.review_stage === 'planning_spec'), true);
+  assert.equal(implementationStart.result.findings.some((finding) => finding.review_stage === 'architecture_spec'), true);
+  const testPlanCheckpoint = await runCli(['checkpoint', 'test-plan', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(testPlanCheckpoint.exitCode, 2);
+  assert.equal(testPlanCheckpoint.result.findings.some((finding) => finding.review_stage === 'test_plan'), true);
+  const implementationComplete = await runCli(['checkpoint', 'implementation-complete', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(implementationComplete.exitCode, 2);
+  assert.equal(implementationComplete.result.findings.some((finding) => finding.review_stage === 'implementation'), true);
+
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const passedGate = passedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   const passedDag = passedResult.result.preparation.pr_context.gate_dag;
   assert.equal(passedGate.status, 'passed');
-  assert.equal(passedDag.nodes.find((node) => node.id === 'review:prepare:test_plan').status, 'passed');
-  assert.equal(passedDag.nodes.find((node) => node.id === 'review:test_plan:e2e_ux').status, 'passed');
-  assert.equal(passedDag.nodes.find((node) => node.id === 'review:record:test_plan:e2e_ux').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:prepare:gate').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:gate:gate_evidence').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence').status, 'passed');
   assert.equal(passedResult.result.preparation.pr_context.agent_reviews.summary.unmet_required_review_count, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## Agent Review/);
