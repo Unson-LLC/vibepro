@@ -1306,7 +1306,7 @@ export default function NewPage() {
     console.log('voice input placeholder');
   };
   const searchByName = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery) return;
     await fetch('/api/dpc-lookup?q=' + searchQuery);
   };
   const lookup = async (code) => {
@@ -1322,6 +1322,7 @@ export default function NewPage() {
   };
   return <>
     {lookupResult && <div>退院目標日 preview</div>}
+    <button onClick={searchByName}>検索</button>
     <button onClick={selectDpc}>DPC候補を選択</button>
     <button onClick={handleVoiceInput}>音声入力</button>
     <button>詳細を見る</button>
@@ -1369,6 +1370,279 @@ export async function POST() {
   assert.equal(result.interactive_contract_hits.some((hit) => hit.kind === 'interactive_element_without_contract' && hit.label === '詳細を見る'), true);
   assert.equal(result.interactive_contract_hits.some((hit) => /AI要約/.test(hit.label ?? '')), false);
   assert.equal(result.value_alignment_hits.some((hit) => hit.kind === 'forbidden_label' && hit.label === '退院予定日'), true);
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner limits silent noop to event paths and ignores test mock buttons', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'ai-search'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'detail', '_components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'ai-search', 'client.tsx'), `
+"use client";
+function createId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return String(Date.now());
+}
+function confidenceLabel(confidence) {
+  if (confidence === 'db_confirmed') return 'DB確認済み';
+  if (confidence === 'needs_call') return '要架電';
+  if (confidence === 'unknown') return '不明';
+  return '未確認';
+}
+function getLatestCarousel(history) {
+  if (history.length === 0) return null;
+  return history[history.length - 1];
+}
+function selectedCallHotel(history, id) {
+  const hotel = history.find((item) => item.id === id);
+  if (hotel) return hotel;
+  return null;
+}
+export default function AiSearchClient() {
+  const isLoading = false;
+  const composerMessage = '';
+  const choose = () => {
+    selectedCallHotel([], 'h1');
+  };
+  const submit = () => {
+    if (!composerMessage || isLoading) return;
+    void fetch('/api/ai-search', { method: 'POST' });
+  };
+  return <form onSubmit={submit}>
+    <button type="submit" disabled={isLoading || !composerMessage.trim()}>
+      検索する
+    </button>
+    {isLoading && <span>読み込み中</span>}
+    <button type="button" onClick={choose}>選択</button>
+  </form>;
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'detail', '_components', 'SearchResultHotelCard.test.tsx'), `
+import { vi } from 'vitest';
+vi.mock('@/components/premium/PremiumGatedShadowCallButton', () => ({
+  PremiumGatedShadowCallButton: ({ children }) => <button type="button">{children}</button>
+}));
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-AI', title: 'AI検索UIの操作信頼性を診断する', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.some((hit) => /createId|confidenceLabel|getLatestCarousel|selectedCallHotel/.test(hit.handler ?? '')), false);
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'submit');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'info');
+  assert.equal(result.silent_noop_hits[0].mitigation, 'disabled UI mitigation');
+  assert.equal(result.interactive_contract_hits.some((hit) => hit.file.endsWith('.test.tsx')), false);
+  assert.equal(result.status, 'pass');
+});
+
+test('flow design scanner detects async function handlers after event-path gating', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'async-handler'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'async-handler', 'page.tsx'), `
+"use client";
+export default function AsyncHandlerPage() {
+  async function handleSubmit() {
+    if (!query) return;
+    setSaved(true);
+  }
+  return <form onSubmit={handleSubmit}><button type="submit">保存</button></form>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-ASYNC', title: 'async function handlerを診断する', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'handleSubmit');
+  assert.equal(result.silent_noop_hits[0].event_path, 'onSubmit:handleSubmit');
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner does not downgrade partially mitigated early returns', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'partial'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'partial', 'page.tsx'), `
+"use client";
+export default function PartialPage() {
+  const submit = () => {
+    if (!query || isLoading) return;
+    setSaved(true);
+  };
+  return <button onClick={submit} disabled={isLoading}>検索</button>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-PARTIAL', title: '部分的なdisabledでは空入力noopを隠さない', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'submit');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner does not use unrelated element disabled state as mitigation', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'unrelated-disabled'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'unrelated-disabled', 'page.tsx'), `
+"use client";
+export default function UnrelatedDisabledPage() {
+  const save = () => {
+    if (!query) return;
+    setSaved(true);
+  };
+  return <main>
+    <button onClick={save}>保存</button>
+    <button disabled={!query}>別の操作</button>
+  </main>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-UNRELATED', title: '別UIのdisabledで無反応を隠さない', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'save');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner preserves unmitigated duplicate event paths for the same handler', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'duplicate-handler'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'duplicate-handler', 'page.tsx'), `
+"use client";
+export default function DuplicateHandlerPage() {
+  const save = () => {
+    if (!query) return;
+    setSaved(true);
+  };
+  return <main>
+    <button onClick={save}>保存</button>
+    <button onClick={save} disabled={!query}>別配置の保存</button>
+  </main>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-DUPLICATE', title: '同一handlerの未mitigate経路を残す', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'save');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.match(result.silent_noop_hits[0].event_path, /onClick:save/);
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner does not treat loading state variable as visible mitigation', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'loading-state'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'loading-state', 'page.tsx'), `
+"use client";
+export default function LoadingStatePage() {
+  const run = () => {
+    if (isLoading) return;
+    void fetch('/api/search');
+    setSaved(true);
+  };
+  return <button onClick={run}>保存</button>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-LOADING', title: 'loading stateだけで無反応を隠さない', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'run');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner follows direct calls from inline event handlers', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'inline'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'inline', 'page.tsx'), `
+"use client";
+export default function InlinePage() {
+  const submit = () => {
+    if (!ready) return;
+    setSaved(true);
+  };
+  return <button onClick={() => submit()}>保存</button>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-INLINE', title: 'inline handler経由の操作を診断する', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'submit');
+  assert.equal(result.silent_noop_hits[0].event_path, 'onClick:submit');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.equal(result.status, 'needs_review');
+});
+
+test('flow design scanner reads disabled mitigation from inline arrow event elements', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'inline-disabled'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'inline-disabled', 'page.tsx'), `
+"use client";
+export default function InlineDisabledPage() {
+  const submit = () => {
+    if (!query) return;
+    setSaved(true);
+  };
+  return <button onClick={() => submit()} disabled={!query}>保存</button>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-INLINE-DISABLED', title: 'inline handlerのdisabledを診断に使う', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'submit');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'info');
+  assert.equal(result.silent_noop_hits[0].mitigation, 'disabled UI mitigation');
+  assert.equal(result.status, 'pass');
+});
+
+test('flow design scanner preserves unmitigated one-hop helper paths', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', 'helper-paths'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'helper-paths', 'page.tsx'), `
+"use client";
+export default function HelperPathsPage() {
+  const saveCore = () => {
+    if (!query) return;
+    setSaved(true);
+  };
+  const saveA = () => saveCore();
+  const saveB = () => saveCore();
+  return <main>
+    <button onClick={saveA} disabled={!query}>保存A</button>
+    <button onClick={saveB}>保存B</button>
+  </main>;
+}
+`);
+
+  const result = await scanFlowDesign(repo, {
+    story: { story_id: 'U-HELPER-PATHS', title: 'helperに複数event pathがある', view: 'user' }
+  });
+
+  assert.equal(result.silent_noop_hits.length, 1);
+  assert.equal(result.silent_noop_hits[0].handler, 'saveCore');
+  assert.equal(result.silent_noop_hits[0].gate_effect, 'review');
+  assert.match(result.silent_noop_hits[0].event_path, /saveA->saveCore/);
+  assert.match(result.silent_noop_hits[0].event_path, /saveB->saveCore/);
   assert.equal(result.status, 'needs_review');
 });
 
@@ -1622,6 +1896,48 @@ export async function POST() {
     manifest.runs[0].artifacts.flow_design_check,
     '.vibepro/diagnostics/2026-05-10T000000Z/flow-design-check-result.md'
   );
+});
+
+test('diagnose does not gate mitigated info-level silent noop findings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-mitigated-flow-'));
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'U-MITIGATED',
+    '--title',
+    '検索UIの空入力をdisabledで防ぐ',
+    '--view',
+    'user'
+  ]);
+  await mkdir(path.join(repo, 'src', 'app'), { recursive: true });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { next: '16.2.1', react: '19.0.0' }
+  }, null, 2));
+  await writeFile(path.join(repo, 'src', 'app', 'page.tsx'), `
+"use client";
+export default function Page() {
+  const submit = () => {
+    if (!query || isLoading) return;
+    setSaved(true);
+  };
+  return <button onClick={submit} disabled={!query || isLoading}>検索</button>;
+}
+`);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'page' }],
+    edges: []
+  }));
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-05-10T010000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', '2026-05-10T010000Z', 'evidence.json'));
+  assert.equal(evidence.flow_design.silent_noop_hits.length, 1);
+  assert.equal(evidence.flow_design.silent_noop_hits[0].gate_effect, 'info');
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-FLOW-002'), false);
+  assert.equal(evidence.gates.find((gate) => gate.id === 'production-readiness')?.status, 'pass');
 });
 
 test('diagnose emits critical network contract finding for missing Next.js API route', async () => {

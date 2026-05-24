@@ -507,7 +507,8 @@ function buildFindings(evidence) {
         recommendation: '主ボタンは検索、選択、保存、遷移のいずれかに意味を固定し、状態差分は明示ラベルや別操作に分ける。'
       }));
     }
-    const silentNoops = evidence.flow_design.silent_noop_hits ?? [];
+    const silentNoops = (evidence.flow_design.silent_noop_hits ?? [])
+      .filter((hit) => hit.gate_effect !== 'info');
     if (silentNoops.length > 0) {
       findings.push(buildFlowFinding({
         id: 'VP-FLOW-002',

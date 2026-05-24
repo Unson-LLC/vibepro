@@ -60,6 +60,15 @@ const KNOWN_INTERACTION_LOCALS = new Set([
   'Action',
   'Item'
 ]);
+const JSX_EVENT_PROPS = [
+  'onClick',
+  'onSubmit',
+  'onChange',
+  'onKeyDown',
+  'onMouseDown',
+  'onPointerDown',
+  'onTouchStart'
+];
 
 export async function scanFlowDesign(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -240,16 +249,13 @@ async function listUiFiles(repoRoot, current) {
 }
 
 function collectInteractions(interactions, file, content) {
-  const patterns = [
-    /\bonClick\s*=\s*\{([^}\n]+)\}/g,
-    /\bonSubmit\s*=\s*\{([^}\n]+)\}/g,
-    /\bonChange\s*=\s*\{([^}\n]+)\}/g
-  ];
-  for (const pattern of patterns) {
+  for (const eventProp of JSX_EVENT_PROPS) {
+    const pattern = new RegExp(`\\b${eventProp}\\s*=\\s*\\{([^}\\n]+)\\}`, 'g');
     for (const match of content.matchAll(pattern)) {
       interactions.push({
         file,
         line: lineNumberAt(content, match.index),
+        event: eventProp,
         handler: cleanup(match[1]),
         excerpt: cleanup(match[0]).slice(0, 180)
       });
@@ -259,21 +265,41 @@ function collectInteractions(interactions, file, content) {
 
 function collectSilentNoops(hits, file, content) {
   const code = stripComments(content);
-  for (const match of code.matchAll(/\bif\s*\(([^)]{1,180})\)\s*return\s*;?/g)) {
-    const start = Math.max(0, match.index - 360);
-    const end = Math.min(code.length, match.index + 360);
-    const context = code.slice(start, end);
-    if (/setError|throw\s+new|disabled=|focus\s*\(|scrollIntoView|aria-invalid/.test(context)) continue;
-    hits.push({
-      kind: 'silent_noop_return',
-      severity: 'Medium',
-      gate_effect: 'review',
-      file,
-      line: lineNumberAt(code, match.index),
-      condition: cleanup(match[1]),
-      excerpt: cleanup(match[0]),
-      detail: `\`${cleanup(match[1])}\` で早期returnするが、同じ近傍にエラー表示・disabled・誘導が見えない。`
-    });
+  const functions = extractFunctions(code);
+  const eventPaths = collectEventPathFunctions(code, functions);
+  for (const fn of functions) {
+    const eventPathEntries = eventPaths.get(fn.name);
+    if (!eventPathEntries || eventPathEntries.length === 0) continue;
+    for (const match of fn.body.matchAll(/\bif\s*\(([^)]{1,180})\)\s*return\s*(?:;|(?=[\r\n}]))/g)) {
+      const bodyOffset = code.indexOf(fn.body, fn.start);
+      const absoluteIndex = bodyOffset + match.index;
+      const start = Math.max(0, absoluteIndex - 360);
+      const end = Math.min(code.length, absoluteIndex + 360);
+      const localContext = code.slice(start, end);
+      const mitigations = eventPathEntries.map((entry) => classifyNoopMitigation({
+        mitigationContext: entry.mitigation_context,
+        localContext,
+        condition: match[1]
+      }));
+      const mitigation = mitigations.length > 0 && mitigations.every(Boolean)
+        ? [...new Set(mitigations)].join(', ')
+        : null;
+      hits.push({
+        kind: 'silent_noop_return',
+        severity: mitigation ? 'Low' : 'Medium',
+        gate_effect: mitigation ? 'info' : 'review',
+        file,
+        line: lineNumberAt(code, absoluteIndex),
+        handler: fn.name,
+        event_path: eventPathEntries.map((entry) => entry.label).join(', '),
+        condition: cleanup(match[1]),
+        mitigation,
+        excerpt: cleanup(match[0]),
+        detail: mitigation
+          ? `\`${cleanup(match[1])}\` で早期returnするが、${mitigation} が見えるため補足情報として扱う。`
+          : `\`${cleanup(match[1])}\` で早期returnするが、同じ操作経路にエラー表示・disabled・誘導が見えない。`
+      });
+    }
   }
 }
 
@@ -345,6 +371,7 @@ function collectDeadUiStates(hits, file, content) {
 }
 
 function collectInteractiveContractHits(hits, file, content) {
+  if (isTestOrMockFile(file)) return;
   const source = stripComments(content);
   const code = normalizeJsxForTagScan(source);
   const functions = extractFunctions(source);
@@ -435,15 +462,28 @@ function collectValueAlignmentHits(hits, file, content, valueContract) {
 
 function extractFunctions(content) {
   const functions = [];
-  const pattern = /\b(?:const|function)\s+([A-Za-z0-9_]+)\s*(?:=\s*(?:async\s*)?\([^)]*\)\s*=>|\([^)]*\)\s*)\s*\{/g;
+  const seen = new Set();
+  const pattern = /\b(?:(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>|(?:async\s+)?function\s+([A-Za-z0-9_]+)\s*\([^)]*\))\s*\{/g;
   for (const match of content.matchAll(pattern)) {
     const bodyStart = content.indexOf('{', match.index);
     const bodyEnd = findMatchingBrace(content, bodyStart);
     if (bodyEnd < 0) continue;
+    const name = match[1] ?? match[2];
+    seen.add(name);
     functions.push({
-      name: match[1],
+      name,
       start: match.index,
       body: content.slice(bodyStart, bodyEnd + 1)
+    });
+  }
+  const expressionArrowPattern = /\b(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>\s*([^;\n]+);/g;
+  for (const match of content.matchAll(expressionArrowPattern)) {
+    const name = match[1];
+    if (seen.has(name)) continue;
+    functions.push({
+      name,
+      start: match.index,
+      body: `{ ${match[2]}; }`
     });
   }
   return functions;
@@ -470,6 +510,156 @@ function buildFunctionHit(kind, file, content, fn, detail) {
     excerpt: cleanup(fn.body).slice(0, 180),
     detail
   };
+}
+
+function collectEventPathFunctions(code, functions) {
+  const lookup = new Map(functions.map((fn) => [fn.name, fn]));
+  const paths = new Map();
+  for (const eventProp of JSX_EVENT_PROPS) {
+    const pattern = new RegExp(`\\b${eventProp}\\s*=\\s*\\{([^}\\n]+)\\}`, 'g');
+    for (const match of code.matchAll(pattern)) {
+      const mitigationContext = collectEventMitigationContext(code, match.index);
+      for (const handler of extractEventExpressionHandlers(match[1])) {
+        if (!lookup.has(handler)) continue;
+        addEventPath(paths, handler, {
+          label: `${eventProp}:${handler}`,
+          mitigation_context: mitigationContext
+        });
+      }
+    }
+  }
+  for (const [handler, pathLabel] of [...paths.entries()]) {
+    const fn = lookup.get(handler);
+    if (!fn) continue;
+    for (const called of collectDirectFunctionCalls(fn.body)) {
+      if (!lookup.has(called)) continue;
+      if (isLikelyPureValueHelper(called)) continue;
+      for (const entry of pathLabel) {
+        addEventPath(paths, called, {
+          label: `${entry.label}->${called}`,
+          mitigation_context: entry.mitigation_context
+        });
+      }
+    }
+  }
+  return paths;
+}
+
+function addEventPath(paths, handler, entry) {
+  const existing = paths.get(handler) ?? [];
+  existing.push(entry);
+  paths.set(handler, existing);
+}
+
+function collectEventMitigationContext(code, eventIndex) {
+  const tagStart = code.lastIndexOf('<', eventIndex);
+  if (tagStart < 0) return code.slice(Math.max(0, eventIndex - 120), Math.min(code.length, eventIndex + 120));
+  const openEnd = findJsxOpeningTagEnd(code, tagStart);
+  if (openEnd < 0) return code.slice(tagStart, Math.min(code.length, eventIndex + 120));
+  const openTag = code.slice(tagStart, openEnd + 1);
+  const tagMatch = openTag.match(/^<([A-Za-z][A-Za-z0-9_.]*)\b/);
+  const tag = tagMatch?.[1];
+  if (tag && !openTag.endsWith('/>')) {
+    const closeIndex = findClosingTagIndex(code, tag, openEnd + 1);
+    if (closeIndex > openEnd) {
+      return code.slice(tagStart, Math.min(code.length, closeIndex + tag.length + 3));
+    }
+  }
+  return openTag;
+}
+
+function findJsxOpeningTagEnd(code, tagStart) {
+  let braceDepth = 0;
+  let quote = null;
+  for (let index = tagStart; index < code.length; index += 1) {
+    const char = code[index];
+    if (quote) {
+      if (char === quote && code[index - 1] !== '\\') quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      continue;
+    }
+    if (char === '{') {
+      braceDepth += 1;
+      continue;
+    }
+    if (char === '}') {
+      braceDepth = Math.max(0, braceDepth - 1);
+      continue;
+    }
+    if (char === '>' && braceDepth === 0) return index;
+  }
+  return -1;
+}
+
+function extractEventExpressionHandlers(expression) {
+  const trimmed = cleanup(expression);
+  const direct = trimmed.match(/^([A-Za-z_$][\w$]*)$/);
+  if (direct) return [direct[1]];
+  const handlers = new Set();
+  for (const called of collectDirectFunctionCalls(trimmed)) {
+    handlers.add(called);
+  }
+  return [...handlers];
+}
+
+function collectDirectFunctionCalls(body) {
+  const calls = new Set();
+  for (const match of body.matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)) {
+    const name = match[1];
+    if ([
+      'if',
+      'for',
+      'while',
+      'switch',
+      'return',
+      'await',
+      'setTimeout',
+      'setInterval',
+      'console',
+      'fetch'
+    ].includes(name)) continue;
+    calls.add(name);
+  }
+  return calls;
+}
+
+function isLikelyPureValueHelper(name) {
+  return /^(createId|format[A-Z]|getLatest[A-Z]|summarize[A-Z]|flatten[A-Z])/.test(name)
+    || /(Label|Formatter|Selector|Summary)$/.test(name);
+}
+
+function classifyNoopMitigation({ mitigationContext, localContext, condition }) {
+  if (/setError|throw\s+new|focus\s*\(|scrollIntoView|aria-invalid/.test(localContext)) {
+    return 'error/focus guidance';
+  }
+  const conditionText = cleanup(condition);
+  const conditionBranches = conditionText.split(/\|\|/).map((branch) => collectConditionTokens(branch));
+  const context = `${localContext}\n${mitigationContext ?? ''}`;
+  const disabledExpressions = [...String(mitigationContext ?? '').matchAll(/\bdisabled\s*=\s*\{([^}]{1,240})\}/g)].map((match) => match[1]);
+  const hasLoadingAffordance = /aria-busy|<(?:Spinner|Loader)\b|(?:Spinner|Loader)\b|['"`][^'"`\n]*(?:Loading|loading|読み込み中|処理中)[^'"`\n]*['"`]/.test(context);
+  const branchMitigations = conditionBranches.map((tokens) => {
+    const disabled = disabledExpressions.some((expression) => (
+      tokens.some((token) => new RegExp(`\\b${escapeRegExp(token)}\\b`).test(expression))
+    ));
+    if (disabled) return 'disabled';
+    if (tokens.some((token) => /loading|pending|submitting|isLoading|isPending|isSubmitting/i.test(token)) && hasLoadingAffordance) {
+      return 'loading';
+    }
+    return null;
+  });
+  if (branchMitigations.length > 0 && branchMitigations.every(Boolean)) {
+    return branchMitigations.includes('disabled') ? 'disabled UI mitigation' : 'loading UI mitigation';
+  }
+  return null;
+}
+
+function collectConditionTokens(condition) {
+  return [...condition.matchAll(/[A-Za-z_$][\w$]*/g)]
+    .map((match) => match[0])
+    .filter((token) => !['if', 'return', 'true', 'false', 'null', 'undefined'].includes(token));
 }
 
 function buildValueContract({ profile, flowConfig }) {
@@ -514,8 +704,9 @@ function resolveStatus(result) {
     ...(result.interactive_contract_hits ?? []),
     ...(result.value_alignment_hits ?? [])
   ];
-  if (allHits.some((hit) => hit.severity === 'Critical')) return 'block';
-  if (allHits.length > 0) return 'needs_review';
+  const gateHits = allHits.filter((hit) => hit.gate_effect !== 'info');
+  if (gateHits.some((hit) => hit.severity === 'Critical')) return 'block';
+  if (gateHits.length > 0) return 'needs_review';
   return 'pass';
 }
 
@@ -666,6 +857,12 @@ function isApiRoute(file) {
 
 function isNewRegistrationFile(file) {
   return /(?:^|\/)(new|register|registration)(?:\/|\.|$)/i.test(file);
+}
+
+function isTestOrMockFile(file) {
+  return /(?:^|\/)__mocks__(?:\/|$)/.test(file)
+    || /\.(test|spec)\.(js|jsx|ts|tsx)$/.test(file)
+    || /(?:^|\/)(test|tests|__tests__)(?:\/|$)/.test(file);
 }
 
 function stripComments(content) {
