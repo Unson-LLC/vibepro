@@ -3714,6 +3714,7 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {});
     'Story acceptance E2E coverage passed'
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
 
   // critical gate 解消後、残る非critical gateだけを理由付きwaiverで通す
   const createResult = await runCli([
@@ -4131,12 +4132,29 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithoutProvenance.effective_status, 'unverified_agent');
   assert.match(roleWithoutProvenance.provenance_reason, /not Codex\/Claude Code subagent review/);
 
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+  const gateManualRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'manual gate pass without subagent proof'
+  ]);
+  assert.equal(gateManualRecord.exitCode, 0);
   const prWithoutProvenance = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
-  const missingRuntime = prWithoutProvenance.result.preparation.pr_context.agent_reviews.unmet_required_reviews.find((item) => (
-    item.stage === 'implementation' && item.role === 'runtime_contract'
+  const missingGateEvidence = prWithoutProvenance.result.preparation.pr_context.agent_reviews.unmet_required_reviews.find((item) => (
+    item.stage === 'gate' && item.role === 'gate_evidence'
   ));
-  assert.equal(missingRuntime.status, 'unverified_agent');
-  assert.match(missingRuntime.detail, /not Codex\/Claude Code subagent review/);
+  assert.equal(missingGateEvidence.status, 'unverified_agent');
+  assert.match(missingGateEvidence.detail, /not Codex\/Claude Code subagent review/);
 
   const anonymousManualRecord = await runCli([
     'review',
