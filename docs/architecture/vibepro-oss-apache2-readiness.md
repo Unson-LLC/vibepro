@@ -51,3 +51,14 @@ Package contents are controlled by `package.json#files`.
 PR evidence generation is part of the VibePro CLI runtime, not an OSS-specific release script. Reviewer-facing PR context must be derived from the canonical Story source whenever it is available, so `.vibepro/config.json` or other cached internal state cannot downgrade a clear Story title to a generic label such as `Story`.
 
 Story parsing remains generic: explicit background sections are preferred, and otherwise the prose directly under `# Story` / `# ストーリー` is treated as the review background. This keeps the behavior reusable for OSS readiness, customer projects, and ordinary feature stories.
+
+## Agent Review Gate Boundary
+
+Agent review enforcement is split by workflow phase. Early development reviews are checkpoint responsibilities, while PR readiness only checks final review surfaces.
+
+- `checkpoint implementation-start` owns planning/spec and architecture/spec review readiness.
+- `checkpoint test-plan` owns test plan review readiness.
+- `checkpoint implementation-complete` owns implementation review readiness.
+- `pr prepare` / `pr create` own final gate and preview review readiness.
+
+This prevents source changes from causing PR-time review backlogs for phases that should have blocked earlier, while preserving a hard Gate DAG before PR creation.

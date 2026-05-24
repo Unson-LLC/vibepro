@@ -53,3 +53,14 @@ VibePro-generated PR bodies MUST use canonical story source fields for reviewer-
 - Requirement titles MUST use the same canonical source title fallback.
 - When no explicit `## Background` / `## 背景` section exists, VibePro SHOULD extract a concise background from the prose directly under `# Story`.
 - VibePro MUST NOT emit `背景: Story文書から抽出できませんでした` when the story document contains usable introductory prose.
+
+## Phase-Gated Agent Review
+
+VibePro MUST NOT require all development-phase subagent reviews at PR time.
+
+- `planning_spec` and `architecture_spec` reviews MUST be enforced by the `implementation-start` checkpoint.
+- `test_plan` reviews MUST be enforced by the `test-plan` checkpoint.
+- `implementation` reviews MUST be enforced by the `implementation-complete` checkpoint.
+- `gate` reviews MUST be enforced before PR readiness when source changes exist.
+- `preview` reviews MUST be enforced before PR readiness when UI or network runtime risk exists.
+- `pr prepare` MUST surface only PR-final required review stages in its Agent Review Gate.
