@@ -4368,6 +4368,10 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /path_surface_coverage/);
   assert.match(dispatch, /every mandatory review lens/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
+  assert.match(dispatch, /vibepro review start .*--role e2e_ux/);
+  assert.match(dispatch, /vibepro review close .*--role e2e_ux/);
+  assert.match(dispatch, /--close-reason timeout/);
+  assert.match(dispatch, /Start replacement/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
@@ -4386,6 +4390,199 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);
   assert.match(request, /Claude Code coordinators must include/);
+  assert.match(request, /review start/);
+  assert.match(request, /review close/);
+  assert.match(request, /does not return by the timeout/);
+});
+
+test('review lifecycle tracks timed out subagents and replacement closure', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+
+  const start = await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-stuck',
+    '--timeout-ms',
+    '1',
+    '--json'
+  ]);
+  assert.equal(start.exitCode, 0);
+  assert.equal(start.result.lifecycle.status, 'running');
+  assert.equal(start.result.lifecycle.timeout_ms, 1);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+
+  const timedOut = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(timedOut.exitCode, 0);
+  const gateStage = timedOut.result.stages[0];
+  assert.equal(gateStage.lifecycle.timed_out_count, 1);
+  assert.equal(gateStage.roles.find((role) => role.role === 'gate_evidence').lifecycle.effective_status, 'timed_out');
+  assert.equal(gateStage.next_actions.some((action) => action.includes('review close') && action.includes('agent-stuck')), true);
+  assert.equal(gateStage.next_actions.some((action) => action.includes('review start') && action.includes('--replacement-for')), true);
+
+  const close = await runCli([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-id',
+    'agent-stuck',
+    '--close-reason',
+    'timeout',
+    '--close-evidence',
+    'shutdown',
+    '--json'
+  ]);
+  assert.equal(close.exitCode, 0);
+  assert.equal(close.result.lifecycle.effective_status, 'closed');
+  assert.equal(close.result.lifecycle.close_reason, 'timeout');
+
+  const replacement = await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-replacement',
+    '--replacement-for',
+    start.result.lifecycle.lifecycle_id,
+    '--json'
+  ]);
+  assert.equal(replacement.exitCode, 0);
+  assert.equal(replacement.result.lifecycle.replacement_for, start.result.lifecycle.lifecycle_id);
+
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'replacement passed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-replacement',
+    '--agent-closed',
+    '--agent-close-evidence',
+    'shutdown',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+  const lifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
+  const replacementEntry = lifecycle.entries.find((entry) => entry.agent_id === 'agent-replacement');
+  assert.equal(replacementEntry.status, 'closed');
+  assert.equal(replacementEntry.close_reason, 'completed');
+});
+
+test('review policy config customizes stage roles and role timeout', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      gate: {
+        roles: ['gate_evidence', 'custom_security']
+      }
+    },
+    roles: {
+      custom_security: {
+        timeout_ms: 12345
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const prepared = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  assert.deepEqual(prepared.result.plan.roles, ['gate_evidence', 'custom_security']);
+  assert.equal(prepared.result.plan.parallel_dispatch.subagent_count, 2);
+  const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-custom_security.md'), 'utf8');
+  assert.match(request, /--role custom_security/);
+  assert.match(request, /--timeout-ms 12345/);
+
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'custom_security',
+    '--status',
+    'pass',
+    '--summary',
+    'custom security passed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-custom-security',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+  assert.equal(record.result.review.role, 'custom_security');
+});
+
+test('agent review PR policy honors role mode and changed-file activation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    roles: {
+      gate_evidence: {
+        when_changed: ['src/**']
+      },
+      pr_split_scope: {
+        mode: 'optional'
+      },
+      release_risk: {
+        mode: 'disabled'
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export const helper = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const required = result.result.preparation.pr_context.agent_reviews.required_reviews;
+  assert.deepEqual(required.map((item) => `${item.stage}:${item.role}`), ['gate:gate_evidence']);
 });
 
 test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
@@ -4963,6 +5160,50 @@ architecture_docs:
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## Agent Review/);
   assert.match(prBody, /status: pass/);
+});
+
+test('pr prepare blocks timed out required review lifecycle even when review result passed', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-stuck-after-pass',
+    '--timeout-ms',
+    '1'
+  ]);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
+  assert.equal(agentGate.status, 'needs_review');
+  assert.equal(agentGate.required_actions.some((action) => action.includes('agent-stuck-after-pass')), true);
+  assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
+  assert.equal(result.result.preparation.pr_context.agent_reviews.summary.lifecycle_timed_out_count, 1);
 });
 
 test('verify record promotes gate evidence into the next pr prepare', async () => {
