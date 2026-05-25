@@ -4505,6 +4505,86 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(replacementEntry.close_reason, 'completed');
 });
 
+test('review policy config customizes stage roles and role timeout', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      gate: {
+        roles: ['gate_evidence', 'custom_security']
+      }
+    },
+    roles: {
+      custom_security: {
+        timeout_ms: 12345
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const prepared = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  assert.deepEqual(prepared.result.plan.roles, ['gate_evidence', 'custom_security']);
+  assert.equal(prepared.result.plan.parallel_dispatch.subagent_count, 2);
+  const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-custom_security.md'), 'utf8');
+  assert.match(request, /--role custom_security/);
+  assert.match(request, /--timeout-ms 12345/);
+
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'custom_security',
+    '--status',
+    'pass',
+    '--summary',
+    'custom security passed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-custom-security',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+  assert.equal(record.result.review.role, 'custom_security');
+});
+
+test('agent review PR policy honors role mode and changed-file activation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    roles: {
+      gate_evidence: {
+        when_changed: ['src/**']
+      },
+      pr_split_scope: {
+        mode: 'optional'
+      },
+      release_risk: {
+        mode: 'disabled'
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export const helper = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const required = result.result.preparation.pr_context.agent_reviews.required_reviews;
+  assert.deepEqual(required.map((item) => `${item.stage}:${item.role}`), ['gate:gate_evidence']);
+});
+
 test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

@@ -8,7 +8,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 
-export const REVIEW_STAGE_ROLES = {
+export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
   requirement: ['product_requirement', 'scope_risk', 'acceptance_e2e'],
   architecture_spec: ['architecture_boundary', 'spec_consistency', 'regression_risk'],
@@ -18,6 +18,7 @@ export const REVIEW_STAGE_ROLES = {
   preview: ['preview_smoke', 'network_runtime', 'human_usability']
 };
 
+export const REVIEW_STAGE_ROLES = DEFAULT_REVIEW_STAGE_ROLES;
 export const REVIEW_STAGES = new Set(Object.keys(REVIEW_STAGE_ROLES));
 const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block']);
 const PASSING_ROLE_STATUS = new Set(['pass']);
@@ -49,11 +50,12 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const stage = requireStage(options.stage, 'review prepare');
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review prepare');
+  const reviewPolicy = await readAgentReviewPolicy(root);
+  const roles = getStageRoles(reviewPolicy, stage);
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
 
   const gitContext = await collectReviewGitContext(root);
-  const roles = REVIEW_STAGE_ROLES[stage];
   const plan = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -61,6 +63,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     roles,
     created_at: new Date().toISOString(),
     git_context: gitContext,
+    review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage),
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: [
       'Dispatch the listed role reviews with separate Codex/Claude Code subagents when the coordinator runtime provides subagent capability.',
@@ -102,7 +105,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   for (const role of roles) {
     await writeFile(getReviewRequestPath(reviewDir, role), renderReviewRequestMarkdown({ storyId, stage, role, plan }));
   }
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext });
+  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     plan,
@@ -120,7 +123,10 @@ export async function prepareAgentReview(repoRoot, options = {}) {
 export async function recordAgentReview(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review record');
   const stage = requireStage(options.stage, 'review record');
-  const role = requireRole(stage, options.role, 'review record');
+  const root = path.resolve(repoRoot);
+  await assertInitializedWorkspace(root, 'review record');
+  const reviewPolicy = await readAgentReviewPolicy(root);
+  const role = requireRole(reviewPolicy, stage, options.role, 'review record');
   const status = options.status;
   if (!REVIEW_STATUSES.has(status)) {
     throw new Error(`review record --status must be one of: ${[...REVIEW_STATUSES].join(', ')}`);
@@ -129,8 +135,6 @@ export async function recordAgentReview(repoRoot, options = {}) {
     throw new Error('review record requires --summary <text> or --from-stdin');
   }
 
-  const root = path.resolve(repoRoot);
-  await assertInitializedWorkspace(root, 'review record');
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root);
@@ -166,7 +170,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
       resultArtifact: toWorkspaceRelative(root, resultPath)
     });
   }
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext });
+  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     review: result,
@@ -178,9 +182,11 @@ export async function recordAgentReview(repoRoot, options = {}) {
 export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review start');
   const stage = requireStage(options.stage, 'review start');
-  const role = requireRole(stage, options.role, 'review start');
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review start');
+  const reviewPolicy = await readAgentReviewPolicy(root);
+  const role = requireRole(reviewPolicy, stage, options.role, 'review start');
+  const rolePolicy = getRolePolicy(reviewPolicy, role);
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const lifecycle = await readLifecycle(root, storyId, stage);
@@ -199,7 +205,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     session_id: normalizeNullable(options.agentSessionId),
     tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId),
     started_at: now,
-    timeout_ms: normalizeTimeoutMs(options.timeoutMs),
+    timeout_ms: normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms),
     replacement_for: normalizeNullable(options.replacementFor),
     close_reason: null,
     close_evidence: null,
@@ -208,7 +214,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   };
   lifecycle.entries.push(entry);
   await writeLifecycle(root, storyId, stage, lifecycle);
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root) });
+  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     lifecycle: entry,
@@ -220,9 +226,10 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
 export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review close');
   const stage = requireStage(options.stage, 'review close');
-  const role = requireRole(stage, options.role, 'review close');
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review close');
+  const reviewPolicy = await readAgentReviewPolicy(root);
+  const role = requireRole(reviewPolicy, stage, options.role, 'review close');
   const reviewDir = getReviewStageDir(root, storyId, stage);
   const lifecycle = await readLifecycle(root, storyId, stage);
   const match = findLifecycleEntry(lifecycle.entries, {
@@ -240,7 +247,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   match.close_reason = closeReason;
   match.close_evidence = normalizeNullable(options.closeEvidence);
   await writeLifecycle(root, storyId, stage, lifecycle);
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root) });
+  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     lifecycle: decorateLifecycleEntry(match),
@@ -253,11 +260,12 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'review status');
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review status');
+  const reviewPolicy = await readAgentReviewPolicy(root);
   const currentGitContext = await collectReviewGitContext(root);
-  const stages = options.stage ? [requireStage(options.stage, 'review status')] : [...REVIEW_STAGES];
+  const stages = options.stage ? [requireStage(options.stage, 'review status')] : getConfiguredStages(reviewPolicy);
   const stageSummaries = [];
   for (const stage of stages) {
-    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext }));
+    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
   return {
     schema_version: '0.1.0',
@@ -282,14 +290,15 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
   const currentGitContext = options.git
     ? normalizeGitContext(options.git)
     : await collectReviewGitContext(root);
-  const requiredReviews = buildRequiredReviewPolicy(options);
+  const reviewPolicy = await readAgentReviewPolicy(root);
+  const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy });
   const stages = [...new Set([
     ...requiredReviews.map((item) => item.stage),
     ...await listExistingReviewStages(root, storyId)
   ])].filter((stage) => REVIEW_STAGES.has(stage));
   const stageSummaries = [];
   for (const stage of stages) {
-    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext }));
+    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
   const roleLookup = new Map();
   for (const stageSummary of stageSummaries) {
@@ -446,14 +455,123 @@ export function renderAgentReviewPrSection(agentReviews) {
   ].join('\n');
 }
 
-function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story }) {
+async function readAgentReviewPolicy(repoRoot) {
+  const config = await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'config.json'));
+  return normalizeAgentReviewPolicy(config?.agent_reviews);
+}
+
+function normalizeAgentReviewPolicy(raw = {}) {
+  const stages = {};
+  const rawStages = isPlainObject(raw?.stages) ? raw.stages : {};
+  for (const stage of Object.keys(DEFAULT_REVIEW_STAGE_ROLES)) {
+    const configured = rawStages[stage];
+    stages[stage] = {
+      roles: normalizeStageRoles(configured, DEFAULT_REVIEW_STAGE_ROLES[stage])
+    };
+  }
+  const roles = {};
+  const rawRoles = isPlainObject(raw?.roles) ? raw.roles : {};
+  for (const [role, policy] of Object.entries(rawRoles)) {
+    roles[role] = isPlainObject(policy) ? {
+      mode: normalizeRoleMode(policy.mode),
+      timeout_ms: policy.timeout_ms,
+      when_changed: normalizeStringList(policy.when_changed),
+      allowed_systems: normalizeStringList(policy.allowed_systems)
+    } : { mode: normalizeRoleMode(policy) };
+  }
+  return {
+    defaults: {
+      timeout_ms: raw?.defaults?.timeout_ms
+    },
+    stages,
+    roles
+  };
+}
+
+function normalizeStageRoles(configured, defaults) {
+  if (!configured) return [...defaults];
+  const rawRoles = Array.isArray(configured) ? configured : configured.roles;
+  if (!Array.isArray(rawRoles)) return [...defaults];
+  return rawRoles.flatMap((item) => {
+    if (typeof item === 'string') return item.trim() ? [item.trim()] : [];
+    if (!isPlainObject(item) || !item.role) return [];
+    return normalizeRoleMode(item.mode) === 'disabled' ? [] : [String(item.role).trim()];
+  }).filter(Boolean);
+}
+
+function summarizeReviewPolicyForStage(policy, stage) {
+  return {
+    stage,
+    roles: getStageRoles(policy, stage),
+    defaults: {
+      timeout_ms: normalizeTimeoutMs(policy?.defaults?.timeout_ms)
+    },
+    role_policies: Object.fromEntries(getStageRoles(policy, stage).map((role) => [role, getRolePolicy(policy, role)]))
+  };
+}
+
+function getConfiguredStages(policy) {
+  return Object.keys(DEFAULT_REVIEW_STAGE_ROLES).filter((stage) => getStageRoles(policy, stage).length > 0);
+}
+
+function getStageRoles(policy, stage) {
+  const roles = policy?.stages?.[stage]?.roles ?? DEFAULT_REVIEW_STAGE_ROLES[stage] ?? [];
+  return roles.filter((role, index) => roles.indexOf(role) === index && getRolePolicy(policy, role).mode !== 'disabled');
+}
+
+function getRolePolicy(policy, role) {
+  return {
+    mode: 'required',
+    ...(policy?.roles?.[role] ?? {})
+  };
+}
+
+function isRequiredRoleActive(policy, role, fileGroups) {
+  const rolePolicy = getRolePolicy(policy, role);
+  if (rolePolicy.mode === 'disabled' || rolePolicy.mode === 'optional') return false;
+  if (!rolePolicy.when_changed || rolePolicy.when_changed.length === 0) return true;
+  const changedFiles = collectChangedFiles(fileGroups);
+  return changedFiles.some((filePath) => rolePolicy.when_changed.some((pattern) => matchPathPattern(filePath, pattern)));
+}
+
+function collectChangedFiles(fileGroups) {
+  const groups = Object.values(fileGroups ?? {});
+  return groups.flatMap((group) => Array.isArray(group?.files) ? group.files : []);
+}
+
+function matchPathPattern(filePath, pattern) {
+  const normalizedFile = String(filePath).replace(/\\/g, '/');
+  const normalizedPattern = String(pattern).replace(/\\/g, '/');
+  const escaped = normalizedPattern
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*/g, '__VIBEPRO_GLOBSTAR__')
+    .replace(/\*/g, '[^/]*');
+  return new RegExp(`^${escaped.replace(/__VIBEPRO_GLOBSTAR__/g, '.*')}$`).test(normalizedFile);
+}
+
+function normalizeRoleMode(value) {
+  const normalized = String(value ?? 'required').trim().toLowerCase().replace(/-/g, '_');
+  return ['required', 'optional', 'disabled'].includes(normalized) ? normalized : 'required';
+}
+
+function normalizeStringList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item).trim()).filter(Boolean);
+}
+
+function isPlainObject(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy }) {
   const requirements = [];
   const addStage = (stage, reason, policy) => {
-    for (const role of REVIEW_STAGE_ROLES[stage]) {
+    for (const role of getStageRoles(reviewPolicy, stage)) {
       addRequirement({ stage, role, reason, policy });
     }
   };
   const addRequirement = (item) => {
+    if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
     const key = `${item.stage}:${item.role}`;
     if (requirements.some((existing) => `${existing.stage}:${existing.role}` === key)) return;
     requirements.push(item);
@@ -511,7 +629,8 @@ function buildRolePromptSummary(stage, role) {
 
 function renderReviewRequestMarkdown({ storyId, stage, role, plan }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
-  const startCommand = buildReviewStartCommand({ storyId, stage, role });
+  const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
+  const startCommand = buildReviewStartCommand({ storyId, stage, role, timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms });
   const closeCommand = buildReviewCloseCommand({ storyId, stage, role });
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   return `# VibePro Agent Review Request
@@ -565,6 +684,7 @@ function renderParallelDispatchMarkdown({ storyId, stage, roles, plan }) {
   const items = roles.map((role, index) => {
     const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
     const command = buildReviewRecordCommand({ storyId, stage, role });
+    const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
     return `## Subagent ${index + 1}: ${stage}:${role}
 
 Review request:
@@ -577,7 +697,7 @@ Record command after the subagent returns:
 \`${command}\`
 
 Lifecycle start command:
-\`${buildReviewStartCommand({ storyId, stage, role })}\`
+\`${buildReviewStartCommand({ storyId, stage, role, timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms })}\`
 
 Lifecycle close command for timeout/replacement/manual shutdown:
 \`${buildReviewCloseCommand({ storyId, stage, role })}\`
@@ -634,8 +754,8 @@ function buildReviewRecordCommand({ storyId, stage, role }) {
   return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed`;
 }
 
-function buildReviewStartCommand({ storyId, stage, role }) {
-  return `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms ${DEFAULT_REVIEW_TIMEOUT_MS}`;
+function buildReviewStartCommand({ storyId, stage, role, timeoutMs }) {
+  return `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms ${normalizeTimeoutMs(timeoutMs)}`;
 }
 
 function buildReviewCloseCommand({ storyId, stage, role }) {
@@ -656,7 +776,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
       return {
         stage,
-        role_count: REVIEW_STAGE_ROLES[stage]?.length ?? 0,
+        role_count: summary?.roles?.length ?? 0,
         status: summary?.status ?? 'missing',
         prepared: summary?.parallel_dispatch?.prepared ?? false,
         prepare_command: buildReviewPrepareCommand({ storyId, stage }),
@@ -674,14 +794,15 @@ function renderParallelDispatchPrRows(parallelDispatch) {
   return rows.join('\n');
 }
 
-async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext }) {
+async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, reviewPolicy }) {
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const roles = [];
+  const stageRoles = getStageRoles(reviewPolicy, stage);
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
-  for (const role of REVIEW_STAGE_ROLES[stage]) {
+  for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
     const binding = result ? bindReviewResult(result, currentGitContext) : null;
     const provenance = result ? validateAgentProvenance(result) : null;
@@ -970,9 +1091,10 @@ function requireStage(stage, commandName) {
   return stage;
 }
 
-function requireRole(stage, role, commandName) {
-  if (!role || !REVIEW_STAGE_ROLES[stage].includes(role)) {
-    throw new Error(`${commandName} --role must be one of for ${stage}: ${REVIEW_STAGE_ROLES[stage].join(', ')}`);
+function requireRole(reviewPolicy, stage, role, commandName) {
+  const roles = getStageRoles(reviewPolicy, stage);
+  if (!role || !roles.includes(role)) {
+    throw new Error(`${commandName} --role must be one of for ${stage}: ${roles.join(', ')}`);
   }
   return role;
 }
