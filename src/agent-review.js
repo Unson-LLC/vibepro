@@ -63,7 +63,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     roles,
     created_at: new Date().toISOString(),
     git_context: gitContext,
-    review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage),
+    review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage, roles),
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: [
       'Dispatch the listed role reviews with separate Codex/Claude Code subagents when the coordinator runtime provides subagent capability.',
@@ -105,7 +105,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   for (const role of roles) {
     await writeFile(getReviewRequestPath(reviewDir, role), renderReviewRequestMarkdown({ storyId, stage, role, plan }));
   }
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy, roles });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     plan,
@@ -499,14 +499,15 @@ function normalizeStageRoles(configured, defaults) {
   }).filter(Boolean);
 }
 
-function summarizeReviewPolicyForStage(policy, stage) {
+function summarizeReviewPolicyForStage(policy, stage, roles = null) {
+  const stageRoles = Array.isArray(roles) && roles.length > 0 ? roles : getStageRoles(policy, stage);
   return {
     stage,
-    roles: getStageRoles(policy, stage),
+    roles: stageRoles,
     defaults: {
       timeout_ms: normalizeTimeoutMs(policy?.defaults?.timeout_ms)
     },
-    role_policies: Object.fromEntries(getStageRoles(policy, stage).map((role) => [role, getRolePolicy(policy, role)]))
+    role_policies: Object.fromEntries(stageRoles.map((role) => [role, getRolePolicy(policy, role)]))
   };
 }
 
@@ -563,7 +564,7 @@ function isPlainObject(value) {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value));
 }
 
-function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy }) {
+function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy, changeClassification }) {
   const requirements = [];
   const addRequirement = (item) => {
     if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
@@ -609,6 +610,62 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
       role: 'network_runtime',
       reason: 'API/network contract changes require preview/runtime network review before PR readiness',
       policy: 'network_contract_pr_final'
+    });
+  }
+  if (changeClassification?.profile === 'workflow_heavy') {
+    addRequirement({
+      stage: 'architecture_spec',
+      role: 'regression_risk',
+      reason: 'workflow_heavy changes require adjacent state and compatibility regression review',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'test_plan',
+      role: 'e2e_ux',
+      reason: 'workflow_heavy changes require user-level workflow replay review',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'test_plan',
+      role: 'gate_coverage',
+      reason: 'workflow_heavy changes require gate coverage review against state/path matrix risk',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'implementation',
+      role: 'runtime_contract',
+      reason: 'workflow_heavy changes require API/DB/queue/auth runtime contract review',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'implementation',
+      role: 'ux_completion',
+      reason: 'workflow_heavy changes require end-to-end UX completion review',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'gate',
+      role: 'release_risk',
+      reason: 'workflow_heavy changes require release confidence and production-path risk review',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'preview',
+      role: 'preview_smoke',
+      reason: 'workflow_heavy changes require preview smoke validation',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'preview',
+      role: 'network_runtime',
+      reason: 'workflow_heavy changes require preview network/runtime validation',
+      policy: 'workflow_heavy'
+    });
+    addRequirement({
+      stage: 'preview',
+      role: 'human_usability',
+      reason: 'workflow_heavy changes require human usability validation',
+      policy: 'workflow_heavy'
     });
   }
   if (isPerformanceStory({ story, performanceEvidence })) {
@@ -826,12 +883,14 @@ function renderParallelDispatchPrRows(parallelDispatch) {
   return rows.join('\n');
 }
 
-async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, reviewPolicy }) {
+async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, reviewPolicy, roles: summaryRoles = null }) {
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const roles = [];
-  const stageRoles = getStageRoles(reviewPolicy, stage);
+  const stageRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
+    ? summaryRoles
+    : getStageRoles(reviewPolicy, stage);
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
   for (const role of stageRoles) {
@@ -883,7 +942,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       mode: 'policy_aware_parallel_reviews',
       prepared: parallelDispatchPrepared,
       artifact: toWorkspaceRelative(repoRoot, parallelDispatchPath),
-      prepare_command: buildReviewPrepareCommand({ storyId, stage })
+      prepare_command: buildReviewPrepareCommand({ storyId, stage, roles: stageRoles })
     }
   };
 }
@@ -921,7 +980,7 @@ function bindReviewResult(result, currentGitContext) {
       reason: `review was recorded for ${recorded.head_sha.slice(0, 12)}, current head is ${currentGitContext.head_sha.slice(0, 12)}`
     };
   }
-  if ((recorded.status_fingerprint ?? '') !== (currentGitContext.status_fingerprint ?? '')) {
+  if (fingerprintHashForContext(recorded) !== fingerprintHashForContext(currentGitContext)) {
     return {
       status: 'stale',
       reason: 'review was recorded with a different dirty worktree fingerprint'
@@ -1339,7 +1398,7 @@ async function collectReviewGitContext(repoRoot) {
     head_sha: headSha || null,
     current_branch: currentBranch || null,
     dirty: statusOutput.length > 0,
-    status_fingerprint: fingerprintStatus(statusOutput, dirtyDiff),
+    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     recorded_at: new Date().toISOString()
   };
 }
@@ -1349,7 +1408,7 @@ function normalizeGitContext(git) {
     head_sha: git.head_sha ?? null,
     current_branch: git.current_branch ?? null,
     dirty: git.dirty === true,
-    status_fingerprint: git.status_fingerprint ?? '',
+    status_fingerprint_hash: fingerprintHashForContext(git),
     recorded_at: new Date().toISOString()
   };
 }
@@ -1397,12 +1456,12 @@ async function collectUntrackedFileFingerprint(repoRoot) {
 }
 
 function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [String(statusOutput ?? ''), String(dirtyDiff ?? '')].join('\n')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean)
-    .sort()
-    .join('\n');
+  return [
+    'git-status --porcelain -uall',
+    String(statusOutput ?? '').trimEnd(),
+    'git-diff --binary',
+    String(dirtyDiff ?? '').trimEnd()
+  ].join('\n');
 }
 
 function buildSourceFingerprint({ storyId, stage, role, gitContext }) {
@@ -1411,8 +1470,17 @@ function buildSourceFingerprint({ storyId, stage, role, gitContext }) {
     stage,
     role,
     head_sha: gitContext.head_sha ?? null,
-    status_fingerprint: gitContext.status_fingerprint ?? ''
+    status_fingerprint_hash: fingerprintHashForContext(gitContext)
   })).digest('hex');
+}
+
+function fingerprintHashForContext(gitContext) {
+  if (gitContext?.status_fingerprint_hash) return gitContext.status_fingerprint_hash;
+  return hashFingerprint(gitContext?.status_fingerprint ?? '');
+}
+
+function hashFingerprint(value) {
+  return crypto.createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
 function hasNetworkContractRisk(networkContracts) {

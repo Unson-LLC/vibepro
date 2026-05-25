@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { chmod, mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
@@ -44,6 +45,31 @@ async function pathExists(filePath) {
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function gitFingerprintHash(repo) {
+  const [status, diff, untracked] = await Promise.all([
+    git(repo, ['status', '--porcelain', '-uall']),
+    git(repo, ['diff', '--binary']),
+    collectUntrackedFingerprint(repo)
+  ]);
+  const dirtyDiff = [diff.stdout.trimEnd(), untracked].filter(Boolean).join('\n');
+  return createHash('sha256').update([
+    'git-status --porcelain -uall',
+    status.stdout.trimEnd(),
+    'git-diff --binary',
+    dirtyDiff
+  ].join('\n')).digest('hex');
+}
+
+async function collectUntrackedFingerprint(repo) {
+  const output = await git(repo, ['ls-files', '--others', '--exclude-standard']);
+  const files = output.stdout.split('\n').filter(Boolean).sort().slice(0, 200);
+  const chunks = [];
+  for (const file of files) {
+    chunks.push(`untracked:${file}\n${await readFile(path.join(repo, file), 'utf8')}`);
+  }
+  return chunks.join('\n');
 }
 
 async function makeGitRepoWithStory(options = {}) {
@@ -2183,6 +2209,32 @@ console.log('fake playwright ok');
   assert.equal(manifest.flow_verification_runs[0].artifacts.flow_verification_json, '.vibepro/verification/flow-run-1/flow-verification.json');
 });
 
+test('verify flow does not pass when no runtime probes are configured', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'U-021', '--title', 'No probe flow']);
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { '@playwright/test': '^1.50.0' }
+  }, null, 2));
+
+  const result = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-no-probes',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.verification.status, 'needs_evidence');
+  assert.match(result.result.verification.reason, /No runtime probes/);
+  assert.equal(result.result.verification.summary.total, 0);
+  const verification = await readJson(path.join(repo, '.vibepro', 'verification', 'flow-no-probes', 'flow-verification.json'));
+  assert.equal(verification.status, 'needs_evidence');
+});
+
 test('verify flow fails on runtime network contract errors from Playwright output', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo, '--story-id', 'story-network-flow', '--title', 'Network flow']);
@@ -2336,9 +2388,9 @@ const { appendFileSync } = require('node:fs');
 appendFileSync(process.env.FAKE_NPX_LOG, [
   process.argv.slice(2).join(' '),
   'auth=' + process.env.VIBEPRO_BASIC_AUTH_USER + ':' + process.env.VIBEPRO_BASIC_AUTH_PASSWORD
-].join('\\n') + '\\n');
-console.log('fake playwright ok');
-`);
+	].join('\\n') + '\\n');
+	console.log('fake playwright ok ' + process.env.VIBEPRO_BASIC_AUTH_PASSWORD);
+	`);
   await chmod(path.join(binDir, 'npx'), 0o755);
 
   const result = await runCli([
@@ -2366,15 +2418,24 @@ console.log('fake playwright ok');
   assert.deepEqual(result.result.verification.http_auth, {
     enabled: true,
     source: 'env:APP_BASIC_AUTH',
-    username: 'nurse',
+    username_redacted: true,
     password_redacted: true
   });
   assert.match(await readFile(path.join(repo, 'fake-npx-basic-auth.log'), 'utf8'), /auth=nurse:super-secret/);
-  const verificationText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.json'), 'utf8');
-  assert.doesNotMatch(verificationText, /super-secret/);
-  const specText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.spec.js'), 'utf8');
-  assert.doesNotMatch(specText, /super-secret/);
-});
+	  const verificationText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.json'), 'utf8');
+	  assert.doesNotMatch(verificationText, /super-secret/);
+	  assert.doesNotMatch(verificationText, /nurse/);
+	  assert.match(verificationText, /\[REDACTED\]/);
+	  const logText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'playwright-output.log'), 'utf8');
+	  assert.doesNotMatch(logText, /super-secret/);
+	  assert.doesNotMatch(logText, /nurse/);
+	  assert.match(logText, /\[REDACTED\]/);
+	  const specText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.spec.js'), 'utf8');
+	  assert.doesNotMatch(specText, /super-secret/);
+	  assert.doesNotMatch(specText, /nurse/);
+	  const reportText = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-basic-auth', 'flow-verification.md'), 'utf8');
+	  assert.doesNotMatch(reportText, /nurse/);
+	});
 
 test('verify flow can fill a value captured from visible page text', async () => {
   const repo = await makeRepo();
@@ -2432,17 +2493,27 @@ console.log('fake playwright ok');
 });
 
 test('pr prepare attaches latest flow verification evidence to the E2E gate', async () => {
-  const repo = await makeGitRepoWithStory();
-  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'feature', 'flow.js'), 'export const flow = true;\n');
-  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-pass'), { recursive: true });
-  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.json'), JSON.stringify({
+	  const repo = await makeGitRepoWithStory();
+	  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+	  await writeFile(path.join(repo, 'src', 'feature', 'flow.js'), 'export const flow = true;\n');
+	  await git(repo, ['add', 'src/feature/flow.js']);
+	  await git(repo, ['commit', '-m', 'feat: add flow source']);
+	  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+	  const cleanFingerprintHash = createHash('sha256').update('git-status --porcelain -uall\n\ngit-diff --binary\n').digest('hex');
+	  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-pass'), { recursive: true });
+	  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.json'), JSON.stringify({
     schema_version: '0.1.0',
     run_id: 'flow-pass',
     story_id: 'story-pr-prepare',
     created_at: '2026-05-10T00:00:00.000Z',
-    status: 'pass',
-    base_url: 'http://127.0.0.1:3000',
+	    status: 'pass',
+	    git_context: {
+	      head_sha: headSha,
+	      dirty: false,
+	      status_fingerprint_hash: cleanFingerprintHash,
+	      recorded_at: '2026-05-10T00:00:00.000Z'
+	    },
+	    base_url: 'http://127.0.0.1:3000',
     summary: {
       total: 1,
       pass: 1,
@@ -2457,18 +2528,69 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
         screenshot_paths: ['screenshots/new-registration.png']
       }
     }]
-  }, null, 2));
-  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.md'), '# Flow Verification\n');
-  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'playwright-output.log'), 'ok\n');
-  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
-  const manifest = await readJson(manifestPath);
-  manifest.latest_flow_verification_run = 'flow-pass';
-  manifest.flow_verification_runs = [{
-    run_id: 'flow-pass',
+	  }, null, 2));
+	  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'flow-verification.md'), '# Flow Verification\n');
+	  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-pass', 'playwright-output.log'), 'ok\n');
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-summary-only'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-summary-only', 'flow-verification.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    run_id: 'flow-summary-only',
     story_id: 'story-pr-prepare',
-    created_at: '2026-05-10T00:00:00.000Z',
+    created_at: '2026-05-11T00:00:00.000Z',
     status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprintHash,
+      recorded_at: '2026-05-11T00:00:00.000Z'
+    },
     base_url: 'http://127.0.0.1:3000',
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    },
+    probes: []
+  }, null, 2));
+	  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+	  const manifest = await readJson(manifestPath);
+  manifest.latest_flow_verification_run = 'flow-summary-only';
+	  manifest.flow_verification_runs = [{
+    run_id: 'flow-summary-only',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-11T00:00:00.000Z',
+    status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprintHash,
+      recorded_at: '2026-05-11T00:00:00.000Z'
+    },
+    base_url: 'http://127.0.0.1:3000',
+    artifacts: {
+      flow_verification_json: '.vibepro/verification/flow-summary-only/flow-verification.json'
+    },
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    }
+  }, {
+	    run_id: 'flow-pass',
+	    story_id: 'story-pr-prepare',
+	    created_at: '2026-05-10T00:00:00.000Z',
+	    status: 'pass',
+	    git_context: {
+	      head_sha: headSha,
+	      dirty: false,
+	      status_fingerprint_hash: cleanFingerprintHash,
+	      recorded_at: '2026-05-10T00:00:00.000Z'
+	    },
+	    base_url: 'http://127.0.0.1:3000',
     artifacts: {
       flow_verification_json: '.vibepro/verification/flow-pass/flow-verification.json',
       flow_verification_report: '.vibepro/verification/flow-pass/flow-verification.md',
@@ -2480,11 +2602,19 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
       fail: 0,
       skipped: 0,
       needs_setup: 0
-    }
-  }];
-  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+	    }
+	  }];
+	  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
-  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const summaryOnlyResult = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(summaryOnlyResult.exitCode, 0);
+  const summaryOnlyPrepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  assert.equal(summaryOnlyPrepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e').status, 'needs_evidence');
+
+  manifest.latest_flow_verification_run = 'flow-pass';
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+	
+	  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
 
   assert.equal(result.exitCode, 0);
   const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
@@ -4057,7 +4187,10 @@ Weighted semantic/layout residual: **34%**
   assert.equal(humanReview.review_record.selected_decision, null);
   assert.equal(humanReview.toolchain.package.name, 'vibepro');
   assert.equal(prepare.next_commands.some((command) => command.startsWith('gh pr create')), false);
-  assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), true);
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), false);
+  assert.equal(prepare.next_commands.some((command) => command.includes('vibepro review status')), true);
+  assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
 
   // gate guard: flag無しなら needs_verification で拒否される
   let stderrOutput = '';
@@ -4122,11 +4255,18 @@ Weighted semantic/layout residual: **1%**
   }, null, 2));
   await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-pr-artifacts.spec.ts'), `
-// story-pr-prepare ac:1
-// story-pr-prepare ac:2
-// story-pr-prepare ac:3
-import { test } from '@playwright/test';
-test('story-pr-prepare PR artifacts acceptance coverage', async () => {});
+import { expect, test } from '@playwright/test';
+test('story-pr-prepare PR artifacts acceptance coverage', async () => {
+  // story-pr-prepare ac:1
+  // PR本文に背景が入る
+  // story-pr-prepare ac:2
+  // PR本文にADR判断が入る
+  // story-pr-prepare ac:3
+  // PR本文に検証候補が入る
+  expect('PR本文に背景が入る').toContain('背景');
+  expect('PR本文にADR判断が入る').toContain('ADR');
+  expect('PR本文に検証候補が入る').toContain('検証');
+});
 `);
   assert.equal((await runCli([
     'verify',
@@ -4229,9 +4369,37 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   });
   assert.equal(actualCreateResult.exitCode, 0);
   assert.equal(actualCreateResult.result.execution.dry_run, false);
-  assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
-  assert.equal(actualCreateResult.result.execution.results.length, 2);
-});
+	  assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
+	  assert.equal(actualCreateResult.result.execution.results.length, 2);
+
+  await writeFile(ghBin, `#!/usr/bin/env node
+console.error('gh create failed');
+process.exit(42);
+`);
+  await chmod(ghBin, 0o755);
+  const failedCreateResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--title',
+    'Test PR',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'fixtureではGitHub失敗経路だけを検証する'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(failedCreateResult.exitCode, 1);
+  const failedPrCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(failedPrCreate.status, 'failed');
+  assert.equal(failedPrCreate.results.length, 2);
+  assert.equal(failedPrCreate.results[1].exit_code, 42);
+  assert.match(failedPrCreate.results[1].stderr, /gh create failed/);
+	});
 
 test('pr prepare uses story source title and intro when explicit background heading is absent', async () => {
   const repo = await makeGitRepoWithStory();
@@ -4427,6 +4595,24 @@ architecture_docs:
   assert.equal(prepare.split_plan.lanes.some((lane) => lane.id === 'e2e-gate'), false);
 });
 
+test('pr prepare uses node --test targeted command for node test runner', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    scripts: { test: 'node --test' }
+  }, null, 2));
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'node-runner.test.js'), 'import test from "node:test";\ntest("ok", () => {});\n');
+  await git(repo, ['add', 'package.json', 'test/node-runner.test.js']);
+  await git(repo, ['commit', '-m', 'chore: add node test runner']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /node --test test\/node-runner\.test\.js/);
+  assert.doesNotMatch(prBody, /--runTestsByPath/);
+});
+
 test('review prepare generates stage role requests', async () => {
   const repo = await makeGitRepoWithStory();
 
@@ -4483,10 +4669,16 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /coordinator records it/);
   assert.match(request, /Codex coordinators must include/);
   assert.match(request, /Claude Code coordinators must include/);
-  assert.match(request, /review start/);
-  assert.match(request, /review close/);
-  assert.match(request, /does not return by the timeout/);
-});
+	  assert.match(request, /review start/);
+	  assert.match(request, /review close/);
+	  assert.match(request, /does not return by the timeout/);
+
+	  const subset = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk', '--json']);
+	  assert.equal(subset.exitCode, 0);
+	  assert.deepEqual(subset.result.plan.roles, ['gate_evidence', 'release_risk']);
+	  assert.deepEqual(subset.result.plan.review_policy.roles, ['gate_evidence', 'release_risk']);
+	  assert.deepEqual(subset.result.summary.roles.map((role) => role.role), ['gate_evidence', 'release_risk']);
+	});
 
 test('review lifecycle tracks timed out subagents and replacement closure', async () => {
   const repo = await makeGitRepoWithStory();
@@ -5163,6 +5355,118 @@ architecture_docs:
   assert.deepEqual(result.result.state.next_actions, ['E2E evidence is missing']);
 });
 
+test('execute state preserves waiver-required semantics for noncritical unresolved gates', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+  await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
+  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+
+  const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'architecture',
+        type: 'architecture_gate',
+        label: 'Architecture Gate',
+        required: true,
+        status: 'missing',
+        reason: 'ADR evidence should be resolved or waived'
+      }
+    ]
+  }, null, 2)}\n`);
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.completion_status, 'waiver_required');
+  assert.equal(result.result.state.current_phase, 'verification');
+  assert.equal(result.result.state.completed_phases.includes('ready_for_pr_create'), false);
+  assert.equal(result.result.state.next_actions.some((action) => action.includes('ADR evidence')), true);
+});
+
+test('execute state treats workflow-heavy gates as critical blockers', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+  await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
+  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+
+  const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'gate:release_confidence',
+        type: 'workflow_heavy_gate',
+        label: 'Release Confidence Gate',
+        required: true,
+        status: 'needs_evidence',
+        reason: 'workflow-heavy release evidence is missing'
+      }
+    ]
+  }, null, 2)}\n`);
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.completion_status, 'blocked');
+  assert.equal(result.result.state.blocking_gate.id, 'gate:release_confidence');
+  assert.equal(result.result.state.next_actions[0], 'workflow-heavy release evidence is missing');
+});
+
+test('execute state treats design quality gates as critical blockers', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---
+story_id: ${storyId}
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+  await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
+  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+
+  const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'gate:design_quality',
+        type: 'design_quality_gate',
+        label: 'Design Quality Gate',
+        required: true,
+        status: 'needs_evidence',
+        reason: 'design quality evidence is missing'
+      }
+    ]
+  }, null, 2)}\n`);
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.completion_status, 'blocked');
+  assert.equal(result.result.state.blocking_gate.id, 'gate:design_quality');
+  assert.equal(result.result.state.next_actions[0], 'design quality evidence is missing');
+});
+
 test('pr prepare requires only final agent review gates; phase reviews are checkpoint-gated', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -5443,10 +5747,15 @@ title: PR準備
 
   await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-main.spec.ts'), `
-// story-pr-prepare ac:1
-// story-pr-prepare ac:2
-import { test } from '@playwright/test';
-test('story-pr-prepare acceptance criteria', async () => {});
+import { expect, test } from '@playwright/test';
+test('story-pr-prepare acceptance criteria', async () => {
+  // story-pr-prepare ac:1
+  // ユーザーが保存ボタンを押すと完了画面へ遷移する
+  // story-pr-prepare ac:2
+  // APIが失敗したらエラー表示から再試行できる
+  expect('ユーザーが保存ボタンを押すと完了画面へ遷移する').toContain('保存');
+  expect('APIが失敗したらエラー表示から再試行できる').toContain('再試行');
+});
 `);
 
   assert.equal((await runCli([
@@ -5508,6 +5817,103 @@ export async function execute(actionParams) {
   assert.equal(networkGate.status, 'needs_evidence');
   assert.equal(networkGate.summary.missing_route_count, 0);
   assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:network_contract'), true);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_flow_verification_run = 'legacy-flow-pass-without-artifact';
+  manifest.flow_verification_runs = [{
+    run_id: 'legacy-flow-pass-without-artifact',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-25T00:00:00.000Z',
+    status: 'pass',
+    artifacts: {}
+  }];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const staleFlowResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(staleFlowResult.exitCode, 0);
+	  const staleFlowNetworkGate = staleFlowResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:network_contract');
+	  assert.equal(staleFlowNetworkGate.status, 'needs_evidence');
+
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const currentFingerprintHash = await gitFingerprintHash(repo);
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'zero-probe-flow-pass'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'zero-probe-flow-pass', 'flow-verification.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    run_id: 'zero-probe-flow-pass',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-25T00:00:00.000Z',
+    status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: currentFingerprintHash,
+      recorded_at: '2026-05-25T00:00:00.000Z'
+    },
+    summary: {
+      total: 0,
+      pass: 0,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    },
+    probes: []
+  }, null, 2)}\n`);
+  manifest.latest_flow_verification_run = 'zero-probe-flow-pass';
+  manifest.flow_verification_runs = [{
+    run_id: 'zero-probe-flow-pass',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-25T00:00:00.000Z',
+    status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: currentFingerprintHash,
+      recorded_at: '2026-05-25T00:00:00.000Z'
+    },
+    artifacts: {
+      flow_verification_json: '.vibepro/verification/zero-probe-flow-pass/flow-verification.json'
+    },
+    summary: {
+      total: 0,
+      pass: 0,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    }
+  }];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const zeroProbeFlowResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(zeroProbeFlowResult.exitCode, 0);
+  const zeroProbeNetworkGate = zeroProbeFlowResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:network_contract');
+  assert.equal(zeroProbeNetworkGate.status, 'needs_evidence');
+
+	  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm test',
+    '--summary', 'Generic E2E command passed'
+  ])).exitCode, 0);
+  const genericE2eResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(genericE2eResult.exitCode, 0);
+  const genericE2eNetworkGate = genericE2eResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:network_contract');
+  assert.equal(genericE2eNetworkGate.status, 'needs_evidence');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e -- /api/detail-search',
+    '--summary', 'Network-aware E2E covered the /api/detail-search route contract'
+  ])).exitCode, 0);
+  const networkAwareResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(networkAwareResult.exitCode, 0);
+  const networkAwareGate = networkAwareResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:network_contract');
+  assert.equal(networkAwareGate.status, 'passed');
 });
 
 test('verify record keeps verification evidence valid under concurrent writes', async () => {

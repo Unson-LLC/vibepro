@@ -159,12 +159,19 @@ async function buildExecutionState(repoRoot, options = {}) {
   const blockingGate = pickBlockingGate(blockingGates);
   const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
   const readyForPrCreate = gateDag
-    ? Boolean(prPrepare && blockingGates.length === 0)
-    : gateStatus?.ready_for_pr_create === true;
+    ? Boolean(prPrepare && unresolvedGates.length === 0)
+    : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
+  const waiverRequired = !prCreated && !readyForPrCreate && Boolean(prPrepare) && (
+    gateDag
+      ? unresolvedGates.length > 0 && blockingGates.length === 0
+      : gateStatus?.execution_gate?.status === 'waiver_required'
+  );
   const completionStatus = prCreated
     ? 'pr_created'
     : readyForPrCreate
       ? 'ready_for_pr_create'
+      : waiverRequired
+        ? 'waiver_required'
       : prPrepare
         ? 'blocked'
         : 'not_prepared';
@@ -172,6 +179,8 @@ async function buildExecutionState(repoRoot, options = {}) {
     ? 'complete'
     : readyForPrCreate
       ? 'create_pr'
+      : waiverRequired
+        ? 'verification'
       : blockingGate?.id === 'gate:agent_review' || blockingGate?.id?.startsWith('review:')
         ? 'agent_review'
         : blockingGate
@@ -189,7 +198,9 @@ async function buildExecutionState(repoRoot, options = {}) {
     baseRef: options.baseRef,
     prPrepare,
     gateStatus,
+    unresolvedGates,
     blockingGate,
+    waiverRequired,
     readyForPrCreate,
     prCreated
   });
@@ -227,10 +238,17 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, r
   return phases;
 }
 
-function deriveNextActions({ storyId, baseRef, prPrepare, gateStatus, blockingGate, readyForPrCreate, prCreated }) {
+function deriveNextActions({ storyId, baseRef, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
   if (prCreated) return [];
   if (!prPrepare) return [buildPrPrepareCommand({ storyId, baseRef })];
   if (readyForPrCreate) return [buildPrCreateCommand({ storyId, baseRef })];
+  if (waiverRequired) {
+    const actions = unresolvedGates
+      .flatMap((gate) => gate.required_actions?.length ? gate.required_actions : [gate.reason])
+      .filter(Boolean);
+    if (actions.length > 0) return actions;
+    return ['Resolve unresolved non-critical gates or rerun PR create with an explicit verification waiver.'];
+  }
   if (blockingGate) {
     if (blockingGate.required_actions?.length) return blockingGate.required_actions;
     return [blockingGate.reason ?? `Resolve ${blockingGate.label ?? blockingGate.id}`];
@@ -287,6 +305,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       'verification_gate',
       'requirement_gate',
       'visual_qa_gate',
+      'design_quality_gate',
+      'workflow_heavy_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
@@ -335,8 +355,10 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';
 }
