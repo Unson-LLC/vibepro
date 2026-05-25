@@ -45,6 +45,16 @@ The repository SHOULD include:
 - PR template
 - CI workflow
 
+## Task Decomposition
+
+The OSS readiness story SHOULD decompose release work into auditable VibePro tasks before execution.
+
+- Metadata and operations documentation review MUST cover license, package metadata, README files, GitHub templates, CI, contribution guidance, security contact, and Graphify optional integration.
+- Package-boundary verification MUST run from a clean worktree and compare `package.json#files` with `npm pack --dry-run` output.
+- Release verification MUST run `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks, then record passing commands as VibePro verification evidence.
+- PR evidence verification MUST confirm canonical Story title/background rendering from the Story source.
+- Agent Review Gate verification MUST confirm phase reviews are checkpoint-gated and PR readiness only requires final `gate` / `preview` reviews.
+
 ## Reviewable PR Evidence
 
 VibePro-generated PR bodies MUST use canonical story source fields for reviewer-facing context:
