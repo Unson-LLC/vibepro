@@ -2192,6 +2192,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const networkContracts = await scanNetworkContracts(repoRoot, {
@@ -2231,6 +2232,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     refactoring_delta: latestEvidence?.refactoring_delta ?? null,
     flow_verification: latestFlowVerification,
     acceptance_e2e_coverage: e2eCoverage,
+    design_quality: designQualityEvidence,
     visual_qa: visualQaEvidence,
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
@@ -2249,6 +2251,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     e2eCommand,
     flowVerification: latestFlowVerification,
     e2eCoverage,
+    designQualityEvidence,
     visualQaEvidence,
     networkContracts,
     agentReviews,
@@ -2259,6 +2262,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
     flowVerification: latestFlowVerification,
+    designQualityEvidence,
     visualQaEvidence
   });
   context.execution_gate = buildExecutionGateStatus(context.gate_dag);
@@ -2426,6 +2430,49 @@ async function readVisualQaEvidence(repoRoot) {
       run.residual_analysis,
       run.latest_residual?.path
     ].filter(Boolean))
+  };
+}
+
+async function readDesignQualityEvidence(repoRoot, storyId) {
+  const root = getWorkspaceDir(repoRoot);
+  const designDir = path.join(root, 'design-modernize', storyId);
+  const planPath = path.join(designDir, 'design-modernize.json');
+  const capturePath = path.join(designDir, 'screen-capture.json');
+  let plan = null;
+  let capture = null;
+  try {
+    plan = JSON.parse(await readFile(planPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return null;
+  }
+  try {
+    capture = JSON.parse(await readFile(capturePath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const hasExplicitGate = plan?.spec_gate?.mode === 'explicit' && plan?.spec_gate?.fallback_allowed === false;
+  const hasDesignDag = plan?.design_quality_dag?.model === 'vibepro-design-quality-dag-v1';
+  const captureStatus = capture?.status ?? 'missing';
+  const status = hasExplicitGate && hasDesignDag && captureStatus === 'pass'
+    ? 'ready_for_review'
+    : 'needs_evidence';
+  const missing = [];
+  if (!hasExplicitGate) missing.push('explicit spec_gate');
+  if (!hasDesignDag) missing.push('design_quality_dag');
+  if (captureStatus !== 'pass') missing.push(`screen capture (${captureStatus})`);
+  return {
+    schema_version: '0.1.0',
+    status,
+    story_id: storyId,
+    model: plan?.design_quality_dag?.model ?? null,
+    screen_count: Array.isArray(plan?.screens) ? plan.screens.length : 0,
+    capture_status: captureStatus,
+    missing,
+    artifacts: [
+      toWorkspaceRelative(repoRoot, planPath),
+      capture ? toWorkspaceRelative(repoRoot, capturePath) : null
+    ].filter(Boolean)
   };
 }
 
@@ -2906,20 +2953,24 @@ function buildSpecGateNode({ fileGroups, inferredSpec, specDrift }) {
   };
 }
 
-function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence }) {
+function buildCompletionQuality({ gateDag, flowVerification, designQualityEvidence, visualQaEvidence }) {
   const unresolved = collectUnresolvedRequiredGates(gateDag);
   const e2eGate = gateDag?.nodes?.find((node) => node.id === 'gate:e2e') ?? null;
+  const designQualityGate = gateDag?.nodes?.find((node) => node.id === 'gate:design_quality') ?? null;
   const visualQaGate = gateDag?.nodes?.find((node) => node.id === 'gate:visual_qa') ?? null;
   const architectureGate = gateDag?.nodes?.find((node) => node.id === 'architecture') ?? null;
   const specGate = gateDag?.nodes?.find((node) => node.id === 'spec') ?? null;
   const visualQaPassRate = visualQaGate?.required
     ? (visualQaGate.status === 'ready_for_review' ? 1 : 0)
     : null;
+  const designQualityPassRate = designQualityGate?.required
+    ? (designQualityGate.status === 'ready_for_review' ? 1 : 0)
+    : null;
   const e2eReachRate = e2eGate?.required
     ? (e2eGate.status === 'passed' ? 1 : 0)
     : null;
-  const final20Rate = calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate });
-  const knownRates = [e2eReachRate, visualQaPassRate, final20Rate].filter((value) => typeof value === 'number');
+  const final20Rate = calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate, designQualityPassRate });
+  const knownRates = [e2eReachRate, designQualityPassRate, visualQaPassRate, final20Rate].filter((value) => typeof value === 'number');
   const requiredEvidence = [];
   if (architectureGate?.required && isUnresolvedGateStatus(architectureGate.status)) {
     requiredEvidence.push(`Architecture approval: ${architectureGate.status} - ${architectureGate.reason ?? 'reason missing'}`);
@@ -2930,11 +2981,14 @@ function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence })
   if (e2eGate?.required && e2eGate.status !== 'passed') {
     requiredEvidence.push(`E2E experience: ${e2eGate.status} - ${e2eGate.reason ?? flowVerification?.reason ?? 'flow evidence missing'}`);
   }
+  if (designQualityGate?.required && designQualityGate.status !== 'ready_for_review') {
+    requiredEvidence.push(`Design Quality DAG: ${designQualityGate.status} - ${designQualityGate.reason ?? designQualityEvidence?.missing?.join(', ') ?? 'design quality evidence missing'}`);
+  }
   if (visualQaGate?.required && visualQaGate.status !== 'ready_for_review') {
     requiredEvidence.push(`Visual QA polish: ${visualQaGate.status} - ${visualQaGate.reason ?? 'visual residual evidence missing'}`);
   }
   for (const gate of unresolved) {
-    if (['architecture', 'spec', 'gate:e2e', 'gate:visual_qa'].includes(gate.id)) continue;
+    if (['architecture', 'spec', 'gate:e2e', 'gate:design_quality', 'gate:visual_qa'].includes(gate.id)) continue;
     requiredEvidence.push(`${gate.label ?? gate.id}: ${gate.status} - ${gate.reason ?? 'reason missing'}`);
   }
 
@@ -2945,6 +2999,7 @@ function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence })
     metrics: {
       e2e_experience_reach_rate: e2eReachRate,
       final_20_auto_closure_rate: final20Rate,
+      design_quality_pass_rate: designQualityPassRate,
       visual_qa_pass_rate: visualQaPassRate,
       human_usable_quality_rate: knownRates.length > 0 ? Math.min(...knownRates) : null
     },
@@ -2952,8 +3007,8 @@ function buildCompletionQuality({ gateDag, flowVerification, visualQaEvidence })
   };
 }
 
-function calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate }) {
-  const knownRates = [e2eReachRate, visualQaPassRate].filter((value) => typeof value === 'number');
+function calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate, designQualityPassRate }) {
+  const knownRates = [e2eReachRate, designQualityPassRate, visualQaPassRate].filter((value) => typeof value === 'number');
   if (knownRates.length === 0) return null;
   return Math.min(...knownRates);
 }
@@ -2968,6 +3023,7 @@ function buildGateDag({
   e2eCommand,
   flowVerification,
   e2eCoverage = null,
+  designQualityEvidence = null,
   visualQaEvidence = null,
   networkContracts = null,
   agentReviews = null,
@@ -3019,6 +3075,19 @@ function buildGateDag({
     required: true
   };
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
+  const designQualityGate = designQualityEvidence ? {
+    id: 'gate:design_quality',
+    type: 'design_quality_gate',
+    label: 'Design Quality DAG Gate',
+    status: designQualityEvidence.status,
+    required: true,
+    reason: designQualityEvidence.status === 'ready_for_review'
+      ? 'VibePro Design Quality DAG evidence is present and screen capture passed'
+      : `Design Quality DAG needs evidence: ${designQualityEvidence.missing?.join(', ') || 'missing quality evidence'}`,
+    artifacts: designQualityEvidence.artifacts,
+    screen_count: designQualityEvidence.screen_count,
+    capture_status: designQualityEvidence.capture_status
+  } : null;
   const visualQaGate = visualQaEvidence ? {
     id: 'gate:visual_qa',
     type: 'visual_qa_gate',
@@ -3063,6 +3132,7 @@ function buildGateDag({
     networkContractGate,
     requirementGate,
     ...gates,
+    ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
@@ -3099,11 +3169,22 @@ function buildGateDag({
     { from: 'gate:requirement', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
+    ...(designQualityGate ? [
+      { from: 'gate:e2e', to: 'gate:design_quality' }
+    ] : []),
     ...(visualQaGate ? [
-      { from: 'gate:e2e', to: 'gate:visual_qa' },
-      ...buildAgentReviewProcessEdges('gate:visual_qa', agentReviewDag)
+      { from: designQualityGate ? 'gate:design_quality' : 'gate:e2e', to: 'gate:visual_qa' },
+      ...buildAgentReviewProcessEdges({
+        defaultUpstreamNodeId: 'gate:visual_qa',
+        agentReviewDag,
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+      })
     ] : [
-      ...buildAgentReviewProcessEdges('gate:e2e', agentReviewDag)
+      ...buildAgentReviewProcessEdges({
+        defaultUpstreamNodeId: designQualityGate ? 'gate:design_quality' : 'gate:e2e',
+        agentReviewDag,
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+      })
     ]),
     { from: 'gate:agent_review', to: 'pr' }
   ];
@@ -3116,6 +3197,7 @@ function buildGateDag({
     networkContractGate,
     requirementGate,
     ...gates,
+    designQualityGate,
     visualQaGate,
     ...agentReviewDag.nodes,
     agentReviewGate
@@ -3144,6 +3226,7 @@ function buildAgentReviewProcessDag(agentReviews) {
   const stages = agentReviews?.parallel_dispatch?.required_stages ?? [];
   if (!agentReviews?.required || stages.length === 0) return { nodes: [], terminal_nodes: [] };
   const stageLookup = new Map((agentReviews.stages ?? []).map((stage) => [stage.stage, stage]));
+  const requiredRoleLookup = new Map(stages.map((stage) => [stage.stage, new Set(stage.roles ?? [])]));
   const nodes = [];
   const terminalNodes = [];
   for (const requiredStage of stages) {
@@ -3164,7 +3247,8 @@ function buildAgentReviewProcessDag(agentReviews) {
         : 'Policy-aware agent review dispatch instructions have not been generated'
     });
 
-    for (const role of stage?.roles ?? []) {
+    const requiredRoles = requiredRoleLookup.get(requiredStage.stage);
+    for (const role of (stage?.roles ?? []).filter((item) => !requiredRoles || requiredRoles.has(item.role))) {
       const reviewId = `review:${requiredStage.stage}:${role.role}`;
       const recordId = `review:record:${requiredStage.stage}:${role.role}`;
       const reviewStatus = normalizeAgentReviewNodeStatus(role.effective_status);
@@ -3194,13 +3278,29 @@ function buildAgentReviewProcessDag(agentReviews) {
   return { nodes, terminal_nodes: terminalNodes };
 }
 
-function buildAgentReviewProcessEdges(upstreamNodeId, agentReviewDag) {
-  if (!agentReviewDag.nodes.length) return [{ from: upstreamNodeId, to: 'gate:agent_review' }];
+function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
+  const implementationUpstream = 'gate:integration';
+  const finalEvidenceUpstream = visualQaGate
+    ? 'gate:visual_qa'
+    : designQualityGate
+      ? 'gate:design_quality'
+      : 'gate:e2e';
+  return {
+    requirement: 'gate:requirement',
+    architecture_spec: 'spec',
+    test_plan: 'gate:requirement',
+    implementation: implementationUpstream,
+    gate: finalEvidenceUpstream
+  };
+}
+
+function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {} }) {
+  if (!agentReviewDag.nodes.length) return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
   const edges = [];
   const prepareNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_prepare_gate');
   for (const prepareNode of prepareNodes) {
-    edges.push({ from: upstreamNodeId, to: prepareNode.id });
     const [, , stage] = prepareNode.id.split(':');
+    edges.push({ from: stageUpstreams[stage] ?? defaultUpstreamNodeId, to: prepareNode.id });
     const roleNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_role_gate' && node.id.startsWith(`review:${stage}:`));
     for (const roleNode of roleNodes) {
       const role = roleNode.id.slice(`review:${stage}:`.length);

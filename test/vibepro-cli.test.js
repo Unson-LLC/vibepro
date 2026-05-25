@@ -154,6 +154,99 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
+test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {
+  const repo = await makeRepo();
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'home', '_components'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'map'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'home', 'page.tsx'), `
+    export default function HomePage() {
+      const [loading] = useState(false);
+      return <button aria-label="地図で探す">地図で探す</button>;
+    }
+  `);
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'home', '_components', 'HomeActions.tsx'), `
+    export function HomeActions() {
+      return <Button>条件から探す</Button>;
+    }
+  `);
+  await writeFile(path.join(repo, 'src', 'app', '(app)', 'map', 'page.tsx'), `
+    export default function MapPage({ searchParams }) {
+      return <a href="/detail">詳しく探す</a>;
+    }
+  `);
+  await writeFile(path.join(repo, 'aitle-ds.json'), JSON.stringify({
+    version: { versionNumber: 1 },
+    bundle: {
+      theme: ':root { --ds-color-brand: #7c3aed; --ds-space-2: 8px; --ds-font-body: "Noto Sans JP"; }',
+      styles: ':root { --ds-surface-base: #111111; --ds-text-primary: #ffffff; }',
+      componentsCss: '.ds-ai-phone-cta { color: var(--ds-color-brand); } .ds-hotel-card { display: grid; }',
+      componentsJs: 'customElements.define("ds-ai-phone-cta", class extends HTMLElement {}); customElements.define("ds-hotel-card", class extends HTMLElement {});'
+    },
+    overview: 'Keep dense search controls scannable. AI phone CTA is the primary action.'
+  }));
+
+  const result = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-aitle-ds-modernize',
+    '--product',
+    'Aitle',
+    '--routes',
+    '/home,/map',
+    '--design-system-bundle',
+    'aitle-ds.json',
+    '--design-system-id',
+    '1c436280-9432-4bf0-b4fd-15585d6482f0',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.plan.spec_gate.mode, 'explicit');
+  assert.equal(result.result.plan.spec_gate.fallback_allowed, false);
+  assert.equal(result.result.plan.design_intelligence.external_generator_required, false);
+  assert.equal(result.result.plan.design_quality_dag.model, 'vibepro-design-quality-dag-v1');
+  assert.equal(result.result.plan.visual_hypothesis.authority, 'evidence_only');
+  assert.equal(result.result.plan.visual_hypothesis.status, 'needs_image_generation');
+  assert.equal(result.result.plan.visual_hypothesis.screens[0].route, '/home');
+  assert.match(result.result.plan.visual_hypothesis.screens[0].prompt, /current screenshot/);
+  assert.match(result.result.plan.visual_hypothesis.screens[0].prompt, /risky or rejected moves/);
+  assert.ok(result.result.plan.design_constraint_graph.component_roles.includes('primary_cta'));
+  assert.ok(result.result.plan.design_constraint_graph.state_semantics.includes('available'));
+  assert.equal(result.result.plan.reference_design_system.version, 1);
+  assert.ok(result.result.plan.reference_design_system.token_summary.count >= 5);
+  assert.ok(result.result.plan.reference_design_system.component_summary.names.includes('ds-ai-phone-cta'));
+  assert.equal(result.result.plan.screens.length, 2);
+  assert.match(result.result.plan.screens[0].design_brief.body, /Design Quality DAG/);
+  assert.match(result.result.plan.screens[0].design_brief.body, /地図で探す/);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'implementation-spec.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'design-constraint-graph.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'visual-hypothesis-prompts.md')), true);
+  const spec = await readFile(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'implementation-spec.md'), 'utf8');
+  const visualPrompts = await readFile(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'visual-hypothesis-prompts.md'), 'utf8');
+  assert.match(spec, /INV-HOME-1/);
+  assert.match(spec, /AP-GLOBAL-1/);
+  assert.match(spec, /DQ-GLOBAL-1/);
+  assert.match(visualPrompts, /Generated images are not implementation authority/);
+  assert.match(visualPrompts, /VH-HOME-INV/);
+
+  const capture = await runCli([
+    'design-modernize',
+    'capture',
+    repo,
+    '--id',
+    'story-aitle-ds-modernize',
+    '--routes',
+    '/home',
+    '--json'
+  ]);
+  assert.equal(capture.exitCode, 0);
+  assert.equal(capture.result.result.status, 'needs_setup');
+  assert.match(capture.result.result.setup.next_commands[0], /base-url/);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'screen-capture.json')), true);
+});
+
 test('init fails explicitly instead of masking corrupt VibePro config', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, '.vibepro'), { recursive: true });
@@ -5100,7 +5193,7 @@ architecture_docs:
     missingGate.parallel_dispatch.required_stages.map((stage) => stage.stage),
     ['gate']
   );
-  assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 3);
+  assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.required_review_count, 1);
   assert.match(missingGate.reason, /dispatch the generated Codex\/Claude Code subagent reviews in parallel/);
   assert.equal(missingGate.required_actions.some((action) => action.includes('vibepro review prepare')), true);
   assert.equal(missingGate.required_actions.some((action) => action.includes('parallel-dispatch.md')), true);
@@ -5114,6 +5207,7 @@ architecture_docs:
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:gate' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:gate:gate_evidence' && node.type === 'agent_review_role_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:record:gate:gate_evidence' && node.type === 'agent_review_record_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:gate:pr_split_scope' && node.type === 'agent_review_role_gate'), false);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:planning_spec'), false);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan'), false);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:implementation'), false);
@@ -5148,7 +5242,7 @@ architecture_docs:
   assert.equal(implementationComplete.exitCode, 2);
   assert.equal(implementationComplete.result.findings.some((finding) => finding.review_stage === 'implementation'), true);
 
-  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence']);
   const passedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const passedGate = passedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   const passedDag = passedResult.result.preparation.pr_context.gate_dag;

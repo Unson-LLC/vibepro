@@ -51,7 +51,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review prepare');
   const reviewPolicy = await readAgentReviewPolicy(root);
-  const roles = getStageRoles(reviewPolicy, stage);
+  const roles = normalizeRequestedRoles(reviewPolicy, stage, options.roles);
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
 
@@ -565,11 +565,6 @@ function isPlainObject(value) {
 
 function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story, reviewPolicy }) {
   const requirements = [];
-  const addStage = (stage, reason, policy) => {
-    for (const role of getStageRoles(reviewPolicy, stage)) {
-      addRequirement({ stage, role, reason, policy });
-    }
-  };
   const addRequirement = (item) => {
     if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
     const key = `${item.stage}:${item.role}`;
@@ -579,10 +574,34 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
 
   const hasSourceChanges = (fileGroups?.source?.count ?? 0) > 0;
   if (hasSourceChanges) {
-    addStage('gate', 'source changes require final gate/release review before PR readiness', 'source_change_pr_final');
+    addRequirement({
+      stage: 'gate',
+      role: 'gate_evidence',
+      reason: 'source changes require final gate evidence review before PR readiness',
+      policy: 'source_change_pr_final'
+    });
+  }
+  if ((fileGroups?.source?.count ?? 0) > 20 || (fileGroups?.total ?? 0) > 30) {
+    addRequirement({
+      stage: 'gate',
+      role: 'pr_split_scope',
+      reason: 'large change sets require PR split/scope review',
+      policy: 'large_change_pr_final'
+    });
   }
   if (hasUiExperienceSourceChange(fileGroups)) {
-    addStage('preview', 'UI changes require preview/runtime/human-usability review before PR readiness', 'ui_preview');
+    addRequirement({
+      stage: 'preview',
+      role: 'preview_smoke',
+      reason: 'UI changes require preview smoke review before PR readiness',
+      policy: 'ui_preview'
+    });
+    addRequirement({
+      stage: 'preview',
+      role: 'human_usability',
+      reason: 'UI changes require human-usability review before PR readiness',
+      policy: 'ui_preview'
+    });
   }
   if (hasNetworkContractRisk(networkContracts)) {
     addRequirement({
@@ -601,6 +620,16 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
     });
   }
   return requirements;
+}
+
+function normalizeRequestedRoles(policy, stage, requestedRoles) {
+  const allowed = getStageRoles(policy, stage);
+  const roles = Array.isArray(requestedRoles) && requestedRoles.length > 0 ? requestedRoles : allowed;
+  const invalid = roles.filter((role) => !allowed.includes(role));
+  if (invalid.length > 0) {
+    throw new Error(`review prepare --role is invalid for ${stage}: ${invalid.join(', ')}. Valid roles: ${allowed.join(', ')}`);
+  }
+  return [...new Set(roles)];
 }
 
 function buildRolePromptSummary(stage, role) {
@@ -762,8 +791,9 @@ function buildReviewCloseCommand({ storyId, stage, role }) {
   return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<subagent-id>" --close-reason <completed|timeout|replaced|manual_shutdown>`;
 }
 
-function buildReviewPrepareCommand({ storyId, stage }) {
-  return `vibepro review prepare . --id ${storyId} --stage ${stage}`;
+function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
+  const roleArgs = roles.length > 0 ? ` ${roles.map((role) => `--role ${role}`).join(' ')}` : '';
+  return `vibepro review prepare . --id ${storyId} --stage ${stage}${roleArgs}`;
 }
 
 function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
@@ -774,12 +804,14 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
     required_stages: requiredStages.map((stage) => {
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
+      const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
       return {
         stage,
-        role_count: summary?.roles?.length ?? 0,
+        roles,
+        role_count: roles.length,
         status: summary?.status ?? 'missing',
         prepared: summary?.parallel_dispatch?.prepared ?? false,
-        prepare_command: buildReviewPrepareCommand({ storyId, stage }),
+        prepare_command: buildReviewPrepareCommand({ storyId, stage, roles }),
         dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
       };
     })
