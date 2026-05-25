@@ -31,6 +31,7 @@ import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
 } from './explore-evidence.js';
+import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -204,13 +205,17 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const verificationEvidence = workspace.initialized
     ? await progress.stage('read_verification_evidence', () => readVerificationEvidenceIfExists(root, story.story_id))
     : null;
+  const decisionRecords = workspace.initialized
+    ? await progress.stage('read_decision_records', () => readDecisionRecordsIfExists(root, story.story_id))
+    : null;
   const prContext = await progress.stage('build_pr_context', () => buildPrContext(root, {
     story,
     taskContext,
     git: reviewGit,
     fileGroups,
     latestStoryRun,
-    verificationEvidence
+    verificationEvidence,
+    decisionRecords
   }));
   prContext.toolchain = toolchain;
   const suggestedBranch = options.branchName ?? buildBranchName(story);
@@ -283,6 +288,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
   const humanReviewPath = path.join(prDir, 'human-review.json');
   const architectureReviewPath = path.join(prDir, 'architecture-review.json');
+  const decisionRecordsPath = path.join(prDir, 'decision-records.json');
   const bodyPath = path.join(prDir, 'pr-body.md');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
@@ -317,6 +323,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
       existingReview: existingArchitectureReview
     }), null, 2)}\n`, { signal });
+    await writeFile(decisionRecordsPath, `${JSON.stringify(preparation.pr_context.decision_records, null, 2)}\n`, { signal });
     await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
       preparation,
       reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
@@ -324,6 +331,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       bodyPath: toWorkspaceRelative(root, bodyPath),
       gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
       splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+      decisionRecordsPath: toWorkspaceRelative(root, decisionRecordsPath),
       existingReview: existingHumanReview
     }), null, 2)}\n`, { signal });
   });
@@ -338,6 +346,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_review_cockpit: toWorkspaceRelative(root, reviewCockpitPath),
         latest_human_review: toWorkspaceRelative(root, humanReviewPath),
         latest_architecture_review: toWorkspaceRelative(root, architectureReviewPath),
+        latest_decision_records: toWorkspaceRelative(root, decisionRecordsPath),
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
         latest_gate_dag: toWorkspaceRelative(root, gateDagJsonPath),
         latest_gate_dag_report: toWorkspaceRelative(root, gateDagReportPath),
@@ -367,6 +376,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       review_cockpit: reviewCockpitPath,
       human_review: humanReviewPath,
       architecture_review: architectureReviewPath,
+      decision_records: decisionRecordsPath,
       pr_body: bodyPath,
       gate_dag: gateDagJsonPath,
       gate_dag_report: gateDagReportPath,
@@ -412,7 +422,7 @@ function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateD
   };
 }
 
-function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architectureReviewPath, bodyPath, gateDagPath, splitPlanPath, existingReview = null }) {
+function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architectureReviewPath, bodyPath, gateDagPath, splitPlanPath, decisionRecordsPath = null, existingReview = null }) {
   const visualQa = preparation.pr_context?.visual_qa ?? null;
   const completionQuality = preparation.pr_context?.completion_quality ?? null;
   return {
@@ -427,11 +437,13 @@ function buildHumanReviewTemplate({ preparation, reviewCockpitPath, architecture
       pr_body: bodyPath,
       gate_dag: gateDagPath,
       split_plan: splitPlanPath,
+      decision_records: decisionRecordsPath,
       visual_qa: visualQa?.artifacts ?? []
     },
     evidence_summary: {
       architecture: summarizeReviewGate(preparation.pr_context?.gate_dag, 'architecture'),
       spec: summarizeReviewGate(preparation.pr_context?.gate_dag, 'spec'),
+      decision_records: preparation.pr_context?.decision_records?.summary ?? null,
       visual_qa: visualQa ? {
         status: visualQa.status,
         threshold_pct: visualQa.threshold_pct,
@@ -671,6 +683,7 @@ ${firstLook}
 - review_cockpit_html: ${toDisplayPath(result.artifacts.review_cockpit)}
 - human_review_json: ${toDisplayPath(result.artifacts.human_review)}
 - architecture_review_json: ${toDisplayPath(result.artifacts.architecture_review)}
+- decision_records_json: ${toDisplayPath(result.artifacts.decision_records)}
 - pr_body_markdown: ${toDisplayPath(result.artifacts.pr_body)}
 - gate_dag_json: ${toDisplayPath(result.artifacts.gate_dag)}
 - gate_dag_html: ${toDisplayPath(result.artifacts.gate_dag_report)}
@@ -2164,7 +2177,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null, decisionRecords = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   const hasSingleChangedStoryDoc = storyDocs.length === 1 && Boolean(primaryStory?.path);
@@ -2209,6 +2222,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     inferredSpec
   });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
     story,
@@ -2239,6 +2253,17 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     verification_evidence: boundVerificationEvidence,
+    decision_records: decisionRecords ? {
+      ...decisionRecords,
+      summary: decisionRecordSummary
+    } : {
+      schema_version: '0.1.0',
+      model: 'vibepro-decision-records-v1',
+      story_id: story.story_id,
+      artifact: toWorkspaceRelative(repoRoot, path.join(getWorkspaceDir(repoRoot), 'pr', story.story_id, 'decision-records.json')),
+      summary: decisionRecordSummary,
+      decisions: []
+    },
     risks: []
   };
   context.gate_dag = buildGateDag({
@@ -2256,6 +2281,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     networkContracts,
     agentReviews,
     verificationEvidence: boundVerificationEvidence,
+    decisionRecords: context.decision_records,
     inferredSpec,
     specDrift
   });
@@ -2269,7 +2295,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   context.gate_status = {
     schema_version: '0.1.0',
     overall_status: context.gate_dag.overall_status,
-    execution_gate: context.execution_gate
+    execution_gate: context.execution_gate,
+    decision_record_summary: decisionRecordSummary
   };
   context.risks = buildRisks({ git, fileGroups, latestStoryRun, gateDag: context.gate_dag, taskContext, specDrift, networkContracts, agentReviews });
   return context;
@@ -3028,6 +3055,7 @@ function buildGateDag({
   networkContracts = null,
   agentReviews = null,
   verificationEvidence,
+  decisionRecords = null,
   inferredSpec = null,
   specDrift = null
 }) {
@@ -3116,6 +3144,7 @@ function buildGateDag({
     flowVerification,
     verificationEvidence
   });
+  const decisionRecordGate = buildDecisionRecordGate(decisionRecords);
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
   const nodes = [
@@ -3131,6 +3160,7 @@ function buildGateDag({
     },
     networkContractGate,
     requirementGate,
+    decisionRecordGate,
     ...gates,
     ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
@@ -3166,7 +3196,8 @@ function buildGateDag({
     ]),
     { from: 'code', to: 'gate:network_contract' },
     { from: 'gate:network_contract', to: 'gate:requirement' },
-    { from: 'gate:requirement', to: 'gate:unit' },
+    { from: 'gate:requirement', to: 'gate:decision_record' },
+    { from: 'gate:decision_record', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
     ...(designQualityGate ? [
@@ -3196,6 +3227,7 @@ function buildGateDag({
     specGate,
     networkContractGate,
     requirementGate,
+    decisionRecordGate,
     ...gates,
     designQualityGate,
     visualQaGate,
@@ -3215,7 +3247,8 @@ function buildGateDag({
       story_status: storyGate.status,
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
-      requirement_status: requirementGate.status
+      requirement_status: requirementGate.status,
+      decision_record_status: decisionRecordGate.status
     },
     nodes: allNodes,
     edges
@@ -4079,12 +4112,40 @@ function renderPrGateEnforcement(gateDag) {
   ].join('\n');
 }
 
+function buildDecisionRecordGate(decisionRecords) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  const summary = decisionRecords?.summary ?? summarizeDecisionRecords(decisionRecords);
+  const open = decisions.filter((decision) => decision.status === 'open');
+  const secretExposure = decisions.filter((decision) => decision.type === 'secret_exposure');
+  const status = open.length > 0 ? 'needs_review' : 'passed';
+  return {
+    id: 'gate:decision_record',
+    type: 'decision_record_gate',
+    label: 'Decision Record Gate',
+    status,
+    required: true,
+    reason: status === 'passed'
+      ? `Decision records are captured; total=${summary.total}, waivers=${summary.by_type.waiver ?? 0}, noise=${summary.by_type.noise ?? 0}, secret_exposure=${summary.by_type.secret_exposure ?? 0}`
+      : `${open.length} decision record(s) are still open; classify as accepted/rejected/superseded before PR creation.`,
+    artifact: decisionRecords?.artifact ?? null,
+    summary,
+    open_decisions: open.map((decision) => ({
+      decision_id: decision.decision_id,
+      type: decision.type,
+      source: decision.source,
+      summary: decision.summary
+    })),
+    secret_exposure_count: secretExposure.length
+  };
+}
+
 function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',
       'architecture_gate',
       'spec_gate',
+      'decision_record_gate',
       'verification_gate',
       'requirement_gate',
       'visual_qa_gate',
@@ -4141,6 +4202,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
+      if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
       if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and using the generated review requests with permitted Codex/Claude Code subagents.`;
       if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for the current git head, dirty fingerprint, and closed subagent lifecycle.`;
@@ -4187,6 +4249,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
+  if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';

@@ -154,6 +154,221 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
+test('decision record captures noise waiver and secret exposure in auditable artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const runCliExpectingStderr = async (args) => {
+    let stderr = '';
+    const result = await runCli(args, {
+      stderr: { write: (text) => { stderr += text; } }
+    });
+    return { ...result, stderr };
+  };
+
+  const noise = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'noise',
+    '--source',
+    'gate:requirement',
+    '--source-status',
+    'needs_review',
+    '--summary',
+    'Mock-only branch was flagged as needs_review but does not affect runtime behavior.',
+    '--reason',
+    'The finding points to a test fixture and has no production route.',
+    '--reviewer',
+    'codex',
+    '--json'
+  ]);
+  assert.equal(noise.exitCode, 0);
+
+  const secret = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'secret_exposure',
+    '--source',
+    'chat:latest',
+    '--summary',
+    'User pasted API key AIzaSyCCXrP25ExGU0CIW3RJhNmUaUVOaEcxglM in chat.',
+    '--secret-location',
+    'conversation',
+    '--secret-action',
+    'rotated',
+    '--json'
+  ]);
+  assert.equal(secret.exitCode, 0);
+  assert.match(secret.result.decision.summary, /\[REDACTED:/);
+  assert.doesNotMatch(secret.result.decision.summary, /AIzaSyCCXrP25ExGU0CIW3RJhNmUaUVOaEcxglM/);
+
+  const waiver = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:e2e',
+    '--summary',
+    'E2E is not applicable for this CLI-only artifact workflow.',
+    '--reason',
+    'The changed surface is non-UI CLI and PR artifact generation covered by unit and integration checks.',
+    '--reviewer',
+    'codex',
+    '--json'
+  ]);
+  assert.equal(waiver.exitCode, 0);
+
+  const missingNoiseReason = await runCliExpectingStderr([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'noise',
+    '--summary',
+    'Missing reason should fail.',
+    '--json'
+  ]);
+  assert.notEqual(missingNoiseReason.exitCode, 0);
+  assert.match(missingNoiseReason.stderr, /--type noise requires --reason/);
+
+  const missingWaiverReason = await runCliExpectingStderr([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'Missing reason should fail.',
+    '--json'
+  ]);
+  assert.notEqual(missingWaiverReason.exitCode, 0);
+  assert.match(missingWaiverReason.stderr, /--type waiver requires --reason/);
+
+  const missingSecretLocation = await runCliExpectingStderr([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'secret_exposure',
+    '--summary',
+    'A secret was pasted and redacted.',
+    '--secret-action',
+    'redacted',
+    '--json'
+  ]);
+  assert.notEqual(missingSecretLocation.exitCode, 0);
+  assert.match(missingSecretLocation.stderr, /--type secret_exposure requires --secret-location/);
+
+  const missingSecretAction = await runCliExpectingStderr([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'secret_exposure',
+    '--summary',
+    'A secret was pasted and redacted.',
+    '--secret-location',
+    'conversation',
+    '--json'
+  ]);
+  assert.notEqual(missingSecretAction.exitCode, 0);
+  assert.match(missingSecretAction.stderr, /--type secret_exposure requires --secret-action/);
+
+  const records = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json'));
+  assert.equal(records.decisions.length, 3);
+  assert.equal(records.decisions.find((decision) => decision.type === 'secret_exposure').secret_exposure.value_recorded, false);
+
+  const status = await runCli([
+    'decision',
+    'status',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--json'
+  ]);
+  assert.equal(status.exitCode, 0, status.stderr);
+  assert.equal(status.result.summary.total, 3);
+  assert.equal(status.result.summary.open, 0);
+  assert.equal(status.result.summary.by_type.noise, 1);
+  assert.equal(status.result.summary.by_type.waiver, 1);
+  assert.equal(status.result.summary.by_type.secret_exposure, 1);
+
+  const prepare = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  assert.equal(prepare.result.preparation.pr_context.decision_records.summary.by_type.noise, 1);
+  assert.equal(prepare.result.preparation.pr_context.decision_records.summary.by_type.waiver, 1);
+  assert.equal(prepare.result.preparation.pr_context.decision_records.summary.by_type.secret_exposure, 1);
+  const decisionGate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:decision_record');
+  assert.equal(decisionGate.status, 'passed');
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json')), true);
+  const humanReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'human-review.json'));
+  assert.equal(humanReview.source_artifacts.decision_records, '.vibepro/pr/story-pr-prepare/decision-records.json');
+});
+
+test('open decision records remain blocking until classified', async () => {
+  const repo = await makeGitRepoWithStory();
+  const result = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'needs_review',
+    '--source',
+    'check:ui',
+    '--summary',
+    'Interactive element finding still needs owner classification.',
+    '--status',
+    'open',
+    '--json'
+  ]);
+  assert.equal(result.exitCode, 0);
+
+  const prepare = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const decisionGate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:decision_record');
+  assert.equal(decisionGate.status, 'needs_review');
+  assert.equal(decisionGate.open_decisions[0].source, 'check:ui');
+  assert.equal(prepare.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:decision_record'), true);
+});
+
 test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates Design Cognition Loop evidence and explicit gate checks', async () => {
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'src', 'app', '(app)', 'home', '_components'), { recursive: true });
