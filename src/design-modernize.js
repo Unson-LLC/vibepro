@@ -16,20 +16,20 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
     designSystemId: options.designSystemId,
     title: options.designSystemTitle ?? product
   });
-  const screens = [];
-
-  for (const route of routes) {
-    const evidence = await collectScreenEvidence(root, route);
-    screens.push(buildScreenSpec({
-      product,
-      route,
-      evidence,
-      designSystem,
-      baseUrl: options.baseUrl
-    }));
-  }
-
-  const designConstraintGraph = buildDesignConstraintGraph(designSystem, screens);
+  const screens = await collectScreens(root, routes, { product, designSystem, baseUrl: options.baseUrl });
+  const productSemanticModel = buildProductSemanticModel({
+    product,
+    brief: options.brief,
+    routes,
+    screens
+  });
+  const derivedDesignSystem = buildDerivedDesignSystem({
+    product,
+    semanticModel: productSemanticModel,
+    screens,
+    referenceDesignSystem: designSystem
+  });
+  const designConstraintGraph = buildDesignConstraintGraph(designSystem, screens, derivedDesignSystem);
   const visualHypothesis = buildVisualHypothesisPlan({ storyId, product, screens, designConstraintGraph });
   const plan = {
     schema_version: '0.1.0',
@@ -55,6 +55,10 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       }
     },
     reference_design_system: designSystem,
+    product_semantic_model: productSemanticModel,
+    derived_design_system: derivedDesignSystem,
+    component_role_map: derivedDesignSystem.component_role_map,
+    composition_guidelines: derivedDesignSystem.composition_guidelines,
     design_constraint_graph: designConstraintGraph,
     visual_hypothesis: visualHypothesis,
     design_quality_dag: buildDesignQualityDag({ storyId, product, screens }),
@@ -67,6 +71,11 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       visual_hypothesis_prompts: '.vibepro/design-modernize/<story-id>/visual-hypothesis-prompts.md',
       visual_hypothesis_candidates: '.vibepro/design-modernize/<story-id>/visual-hypotheses/',
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
+      derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
+      product_semantic_model: '.vibepro/design-modernize/<story-id>/product-semantic-model.json',
+      component_role_map: '.vibepro/design-modernize/<story-id>/component-role-map.json',
+      composition_guidelines: '.vibepro/design-modernize/<story-id>/composition-guidelines.md',
+      ds_gate: '.vibepro/design-modernize/<story-id>/ds-gate.json',
       screen_specs: '.vibepro/design-modernize/<story-id>/design-modernize.json',
       design_briefs: '.vibepro/design-modernize/<story-id>/design-briefs.md',
       implementation_spec: '.vibepro/design-modernize/<story-id>/implementation-spec.md'
@@ -81,11 +90,69 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   await writeFile(path.join(outDir, 'implementation-spec.md'), renderImplementationSpec(plan));
   await writeFile(path.join(outDir, 'design-constraint-graph.json'), `${JSON.stringify(designConstraintGraph, null, 2)}\n`);
   await writeFile(path.join(outDir, 'visual-hypothesis-prompts.md'), renderVisualHypothesisPrompts(plan));
+  await writeDerivedDesignSystemArtifacts(outDir, {
+    storyId,
+    productSemanticModel,
+    derivedDesignSystem
+  });
   if (bundle) {
     await writeFile(path.join(outDir, 'design-system-bundle.json'), `${JSON.stringify(bundle, null, 2)}\n`);
   }
 
   return { outDir, plan };
+}
+
+export async function deriveProductDesignSystem(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = options.storyId ?? 'design-modernize';
+  const product = options.product ?? inferProductName(root);
+  const routes = options.routes?.length > 0 ? options.routes : DEFAULT_SCREEN_ROUTES;
+  const bundle = await readDesignSystemBundle(root, options.designSystemBundle);
+  const referenceDesignSystem = normalizeDesignSystemBundle(bundle, {
+    designSystemId: options.designSystemId,
+    title: options.designSystemTitle ?? product
+  });
+  const screens = await collectScreens(root, routes, {
+    product,
+    designSystem: referenceDesignSystem,
+    baseUrl: options.baseUrl
+  });
+  const productSemanticModel = buildProductSemanticModel({
+    product,
+    brief: options.brief,
+    routes,
+    screens
+  });
+  const derivedDesignSystem = buildDerivedDesignSystem({
+    product,
+    semanticModel: productSemanticModel,
+    screens,
+    referenceDesignSystem
+  });
+  const result = {
+    schema_version: '0.1.0',
+    workflow: 'design-system-derivation',
+    story_id: storyId,
+    product,
+    generated_at: new Date().toISOString(),
+    external_generator_required: false,
+    authority: 'vibepro_internal_design_constraints',
+    product_semantic_model: productSemanticModel,
+    derived_design_system: derivedDesignSystem,
+    component_role_map: derivedDesignSystem.component_role_map,
+    composition_guidelines: derivedDesignSystem.composition_guidelines,
+    ds_gate: buildDesignSystemGate({ storyId, derivedDesignSystem })
+  };
+  const outDir = path.join(root, '.vibepro', 'design-modernize', storyId);
+  await mkdir(outDir, { recursive: true });
+  await writeDerivedDesignSystemArtifacts(outDir, {
+    storyId,
+    productSemanticModel,
+    derivedDesignSystem
+  });
+  await writeFile(path.join(outDir, 'design-system-derivation.json'), `${JSON.stringify(result, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'design-system-derivation.md'), renderDerivedDesignSystemSummary(result));
+  return { outDir, result };
 }
 
 export async function captureDesignModernizeScreens(repoRoot, options = {}) {
@@ -279,6 +346,41 @@ ${screen.gate_checks.map((check) => `- ${check}`).join('\n')}
 `).join('\n')}`;
 }
 
+export function renderDerivedDesignSystemSummary(result) {
+  const ds = result.derived_design_system;
+  return `# ${result.story_id} Derived Design System
+
+VibePro derived this design system from product brief, current UI evidence, and route-level invariants. It is an internal constraint model, not an external generator output.
+
+## Identity
+
+- Product: ${result.product}
+- Design language: ${ds.identity.design_language}
+- Interaction model: ${ds.identity.interaction_model}
+- Authority: ${result.authority}
+
+## Semantic Color Roles
+
+${ds.semantic_tokens.color_roles.map((role) => `- ${role.name}: ${role.purpose}`).join('\n')}
+
+## Component Roles
+
+${ds.component_role_map.roles.map((role) => `- ${role.name}: ${role.responsibility}`).join('\n')}
+
+## Composition Rules
+
+${ds.composition_guidelines.rules.map((rule) => `- ${rule.id}: ${rule.statement}`).join('\n')}
+
+## Anti-patterns
+
+${ds.anti_patterns.map((item) => `- ${item.id}: ${item.statement}`).join('\n')}
+
+## Gate
+
+${buildDesignSystemGate({ storyId: result.story_id, derivedDesignSystem: ds }).checks.map((check) => `- ${check.id}: ${check.statement}`).join('\n')}
+`;
+}
+
 export function renderCaptureSummary({ outDir, result }) {
   return `# Design Modernize Capture
 
@@ -303,6 +405,31 @@ async function readDesignSystemBundle(repoRoot, bundlePath) {
   if (!bundlePath) return null;
   const absolutePath = path.isAbsolute(bundlePath) ? bundlePath : path.join(repoRoot, bundlePath);
   return JSON.parse(await readFile(absolutePath, 'utf8'));
+}
+
+async function writeDerivedDesignSystemArtifacts(outDir, { storyId, productSemanticModel, derivedDesignSystem }) {
+  await writeFile(path.join(outDir, 'product-semantic-model.json'), `${JSON.stringify(productSemanticModel, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'derived-design-system.json'), `${JSON.stringify(derivedDesignSystem, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'component-role-map.json'), `${JSON.stringify(derivedDesignSystem.component_role_map, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'ds-gate.json'), `${JSON.stringify(buildDesignSystemGate({ storyId, derivedDesignSystem }), null, 2)}\n`);
+  await writeFile(path.join(outDir, 'composition-guidelines.md'), renderCompositionGuidelines(derivedDesignSystem));
+}
+
+function renderCompositionGuidelines(derivedDesignSystem) {
+  return `# Composition Guidelines
+
+${derivedDesignSystem.composition_guidelines.rules.map((rule) => `## ${rule.id}
+
+${rule.statement}
+`).join('\n')}
+## Color Discipline
+
+${derivedDesignSystem.semantic_tokens.color_roles.map((role) => `- ${role.name}: ${role.purpose}`).join('\n')}
+
+## CTA Hierarchy
+
+${derivedDesignSystem.cta_hierarchy.map((item, index) => `${index + 1}. ${item}`).join('\n')}
+`;
 }
 
 async function readPlan(outDir) {
@@ -330,6 +457,300 @@ async function loadPlaywright(repoRoot) {
       return null;
     }
   }
+}
+
+async function collectScreens(repoRoot, routes, { product, designSystem, baseUrl }) {
+  const screens = [];
+  for (const route of routes) {
+    const evidence = await collectScreenEvidence(repoRoot, route);
+    screens.push(buildScreenSpec({
+      product,
+      route,
+      evidence,
+      designSystem,
+      baseUrl
+    }));
+  }
+  return screens;
+}
+
+function buildProductSemanticModel({ product, brief, routes, screens }) {
+  const text = [
+    product,
+    brief,
+    routes.join(' '),
+    ...screens.flatMap((screen) => [
+      screen.route,
+      ...screen.evidence.files.flatMap((file) => [
+        ...file.components,
+        ...file.ctas,
+        ...file.states,
+        ...file.navigation,
+        ...file.data_dependencies
+      ])
+    ])
+  ].join(' ').toLowerCase();
+  const currentCtas = unique(screens.flatMap((screen) => screen.evidence.files.flatMap((file) => file.ctas))).slice(0, 20);
+  const routeIntents = screens.map((screen) => ({
+    route: screen.route,
+    intent: inferScreenIntent(screen.route),
+    current_ctas: unique(screen.evidence.files.flatMap((file) => file.ctas)).slice(0, 12),
+    current_navigation: unique(screen.evidence.files.flatMap((file) => file.navigation)).slice(0, 12)
+  }));
+  const isJapanese = /日本|japanese|渋谷|新宿|休憩|宿泊|地図|検索|電話/.test(text);
+  const hotelDiscovery = /hotel|ホテル|宿泊|休憩|stay|map|地図|空室|電話/.test(text);
+  const aiPhone = /ai電話|ai phone|phone confirmation|空室確認|電話/.test(text);
+  return {
+    schema_version: '0.1.0',
+    product,
+    brief: brief ?? null,
+    primary_domain: hotelDiscovery ? 'hotel_discovery' : 'product_workflow',
+    language_policy: isJapanese ? 'japanese_ui_first' : 'preserve_current_product_language',
+    interaction_model: aiPhone ? 'discovery_to_ai_phone_confirmation' : 'preserve_current_primary_action_model',
+    domain_concepts: unique([
+      ...(/current|現在地|location|map|地図/.test(text) ? ['location_search', 'map_exploration'] : []),
+      ...(/condition|filter|条件|絞り/.test(text) ? ['condition_search', 'filter_refinement'] : []),
+      ...(/休憩/.test(text) ? ['plan_rest'] : []),
+      ...(/宿泊|stay/.test(text) ? ['plan_stay'] : []),
+      ...(/サービスタイム|service/.test(text) ? ['plan_service_time'] : []),
+      ...(/今すぐ|now|空室/.test(text) ? ['plan_now', 'availability'] : []),
+      ...(/price|価格|¥|円/.test(text) ? ['price'] : []),
+      ...(/distance|距離|徒歩|km|m/.test(text) ? ['distance'] : []),
+      ...(/facility|設備|wi-fi|駐車場/.test(text) ? ['facility'] : []),
+      ...(/user posts|投稿|口コミ/.test(text) ? ['user_posts'] : [])
+    ]),
+    route_intents: routeIntents,
+    native_ctas: currentCtas,
+    forbidden_patterns: unique([
+      'net_new_app_concept',
+      'navigation_rewrite_without_evidence',
+      'invented_backend_data',
+      'marketing_landing_page',
+      ...(/book now|booking|予約/.test(text) || aiPhone ? ['generic_book_now_cta'] : [])
+    ])
+  };
+}
+
+function buildDerivedDesignSystem({ product, semanticModel, screens, referenceDesignSystem }) {
+  const routeIntents = semanticModel.route_intents.map((item) => item.intent);
+  const componentSamples = unique([
+    ...screens.flatMap((screen) => screen.evidence.files.flatMap((file) => file.components)),
+    ...(referenceDesignSystem.component_summary?.names ?? [])
+  ]);
+  const colorRoles = buildSemanticColorRoles(semanticModel);
+  const componentRoleMap = buildComponentRoleMap({ semanticModel, componentSamples, routeIntents });
+  return {
+    schema_version: '0.1.0',
+    source: 'vibepro_derived_from_product_evidence',
+    authority: 'internal_design_constraints',
+    identity: {
+      product,
+      design_language: inferDesignLanguage(semanticModel),
+      interaction_model: semanticModel.interaction_model,
+      language_policy: semanticModel.language_policy
+    },
+    foundations: {
+      theme_order: ['color_ramps', 'typography', 'spacing', 'radii', 'motion', 'shadows'],
+      token_dependency_order: ['raw_theme', 'semantic_tokens', 'recipes', 'component_roles', 'composition_rules'],
+      density_policy: semanticModel.primary_domain === 'hotel_discovery' ? 'mobile_dense_scannable' : 'preserve_current_density',
+      typography_policy: semanticModel.language_policy === 'japanese_ui_first'
+        ? 'compact_japanese_mobile_scale_with_tabular_numerals'
+        : 'preserve_current_readability_scale',
+      motion_policy: ['snappy_utility_feedback', 'spatial_context_for_sheets_and_overlays', 'respect_reduced_motion']
+    },
+    semantic_tokens: {
+      color_roles: colorRoles,
+      state_semantics: ['loading', 'empty', 'error', 'selected', 'disabled', 'success', 'available', 'limited', 'unavailable'],
+      cta_priority: ['primary_domain_action', 'route_navigation', 'filter_refinement', 'secondary_reference'],
+      domain_semantics: semanticModel.domain_concepts
+    },
+    component_role_map: componentRoleMap,
+    composition_guidelines: buildCompositionGuidelines(semanticModel),
+    cta_hierarchy: buildCtaHierarchy(semanticModel),
+    anti_patterns: semanticModel.forbidden_patterns.map((pattern, index) => ({
+      id: `DS-AP-${index + 1}`,
+      statement: antiPatternStatement(pattern)
+    })),
+    visual_hypothesis_policy: {
+      image_generation_role: 'explore_candidate_visual_directions_only',
+      candidates_per_screen: { min: 2, max: 4 },
+      required_candidate_notes: [
+        'preserved UX',
+        'design moves',
+        'risky or rejected moves',
+        'implementation notes',
+        'DS drift risks'
+      ],
+      implementation_authority: 'VibePro spec, current code, screenshots, and gate evidence'
+    }
+  };
+}
+
+function buildSemanticColorRoles(semanticModel) {
+  const roles = [
+    { name: 'surface_base', purpose: 'primary app background and depth foundation' },
+    { name: 'surface_raised', purpose: 'cards, sheets, and grouped controls' },
+    { name: 'text_primary', purpose: 'primary readable content' },
+    { name: 'text_muted', purpose: 'secondary metadata and disabled context' },
+    { name: 'brand_interactive', purpose: 'primary interaction and selected state, not decoration' }
+  ];
+  if (semanticModel.primary_domain === 'hotel_discovery') {
+    roles.push(
+      { name: 'availability_positive', purpose: 'available or confirmed state' },
+      { name: 'geo_distance', purpose: 'location, distance, and map exploration cues' },
+      { name: 'urgency_caution', purpose: 'limited availability, now intent, price attention, and caution' },
+      { name: 'plan_rest', purpose: '休憩 plan identity, consistent across selector badge card and pin' },
+      { name: 'plan_stay', purpose: '宿泊 plan identity, consistent across selector badge card and pin' },
+      { name: 'plan_service_time', purpose: 'サービスタイム plan identity, consistent across selector badge card and pin' },
+      { name: 'plan_now', purpose: '今すぐ plan identity, consistent across selector badge card and pin' }
+    );
+  }
+  return roles;
+}
+
+function buildComponentRoleMap({ semanticModel, componentSamples, routeIntents }) {
+  const names = componentSamples.map(String);
+  const defaults = semanticModel.primary_domain === 'hotel_discovery'
+    ? [
+        ['SearchBar', 'top-level discovery entry point; never buried inside cards'],
+        ['SegmentedSearchMode', 'switches search approach without changing plan semantics'],
+        ['PlanTypeSelector', 'selects domain plan views; not a generic filter substitute'],
+        ['FilterChip', 'fast condition refinement in horizontal rows'],
+        ['HotelCard', 'full result card for browsing feeds'],
+        ['CompactHotelCard', 'dense result card for bottom sheets and long lists'],
+        ['MapPricePin', 'only result marker on map surfaces'],
+        ['BottomSheet', 'map result container and contextual mobile overlay'],
+        ['BottomNavigation', 'primary mobile navigation anchor'],
+        ['PageHeader', 'route title, back action, and scoped actions'],
+        ['AIPhoneCTA', 'primary domain action after the user focuses on a hotel'],
+        ['FacilityBadge', 'quiet amenity metadata'],
+        ['AvailabilityBadge', 'semantic availability status'],
+        ['PlanBadge', 'domain plan identity marker']
+      ]
+    : [
+        ['PrimaryAction', 'highest-priority domain action'],
+        ['FilterControl', 'condition refinement without route rewrite'],
+        ['ResultCard', 'repeatable entity summary'],
+        ['StatusBadge', 'state or status indicator'],
+        ['NavigationShell', 'stable route navigation']
+      ];
+  const roles = defaults.map(([name, responsibility]) => ({
+    name,
+    responsibility,
+    evidence: names.filter((sample) => sample.toLowerCase().includes(name.toLowerCase())).slice(0, 8),
+    required_for_intents: routeIntents.filter(Boolean).slice(0, 8)
+  }));
+  return {
+    schema_version: '0.1.0',
+    roles,
+    consistency_rules: [
+      'same component role must carry the same semantic color meaning across screens',
+      'dense and full-size variants must not be mixed in one homogeneous list',
+      'primary domain action must not be replaced by generic conversion language',
+      'component role changes require matching route-level regression evidence'
+    ]
+  };
+}
+
+function buildCompositionGuidelines(semanticModel) {
+  const hotelRules = [
+    {
+      id: 'DS-COMP-1',
+      statement: 'Search flows keep a stable vertical hierarchy: search entry, search mode, plan intent, filters, then results.'
+    },
+    {
+      id: 'DS-COMP-2',
+      statement: 'Map screens show results through map pins and a bottom sheet; avoid floating result cards directly on the map.'
+    },
+    {
+      id: 'DS-COMP-3',
+      statement: 'Plan identity appears before availability, and facility metadata stays visually quieter than plan or availability signals.'
+    },
+    {
+      id: 'DS-COMP-4',
+      statement: 'AI phone confirmation appears only after a user has focused on a hotel or result, not as a generic search CTA.'
+    },
+    {
+      id: 'DS-COMP-5',
+      statement: 'Prices use yen prefix and aligned numerals; avoid crossed-out discounts or deal-app patterns.'
+    }
+  ];
+  const genericRules = [
+    {
+      id: 'DS-COMP-1',
+      statement: 'Preserve current route purpose, CTA order, and navigation anchors while improving visual hierarchy.'
+    },
+    {
+      id: 'DS-COMP-2',
+      statement: 'Use repeated component roles consistently instead of one-off visual treatments.'
+    },
+    {
+      id: 'DS-COMP-3',
+      statement: 'State, status, and action colors must be semantic and stable across screens.'
+    }
+  ];
+  return {
+    schema_version: '0.1.0',
+    rules: semanticModel.primary_domain === 'hotel_discovery' ? hotelRules : genericRules
+  };
+}
+
+function buildCtaHierarchy(semanticModel) {
+  if (semanticModel.interaction_model === 'discovery_to_ai_phone_confirmation') {
+    return ['AI電話で空室確認', '現在地から探す', 'このエリアで検索', '条件で絞り込む', '地図で見る', '公式サイト', '行きたい'];
+  }
+  return unique(['primary domain action', ...semanticModel.native_ctas]).slice(0, 10);
+}
+
+function inferDesignLanguage(semanticModel) {
+  if (semanticModel.primary_domain === 'hotel_discovery') return 'premium_utility_travel';
+  return 'product_local_utility';
+}
+
+function antiPatternStatement(pattern) {
+  const statements = {
+    net_new_app_concept: 'Do not turn modernization into a new app concept or unrelated product direction.',
+    navigation_rewrite_without_evidence: 'Do not rewrite navigation structure unless Graphify/Codex evidence proves the current route contract changed.',
+    invented_backend_data: 'Do not invent backend data, domain entities, or unavailable states.',
+    marketing_landing_page: 'Do not collapse operational product screens into marketing or landing-page composition.',
+    generic_book_now_cta: 'Do not replace product-native confirmation actions with generic Book Now or booking-funnel CTAs.'
+  };
+  return statements[pattern] ?? `Avoid ${pattern}.`;
+}
+
+function buildDesignSystemGate({ storyId, derivedDesignSystem }) {
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    mode: 'explicit',
+    fallback_allowed: false,
+    checks: [
+      {
+        id: 'DS-GATE-IDENTITY',
+        statement: 'Derived design system includes product identity, interaction model, language policy, and forbidden patterns.'
+      },
+      {
+        id: 'DS-GATE-SEMANTICS',
+        statement: 'Semantic tokens cover surface, text, brand/interactive, state colors, CTA priority, density, motion, and domain semantics.'
+      },
+      {
+        id: 'DS-GATE-COMPONENT-ROLES',
+        statement: 'Component roles define responsibility and usage constraints, not only visual component names.'
+      },
+      {
+        id: 'DS-GATE-COMPOSITION',
+        statement: 'Composition guidelines preserve route hierarchy, navigation, card/list usage, badge order, and primary CTA placement.'
+      },
+      {
+        id: 'DS-GATE-VISUAL-HYPOTHESIS',
+        statement: 'Image generation is treated as candidate evidence with critique notes, never as implementation authority.'
+      },
+      {
+        id: 'DS-GATE-ANTI-PATTERN',
+        statement: `Anti-pattern coverage is explicit (${derivedDesignSystem.anti_patterns.map((item) => item.id).join(', ')}).`
+      }
+    ]
+  };
 }
 
 async function collectScreenEvidence(repoRoot, route) {
@@ -563,10 +984,12 @@ function buildDesignQualityDag({ storyId, product, screens }) {
   };
 }
 
-function buildDesignConstraintGraph(designSystem, screens) {
+function buildDesignConstraintGraph(designSystem, screens, derivedDesignSystem = null) {
   const tokenSample = designSystem.token_summary?.sample ?? [];
   const componentNames = designSystem.component_summary?.names ?? [];
   const guidelineTopics = designSystem.guideline_summary?.topics ?? [];
+  const derivedColorRoles = derivedDesignSystem?.semantic_tokens?.color_roles?.map((role) => role.name) ?? [];
+  const derivedComponentRoles = derivedDesignSystem?.component_role_map?.roles?.map((role) => role.name) ?? [];
   return {
     schema_version: '0.1.0',
     source_design_system: {
@@ -575,14 +998,14 @@ function buildDesignConstraintGraph(designSystem, screens) {
       version: designSystem.version ?? null,
       status: designSystem.status
     },
-    color_roles: inferRoles({
+    color_roles: unique([...derivedColorRoles, ...inferRoles({
       samples: tokenSample,
       defaults: ['brand', 'surface', 'text', 'success', 'warning', 'location', 'urgency', 'disabled']
-    }),
-    component_roles: inferRoles({
+    })]).slice(0, 24),
+    component_roles: unique([...derivedComponentRoles, ...inferRoles({
       samples: componentNames,
       defaults: ['primary_cta', 'result_card', 'status_badge', 'filter_chip', 'bottom_sheet', 'bottom_navigation']
-    }),
+    })]).slice(0, 24),
     cta_priority: ['primary', 'secondary', 'tertiary'],
     state_semantics: ['loading', 'empty', 'error', 'selected', 'disabled', 'success', 'available', 'limited', 'unavailable'],
     density_policy: inferDensityPolicy(guidelineTopics),

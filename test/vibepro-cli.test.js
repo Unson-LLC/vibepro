@@ -232,6 +232,11 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(result.result.plan.spec_gate.mode, 'explicit');
   assert.equal(result.result.plan.spec_gate.fallback_allowed, false);
   assert.equal(result.result.plan.design_intelligence.external_generator_required, false);
+  assert.equal(result.result.plan.derived_design_system.source, 'vibepro_derived_from_product_evidence');
+  assert.equal(result.result.plan.derived_design_system.authority, 'internal_design_constraints');
+  assert.equal(result.result.plan.product_semantic_model.primary_domain, 'hotel_discovery');
+  assert.equal(result.result.plan.derived_design_system.visual_hypothesis_policy.image_generation_role, 'explore_candidate_visual_directions_only');
+  assert.ok(result.result.plan.component_role_map.roles.some((role) => role.name === 'AIPhoneCTA'));
   assert.equal(result.result.plan.design_quality_dag.model, 'vibepro-design-quality-dag-v1');
   assert.equal(result.result.plan.visual_hypothesis.authority, 'evidence_only');
   assert.equal(result.result.plan.visual_hypothesis.status, 'needs_image_generation');
@@ -248,14 +253,46 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.match(result.result.plan.screens[0].design_brief.body, /地図で探す/);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'implementation-spec.md')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'design-constraint-graph.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'derived-design-system.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'product-semantic-model.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'component-role-map.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'composition-guidelines.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'ds-gate.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'visual-hypothesis-prompts.md')), true);
   const spec = await readFile(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'implementation-spec.md'), 'utf8');
   const visualPrompts = await readFile(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'visual-hypothesis-prompts.md'), 'utf8');
+  const derivedDesignSystem = await readJson(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'derived-design-system.json'));
+  const dsGate = await readJson(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-ds-modernize', 'ds-gate.json'));
   assert.match(spec, /INV-HOME-1/);
   assert.match(spec, /AP-GLOBAL-1/);
   assert.match(spec, /DQ-GLOBAL-1/);
   assert.match(visualPrompts, /Generated images are not implementation authority/);
   assert.match(visualPrompts, /VH-HOME-INV/);
+  assert.equal(derivedDesignSystem.foundations.token_dependency_order[0], 'raw_theme');
+  assert.ok(derivedDesignSystem.composition_guidelines.rules.some((rule) => /AI phone confirmation/.test(rule.statement)));
+  assert.equal(dsGate.fallback_allowed, false);
+  assert.ok(dsGate.checks.some((check) => check.id === 'DS-GATE-VISUAL-HYPOTHESIS'));
+
+  const derivedOnly = await runCli([
+    'design-modernize',
+    'derive-system',
+    repo,
+    '--id',
+    'story-aitle-derived-only',
+    '--product',
+    'Aitle',
+    '--routes',
+    '/home,/map',
+    '--brief',
+    'Japanese hotel discovery app with map exploration, AI電話で空室確認, 休憩, 宿泊, サービスタイム, 今すぐ. Avoid Book Now.',
+    '--json'
+  ]);
+  assert.equal(derivedOnly.exitCode, 0);
+  assert.equal(derivedOnly.result.result.workflow, 'design-system-derivation');
+  assert.equal(derivedOnly.result.result.external_generator_required, false);
+  assert.equal(derivedOnly.result.result.product_semantic_model.interaction_model, 'discovery_to_ai_phone_confirmation');
+  assert.ok(derivedOnly.result.result.derived_design_system.anti_patterns.some((item) => /Book Now/.test(item.statement)));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-derived-only', 'design-system-derivation.md')), true);
 
   const capture = await runCli([
     'design-modernize',
@@ -330,7 +367,13 @@ test('help command prints discoverable usage', async () => {
   assert.equal(result.command, 'help');
   assert.match(output, /vibepro help \[command\]/);
   assert.match(output, /まず人間が使う基本コマンド/);
+  assert.match(output, /risk-adaptive Gate DAG/);
+  assert.match(output, /workflow_heavy/);
   assert.match(output, /\.vibepro\/ の意味/);
+  assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(output, /GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らない/);
+  assert.doesNotMatch(output, /gh pr create.*標準経路として使/i);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
@@ -354,8 +397,12 @@ test('help command prints discoverable usage', async () => {
     stdout: { write: (text) => { englishOutput += text; } }
   });
   assert.equal(englishResult.exitCode, 0);
-  assert.match(englishOutput, /VibePro is a Story \/ Architecture \/ Spec/);
+  assert.match(englishOutput, /safer AI-driven PRs/);
+  assert.match(englishOutput, /risk-adaptive Gate DAG/);
   assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
+  assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
 });
 
 test('check list prints available diagnosis packs', async () => {
@@ -4449,6 +4496,9 @@ Graphifyは任意の外部CLIとして扱い、VibeProの配布物には同梱�
   assert.match(prBody, /VibeProをOSSとして公開するために/);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json'));
   assert.equal(gateDag.nodes.find((node) => node.id === 'story')?.label, 'story-oss-readiness - Apache-2.0でVibeProをOSS公開できる状態にする');
+  const splitPlan = await readJson(path.join(repo, '.vibepro', 'pr', storyId, 'split-plan.json'));
+  assert.equal(splitPlan.lanes.find((lane) => lane.id === 'requirements-ssot')?.files.includes('README.md'), true);
+  assert.equal(splitPlan.lanes.find((lane) => lane.id === 'misc-follow-up')?.files.includes('README.md') ?? false, false);
 });
 
 test('pr prepare carries configured output language into human artifacts', async () => {
@@ -4589,10 +4639,16 @@ architecture_docs:
   assert.equal(e2eGate.status, 'not_required');
   assert.equal(e2eGate.command, null);
   assert.match(e2eGate.reason, /UI\/E2E対象の差分ではない/);
+  assert.equal(e2eGate.acceptance_e2e_coverage.required, false);
+  assert.equal(e2eGate.acceptance_e2e_coverage.status, 'not_applicable');
+  assert.deepEqual(e2eGate.acceptance_e2e_coverage.missing_acceptance_criteria, []);
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), false);
   assert.equal(prepare.pr_context.completion_quality.metrics.e2e_experience_reach_rate, null);
   assert.equal(prepare.split_plan.stacked_gate_plan.summary.requires_cumulative_e2e, false);
   assert.equal(prepare.split_plan.lanes.some((lane) => lane.id === 'e2e-gate'), false);
+  const runtimeLanePlan = prepare.split_plan.stacked_gate_plan.lane_plans.find((lane) => lane.lane_id === 'runtime-behavior');
+  assert.match(runtimeLanePlan.review_note, /E2E Gateが不要/);
+  assert.doesNotMatch(runtimeLanePlan.review_note, /後続のe2e-gate/);
 });
 
 test('pr prepare uses node --test targeted command for node test runner', async () => {
@@ -9414,11 +9470,27 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
   assert.match(readme, /Graphify is optional/);
   assert.match(readme, /does not bundle Graphify/);
+  assert.match(readme, /Risk-adaptive Gate DAGs/);
+  assert.match(readme, /workflow_heavy/);
+  assert.match(readme, /vibepro pr create/);
+  assert.match(readme, /Do not use raw `gh pr create`/);
+  assert.match(readme, /design-modernize/);
+  assert.match(readme, /derive-system/);
+  assert.match(readme, /VibePro-derived Design System/);
+  assert.match(readme, /preserving current routes, information architecture, CTAs, state behavior, and data dependencies/);
   assert.match(readme, /Apache License 2\.0/);
   assert.doesNotMatch(readme, /No license file is currently included/);
   assert.doesNotMatch(readme, /Internal beta release notes/);
   assert.match(readmeJa, /Graphify は任意/);
   assert.match(readmeJa, /Graphify 本体や Graphify のコードを同梱しません/);
+  assert.match(readmeJa, /risk-adaptive Gate DAG/);
+  assert.match(readmeJa, /workflow-heavy/);
+  assert.match(readmeJa, /vibepro pr create/);
+  assert.match(readmeJa, /raw `gh pr create` は使わない/);
+  assert.match(readmeJa, /design-modernize/);
+  assert.match(readmeJa, /derive-system/);
+  assert.match(readmeJa, /Derived Design System/);
+  assert.match(readmeJa, /既存の route、情報構造、CTA、状態、データ依存を保ったまま/);
   assert.match(readmeJa, /Apache License 2\.0/);
   assert.doesNotMatch(readmeJa, /現在 license file は含まれていません/);
   assert.doesNotMatch(readmeJa, /社内βリリースノート/);

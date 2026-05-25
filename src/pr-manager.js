@@ -1874,6 +1874,7 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   const e2eGateRequired = prContext.gate_dag?.nodes?.some((node) => node.id === 'gate:e2e' && node.required) === true;
   const gateInfraFiles = repoControlFiles.filter((file) => isE2eInfraPath(file) || (e2eGateRequired && isPackageManifestPath(file)));
   const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
+  const storyBoundSupportDocs = fileGroups.other.files.filter((file) => isStoryBoundSupportDoc(file, prContext.story_source));
 
   addLane({
     id: 'repo-control',
@@ -1899,12 +1900,14 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
       ...fileGroups.story_docs.files,
       ...fileGroups.specifications.files,
       ...fileGroups.architecture_docs.files,
-      ...fileGroups.policy_docs.files
+      ...fileGroups.policy_docs.files,
+      ...storyBoundSupportDocs
     ],
     required_gates: ['Requirement Gate'],
     review_focus: [
       'Story / Spec / Architecture / Policy の正本が互いに矛盾していないか',
-      '実装差分が要求の範囲を超えていないか'
+      '実装差分が要求の範囲を超えていないか',
+      'Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか'
     ]
   });
 
@@ -1943,7 +1946,7 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   });
 
   const remainingFiles = [
-    ...fileGroups.other.files,
+    ...fileGroups.other.files.filter((file) => !storyBoundSupportDocs.includes(file)),
     ...getAllGroupFiles(fileGroups).filter((file) => !used.has(file))
   ];
   addLane({
@@ -1960,6 +1963,38 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   });
 
   return lanes;
+}
+
+function isStoryBoundSupportDoc(file, storySource) {
+  if (!isSupportDocPath(file)) return false;
+  const storyText = [
+    storySource?.title,
+    storySource?.requirement_title,
+    storySource?.background,
+    storySource?.policy,
+    ...(storySource?.acceptance_criteria ?? [])
+  ]
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
+  if (!storyText) return false;
+  const normalizedFile = file.toLowerCase();
+  const baseName = path.basename(normalizedFile);
+  if (storyText.includes(normalizedFile) || storyText.includes(baseName)) return true;
+  if (baseName.startsWith('readme') && /\breadme\b|ドキュメント|ヘルプ|help|documentation|docs/.test(storyText)) return true;
+  return false;
+}
+
+function isSupportDocPath(file) {
+  const normalized = file.replaceAll('\\', '/');
+  if (/^readme(?:\.[a-z]{2})?\.md$/i.test(normalized)) return true;
+  if (normalized.startsWith('docs/')) {
+    return !isStoryDocPath(normalized)
+      && !isArchitectureDocPath(normalized)
+      && !isSpecificationDocPath(normalized)
+      && !isPolicyDocPath(normalized);
+  }
+  return false;
 }
 
 function buildRuntimeLaneGates(prContext) {
@@ -2004,7 +2039,7 @@ function buildStackedGatePlan({ lanes, mergeOrder, prContext }) {
       depends_on: dependsOn,
       isolated_checks: buildIsolatedLaneChecks(lane, requiredCommands),
       cumulative_checks: buildCumulativeLaneChecks({ lane, commands: requiredCommands, requiresCumulativeE2e }),
-      review_note: buildStackedGateReviewNote({ lane, gateMode, dependsOn })
+      review_note: buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulativeE2e })
     };
   });
 
@@ -2049,11 +2084,14 @@ function buildCumulativeLaneChecks({ lane, commands, requiresCumulativeE2e }) {
   return [];
 }
 
-function buildStackedGateReviewNote({ lane, gateMode, dependsOn }) {
+function buildStackedGateReviewNote({ lane, gateMode, dependsOn, requiresCumulativeE2e }) {
   if (gateMode === 'cumulative_after_dependencies') {
     return `${lane.id} は単体PRだけで完了判定せず、${dependsOn.join(' -> ')} を取り込んだ累積状態でGateを確認する。`;
   }
   if (lane.id === 'runtime-behavior') {
+    if (!requiresCumulativeE2e) {
+      return 'runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。';
+    }
     return 'runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。';
   }
   return `${lane.id} は単体PRとしてレビュー可能。`;
@@ -3869,6 +3907,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
   const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
+  const gateE2eCoverage = e2eRequired ? e2eCoverage : markE2eCoverageNotApplicable(e2eCoverage);
   const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage) : 'not_required';
   const e2eReason = e2eRequired
     ? buildE2eGateReason(e2eCommand, flowVerification, e2eCoverage)
@@ -3901,10 +3940,21 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       command: e2eRequired ? e2eCommand.command : null,
       reason: e2eReason,
       flow_verification: flowVerification ? summarizeFlowVerificationForGate(flowVerification) : null,
-      acceptance_e2e_coverage: e2eCoverage,
+      acceptance_e2e_coverage: gateE2eCoverage,
       artifact_expectation: e2eRequired ? '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す' : null
     }
   ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
+}
+
+function markE2eCoverageNotApplicable(e2eCoverage) {
+  if (!e2eCoverage) return null;
+  return {
+    ...e2eCoverage,
+    required: false,
+    status: 'not_applicable',
+    not_applicable_reason: 'E2E Gate is not required for this non-UI/non-flow change; Unit and Integration evidence are authoritative.',
+    missing_acceptance_criteria: []
+  };
 }
 
 function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence = null }) {

@@ -5,13 +5,13 @@
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-VibePro は、AI 駆動開発のための CLI 制御基盤です。Feature Story から Architecture、Spec、Task、Verification、PR Evidence を生成・整理し、人間が安心して AI エージェントへ実装を任せられる状態を作ります。
+VibePro は、AI 駆動開発の PR を安全に進めるための CLI 制御基盤です。Feature Story から Architecture、Spec、Verification、Agent Review、PR Evidence を生成・整理し、必要な Gate が揃うまで PR 作成を止めます。
 
 VibePro は対象アプリを自動で書き換えるツールではありません。対象リポジトリ内に `.vibepro/` 作業領域を作り、変更・レビュー・マージの前に必要な証跡を保存します。
 
 ## なぜ VibePro か
 
-AI コーディングは速い一方で、最後の 20% に手間がかかります。要求の抜け、UI フローの未確認、API 契約破壊、曖昧なレビュー範囲、見た目は完成しているが実際には触れない PR が起きやすいからです。
+AI コーディングは速い一方で、最後の 20% に手間がかかります。要求の抜け、UI フローの未確認、API 契約破壊、曖昧なレビュー範囲、見た目は完成しているが実際には触れない PR が起きやすいからです。さらに、広いワークフロー変更が通常の Unit/API 変更のように見えてしまうリスクがあります。
 
 VibePro はその最後の詰めを明示します。
 
@@ -20,27 +20,30 @@ VibePro はその最後の詰めを明示します。
 - Spec: どの振る舞い・不変条件を満たすべきか。
 - Code: 実際に何が変わったか。
 - Gates: Unit、Integration、E2E、Performance、Security、Review の何が未解決か。
+- Risk profile: 変更が light / API contract / UI interaction / workflow-heavy のどれか。
 - PR Evidence: 人間と AI エージェントが作業前に読むべき共通文脈。
 
 基本の流れは次の通りです。
 
 ```text
-Story -> Architecture -> Spec -> Code -> Gate -> PR Evidence
+Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
 ```
 
-Story と Architecture が確定できれば、実装は AI エージェントへ渡しやすくなります。
+Story と Architecture が確定できれば、実装は AI エージェントへ渡しやすくなります。変更が workflow state、runtime contract、verification evidence、review orchestration にまたがる場合、VibePro は通常の軽いGateではなく重い Gate DAG へ自動で切り替えます。
 
 ## 主な機能
 
 - Story / Architecture / Spec を踏まえた PR 準備
 - 変更コードに対する Requirement Consistency 検査
-- 完了条件の依存関係を示す Gate DAG
+- 完了条件と workflow-heavy release check を示す risk-adaptive Gate DAG
 - 大きい変更や危険な変更の PR 分割計画
 - Unit / Integration / E2E / Build / Type-check の検証証跡記録
 - Playwright による UI フロー検証とネットワークエラー検知
 - Performance metric 定義、run 記録、before/after 比較
 - UI、Security、Performance、Architecture、PR Readiness、Launch Readiness の診断パッケージ
-- サブエージェントレビュー依頼とレビュー結果の記録
+- サブエージェントレビュー依頼とリスクに応じたレビュー結果の記録
+- 未解決Gateとwaiver理由を記録する `vibepro pr create` 経路強制
+- 既存情報構造を壊さずUIを改善する `design-modernize` planning と Derived Design System 生成
 - Skills / Codex instructions の導入による AI 駆動開発ワークフロー標準化
 
 ## インストール
@@ -138,6 +141,8 @@ vibepro pr prepare /path/to/repo \
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。
 
+`pr prepare` は Gate DAG を作る前に変更リスクを分類します。狭い docs / UI 変更は軽いGateに留まります。一方、複数surfaceにまたがる workflow 変更は `workflow_heavy` となり、workflow replay、production path coverage、release confidence、より広い Agent Review role が必要になります。必須Gateが未解決の間、VibePro の `next_commands` は PR 作成ではなく review / verification / prepare の再実行を案内します。
+
 ## Quick Start
 
 対象リポジトリを初期化します。
@@ -165,6 +170,16 @@ npx vibepro pr prepare /path/to/repo \
   --story-id story-internal-beta
 ```
 
+現在の git 状態で実際に走らせた検証証跡を記録します。
+
+```bash
+npx vibepro verify record /path/to/repo \
+  --id story-internal-beta \
+  --kind unit \
+  --status pass \
+  --command "npm test"
+```
+
 実装完了扱いにする前に checkpoint を通します。
 
 ```bash
@@ -172,6 +187,25 @@ npx vibepro checkpoint verification /path/to/repo \
   --base <base-branch> \
   --story-id story-internal-beta
 ```
+
+必要な Agent Review を準備・記録し、Gate DAG が ready になるまで PR preparation を再実行します。
+
+```bash
+npx vibepro review prepare /path/to/repo --id story-internal-beta --stage gate
+npx vibepro review status /path/to/repo --id story-internal-beta
+npx vibepro pr prepare /path/to/repo --base <base-branch> --story-id story-internal-beta
+```
+
+`pr prepare` が ready を返した後、VibePro 経由で PR を作成します。
+
+```bash
+npx vibepro pr create /path/to/repo \
+  --base <base-branch> \
+  --head <feature-branch> \
+  --story-id story-internal-beta
+```
+
+通常の PR 作成経路として raw `gh pr create` は使わないでください。VibePro の Gate DAG と waiver audit を通らないためです。
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。VibePro は `init` や `pr prepare` の出力で候補 branch も表示します。
 
@@ -241,6 +275,8 @@ npx vibepro verify record /path/to/repo \
 
 記録した証跡は `pr prepare` と PR Gate で再利用されます。
 
+workflow-heavy 変更では Unit/API 証跡だけでは不十分です。VibePro は current git に紐づいた Story E2E / Flow evidence、実行可能な assertion、Gate DAG が要求する risk-adaptive review role も確認します。
+
 ### Agent Review を準備する
 
 ```bash
@@ -286,6 +322,35 @@ npx vibepro review record /path/to/repo \
 手動レビュー証跡は監査文脈としては有用ですが、required Agent Review Gate は通しません。
 実行環境がサブエージェントを起動できない場合、coordinator は gate を通した扱いにせず、
 block するか別の waiver decision として記録します。
+
+### VibePro 経由で PR を作成する
+
+```bash
+npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
+npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
+```
+
+`pr create` は `pr prepare` が生成した PR 本文を使い、branch push と GitHub PR 作成を実行します。critical Gate が未解決の場合、PR作成前に失敗します。非critical Gate だけが未解決の場合は、`--allow-needs-verification` と `--verification-waiver <reason>` の両方が必要です。
+
+### 既存UIをModernizeする
+
+```bash
+npx vibepro design-modernize derive-system /path/to/repo \
+  --id <story-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --brief "日本語ホテル探索アプリ。地図探索とプロダクト固有CTAを重視する"
+
+npx vibepro design-modernize plan /path/to/repo \
+  --id <story-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --base-url http://127.0.0.1:3000
+```
+
+`derive-system` は product brief と現行UI証跡から、VibePro内の Derived Design System を作ります。product semantics、semantic color roles、component responsibilities、composition rules、visual-hypothesis policy、明示的なDS gateを生成し、画面候補を作る前に「そのプロダクトで許されるデザイン判断の空間」を固定します。
+
+`design-modernize` は、既存の route、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための workflow です。Design System bundle や生成された visual hypothesis は参照材料であり、VibePro-derived Design System、現行スクリーンショット、Graphify/Codex evidence、Gate DAG が実装判断の正本です。
 
 ### Performance を測る
 

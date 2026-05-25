@@ -5,13 +5,13 @@
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-VibePro is a CLI control plane for AI-driven development. It turns a feature story into reviewable architecture, spec, task, verification, and PR evidence so humans can safely delegate implementation work to AI agents.
+VibePro is a CLI control plane for safer AI-driven PRs. It turns a feature story into architecture, spec, verification, agent-review, and PR evidence, then blocks PR creation until the required gates are satisfied.
 
 VibePro does not rewrite your application by itself. It creates a repo-local `.vibepro/` workspace and stores the evidence that an engineer or coding agent needs before changing, reviewing, or merging code.
 
 ## Why VibePro
 
-AI coding is fast until the final 20%: missing requirements, untested UI flows, broken API contracts, vague review scope, and PRs that look complete but are not actually usable.
+AI coding is fast until the final 20%: missing requirements, untested UI flows, broken API contracts, vague review scope, and PRs that look complete but are not actually usable. The bigger risk is that a broad workflow change can still look like an ordinary unit/API change.
 
 VibePro is designed to make that final stretch explicit:
 
@@ -20,27 +20,30 @@ VibePro is designed to make that final stretch explicit:
 - Spec: which behaviors and invariants must hold.
 - Code: what actually changed.
 - Gates: which unit, integration, E2E, performance, security, and review evidence is still missing.
+- Risk profile: whether the change is light, API contract, UI interaction, or workflow-heavy.
 - PR evidence: what humans and AI agents should read before continuing.
 
 The intended workflow is:
 
 ```text
-Story -> Architecture -> Spec -> Code -> Gate -> PR Evidence
+Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
 ```
 
-Once the story and architecture are clear, implementation can be handed to AI agents with much less ambiguity.
+Once the story and architecture are clear, implementation can be handed to AI agents with much less ambiguity. When the change touches workflow state, runtime contracts, verification evidence, or review orchestration, VibePro expands the Gate DAG automatically instead of treating the PR like a narrow code change.
 
 ## Features
 
 - Story, architecture, and spec aware PR preparation
 - Requirement consistency checks against changed code
-- Gate DAGs for completion dependencies
+- Risk-adaptive Gate DAGs for completion dependencies and workflow-heavy release checks
 - PR split planning for large or risky changes
 - Verification evidence recording for unit, integration, E2E, build, and type-check results
 - Playwright-based flow verification with network error detection
 - Performance evidence definitions, run recording, and before/after comparison
 - Diagnosis packs for UI, security, performance, architecture, PR readiness, and launch readiness
-- Agent review requests and review evidence recording
+- Agent review requests and risk-adaptive review evidence recording
+- `vibepro pr create` path enforcement so unresolved gates and waiver reasons are captured
+- `design-modernize` planning and derived Design System generation for existing UI modernization without changing current information architecture
 - Skills and Codex instruction installation for standardizing AI-driven workflows
 
 ## Installation
@@ -138,6 +141,8 @@ Open in this order:
 
 `<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`.
 
+`pr prepare` classifies the change before building the Gate DAG. A narrow docs or UI change may stay light. A cross-surface workflow change becomes `workflow_heavy` and requires extra release evidence such as workflow replay, production path coverage, release confidence, and broader Agent Review roles. While required gates are unresolved, VibePro's `next_commands` point back to review or verification steps instead of PR creation.
+
 ## Quick Start
 
 Initialize VibePro in a target repository:
@@ -165,6 +170,16 @@ npx vibepro pr prepare /path/to/repo \
   --story-id story-internal-beta
 ```
 
+Record the verification evidence that actually ran on the current git state:
+
+```bash
+npx vibepro verify record /path/to/repo \
+  --id story-internal-beta \
+  --kind unit \
+  --status pass \
+  --command "npm test"
+```
+
 Run a checkpoint before treating implementation as ready:
 
 ```bash
@@ -172,6 +187,25 @@ npx vibepro checkpoint verification /path/to/repo \
   --base <base-branch> \
   --story-id story-internal-beta
 ```
+
+Prepare and record required Agent Reviews, then rerun PR preparation until the Gate DAG is ready:
+
+```bash
+npx vibepro review prepare /path/to/repo --id story-internal-beta --stage gate
+npx vibepro review status /path/to/repo --id story-internal-beta
+npx vibepro pr prepare /path/to/repo --base <base-branch> --story-id story-internal-beta
+```
+
+Create the PR through VibePro after `pr prepare` reports readiness:
+
+```bash
+npx vibepro pr create /path/to/repo \
+  --base <base-branch> \
+  --head <feature-branch> \
+  --story-id story-internal-beta
+```
+
+Do not use raw `gh pr create` as the normal PR path; it bypasses VibePro's Gate DAG and waiver audit.
 
 `<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`. VibePro also prints branch candidates during `init` and `pr prepare`.
 
@@ -241,6 +275,8 @@ npx vibepro verify record /path/to/repo \
 
 Recorded evidence is reused by `pr prepare` and PR gates.
 
+For workflow-heavy changes, unit/API evidence alone is not enough. VibePro also expects current, story-bound flow or E2E evidence with executable assertions, plus any risk-adaptive review roles required by the Gate DAG.
+
 ### Prepare Agent Reviews
 
 ```bash
@@ -288,6 +324,35 @@ Manual review evidence remains useful audit context, but it does not satisfy a
 required Agent Review Gate. If a runtime cannot spawn subagents, the coordinator
 should block or record a separate waiver decision instead of marking the gate as
 passed.
+
+### Create A PR Through VibePro
+
+```bash
+npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
+npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
+```
+
+`pr create` reuses the PR body generated by `pr prepare`, pushes the branch, and creates the GitHub PR. If critical gates are unresolved, it fails before creating a PR. Non-critical unresolved gates require both `--allow-needs-verification` and `--verification-waiver <reason>`.
+
+### Modernize An Existing UI
+
+```bash
+npx vibepro design-modernize derive-system /path/to/repo \
+  --id <story-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --brief "Japanese hotel discovery app with map exploration and product-native CTAs"
+
+npx vibepro design-modernize plan /path/to/repo \
+  --id <story-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --base-url http://127.0.0.1:3000
+```
+
+`derive-system` converts the product brief and current UI evidence into a VibePro-derived Design System: product semantics, semantic color roles, component responsibilities, composition rules, visual-hypothesis policy, and explicit DS gates. This brings the useful Moonchild pattern into VibePro itself: build the design decision space before generating screen candidates.
+
+`design-modernize` is for improving real product screens while preserving current routes, information architecture, CTAs, state behavior, and data dependencies. Optional design-system bundles or generated visual hypotheses are reference material; the VibePro-derived Design System, current screenshots, Graphify/Codex evidence, and Gate DAG remain authoritative.
 
 ### Measure Performance
 
