@@ -23,9 +23,10 @@ Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifac
 4. Open `.vibepro/pr/<story-id>/review-cockpit.html`.
 5. Read the recommended decision and reason.
 6. Check split lanes and Graphify investigation scope.
-7. For performance-sensitive PRs, read the `Performance Evidence` section in `pr-body.md` and the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
-8. Review next commands and confirm they use `vibepro pr create`.
-9. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
+7. For UI modernization PRs, read `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json`. Confirm that current routes, information architecture, CTA priority, state behavior, and data dependencies are preserved unless the Story/Spec explicitly changes them.
+8. For performance-sensitive PRs, read the `Performance Evidence` section in `pr-body.md` and the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
+9. Review next commands and confirm they use `vibepro pr create`.
+10. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
 
 ## Decision Rules
 
@@ -57,6 +58,8 @@ Fill these fields in `human-review.json`:
 - Do not approve a performance claim when the comparison says `改善率不明` / `not_comparable`.
 - Do not accept server-side readiness as evidence for user-perceived readiness. User-perceived metrics need `browser_e2e`, `client_marker`, or `manual_observation`.
 - Check that snapshot visible, DOM visible, API completed, server ready, and interactive ready are not mixed into one completion condition.
+- Do not approve UI modernization when `ds-gate.json` is missing, has implicit fallback, or omits DS drift / component role / composition / anti-pattern checks.
+- Do not approve a generated visual direction just because it looks better. Require evidence that it preserves the existing product workflow and that the implementation follows VibePro-derived DS constraints.
 
 ## Performance Evidence Review
 

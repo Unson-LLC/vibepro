@@ -25,18 +25,23 @@ Use this Skill when VibePro is driving a refactor. The goal is to find and fix c
    - Architecture boundary: `vibepro check architecture <repo> --story-id <story-id>`
    - Launch readiness: `vibepro check launch-readiness <repo> --story-id <story-id>`
 6. For performance refactors, define Story-level metrics before claiming improvement. Separate DB/server readiness from user-perceived readiness.
-7. Implement with focused tests. Prefer small changes tied to the task target files.
-8. Run project verification and then `vibepro pr prepare`.
-9. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
-10. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-11. Run the VibePro parallel subagent review workflow:
+7. For UI/UX modernization refactors, derive design constraints before changing components:
+   - run `vibepro design-modernize derive-system <repo> --id <story-id> ...`,
+   - run `vibepro design-modernize plan <repo> --id <story-id> ...`,
+   - preserve current routes, information architecture, CTA priority, state behavior, and data dependencies,
+   - treat image-generated or external design proposals as visual hypotheses, not implementation authority.
+8. Implement with focused tests. Prefer small changes tied to the task target files.
+9. Run project verification and then `vibepro pr prepare`.
+10. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
+11. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+12. Run the VibePro parallel subagent review workflow:
    - `vibepro review prepare <repo> --id <story-id> --stage <stage>`
    - dispatch each role in `parallel-dispatch.md` as a separate parallel subagent review,
    - close/shutdown each review subagent after receiving its result,
    - `vibepro review record` each result with Codex/Claude Code provenance and lifecycle evidence (`--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed` plus thread/session/call/transcript evidence),
    - rerun `vibepro pr prepare`.
    If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-12. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
+13. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
 
 ## Refactor Target Criteria
 
@@ -59,6 +64,8 @@ Prioritize candidates that VibePro surfaces as:
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not call a VibePro refactor complete while `gate:agent_review` is `needs_review`, `missing`, `stale`, `block`, or `failed`; complete the parallel subagent reviews first.
 - Do not satisfy Agent Review Gate with a manual `pass`. A passing review must include Codex or Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) so later audits can distinguish real subagent review from coordinator self-approval and closed review threads.
+- Do not treat visual redesign as a refactor unless the unchanged UX contracts are explicit. Current route, layout information hierarchy, CTA priority, state behavior, data dependencies, and accessibility expectations must be preserved or intentionally changed in Story/Spec.
+- Do not use color-token substitution as a substitute for a Design System. VibePro-derived DS should include semantic colors, state colors, component roles, CTA hierarchy, composition rules, anti-patterns, and visual hypothesis policy.
 - Do not clean dirty repository worktrees by reflexively stashing. First inspect `git status --short --branch`, unstaged diff, cached diff, and branch/HEAD reflog.
 - If a branch was advanced by external sync, merge, rebase, or another worktree, check whether the dirty state is a stale reverse diff from the previous branch commit to `HEAD`. Compare `git diff --stat <old> HEAD` with `git diff --cached --stat` / `git diff --stat` before deciding.
 - Only classify dirty state as safe to clean after proving it is already represented in `HEAD` and contains no extra user hunks. Otherwise report the exact files and keep the work intact.
@@ -70,6 +77,7 @@ Before calling the work done:
 - Story / Architecture / Spec relationship is clear.
 - Tests or verification evidence exists for changed behavior.
 - Purpose-level diagnosis package evidence exists when UI, security, performance, architecture, or launch readiness was the stated goal.
+- UI modernization has `derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` evidence when the Story changes design/UX.
 - Performance improvements have comparable before/after evidence, or the PR explicitly says improvement rate is unknown and why.
 - `pr-prepare.json` `gate_status.ready_for_pr_create` is true.
 - `gate:agent_review` has passed when VibePro required parallel subagent review.
