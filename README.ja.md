@@ -352,6 +352,15 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-modernize` は、既存の route、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための workflow です。Design System bundle や生成された visual hypothesis は参照材料であり、VibePro-derived Design System、現行スクリーンショット、Graphify/Codex evidence、Gate DAG が実装判断の正本です。
 
+主な成果物は `.vibepro/design-modernize/<story-id>/` 配下に出力されます。
+
+- `design-system-derivation.json` / `.md`: product semantics と Derived Design System の要約
+- `derived-design-system.json`: semantic token、component role map、CTA hierarchy、anti-pattern、visual hypothesis policy
+- `design-modernize.json`: 画面別modernization plan と Design Quality DAG
+- `ds-gate.json`: fallbackを禁止した明示的なDS drift / UX regression clause
+
+外部Design Systemや画像生成案は visual hypothesis として扱います。実装前に、spec が現行route、情報構造、CTA優先度、状態、データ依存を保持していることを確認してください。PR作成前には `vibepro pr prepare` で Design / Requirement / Unit / Integration / Agent Review gate が現HEADに対して解消されている必要があります。
+
 ### Performance を測る
 
 Story ごとの metric を定義します。
@@ -391,6 +400,13 @@ npx vibepro skills list
 npx vibepro skills install /path/to/repo
 npx vibepro skills verify /path/to/repo
 ```
+
+同梱 Skills:
+
+- `vibepro-workflow`: Story / Architecture / Spec / Graphify / Gate の実行順。design-modernize と Agent Review flow も含む。
+- `vibepro-story-refactor`: Story、Architecture、Spec、Task、Code、Gate evidence を揃えながら進める refactor workflow。
+- `vibepro-diagnosis-packages`: UI、security、performance、architecture、PR、launch readiness の目的別check。
+- `vibepro-human-review`: PR readiness artifact、split plan、review cockpit、waiver 判断の読み方。
 
 Codex 向け instructions を導入します。
 

@@ -354,6 +354,15 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-modernize` is for improving real product screens while preserving current routes, information architecture, CTAs, state behavior, and data dependencies. Optional design-system bundles or generated visual hypotheses are reference material; the VibePro-derived Design System, current screenshots, Graphify/Codex evidence, and Gate DAG remain authoritative.
 
+Typical artifacts are written under `.vibepro/design-modernize/<story-id>/`:
+
+- `design-system-derivation.json` / `.md`: product semantics and Derived Design System summary
+- `derived-design-system.json`: semantic tokens, component role map, CTA hierarchy, anti-patterns, and visual hypothesis policy
+- `design-modernize.json`: screen-level modernization plan and Design Quality DAG
+- `ds-gate.json`: explicit DS drift and UX regression clauses with fallback disabled
+
+Use generated or external design ideas only as visual hypotheses. Before implementation, confirm that the spec keeps the current route, information architecture, CTA priority, state behavior, and data dependencies. Before PR creation, `vibepro pr prepare` must show the Design / Requirement / Unit / Integration / Agent Review gates as resolved for the current HEAD.
+
 ### Measure Performance
 
 Define a story-specific metric:
@@ -393,6 +402,13 @@ npx vibepro skills list
 npx vibepro skills install /path/to/repo
 npx vibepro skills verify /path/to/repo
 ```
+
+Bundled skills:
+
+- `vibepro-workflow`: Story / Architecture / Spec / Graphify / Gate operating order, including design-modernize and Agent Review flow.
+- `vibepro-story-refactor`: refactor workflow that keeps Story, Architecture, Spec, task, code, and Gate evidence aligned.
+- `vibepro-diagnosis-packages`: purpose-level UI, security, performance, architecture, PR, and launch readiness checks.
+- `vibepro-human-review`: how to read PR readiness artifacts, split plans, review cockpit, and waiver decisions.
 
 Install Codex instructions:
 
