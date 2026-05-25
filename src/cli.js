@@ -44,12 +44,16 @@ import {
   renderPerformanceRecordSummary
 } from './performance-evidence.js';
 import {
+  closeAgentReviewLifecycle,
   getAgentReviewStatus,
   prepareAgentReview,
   recordAgentReview,
+  renderAgentReviewLifecycleCloseSummary,
+  renderAgentReviewLifecycleStartSummary,
   renderAgentReviewPrepareSummary,
   renderAgentReviewRecordSummary,
-  renderAgentReviewStatusSummary
+  renderAgentReviewStatusSummary,
+  startAgentReviewLifecycle
 } from './agent-review.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
@@ -173,6 +177,8 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
+  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
+  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
@@ -271,6 +277,8 @@ Usage:
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
+  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
+  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--json]
@@ -605,6 +613,50 @@ export async function runCli(argv, io = {}) {
           : renderAgentReviewPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'start') {
+        const result = await startAgentReviewLifecycle(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'),
+          role: getOption(rest, '--role'),
+          agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
+          agentId: getOption(rest, '--agent-id'),
+          agentThreadId: getOption(rest, '--agent-thread-id'),
+          agentSessionId: getOption(rest, '--agent-session-id'),
+          agentCallId: getOption(rest, '--agent-call-id') ?? getOption(rest, '--agent-tool-call-id'),
+          agentModel: getOption(rest, '--agent-model'),
+          timeoutMs: getOption(rest, '--timeout-ms'),
+          replacementFor: getOption(rest, '--replacement-for'),
+          lifecycleId: getOption(rest, '--lifecycle-id')
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.lifecycle.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewLifecycleStartSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'close') {
+        const result = await closeAgentReviewLifecycle(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'),
+          role: getOption(rest, '--role'),
+          agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
+          agentId: getOption(rest, '--agent-id'),
+          lifecycleId: getOption(rest, '--lifecycle-id'),
+          closeReason: getOption(rest, '--close-reason'),
+          closeEvidence: getOption(rest, '--close-evidence')
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.lifecycle.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewLifecycleCloseSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'record') {
         const inputPath = getOption(rest, '--input');
         const stdinText = hasFlag(rest, '--from-stdin')
@@ -637,7 +689,7 @@ export async function runCli(argv, io = {}) {
           stdinText
         });
         await reconcileExecutionState(repoRoot, {
-          storyId: result.story_id,
+          storyId: result.review?.story_id ?? result.summary?.story_id,
           target: 'pr_create'
         }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')

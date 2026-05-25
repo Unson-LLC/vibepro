@@ -3341,7 +3341,9 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
     actions.push(`Run \`${stage.command}\` and use ${stage.artifact}; dispatch the listed Codex/Claude Code subagent reviews in parallel, close/shutdown each review subagent after receiving its result, then record every result with parallel_subagent provenance and --agent-closed.`);
   }
   if (unmet.length > 0) {
-    const roleList = unmet.slice(0, 12).map((item) => `${item.stage}:${item.role}(${item.status})`).join(', ');
+    const roleList = unmet.slice(0, 12)
+      .map((item) => `${item.stage}:${item.role}(${item.status}${item.detail ? `: ${item.detail}` : ''})`)
+      .join(', ');
     actions.push(`Complete and record current-git review results for: ${roleList}.`);
   }
   actions.push('After closing review subagents and recording all roles with parallel_subagent provenance and closed subagent lifecycle, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
