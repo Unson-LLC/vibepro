@@ -156,7 +156,7 @@ Playwright依存またはブラウザ本体が不足している場合、`setup.
 - Playwright依存なし: `npm install -D @playwright/test`、`npx playwright install chromium`
 - ブラウザ本体なし: `npx playwright install chromium`
 
-Basic認証付きURLを検証する場合は、秘密情報をartifactへ保存しないため `--basic-auth-env <env>` を推奨する。env値は `<username>:<password>` 形式とする。互換のため `--basic-auth <username>:<password>` と、`--base-url http://user:pass@example.test` 形式も受け付ける。`flow-verification.json` には `http_auth.enabled`、`source`、`username`、`password_redacted: true` だけを保存し、パスワードは保存しない。
+Basic認証付きURLを検証する場合は、秘密情報をartifactへ保存しないため `--basic-auth-env <env>` を推奨する。env値は `<username>:<password>` 形式とする。互換のため `--basic-auth <username>:<password>` と、`--base-url http://user:pass@example.test` 形式も受け付ける。`flow-verification.json` には `http_auth.enabled`、`source`、`username_redacted: true`、`password_redacted: true` だけを保存し、ユーザー名・パスワードは保存しない。
 
 `.vibepro/config.json` の `flow_design.runtime_probes[]` で実行プローブを指定できる。
 

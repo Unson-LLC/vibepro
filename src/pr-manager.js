@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,6 +13,7 @@ import {
   renderRequirementGateSummary
 } from './requirement-consistency.js';
 import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
+import { classifyChangeRisk } from './change-risk-classifier.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
@@ -222,6 +224,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     prContext,
     suggestedBranch
   }));
+  const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: reviewGit.current_branch,
@@ -230,7 +233,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     scope,
     storyId: story.story_id,
     taskId: taskContext?.task?.id ?? options.taskId ?? null,
-    groupId: taskContext?.group?.id ?? options.groupId ?? null
+    groupId: taskContext?.group?.id ?? options.groupId ?? null,
+    gateStatus
   });
   const prBodyNarrative = await progress.stage('read_pr_body_narrative', () => readNarrative(root, story.story_id, 'pr-body'));
   const prBody = await progress.stage('render_pr_body', () => renderPrBody({
@@ -245,7 +249,6 @@ export async function preparePullRequest(repoRoot, options = {}) {
     narrative: prBodyNarrative,
     language: outputLanguage
   }));
-  const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const preparation = {
     schema_version: '0.1.0',
     story,
@@ -610,8 +613,20 @@ export async function createPullRequest(repoRoot, options = {}) {
   if (!dryRun) {
     const pushResult = await runCommand(root, pushCommand, options);
     execution.results.push(pushResult);
+    if (pushResult.exit_code !== 0) {
+      execution.status = 'failed';
+      execution.error = `Command failed: ${pushResult.command}`;
+      await writePrCreateArtifacts(root, prepareResult, execution);
+      throw new Error(execution.error);
+    }
     const ghResult = await runCommand(root, ghCommand, options);
     execution.results.push(ghResult);
+    if (ghResult.exit_code !== 0) {
+      execution.status = 'failed';
+      execution.error = `Command failed: ${ghResult.command}`;
+      await writePrCreateArtifacts(root, prepareResult, execution);
+      throw new Error(execution.error);
+    }
     execution.pr_url = extractPrUrl(ghResult.stdout);
   }
 
@@ -734,7 +749,7 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
   const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const overallStatus = gateDag?.overall_status ?? 'unknown';
   const executionGate = buildExecutionGateStatus(gateDag);
-  const readyForPrCreate = executionGate.pr_create_allowed === true;
+  const readyForPrCreate = executionGate.pr_create_allowed === true && unresolvedGates.length === 0;
   const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
   return {
     schema_version: '0.1.0',
@@ -763,14 +778,19 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
 function buildExecutionGateStatus(gateDag) {
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
-  const status = blockingGates.length > 0 ? 'blocked' : 'ready';
+  const status = blockingGates.length > 0
+    ? 'blocked'
+    : unresolvedGates.length > 0
+      ? 'waiver_required'
+      : 'ready';
   return {
     schema_version: '0.1.0',
     status,
     pr_create_allowed: status === 'ready',
+    waiver_required: status === 'waiver_required',
     blocking_gate_count: blockingGates.length,
     blocking_gates: blockingGates,
-    required_actions: blockingGates.map(formatExecutionGateAction)
+    required_actions: (blockingGates.length > 0 ? blockingGates : unresolvedGates).map(formatExecutionGateAction)
   };
 }
 
@@ -888,7 +908,7 @@ async function collectGitState(repoRoot, options) {
     head_ref: headRef,
     head_sha: headSha || null,
     dirty: dirtyFiles.length > 0,
-    status_fingerprint: fingerprintStatus(statusOutput, dirtyDiff),
+    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
@@ -988,12 +1008,21 @@ function parseStatus(output) {
 }
 
 function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [String(statusOutput ?? ''), String(dirtyDiff ?? '')].join('\n')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean)
-    .sort()
-    .join('\n');
+  return [
+    'git-status --porcelain -uall',
+    String(statusOutput ?? '').trimEnd(),
+    'git-diff --binary',
+    String(dirtyDiff ?? '').trimEnd()
+  ].join('\n');
+}
+
+function hashFingerprint(value) {
+  return createHash('sha256').update(String(value ?? '')).digest('hex');
+}
+
+function fingerprintHashForContext(gitContext) {
+  if (gitContext?.status_fingerprint_hash) return gitContext.status_fingerprint_hash;
+  return hashFingerprint(gitContext?.status_fingerprint ?? '');
 }
 
 async function collectDirtyDiff(repoRoot) {
@@ -1143,7 +1172,7 @@ function hasMixedRepoControlChanges(fileGroups) {
   return nonRepoGroups.some((group) => group.count > 0);
 }
 
-function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, scope, storyId, taskId = null, groupId = null }) {
+function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, scope, storyId, taskId = null, groupId = null, gateStatus = null }) {
   const prCreateCommand = [
     'npx vibepro pr create .',
     storyId ? `--story-id ${storyId}` : null,
@@ -1151,8 +1180,18 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
     groupId ? `--group ${groupId}` : null,
     `--base ${baseRef}`
   ].filter(Boolean).join(' ');
+  const prPrepareCommand = [
+    'npx vibepro pr prepare .',
+    storyId ? `--story-id ${storyId}` : null,
+    taskId ? `--task ${taskId}` : null,
+    groupId ? `--group ${groupId}` : null
+  ].filter(Boolean).join(' ');
 
   if (scope.recommended_strategy === 'current_branch_pr') {
+    if (gateStatus && gateStatus.ready_for_pr_create === false) {
+      return buildBlockedNextCommands({ storyId, taskId, groupId, gateStatus });
+    }
+
     return [
       currentBranch
         ? `${prCreateCommand} --head ${currentBranch}`
@@ -1166,8 +1205,44 @@ function buildNextCommands({ baseRef, currentBranch, suggestedBranch, commits, s
     commits.length === 1
       ? `git cherry-pick ${firstCommit}`
       : `git cherry-pick <story-related-commit-sha>`,
-    `${prCreateCommand} --head ${suggestedBranch}`
+    gateStatus && gateStatus.ready_for_pr_create === false
+      ? prPrepareCommand
+      : `${prCreateCommand} --head ${suggestedBranch}`
   ];
+}
+
+function buildBlockedNextCommands({ storyId, taskId = null, groupId = null, gateStatus }) {
+  const commands = [];
+  const storyArgs = [
+    storyId ? `--id ${storyId}` : null,
+    taskId ? `--task ${taskId}` : null,
+    groupId ? `--group ${groupId}` : null
+  ].filter(Boolean).join(' ');
+  const prStoryArgs = [
+    storyId ? `--story-id ${storyId}` : null,
+    taskId ? `--task ${taskId}` : null,
+    groupId ? `--group ${groupId}` : null
+  ].filter(Boolean).join(' ');
+  const blockingGateIds = new Set((gateStatus.execution_gate?.blocking_gates ?? []).map((gate) => gate.id));
+
+  if (blockingGateIds.has('gate:agent_review')) {
+    commands.push(`npx vibepro review status . ${storyArgs}`.trim());
+  }
+
+  if (blockingGateIds.has('gate:verification')) {
+    commands.push(`npx vibepro verify record . ${storyArgs} --kind <unit|integration|e2e> --status pass --command "<command>" --summary "<summary>"`.trim());
+  }
+
+  if (blockingGateIds.has('gate:e2e')) {
+    commands.push(`npx vibepro verify flow . ${storyArgs} --base-url http://localhost:<port>`.trim());
+  }
+
+  if (commands.length === 0) {
+    commands.push(`npx vibepro review status . ${storyArgs}`.trim());
+  }
+
+  commands.push(`npx vibepro pr prepare . ${prStoryArgs}`.trim());
+  return commands;
 }
 
 function renderPrNarrative(narrative) {
@@ -2190,7 +2265,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
   const verificationCommands = buildVerificationCommands(fileGroups, { typecheckCommand, testRunner });
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
-  const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id);
+  const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory);
@@ -2208,6 +2283,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     fileGroups,
     inferredSpec
   });
+  const changeClassification = classifyChangeRisk({
+    fileGroups,
+    storySource: primaryStory,
+    networkContracts
+  });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
@@ -2215,6 +2295,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     fileGroups,
     networkContracts,
     performanceEvidence,
+    changeClassification,
     git
   });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
@@ -2224,6 +2305,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     story_source: primaryStory,
     architecture_decision: architectureDecision,
     requirement_consistency: requirementConsistency,
+    change_classification: changeClassification,
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
     change_summary: buildChangeSummary(fileGroups),
@@ -2257,7 +2339,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     agentReviews,
     verificationEvidence: boundVerificationEvidence,
     inferredSpec,
-    specDrift
+    specDrift,
+    changeClassification
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -2320,7 +2403,7 @@ function bindVerificationEvidenceToGit(verificationEvidence, git) {
     binding: {
       current_head_sha: git.head_sha ?? null,
       current_dirty: git.dirty === true,
-      current_status_fingerprint: git.status_fingerprint ?? '',
+      current_status_fingerprint_hash: fingerprintHashForContext(git),
       stale_command_count: commands.filter((command) => command.binding?.status !== 'current').length
     }
   };
@@ -2349,9 +2432,9 @@ function resolveVerificationBinding(context, git) {
       reason: `verification evidence was recorded for ${context.head_sha.slice(0, 12)}, current head is ${git.head_sha.slice(0, 12)}`
     };
   }
-  const recordedFingerprint = context.status_fingerprint ?? '';
-  const currentFingerprint = git.status_fingerprint ?? '';
-  if (context.dirty === true && recordedFingerprint !== currentFingerprint) {
+  const recordedFingerprint = fingerprintHashForContext(context);
+  const currentFingerprint = fingerprintHashForContext(git);
+  if (recordedFingerprint !== currentFingerprint) {
     return {
       status: 'stale',
       reason: 'verification evidence was recorded with a different dirty worktree fingerprint'
@@ -2363,7 +2446,7 @@ function resolveVerificationBinding(context, git) {
   };
 }
 
-async function readLatestFlowVerification(repoRoot, storyId) {
+async function readLatestFlowVerification(repoRoot, storyId, git = null) {
   let manifest = null;
   try {
     manifest = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'vibepro-manifest.json'), 'utf8'));
@@ -2372,19 +2455,19 @@ async function readLatestFlowVerification(repoRoot, storyId) {
     return null;
   }
   const runs = Array.isArray(manifest.flow_verification_runs) ? manifest.flow_verification_runs : [];
-  const matching = runs.find((run) => run.story_id === storyId)
-    ?? runs.find((run) => run.run_id === manifest.latest_flow_verification_run)
-    ?? runs[0]
-    ?? null;
+  const matching = selectLatestFlowVerificationRun(runs, storyId, manifest.latest_flow_verification_run);
   const artifact = matching?.artifacts?.flow_verification_json;
-  if (!artifact) return matching;
+  if (!artifact) return bindFlowVerificationToGit(matching, git);
   try {
     const verification = JSON.parse(await readFile(path.resolve(repoRoot, artifact), 'utf8'));
-    return {
+    const storyMismatch = verification?.story_id && verification.story_id !== storyId;
+    return bindFlowVerificationToGit({
       ...matching,
       verification,
-      artifact
-    };
+      artifact,
+      story_mismatch: storyMismatch,
+      expected_story_id: storyId
+    }, git);
   } catch (error) {
     if (error.code === 'ENOENT') {
       return {
@@ -2395,6 +2478,35 @@ async function readLatestFlowVerification(repoRoot, storyId) {
     }
     throw error;
   }
+}
+
+function selectLatestFlowVerificationRun(runs, storyId, latestRunId = null) {
+  const matchingRuns = runs.filter((run) => run?.story_id === storyId);
+  if (latestRunId) {
+    const explicit = matchingRuns.find((run) => run.run_id === latestRunId);
+    if (explicit) return explicit;
+  }
+  return matchingRuns
+    .slice()
+    .sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))[0] ?? null;
+}
+
+function bindFlowVerificationToGit(flowVerification, git) {
+  if (!flowVerification || !git) return flowVerification;
+  const context = flowVerification.verification?.git_context ?? flowVerification.git_context ?? null;
+  const binding = resolveVerificationBinding(context, git);
+  return {
+    ...flowVerification,
+    binding,
+    stale: binding.status !== 'current',
+    verification: flowVerification.verification
+      ? {
+        ...flowVerification.verification,
+        binding,
+        stale: binding.status !== 'current'
+      }
+      : flowVerification.verification
+  };
 }
 
 async function readVisualQaEvidence(repoRoot) {
@@ -2495,13 +2607,17 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource) {
     const relativePath = normalizeRepoPath(path.relative(repoRoot, file));
     const content = await readFile(file, 'utf8').catch(() => '');
     if (isStoryE2eCandidate(relativePath, content, story.story_id, storySlug)) {
-      candidates.push({ path: relativePath, content });
+      candidates.push({
+        path: relativePath,
+        content,
+        executable: hasExecutableE2eAssertions(content)
+      });
     }
   }
   const covered = acceptanceCriteria.map((criterion, index) => {
     const id = `ac:${index + 1}`;
     const files = candidates
-      .filter((candidate) => e2eCandidateCoversAcceptance(candidate, story.story_id, criterion, index))
+      .filter((candidate) => candidate.executable && e2eCandidateCoversAcceptance(candidate, story.story_id, criterion, index))
       .map((candidate) => candidate.path);
     return {
       id,
@@ -2522,11 +2638,21 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource) {
         : 'needs_evidence',
     expected_file_patterns: expectedFilePatterns,
     matched_files: candidates.map((candidate) => candidate.path),
+    executable_matched_files: candidates.filter((candidate) => candidate.executable).map((candidate) => candidate.path),
     acceptance_criteria_count: acceptanceCriteria.length,
     covered_acceptance_criteria_count: covered.length - missing.length,
     covered_acceptance_criteria: covered.filter((item) => item.covered),
     missing_acceptance_criteria: missing
   };
+}
+
+function hasExecutableE2eAssertions(content) {
+  return getExecutableE2eBlocks(content).length > 0;
+}
+
+function hasExecutableE2eAssertionsInText(content) {
+  return /\bassert\s*[.(]/.test(content)
+    || /\bexpect\s*\(/.test(content);
 }
 
 function isStoryE2eCandidate(relativePath, content, storyId, storySlug) {
@@ -2536,16 +2662,73 @@ function isStoryE2eCandidate(relativePath, content, storyId, storySlug) {
 }
 
 function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
-  const content = normalizeCoverageText(candidate.content);
   const markers = [
     `${storyId} ac:${index + 1}`,
     `${storyId} ac-${index + 1}`,
-    `ac:${index + 1}`,
-    `ac-${index + 1}`,
-    `acceptance:${index + 1}`,
-    criterion
+    `${storyId} acceptance:${index + 1}`
   ].map(normalizeCoverageText);
-  return markers.some((marker) => marker.length > 0 && content.includes(marker));
+  const criterionMarker = normalizeCoverageText(criterion);
+  return getExecutableE2eBlocks(candidate.content).some((block) => {
+    const content = normalizeCoverageText(block);
+    return criterionMarker.length > 0
+      && content.includes(criterionMarker)
+      && markers.some((marker) => marker.length > 0 && content.includes(marker))
+      && blockHasCriterionAssertion(block, criterion);
+  });
+}
+
+function blockHasCriterionAssertion(block, criterion) {
+  const tokens = coverageAssertionTokens(criterion);
+  if (tokens.length === 0) return hasExecutableE2eAssertionsInText(block);
+  return String(block ?? '')
+    .split('\n')
+    .filter(hasExecutableE2eAssertionsInText)
+    .some((line) => {
+      const normalized = normalizeCoverageText(line);
+      return tokens.some((token) => normalized.includes(token));
+    });
+}
+
+function coverageAssertionTokens(text) {
+  const normalized = normalizeCoverageText(text);
+  const ascii = normalized.match(/[a-z0-9_:-]{4,}/g) ?? [];
+  const japanese = normalized.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]{2,}/gu) ?? [];
+  return [...new Set([...ascii, ...japanese])]
+    .filter((token) => !['with', 'when', 'case', 'true', 'false', 'status', '場合'].includes(token))
+    .slice(0, 12);
+}
+
+function getExecutableE2eBlocks(content) {
+  const lines = String(content ?? '').split('\n');
+  const blocks = [];
+  let current = [];
+  let parenBalance = 0;
+  const startsTestBlock = (line) => /^\s*(?:test|it)(?:\.only)?\s*\(/.test(line);
+  const updateBalance = (line) => {
+    const withoutLineComment = line.replace(/\/\/.*$/, '');
+    for (const char of withoutLineComment) {
+      if (char === '(') parenBalance += 1;
+      if (char === ')') parenBalance = Math.max(0, parenBalance - 1);
+    }
+  };
+  for (const line of lines) {
+    const startsBlock = startsTestBlock(line);
+    if (startsBlock && current.length > 0) {
+      blocks.push(current.join('\n'));
+      current = [];
+      parenBalance = 0;
+    }
+    if (current.length > 0 || startsBlock) {
+      current.push(line);
+      updateBalance(line);
+      if (parenBalance === 0 && /[;)]\s*$/.test(line.trim())) {
+        blocks.push(current.join('\n'));
+        current = [];
+      }
+    }
+  }
+  if (current.length > 0) blocks.push(current.join('\n'));
+  return blocks.filter(hasExecutableE2eAssertionsInText);
 }
 
 function slugifyStoryId(storyId) {
@@ -2910,6 +3093,9 @@ function buildTargetedTestCommand(testFiles, testRunner = null) {
   if (testRunner === 'vitest') {
     return `npm test -- ${testFiles.join(' ')}`;
   }
+  if (testRunner === 'node') {
+    return `node --test ${testFiles.join(' ')}`;
+  }
   return `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`;
 }
 
@@ -3029,7 +3215,8 @@ function buildGateDag({
   agentReviews = null,
   verificationEvidence,
   inferredSpec = null,
-  specDrift = null
+  specDrift = null,
+  changeClassification = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -3074,6 +3261,7 @@ function buildGateDag({
     ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
     required: true
   };
+  const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const designQualityGate = designQualityEvidence ? {
     id: 'gate:design_quality',
@@ -3118,8 +3306,16 @@ function buildGateDag({
   });
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
+  const workflowHeavyGates = buildWorkflowHeavyGates({
+    changeClassification,
+    inferredSpec,
+    flowVerification,
+    e2eCoverage,
+    verificationEvidence
+  });
   const nodes = [
     storyGate,
+    changeClassificationGate,
     architectureGate,
     specGate,
     {
@@ -3134,6 +3330,7 @@ function buildGateDag({
     ...gates,
     ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
+    ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
     {
@@ -3153,6 +3350,9 @@ function buildGateDag({
   }));
 
   const edges = [
+    { from: 'story', to: 'gate:change_classification' },
+    { from: 'gate:change_classification', to: 'architecture' },
+    { from: 'gate:change_classification', to: 'spec' },
     { from: 'story', to: 'architecture' },
     { from: 'story', to: 'spec' },
     { from: 'architecture', to: 'code' },
@@ -3174,14 +3374,22 @@ function buildGateDag({
     ] : []),
     ...(visualQaGate ? [
       { from: designQualityGate ? 'gate:design_quality' : 'gate:e2e', to: 'gate:visual_qa' },
+      ...buildWorkflowHeavyEdges({
+        workflowHeavyGates,
+        defaultUpstreamNodeId: 'gate:visual_qa'
+      }),
       ...buildAgentReviewProcessEdges({
-        defaultUpstreamNodeId: 'gate:visual_qa',
+        defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : 'gate:visual_qa',
         agentReviewDag,
         stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
       })
     ] : [
+      ...buildWorkflowHeavyEdges({
+        workflowHeavyGates,
+        defaultUpstreamNodeId: designQualityGate ? 'gate:design_quality' : 'gate:e2e'
+      }),
       ...buildAgentReviewProcessEdges({
-        defaultUpstreamNodeId: designQualityGate ? 'gate:design_quality' : 'gate:e2e',
+        defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : designQualityGate ? 'gate:design_quality' : 'gate:e2e',
         agentReviewDag,
         stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
       })
@@ -3194,11 +3402,13 @@ function buildGateDag({
     storyGate,
     architectureGate,
     specGate,
+    changeClassificationGate,
     networkContractGate,
     requirementGate,
     ...gates,
     designQualityGate,
     visualQaGate,
+    ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate
   ].filter((gate) => gate?.required);
@@ -3276,6 +3486,185 @@ function buildAgentReviewProcessDag(agentReviews) {
     }
   }
   return { nodes, terminal_nodes: terminalNodes };
+}
+
+function buildChangeClassificationGate(changeClassification) {
+  const profile = changeClassification?.profile ?? 'light';
+  return {
+    id: 'gate:change_classification',
+    type: 'change_classification_gate',
+    label: 'Change Classification Gate',
+    status: 'passed',
+    required: true,
+    profile,
+    change_type: changeClassification?.change_type ?? 'simple_code_change',
+    risk_surfaces: changeClassification?.risk_surfaces ?? [],
+    reason: changeClassification?.reasons?.join('; ') || `Gate profile selected: ${profile}`
+  };
+}
+
+function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
+  if (changeClassification?.profile !== 'workflow_heavy') return [];
+  const flowEvidence = resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificationEvidence });
+  const hasPassingFlowEvidence = flowEvidence.passed;
+  const clauses = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [];
+  const scenarioCount = clauses.filter(isWorkflowStateScenarioClause).length;
+  const blockerQuestions = (inferredSpec?.open_questions ?? []).filter((item) => item?.blocker === true);
+  const stateMachineStatus = scenarioCount > 0 && blockerQuestions.length === 0 ? 'passed' : 'needs_evidence';
+  const pathMatrixStatus = hasPassingFlowEvidence ? 'passed' : 'needs_evidence';
+  const evidenceCoverageStatus = hasPassingFlowEvidence && scenarioCount > 0 && blockerQuestions.length === 0
+    ? 'passed'
+    : 'needs_evidence';
+  return [
+    {
+      id: 'gate:workflow_state_machine',
+      type: 'workflow_heavy_gate',
+      label: 'Workflow State Machine Gate',
+      status: stateMachineStatus,
+      required: true,
+      reason: stateMachineStatus === 'passed'
+        ? `${scenarioCount} scenario clause(s) define workflow states and transitions`
+        : blockerQuestions.length > 0
+          ? `${blockerQuestions.length} blocker open question(s) must be resolved before workflow release readiness`
+          : 'workflow_heavy changes require explicit scenario clauses for state transitions'
+    },
+    {
+      id: 'gate:production_path_matrix',
+      type: 'workflow_heavy_gate',
+      label: 'Production Path Matrix Gate',
+      status: pathMatrixStatus,
+      required: true,
+      reason: pathMatrixStatus === 'passed'
+        ? flowEvidence.reason
+        : flowEvidence.reason ?? 'workflow_heavy changes require production path matrix evidence via Flow Verification or current E2E evidence with story acceptance coverage'
+    },
+    {
+      id: 'gate:workflow_flow_replay',
+      type: 'workflow_heavy_gate',
+      label: 'Workflow Flow Replay Gate',
+      status: hasPassingFlowEvidence ? 'passed' : 'needs_evidence',
+      required: true,
+      reason: hasPassingFlowEvidence
+        ? flowEvidence.reason
+        : flowEvidence.reason ?? 'Run `vibepro verify flow . --base-url <url> --id <story-id>` or record current E2E evidence with story acceptance coverage before release'
+    },
+    {
+      id: 'gate:evidence_coverage',
+      type: 'workflow_heavy_gate',
+      label: 'Evidence Coverage Gate',
+      status: evidenceCoverageStatus,
+      required: true,
+      reason: evidenceCoverageStatus === 'passed'
+        ? 'Workflow clauses and flow replay evidence are both present'
+        : 'workflow_heavy release readiness requires scenario clauses plus flow replay evidence'
+    },
+    {
+      id: 'gate:release_confidence',
+      type: 'workflow_heavy_gate',
+      label: 'Release Confidence Gate',
+      status: evidenceCoverageStatus === 'passed' ? 'passed' : 'needs_evidence',
+      required: true,
+      confidence: {
+        implementation_consistency: 'unknown',
+        production_flow_coverage: hasPassingFlowEvidence ? 'medium' : 'low',
+        state_matrix_coverage: scenarioCount > 0 ? 'medium' : 'low',
+        release_confidence: evidenceCoverageStatus === 'passed' ? 'medium' : 'low'
+      },
+      reason: evidenceCoverageStatus === 'passed'
+        ? 'workflow_heavy evidence is sufficient for human release review'
+        : 'implementation may be consistent, but production workflow confidence is low'
+    }
+  ];
+}
+
+function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificationEvidence }) {
+  const flowStatus = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  const flowBinding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
+  if (flowStatus === 'pass') {
+    if (flowVerification?.story_mismatch === true) {
+      return {
+        passed: false,
+        reason: `Flow Verification evidence is for ${flowVerification.verification?.story_id ?? 'another story'}, not ${flowVerification.expected_story_id}`
+      };
+    }
+    if (!flowVerification?.artifact || flowVerification?.missing_artifact === true) {
+      return {
+        passed: false,
+        reason: 'Flow Verification pass requires a readable flow-verification.json artifact'
+      };
+    }
+    if (flowBinding?.status !== 'current') {
+      return {
+        passed: false,
+        reason: flowBinding?.reason ?? 'Flow Verification evidence is not bound to the current git state'
+      };
+    }
+    if (!hasPassingRuntimeProbeEvidence(flowVerification)) {
+      return {
+        passed: false,
+        reason: 'Flow Verification pass requires at least one passing runtime probe'
+      };
+    }
+    return { passed: true, reason: 'Flow Verification passed and is available as workflow replay evidence' };
+  }
+  if (flowStatus === 'fail') {
+    return { passed: false, reason: 'Flow Verification failed; workflow replay evidence must pass before release' };
+  }
+  if (['needs_setup', 'skipped'].includes(flowStatus)) {
+    return { passed: false, reason: 'Flow Verification did not produce passing workflow replay evidence' };
+  }
+
+  const e2eEvidence = Array.isArray(verificationEvidence?.commands)
+    ? verificationEvidence.commands.find((item) => item.kind === 'e2e' && item.binding?.status === 'current')
+    : null;
+  if (!['pass', 'passed', 'success', 'ok'].includes(e2eEvidence?.status)) {
+    return { passed: false, reason: 'workflow_heavy changes require current passing Flow Verification or E2E replay evidence' };
+  }
+  if (requiresStoryE2eCoverage(e2eCoverage) && e2eCoverage.status !== 'passed') {
+    return { passed: false, reason: buildE2eCoverageReason(e2eCoverage) };
+  }
+  if (!e2eEvidenceCoversStoryAcceptance(e2eEvidence, e2eCoverage)) {
+    return {
+      passed: false,
+      reason: 'Current E2E evidence must execute a story acceptance E2E file with executable assertions for workflow-heavy replay'
+    };
+  }
+  return {
+    passed: true,
+    reason: requiresStoryE2eCoverage(e2eCoverage)
+      ? 'Current E2E evidence passed with story acceptance coverage'
+      : 'Current E2E evidence passed and no story acceptance coverage was required'
+  };
+}
+
+function e2eEvidenceCoversStoryAcceptance(evidence, e2eCoverage) {
+  if (!requiresStoryE2eCoverage(e2eCoverage)) return true;
+  const executableFiles = Array.isArray(e2eCoverage.executable_matched_files)
+    ? e2eCoverage.executable_matched_files
+    : [];
+  if (executableFiles.length === 0) return false;
+  const command = normalizeRepoPath(evidence?.command ?? '').toLowerCase();
+  return executableFiles.some((file) => command.includes(normalizeRepoPath(file).toLowerCase()));
+}
+
+function isWorkflowStateScenarioClause(clause) {
+  if (clause?.type !== 'scenario') return false;
+  const statement = String(clause.statement ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+  return /\b(workflow|flow|process|journey)\b/.test(statement)
+    && /\b(state|status|transition|matrix|retry|poll|resume|rollback)\b/.test(statement);
+}
+
+function buildWorkflowHeavyEdges({ workflowHeavyGates, defaultUpstreamNodeId }) {
+  if (workflowHeavyGates.length === 0) return [];
+  return [
+    { from: 'gate:change_classification', to: 'gate:workflow_state_machine' },
+    { from: 'spec', to: 'gate:workflow_state_machine' },
+    { from: 'gate:workflow_state_machine', to: 'gate:production_path_matrix' },
+    { from: defaultUpstreamNodeId, to: 'gate:workflow_flow_replay' },
+    { from: 'gate:production_path_matrix', to: 'gate:evidence_coverage' },
+    { from: 'gate:workflow_flow_replay', to: 'gate:evidence_coverage' },
+    { from: 'gate:evidence_coverage', to: 'gate:release_confidence' }
+  ];
 }
 
 function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
@@ -3452,14 +3841,28 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
 
 function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
   const flowStatus = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
-  if (flowStatus === 'pass') return true;
+  const flowBinding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
+  if (flowStatus === 'pass'
+    && flowBinding?.status === 'current'
+    && flowVerification?.story_mismatch !== true
+    && flowVerification?.artifact
+    && flowVerification?.missing_artifact !== true
+    && hasPassingRuntimeProbeEvidence(flowVerification)) {
+    return true;
+  }
   const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   return commands.some((item) => {
     const kind = item.kind === 'flow' ? 'e2e' : item.kind;
     return kind === 'e2e'
       && item.binding?.status === 'current'
-      && ['pass', 'passed', 'success', 'ok'].includes(item.status);
+      && ['pass', 'passed', 'success', 'ok'].includes(item.status)
+      && verificationCommandHasNetworkContractScope(item);
   });
+}
+
+function verificationCommandHasNetworkContractScope(item) {
+  const text = `${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`.toLowerCase();
+  return /network[-_\s]?aware|network contract|route contract|api route|\/api\//.test(text);
 }
 
 function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence }) {
@@ -3614,11 +4017,15 @@ function normalizeVerificationEvidenceStatus(status) {
 
 function resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage = null) {
   const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  const binding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
   if (status === 'fail') return 'failed';
   if (status === 'needs_setup') return 'needs_setup';
   if (status === 'skipped') return 'needs_evidence';
   if (e2eCommand.reliable_exit === false) return 'needs_setup';
   if (requiresStoryE2eCoverage(e2eCoverage) && e2eCoverage.status !== 'passed') return 'needs_evidence';
+  if (status === 'pass' && (!flowVerification?.artifact || flowVerification?.missing_artifact === true)) return 'needs_evidence';
+  if (status === 'pass' && binding?.status !== 'current') return 'needs_evidence';
+  if (status === 'pass' && !hasPassingRuntimeProbeEvidence(flowVerification)) return 'needs_evidence';
   if (status === 'pass') return 'passed';
   return e2eCommand.detected ? 'needs_evidence' : 'needs_setup';
 }
@@ -3627,8 +4034,12 @@ function buildE2eGateReason(e2eCommand, flowVerification, e2eCoverage = null) {
   const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
   const runId = flowVerification?.verification?.run_id ?? flowVerification?.run_id ?? null;
   const artifact = flowVerification?.artifact ?? flowVerification?.artifacts?.flow_verification_json ?? null;
+  const binding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
   const coverageReason = buildE2eCoverageReason(e2eCoverage);
   if (status === 'pass') {
+    if (!artifact || flowVerification?.missing_artifact === true) return 'Flow Verification pass requires a readable flow-verification.json artifact';
+    if (binding?.status !== 'current') return binding?.reason ?? 'Flow Verification evidence is not bound to the current git state';
+    if (!hasPassingRuntimeProbeEvidence(flowVerification)) return 'Flow Verification pass requires at least one passing runtime probe';
     const flowReason = `Flow Verification passed${runId ? ` (${runId})` : ''}${artifact ? `: ${artifact}` : ''}`;
     return coverageReason ? `${flowReason}; ${coverageReason}` : flowReason;
   }
@@ -3656,8 +4067,14 @@ function buildE2eCoverageReason(e2eCoverage) {
   if (e2eCoverage.status === 'passed') {
     return `Story E2E coverage passed: ${e2eCoverage.matched_files.join(', ')}`;
   }
+  if ((e2eCoverage.matched_files?.length ?? 0) > 0 && (e2eCoverage.executable_matched_files?.length ?? 0) === 0) {
+    return `Story E2E coverage needs evidence: matched files contain no executable assertions (${e2eCoverage.matched_files.join(', ')})`;
+  }
   const missing = e2eCoverage.missing_acceptance_criteria ?? [];
   const missingLabel = missing.map((item) => item.id).join(', ') || 'acceptance criteria';
+  if ((e2eCoverage.matched_files?.length ?? 0) > 0) {
+    return `Story E2E coverage needs evidence: ${missingLabel} must be covered by executable assertions in ${e2eCoverage.expected_file_patterns.join(' or ')}`;
+  }
   return `Story E2E coverage needs evidence: ${missingLabel} must be covered by ${e2eCoverage.expected_file_patterns.join(' or ')}`;
 }
 
@@ -3671,6 +4088,16 @@ function summarizeFlowVerificationForGate(flowVerification) {
     report: flowVerification.artifacts?.flow_verification_report ?? null,
     summary: verification.summary ?? flowVerification.summary ?? null
   };
+}
+
+function hasPassingRuntimeProbeEvidence(flowVerification) {
+  const verification = flowVerification?.verification ?? flowVerification;
+  const probes = Array.isArray(verification?.probes)
+    ? verification.probes
+    : Array.isArray(flowVerification?.probes)
+      ? flowVerification.probes
+      : [];
+  return probes.some((probe) => ['pass', 'passed', 'success', 'ok'].includes(probe?.status));
 }
 
 function resolveRequirementGateStatus(requirement) {
@@ -3823,6 +4250,7 @@ async function detectTestRunner(repoRoot) {
   };
   if (/\bvitest\b/.test(testScript) || deps.vitest) return 'vitest';
   if (/\bjest\b/.test(testScript) || deps.jest) return 'jest';
+  if (/\bnode\s+--test\b/.test(testScript)) return 'node';
   return null;
 }
 
@@ -4088,6 +4516,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       'verification_gate',
       'requirement_gate',
       'visual_qa_gate',
+      'design_quality_gate',
+      'workflow_heavy_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
@@ -4097,6 +4527,7 @@ function collectUnresolvedRequiredGates(gateDag) {
     .filter((node) => isUnresolvedGateStatus(node.status))
     .map((node) => ({
       id: node.id,
+      type: node.type,
       label: node.label,
       status: node.status,
       command: node.command,
@@ -4142,6 +4573,9 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
+      if (gate.id?.startsWith('gate:workflow_') || gate.id === 'gate:production_path_matrix' || gate.id === 'gate:evidence_coverage' || gate.id === 'gate:release_confidence') {
+        return `${gate.label ?? gate.id} requires workflow-heavy evidence: explicit scenario clauses, production path matrix coverage, and passing flow replay evidence.`;
+      }
       if (gate.id?.startsWith('review:prepare:')) return `${gate.label ?? gate.id} requires running the listed \`vibepro review prepare\` command and using the generated review requests with permitted Codex/Claude Code subagents.`;
       if (gate.id?.startsWith('review:record:')) return `${gate.label ?? gate.id} requires recording the review result with \`vibepro review record --agent-closed\` for the current git head, dirty fingerprint, and closed subagent lifecycle.`;
       if (gate.id?.startsWith('review:')) return `${gate.label ?? gate.id} requires completing the assigned review role.`;
@@ -4186,8 +4620,10 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';
 }
@@ -4327,19 +4763,30 @@ function shellQuote(value) {
 async function runCommand(repoRoot, command, options = {}) {
   const [bin, args] = command;
   const startedAt = new Date().toISOString();
-  const result = await execFileAsync(bin, args, {
-    cwd: repoRoot,
-    encoding: 'utf8',
-    env: options.env
-  });
-  return {
-    command: formatCommand(command),
-    started_at: startedAt,
-    finished_at: new Date().toISOString(),
-    exit_code: 0,
-    stdout: result.stdout.trim(),
-    stderr: result.stderr.trim()
-  };
+  try {
+    const result = await execFileAsync(bin, args, {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: options.env
+    });
+    return {
+      command: formatCommand(command),
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      exit_code: 0,
+      stdout: result.stdout.trim(),
+      stderr: result.stderr.trim()
+    };
+  } catch (error) {
+    return {
+      command: formatCommand(command),
+      started_at: startedAt,
+      finished_at: new Date().toISOString(),
+      exit_code: Number.isInteger(error.code) ? error.code : 1,
+      stdout: String(error.stdout ?? '').trim(),
+      stderr: String(error.stderr ?? error.message ?? '').trim()
+    };
+  }
 }
 
 function extractPrUrl(stdout) {

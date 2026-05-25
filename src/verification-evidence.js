@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -184,7 +185,7 @@ async function collectEvidenceGitContext(repoRoot) {
     head_sha: headSha || null,
     current_branch: currentBranch || null,
     dirty: statusOutput.length > 0,
-    status_fingerprint: fingerprintStatus(statusOutput, dirtyDiff),
+    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     recorded_at: new Date().toISOString()
   };
 }
@@ -232,10 +233,14 @@ async function collectUntrackedFileFingerprint(repoRoot) {
 }
 
 function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [String(statusOutput ?? ''), String(dirtyDiff ?? '')].join('\n')
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter(Boolean)
-    .sort()
-    .join('\n');
+  return [
+    'git-status --porcelain -uall',
+    String(statusOutput ?? '').trimEnd(),
+    'git-diff --binary',
+    String(dirtyDiff ?? '').trimEnd()
+  ].join('\n');
+}
+
+function hashFingerprint(value) {
+  return createHash('sha256').update(String(value ?? '')).digest('hex');
 }

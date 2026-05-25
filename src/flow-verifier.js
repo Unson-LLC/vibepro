@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -23,6 +24,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
   const connection = resolveConnectionOptions(options, options.env ?? process.env);
   const playwright = await detectPlaywright(root);
   const startedAt = new Date().toISOString();
+  const gitContext = await collectFlowGitContext(root);
 
   let commandResult = null;
   let generatedSpecPath = null;
@@ -71,6 +73,9 @@ export async function runFlowVerification(repoRoot, options = {}) {
     if (setupIssue) reason = setupIssue.reason;
     else if (commandStatus === 'fail') reason = `Playwright exited with code ${commandResult.exit_code}`;
     if (setupIssue) commandResult.setup = setupIssue;
+  } else if (probeResults.length === 0) {
+    status = 'needs_evidence';
+    reason = 'No runtime probes were configured for Flow Verification.';
   } else if (probeResults.some((probe) => probe.status === 'skipped')) {
     status = 'skipped';
     reason = 'No runnable probes after mutation guard filtering.';
@@ -98,6 +103,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
     probes: probeResults,
     command: commandResult,
     runtime_contract_failures: commandResult?.runtime_contract_failures ?? [],
+    git_context: gitContext,
     generated_spec: generatedSpecPath ? toWorkspaceRelative(root, generatedSpecPath) : null,
     generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null
   };
@@ -117,6 +123,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
       created_at: verification.created_at,
       status: verification.status,
       base_url: verification.base_url,
+      git_context: gitContext,
       artifacts: {
         flow_verification_json: toWorkspaceRelative(root, jsonPath),
         flow_verification_report: toWorkspaceRelative(root, markdownPath),
@@ -141,6 +148,77 @@ export async function runFlowVerification(repoRoot, options = {}) {
     },
     verification
   };
+}
+
+async function collectFlowGitContext(repoRoot) {
+  const [headSha, currentBranch, statusOutput] = await Promise.all([
+    gitOptional(repoRoot, ['rev-parse', 'HEAD']),
+    gitOptional(repoRoot, ['branch', '--show-current']),
+    gitStatus(repoRoot)
+  ]);
+  const dirtyDiff = await collectDirtyDiff(repoRoot);
+  return {
+    head_sha: headSha || null,
+    current_branch: currentBranch || null,
+    dirty: statusOutput.length > 0,
+    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
+    recorded_at: new Date().toISOString()
+  };
+}
+
+async function gitStatus(repoRoot) {
+  try {
+    const { stdout } = await execFileAsync('git', ['status', '--porcelain', '-uall'], { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trimEnd();
+  } catch {
+    return '';
+  }
+}
+
+async function collectDirtyDiff(repoRoot) {
+  const [unstaged, staged, untracked] = await Promise.all([
+    gitOptional(repoRoot, ['diff', '--binary']),
+    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
+    collectUntrackedFileFingerprint(repoRoot)
+  ]);
+  return [staged, unstaged, untracked].filter(Boolean).join('\n');
+}
+
+async function collectUntrackedFileFingerprint(repoRoot) {
+  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
+  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
+  const chunks = [];
+  for (const file of files) {
+    try {
+      const content = await readFile(path.join(repoRoot, file), 'utf8');
+      chunks.push(`untracked:${file}\n${content}`);
+    } catch {
+      chunks.push(`untracked:${file}\n<unreadable>`);
+    }
+  }
+  return chunks.join('\n');
+}
+
+function fingerprintStatus(statusOutput, dirtyDiff = '') {
+  return [
+    'git-status --porcelain -uall',
+    String(statusOutput ?? '').trimEnd(),
+    'git-diff --binary',
+    String(dirtyDiff ?? '').trimEnd()
+  ].join('\n');
+}
+
+function hashFingerprint(value) {
+  return createHash('sha256').update(String(value ?? '')).digest('hex');
+}
+
+async function gitOptional(repoRoot, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trim();
+  } catch {
+    return '';
+  }
 }
 
 export function renderFlowVerificationSummary(result) {
@@ -287,6 +365,11 @@ async function runPlaywright(root, { specPath, configPath, baseUrl, httpAuth, he
   const args = ['playwright', 'test', '--config', configPath];
   if (headed) args.push('--headed');
   const command = `npx ${args.map(toPosix).join(' ')}`;
+  const secrets = [
+    httpAuth?.credentials?.username,
+    httpAuth?.credentials?.password,
+    ...(env ? Object.values(env) : [])
+  ].filter((value) => typeof value === 'string' && value.length > 0);
   try {
     const result = await execFileAsync('npx', args, {
       cwd: root,
@@ -304,26 +387,39 @@ async function runPlaywright(root, { specPath, configPath, baseUrl, httpAuth, he
       encoding: 'utf8',
       maxBuffer: 20 * 1024 * 1024
     });
-    await writeFile(logPath, `${result.stdout ?? ''}${result.stderr ?? ''}`);
+    const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+    const redactedOutput = redactSecrets(output, secrets);
+    await writeFile(logPath, redactedOutput);
     return {
       command,
       status: 'pass',
       exit_code: 0,
-      stdout: truncate(result.stdout),
-      stderr: truncate(result.stderr),
-      runtime_contract_failures: extractRuntimeContractFailures(`${result.stdout ?? ''}\n${result.stderr ?? ''}`)
+      stdout: truncate(redactSecrets(result.stdout, secrets)),
+      stderr: truncate(redactSecrets(result.stderr, secrets)),
+      runtime_contract_failures: extractRuntimeContractFailures(redactedOutput)
     };
   } catch (error) {
-    await writeFile(logPath, `${error.stdout ?? ''}${error.stderr ?? ''}${error.message ?? ''}`);
+    const output = `${error.stdout ?? ''}${error.stderr ?? ''}${error.message ?? ''}`;
+    const redactedOutput = redactSecrets(output, secrets);
+    await writeFile(logPath, redactedOutput);
     return {
       command,
       status: 'fail',
       exit_code: error.code ?? 1,
-      stdout: truncate(error.stdout),
-      stderr: truncate(error.stderr ?? error.message),
-      runtime_contract_failures: extractRuntimeContractFailures(`${error.stdout ?? ''}\n${error.stderr ?? ''}\n${error.message ?? ''}`)
+      stdout: truncate(redactSecrets(error.stdout, secrets)),
+      stderr: truncate(redactSecrets(error.stderr ?? error.message, secrets)),
+      runtime_contract_failures: extractRuntimeContractFailures(redactedOutput)
     };
   }
+}
+
+function redactSecrets(value, secrets = []) {
+  let output = String(value ?? '');
+  for (const secret of secrets) {
+    if (!secret) continue;
+    output = output.split(secret).join('[REDACTED]');
+  }
+  return output;
 }
 
 function resolveConnectionOptions(options, env) {
@@ -390,7 +486,7 @@ function buildHttpAuthSummary(source, username) {
   return {
     enabled: true,
     source,
-    username,
+    username_redacted: Boolean(username),
     password_redacted: true
   };
 }
@@ -693,7 +789,7 @@ function renderFlowVerificationReport(verification) {
 | Story ID | ${verification.story_id ?? '-'} |
 | Status | ${verification.status} |
 | Base URL | ${verification.base_url} |
-| HTTP Auth | ${verification.http_auth?.enabled ? `enabled (${verification.http_auth.source}, user=${verification.http_auth.username})` : 'disabled'} |
+| HTTP Auth | ${verification.http_auth?.enabled ? `enabled (${verification.http_auth.source}, credentials redacted)` : 'disabled'} |
 | Reason | ${verification.reason ?? '-'} |
 
 ## Summary
