@@ -33,7 +33,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   await mkdir(reviewDir, { recursive: true });
 
   const gitContext = await collectReviewGitContext(root);
-  const roles = REVIEW_STAGE_ROLES[stage];
+  const roles = normalizeRequestedRoles(stage, options.roles);
   const plan = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -279,11 +279,6 @@ export function renderAgentReviewPrSection(agentReviews) {
 
 function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEvidence, story }) {
   const requirements = [];
-  const addStage = (stage, reason, policy) => {
-    for (const role of REVIEW_STAGE_ROLES[stage]) {
-      addRequirement({ stage, role, reason, policy });
-    }
-  };
   const addRequirement = (item) => {
     const key = `${item.stage}:${item.role}`;
     if (requirements.some((existing) => `${existing.stage}:${existing.role}` === key)) return;
@@ -292,11 +287,47 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
 
   const hasSourceChanges = (fileGroups?.source?.count ?? 0) > 0;
   if (hasSourceChanges) {
-    for (const stage of ['requirement', 'architecture_spec', 'test_plan', 'implementation', 'gate']) {
-      addStage(stage, 'source changes require staged AI review before PR readiness', 'source_change');
-    }
+    addRequirement({ stage: 'requirement', role: 'scope_risk', reason: 'source changes require scope drift review before PR readiness', policy: 'source_change' });
+    addRequirement({ stage: 'architecture_spec', role: 'architecture_boundary', reason: 'source changes require architecture boundary review before PR readiness', policy: 'source_change' });
+    addRequirement({ stage: 'test_plan', role: 'unit_integration', reason: 'source changes require unit/integration coverage review before PR readiness', policy: 'source_change' });
+    addRequirement({ stage: 'implementation', role: 'code_spec_alignment', reason: 'source changes require code/spec alignment review before PR readiness', policy: 'source_change' });
+    addRequirement({ stage: 'gate', role: 'gate_evidence', reason: 'source changes require gate evidence review before PR readiness', policy: 'source_change' });
+  }
+  if ((fileGroups?.story_docs?.count ?? 0) > 0 || (fileGroups?.specifications?.count ?? 0) > 0) {
+    addRequirement({
+      stage: 'requirement',
+      role: 'product_requirement',
+      reason: 'Story/Spec changes require product requirement review',
+      policy: 'requirement_change'
+    });
+    addRequirement({
+      stage: 'architecture_spec',
+      role: 'spec_consistency',
+      reason: 'Story/Spec changes require consistency review',
+      policy: 'requirement_change'
+    });
+  }
+  if ((fileGroups?.source?.count ?? 0) > 20 || (fileGroups?.total ?? 0) > 30) {
+    addRequirement({
+      stage: 'gate',
+      role: 'pr_split_scope',
+      reason: 'large change sets require PR split/scope review',
+      policy: 'large_change'
+    });
+    addRequirement({
+      stage: 'architecture_spec',
+      role: 'regression_risk',
+      reason: 'large change sets require regression risk review',
+      policy: 'large_change'
+    });
   }
   if (hasUiExperienceSourceChange(fileGroups)) {
+    addRequirement({
+      stage: 'requirement',
+      role: 'acceptance_e2e',
+      reason: 'UI changes require acceptance criteria to be provable by user-level flows',
+      policy: 'ui_change'
+    });
     addRequirement({
       stage: 'test_plan',
       role: 'e2e_ux',
@@ -339,6 +370,16 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
     });
   }
   return requirements;
+}
+
+function normalizeRequestedRoles(stage, requestedRoles) {
+  const allowed = REVIEW_STAGE_ROLES[stage] ?? [];
+  const roles = Array.isArray(requestedRoles) && requestedRoles.length > 0 ? requestedRoles : allowed;
+  const invalid = roles.filter((role) => !allowed.includes(role));
+  if (invalid.length > 0) {
+    throw new Error(`review prepare --role is invalid for ${stage}: ${invalid.join(', ')}. Valid roles: ${allowed.join(', ')}`);
+  }
+  return [...new Set(roles)];
 }
 
 function buildRolePromptSummary(stage, role) {
@@ -449,8 +490,9 @@ function buildReviewRecordCommand({ storyId, stage, role }) {
   return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact>`;
 }
 
-function buildReviewPrepareCommand({ storyId, stage }) {
-  return `vibepro review prepare . --id ${storyId} --stage ${stage}`;
+function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
+  const roleArgs = roles.length > 0 ? ` ${roles.map((role) => `--role ${role}`).join(' ')}` : '';
+  return `vibepro review prepare . --id ${storyId} --stage ${stage}${roleArgs}`;
 }
 
 function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
@@ -461,12 +503,14 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
     required_stages: requiredStages.map((stage) => {
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
+      const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
       return {
         stage,
-        role_count: REVIEW_STAGE_ROLES[stage]?.length ?? 0,
+        roles,
+        role_count: roles.length,
         status: summary?.status ?? 'missing',
         prepared: summary?.parallel_dispatch?.prepared ?? false,
-        prepare_command: buildReviewPrepareCommand({ storyId, stage }),
+        prepare_command: buildReviewPrepareCommand({ storyId, stage, roles }),
         dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
       };
     })

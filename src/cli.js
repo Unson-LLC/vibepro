@@ -8,6 +8,12 @@ import { initWorkspace } from './workspace.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { runDiagnosis } from './diagnostic-engine.js';
+import {
+  captureDesignModernizeScreens,
+  createDesignModernizePlan,
+  renderCaptureSummary,
+  renderDesignModernizePlan
+} from './design-modernize.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
@@ -138,10 +144,12 @@ Usage:
   vibepro codex verify [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
+  vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
+  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
@@ -225,10 +233,12 @@ Usage:
   vibepro codex verify [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
+  vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
+  vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
-  vibepro review prepare [repo] --id <story-id> --stage <stage> [--json]
+  vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro measure [repo] [--base-url <url>] [--pages <csv>] [--apis <csv>] [--samples <n>] [--build] [--no-typecheck] [--startup-script <name>] [--ready-pattern <regex>] [--startup-timeout <ms>] [--prisma-log <file>] [--command <id=cmd>] [--run-id <id>] [--json]
@@ -406,6 +416,46 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'design-modernize') {
+      const subcommand = rest[0] ?? 'plan';
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'plan') {
+        const result = await createDesignModernizePlan(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? 'design-modernize',
+          product: getOption(rest, '--product'),
+          routes: parseDesignRoutes(rest),
+          baseUrl: getOption(rest, '--base-url'),
+          designSystemId: getOption(rest, '--design-system-id'),
+          designSystemTitle: getOption(rest, '--design-system-title'),
+          designSystemBundle: getOption(rest, '--design-system-bundle'),
+          sceneId: getOption(rest, '--scene-id'),
+          optionalReferenceStatus: process.env.MOONCHILD_MCP_TOKEN ? 'optional_reference_token_present' : 'not_required',
+          optionalReferenceNote: process.env.MOONCHILD_MCP_TOKEN
+            ? 'Optional reference token is present; external design-system exports may be used as reference input.'
+            : 'No external generator token is required; pass --design-system-bundle only when a reference system should constrain the design.'
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.plan, null, 2)}\n`
+          : `${renderDesignModernizePlan(result.plan)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'capture') {
+        const result = await captureDesignModernizeScreens(repoRoot, {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? 'design-modernize',
+          baseUrl: getOption(rest, '--base-url'),
+          routes: parseDesignRoutes(rest),
+          sampleHotelId: getOption(rest, '--sample-hotel-id'),
+          timeoutMs: parseNumberOption(rest, '--timeout-ms') ?? 30000
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : renderCaptureSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown design-modernize command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
     if (command === 'check') {
       const packId = rest[0];
       if (!packId || packId === 'list' || packId === '--help' || packId === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
@@ -495,7 +545,11 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'prepare') {
         const result = await prepareAgentReview(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
-          stage: getOption(rest, '--stage')
+          stage: getOption(rest, '--stage'),
+          roles: [
+            ...getOptions(rest, '--role'),
+            ...parseCsvOption(rest, '--roles')
+          ]
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
@@ -1182,6 +1236,13 @@ function parseCsvOption(args, name) {
   const value = getOption(args, name);
   if (!value) return [];
   return value.split(',').map((item) => item.trim()).filter(Boolean);
+}
+
+function parseDesignRoutes(args) {
+  return [
+    ...parseCsvOption(args, '--routes'),
+    ...getOptions(args, '--route')
+  ].filter(Boolean);
 }
 
 function parseNumberOption(args, name) {
