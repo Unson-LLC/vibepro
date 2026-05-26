@@ -26,7 +26,13 @@ import {
   renderDerivedDesignSystemSummary,
   renderDesignModernizePlan
 } from './design-modernize.js';
-import { deriveNativeDesignSystem, ingestVisualDesignBrief, renderNativeDesignSystemSummary } from './design-system.js';
+import {
+  deriveNativeDesignSystem,
+  ingestVisualDesignBrief,
+  renderDesignSystemValidationSummary,
+  renderNativeDesignSystemSummary,
+  validateDesignSystem
+} from './design-system.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
@@ -174,6 +180,9 @@ Existing UI modernization:
   vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
       Derive a product-local Design System from current route code, style/token
       files, optional Graphify evidence, and product semantics.
+  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
+      Validate DS drift, CTA priority, state semantics, component roles,
+      navigation/density policy, and secret leakage before UI implementation.
   Review .vibepro/design-system/<ds-id>/evidence-coverage.json and ds-gate.json,
   then use design-modernize derive-system or plan for screen-level work. Generated
   visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
@@ -201,6 +210,7 @@ Usage:
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
+  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -302,6 +312,9 @@ base branch:
       プロダクトローカルなDesign System正本を作ります。
   vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
       外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
+  vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
+      DS drift、CTA優先度、状態意味、component role、navigation/density、secret混入を
+      Story/Spec/Architecture文脈に対して検証します。
   .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
   その後に design-modernize derive-system または plan で画面別作業へ進みます。
   生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
@@ -333,6 +346,7 @@ Usage:
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
+  vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -599,6 +613,17 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
           : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'validate') {
+        const result = await validateDesignSystem(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--story')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderDesignSystemValidationSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown design-system command: ${subcommand ?? ''}\n\n${renderHelp()}`);
