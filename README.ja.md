@@ -248,6 +248,84 @@ PR 前に見る主な成果物:
 
 人間は Markdown / HTML を読みます。AI エージェントには `pr-body.md`、`review-cockpit.html`、`gate-dag.html`、`split-plan.html`、関連 JSON を渡すのが基本です。
 
+## 設定
+
+VibePro のリポジトリ別設定は `.vibepro/config.json` に保存されます。対象リポジトリで一度 `vibepro init` を実行すると作成されます。
+
+```bash
+npx vibepro init /path/to/repo \
+  --story-id story-<short-name> \
+  --title "<機能名または不具合名>" \
+  --language ja
+```
+
+初期設定はおおむね次の形です。
+
+```json
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-<short-name>",
+        "title": "<機能名または不具合名>",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+重要な項目:
+
+- `output.language`: 人間向け出力言語。`ja` と `en` を指定できます。
+- `brainbase.stories[]`: `story diagnose`、`pr prepare`、`checkpoint`、`verify record`、Agent Review が参照するローカル Story catalog。
+- `brainbase.current_story_id`: `--story-id` / `--id` を省略した場合の既定 Story。
+- `brainbase.stories[].performanceMetrics[]`: `vibepro performance define` で作る Story 単位の performance contract。
+- `flow_design`: `diagnose` と `verify flow` で使う UI-flow scan / runtime probe の任意設定。
+
+よく使う設定変更は CLI から行います。
+
+```bash
+npx vibepro config language /path/to/repo --language en
+npx vibepro performance define /path/to/repo --id <story-id> --metric-id <metric-id> \
+  --user-story "<ユーザー操作>" \
+  --start-condition "<開始条件>" \
+  --completion-condition "<完了条件>"
+```
+
+プロダクト固有の UI 契約や runtime probe が必要な場合は、`.vibepro/config.json` の `flow_design` を編集します。
+
+```json
+{
+  "flow_design": {
+    "profile": "case-management",
+    "value_contract": {
+      "forbidden_labels": ["退院予定日"],
+      "required_labels": ["退院目標日"]
+    },
+    "runtime_probes": [
+      {
+        "id": "readonly-search",
+        "title": "Readonly search path",
+        "path": "/search",
+        "mutates": false,
+        "steps": [
+          { "action": "expectVisible", "text": "Search" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`.vibepro/` はローカル証跡の作業領域であり、`vibepro init` によって `.gitignore` に追加されます。生成証跡を保存する明確な運用がない限り、`.vibepro/` はコミットしません。一方で、変更の正本になる Story / Spec / Architecture 文書は `docs/` 配下に置き、必要に応じてコミットします。
+
 ## よく使うワークフロー
 
 ### リポジトリを診断する

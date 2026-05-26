@@ -248,6 +248,84 @@ The most important PR artifacts are:
 
 Humans usually read the Markdown and HTML artifacts. AI agents should receive `pr-body.md`, `review-cockpit.html`, `gate-dag.html`, `split-plan.html`, and the relevant JSON artifacts.
 
+## Configuration
+
+VibePro stores repo-local settings in `.vibepro/config.json`. Run `vibepro init` once in the target repository to create it:
+
+```bash
+npx vibepro init /path/to/repo \
+  --story-id story-<short-name> \
+  --title "<feature or bug title>" \
+  --language en
+```
+
+The default config looks like this:
+
+```json
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "en"
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-<short-name>",
+        "title": "<feature or bug title>",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+Important fields:
+
+- `output.language`: human-facing output language. Supported values are `ja` and `en`.
+- `brainbase.stories[]`: local Story catalog used by `story diagnose`, `pr prepare`, `checkpoint`, `verify record`, and Agent Review commands.
+- `brainbase.current_story_id`: optional default Story when a command does not receive `--story-id` / `--id`.
+- `brainbase.stories[].performanceMetrics[]`: optional Story-bound performance contracts created by `vibepro performance define`.
+- `flow_design`: optional UI-flow scanning and runtime probe settings used by `diagnose` and `verify flow`.
+
+Use the CLI for common config updates:
+
+```bash
+npx vibepro config language /path/to/repo --language ja
+npx vibepro performance define /path/to/repo --id <story-id> --metric-id <metric-id> \
+  --user-story "<user action>" \
+  --start-condition "<start condition>" \
+  --completion-condition "<completion condition>"
+```
+
+`flow_design` is edited in `.vibepro/config.json` when you need product-specific UI contracts or runtime probes:
+
+```json
+{
+  "flow_design": {
+    "profile": "case-management",
+    "value_contract": {
+      "forbidden_labels": ["退院予定日"],
+      "required_labels": ["退院目標日"]
+    },
+    "runtime_probes": [
+      {
+        "id": "readonly-search",
+        "title": "Readonly search path",
+        "path": "/search",
+        "mutates": false,
+        "steps": [
+          { "action": "expectVisible", "text": "Search" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`.vibepro/` is a local evidence workspace and is added to `.gitignore` by `vibepro init`. Do not commit `.vibepro/` artifacts unless your repository has an explicit policy for storing generated evidence. Do commit Story / Spec / Architecture documents under `docs/` when they are the durable source of truth for a change.
+
 ## Common Workflows
 
 ### Diagnose A Repository
