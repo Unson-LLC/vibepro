@@ -692,6 +692,77 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(blockedValidation.result.result.summary.status, 'block');
   assert.equal(blockedValidation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN').status, 'block');
 
+  await writeFile(path.join(nativeOutDir, 'design-system.json'), JSON.stringify(nativeDesignSystemJson, null, 2));
+  await writeFile(path.join(repo, 'external-ds-bundle.json'), JSON.stringify({
+    title: 'Aitle External Reference DS',
+    version: { versionNumber: 2 },
+    bundle: {
+      theme: ':root { --ds-color-brand: #2563eb; --ds-color-success: #16a34a; --ds-space-compact: 8px; --ds-font-body: "Noto Sans JP"; }',
+      componentsCss: '.ds-primary-cta { color: var(--ds-color-brand); } .ds-result-card { display: grid; }',
+      componentsJs: 'customElements.define("ds-filter-chip", class extends HTMLElement {});',
+      documentation: [
+        'CTA: AI電話で空室確認 is primary; map and filter actions are secondary.',
+        'States: loading, disabled, error, selected, available, limited, unavailable.',
+        'Density: compact scannable hotel comparison, preserve navigation and bottom sheet.',
+        'Avoid generic Book Now language.'
+      ].join('\n')
+    },
+    credentials: {
+      apiKey: 'sk_live_1234567890abcdef1234567890abcdef'
+    }
+  }, null, 2));
+  const bundleIngest = await runCli([
+    'design-system',
+    'ingest',
+    repo,
+    '--id',
+    'aitle',
+    '--bundle',
+    'external-ds-bundle.json',
+    '--json'
+  ]);
+  assert.equal(bundleIngest.exitCode, 0);
+  assert.equal(bundleIngest.result.result.authority, 'vibepro_native_design_system');
+  assert.equal(bundleIngest.result.result.source_evidence.external_bundle.source, 'external-ds-bundle.json');
+  assert.equal(bundleIngest.result.result.external_bundle.redacted_value_count, 1);
+  assert.ok(bundleIngest.result.result.theme_tokens.css_variables.includes('--ds-color-brand'));
+  assert.ok(bundleIngest.result.result.component_roles.roles.some((role) => role.name === 'PrimaryCta'));
+  assert.match(JSON.stringify(bundleIngest.result.result.component_states.required_states), /available/);
+  assert.match(JSON.stringify(bundleIngest.result.result.cta_policy.discovered_ctas), /AI電話で空室確認/);
+  assert.equal(bundleIngest.result.result.ds_gate.fallback_allowed, false);
+  assert.ok(bundleIngest.result.result.ds_gate.checks.some((check) => check.id === 'DS-GATE-EXTERNAL-BUNDLE-AUTHORITY'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'external-bundle.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'semantic-tokens.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'component-roles.json')), true);
+  const ingestedDesignSystemText = await readFile(path.join(nativeOutDir, 'design-system.json'), 'utf8');
+  const ingestedExternalBundleText = await readFile(path.join(nativeOutDir, 'external-bundle.json'), 'utf8');
+  assert.doesNotMatch(ingestedDesignSystemText, /sk_live_1234567890abcdef1234567890abcdef/);
+  assert.doesNotMatch(ingestedExternalBundleText, /sk_live_1234567890abcdef1234567890abcdef/);
+
+  await writeFile(path.join(repo, 'string-token-ds-bundle.json'), JSON.stringify({
+    files: {
+      tokens: ':root { --ds-color-inline-brand: #0f766e; --ds-space-inline: 12px; }',
+      components: '.ds-inline-cta { color: var(--ds-color-inline-brand); }',
+      guidelines: 'CTA: inline action remains primary. States: loading and disabled. Density: compact.'
+    },
+    accessToken: 'Bearer abcdefghijklmnopqrstuvwxyz1234567890'
+  }, null, 2));
+  const stringTokenIngest = await runCli([
+    'design-system',
+    'ingest',
+    repo,
+    '--id',
+    'aitle',
+    '--bundle',
+    'string-token-ds-bundle.json',
+    '--json'
+  ]);
+  assert.equal(stringTokenIngest.exitCode, 0);
+  assert.ok(stringTokenIngest.result.result.theme_tokens.css_variables.includes('--ds-color-inline-brand'));
+  assert.equal(stringTokenIngest.result.result.external_bundle.redacted_value_count, 1);
+  const stringTokenDesignSystemText = await readFile(path.join(nativeOutDir, 'design-system.json'), 'utf8');
+  assert.doesNotMatch(stringTokenDesignSystemText, /abcdefghijklmnopqrstuvwxyz1234567890/);
+
   await writeFile(path.join(repo, 'visual-brief-v2.md'), '- Native CTA language: 空室をAI電話で確認.\n- Forbidden generic CTAs: avoid Book Now.\n');
   const ingested = await runCli([
     'design-system',
@@ -805,6 +876,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
+  assert.match(output, /vibepro design-system ingest \[repo\]/);
   assert.match(output, /vibepro design-system validate \[repo\]/);
   assert.match(output, /既存UI modernize/);
   assert.match(output, /プロダクトローカルなDesign System正本/);
@@ -840,6 +912,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system ingest \[repo\]/);
   assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
   assert.match(englishOutput, /Existing UI modernization/);
   assert.match(englishOutput, /product-local Design System/);

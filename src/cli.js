@@ -28,6 +28,7 @@ import {
 } from './design-modernize.js';
 import {
   deriveNativeDesignSystem,
+  ingestExternalDesignSystemBundle,
   ingestVisualDesignBrief,
   renderDesignSystemValidationSummary,
   renderNativeDesignSystemSummary,
@@ -186,6 +187,9 @@ Existing UI modernization:
   vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
       Derive a product-local Design System from current route code, style/token
       files, optional Graphify evidence, and product semantics.
+  vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
+      Normalize external token/component/guideline bundles into VibePro-native
+      DS sections as reference evidence only.
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
       Validate DS drift, CTA priority, state semantics, component roles,
       navigation/density policy, and secret leakage before UI implementation.
@@ -215,6 +219,7 @@ Usage:
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
@@ -318,6 +323,9 @@ base branch:
   vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code
       現行route code、style/token files、任意のGraphify証跡、product semanticsから
       プロダクトローカルなDesign System正本を作ります。
+  vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
+      外部DS bundleのtokens/components/guidelinesをreference-onlyとして正規化し、
+      VibePro-native DS sectionsへ取り込みます。
   vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
       外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
@@ -353,6 +361,7 @@ Usage:
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
@@ -607,6 +616,18 @@ export async function runCli(argv, io = {}) {
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           graphifyOut: getOption(rest, '--from')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'ingest') {
+        const result = await ingestExternalDesignSystemBundle(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          bundleFile: getOption(rest, '--bundle') ?? getOption(rest, '--design-system-bundle')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`

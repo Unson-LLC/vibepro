@@ -5,7 +5,8 @@ import {
   buildDerivedDesignSystem,
   buildDesignSystemGate,
   buildProductSemanticModel,
-  collectScreens
+  collectScreens,
+  normalizeDesignSystemBundle
 } from './design-modernize.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 
@@ -144,6 +145,83 @@ export async function ingestVisualDesignBrief(repoRoot, options = {}) {
   return { outDir, result: nextDesignSystem };
 }
 
+export async function ingestExternalDesignSystemBundle(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system ingest requires --id <ds-id>');
+  }
+  if (!options.bundleFile) {
+    throw new Error('design-system ingest requires --bundle <file>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const bundlePath = path.isAbsolute(options.bundleFile) ? options.bundleFile : path.join(root, options.bundleFile);
+  const bundleText = await readFile(bundlePath, 'utf8');
+  const parsedBundle = JSON.parse(bundleText);
+  const sanitized = sanitizeExternalBundle(parsedBundle);
+  const bundleSummary = normalizeDesignSystemBundle(sanitized.value, {
+    designSystemId,
+    title: options.product ?? designSystemId
+  });
+  const externalBundle = buildExternalBundleReference({
+    root,
+    bundlePath,
+    designSystemId,
+    sanitized,
+    bundleSummary
+  });
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  const existingDesignSystem = await readJsonIfExists(designSystemPath);
+  const product = options.product
+    ?? existingDesignSystem?.product
+    ?? parsedBundle.product
+    ?? parsedBundle.title
+    ?? parsedBundle.name
+    ?? designSystemId;
+  const base = existingDesignSystem ?? createBundleIngestBaseDesignSystem({ designSystemId, product });
+  const normalizedPayload = extractBundlePayload(sanitized.value);
+  const tokenEvidence = collectBundleTokenEvidence(normalizedPayload.tokens);
+  const componentEvidence = collectBundleComponentEvidence(normalizedPayload.components);
+  const guidelineEvidence = collectBundleGuidelineEvidence(normalizedPayload.guidelines);
+  const nextDesignSystem = {
+    ...base,
+    workflow: base.workflow ?? 'native-design-system-derivation',
+    design_system_id: designSystemId,
+    product,
+    generated_at: new Date().toISOString(),
+    authority: 'vibepro_native_design_system',
+    external_generator_required: false,
+    source_evidence: {
+      ...(base.source_evidence ?? {}),
+      routes: base.source_evidence?.routes ?? [],
+      graphify: base.source_evidence?.graphify ?? emptyGraphifyEvidence(),
+      current_ui_code: base.source_evidence?.current_ui_code ?? [],
+      style_files: base.source_evidence?.style_files ?? [],
+      external_bundle: {
+        source: externalBundle.source,
+        artifact: `.vibepro/design-system/${designSystemId}/external-bundle.json`,
+        authority: externalBundle.authority,
+        redacted_value_count: externalBundle.redacted_value_count
+      }
+    },
+    external_bundle: externalBundle,
+    theme_tokens: mergeThemeTokens(base.theme_tokens, tokenEvidence),
+    semantic_tokens: mergeSemanticTokens(base.semantic_tokens, tokenEvidence, guidelineEvidence),
+    component_roles: mergeComponentRoles(base.component_roles, componentEvidence),
+    component_states: mergeComponentStates(base.component_states, guidelineEvidence),
+    cta_policy: mergeCtaPolicy(base.cta_policy, guidelineEvidence, componentEvidence),
+    density_policy: mergeDensityPolicy(base.density_policy, guidelineEvidence, tokenEvidence),
+    navigation_policy: mergeNavigationPolicy(base.navigation_policy, guidelineEvidence),
+    anti_patterns: mergeAntiPatterns(base.anti_patterns, guidelineEvidence),
+    evidence_coverage: mergeBundleEvidenceCoverage(base.evidence_coverage, { tokenEvidence, componentEvidence, guidelineEvidence }),
+    ds_gate: mergeExternalBundleGate(base.ds_gate, externalBundle)
+  };
+  await mkdir(outDir, { recursive: true });
+  await writeDesignSystemArtifacts(outDir, nextDesignSystem);
+  await writeFile(path.join(outDir, 'external-bundle.json'), `${JSON.stringify(externalBundle, null, 2)}\n`);
+  return { outDir, result: nextDesignSystem };
+}
+
 export async function validateDesignSystem(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   if (!options.designSystemId && !options.id) {
@@ -271,6 +349,9 @@ async function writeDesignSystemArtifacts(outDir, designSystem) {
   if (designSystem.visual_foundations) {
     artifacts['visual-foundations.json'] = designSystem.visual_foundations;
   }
+  if (designSystem.external_bundle) {
+    artifacts['external-bundle.json'] = designSystem.external_bundle;
+  }
   await Promise.all(Object.entries(artifacts).map(([fileName, content]) => (
     writeFile(path.join(outDir, fileName), `${JSON.stringify(content, null, 2)}\n`)
   )));
@@ -393,6 +474,298 @@ ${formatList([
 
 function formatList(items) {
   return items.length > 0 ? items.map((item) => `- ${item}`).join('\n') : '- not extracted';
+}
+
+function createBundleIngestBaseDesignSystem({ designSystemId, product }) {
+  return {
+    schema_version: '0.1.0',
+    workflow: 'native-design-system-bundle-ingest',
+    design_system_id: designSystemId,
+    product,
+    authority: 'vibepro_native_design_system',
+    external_generator_required: false,
+    source_evidence: {
+      routes: [],
+      graphify: emptyGraphifyEvidence(),
+      current_ui_code: [],
+      style_files: []
+    },
+    product_semantics: {
+      schema_version: '0.1.0',
+      product,
+      primary_domain: 'product_ui',
+      language_policy: 'preserve_current_product_language',
+      interaction_model: 'existing_product_workflow',
+      domain_concepts: []
+    },
+    screen_patterns: {
+      schema_version: '0.1.0',
+      graphify_status: 'not_available',
+      patterns: []
+    },
+    implementation_mapping: {
+      schema_version: '0.1.0',
+      mapping_source: 'external_bundle_reference_only',
+      screen_mappings: [],
+      source_file_sample: [],
+      shared_component_candidates: []
+    }
+  };
+}
+
+function emptyGraphifyEvidence() {
+  return {
+    status: 'not_available',
+    graphify_executed: false,
+    artifact_dir: null,
+    route_count: 0,
+    component_count: 0,
+    edge_count: 0
+  };
+}
+
+function extractBundlePayload(bundle) {
+  const source = bundle && typeof bundle === 'object' ? bundle : {};
+  const payload = source.bundle && typeof source.bundle === 'object' ? source.bundle : source;
+  return {
+    tokens: payload.tokens
+      ?? payload.designTokens
+      ?? payload.files?.tokens
+      ?? source.semantic_tokens
+      ?? source.theme_tokens
+      ?? [payload.theme, payload.styles].filter(Boolean).join('\n')
+      ?? {},
+    components: payload.components
+      ?? source.files?.components
+      ?? source.component_roles?.roles
+      ?? source.component_roles
+      ?? [payload.componentsCss, payload.componentsJs].filter(Boolean).join('\n')
+      ?? [],
+    guidelines: payload.guidelines
+      ?? source.files?.guidelines
+      ?? source.overview
+      ?? payload.documentation
+      ?? []
+  };
+}
+
+function buildExternalBundleReference({ root, bundlePath, designSystemId, sanitized, bundleSummary }) {
+  return {
+    schema_version: '0.1.0',
+    design_system_id: designSystemId,
+    source: path.relative(root, bundlePath).split(path.sep).join('/'),
+    authority: 'external_bundle_reference_only_current_code_and_vibepro_gates_remain_authoritative',
+    imported_at: new Date().toISOString(),
+    redacted_value_count: sanitized.redactedCount,
+    token_summary: bundleSummary.token_summary,
+    component_summary: bundleSummary.component_summary,
+    guideline_summary: bundleSummary.guideline_summary,
+    constraints: bundleSummary.constraints,
+    boundary: [
+      'external bundle content may inform DS tokens, component roles, state semantics, CTA policy, density, and navigation constraints',
+      'external bundle content must not override current code, Story, Spec, Architecture, or VibePro gates',
+      'raw external CSS/JS exports are not persisted as implementation authority'
+    ]
+  };
+}
+
+function collectBundleTokenEvidence(tokens) {
+  const text = flattenText(tokens);
+  return {
+    schema_version: '0.1.0',
+    css_variables: unique([
+      ...collectCssVariables(text),
+      ...flattenKeys(tokens).filter((key) => /color|surface|text|space|font|radius|shadow|motion|state|semantic/i.test(key))
+    ]).slice(0, 160),
+    class_hints: unique(collectClassHints(text)).slice(0, 80),
+    color_values: unique(collectColorValues(text)).slice(0, 80),
+    spacing_values: unique(collectSpacingValues(text)).slice(0, 80),
+    token_keys: unique(flattenKeys(tokens)).slice(0, 200)
+  };
+}
+
+function collectBundleComponentEvidence(components) {
+  const text = flattenText(components);
+  const customElements = [...text.matchAll(/\b([a-z][a-z0-9]*-[a-z0-9-]+)\b/g)].map((match) => match[1]);
+  const names = Array.isArray(components)
+    ? components.map((item) => typeof item === 'string' ? item : item?.name ?? item?.title ?? item?.role).filter(Boolean)
+    : flattenKeys(components);
+  return {
+    schema_version: '0.1.0',
+    names: unique([...names.map(String), ...customElements, ...collectClassHints(text)]).slice(0, 120)
+  };
+}
+
+function collectBundleGuidelineEvidence(guidelines) {
+  const text = flattenText(guidelines);
+  const topics = typeof guidelines === 'string'
+    ? guidelines.split(/\n+/).map((line) => line.replace(/^[-*#\s]+/, '').trim()).filter(Boolean)
+    : flattenKeys(guidelines);
+  return {
+    schema_version: '0.1.0',
+    text,
+    topics: unique(topics.map(String)).slice(0, 120)
+  };
+}
+
+function mergeThemeTokens(existing, tokenEvidence) {
+  return {
+    ...(existing ?? {}),
+    schema_version: existing?.schema_version ?? '0.1.0',
+    css_variables: unique([...(existing?.css_variables ?? []), ...tokenEvidence.css_variables]).slice(0, 200),
+    class_hints: unique([...(existing?.class_hints ?? []), ...tokenEvidence.class_hints]).slice(0, 200),
+    color_values: unique([...(existing?.color_values ?? []), ...tokenEvidence.color_values]).slice(0, 120),
+    spacing_values: unique([...(existing?.spacing_values ?? []), ...tokenEvidence.spacing_values]).slice(0, 120),
+    external_bundle_token_keys: unique([...(existing?.external_bundle_token_keys ?? []), ...tokenEvidence.token_keys]).slice(0, 200)
+  };
+}
+
+function mergeSemanticTokens(existing, tokenEvidence, guidelineEvidence) {
+  const existingRoles = existing?.color_roles ?? [];
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    ...(existing ?? {}),
+    color_roles: mergeNamedItems(existingRoles, inferExternalColorRoles(tokenEvidence, guidelineEvidence)).slice(0, 80),
+    state_semantics: unique([...(existing?.state_semantics ?? []), ...inferExternalStates(guidelineEvidence)]).slice(0, 40),
+    cta_priority: unique([...(existing?.cta_priority ?? []), 'primary', 'secondary', 'tertiary']).slice(0, 20),
+    domain_semantics: unique([...(existing?.domain_semantics ?? []), ...inferExternalDomainSemantics(guidelineEvidence)]).slice(0, 60)
+  };
+}
+
+function mergeComponentRoles(existing, componentEvidence) {
+  const inferred = componentEvidence.names.map((name) => ({
+    name: normalizeRoleName(name),
+    source: 'external_bundle_reference',
+    responsibility: inferComponentResponsibility(name)
+  }));
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    roles: mergeNamedItems(existing?.roles ?? [], inferred).slice(0, 120)
+  };
+}
+
+function mergeComponentStates(existing, guidelineEvidence) {
+  const states = inferExternalStates(guidelineEvidence);
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    required_states: unique([...(existing?.required_states ?? []), ...states]).slice(0, 40),
+    discovered_states: unique([...(existing?.discovered_states ?? []), ...states]).slice(0, 40),
+    state_policy: unique([
+      ...(existing?.state_policy ?? []),
+      'external bundle states are reference constraints and must be verified against current implementation',
+      'loading, disabled, error, empty, selected, success, available, limited, and unavailable states must stay visually distinguishable when present'
+    ]).slice(0, 40)
+  };
+}
+
+function mergeCtaPolicy(existing, guidelineEvidence, componentEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    hierarchy: existing?.hierarchy?.length > 0 ? existing.hierarchy : [
+      { priority: 'primary', role: 'main product action', source: 'external_bundle_reference' },
+      { priority: 'secondary', role: 'supporting navigation or refinement action', source: 'external_bundle_reference' },
+      { priority: 'tertiary', role: 'low-emphasis utility action', source: 'external_bundle_reference' }
+    ],
+    discovered_ctas: unique([...(existing?.discovered_ctas ?? []), ...inferExternalCtas(guidelineEvidence, componentEvidence)]).slice(0, 80),
+    rules: unique([
+      ...(existing?.rules ?? []),
+      'external CTA labels are candidates only; preserve current product-native wording unless Story/Spec changes it',
+      'do not promote external secondary actions above the current primary product action'
+    ]).slice(0, 40)
+  };
+}
+
+function mergeDensityPolicy(existing, guidelineEvidence, tokenEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    policy: existing?.policy ?? inferDensityFromText(guidelineEvidence.text),
+    evidence: {
+      ...(existing?.evidence ?? {}),
+      external_bundle_spacing_values: tokenEvidence.spacing_values.slice(0, 40),
+      external_bundle_topics: guidelineEvidence.topics.filter((topic) => /density|compact|spacing|layout|scan|grid|余白|密度/i.test(topic)).slice(0, 40)
+    },
+    rules: unique([
+      ...(existing?.rules ?? []),
+      'external density guidance must not drop current required information',
+      'spacing and layout guidance remain subject to current screen invariants'
+    ]).slice(0, 40)
+  };
+}
+
+function mergeNavigationPolicy(existing, guidelineEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    policy: existing?.policy ?? 'preserve_current_navigation_model',
+    discovered_targets: existing?.discovered_targets ?? [],
+    composition_rules: existing?.composition_rules ?? [],
+    rules: unique([
+      ...(existing?.rules ?? []),
+      ...guidelineEvidence.topics.filter((topic) => /nav|route|tab|back|menu|sheet|navigation|遷移|ナビ/i.test(topic)).slice(0, 12),
+      'external navigation guidance must not rewrite current route purpose or existing navigation anchors'
+    ]).slice(0, 40)
+  };
+}
+
+function mergeAntiPatterns(existing, guidelineEvidence) {
+  const forbidden = guidelineEvidence.topics.filter((topic) => /avoid|forbid|do not|never|禁止|避ける|anti/i.test(topic));
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    items: uniqueItemsByStatement([...(existing?.items ?? []), ...forbidden.map((statement) => ({ statement, source: 'external_bundle_reference' }))]).slice(0, 80),
+    global_rules: unique([
+      ...(existing?.global_rules ?? []),
+      'do not treat external bundle visuals as implementation authority',
+      'do not persist external secret values or service tokens',
+      'do not override current UX invariants with external bundle defaults'
+    ]).slice(0, 40)
+  };
+}
+
+function mergeBundleEvidenceCoverage(existing, { tokenEvidence, componentEvidence, guidelineEvidence }) {
+  const findings = mergeFindings(existing?.findings ?? [], [
+    {
+      id: 'DS-EVIDENCE-EXTERNAL-BUNDLE-TOKENS',
+      status: tokenEvidence.css_variables.length > 0 || tokenEvidence.token_keys.length > 0 ? 'pass' : 'warn',
+      summary: `${tokenEvidence.css_variables.length + tokenEvidence.token_keys.length} external token signal(s) extracted`
+    },
+    {
+      id: 'DS-EVIDENCE-EXTERNAL-BUNDLE-COMPONENTS',
+      status: componentEvidence.names.length > 0 ? 'pass' : 'warn',
+      summary: `${componentEvidence.names.length} external component signal(s) extracted`
+    },
+    {
+      id: 'DS-EVIDENCE-EXTERNAL-BUNDLE-GUIDELINES',
+      status: guidelineEvidence.topics.length > 0 ? 'pass' : 'warn',
+      summary: `${guidelineEvidence.topics.length} external guideline topic(s) extracted`
+    }
+  ]);
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    status: findings.some((finding) => finding.status === 'fail')
+      ? 'fail'
+      : findings.some((finding) => finding.status === 'warn')
+        ? 'needs_review'
+        : 'pass',
+    findings
+  };
+}
+
+function mergeExternalBundleGate(dsGate, externalBundle) {
+  const base = dsGate ?? {
+    schema_version: '0.1.0',
+    fallback_allowed: false,
+    checks: []
+  };
+  return {
+    ...base,
+    fallback_allowed: false,
+    checks: [
+      ...(base.checks ?? []).filter((check) => check.id !== 'DS-GATE-EXTERNAL-BUNDLE-AUTHORITY'),
+      {
+        id: 'DS-GATE-EXTERNAL-BUNDLE-AUTHORITY',
+        statement: `External bundle ${externalBundle.source} is reference evidence only; VibePro-native DS, current code, Story/Spec/Architecture, and gates remain implementation authority. Redacted values: ${externalBundle.redacted_value_count}.`
+      }
+    ]
+  };
 }
 
 async function collectGraphifyEvidence(root, options) {
@@ -829,6 +1202,182 @@ function summarizeValidationStatus(findings) {
     needs_evidence: needsEvidence,
     block
   };
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function sanitizeExternalBundle(value) {
+  let redactedCount = 0;
+  const sanitize = (item, key = '') => {
+    if (typeof item === 'string') {
+      if (isLikelySecretValue(item) || isSecretKey(key)) {
+        redactedCount += 1;
+        return undefined;
+      }
+      return item;
+    }
+    if (Array.isArray(item)) {
+      return item.map((entry) => sanitize(entry, key)).filter((entry) => entry !== undefined);
+    }
+    if (item && typeof item === 'object') {
+      const next = {};
+      for (const [entryKey, entryValue] of Object.entries(item)) {
+        if (isSecretKey(entryKey) && typeof entryValue === 'string') {
+          redactedCount += 1;
+          continue;
+        }
+        const sanitized = sanitize(entryValue, entryKey);
+        if (sanitized !== undefined) next[entryKey] = sanitized;
+      }
+      return next;
+    }
+    return item;
+  };
+  return {
+    value: sanitize(value),
+    redactedCount
+  };
+}
+
+function isSecretKey(key) {
+  return /secret|password|passwd|api[_-]?key|private[_-]?key|access[_-]?token|refresh[_-]?token|auth[_-]?token|bearer|credential/i.test(String(key ?? ''));
+}
+
+function isLikelySecretValue(value) {
+  const text = String(value ?? '');
+  return /sk_live_[A-Za-z0-9_]{16,}/.test(text)
+    || /ghp_[A-Za-z0-9_]{24,}/.test(text)
+    || /xox[baprs]-[A-Za-z0-9-]{20,}/.test(text)
+    || /AKIA[0-9A-Z]{16}/.test(text)
+    || /Bearer\s+[A-Za-z0-9._-]{24,}/i.test(text)
+    || /(?:password|secret|token|api[_-]?key)["']?\s*[:=]\s*["'][^"']{12,}["']/i.test(text);
+}
+
+function flattenText(value) {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(flattenText).join('\n');
+  if (value && typeof value === 'object') {
+    return Object.entries(value).map(([key, item]) => `${key}\n${flattenText(item)}`).join('\n');
+  }
+  return '';
+}
+
+function flattenKeys(value, prefix = '') {
+  if (typeof value === 'string') return value ? [prefix || value] : [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => flattenKeys(item, prefix ? `${prefix}.${index}` : String(index)));
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, item]) => {
+      const nextPrefix = prefix ? `${prefix}.${key}` : key;
+      if (item && typeof item === 'object') return flattenKeys(item, nextPrefix);
+      return [nextPrefix];
+    });
+  }
+  return prefix ? [prefix] : [];
+}
+
+function inferExternalColorRoles(tokenEvidence, guidelineEvidence) {
+  const text = `${tokenEvidence.css_variables.join(' ')} ${tokenEvidence.token_keys.join(' ')} ${guidelineEvidence.text}`.toLowerCase();
+  const roleSpecs = [
+    ['brand', /brand|primary|interactive|accent/],
+    ['surface', /surface|background|card|sheet/],
+    ['text', /text|foreground|muted|label/],
+    ['success', /success|available|positive/],
+    ['warning', /warning|caution|limited|urgency/],
+    ['error', /error|danger|negative/],
+    ['disabled', /disabled|inactive/],
+    ['selected', /selected|active/]
+  ];
+  return roleSpecs
+    .filter(([, pattern]) => pattern.test(text))
+    .map(([name]) => ({
+      name,
+      purpose: `External bundle candidate role: ${name}`,
+      source: 'external_bundle_reference',
+      candidate_tokens: tokenEvidence.css_variables.filter((token) => token.toLowerCase().includes(name)).slice(0, 12)
+    }));
+}
+
+function inferExternalStates(guidelineEvidence) {
+  const text = `${guidelineEvidence.text} ${guidelineEvidence.topics.join(' ')}`;
+  const states = ['loading', 'empty', 'error', 'selected', 'disabled', 'success', 'available', 'limited', 'unavailable'];
+  return states.filter((state) => new RegExp(state, 'i').test(text));
+}
+
+function inferExternalDomainSemantics(guidelineEvidence) {
+  return guidelineEvidence.topics
+    .filter((topic) => /search|map|hotel|booking|inventory|availability|filter|detail|result|domain|concept/i.test(topic))
+    .slice(0, 40);
+}
+
+function inferExternalCtas(guidelineEvidence, componentEvidence) {
+  const text = `${guidelineEvidence.text}\n${componentEvidence.names.join('\n')}`;
+  return unique([
+    ...[...text.matchAll(/(?:CTA|Action|Button|ボタン|導線)[:\s-]+([^\n.。]+)/gi)].map((match) => match[1].trim()),
+    ...componentEvidence.names.filter((name) => /cta|button|action|submit|confirm|reserve|search|電話/i.test(name))
+  ]).slice(0, 40);
+}
+
+function inferDensityFromText(text) {
+  if (/dense|compact|scan|密度|一覧|comparison/i.test(text)) return 'preserve_dense_scannable_product_layout';
+  return 'preserve_current_information_density';
+}
+
+function normalizeRoleName(value) {
+  const raw = String(value ?? 'component').trim();
+  const parts = raw
+    .replace(/^ds[-_]/i, '')
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean);
+  const pascal = parts.map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`).join('');
+  return pascal || raw;
+}
+
+function inferComponentResponsibility(name) {
+  const text = String(name ?? '').toLowerCase();
+  if (/cta|button|action|confirm|電話/.test(text)) return 'primary or secondary action surface';
+  if (/card|result|hotel|item/.test(text)) return 'structured result or entity display';
+  if (/sheet|modal|drawer/.test(text)) return 'layered navigation or detail surface';
+  if (/nav|tab|menu/.test(text)) return 'navigation surface';
+  if (/chip|filter|search/.test(text)) return 'search and refinement control';
+  return 'external bundle component role candidate';
+}
+
+function mergeNamedItems(existing, incoming) {
+  const byName = new Map();
+  for (const item of [...existing, ...incoming]) {
+    const name = item?.name ?? item;
+    if (!name) continue;
+    byName.set(String(name), typeof item === 'object' ? item : { name: String(name) });
+  }
+  return [...byName.values()];
+}
+
+function uniqueItemsByStatement(items) {
+  const byStatement = new Map();
+  for (const item of items) {
+    const statement = typeof item === 'string' ? item : item?.statement;
+    if (!statement) continue;
+    byStatement.set(String(statement), typeof item === 'object' ? item : { statement });
+  }
+  return [...byStatement.values()];
+}
+
+function mergeFindings(existing, incoming) {
+  const byId = new Map();
+  for (const finding of [...existing, ...incoming]) {
+    if (!finding?.id) continue;
+    byId.set(finding.id, finding);
+  }
+  return [...byId.values()];
 }
 
 async function listFiles(root, dir = root) {
