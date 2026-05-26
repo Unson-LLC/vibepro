@@ -8,7 +8,11 @@ VibePro is pre-1.0 software. Security fixes target the latest published version 
 
 Please do not open public issues for vulnerabilities.
 
-Report suspected vulnerabilities by contacting the maintainers through the security contact listed in the GitHub repository, or by opening a private security advisory when available.
+Report suspected vulnerabilities by opening a private GitHub Security Advisory for this repository:
+
+https://github.com/Unson-LLC/vibepro/security/advisories/new
+
+If private advisories are unavailable, contact the maintainers through the security contact listed in the GitHub repository. Do not include exploit details, secrets, or private repository evidence in public issues.
 
 Include:
 

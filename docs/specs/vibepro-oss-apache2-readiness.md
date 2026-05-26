@@ -45,6 +45,38 @@ The repository SHOULD include:
 - PR template
 - CI workflow
 
+## Task Decomposition
+
+The OSS readiness story SHOULD decompose release work into auditable VibePro tasks before execution.
+
+- Metadata and operations documentation review MUST cover license, package metadata, README files, GitHub templates, CI, contribution guidance, security contact, and Graphify optional integration.
+- Package-boundary verification MUST run from a clean worktree and compare `package.json#files` with `npm pack --dry-run` output.
+- Release verification MUST run `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks, then record passing commands as VibePro verification evidence.
+- PR evidence verification MUST confirm canonical Story title/background rendering from the Story source.
+- Agent Review Gate verification MUST confirm phase reviews are checkpoint-gated and PR readiness only requires final `gate` / `preview` reviews.
+- Planning metadata verification MUST keep the Story source populated with `view`, `horizon`, `period`, `category`, and `started_at`, and MUST leave no period or KPI open question in `story derive`.
+
+## Planning Metadata
+
+The OSS readiness Story source MUST remain schedulable for VibePro / NocoDB planning.
+
+- `view` MUST be `dev`.
+- `horizon` MUST be `month`.
+- `period` MUST be `2026-05`.
+- `category` MUST be `product`.
+- `started_at` MUST be `2026-05-26`.
+- The Story body MUST include business value and success indicators for OSS release readiness.
+
+## Verification Evidence
+
+- 2026-05-26: Metadata and operations documentation review confirmed `LICENSE`, `NOTICE`, `package.json`, README files, contribution docs, security policy, code of conduct, changelog, GitHub issue templates, PR template, and CI workflow are present and aligned with Apache-2.0 OSS publication.
+- 2026-05-26: Security contact routing was made explicit through the repository's private GitHub Security Advisory URL in `SECURITY.md`.
+- 2026-05-26: Package-boundary verification passed from a clean worktree with `npm run pack:dry-run`; the dry-run package contained 74 runtime/package files and excluded `.vibepro/`, `docs/`, `docs/releases/`, local logs, and Graphify source.
+- 2026-05-26: Release verification passed from a clean worktree with `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks for `--version`, English help, and `checkpoint --json`.
+- 2026-05-26: PR evidence verification confirmed `pr prepare` uses the canonical Story title/background from the Story source and does not emit the missing-background fallback when introductory Story prose is available. Regression coverage is the existing test `pr prepare uses story source title and intro when explicit background heading is absent`.
+- 2026-05-26: Agent Review Gate phase separation verification confirmed development-phase reviews are enforced by `implementation-start`, `test-plan`, and `implementation-complete` checkpoints, while PR readiness only requires final `gate` / `preview` review stages. Regression coverage is the existing tests `checkpoint lists available phase gates`, `checkpoint blocks implementation start before design gates and staged reviews pass`, and `pr prepare requires only final agent review gates; phase reviews are checkpoint-gated`.
+- 2026-05-26: Planning metadata verification confirmed `story derive` resolves OSS readiness as `view=dev`, `horizon=month`, `period=2026-05`, `category=product`, with no period or KPI open questions.
+
 ## Reviewable PR Evidence
 
 VibePro-generated PR bodies MUST use canonical story source fields for reviewer-facing context:

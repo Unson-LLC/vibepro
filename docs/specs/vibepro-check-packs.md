@@ -17,6 +17,7 @@ related_stories:
 vibepro check list
 vibepro check ui <repo> [--json]
 vibepro check security <repo> [--json]
+vibepro check oss-readiness <repo> [--json]
 vibepro check performance <repo> [--measure] [--json]
 vibepro check architecture <repo> [--json]
 vibepro check pr-readiness <repo> --base <ref> [--story-id <id>] [--json]
@@ -53,6 +54,7 @@ vibepro check all <repo> [--json]
 |------|-----------------|
 | `ui` | `component_style`, `flow_design`, `terminal_link_contracts` |
 | `security` | `static_site`, `api_boundary`, `code_quality` |
+| `oss-readiness` | `oss_readiness` |
 | `performance` | `database_access`, `local_dev`, `code_quality`; optional `performance_measurement` when `--measure` |
 | `architecture` | `architecture_profile`, `code_quality`, `api_boundary`, `database_access` |
 | `pr-readiness` | `pr_prepare`; requires `--base` or `--head` |

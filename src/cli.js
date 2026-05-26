@@ -84,6 +84,12 @@ import {
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
+import {
+  getDecisionStatus,
+  recordDecision,
+  renderDecisionRecordSummary,
+  renderDecisionStatusSummary
+} from './decision-records.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
@@ -207,7 +213,7 @@ Usage:
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
@@ -216,6 +222,8 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
+  vibepro decision status [repo] --id <story-id> [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
@@ -343,7 +351,7 @@ Usage:
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
-  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
+  vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
@@ -352,6 +360,8 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
+  vibepro decision status [repo] --id <story-id> [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
@@ -700,6 +710,7 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       const result = await runCheckPack(repoRoot, {
         packId,
+        env: io.env,
         runId: getOption(rest, '--run-id'),
         storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
         baseRef: getOption(rest, '--base'),
@@ -895,6 +906,46 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown review command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'decision') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'record') {
+        const result = await recordDecision(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          type: getOption(rest, '--type'),
+          source: getOption(rest, '--source'),
+          sourceStatus: getOption(rest, '--source-status'),
+          summary: getOption(rest, '--summary'),
+          reason: getOption(rest, '--reason'),
+          artifact: getOption(rest, '--artifact'),
+          reviewer: getOption(rest, '--reviewer'),
+          status: getOption(rest, '--status'),
+          secretLocation: getOption(rest, '--secret-location'),
+          secretAction: getOption(rest, '--secret-action'),
+          stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(stdin) : ''
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDecisionRecordSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await getDecisionStatus(repoRoot, {
+          storyId: getOption(rest, '--id')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDecisionStatusSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown decision command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
