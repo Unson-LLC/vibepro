@@ -214,6 +214,7 @@ npx vibepro check all /path/to/repo --story-id <story-id> --base <base-branch>
 ```bash
 npx vibepro check ui /path/to/repo --story-id <story-id>
 npx vibepro check security /path/to/repo --story-id <story-id>
+npx vibepro check oss-readiness /path/to/repo --story-id <story-id>
 npx vibepro check performance /path/to/repo --story-id <story-id>
 npx vibepro check architecture /path/to/repo --story-id <story-id>
 npx vibepro check pr-readiness /path/to/repo --story-id <story-id> --base <base-branch>

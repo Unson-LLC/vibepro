@@ -30,6 +30,7 @@ VibeProの診断器を、内部scanner名ではなくユーザーの目的別パ
 |------|---------|--------|
 | `ui` | UI体験と操作信頼性を見る | component style, flow design, terminal/file viewer contracts |
 | `security` | 公開前のセキュリティ境界を見る | secrets, XSS, API boundary, authorization order |
+| `oss-readiness` | OSS公開前のlicense, secret, SBOM, vulnerability, repository postureを見る | Gitleaks, OpenSSF Scorecard, Syft, Grype, REUSE |
 | `performance` | 重さと運用コストを見る | DB access, local dev, duplicate query shapes, optional measurement |
 | `architecture` | 境界と責務分離を見る | architecture profile, API boundary, DB access, responsibility hotspots |
 | `pr-readiness` | PR可能性を見る | PR prepare, Gate DAG, split plan |
