@@ -11,7 +11,7 @@ updated_at: 2026-05-25
 
 `design-modernize` turns an existing UI into VibePro's internal Design Quality DAG. It is for improving a real product screen while preserving current information architecture, route contracts, data dependencies, and user flows.
 
-It does not require Moonchild or any external generator. External Design System bundles can be used as optional reference material, but the gate logic lives in VibePro.
+It does not require an external generator. External Design System bundles can be used as optional reference material, but the gate logic lives in VibePro.
 
 The workflow may use image generation, but only as visual hypothesis exploration after the current UX invariants and design constraints are locked. Generated images are evidence for critique and distillation, not source-of-truth implementation artifacts.
 
@@ -145,42 +145,12 @@ Required checks:
 - `VH-IMPL`: Candidate can be implemented within discovered files or justified shared components.
 - `VH-AP`: Candidate does not introduce net-new onboarding, route structure, backend data, or navigation model.
 
-## Moonchild MCP Validation
+## Reference Evidence Validation
 
-Validated on 2026-05-25 through HTTP JSON-RPC against `https://forge.moonchild.ai/mcp`. The token was injected only from the current tmux global environment and verified by length, not printed.
-
-Observed tools:
-
-- `organization_list`
-- `design_system_list`
-- `design_system_get`
-- `design_system_list_versions`
-- `design_system_get_files`
-- `design_system_get_bundle`
-- `design_system_search`
-- `scene_list`
-- `scene_get`
-- `frame_get`
-- `frame_get_screenshot`
-- `frame_get_export`
-- `url_resolve`
-
-Aitle facts observed through MCP:
-
-- Published Design System id: `1c436280-9432-4bf0-b4fd-15585d6482f0`
-- Published Design System title: `Aitle`
-- Published Design System version: `1`
-- Design System bundle shape: `{ version, bundle }`, where `bundle.theme`, `bundle.styles`, `bundle.componentsCss`, and `bundle.componentsJs` are string assets.
-- Scene id: `eaa54dae-7f7a-4f00-afce-f1bf44a7095b`
-- Scene title: `Aitle モバイル Flows`
-- Frames: `Home Search Entry`, `Map Search`, `Detail Filters`, `Search Results`, `Hotel Detail`
-- Frame screenshots are available as `image/png`.
-- `frame_get_export` returns frame metadata, linked Design System metadata, fonts, HTML, and image assets.
+The workflow has been validated against an external design-system export with string-based assets. VibePro must ingest string-based token/style/component bundles as constraints, not only structured JSON token objects.
 
 Interpretation for VibePro:
 
-- Moonchild is useful as observed reference evidence, but it is not required for the `design-modernize` workflow.
-- VibePro must ingest string-based token/style/component bundles as constraints, not only structured JSON token objects.
 - The durable product behavior belongs in VibePro's Design Quality DAG: invariant lock, information architecture preservation, CTA hierarchy, state clarity, density control, accessibility, and implementation acceptance.
 - Generated or external frame output remains non-authoritative reference material when it conflicts with current product code, current screenshots, or explicit VibePro gate clauses.
 

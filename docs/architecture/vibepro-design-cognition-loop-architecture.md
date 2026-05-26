@@ -13,7 +13,7 @@ related_specs:
 
 ## Intent
 
-VibePro must internalize the design-generation discipline observed from Moonchild without becoming a Moonchild orchestrator. The core architecture is a loop that combines current-product evidence, UX invariant locking, Design System constraints, image-based visual hypothesis exploration, DAG critique, and Codex implementation distillation.
+VibePro must internalize product-local design-generation discipline without becoming an external design orchestrator. The core architecture is a loop that combines current-product evidence, UX invariant locking, Design System constraints, image-based visual hypothesis exploration, DAG critique, and Codex implementation distillation.
 
 The loop exists for existing-product modernization. Its job is to make a real screen better while preserving information architecture, route contracts, data dependencies, and user task continuity.
 
@@ -104,7 +104,7 @@ Current product code + current screenshots
 
 ## Aitle Mapping
 
-Moonchild MCP validation showed that Aitle's reference DS is not only color tokens. It includes component roles such as AI phone CTA, hotel card, compact hotel card, availability badge, filter chip, bottom sheet, and bottom navigation. It also encodes a dark mobile surface, purple primary action, mint availability, cyan location/distance, amber urgency, dense Japanese mobile typography, and Phosphor-style iconography.
+Reference DS validation showed that Aitle's system is not only color tokens. It includes component roles such as AI phone CTA, hotel card, compact hotel card, availability badge, filter chip, bottom sheet, and bottom navigation. It also encodes a dark mobile surface, purple primary action, mint availability, cyan location/distance, amber urgency, dense Japanese mobile typography, and Phosphor-style iconography.
 
 VibePro must preserve the current Aitle route purposes and use image generation only after the invariant lock:
 

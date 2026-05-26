@@ -9,9 +9,9 @@ updated_at: 2026-05-25
 
 ## Purpose
 
-Derived Design System is VibePro's internal design constraint model for existing UI modernization. It captures the design cognition step learned from Moonchild: before generating screens, first define the product-local design decision space.
+Derived Design System is VibePro's internal design constraint model for existing UI modernization. It captures the design cognition step required before generating screens: first define the product-local design decision space.
 
-This model is not a Moonchild export and does not require an external image or design-system generator. External Design System bundles remain optional reference evidence.
+This model is not an external export and does not require an external image or design-system generator. External Design System bundles remain optional reference evidence.
 
 ## CLI
 
