@@ -898,6 +898,7 @@ async function collectGitState(repoRoot, options) {
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
   const dirtyDiff = await collectDirtyDiff(repoRoot);
+  const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
   const dirtyFiles = parseStatus(statusOutput);
   const changedFiles = includesDirtyInChangedFiles
     ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
@@ -907,6 +908,7 @@ async function collectGitState(repoRoot, options) {
     base_ref: baseRef,
     head_ref: headRef,
     head_sha: headSha || null,
+    origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
     status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     changed_files: changedFiles,
@@ -1422,7 +1424,13 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
   const storyLabel = formatPrStoryLabel(story, prContext.story_source);
   const reviewQuestion = buildHumanReviewQuestion({ source: prContext.story_source, fileGroups });
-  const decisionGraph = renderHumanDecisionGraph({ source: prContext.story_source, fileGroups, gateDag: prContext.gate_dag, splitPlan });
+  const decisionGraph = renderHumanDecisionGraph({
+    source: prContext.story_source,
+    fileGroups,
+    gateDag: prContext.gate_dag,
+    splitPlan,
+    git
+  });
   const gateNote = unresolved.length === 0
     ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
     : `未解決Gateがあります（対象: ${formatHumanGateSummary(unresolved)}）。詳細は監査ログの Gate DAG / Gate Enforcement を確認し、blocking か waiver 可能かを判断してください。`;
@@ -1446,19 +1454,59 @@ function buildHumanReviewQuestion({ source = {}, fileGroups }) {
   return `${title} を満たす変更として、${areas} の差分をこのPRで受け入れてよいか。`;
 }
 
-function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan }) {
+function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
   const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
   const sourcePath = source.path ?? 'Story未検出';
   const changeIntent = buildHumanChangeIntent(fileGroups);
+  const changeLinks = buildHumanDecisionFileLinks(fileGroups, git);
   const evidence = buildHumanEvidenceDigest(gateDag);
   const split = buildHumanSplitDigest(splitPlan);
   return [
     `- 目的: ${title}`,
-    `- 正本: ${sourcePath}`,
-    `- 差分: ${changeIntent}`,
+    `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
+    `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
     `- 証跡: ${evidence}`,
     `- 分割判断: ${split}`
   ].join('\n');
+}
+
+function buildHumanDecisionFileLinks(fileGroups, git) {
+  const rows = [
+    ['Runtime', fileGroups.source?.files ?? []],
+    ['Contract Docs', collectContractDocFiles(fileGroups)],
+    ['Capability Map', collectCapabilityFiles(fileGroups)],
+    ['Tests', fileGroups.tests?.files ?? []],
+    ['Repo Control', fileGroups.repo_control?.files ?? []]
+  ];
+  const links = rows
+    .filter(([, files]) => files.length > 0)
+    .map(([label, files]) => `${label}: ${files.slice(0, 3).map((file) => formatGithubFileLink(file, git)).join(', ')}${files.length > 3 ? ` ほか${files.length - 3}件` : ''}`);
+  return links.join(' / ');
+}
+
+function formatGithubFileLink(filePath, git = {}) {
+  if (!filePath || filePath === 'Story未検出') return filePath || 'unknown';
+  const baseUrl = githubRepositoryUrl(git.origin_url);
+  const ref = git.current_branch || git.head_sha || git.head_ref || 'HEAD';
+  if (!baseUrl) return filePath;
+  return `[${filePath}](${baseUrl}/blob/${ref}/${encodePathForGithub(filePath)})`;
+}
+
+function githubRepositoryUrl(originUrl) {
+  if (!originUrl) return null;
+  const trimmed = String(originUrl).trim().replace(/\.git$/, '');
+  const httpsMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/);
+  if (httpsMatch) return `https://github.com/${httpsMatch[1]}`;
+  const sshMatch = trimmed.match(/^git@github\.com:([^/]+\/[^/]+)$/);
+  if (sshMatch) return `https://github.com/${sshMatch[1]}`;
+  return null;
+}
+
+function encodePathForGithub(filePath) {
+  return String(filePath)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
 }
 
 function buildHumanChangeIntent(fileGroups) {

@@ -12,7 +12,7 @@ VibePro keeps the machine evidence sections in `pr-body.md`, but adds a human de
 The PR body is organized as:
 
 1. Decision brief: what this PR asks the reviewer to decide.
-2. Decision graph: a compressed human-readable graph of purpose, source of truth, changed surfaces, gate evidence, and split decision.
+2. Decision graph: a compressed human-readable graph of purpose, source of truth, changed surfaces, gate evidence, and split decision. File references link to the PR head on GitHub when the target repo has a supported GitHub remote.
 3. Change and rationale summary: what changed and why.
 4. Human review map: focused reviewer questions and Runtime / Contract Docs / Capability Map / Tests / Repo Control classification.
 5. Verification checklist: commands with `[x]` only when bound Gate evidence has passed.
@@ -26,6 +26,8 @@ Gate artifacts are necessary for auditability, but they should not be the first 
 Raw machine states such as `needs_clean_branch` are still preserved in audit details, but the first screen translates them into the human decision they imply: split the PR, explain the scope, or waive a non-critical warning with reason.
 
 The top section should answer the reviewer question directly: whether the changed surfaces should be accepted for the Story. The decision graph is not a full Gate DAG dump; it is a human-sized projection of the Story / Spec / Gate DAG evidence.
+
+File links belong in the decision graph because the reviewer should be able to open the authoritative Story, Spec, Architecture, runtime, and test files from the first screen. Link rendering is best-effort: GitHub remotes produce `blob/<head-ref>/<path>` links, while non-GitHub or missing remotes keep repository-relative paths so the PR body never emits misleading URLs.
 
 ## Boundaries
 

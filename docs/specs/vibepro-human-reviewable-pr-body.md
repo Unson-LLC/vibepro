@@ -11,6 +11,8 @@ title: Human-reviewable PR body spec
 - The decision brief MUST include Story, human merge decision, review entry points, Gate status, scope decision, and changed file count.
 - The decision brief MUST include a human review question labeled `このPRで閉じる問い` before raw Story/Gate details.
 - The decision brief MUST render `### 判断グラフ` with purpose, source of truth, changed surfaces, gate evidence digest, and split decision digest.
+- When the target repository has a GitHub `origin` remote, the decision graph SHOULD render source-of-truth and primary changed file references as GitHub file links for the PR head ref.
+- When no supported GitHub remote exists, the decision graph MUST fall back to plain repository-relative paths instead of emitting broken links.
 - The human-facing top section MUST render `## 変更内容`, `## なぜこの変更か`, `## レビューしてほしい観点`, `## 検証`, `## リスク・確認事項`, and `## 明示的にやらないこと` before `## 監査ログ`.
 - The PR body MUST render a reviewer-oriented change map with Runtime, Contract Docs, Capability Map, Tests, and Repo Control categories when applicable.
 - The PR body MUST render explicit non-goals so reviewers can keep the review scope narrow.
