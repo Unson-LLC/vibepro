@@ -175,7 +175,7 @@ async function runNamedCheck(check, context) {
   if (check === 'architecture_profile') return architectureProfile;
   if (check === 'agent_harness') return scanAgentHarness(root);
   if (check === 'public_discovery') return scanPublicDiscovery(root);
-  if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId });
+  if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId, env: options.env });
   if (check === 'oss_readiness') return scanOssReadiness(root, { env: options.env });
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
