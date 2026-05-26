@@ -1,47 +1,53 @@
 # VibePro
 
+![VibePro README header](docs/assets/vibepro-header.png)
+
 [![Language: English](https://img.shields.io/badge/Language-English-blue)](README.md)
 [![Language: Japanese](https://img.shields.io/badge/Language-%E6%97%A5%E6%9C%AC%E8%AA%9E-green)](README.ja.md)
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-VibePro は、AI 駆動開発のための CLI 制御基盤です。Feature Story から Architecture、Spec、Task、Verification、PR Evidence を生成・整理し、人間が安心して AI エージェントへ実装を任せられる状態を作ります。
+AIを見張り続けるのをやめる。作りたかったものを出荷する。
 
-VibePro は対象アプリを自動で書き換えるツールではありません。対象リポジトリ内に `.vibepro/` 作業領域を作り、変更・レビュー・マージの前に必要な証跡を保存します。
+VibePro は、Codex や Claude Code などの AI コーディングエージェントに実装を任せても、プロダクト意図・責務境界・品質基準がブレないようにするための CLI です。
+
+作りたいものを Story、Architecture、Spec、Task、Gate DAG、検証証跡、エージェントレビュー証跡、PR Evidence として `.vibepro/` に残します。AI エージェントが並列に作業しても、人間は「何が完成か」を握ったまま進められます。
 
 ## なぜ VibePro か
 
-AI コーディングは速い一方で、最後の 20% に手間がかかります。要求の抜け、UI フローの未確認、API 契約破壊、曖昧なレビュー範囲、見た目は完成しているが実際には触れない PR が起きやすいからです。
+AI コーディングは、小さいタスクでは速い。問題は、プロダクト全体をブレずに完成させることです。
 
-VibePro はその最後の詰めを明示します。
+本当の課題は、AI がコードを書けるかどうかではありません。AI は書けます。課題は、複数のエージェントが UI、API、データフロー、性能、セキュリティ境界、責務分担を触っても、プロダクトの意図を保ち続けることです。
+
+VibePro は AI に渡すプロダクト契約を作ります。
 
 - Story: どんなユーザー価値を満たすべきか。
 - Architecture: どの境界・責務・依存方向を守るべきか。
-- Spec: どの振る舞い・不変条件を満たすべきか。
-- Code: 実際に何が変わったか。
-- Gates: Unit、Integration、E2E、Performance、Security、Review の何が未解決か。
-- PR Evidence: 人間と AI エージェントが作業前に読むべき共通文脈。
+- Spec: どの振る舞い・不変条件・受け入れ基準を満たすべきか。
+- Task: AI に渡せる粒度で、どこまでを作るべきか。
+- Gates: UI、E2E、Performance、Security、Integration、Review の何が未解決か。
+- PR Evidence: 変更・レビュー・マージ前に人間と AI エージェントが読むべき共通文脈。
 
-基本の流れは次の通りです。
+基本の流れ:
 
 ```text
-Story -> Architecture -> Spec -> Code -> Gate -> PR Evidence
+Story -> Architecture -> Spec -> Task -> AI Implementation -> Gate -> PR Evidence
 ```
 
-Story と Architecture が確定できれば、実装は AI エージェントへ渡しやすくなります。
+VibePro は対象アプリを自動で書き換えるツールではありません。人間が AI エージェントへ実装を渡し、その実装が意図したプロダクトからズレていないかを確認し、マージ可能な状態まで運ぶための制御レイヤです。
 
 ## 主な機能
 
-- Story / Architecture / Spec を踏まえた PR 準備
-- 変更コードに対する Requirement Consistency 検査
-- 完了条件の依存関係を示す Gate DAG
-- 大きい変更や危険な変更の PR 分割計画
-- Unit / Integration / E2E / Build / Type-check の検証証跡記録
-- Playwright による UI フロー検証とネットワークエラー検知
-- Performance metric 定義、run 記録、before/after 比較
-- UI、Security、Performance、Architecture、PR Readiness、Launch Readiness の診断パッケージ
-- サブエージェントレビュー依頼とレビュー結果の記録
-- Skills / Codex instructions の導入による AI 駆動開発ワークフロー標準化
+- プロダクト意図の artifact 化: Story、Architecture、Spec、Task、受け入れ基準を `.vibepro/` に保存
+- Graphify ベースの影響範囲文脈: code graph を取り込み、Story と Task から対象ファイル、hub、隣接責務を参照
+- AI エージェントへの handoff: Codex、Claude Code、人間エンジニアへ渡す task brief、implementation plan、handoff artifact を生成
+- Risk-adaptive Gate DAG: 完了をブロックしている品質 Gate と、足りない証跡を可視化
+- PR Evidence: PR 前に `pr-body.md`、`review-cockpit.html`、`gate-dag.html`、`split-plan.html` を生成
+- 品質チェック: UI、Flow Design、Gesture Interaction、Network Contract、Security Boundary、Database Access、Local Dev、Code Quality、Architecture、PR Readiness、Launch Readiness
+- 検証証跡: Unit、Integration、E2E、Build、Type-check、Playwright Flow の結果を現在の git 状態に紐づけて記録
+- Performance evidence: Story 単位の性能主張に対して metric 定義、run 記録、before/after 比較を保存
+- Agent review evidence: Codex / Claude Code の role-based review 依頼を作り、並列サブエージェントレビューの provenance を記録
+- Decision records: `needs_review`、ノイズ判定、waiver、secret 混入判断を会話ではなく VibePro artifact として保存
 
 ## インストール
 
