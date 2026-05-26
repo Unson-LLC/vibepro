@@ -450,6 +450,9 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
+  assert.match(output, /既存UI modernize/);
+  assert.match(output, /プロダクトローカルなDesign System正本/);
+  assert.match(output, /evidence-coverage\.json と ds-gate\.json/);
   assert.match(output, /GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らない/);
   assert.doesNotMatch(output, /gh pr create.*標準経路として使/i);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
@@ -481,6 +484,9 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
+  assert.match(englishOutput, /Existing UI modernization/);
+  assert.match(englishOutput, /product-local Design System/);
+  assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);
   assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
 });
 

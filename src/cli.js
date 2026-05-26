@@ -170,6 +170,15 @@ If required gates are unresolved, next_commands points back to review or
 verification. Only use vibepro pr create for normal PR creation; do not use raw
 gh pr create as the standard path.
 
+Existing UI modernization:
+  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
+      Derive a product-local Design System from current route code, style/token
+      files, optional Graphify evidence, and product semantics.
+  Review .vibepro/design-system/<ds-id>/evidence-coverage.json and ds-gate.json,
+  then use design-modernize derive-system or plan for screen-level work. Generated
+  visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
+  remain authoritative.
+
 Usage:
   vibepro help [command]
   vibepro version
@@ -285,6 +294,14 @@ PR作成経路:
 base branch:
   READMEや例の origin/develop は固定ではありません。リポジトリに合わせて origin/main や main を指定してください。
   init後の案内と pr prepare の出力に候補を表示します。
+
+既存UI modernize:
+  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
+      現行route code、style/token files、任意のGraphify証跡、product semanticsから
+      プロダクトローカルなDesign System正本を作ります。
+  .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
+  その後に design-modernize derive-system または plan で画面別作業へ進みます。
+  生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
 
 英語で表示したい場合:
   vibepro init <repo> --language en

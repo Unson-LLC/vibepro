@@ -31,17 +31,22 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
    - `vibepro performance define <repo> --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> --evidence-source <type>`
    - `vibepro performance record <repo> --id <story-id> --metric-id <id> --label before|after --status completed --duration-ms <ms> --evidence-source <type:ref:summary>`
    - `vibepro performance compare <repo> --id <story-id>`
-8. For existing UI modernization, create the design decision space before screen implementation:
+8. For existing UI modernization, derive the product-local Design System before screen implementation:
+   - Run Graphify first when available: `vibepro graph <repo> --run-graphify`.
+   - Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code`.
+   - Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json` before accepting the DS as an implementation constraint.
+   - Treat `.vibepro/design-system/<ds-id>/design-system.json`, `semantic-tokens.json`, `component-roles.json`, `component-states.json`, `screen-patterns.json`, `cta-policy.json`, `density-policy.json`, `navigation-policy.json`, `anti-patterns.json`, and `implementation-mapping.json` as product-local DS evidence.
+9. For screen-level UI modernization, create the story-specific design decision space before screen implementation:
    - `vibepro design-modernize derive-system <repo> --id <story-id> --product <name> --routes <csv> --brief <text>`
    - `vibepro design-modernize plan <repo> --id <story-id> --product <name> --routes <csv> --base-url <url>`
    - Treat `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` as implementation constraints.
    - External Design System bundles, screenshots, and image-generated ideas are visual hypotheses. The VibePro-derived Design System, current UI evidence, Story/Spec, and Gate DAG remain authoritative.
-9. Plan work from VibePro evidence: `vibepro story plan <repo>`.
-10. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
-11. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
-12. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
-13. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-14. Run parallel subagent review:
+10. Plan work from VibePro evidence: `vibepro story plan <repo>`.
+11. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
+12. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
+13. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
+14. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+15. Run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
@@ -51,8 +56,8 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-15. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
-16. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+16. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
+17. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
 
 ## Guardrails
 
@@ -69,6 +74,8 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.
 - Do not treat type-check or a superficially rendered UI as enough when UI code introduces `/api/...` calls. Network Contract Gate requires matching Next.js routes and network-aware flow evidence for API 4xx/5xx.
 - Do not treat Story-level E2E existence as enough for UI-heavy changes. Clickable-looking controls on the changed screen need an interaction contract: save/mutate, visible state change, navigation, scroll/focus, disabled, or explicit unfinished state.
+- Do not skip `design-system derive` for existing products that need a reusable DS. Screen-level modernization should not invent product semantics when current routes, CTAs, states, style tokens, or Graphify evidence can define them.
+- Do not treat `.vibepro/design-system/<ds-id>/design-system.json` as complete unless `evidence-coverage.json` and `ds-gate.json` are reviewed. Missing Graphify/style evidence may be a warning; missing semantic roles or implicit fallback is a design gate problem.
 - Do not implement a generated design proposal directly. For UI modernization, first verify the current route, information architecture, CTA priority, state behavior, and data dependencies against the Derived Design System and `ds-gate.json`.
 - Do not let `ds-gate.json` fall back implicitly. If DS drift, component role, composition, visual hypothesis, or anti-pattern clauses are missing, treat the design-modernize evidence as incomplete.
 
@@ -107,6 +114,10 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 - `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.
 - `.vibepro/checks/ui/<run-id>/check.json`: UI check evidence, including `flow_design.interactive_contract_hits`.
 - `.vibepro/pr/<story-id>/performance-runs/*.json`: Story-level performance evidence runs.
+- `.vibepro/design-system/<ds-id>/design-system.json`: product-local Design System derived from current evidence.
+- `.vibepro/design-system/<ds-id>/evidence-coverage.json`: route/style/Graphify/semantic coverage findings for the native DS.
+- `.vibepro/design-system/<ds-id>/ds-gate.json`: explicit DS gate with fallback disabled.
+- `.vibepro/design-system/<ds-id>/implementation-mapping.json`: route/component/file mapping for implementation handoff.
 - `.vibepro/design-modernize/<story-id>/design-system-derivation.json`: product semantics and Derived Design System derivation.
 - `.vibepro/design-modernize/<story-id>/derived-design-system.json`: semantic tokens, component roles, CTA hierarchy, anti-patterns, and visual hypothesis policy.
 - `.vibepro/design-modernize/<story-id>/design-modernize.json`: screen modernization plan and Design Quality DAG.
