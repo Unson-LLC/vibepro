@@ -4195,6 +4195,13 @@ Weighted semantic/layout residual: **34%**
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 概要'));
+  assert.match(prBody, /このPRで閉じる問い: PR本文に背景が出ない を満たす変更として、Runtime \/ Contract Docs \/ Tests の差分をこのPRで受け入れてよいか。/);
+  assert.match(prBody, /### 判断グラフ/);
+  assert.match(prBody, /- 目的: PR本文に背景が出ない/);
+  assert.match(prBody, /- 正本: docs\/management\/stories\/active\/STR-001-pr-prepare.md/);
+  assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
+  assert.match(prBody, /- 証跡: Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed/);
+  assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
   assert.ok(prBody.indexOf('## 変更内容') < prBody.indexOf('## なぜこの変更か'));
