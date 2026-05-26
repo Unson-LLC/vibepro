@@ -40,7 +40,11 @@ The intended workflow:
 Story -> Architecture -> Spec -> Task -> AI Implementation -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
 ```
 
-VibePro does not rewrite your application by itself. It creates the control layer that lets humans hand work to AI agents, check whether the implementation still matches the intended product, and carry changes to a merge-ready state. When the change touches workflow state, runtime contracts, verification evidence, or review orchestration, VibePro expands the Gate DAG automatically instead of treating the PR like a narrow code change.
+VibePro does not write the app for you. It defines what must be true before an AI-made change can be merged.
+
+A small edit may only need tests. A change that affects user flows, API or data contracts, performance, security, or agent reviews needs stronger proof. VibePro expands the gates for that risk and blocks PR creation until the required evidence is present.
+
+That is the point: you can hand implementation to Codex or Claude Code without letting the product drift away from what you meant to build.
 
 ## Features
 
@@ -89,6 +93,24 @@ For local development of VibePro itself:
 ```bash
 npm install
 node bin/vibepro.js --help
+```
+
+## Set Up a Target Repository for AI Agents
+
+After installing VibePro, install the bundled Claude / Claude Code skills and Codex instructions into each repository where agents will work:
+
+```bash
+vibepro skills install /path/to/repo
+vibepro skills verify /path/to/repo
+
+vibepro codex install /path/to/repo
+vibepro codex verify /path/to/repo
+```
+
+This gives agents the local VibePro workflow: read the Story and Spec, produce verification evidence, record reviews and decisions, and respect PR gates. You can inspect what will be installed first:
+
+```bash
+vibepro skills list
 ```
 
 ## Optional Integration: Graphify

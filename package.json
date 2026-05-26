@@ -1,7 +1,7 @@
 {
   "name": "vibepro",
   "version": "0.1.0-alpha.0",
-  "description": "Story, architecture, spec, checkpoint, and PR evidence control plane for AI-driven development",
+  "description": "Product-intent gates and review evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -13,12 +13,14 @@
   },
   "homepage": "https://github.com/Unson-LLC/vibepro#readme",
   "keywords": [
-    "ai-development",
+    "ai-agents",
+    "ai-coding",
     "codex",
     "claude-code",
-    "e2e",
+    "developer-tools",
     "pr-gate",
-    "software-architecture",
+    "pr-review",
+    "software-quality",
     "vibe-coding"
   ],
   "bin": {
@@ -29,6 +31,7 @@
     "bin",
     "src",
     "skills",
+    "docs/assets/vibepro-header.png",
     "LICENSE",
     "NOTICE",
     "README.md",
