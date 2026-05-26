@@ -11,6 +11,7 @@ import { scanFlowDesign } from './flow-design-scanner.js';
 import { scanGestureInteraction } from './gesture-interaction-scanner.js';
 import { scanLocalDev } from './local-dev-scanner.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
+import { scanOssReadiness } from './oss-readiness-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
 import { preparePullRequest } from './pr-manager.js';
 import { scanPublicDiscovery } from './public-discovery-scanner.js';
@@ -55,6 +56,10 @@ export const CHECK_PACKS = {
   'self-dogfood': {
     title: 'VibePro self-dogfood gate readiness check',
     checks: ['self_dogfood']
+  },
+  'oss-readiness': {
+    title: 'OSS publication readiness check',
+    checks: ['oss_readiness']
   },
   all: {
     title: 'All check packs',
@@ -171,6 +176,7 @@ async function runNamedCheck(check, context) {
   if (check === 'agent_harness') return scanAgentHarness(root);
   if (check === 'public_discovery') return scanPublicDiscovery(root);
   if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId });
+  if (check === 'oss_readiness') return scanOssReadiness(root, { env: options.env });
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -242,6 +248,15 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       label: 'VibePro Self-Dogfood Gate Readiness',
       status: statusFromRiskSummary(summary),
       summary: `${evidence.self_dogfood.summary?.findings ?? 0} findings; block=${summary.block ?? 0}, review=${summary.review ?? 0}, info=${summary.info ?? 0}`
+    });
+  }
+  if (evidence.oss_readiness) {
+    const summary = evidence.oss_readiness.risk_summary?.findings ?? { block: 0, review: 0, info: 0 };
+    checks.push({
+      id: 'oss_readiness',
+      label: 'OSS Publication Readiness',
+      status: normalizeCheckStatus(evidence.oss_readiness.status),
+      summary: `${evidence.oss_readiness.summary?.tool_count ?? 0} tools; pass=${evidence.oss_readiness.summary?.pass ?? 0}, needs_setup=${evidence.oss_readiness.summary?.needs_setup ?? 0}, findings=${evidence.oss_readiness.summary?.findings ?? 0}; block=${summary.block ?? 0}, review=${summary.review ?? 0}, info=${summary.info ?? 0}`
     });
   }
   if (evidence.static_site) {
