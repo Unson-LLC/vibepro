@@ -57,6 +57,18 @@ async function runGitleaks(root, env) {
   const command = 'gitleaks detect --source . --report-format json --no-banner';
   const result = await runTool('gitleaks', ['detect', '--source', '.', '--report-format', 'json', '--no-banner'], { cwd: root, env });
   if (result.missing) return missingTool('gitleaks', command, 'Install gitleaks and rerun `vibepro check oss-readiness <repo>`.');
+  if (result.ok && !result.stdout.trim()) {
+    return {
+      tool: {
+        id: 'gitleaks',
+        label: 'Gitleaks secret scan',
+        status: 'pass',
+        command,
+        summary: 'No secret candidates reported'
+      },
+      findings: []
+    };
+  }
   if (!result.ok && !result.stdout.trim()) return unusableTool('gitleaks', command, result);
 
   const parsed = parseToolJson('gitleaks', command, result);

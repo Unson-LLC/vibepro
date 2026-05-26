@@ -1091,6 +1091,42 @@ ${name === 'reuse' ? 'process.exit(1);' : ''}
   assert.equal(evidence.findings.every((finding) => finding.gate_effect === 'review'), true);
 });
 
+test('check oss-readiness treats empty successful gitleaks output as pass', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['remote', 'add', 'origin', 'https://github.com/Unson-LLC/vibepro.git']);
+  await runCli(['init', repo, '--story-id', 'story-oss-readiness', '--title', 'OSS readiness']);
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-oss-bin-'));
+  await writeFile(path.join(binDir, 'gitleaks'), `#!/usr/bin/env node
+process.exit(0);
+`);
+  await writeFile(path.join(binDir, 'scorecard'), `#!/usr/bin/env node
+console.log(JSON.stringify({ score: 8, checks: [] }));
+`);
+  await writeFile(path.join(binDir, 'syft'), `#!/usr/bin/env node
+console.log(JSON.stringify({ components: [{ name: 'vibepro' }] }));
+`);
+  await writeFile(path.join(binDir, 'grype'), `#!/usr/bin/env node
+console.log(JSON.stringify({ matches: [] }));
+`);
+  await writeFile(path.join(binDir, 'reuse'), `#!/usr/bin/env node
+console.log(JSON.stringify({ compliant: true }));
+`);
+  for (const name of ['gitleaks', 'scorecard', 'syft', 'grype', 'reuse']) {
+    await chmod(path.join(binDir, name), 0o755);
+  }
+
+  const result = await runCli(['check', 'oss-readiness', repo, '--run-id', 'oss-gitleaks-empty-pass', '--json'], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'pass');
+  const evidence = result.result.check.evidence.oss_readiness;
+  assert.equal(evidence.tools.find((tool) => tool.id === 'gitleaks').status, 'pass');
+  assert.equal(evidence.tools.find((tool) => tool.id === 'gitleaks').summary, 'No secret candidates reported');
+});
+
 test('check oss-readiness normalizes Core 5 tool findings without leaking secret values', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
