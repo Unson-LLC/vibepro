@@ -17,7 +17,7 @@ updated_at: 2026-05-25
 
 ## 背景
 
-MoonchildでAitle Design Systemを作った時に強かったのは、画面をいきなり生成することではなく、先にプロダクト意味、semantic token、component role、composition rule、anti-patternを固定したことだった。
+Aitle Design Systemの作成で強かったのは、画面をいきなり生成することではなく、先にプロダクト意味、semantic token、component role、composition rule、anti-patternを固定したことだった。
 
 VibeProの `design-modernize` は既存画面の情報構造を守るためのDesign Quality DAGを持つが、外部Design System bundleがない場合に、VibePro自身が「そのプロダクトで許されるデザイン判断の空間」を作る力が弱い。
 
@@ -35,7 +35,7 @@ VibeProの `design-modernize` は既存画面の情報構造を守るためのDe
 
 このStoryは既存のDesign Cognition Loop / `design-modernize` DAGの中に、Derived Design System導出とDS Gate artifactsを追加する。新しい外部生成器、runner、永続化境界、実装authorityは導入しない。
 
-実装境界は `src/design-modernize.js` と `src/cli.js` に閉じ、成果物は既存の `.vibepro/design-modernize/<story-id>/` 配下へ保存する。Moonchildや画像生成は候補探索の入力であり、実装判断の正本はVibePro spec、現行コード、現行スクリーンショット、Graphify/Codex evidence、Gate DAGに固定する。
+実装境界は `src/design-modernize.js` と `src/cli.js` に閉じ、成果物は既存の `.vibepro/design-modernize/<story-id>/` 配下へ保存する。外部生成候補や画像生成は候補探索の入力であり、実装判断の正本はVibePro spec、現行コード、現行スクリーンショット、Graphify/Codex evidence、Gate DAGに固定する。
 
 ## 受け入れ基準
 

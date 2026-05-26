@@ -459,7 +459,7 @@ async function loadPlaywright(repoRoot) {
   }
 }
 
-async function collectScreens(repoRoot, routes, { product, designSystem, baseUrl }) {
+export async function collectScreens(repoRoot, routes, { product, designSystem, baseUrl }) {
   const screens = [];
   for (const route of routes) {
     const evidence = await collectScreenEvidence(repoRoot, route);
@@ -474,7 +474,7 @@ async function collectScreens(repoRoot, routes, { product, designSystem, baseUrl
   return screens;
 }
 
-function buildProductSemanticModel({ product, brief, routes, screens }) {
+export function buildProductSemanticModel({ product, brief, routes, screens }) {
   const text = [
     product,
     brief,
@@ -531,7 +531,7 @@ function buildProductSemanticModel({ product, brief, routes, screens }) {
   };
 }
 
-function buildDerivedDesignSystem({ product, semanticModel, screens, referenceDesignSystem }) {
+export function buildDerivedDesignSystem({ product, semanticModel, screens, referenceDesignSystem }) {
   const routeIntents = semanticModel.route_intents.map((item) => item.intent);
   const componentSamples = unique([
     ...screens.flatMap((screen) => screen.evidence.files.flatMap((file) => file.components)),
@@ -718,7 +718,7 @@ function antiPatternStatement(pattern) {
   return statements[pattern] ?? `Avoid ${pattern}.`;
 }
 
-function buildDesignSystemGate({ storyId, derivedDesignSystem }) {
+export function buildDesignSystemGate({ storyId, derivedDesignSystem }) {
   return {
     schema_version: '0.1.0',
     story_id: storyId,

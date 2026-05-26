@@ -294,6 +294,83 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.ok(derivedOnly.result.result.derived_design_system.anti_patterns.some((item) => /Book Now/.test(item.statement)));
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-derived-only', 'design-system-derivation.md')), true);
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'route:/home', kind: 'route', file: 'src/app/(app)/home/page.tsx' },
+      { id: 'component:HomeActions', kind: 'component', file: 'src/app/(app)/home/_components/HomeActions.tsx' },
+      { id: 'route:/map', kind: 'route', file: 'src/app/(app)/map/page.tsx' }
+    ],
+    edges: [
+      { from: 'route:/home', to: 'component:HomeActions' },
+      { from: 'route:/home', to: 'route:/map' }
+    ]
+  }, null, 2));
+
+  const nativeDesignSystem = await runCli([
+    'design-system',
+    'derive',
+    repo,
+    '--id',
+    'aitle',
+    '--product',
+    'Aitle',
+    '--routes',
+    '/home,/map',
+    '--brief',
+    'Japanese hotel discovery app with location search, map exploration, AI電話で空室確認, 休憩, 宿泊, サービスタイム, 今すぐ.',
+    '--from-code',
+    '--json'
+  ]);
+  assert.equal(nativeDesignSystem.exitCode, 0);
+  assert.equal(nativeDesignSystem.result.result.workflow, 'native-design-system-derivation');
+  assert.equal(nativeDesignSystem.result.result.design_system_id, 'aitle');
+  assert.equal(nativeDesignSystem.result.result.authority, 'vibepro_native_design_system');
+  assert.equal(nativeDesignSystem.result.result.external_generator_required, false);
+  assert.equal(nativeDesignSystem.result.result.source_evidence.graphify.status, 'available');
+  assert.equal(nativeDesignSystem.result.result.source_evidence.graphify.edge_count, 2);
+  assert.equal(nativeDesignSystem.result.result.product_semantics.primary_domain, 'hotel_discovery');
+  assert.equal(nativeDesignSystem.result.result.screen_patterns.patterns.length, 2);
+  assert.ok(nativeDesignSystem.result.result.semantic_tokens.color_roles.some((role) => role.name === 'availability_positive'));
+  assert.ok(nativeDesignSystem.result.result.component_roles.roles.some((role) => role.name === 'AIPhoneCTA'));
+  assert.equal(nativeDesignSystem.result.result.ds_gate.fallback_allowed, false);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'design-system.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'product-semantics.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'theme-tokens.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'semantic-tokens.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'component-roles.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'component-states.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'screen-patterns.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'cta-policy.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'density-policy.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'navigation-policy.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'anti-patterns.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'implementation-mapping.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'evidence-coverage.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'ds-gate.json')), true);
+  const nativeOutDir = path.join(repo, '.vibepro', 'design-system', 'aitle');
+  const nativeSemanticTokens = await readJson(path.join(nativeOutDir, 'semantic-tokens.json'));
+  const nativeComponentStates = await readJson(path.join(nativeOutDir, 'component-states.json'));
+  const nativeCtaPolicy = await readJson(path.join(nativeOutDir, 'cta-policy.json'));
+  const nativeDensityPolicy = await readJson(path.join(nativeOutDir, 'density-policy.json'));
+  const nativeNavigationPolicy = await readJson(path.join(nativeOutDir, 'navigation-policy.json'));
+  const nativeAntiPatterns = await readJson(path.join(nativeOutDir, 'anti-patterns.json'));
+  const nativeEvidenceCoverage = await readJson(path.join(nativeOutDir, 'evidence-coverage.json'));
+  const nativeDsGate = await readJson(path.join(nativeOutDir, 'ds-gate.json'));
+  const nativeScreenPatterns = await readJson(path.join(nativeOutDir, 'screen-patterns.json'));
+  const nativeSummary = await readFile(path.join(nativeOutDir, 'design-system.md'), 'utf8');
+  assert.ok(nativeSemanticTokens.color_roles.some((role) => role.name === 'availability_positive'));
+  assert.match(JSON.stringify(nativeComponentStates.required_states), /loading/);
+  assert.ok(nativeCtaPolicy.discovered_ctas.includes('地図で探す'));
+  assert.match(nativeDensityPolicy.rules.join('\n'), /scanability/);
+  assert.equal(nativeNavigationPolicy.policy, 'preserve_current_navigation_model');
+  assert.ok(nativeAntiPatterns.global_rules.some((rule) => /new product concept/.test(rule)));
+  assert.equal(nativeEvidenceCoverage.findings.find((finding) => finding.id === 'DS-EVIDENCE-GRAPH').status, 'pass');
+  assert.equal(nativeDsGate.fallback_allowed, false);
+  assert.ok(nativeDsGate.checks.some((check) => check.id === 'DS-GATE-VISUAL-HYPOTHESIS'));
+  assert.equal(nativeScreenPatterns.graphify_status, 'available');
+  assert.match(nativeSummary, /graphify: available/);
+
   const capture = await runCli([
     'design-modernize',
     'capture',
@@ -372,6 +449,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(output, /vibepro design-system derive \[repo\]/);
   assert.match(output, /GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らない/);
   assert.doesNotMatch(output, /gh pr create.*標準経路として使/i);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
@@ -402,6 +480,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
   assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
 });
 

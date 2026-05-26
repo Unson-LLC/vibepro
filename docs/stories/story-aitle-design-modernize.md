@@ -12,7 +12,7 @@ optional_reference_scene_id: eaa54dae-7f7a-4f00-afce-f1bf44a7095b
 
 ## Background
 
-Aitle has useful design-generation learnings from Moonchild, but the product workflow should not depend on Moonchild. A previous five-frame mobile flow was useful as a new concept, but it drifted from the current Aitle screens and information structure.
+Aitle has useful design-generation learnings from prior reference work, but the product workflow should not depend on an external generator. A previous five-frame mobile flow was useful as a new concept, but it drifted from the current Aitle screens and information structure.
 
 The deeper learning is that good design generation combines two things: explicit structural constraints and image-based visual hypothesis exploration. VibePro must internalize both. The modernization workflow must preserve current UX constraints first, compile product-local design constraints second, use image generation only to explore visual candidates for the same locked screen structure, then distill accepted design moves into Codex implementation specs.
 

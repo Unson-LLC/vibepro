@@ -26,6 +26,7 @@ import {
   renderDerivedDesignSystemSummary,
   renderDesignModernizePlan
 } from './design-modernize.js';
+import { deriveNativeDesignSystem, renderNativeDesignSystemSummary } from './design-system.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
@@ -189,6 +190,7 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -309,6 +311,7 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -544,6 +547,30 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'design-system') {
+      const subcommand = rest[0] ?? 'derive';
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'derive') {
+        const result = await deriveNativeDesignSystem(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id') ?? getOption(rest, '--product'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          routes: parseDesignRoutes(rest),
+          brief: getOption(rest, '--brief'),
+          baseUrl: getOption(rest, '--base-url'),
+          fromCode: hasFlag(rest, '--from-code'),
+          runGraphify: hasFlag(rest, '--run-graphify'),
+          graphifyOut: getOption(rest, '--from')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown design-system command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
     if (command === 'design-modernize') {
       const subcommand = rest[0] ?? 'plan';
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -558,10 +585,8 @@ export async function runCli(argv, io = {}) {
           designSystemTitle: getOption(rest, '--design-system-title'),
           designSystemBundle: getOption(rest, '--design-system-bundle'),
           sceneId: getOption(rest, '--scene-id'),
-          optionalReferenceStatus: process.env.MOONCHILD_MCP_TOKEN ? 'optional_reference_token_present' : 'not_required',
-          optionalReferenceNote: process.env.MOONCHILD_MCP_TOKEN
-            ? 'Optional reference token is present; external design-system exports may be used as reference input.'
-            : 'No external generator token is required; pass --design-system-bundle only when a reference system should constrain the design.'
+          optionalReferenceStatus: 'not_required',
+          optionalReferenceNote: 'No external generator token is required; pass --design-system-bundle only when a reference system should constrain the design.'
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.plan, null, 2)}\n`
