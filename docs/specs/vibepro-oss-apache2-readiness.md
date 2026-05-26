@@ -61,6 +61,7 @@ The OSS readiness story SHOULD decompose release work into auditable VibePro tas
 - 2026-05-26: Security contact routing was made explicit through the repository's private GitHub Security Advisory URL in `SECURITY.md`.
 - 2026-05-26: Package-boundary verification passed from a clean worktree with `npm run pack:dry-run`; the dry-run package contained 74 runtime/package files and excluded `.vibepro/`, `docs/`, `docs/releases/`, local logs, and Graphify source.
 - 2026-05-26: Release verification passed from a clean worktree with `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks for `--version`, English help, and `checkpoint --json`.
+- 2026-05-26: PR evidence verification confirmed `pr prepare` uses the canonical Story title/background from the Story source and does not emit the missing-background fallback when introductory Story prose is available. Regression coverage is the existing test `pr prepare uses story source title and intro when explicit background heading is absent`.
 
 ## Reviewable PR Evidence
 
