@@ -337,6 +337,8 @@ npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> -
 
 ### Modernize An Existing UI
 
+For existing products, first derive the product-local Design System from current evidence. This creates the design decision space that later screen modernization and implementation gates must respect.
+
 ```bash
 npx vibepro design-system derive /path/to/repo \
   --id <ds-id> \
@@ -360,6 +362,8 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-system derive` creates a VibePro-native Design System under `.vibepro/design-system/<ds-id>/`. It reads existing route code, style/token files, optional Graphify evidence, and the product brief, then writes product semantics, theme tokens, semantic tokens, component roles, screen patterns, CTA policy, state semantics, density/navigation policies, implementation mapping, evidence coverage, and explicit DS gates.
 
+Use this command before redesigning existing UI when the product already has real routes, CTAs, states, and data dependencies. The generated Design System is not a visual suggestion; it is the product-local constraint artifact that preserves existing UX invariants while making the UI more coherent.
+
 `derive-system` converts the product brief and current UI evidence into a VibePro-derived Design System for a specific modernization story: product semantics, semantic color roles, component responsibilities, composition rules, visual-hypothesis policy, and explicit DS gates. The durable pattern is to build the design decision space before generating screen candidates.
 
 `design-modernize` is for improving real product screens while preserving current routes, information architecture, CTAs, state behavior, and data dependencies. Optional design-system bundles or generated visual hypotheses are reference material; the VibePro-derived Design System, current screenshots, Graphify/Codex evidence, and Gate DAG remain authoritative.
@@ -373,6 +377,14 @@ Typical native Design System artifacts are written under `.vibepro/design-system
 - `screen-patterns.json`: route-family patterns, current CTAs, data dependencies, navigation targets, UX invariants
 - `implementation-mapping.json`: route/component/file mapping for implementation handoff
 - `evidence-coverage.json` and `ds-gate.json`: coverage findings and explicit DS gate clauses
+
+Recommended sequence:
+
+1. Run `vibepro graph <repo> --run-graphify` when Graphify is available.
+2. Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code`.
+3. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
+4. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
+5. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
 
 Typical artifacts are written under `.vibepro/design-modernize/<story-id>/`:
 
