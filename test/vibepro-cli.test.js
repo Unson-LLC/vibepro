@@ -4157,6 +4157,7 @@ Weighted semantic/layout residual: **34%**
   await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify(manifestWithDelta, null, 2)}\n`);
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
+  await git(repo, ['remote', 'add', 'origin', 'https://github.com/Unson-LLC/vibepro.git']);
 
   let prepareSummaryOutput = '';
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'], {
@@ -4195,6 +4196,15 @@ Weighted semantic/layout residual: **34%**
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 概要'));
+  assert.match(prBody, /このPRで閉じる問い: PR本文に背景が出ない を満たす変更として、Runtime \/ Contract Docs \/ Tests の差分をこのPRで受け入れてよいか。/);
+  assert.match(prBody, /### 判断グラフ/);
+  assert.match(prBody, /- 目的: PR本文に背景が出ない/);
+  assert.match(prBody, /- 正本: \[docs\/management\/stories\/active\/STR-001-pr-prepare.md\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/docs\/management\/stories\/active\/STR-001-pr-prepare.md\)/);
+  assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
+  assert.match(prBody, /\[src\/feature\/pr-prepare.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/src\/feature\/pr-prepare.js\)/);
+  assert.match(prBody, /\[tests\/unit\/pr-prepare.test.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/tests\/unit\/pr-prepare.test.js\)/);
+  assert.match(prBody, /- 証跡: Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed/);
+  assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
   assert.ok(prBody.indexOf('## 変更内容') < prBody.indexOf('## なぜこの変更か'));
@@ -4471,7 +4481,11 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
 
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
   await git(remote, ['init', '--bare']);
-  await git(repo, ['remote', 'add', 'origin', remote]);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
   await git(repo, ['push', '-u', 'origin', 'main']);
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-'));
   const ghBin = path.join(binDir, 'gh');

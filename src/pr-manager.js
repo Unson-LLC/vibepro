@@ -898,6 +898,7 @@ async function collectGitState(repoRoot, options) {
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
   const dirtyDiff = await collectDirtyDiff(repoRoot);
+  const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
   const dirtyFiles = parseStatus(statusOutput);
   const changedFiles = includesDirtyInChangedFiles
     ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
@@ -907,6 +908,7 @@ async function collectGitState(repoRoot, options) {
     base_ref: baseRef,
     head_ref: headRef,
     head_sha: headSha || null,
+    origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
     status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     changed_files: changedFiles,
@@ -1421,17 +1423,130 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   const decision = buildHumanMergeDecision({ executionGate, unresolved, scope });
   const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
   const storyLabel = formatPrStoryLabel(story, prContext.story_source);
+  const reviewQuestion = buildHumanReviewQuestion({ source: prContext.story_source, fileGroups });
+  const decisionGraph = renderHumanDecisionGraph({
+    source: prContext.story_source,
+    fileGroups,
+    gateDag: prContext.gate_dag,
+    splitPlan,
+    git
+  });
   const gateNote = unresolved.length === 0
     ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
     : `未解決Gateがあります（対象: ${formatHumanGateSummary(unresolved)}）。詳細は監査ログの Gate DAG / Gate Enforcement を確認し、blocking か waiver 可能かを判断してください。`;
   const scopeNote = buildScopeDecisionNote(scope, splitPlan);
   return `## このPRで決めたいこと
+- このPRで閉じる問い: ${reviewQuestion}
 - Story: ${storyLabel}
 - 判断: ${decision}
 - レビュー入口: ${primaryReviewAreas}
 - Gate状況: ${gateNote}
 - Scope判断: ${scopeNote}
-- 変更規模: ${git.changed_files.length} files`;
+- 変更規模: ${git.changed_files.length} files
+
+### 判断グラフ
+${decisionGraph}`;
+}
+
+function buildHumanReviewQuestion({ source = {}, fileGroups }) {
+  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'このStory';
+  const areas = buildPrimaryReviewAreas(fileGroups);
+  return `${title} を満たす変更として、${areas} の差分をこのPRで受け入れてよいか。`;
+}
+
+function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
+  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
+  const sourcePath = source.path ?? 'Story未検出';
+  const changeIntent = buildHumanChangeIntent(fileGroups);
+  const changeLinks = buildHumanDecisionFileLinks(fileGroups, git);
+  const evidence = buildHumanEvidenceDigest(gateDag);
+  const split = buildHumanSplitDigest(splitPlan);
+  return [
+    `- 目的: ${title}`,
+    `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
+    `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
+    `- 証跡: ${evidence}`,
+    `- 分割判断: ${split}`
+  ].join('\n');
+}
+
+function buildHumanDecisionFileLinks(fileGroups, git) {
+  const rows = [
+    ['Runtime', fileGroups.source?.files ?? []],
+    ['Contract Docs', collectContractDocFiles(fileGroups)],
+    ['Capability Map', collectCapabilityFiles(fileGroups)],
+    ['Tests', fileGroups.tests?.files ?? []],
+    ['Repo Control', fileGroups.repo_control?.files ?? []]
+  ];
+  const links = rows
+    .filter(([, files]) => files.length > 0)
+    .map(([label, files]) => `${label}: ${files.slice(0, 3).map((file) => formatGithubFileLink(file, git)).join(', ')}${files.length > 3 ? ` ほか${files.length - 3}件` : ''}`);
+  return links.join(' / ');
+}
+
+function formatGithubFileLink(filePath, git = {}) {
+  if (!filePath || filePath === 'Story未検出') return filePath || 'unknown';
+  const baseUrl = githubRepositoryUrl(git.origin_url);
+  const ref = git.current_branch || git.head_sha || git.head_ref || 'HEAD';
+  if (!baseUrl) return filePath;
+  return `[${filePath}](${baseUrl}/blob/${ref}/${encodePathForGithub(filePath)})`;
+}
+
+function githubRepositoryUrl(originUrl) {
+  if (!originUrl) return null;
+  const trimmed = String(originUrl).trim().replace(/\.git$/, '');
+  const httpsMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)$/);
+  if (httpsMatch) return `https://github.com/${httpsMatch[1]}`;
+  const sshMatch = trimmed.match(/^git@github\.com:([^/]+\/[^/]+)$/);
+  if (sshMatch) return `https://github.com/${sshMatch[1]}`;
+  return null;
+}
+
+function encodePathForGithub(filePath) {
+  return String(filePath)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+}
+
+function buildHumanChangeIntent(fileGroups) {
+  const parts = [];
+  if (fileGroups.source?.count > 0) parts.push(`runtime ${fileGroups.source.count}件`);
+  const contractDocs = collectContractDocFiles(fileGroups);
+  if (contractDocs.length > 0) parts.push(`contract docs ${contractDocs.length}件`);
+  const capabilityFiles = collectCapabilityFiles(fileGroups);
+  if (capabilityFiles.length > 0) parts.push(`capability map ${capabilityFiles.length}件`);
+  if (fileGroups.tests?.count > 0) parts.push(`tests ${fileGroups.tests.count}件`);
+  if (fileGroups.repo_control?.count > 0) parts.push(`repo control ${fileGroups.repo_control.count}件`);
+  if (parts.length === 0) return '差分なし';
+  return `${parts.join(' / ')}を変更`;
+}
+
+function buildHumanEvidenceDigest(gateDag) {
+  const nodes = gateDag?.nodes ?? [];
+  const labels = [
+    ['gate:requirement', 'Requirement'],
+    ['gate:unit', 'Unit'],
+    ['gate:integration', 'Integration'],
+    ['gate:e2e', 'E2E'],
+    ['gate:agent_review', 'Agent Review'],
+    ['gate:network_contract', 'Network Contract']
+  ].map(([id, label]) => {
+    const node = nodes.find((item) => item.id === id);
+    if (!node) return null;
+    if (['passed', 'pass'].includes(node.status)) return `${label} passed`;
+    if (node.status === 'not_required') return `${label} not required`;
+    return `${label} ${node.status}`;
+  }).filter(Boolean);
+  return labels.length > 0 ? labels.join(' / ') : 'Gate証跡なし';
+}
+
+function buildHumanSplitDigest(splitPlan) {
+  if (!splitPlan) return '分割計画なし';
+  if (splitPlan.status === 'split_recommended') {
+    return `分割案は監査ログに残す。${splitPlan.recommended_strategy ?? 'strategy未設定'}`;
+  }
+  return `${splitPlan.status}${splitPlan.recommended_strategy ? ` / ${splitPlan.recommended_strategy}` : ''}`;
 }
 
 function formatPrStoryLabel(story, source = {}) {
@@ -1460,6 +1575,9 @@ function buildScopeDecisionNote(scope, splitPlan) {
   const split = splitPlan?.recommended_strategy ? `split=${splitPlan.recommended_strategy}` : 'split=-';
   if (scope.status === 'needs_clean_branch') {
     return `差分範囲の説明または分割判断が必要。理由: ${reasons} / ${split}`;
+  }
+  if (scope.status === 'reviewable' && splitPlan?.status === 'split_recommended') {
+    return `同一PRでレビュー可能。分割案は監査ログとして残す（${split}）`;
   }
   return `${scope.status}: ${reasons} / ${split}`;
 }
