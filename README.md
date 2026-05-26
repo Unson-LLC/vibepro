@@ -13,11 +13,15 @@ VibePro helps you delegate implementation to Codex, Claude Code, and other AI co
 
 It turns what you mean to build into repo-local `.vibepro/` artifacts: Story, Architecture, Spec, Task, risk-adaptive Gate DAG, verification evidence, agent review evidence, and PR evidence. AI agents can work from those artifacts in parallel, while humans keep control of what counts as done.
 
+When required evidence is missing, VibePro stops the workflow mechanically. It can ask for role-based Codex or Claude Code reviews along the way, bind their results to the current git state, and keep PR creation blocked until the required gates, waivers, or decision records exist.
+
 ## Why VibePro
 
 AI coding is fast when the task is small. It gets expensive when the product has to stay coherent.
 
 The real problem is not whether AI can write code. It can. The problem is keeping the product on track while multiple agents touch UI, APIs, data flows, performance paths, security boundaries, architectural responsibilities, and workflow state.
+
+That requires more than a checklist at the end. VibePro carries evidence through the work: it prepares the handoff, expands gates when risk increases, requests focused subagent reviews when needed, and refuses to treat the PR as ready when required artifacts are missing.
 
 VibePro gives AI work a product contract:
 
@@ -27,6 +31,7 @@ VibePro gives AI work a product contract:
 - Tasks: what can be handed to an agent without blurring scope.
 - Risk profile: whether the change is light, API contract, UI interaction, or workflow-heavy.
 - Gates: which UI, E2E, performance, security, integration, workflow, and review evidence is still missing.
+- Agent reviews: which Codex, Claude Code, or human review roles must pass for the current risk profile.
 - PR evidence: what humans and AI agents should read before changing, reviewing, or merging code.
 
 The intended workflow:
@@ -43,11 +48,12 @@ VibePro does not rewrite your application by itself. It creates the control laye
 - Graphify-backed impact context: import code graphs so stories and tasks can point agents at the right files, hubs, and neighboring responsibilities.
 - Agent handoff packages: generate task briefs, implementation plans, and handoff artifacts for Codex, Claude Code, or human engineers.
 - Risk-adaptive Gate DAGs: show which quality gates block completion, including workflow-heavy release checks when the change is broader than a narrow code edit.
+- Mechanical gate blocking: keep PR creation blocked until required verification, review, waiver, and decision-record evidence exists.
+- Role-based agent reviews: prepare focused Codex/Claude Code review requests and record provenance for parallel subagent reviews against the current git state.
 - PR evidence: generate `pr-body.md`, `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` before opening a PR.
 - Quality checks: UI, flow design, gesture interaction, network contracts, security boundaries, database access, local dev, code quality, architecture, PR readiness, and launch readiness.
 - Verification evidence: record unit, integration, E2E, build, type-check, and Playwright flow results against the current git state.
 - Performance evidence: define metrics, record runs, and compare before/after behavior for story-level performance claims.
-- Agent review evidence: prepare role-based Codex/Claude Code review requests and record risk-adaptive provenance for parallel subagent reviews.
 - Decision records: capture `needs_review`, noise triage, waivers, and secret exposure decisions as VibePro artifacts instead of chat-only context.
 - PR create enforcement: use `vibepro pr create` so unresolved gates and waiver reasons are captured before the PR opens.
 - Design modernization: derive VibePro-native Design System artifacts and modernization plans from existing routes, code, style evidence, and optional Graphify context.
