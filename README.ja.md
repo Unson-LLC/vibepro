@@ -154,7 +154,7 @@ vibepro pr prepare /path/to/repo \
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。
 
-`pr prepare` は Gate DAG を作る前に変更リスクを分類します。ドキュメントだけ、画面だけのような狭い変更は軽い Gate に留まります。一方、複数の画面・API・状態遷移をまたぐ変更では、導線の再現確認、本番経路の確認、リリース判断、より広いレビューが必要になります。必須 Gate が未解決の間、VibePro の `next_commands` は PR 作成ではなく、レビュー・検証・再準備を案内します。
+`pr prepare` は risk-adaptive Gate DAG を作る前に変更リスクを分類します。ドキュメントだけ、画面だけのような狭い変更は軽い Gate に留まります。一方、複数の画面・API・状態遷移をまたぐ workflow-heavy な変更では、導線の再現確認、本番経路の確認、リリース判断、より広いレビューが必要になります。必須 Gate が未解決の間、VibePro の `next_commands` は PR 作成ではなく、レビュー・検証・再準備を案内します。
 
 ## Quick Start
 
@@ -218,7 +218,7 @@ npx vibepro pr create /path/to/repo \
   --story-id story-internal-beta
 ```
 
-通常の PR 作成経路として直接 `gh pr create` は使わないでください。VibePro の Gate DAG と例外判断の記録を通らないためです。
+通常の PR 作成経路として raw `gh pr create` は使わないでください。VibePro の Gate DAG と例外判断の記録を通らないためです。
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。VibePro は `init` や `pr prepare` の出力で候補 branch も表示します。
 
@@ -247,6 +247,84 @@ PR 前に見る主な成果物:
 - `pr-prepare.json`: AI エージェント向けの機械可読な正本。
 
 人間は Markdown / HTML を読みます。AI エージェントには `pr-body.md`、`review-cockpit.html`、`gate-dag.html`、`split-plan.html`、関連 JSON を渡すのが基本です。
+
+## 設定
+
+VibePro のリポジトリ別設定は `.vibepro/config.json` に保存されます。対象リポジトリで一度 `vibepro init` を実行すると作成されます。
+
+```bash
+npx vibepro init /path/to/repo \
+  --story-id story-<short-name> \
+  --title "<機能名または不具合名>" \
+  --language ja
+```
+
+初期設定はおおむね次の形です。
+
+```json
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-<short-name>",
+        "title": "<機能名または不具合名>",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+重要な項目:
+
+- `output.language`: 人間向け出力言語。`ja` と `en` を指定できます。
+- `brainbase.stories[]`: `story diagnose`、`pr prepare`、`checkpoint`、`verify record`、Agent Review が参照するローカル Story catalog。
+- `brainbase.current_story_id`: `--story-id` / `--id` を省略した場合の既定 Story。
+- `brainbase.stories[].performanceMetrics[]`: `vibepro performance define` で作る Story 単位の performance contract。
+- `flow_design`: `diagnose` と `verify flow` で使う UI-flow scan / runtime probe の任意設定。
+
+よく使う設定変更は CLI から行います。
+
+```bash
+npx vibepro config language /path/to/repo --language en
+npx vibepro performance define /path/to/repo --id <story-id> --metric-id <metric-id> \
+  --user-story "<ユーザー操作>" \
+  --start-condition "<開始条件>" \
+  --completion-condition "<完了条件>"
+```
+
+プロダクト固有の UI 契約や runtime probe が必要な場合は、`.vibepro/config.json` の `flow_design` を編集します。
+
+```json
+{
+  "flow_design": {
+    "profile": "case-management",
+    "value_contract": {
+      "forbidden_labels": ["退院予定日"],
+      "required_labels": ["退院目標日"]
+    },
+    "runtime_probes": [
+      {
+        "id": "readonly-search",
+        "title": "Readonly search path",
+        "path": "/search",
+        "mutates": false,
+        "steps": [
+          { "action": "expectVisible", "text": "Search" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`.vibepro/` はローカル証跡の作業領域であり、`vibepro init` によって `.gitignore` に追加されます。生成証跡を保存する明確な運用がない限り、`.vibepro/` はコミットしません。一方で、変更の正本になる Story / Spec / Architecture 文書は `docs/` 配下に置き、必要に応じてコミットします。
 
 ## よく使うワークフロー
 
@@ -361,7 +439,7 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `derive-system` は、プロダクト概要と現行UIの証跡から、VibePro内の派生デザインシステムを作ります。プロダクトの意味づけ、色の役割、コンポーネントの責務、画面構成ルール、仮説デザインの扱い、明示的なデザインシステムGateを生成し、画面候補を作る前に「そのプロダクトで許されるデザイン判断の範囲」を固定します。
 
-`design-modernize` は、既存のルート、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための流れです。外部のデザインシステムや生成された画面案は参照材料であり、VibePro が作ったデザインシステム、現行スクリーンショット、Graphify / Codex の証跡、Gate DAG が実装判断の正本です。
+`design-modernize` は、既存の route、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための流れです。外部のデザインシステムや生成された画面案は参照材料であり、VibePro が作った Derived Design System、現行スクリーンショット、Graphify / Codex の証跡、Gate DAG が実装判断の正本です。
 
 主な成果物は `.vibepro/design-modernize/<story-id>/` 配下に出力されます。
 
