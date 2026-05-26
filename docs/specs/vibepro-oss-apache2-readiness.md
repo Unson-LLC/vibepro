@@ -55,6 +55,11 @@ The OSS readiness story SHOULD decompose release work into auditable VibePro tas
 - PR evidence verification MUST confirm canonical Story title/background rendering from the Story source.
 - Agent Review Gate verification MUST confirm phase reviews are checkpoint-gated and PR readiness only requires final `gate` / `preview` reviews.
 
+## Verification Evidence
+
+- 2026-05-26: Package-boundary verification passed from a clean worktree with `npm run pack:dry-run`; the dry-run package contained 74 runtime/package files and excluded `.vibepro/`, `docs/`, `docs/releases/`, local logs, and Graphify source.
+- 2026-05-26: Release verification passed from a clean worktree with `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks for `--version`, English help, and `checkpoint --json`.
+
 ## Reviewable PR Evidence
 
 VibePro-generated PR bodies MUST use canonical story source fields for reviewer-facing context:

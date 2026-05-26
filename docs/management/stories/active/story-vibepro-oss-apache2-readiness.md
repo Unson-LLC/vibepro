@@ -58,3 +58,15 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
    - `implementation-start` / `test-plan` / `implementation-complete` checkpointが各フェーズのreviewをGate化することを確認する
    - `pr prepare` / `pr create` がPR直前のfinal `gate` / `preview` 系reviewだけを要求することを確認する
    - phase reviewの未実行がPR直前にまとめて要求されないことをテストまたはVibePro artifactで証跡化する
+
+## 進捗
+
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-02-npm-package-boundary`
+  - clean worktreeで `npm run pack:dry-run` を実行し、74 files のtarball候補を確認した。
+  - tarball候補は `package.json#files` に沿った runtime/package files のみで、`.vibepro/`、`docs/`、`docs/releases/`、local logs、Graphify source は含まれていない。
+  - VibePro verification artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/verification-evidence.json`
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-03-oss-release-verification`
+  - clean worktreeで `npm run typecheck`、`npm test`、`npm run pack:dry-run`、CLI smokeを実行した。
+  - `npm test` は 215 tests / 0 failures。
+  - CLI smokeは `node bin/vibepro.js --version`、`node bin/vibepro.js help --language en`、`node bin/vibepro.js checkpoint --json` を確認した。
+  - VibePro verification artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/verification-evidence.json`
