@@ -1,0 +1,8 @@
+title = "VibePro gitleaks configuration"
+
+[allowlist]
+description = "Allow intentional secret-scanner fixtures used by VibePro tests"
+paths = [
+  '''(^|/)test/vibepro-cli\.test\.js$''',
+  '''(^|/)\.jjconflict-[^/]+/test/vibepro-cli\.test\.js$'''
+]

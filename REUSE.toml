@@ -1,0 +1,15 @@
+version = 1
+SPDX-PackageName = "VibePro"
+SPDX-PackageDownloadLocation = "https://github.com/Unson-LLC/vibepro"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Unson LLC"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "LICENSE"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "none"
+SPDX-License-Identifier = "Apache-2.0"
