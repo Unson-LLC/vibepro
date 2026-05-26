@@ -353,6 +353,10 @@ npx vibepro design-system ingest-brief /path/to/repo \
   --id <ds-id> \
   --brief-file visual-foundations.md
 
+npx vibepro design-system ingest /path/to/repo \
+  --id <ds-id> \
+  --bundle external-ds-bundle.json
+
 npx vibepro design-system validate /path/to/repo \
   --id <ds-id> \
   --story-id <story-id>
@@ -374,6 +378,8 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-system ingest-brief` adds or replaces `visual-foundations.json` / `.md` on an existing native DS. Visual foundations capture design language, color roles, typography, density, component feel, composition, and native CTA language as reference evidence only. Current code, Graphify evidence, implementation mapping, and VibePro gates remain authoritative.
 
+`design-system ingest` normalizes external DS bundles with tokens, components, guidelines, and CSS/JS string exports into VibePro-native DS sections. The external bundle remains reference evidence only; `authority` stays `vibepro_native_design_system`, `ds-gate.json` keeps fallback disabled, and likely secret values are omitted from persisted artifacts.
+
 `design-system validate` checks the native DS against a selected Story/Spec/Architecture context before implementation. It writes `.vibepro/design-system/<ds-id>/validation/<story-id>.json` and `.md`, and explicitly reports DS drift, CTA priority, state semantics, component roles, navigation/density policy, Story alignment, and likely secret leakage.
 
 Use this command before redesigning existing UI when the product already has real routes, CTAs, states, and data dependencies. The generated Design System is not a visual suggestion; it is the product-local constraint artifact that preserves existing UX invariants while making the UI more coherent.
@@ -390,6 +396,7 @@ Typical native Design System artifacts are written under `.vibepro/design-system
 - `component-roles.json` and `component-states.json`: component responsibilities and state semantics
 - `screen-patterns.json`: route-family patterns, current CTAs, data dependencies, navigation targets, UX invariants
 - `visual-foundations.json` / `.md`: external visual DS brief distilled as reference-only foundations
+- `external-bundle.json`: external tokens/components/guidelines summarized as reference-only evidence
 - `implementation-mapping.json`: route/component/file mapping for implementation handoff
 - `evidence-coverage.json` and `ds-gate.json`: coverage findings and explicit DS gate clauses
 - `validation/<story-id>.json` / `.md`: Story-specific DS drift and regression gate results
@@ -398,10 +405,11 @@ Recommended sequence:
 
 1. Run `vibepro graph <repo> --run-graphify` when Graphify is available.
 2. Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code`.
-3. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
-4. Run `vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>`.
-5. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
-6. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
+3. Optionally run `vibepro design-system ingest <repo> --id <ds-id> --bundle <file>` for external DS bundle references.
+4. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
+5. Run `vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>`.
+6. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
+7. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
 
 Typical artifacts are written under `.vibepro/design-modernize/<story-id>/`:
 
