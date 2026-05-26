@@ -61,6 +61,12 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
 
 ## 進捗
 
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-01-oss`
+  - `LICENSE` は Apache License 2.0 本文、`NOTICE` は VibePro copyright / Apache-2.0 / Graphify optional integration を記載している。
+  - `package.json` は `license: Apache-2.0`、GitHub repository / bugs / homepage、public npm `publishConfig.access`、CLI `bin`、runtime-focused `files` を持つ。
+  - README / README.ja は Apache-2.0、alpha OSS release candidate、npm公開前後のinstall方法、Graphify optional integration と外部ライセンス扱いを記載している。
+  - `CONTRIBUTING.md`、`SECURITY.md`、`CODE_OF_CONDUCT.md`、`CHANGELOG.md`、GitHub issue templates、PR template、CI workflow を確認した。
+  - `SECURITY.md` に private GitHub Security Advisory の具体導線を追加した。
 - [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-02-npm-package-boundary`
   - clean worktreeで `npm run pack:dry-run` を実行し、74 files のtarball候補を確認した。
   - tarball候補は `package.json#files` に沿った runtime/package files のみで、`.vibepro/`、`docs/`、`docs/releases/`、local logs、Graphify source は含まれていない。

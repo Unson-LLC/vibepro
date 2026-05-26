@@ -57,6 +57,8 @@ The OSS readiness story SHOULD decompose release work into auditable VibePro tas
 
 ## Verification Evidence
 
+- 2026-05-26: Metadata and operations documentation review confirmed `LICENSE`, `NOTICE`, `package.json`, README files, contribution docs, security policy, code of conduct, changelog, GitHub issue templates, PR template, and CI workflow are present and aligned with Apache-2.0 OSS publication.
+- 2026-05-26: Security contact routing was made explicit through the repository's private GitHub Security Advisory URL in `SECURITY.md`.
 - 2026-05-26: Package-boundary verification passed from a clean worktree with `npm run pack:dry-run`; the dry-run package contained 74 runtime/package files and excluded `.vibepro/`, `docs/`, `docs/releases/`, local logs, and Graphify source.
 - 2026-05-26: Release verification passed from a clean worktree with `npm run typecheck`, `npm test`, `npm run pack:dry-run`, and CLI smoke checks for `--version`, English help, and `checkpoint --json`.
 
