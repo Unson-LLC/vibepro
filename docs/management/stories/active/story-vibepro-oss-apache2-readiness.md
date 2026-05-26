@@ -76,3 +76,8 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
   - `npm test` は 215 tests / 0 failures。
   - CLI smokeは `node bin/vibepro.js --version`、`node bin/vibepro.js help --language en`、`node bin/vibepro.js checkpoint --json` を確認した。
   - VibePro verification artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/verification-evidence.json`
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-04-pr-evidence-canonical-story-context`
+  - `vibepro pr prepare` がStory正本のtitle / requirement titleをPR本文とGate DAGに使うことを確認した。
+  - Story正本に `## 背景` がない場合でも、`# Story` 直下の導入文から背景を抽出し、`背景: Story文書から抽出できませんでした` を出さないことを確認した。
+  - pre-fix回帰を捕まえる既存テスト: `pr prepare uses story source title and intro when explicit background heading is absent`
+  - VibePro PR artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/pr-body.md`
