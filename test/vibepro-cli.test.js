@@ -432,6 +432,55 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(planFromNativeDs.result.plan.visual_foundations_reference.source, 'visual-brief-v2.md');
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-native-ds-plan', 'visual-foundations-reference.json')), true);
 
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-aitle-ui-refresh.md'), `---
+story_id: story-aitle-ui-refresh
+title: Aitle UI refresh
+---
+
+# Aitle UI refresh
+
+## 受け入れ基準
+
+- CTA priority, loading/error/selected state semantics, component roles, navigation, and density policy stay aligned with the native Design System.
+`);
+  const validation = await runCli([
+    'design-system',
+    'validate',
+    repo,
+    '--id',
+    'aitle',
+    '--story-id',
+    'story-aitle-ui-refresh',
+    '--json'
+  ]);
+  assert.equal(validation.exitCode, 0);
+  assert.equal(validation.result.result.workflow, 'design-system-validation');
+  assert.equal(validation.result.result.status, 'pass');
+  assert.ok(validation.result.result.findings.some((finding) => finding.id === 'DS-VALIDATE-CTA-PRIORITY' && finding.status === 'pass'));
+  assert.ok(validation.result.result.findings.some((finding) => finding.id === 'DS-VALIDATE-STATE-SEMANTICS' && finding.status === 'pass'));
+  assert.ok(validation.result.result.findings.some((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN' && finding.status === 'pass'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.md')), true);
+
+  const dsJsonPath = path.join(repo, '.vibepro', 'design-system', 'aitle', 'design-system.json');
+  const dsWithSecret = await readJson(dsJsonPath);
+  dsWithSecret.theme_tokens.leaked = 'sk_live_1234567890abcdef1234567890abcdef';
+  await writeFile(dsJsonPath, `${JSON.stringify(dsWithSecret, null, 2)}\n`);
+  const blockedValidation = await runCli([
+    'design-system',
+    'validate',
+    repo,
+    '--id',
+    'aitle',
+    '--story-id',
+    'story-aitle-ui-refresh',
+    '--json'
+  ]);
+  assert.equal(blockedValidation.exitCode, 0);
+  assert.equal(blockedValidation.result.result.status, 'block');
+  assert.ok(blockedValidation.result.result.findings.some((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN' && finding.status === 'block'));
+
   const capture = await runCli([
     'design-modernize',
     'capture',
@@ -511,6 +560,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
+  assert.match(output, /vibepro design-system validate \[repo\]/);
   assert.match(output, /既存UI modernize/);
   assert.match(output, /プロダクトローカルなDesign System正本/);
   assert.match(output, /evidence-coverage\.json と ds-gate\.json/);
@@ -545,6 +595,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
   assert.match(englishOutput, /Existing UI modernization/);
   assert.match(englishOutput, /product-local Design System/);
   assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);

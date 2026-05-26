@@ -144,6 +144,64 @@ export async function ingestVisualDesignBrief(repoRoot, options = {}) {
   return { outDir, result: nextDesignSystem };
 }
 
+export async function validateDesignSystem(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system validate requires --id <ds-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const storyId = options.storyId ?? options.id;
+  if (!storyId) {
+    throw new Error('design-system validate requires --story-id <story-id>');
+  }
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  const designSystem = JSON.parse(await readFile(designSystemPath, 'utf8'));
+  const storyContext = await collectDesignValidationStoryContext(root, storyId);
+  const artifactTexts = await readDesignSystemArtifactTexts(outDir);
+  const findings = [
+    ...validateDesignSystemShape(designSystem),
+    ...validateDesignSystemStoryDrift(designSystem, storyContext),
+    ...validateSecretLeakage(artifactTexts)
+  ];
+  const result = {
+    schema_version: '0.1.0',
+    workflow: 'design-system-validation',
+    design_system_id: designSystemId,
+    story_id: storyId,
+    generated_at: new Date().toISOString(),
+    status: summarizeValidationStatus(findings),
+    authority: 'current_code_graph_implementation_mapping_and_gates_remain_authoritative',
+    story_context: storyContext,
+    findings
+  };
+  const validationDir = path.join(outDir, 'validation');
+  await mkdir(validationDir, { recursive: true });
+  await writeFile(path.join(validationDir, `${storyId}.json`), `${JSON.stringify(result, null, 2)}\n`);
+  await writeFile(path.join(validationDir, `${storyId}.md`), renderDesignSystemValidationSummary(result));
+  return { outDir: validationDir, result };
+}
+
+export function renderDesignSystemValidationSummary(result) {
+  return `# Design System Validation
+
+| Item | Value |
+|------|-------|
+| Design System | ${result.design_system_id} |
+| Story | ${result.story_id} |
+| Status | ${result.status} |
+| Authority | ${result.authority} |
+
+## Findings
+
+${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n') || '- none'}
+
+## Story Sources
+
+${result.story_context.sources.map((source) => `- ${source.kind}: ${source.path}`).join('\n') || '- none'}
+`;
+}
+
 export function renderNativeDesignSystemSummary(result) {
   return [
     `# Design System: ${result.product}`,
@@ -571,6 +629,183 @@ function buildEvidenceCoverage({ screens, styleEvidence, sourceEvidence, graphif
         : 'pass',
     findings
   };
+}
+
+async function collectDesignValidationStoryContext(root, storyId) {
+  const markdownFiles = (await listFiles(root))
+    .filter((file) => file.endsWith('.md'))
+    .filter((file) => !file.startsWith('.vibepro/'))
+    .filter((file) => file.includes(storyId) || /docs\/(management\/stories|specs|architecture)\//.test(file))
+    .slice(0, 160);
+  const sources = [];
+  for (const file of markdownFiles) {
+    const text = await readFile(path.join(root, file), 'utf8').catch(() => '');
+    if (!text.includes(storyId) && !file.includes(storyId)) continue;
+    sources.push({
+      kind: inferDesignValidationSourceKind(file),
+      path: file,
+      text
+    });
+  }
+  const combinedText = sources.map((source) => source.text).join('\n').toLowerCase();
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    sources: sources.map(({ kind, path }) => ({ kind, path })),
+    signal: {
+      mentions_design_system: /design system|ds|デザインシステム/i.test(combinedText),
+      mentions_cta: /cta|call to action|ボタン|導線|primary|secondary/i.test(combinedText),
+      mentions_state: /state|loading|empty|error|selected|disabled|状態/i.test(combinedText),
+      mentions_component: /component|role|card|chip|sheet|navigation|コンポーネント/i.test(combinedText),
+      mentions_navigation_or_density: /navigation|density|route|layout|ナビ|密度|レイアウト/i.test(combinedText)
+    }
+  };
+}
+
+function inferDesignValidationSourceKind(file) {
+  if (file.includes('/specs/')) return 'spec';
+  if (file.includes('/architecture/')) return 'architecture';
+  if (file.includes('/stories/')) return 'story';
+  return 'markdown';
+}
+
+async function readDesignSystemArtifactTexts(outDir) {
+  const files = (await listFiles(outDir))
+    .filter((file) => /\.(json|md|css)$/.test(file))
+    .slice(0, 80);
+  const entries = [];
+  for (const file of files) {
+    const absolute = path.join(outDir, file);
+    entries.push({
+      path: file,
+      text: await readFile(absolute, 'utf8').catch(() => '')
+    });
+  }
+  return entries;
+}
+
+function validateDesignSystemShape(designSystem) {
+  const findings = [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-DRIFT',
+    status: designSystem.authority === 'vibepro_native_design_system' ? 'pass' : 'block',
+    summary: designSystem.authority === 'vibepro_native_design_system'
+      ? 'Design System authority remains VibePro-native'
+      : 'Design System authority is not VibePro-native'
+  }));
+  const ctaHierarchy = designSystem.cta_policy?.hierarchy ?? [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-CTA-PRIORITY',
+    status: ctaHierarchy.length > 0 ? 'pass' : 'needs_evidence',
+    summary: ctaHierarchy.length > 0
+      ? `${ctaHierarchy.length} CTA hierarchy entries available`
+      : 'CTA hierarchy evidence is missing'
+  }));
+  const states = designSystem.component_states?.required_states ?? [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STATE-SEMANTICS',
+    status: states.length > 0 ? 'pass' : 'needs_evidence',
+    summary: states.length > 0
+      ? `${states.length} state semantics are required by the DS`
+      : 'State semantics are missing'
+  }));
+  const roles = designSystem.component_roles?.roles ?? [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-COMPONENT-ROLES',
+    status: roles.length > 0 ? 'pass' : 'needs_evidence',
+    summary: roles.length > 0
+      ? `${roles.length} component roles are available`
+      : 'Component role evidence is missing'
+  }));
+  const navRules = designSystem.navigation_policy?.rules ?? [];
+  const densityRules = designSystem.density_policy?.rules ?? [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-NAV-DENSITY',
+    status: navRules.length > 0 && densityRules.length > 0 ? 'pass' : 'needs_evidence',
+    summary: navRules.length > 0 && densityRules.length > 0
+      ? 'Navigation and density policies are present'
+      : 'Navigation or density policy evidence is missing'
+  }));
+  return findings;
+}
+
+function validateDesignSystemStoryDrift(designSystem, storyContext) {
+  const findings = [];
+  if (storyContext.sources.length === 0) {
+    findings.push(validationFinding({
+      id: 'DS-VALIDATE-STORY-CONTEXT',
+      status: 'needs_evidence',
+      summary: 'No Story/Spec/Architecture context was found for this story'
+    }));
+    return findings;
+  }
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STORY-CONTEXT',
+    status: 'pass',
+    summary: `${storyContext.sources.length} Story/Spec/Architecture source(s) found`
+  }));
+  const uiRelevant = Object.values(storyContext.signal).some(Boolean);
+  if (!uiRelevant) {
+    findings.push(validationFinding({
+      id: 'DS-VALIDATE-STORY-UI-SIGNAL',
+      status: 'needs_review',
+      summary: 'Story context does not explicitly mention DS, CTA, state, component, navigation, or density signals'
+    }));
+    return findings;
+  }
+  const missingSignals = [];
+  if (storyContext.signal.mentions_cta && !(designSystem.cta_policy?.hierarchy?.length > 0)) missingSignals.push('CTA policy');
+  if (storyContext.signal.mentions_state && !(designSystem.component_states?.required_states?.length > 0)) missingSignals.push('state semantics');
+  if (storyContext.signal.mentions_component && !(designSystem.component_roles?.roles?.length > 0)) missingSignals.push('component roles');
+  if (storyContext.signal.mentions_navigation_or_density && !((designSystem.navigation_policy?.rules?.length > 0) && (designSystem.density_policy?.rules?.length > 0))) {
+    missingSignals.push('navigation/density policy');
+  }
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STORY-DS-ALIGNMENT',
+    status: missingSignals.length > 0 ? 'needs_review' : 'pass',
+    summary: missingSignals.length > 0
+      ? `Story mentions UI/UX signals but DS lacks: ${missingSignals.join(', ')}`
+      : 'Story UI/UX signals are covered by DS policy sections'
+  }));
+  return findings;
+}
+
+function validateSecretLeakage(artifactTexts) {
+  const findings = [];
+  const leaks = [];
+  const secretPatterns = [
+    /\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9]{16,}\b/g,
+    /\b[A-Za-z0-9_]*SECRET[A-Za-z0-9_]*\s*[:=]\s*["'][^"']{8,}["']/gi,
+    /\b[A-Za-z0-9_]*TOKEN[A-Za-z0-9_]*\s*[:=]\s*["'][^"']{12,}["']/gi,
+    /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g
+  ];
+  for (const artifact of artifactTexts) {
+    for (const pattern of secretPatterns) {
+      if (pattern.test(artifact.text)) {
+        leaks.push(artifact.path);
+        break;
+      }
+    }
+  }
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-SECRET-SCAN',
+    status: leaks.length > 0 ? 'block' : 'pass',
+    summary: leaks.length > 0
+      ? `Potential secret-like values found in DS artifacts: ${unique(leaks).join(', ')}`
+      : 'No secret-like values detected in DS artifacts'
+  }));
+  return findings;
+}
+
+function validationFinding({ id, status, summary }) {
+  return { id, status, summary };
+}
+
+function summarizeValidationStatus(findings) {
+  if (findings.some((finding) => finding.status === 'block')) return 'block';
+  if (findings.some((finding) => finding.status === 'needs_review')) return 'needs_review';
+  if (findings.some((finding) => finding.status === 'needs_evidence')) return 'needs_evidence';
+  return 'pass';
 }
 
 function summarizeScreenEvidence(screens) {
