@@ -1,7 +1,11 @@
+import { execFile } from 'node:child_process';
 import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+
+const execFileAsync = promisify(execFile);
 
 const TEXT_TARGETS = [
   'docs',
@@ -19,7 +23,11 @@ export async function scanSelfDogfood(root, options = {}) {
   const instructionFindings = await scanInstructionBypassLanguage(repoRoot, {
     storyId: options.storyId
   });
-  const findings = [...storyFindings, ...instructionFindings];
+  const githubPrFindings = await scanCurrentGitHubPr(repoRoot, workspaceDir, {
+    storyId: options.storyId,
+    env: options.env
+  });
+  const findings = [...storyFindings, ...instructionFindings, ...githubPrFindings];
   const riskSummary = summarizeFindings(findings);
   return {
     schema_version: '0.1.0',
@@ -117,6 +125,144 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
   return findings;
 }
 
+async function scanCurrentGitHubPr(repoRoot, workspaceDir, options = {}) {
+  const currentPr = await readCurrentGitHubPr(repoRoot, options);
+  if (!currentPr) return [];
+
+  const findings = [];
+  const body = typeof currentPr.body === 'string' ? currentPr.body : '';
+  const prLabel = currentPr.number ? `#${currentPr.number}` : currentPr.url ?? currentPr.headRefName ?? 'current branch';
+  const idSuffix = sanitizeFindingId(currentPr.headRefName ?? String(currentPr.number ?? 'current'));
+
+  if (body.trim().length === 0 || !isVibeProPrBody(body)) {
+    findings.push({
+      id: `self_dogfood.github_pr_non_vibepro_body.${idSuffix}`,
+      severity: 'critical',
+      gate_effect: 'block',
+      story_id: options.storyId ?? null,
+      path: currentPr.url ?? null,
+      detail: `GitHub PR ${prLabel} does not look like a VibePro PR body; decision brief, Gate DAG, or Execution Gate sections are missing.`,
+      required_action: 'Regenerate the PR body through `vibepro pr prepare`, then create or update the PR through `vibepro pr create` so Gate evidence is visible.'
+    });
+  }
+
+  if (hasEscapedNewlinePrBody(body)) {
+    findings.push({
+      id: `self_dogfood.github_pr_body_escaped_newlines.${idSuffix}`,
+      severity: 'critical',
+      gate_effect: 'block',
+      story_id: options.storyId ?? null,
+      path: currentPr.url ?? null,
+      detail: `GitHub PR ${prLabel} contains literal escaped newline sequences, which usually means the PR body was passed inline instead of through VibePro's body file.`,
+      required_action: 'Update the PR body from the generated VibePro `pr-body.md` artifact instead of passing a raw escaped string.'
+    });
+  }
+
+  const matchingEvidence = await findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, options);
+  if (!matchingEvidence) {
+    findings.push({
+      id: `self_dogfood.github_pr_missing_vibepro_create.${idSuffix}`,
+      severity: 'critical',
+      gate_effect: 'block',
+      story_id: options.storyId ?? null,
+      path: toWorkspaceRelative(repoRoot, path.join(workspaceDir, 'pr')),
+      detail: `GitHub PR ${prLabel} is visible, but no matching .vibepro/pr pr-create.json evidence was found for this PR or head branch.`,
+      required_action: 'Run `vibepro pr create` for the Story so GitHub PR creation, Gate DAG, waiver policy, and toolchain evidence are recorded together.'
+    });
+  }
+
+  return findings;
+}
+
+async function readCurrentGitHubPr(repoRoot, options = {}) {
+  try {
+    const result = await execFileAsync('gh', ['pr', 'view', '--json', 'number,url,headRefName,headRefOid,body'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      env: options.env ?? process.env,
+      timeout: 5000,
+      maxBuffer: 1024 * 1024
+    });
+    const parsed = JSON.parse(result.stdout);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function isVibeProPrBody(body) {
+  const hasDecisionBrief = /(##\s+このPRで決めたいこと|##\s+What this PR needs to decide|このPRで閉じる問い|Review question)/i.test(body);
+  return hasDecisionBrief && /##\s+Gate DAG/i.test(body) && /##\s+Execution Gate/i.test(body);
+}
+
+function hasEscapedNewlinePrBody(body) {
+  if (!body.includes('\\n')) return false;
+  const realNewlines = (body.match(/\n/g) ?? []).length;
+  const escapedNewlines = (body.match(/\\n/g) ?? []).length;
+  return escapedNewlines > 0 && realNewlines <= 1;
+}
+
+async function findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, options = {}) {
+  const prDir = path.join(workspaceDir, 'pr');
+  if (!(await exists(prDir))) return null;
+  const entries = await readdir(prDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const storyId = entry.name;
+    if (options.storyId && storyId !== options.storyId) continue;
+    const createPath = path.join(prDir, storyId, 'pr-create.json');
+    if (!(await exists(createPath))) continue;
+    const prCreate = await readJson(createPath);
+    if (isValidPrCreateEvidence(prCreate, currentPr) && matchesCurrentPr(prCreate, currentPr)) {
+      return { story_id: storyId, path: toWorkspaceRelative(repoRoot, createPath), evidence: prCreate };
+    }
+  }
+  return null;
+}
+
+function isValidPrCreateEvidence(prCreate, currentPr) {
+  if (!prCreate || prCreate.mode !== 'pr_create') return false;
+  if (prCreate.dry_run === true) return false;
+  if (prCreate.status === 'failed' || prCreate.error) return false;
+
+  const currentUrl = normalizeUrl(currentPr?.url);
+  if (currentUrl && normalizeUrl(prCreate.pr_url) !== currentUrl) return false;
+
+  const currentHeadOid = typeof currentPr?.headRefOid === 'string' ? currentPr.headRefOid.trim() : '';
+  if (currentHeadOid) {
+    return prCreate.toolchain?.source_git?.commit === currentHeadOid;
+  }
+
+  const results = Array.isArray(prCreate.results) ? prCreate.results : [];
+  if (results.length === 0) return Boolean(normalizeUrl(prCreate.pr_url));
+  const ghCreateResult = results.find((result) => /(^|\s)gh pr create(\s|$)/.test(result?.command ?? ''));
+  return ghCreateResult?.exit_code === 0;
+}
+
+function matchesCurrentPr(prCreate, currentPr) {
+  if (!prCreate || !currentPr) return false;
+  const prUrl = normalizeUrl(prCreate.pr_url);
+  const currentUrl = normalizeUrl(currentPr.url);
+  if (prUrl && currentUrl && prUrl === currentUrl) return true;
+
+  const head = typeof prCreate.head === 'string' ? prCreate.head : '';
+  if (head && currentPr.headRefName && head === currentPr.headRefName) return true;
+
+  const branch = prCreate.toolchain?.source_git?.branch;
+  if (branch && currentPr.headRefName && branch === currentPr.headRefName) return true;
+
+  return false;
+}
+
+function normalizeUrl(value) {
+  return typeof value === 'string' ? value.trim().replace(/\/$/, '') : '';
+}
+
+function sanitizeFindingId(value) {
+  return String(value).trim().replace(/[^a-zA-Z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '') || 'current';
+}
+
 function isAuditableGateOverride(override) {
   if (!override || override.allowed !== true) return false;
   const reason = typeof override.reason === 'string' ? override.reason.trim() : '';
@@ -206,7 +352,8 @@ function isCriticalGateDag(gateDag) {
     'verification_gate',
     'requirement_gate',
     'visual_qa_gate',
-    'agent_review_gate'
+    'agent_review_gate',
+    'pr_freshness_gate'
   ].includes(node.type) && [
     'missing',
     'implicit',
@@ -217,6 +364,7 @@ function isCriticalGateDag(gateDag) {
     'needs_changes',
     'contradicted',
     'stale',
+    'needs_rebase',
     'block',
     'failed'
   ].includes(node.status));

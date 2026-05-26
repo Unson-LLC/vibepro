@@ -47,6 +47,21 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
+async function makeFakeGh(pr) {
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-bin-'));
+  const ghPath = path.join(binDir, 'gh');
+  await writeFile(ghPath, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] !== 'pr' || args[1] !== 'view') {
+  process.stderr.write('unexpected gh command: ' + args.join(' '));
+  process.exit(1);
+}
+console.log(${JSON.stringify(JSON.stringify(pr))});
+`);
+  await chmod(ghPath, 0o755);
+  return binDir;
+}
+
 async function gitFingerprintHash(repo) {
   const [status, diff, untracked] = await Promise.all([
     git(repo, ['status', '--porcelain', '-uall']),
@@ -1019,6 +1034,206 @@ test('check self-dogfood surfaces PR create bypass and finding details in markdo
   assert.equal(standaloneResult.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('pr_create_without_gate_override.story-standalone-bypass')), true);
   assert.equal(weakWaiverResult.exitCode, 0);
   assert.equal(weakWaiverResult.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('pr_create_without_gate_override.story-weak-waiver')), true);
+});
+
+test('check self-dogfood blocks GitHub PRs that bypass VibePro PR evidence', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const fakeGh = await makeFakeGh({
+    number: 97,
+    url: 'https://github.com/Unson-LLC/vibepro/pull/97',
+    headRefName: 'codex/publication-precheck-fixes',
+    body: '## Summary\\n- patched through a raw gh pr create path'
+  });
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-pr-path', '--run-id', 'self-dogfood-gh-pr-bypass', '--json'], {
+    env: { ...process.env, PATH: `${fakeGh}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_non_vibepro_body.codex-publication-precheck-fixes')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_body_escaped_newlines.codex-publication-precheck-fixes')), true);
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_missing_vibepro_create.codex-publication-precheck-fixes')), true);
+});
+
+test('check self-dogfood accepts GitHub PRs with VibePro body and matching pr-create evidence', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const fakeGh = await makeFakeGh({
+    number: 96,
+    url: 'https://github.com/Unson-LLC/vibepro/pull/96',
+    headRefName: 'feat/vibepro-pr-path',
+    headRefOid: '1111111111111111111111111111111111111111',
+    body: [
+      '## このPRで決めたいこと',
+      '- このPRで閉じる問い: VibePro経由のPRとして受け入れてよいか。',
+      '',
+      '## 監査ログ',
+      '',
+      '## Gate DAG',
+      '- overall_status: ready_for_review',
+      '',
+      '## Execution Gate',
+      '- status: ready'
+    ].join('\n')
+  });
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    mode: 'pr_create',
+    dry_run: false,
+    pr_url: 'https://github.com/Unson-LLC/vibepro/pull/96',
+    head: 'feat/vibepro-pr-path',
+    toolchain: {
+      source_git: {
+        commit: '1111111111111111111111111111111111111111'
+      }
+    },
+    gate_dag: { overall_status: 'ready_for_review' }
+  }, null, 2));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-pr-path', '--run-id', 'self-dogfood-gh-pr-vibepro', '--json'], {
+    env: { ...process.env, PATH: `${fakeGh}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'pass');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_')), false);
+});
+
+test('check self-dogfood rejects failed pr-create evidence for visible GitHub PRs', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const fakeGh = await makeFakeGh({
+    number: 98,
+    url: 'https://github.com/Unson-LLC/vibepro/pull/98',
+    headRefName: 'feat/failed-pr-create-artifact',
+    headRefOid: '2222222222222222222222222222222222222222',
+    body: [
+      '## このPRで決めたいこと',
+      '- このPRで閉じる問い: 失敗証跡をPR作成証跡として扱わないか。',
+      '',
+      '## Gate DAG',
+      '- overall_status: ready_for_review',
+      '',
+      '## Execution Gate',
+      '- status: ready'
+    ].join('\n')
+  });
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    mode: 'pr_create',
+    dry_run: false,
+    status: 'failed',
+    error: 'Command failed: gh pr create',
+    pr_url: null,
+    head: 'feat/failed-pr-create-artifact',
+    results: [
+      { command: 'gh pr create --base main --head feat/failed-pr-create-artifact', exit_code: 1 }
+    ]
+  }, null, 2));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-pr-path', '--run-id', 'self-dogfood-gh-pr-failed-evidence', '--json'], {
+    env: { ...process.env, PATH: `${fakeGh}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_missing_vibepro_create.feat-failed-pr-create-artifact')), true);
+});
+
+test('check self-dogfood rejects dry-run pr-create evidence for visible GitHub PRs', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const fakeGh = await makeFakeGh({
+    number: 99,
+    url: 'https://github.com/Unson-LLC/vibepro/pull/99',
+    headRefName: 'feat/dry-run-pr-create-artifact',
+    headRefOid: '3333333333333333333333333333333333333333',
+    body: [
+      '## このPRで決めたいこと',
+      '- このPRで閉じる問い: dry-run証跡をPR作成証跡として扱わないか。',
+      '',
+      '## Gate DAG',
+      '- overall_status: ready_for_review',
+      '',
+      '## Execution Gate',
+      '- status: ready'
+    ].join('\n')
+  });
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    mode: 'pr_create',
+    dry_run: true,
+    pr_url: 'https://github.com/Unson-LLC/vibepro/pull/99',
+    head: 'feat/dry-run-pr-create-artifact',
+    toolchain: {
+      source_git: {
+        commit: '3333333333333333333333333333333333333333'
+      }
+    }
+  }, null, 2));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-pr-path', '--run-id', 'self-dogfood-gh-pr-dry-run-evidence', '--json'], {
+    env: { ...process.env, PATH: `${fakeGh}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_missing_vibepro_create.feat-dry-run-pr-create-artifact')), true);
+});
+
+test('check self-dogfood rejects stale pr-create evidence for visible GitHub PRs', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  const fakeGh = await makeFakeGh({
+    number: 100,
+    url: 'https://github.com/Unson-LLC/vibepro/pull/100',
+    headRefName: 'feat/stale-pr-create-artifact',
+    headRefOid: '4444444444444444444444444444444444444444',
+    body: [
+      '## このPRで決めたいこと',
+      '- このPRで閉じる問い: stale証跡をPR作成証跡として扱わないか。',
+      '',
+      '## Gate DAG',
+      '- overall_status: ready_for_review',
+      '',
+      '## Execution Gate',
+      '- status: ready'
+    ].join('\n')
+  });
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), JSON.stringify({
+    mode: 'pr_create',
+    dry_run: false,
+    pr_url: 'https://github.com/Unson-LLC/vibepro/pull/100',
+    head: 'feat/stale-pr-create-artifact',
+    toolchain: {
+      source_git: {
+        commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      }
+    },
+    results: [
+      { command: 'gh pr create --base main --head feat/stale-pr-create-artifact', exit_code: 0 }
+    ]
+  }, null, 2));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-pr-path', '--run-id', 'self-dogfood-gh-pr-stale-evidence', '--json'], {
+    env: { ...process.env, PATH: `${fakeGh}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.check.status, 'fail');
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('github_pr_missing_vibepro_create.feat-stale-pr-create-artifact')), true);
 });
 
 test('check --fail-on-findings exits non-zero for non-pass check packs', async () => {
