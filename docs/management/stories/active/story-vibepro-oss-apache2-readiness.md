@@ -2,6 +2,11 @@
 story_id: story-vibepro-oss-apache2-readiness
 title: Apache-2.0でVibeProをOSS公開できる状態にする
 status: active
+view: dev
+horizon: month
+period: 2026-05
+category: product
+started_at: 2026-05-26
 source:
   type: user_request
   id: oss-apache2-readiness
@@ -17,6 +22,17 @@ reason: OSS readiness task breakdown refines existing release-readiness document
 VibeProをOSSとして公開するために、Apache-2.0ライセンス、公開用package metadata、README、CI、GitHub運用テンプレート、配布物の安全確認を揃える。
 
 VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本体を同梱しない。Graphifyの利用者はGraphify側のライセンスに従う。
+
+## 事業価値
+
+OSS公開前の権利・配布物・検証証跡を揃えることで、公開判断と公開後の保守導線を効率化し、外部利用者が安全にVibeProを選択できる状態にする。
+
+## 成功指標
+
+- npm dry-run package が `.vibepro/`、`docs/`、`docs/releases/`、local logs、Graphify source を含まない。
+- OSS公開前のCI相当コマンド (`npm run typecheck`、`npm test`、`npm run pack:dry-run`) が通る。
+- PR evidence はStory正本のtitle / backgroundを使い、汎用fallback文言を不要に出さない。
+- Agent Review Gate はdevelopment phase reviewとPR-final reviewを分離し、PR直前に全フェーズを一括要求しない。
 
 ## Acceptance Criteria
 
@@ -59,6 +75,11 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
    - `pr prepare` / `pr create` がPR直前のfinal `gate` / `preview` 系reviewだけを要求することを確認する
    - phase reviewの未実行がPR直前にまとめて要求されないことをテストまたはVibePro artifactで証跡化する
 
+6. KPI / Period metadataの補完
+   - Story正本frontmatterに `view` / `horizon` / `period` / `category` / `started_at` を明示する
+   - OSS公開readyの事業価値と成功指標をStory本文に残す
+   - `story derive` でperiod未確定やKPI未確認のopen questionが残らないことを確認する
+
 ## 進捗
 
 - [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-01-oss`
@@ -86,3 +107,6 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
   - `pr prepare` / `pr create` のAgent Review Gateは、PR直前のfinal `gate` reviewだけを要求し、development phase reviewをPR直前にまとめて要求しないことを確認した。
   - pre-fix回帰を捕まえる既存テスト: `checkpoint lists available phase gates`、`checkpoint blocks implementation start before design gates and staged reviews pass`、`pr prepare requires only final agent review gates; phase reviews are checkpoint-gated`
   - VibePro PR artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/gate-dag.json`
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-06-planning-metadata`
+  - Story正本frontmatterに `view: dev`、`horizon: month`、`period: 2026-05`、`category: product`、`started_at: 2026-05-26` を追加し、VibePro / NocoDB連携で管理期間が未確定にならないようにした。
+  - `## 事業価値` と `## 成功指標` を追加し、OSS公開readyの事業上の意味と判定を package boundary、CI相当検証、PR evidence、Agent Review Gate phase separation の4点に固定した。
