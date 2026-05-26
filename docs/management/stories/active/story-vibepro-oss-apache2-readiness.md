@@ -81,3 +81,8 @@ VibeProはGraphifyを任意の外部CLIとして利用できるが、Graphify本
   - Story正本に `## 背景` がない場合でも、`# Story` 直下の導入文から背景を抽出し、`背景: Story文書から抽出できませんでした` を出さないことを確認した。
   - pre-fix回帰を捕まえる既存テスト: `pr prepare uses story source title and intro when explicit background heading is absent`
   - VibePro PR artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/pr-body.md`
+- [x] 2026-05-26: `story-vibepro-oss-apache2-readiness-05-agent-review-gate-phase-separation`
+  - `implementation-start` / `test-plan` / `implementation-complete` checkpoint が、それぞれ `planning_spec` / `architecture_spec`、`test_plan`、`implementation` reviewをGate化することを確認した。
+  - `pr prepare` / `pr create` のAgent Review Gateは、PR直前のfinal `gate` reviewだけを要求し、development phase reviewをPR直前にまとめて要求しないことを確認した。
+  - pre-fix回帰を捕まえる既存テスト: `checkpoint lists available phase gates`、`checkpoint blocks implementation start before design gates and staged reviews pass`、`pr prepare requires only final agent review gates; phase reviews are checkpoint-gated`
+  - VibePro PR artifact: `.vibepro/pr/story-vibepro-oss-apache2-readiness/gate-dag.json`
