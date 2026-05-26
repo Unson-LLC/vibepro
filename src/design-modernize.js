@@ -55,6 +55,11 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       }
     },
     reference_design_system: designSystem,
+    visual_foundations_reference: designSystem.visual_foundations ? {
+      source: designSystem.visual_foundations.source,
+      authority: designSystem.visual_foundations.authority,
+      artifact: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json'
+    } : null,
     product_semantic_model: productSemanticModel,
     derived_design_system: derivedDesignSystem,
     component_role_map: derivedDesignSystem.component_role_map,
@@ -71,6 +76,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       visual_hypothesis_prompts: '.vibepro/design-modernize/<story-id>/visual-hypothesis-prompts.md',
       visual_hypothesis_candidates: '.vibepro/design-modernize/<story-id>/visual-hypotheses/',
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
+      visual_foundations_reference: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json',
       derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
       product_semantic_model: '.vibepro/design-modernize/<story-id>/product-semantic-model.json',
       component_role_map: '.vibepro/design-modernize/<story-id>/component-role-map.json',
@@ -97,6 +103,9 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   });
   if (bundle) {
     await writeFile(path.join(outDir, 'design-system-bundle.json'), `${JSON.stringify(bundle, null, 2)}\n`);
+  }
+  if (designSystem.visual_foundations) {
+    await writeFile(path.join(outDir, 'visual-foundations-reference.json'), `${JSON.stringify(designSystem.visual_foundations, null, 2)}\n`);
   }
 
   return { outDir, plan };
@@ -240,10 +249,14 @@ export function normalizeDesignSystemBundle(bundle, options = {}) {
   const tokens = payload.tokens
     ?? payload.designTokens
     ?? payload.files?.tokens
+    ?? source.semantic_tokens
+    ?? source.theme_tokens
     ?? [payload.theme, payload.styles].filter(Boolean).join('\n')
     ?? {};
   const components = payload.components
     ?? source.files?.components
+    ?? source.component_roles?.roles
+    ?? source.component_roles
     ?? [payload.componentsCss, payload.componentsJs].filter(Boolean).join('\n')
     ?? [];
   const guidelines = payload.guidelines
@@ -259,6 +272,7 @@ export function normalizeDesignSystemBundle(bundle, options = {}) {
     token_summary: summarizeTokens(tokens),
     component_summary: summarizeComponents(components),
     guideline_summary: summarizeGuidelines(guidelines),
+    visual_foundations: source.visual_foundations ?? payload.visual_foundations ?? null,
     constraints: buildDesignConstraints({ tokens, components, guidelines })
   };
 }
@@ -273,12 +287,14 @@ export function renderDesignModernizePlan(plan) {
 | Design Intelligence | ${plan.design_intelligence.model} |
 | External generator required | ${plan.design_intelligence.external_generator_required} |
 | Reference Design System | ${plan.reference_design_system.title ?? '-'} (${plan.reference_design_system.id ?? '-'}) |
+| Visual Foundations | ${plan.visual_foundations_reference?.source ?? '-'} |
 
 ## Workflow
 
 1. Graphify/Codex extract routes, components, state, CTA, data dependency, and preserved UX from current code.
 2. Capture current browser screenshots for each route before asking for visual redesign.
 3. Convert optional brand/design-system material into VibePro design constraints.
+   - Visual foundations are reference material only; current code, graph evidence, implementation mapping, and gates remain authoritative.
 4. Generate one screen-level design brief per route with invariants, allowed visual changes, anti-patterns, rubric, and Codex acceptance criteria.
 5. Use VibePro's Design Quality DAG to review hierarchy, density, CTA priority, state clarity, accessibility, interaction continuity, and implementation fit.
 6. Implement with Codex using this spec, Graphify evidence, current screenshots, and current code as the source of truth.
@@ -1253,7 +1269,17 @@ function collectCtas(content) {
   for (const match of content.matchAll(/<button\b[^>]*>([\s\S]{0,160}?)<\/button>/g)) labels.push(clean(match[1]));
   for (const match of content.matchAll(/<Button\b[^>]*>([\s\S]{0,160}?)<\/Button>/g)) labels.push(clean(match[1]));
   for (const match of content.matchAll(/aria-label=["']([^"']+)["']/g)) labels.push(clean(match[1]));
-  return unique(labels.filter((label) => label.length > 0 && label.length < 80)).slice(0, 40);
+  return unique(labels.filter(isLikelyHumanCtaLabel)).slice(0, 40);
+}
+
+function isLikelyHumanCtaLabel(label) {
+  const value = String(label ?? '').trim();
+  if (value.length === 0 || value.length >= 80) return false;
+  if (/^[A-Za-z_$][A-Za-z0-9_$.]*$/.test(value)) return false;
+  if (/^(true|false|null|undefined|loading|error)$/i.test(value)) return false;
+  if (/[{}()[\]<>;]/.test(value)) return false;
+  if (/\b(className|onClick|props|children|return|const|function|=>)\b/.test(value)) return false;
+  return /[\p{L}\p{N}]/u.test(value);
 }
 
 function collectDataDependencies(content) {

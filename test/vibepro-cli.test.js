@@ -187,7 +187,10 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'home', 'page.tsx'), `
     export default function HomePage() {
       const [loading] = useState(false);
-      return <button aria-label="地図で探す">地図で探す</button>;
+      return <>
+        <button aria-label="地図で探す">地図で探す</button>
+        <Button>{loading ? 'loading' : iconOnly}</Button>
+      </>;
     }
   `);
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'home', '_components', 'HomeActions.tsx'), `
@@ -306,6 +309,18 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
       { from: 'route:/home', to: 'route:/map' }
     ]
   }, null, 2));
+  await writeFile(path.join(repo, 'visual-brief.md'), `# Aitle Visual Foundations
+
+- Design language: quiet premium travel utility, not a marketing landing page.
+- Mobile density: dense scannable hotel comparison with compact Japanese labels.
+- Semantic color roles: brand interactive, surface raised, text muted, availability positive, urgency caution.
+- Typography: compact Japanese mobile scale with tabular price numerals.
+- Spacing radius motion shadow: 8px radius, restrained elevation, snappy sheet motion.
+- Component visual requirements: AI電話 CTA is the primary native action; hotel cards stay dense.
+- Composition requirements: map and result screens preserve current hierarchy and bottom sheet behavior.
+- Native CTA language: AI電話で空室確認, 地図で探す, 条件から探す.
+- Forbidden generic CTAs: avoid Book Now and generic booking-funnel language.
+`);
 
   const nativeDesignSystem = await runCli([
     'design-system',
@@ -319,6 +334,8 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
     '/home,/map',
     '--brief',
     'Japanese hotel discovery app with location search, map exploration, AI電話で空室確認, 休憩, 宿泊, サービスタイム, 今すぐ.',
+    '--brief-file',
+    'visual-brief.md',
     '--from-code',
     '--json'
   ]);
@@ -348,7 +365,10 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'implementation-mapping.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'evidence-coverage.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'ds-gate.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'visual-foundations.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'visual-foundations.md')), true);
   const nativeOutDir = path.join(repo, '.vibepro', 'design-system', 'aitle');
+  const nativeDesignSystemJson = await readJson(path.join(nativeOutDir, 'design-system.json'));
   const nativeSemanticTokens = await readJson(path.join(nativeOutDir, 'semantic-tokens.json'));
   const nativeComponentStates = await readJson(path.join(nativeOutDir, 'component-states.json'));
   const nativeCtaPolicy = await readJson(path.join(nativeOutDir, 'cta-policy.json'));
@@ -357,19 +377,60 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   const nativeAntiPatterns = await readJson(path.join(nativeOutDir, 'anti-patterns.json'));
   const nativeEvidenceCoverage = await readJson(path.join(nativeOutDir, 'evidence-coverage.json'));
   const nativeDsGate = await readJson(path.join(nativeOutDir, 'ds-gate.json'));
+  const nativeVisualFoundations = await readJson(path.join(nativeOutDir, 'visual-foundations.json'));
   const nativeScreenPatterns = await readJson(path.join(nativeOutDir, 'screen-patterns.json'));
   const nativeSummary = await readFile(path.join(nativeOutDir, 'design-system.md'), 'utf8');
+  assert.equal(nativeDesignSystemJson.source_evidence.visual_foundations.source, 'visual-brief.md');
+  assert.match(nativeVisualFoundations.authority, /reference_only/);
+  assert.ok(nativeVisualFoundations.semantic_color_roles.some((line) => /availability positive/.test(line)));
   assert.ok(nativeSemanticTokens.color_roles.some((role) => role.name === 'availability_positive'));
   assert.match(JSON.stringify(nativeComponentStates.required_states), /loading/);
   assert.ok(nativeCtaPolicy.discovered_ctas.includes('地図で探す'));
+  assert.equal(nativeCtaPolicy.discovered_ctas.includes('iconOnly'), false);
   assert.match(nativeDensityPolicy.rules.join('\n'), /scanability/);
   assert.equal(nativeNavigationPolicy.policy, 'preserve_current_navigation_model');
   assert.ok(nativeAntiPatterns.global_rules.some((rule) => /new product concept/.test(rule)));
   assert.equal(nativeEvidenceCoverage.findings.find((finding) => finding.id === 'DS-EVIDENCE-GRAPH').status, 'pass');
   assert.equal(nativeDsGate.fallback_allowed, false);
   assert.ok(nativeDsGate.checks.some((check) => check.id === 'DS-GATE-VISUAL-HYPOTHESIS'));
+  assert.ok(nativeDsGate.checks.some((check) => check.id === 'DS-GATE-VISUAL-FOUNDATIONS-AUTHORITY'));
   assert.equal(nativeScreenPatterns.graphify_status, 'available');
   assert.match(nativeSummary, /graphify: available/);
+  assert.match(nativeSummary, /visual foundations: visual-brief.md/);
+
+  await writeFile(path.join(repo, 'visual-brief-v2.md'), '- Native CTA language: 空室をAI電話で確認.\n- Forbidden generic CTAs: avoid Book Now.\n');
+  const ingested = await runCli([
+    'design-system',
+    'ingest-brief',
+    repo,
+    '--id',
+    'aitle',
+    '--brief-file',
+    'visual-brief-v2.md',
+    '--json'
+  ]);
+  assert.equal(ingested.exitCode, 0);
+  assert.equal(ingested.result.result.visual_foundations.source, 'visual-brief-v2.md');
+
+  const planFromNativeDs = await runCli([
+    'design-modernize',
+    'plan',
+    repo,
+    '--id',
+    'story-aitle-native-ds-plan',
+    '--product',
+    'Aitle',
+    '--routes',
+    '/home,/map',
+    '--design-system-bundle',
+    '.vibepro/design-system/aitle/design-system.json',
+    '--json'
+  ]);
+  assert.equal(planFromNativeDs.exitCode, 0);
+  assert.ok(planFromNativeDs.result.plan.reference_design_system.token_summary.count > 0);
+  assert.ok(planFromNativeDs.result.plan.reference_design_system.component_summary.count > 0);
+  assert.equal(planFromNativeDs.result.plan.visual_foundations_reference.source, 'visual-brief-v2.md');
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-native-ds-plan', 'visual-foundations-reference.json')), true);
 
   const capture = await runCli([
     'design-modernize',

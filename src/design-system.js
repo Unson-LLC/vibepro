@@ -19,6 +19,11 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
   const product = options.product ?? inferProductName(root);
   const designSystemId = sanitizeId(options.designSystemId ?? options.id ?? product);
   const routes = options.routes?.length > 0 ? options.routes : DEFAULT_ROUTES;
+  const visualFoundations = await readVisualFoundations(root, {
+    designSystemId,
+    product,
+    briefFile: options.briefFile
+  });
   const graphify = await collectGraphifyEvidence(root, options);
   const screens = await collectScreens(root, routes, {
     product,
@@ -71,8 +76,14 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
       routes,
       graphify,
       current_ui_code: summarizeScreenEvidence(screens),
-      style_files: styleEvidence.files.map((file) => file.path)
+      style_files: styleEvidence.files.map((file) => file.path),
+      visual_foundations: visualFoundations ? {
+        source: visualFoundations.source,
+        artifact: `.vibepro/design-system/${designSystemId}/visual-foundations.json`,
+        authority: visualFoundations.authority
+      } : null
     },
+    visual_foundations: visualFoundations,
     product_semantics: productSemantics,
     theme_tokens: styleEvidence.theme_tokens,
     semantic_tokens: semanticTokens,
@@ -85,13 +96,52 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
     anti_patterns: antiPatterns,
     implementation_mapping: implementationMapping,
     evidence_coverage: evidenceCoverage,
-    ds_gate: dsGate
+    ds_gate: mergeVisualFoundationsGate(dsGate, visualFoundations)
   };
 
   const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
   await mkdir(outDir, { recursive: true });
   await writeDesignSystemArtifacts(outDir, designSystem);
   return { outDir, result: designSystem };
+}
+
+export async function ingestVisualDesignBrief(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system ingest-brief requires --id <ds-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  if (!options.briefFile) {
+    throw new Error('design-system ingest-brief requires --brief-file <path>');
+  }
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  let designSystem;
+  try {
+    designSystem = JSON.parse(await readFile(designSystemPath, 'utf8'));
+  } catch {
+    throw new Error(`Design System not found: ${path.relative(root, designSystemPath).split(path.sep).join('/')}. Run design-system derive first.`);
+  }
+  const visualFoundations = await readVisualFoundations(root, {
+    designSystemId,
+    product: designSystem.product ?? options.product ?? designSystemId,
+    briefFile: options.briefFile
+  });
+  const nextDesignSystem = {
+    ...designSystem,
+    visual_foundations: visualFoundations,
+    source_evidence: {
+      ...(designSystem.source_evidence ?? {}),
+      visual_foundations: {
+        source: visualFoundations.source,
+        artifact: `.vibepro/design-system/${designSystemId}/visual-foundations.json`,
+        authority: visualFoundations.authority
+      }
+    },
+    ds_gate: mergeVisualFoundationsGate(designSystem.ds_gate, visualFoundations)
+  };
+  await writeDesignSystemArtifacts(outDir, nextDesignSystem);
+  return { outDir, result: nextDesignSystem };
 }
 
 export function renderNativeDesignSystemSummary(result) {
@@ -106,6 +156,7 @@ export function renderNativeDesignSystemSummary(result) {
     `- style files: ${result.source_evidence.style_files.length}`,
     `- component roles: ${result.component_roles.roles.length}`,
     `- screen patterns: ${result.screen_patterns.patterns.length}`,
+    `- visual foundations: ${result.visual_foundations ? result.visual_foundations.source : 'not_provided'}`,
     `- gate fallback allowed: ${result.ds_gate.fallback_allowed}`,
     '',
     '## Product Semantics',
@@ -140,10 +191,131 @@ async function writeDesignSystemArtifacts(outDir, designSystem) {
     'evidence-coverage.json': designSystem.evidence_coverage,
     'ds-gate.json': designSystem.ds_gate
   };
+  if (designSystem.visual_foundations) {
+    artifacts['visual-foundations.json'] = designSystem.visual_foundations;
+  }
   await Promise.all(Object.entries(artifacts).map(([fileName, content]) => (
     writeFile(path.join(outDir, fileName), `${JSON.stringify(content, null, 2)}\n`)
   )));
+  if (designSystem.visual_foundations) {
+    await writeFile(path.join(outDir, 'visual-foundations.md'), renderVisualFoundationsSummary(designSystem.visual_foundations));
+  }
   await writeFile(path.join(outDir, 'design-system.md'), renderNativeDesignSystemSummary(designSystem));
+}
+
+async function readVisualFoundations(root, { designSystemId, product, briefFile }) {
+  if (!briefFile) return null;
+  const absolutePath = path.isAbsolute(briefFile) ? briefFile : path.join(root, briefFile);
+  const text = await readFile(absolutePath, 'utf8');
+  return extractVisualFoundations({
+    designSystemId,
+    product,
+    source: path.relative(root, absolutePath).split(path.sep).join('/'),
+    text
+  });
+}
+
+function extractVisualFoundations({ designSystemId, product, source, text }) {
+  const normalized = String(text ?? '');
+  return {
+    schema_version: '0.1.0',
+    design_system_id: designSystemId,
+    product,
+    source,
+    authority: 'visual_reference_only_current_code_and_gates_remain_authoritative',
+    design_language: extractLines(normalized, /(design language|tone|brand|らしさ|トーン|世界観)/i),
+    platform_density: extractLines(normalized, /(platform|mobile|desktop|density|compact|dense|scan|密度|モバイル)/i),
+    semantic_color_roles: extractLines(normalized, /(color|colour|semantic|surface|text|brand|success|warning|色|カラー)/i),
+    typography: extractLines(normalized, /(typography|font|type|line-height|文字|フォント|タイポ)/i),
+    spacing_radius_motion_shadow: extractLines(normalized, /(spacing|space|radius|radii|motion|shadow|elevation|余白|角丸|影|モーション)/i),
+    component_visual_requirements: extractLines(normalized, /(component|button|card|chip|sheet|navigation|cta|コンポーネント|カード|ボタン)/i),
+    composition_requirements: extractLines(normalized, /(composition|layout|screen|hierarchy|section|画面|構成|レイアウト|階層)/i),
+    native_cta_language: extractLines(normalized, /(cta|action|button|call to action|電話|確認|探す|予約|文言)/i),
+    forbidden_generic_ctas: extractForbiddenCtas(normalized),
+    authority_boundary: [
+      'current code, route evidence, implementation mapping, and VibePro gates remain implementation authority',
+      'visual foundations may guide tone, component feel, density, and composition but must not override preserved UX invariants'
+    ]
+  };
+}
+
+function extractLines(text, pattern) {
+  return unique(String(text ?? '')
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*#\s]+/, '').trim())
+    .filter((line) => line.length > 0 && line.length < 240)
+    .filter((line) => pattern.test(line)))
+    .slice(0, 24);
+}
+
+function extractForbiddenCtas(text) {
+  const lines = extractLines(text, /(forbidden|avoid|do not|generic|禁止|避ける|汎用)/i);
+  const known = [];
+  if (/book now/i.test(text)) known.push('Book Now');
+  if (/予約する/.test(text) && /禁止|avoid|generic|汎用/i.test(text)) known.push('予約する');
+  return unique([...known, ...lines]).slice(0, 16);
+}
+
+function mergeVisualFoundationsGate(dsGate, visualFoundations) {
+  if (!visualFoundations) return dsGate;
+  const base = dsGate ?? {
+    schema_version: '0.1.0',
+    fallback_allowed: false,
+    checks: []
+  };
+  const checks = [
+    ...(base.checks ?? []).filter((check) => check.id !== 'DS-GATE-VISUAL-FOUNDATIONS-AUTHORITY'),
+    {
+      id: 'DS-GATE-VISUAL-FOUNDATIONS-AUTHORITY',
+      statement: 'Visual foundations are reference material only; current code, graph evidence, implementation mapping, and VibePro gates remain authoritative.'
+    }
+  ];
+  return {
+    ...base,
+    fallback_allowed: false,
+    checks
+  };
+}
+
+function renderVisualFoundationsSummary(foundations) {
+  return `# Visual Foundations: ${foundations.product}
+
+- source: ${foundations.source}
+- authority: ${foundations.authority}
+
+## Authority Boundary
+
+${foundations.authority_boundary.map((item) => `- ${item}`).join('\n')}
+
+## Design Language
+
+${formatList(foundations.design_language)}
+
+## Color Roles
+
+${formatList(foundations.semantic_color_roles)}
+
+## Typography / Density / Motion
+
+${formatList([
+  ...foundations.typography,
+  ...foundations.platform_density,
+  ...foundations.spacing_radius_motion_shadow
+])}
+
+## Components / Composition / CTA
+
+${formatList([
+  ...foundations.component_visual_requirements,
+  ...foundations.composition_requirements,
+  ...foundations.native_cta_language,
+  ...foundations.forbidden_generic_ctas
+])}
+`;
+}
+
+function formatList(items) {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join('\n') : '- not extracted';
 }
 
 async function collectGraphifyEvidence(root, options) {
