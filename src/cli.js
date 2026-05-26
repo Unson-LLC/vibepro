@@ -26,7 +26,7 @@ import {
   renderDerivedDesignSystemSummary,
   renderDesignModernizePlan
 } from './design-modernize.js';
-import { deriveNativeDesignSystem, renderNativeDesignSystemSummary } from './design-system.js';
+import { deriveNativeDesignSystem, ingestVisualDesignBrief, renderNativeDesignSystemSummary } from './design-system.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
@@ -199,7 +199,8 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -296,9 +297,11 @@ base branch:
   init後の案内と pr prepare の出力に候補を表示します。
 
 既存UI modernize:
-  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
+  vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code
       現行route code、style/token files、任意のGraphify証跡、product semanticsから
       プロダクトローカルなDesign System正本を作ります。
+  vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
+      外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
   .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
   その後に design-modernize derive-system または plan で画面別作業へ進みます。
   生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
@@ -328,7 +331,8 @@ Usage:
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -574,10 +578,23 @@ export async function runCli(argv, io = {}) {
           product: getOption(rest, '--product'),
           routes: parseDesignRoutes(rest),
           brief: getOption(rest, '--brief'),
+          briefFile: getOption(rest, '--brief-file'),
           baseUrl: getOption(rest, '--base-url'),
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           graphifyOut: getOption(rest, '--from')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'ingest-brief') {
+        const result = await ingestVisualDesignBrief(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          briefFile: getOption(rest, '--brief-file')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`

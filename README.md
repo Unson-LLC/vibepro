@@ -345,7 +345,12 @@ npx vibepro design-system derive /path/to/repo \
   --product <name> \
   --routes /home,/map,/detail \
   --brief "Japanese hotel discovery app with map exploration and product-native CTAs" \
+  --brief-file visual-foundations.md \
   --from-code
+
+npx vibepro design-system ingest-brief /path/to/repo \
+  --id <ds-id> \
+  --brief-file visual-foundations.md
 
 npx vibepro design-modernize derive-system /path/to/repo \
   --id <story-id> \
@@ -360,7 +365,9 @@ npx vibepro design-modernize plan /path/to/repo \
   --base-url http://127.0.0.1:3000
 ```
 
-`design-system derive` creates a VibePro-native Design System under `.vibepro/design-system/<ds-id>/`. It reads existing route code, style/token files, optional Graphify evidence, and the product brief, then writes product semantics, theme tokens, semantic tokens, component roles, screen patterns, CTA policy, state semantics, density/navigation policies, implementation mapping, evidence coverage, and explicit DS gates.
+`design-system derive` creates a VibePro-native Design System under `.vibepro/design-system/<ds-id>/`. It reads existing route code, style/token files, optional Graphify evidence, the product brief, and an optional visual foundations brief, then writes product semantics, theme tokens, semantic tokens, component roles, screen patterns, CTA policy, state semantics, density/navigation policies, implementation mapping, evidence coverage, and explicit DS gates.
+
+`design-system ingest-brief` adds or replaces `visual-foundations.json` / `.md` on an existing native DS. Visual foundations capture design language, color roles, typography, density, component feel, composition, and native CTA language as reference evidence only. Current code, Graphify evidence, implementation mapping, and VibePro gates remain authoritative.
 
 Use this command before redesigning existing UI when the product already has real routes, CTAs, states, and data dependencies. The generated Design System is not a visual suggestion; it is the product-local constraint artifact that preserves existing UX invariants while making the UI more coherent.
 
@@ -375,13 +382,14 @@ Typical native Design System artifacts are written under `.vibepro/design-system
 - `theme-tokens.json` and `semantic-tokens.json`: extracted raw style evidence and semantic token roles
 - `component-roles.json` and `component-states.json`: component responsibilities and state semantics
 - `screen-patterns.json`: route-family patterns, current CTAs, data dependencies, navigation targets, UX invariants
+- `visual-foundations.json` / `.md`: external visual DS brief distilled as reference-only foundations
 - `implementation-mapping.json`: route/component/file mapping for implementation handoff
 - `evidence-coverage.json` and `ds-gate.json`: coverage findings and explicit DS gate clauses
 
 Recommended sequence:
 
 1. Run `vibepro graph <repo> --run-graphify` when Graphify is available.
-2. Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code`.
+2. Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code`.
 3. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
 4. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
 5. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
