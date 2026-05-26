@@ -811,6 +811,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:e2e') return `Record current-head E2E evidence for ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:visual_qa') return `Record Visual QA evidence for UI changes: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:network_contract') return `Resolve Network Contract evidence: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:pr_freshness') {
+    return `Refresh PR branch and regenerate VibePro evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -906,6 +909,8 @@ async function collectGitState(repoRoot, options) {
   const headRef = options.headRef ?? 'HEAD';
   const includesDirtyInChangedFiles = !options.headRef;
   const headSha = await gitOptional(repoRoot, ['rev-parse', headRef]);
+  const baseSha = await gitOptional(repoRoot, ['rev-parse', baseRef]);
+  const mergeBaseSha = baseSha && headSha ? await gitOptional(repoRoot, ['merge-base', baseRef, headRef]) : '';
   const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
@@ -921,6 +926,15 @@ async function collectGitState(repoRoot, options) {
     base_ref: baseRef,
     head_ref: headRef,
     head_sha: headSha || null,
+    base_sha: baseSha || null,
+    merge_base_sha: mergeBaseSha || null,
+    pr_freshness: buildPrFreshnessState({
+      baseRef,
+      headRef,
+      baseSha,
+      headSha,
+      mergeBaseSha
+    }),
     origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
     status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
@@ -942,6 +956,40 @@ function mergeChangedAndDirtyFiles(changedFiles, dirtyFiles) {
     });
   }
   return [...byPath.values()];
+}
+
+function buildPrFreshnessState({ baseRef, headRef, baseSha, headSha, mergeBaseSha }) {
+  const baseResolved = Boolean(baseSha);
+  const headResolved = Boolean(headSha);
+  const headContainsBase = baseResolved && headResolved && mergeBaseSha === baseSha;
+  const status = !baseResolved || !headResolved
+    ? 'needs_evidence'
+    : headContainsBase
+      ? 'passed'
+      : 'needs_rebase';
+  const reason = status === 'passed'
+    ? `${headRef} contains current ${baseRef}; PR prepare artifacts are based on the latest resolved base ref`
+    : status === 'needs_rebase'
+      ? `${headRef} does not contain current ${baseRef}; run fetch/rebase, then rerun verification and vibepro pr prepare`
+      : `Could not resolve ${!baseResolved ? baseRef : headRef} for PR freshness check`;
+  return {
+    schema_version: '0.1.0',
+    status,
+    base_ref: baseRef,
+    head_ref: headRef,
+    base_sha: baseSha || null,
+    head_sha: headSha || null,
+    merge_base_sha: mergeBaseSha || null,
+    head_contains_base: headContainsBase,
+    pr_prepare_regenerated_at_runtime: true,
+    reason,
+    required_actions: status === 'passed' ? [] : [
+      `git fetch origin`,
+      `git rebase ${baseRef}`,
+      `rerun required verification evidence for the rebased HEAD`,
+      `vibepro pr prepare . --story-id <story-id> --base ${baseRef}`
+    ]
+  };
 }
 
 async function resolveBaseRef(repoRoot) {
@@ -2522,7 +2570,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     decisionRecords: context.decision_records,
     inferredSpec,
     specDrift,
-    changeClassification
+    changeClassification,
+    git
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -3400,7 +3449,8 @@ function buildGateDag({
   decisionRecords = null,
   inferredSpec = null,
   specDrift = null,
-  changeClassification = null
+  changeClassification = null,
+  git = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -3446,6 +3496,7 @@ function buildGateDag({
     required: true
   };
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
+  const prFreshnessGate = buildPrFreshnessGate(git);
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const designQualityGate = designQualityEvidence ? {
     id: 'gate:design_quality',
@@ -3501,6 +3552,7 @@ function buildGateDag({
   const nodes = [
     storyGate,
     changeClassificationGate,
+    prFreshnessGate,
     architectureGate,
     specGate,
     {
@@ -3537,10 +3589,9 @@ function buildGateDag({
 
   const edges = [
     { from: 'story', to: 'gate:change_classification' },
-    { from: 'gate:change_classification', to: 'architecture' },
-    { from: 'gate:change_classification', to: 'spec' },
-    { from: 'story', to: 'architecture' },
-    { from: 'story', to: 'spec' },
+    { from: 'gate:change_classification', to: 'gate:pr_freshness' },
+    { from: 'gate:pr_freshness', to: 'architecture' },
+    { from: 'gate:pr_freshness', to: 'spec' },
     { from: 'architecture', to: 'code' },
     { from: 'spec', to: 'code' },
     ...acceptanceNodes.flatMap((node) => [
@@ -3590,6 +3641,7 @@ function buildGateDag({
     architectureGate,
     specGate,
     changeClassificationGate,
+    prFreshnessGate,
     networkContractGate,
     requirementGate,
     decisionRecordGate,
@@ -3689,6 +3741,32 @@ function buildChangeClassificationGate(changeClassification) {
     change_type: changeClassification?.change_type ?? 'simple_code_change',
     risk_surfaces: changeClassification?.risk_surfaces ?? [],
     reason: changeClassification?.reasons?.join('; ') || `Gate profile selected: ${profile}`
+  };
+}
+
+function buildPrFreshnessGate(git) {
+  const freshness = git?.pr_freshness ?? null;
+  const status = freshness?.status === 'passed' ? 'passed' : freshness?.status ?? 'needs_evidence';
+  return {
+    id: 'gate:pr_freshness',
+    type: 'pr_freshness_gate',
+    label: 'PR Freshness Gate',
+    status,
+    required: true,
+    base_ref: freshness?.base_ref ?? git?.base_ref ?? null,
+    head_ref: freshness?.head_ref ?? git?.head_ref ?? null,
+    base_sha: freshness?.base_sha ?? git?.base_sha ?? null,
+    head_sha: freshness?.head_sha ?? git?.head_sha ?? null,
+    merge_base_sha: freshness?.merge_base_sha ?? git?.merge_base_sha ?? null,
+    head_contains_base: freshness?.head_contains_base ?? false,
+    pr_prepare_regenerated_at_runtime: freshness?.pr_prepare_regenerated_at_runtime ?? true,
+    required_actions: freshness?.required_actions ?? [
+      'git fetch origin',
+      'rebase the PR branch onto the current base ref',
+      'rerun verification evidence',
+      'rerun vibepro pr prepare'
+    ],
+    reason: freshness?.reason ?? 'PR freshness could not be proven'
   };
 }
 
@@ -4747,6 +4825,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'pr_freshness_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
@@ -4776,6 +4855,7 @@ function isUnresolvedGateStatus(status) {
     'needs_evidence',
     'needs_setup',
     'needs_review',
+    'needs_rebase',
     'needs_changes',
     'contradicted',
     'stale',
@@ -4803,6 +4883,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
+      if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
       if (gate.id?.startsWith('gate:workflow_') || gate.id === 'gate:production_path_matrix' || gate.id === 'gate:evidence_coverage' || gate.id === 'gate:release_confidence') {
         return `${gate.label ?? gate.id} requires workflow-heavy evidence: explicit scenario clauses, production path matrix coverage, and passing flow replay evidence.`;
       }
@@ -4854,6 +4935,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';

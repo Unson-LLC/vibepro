@@ -1312,6 +1312,43 @@ Docs-only Story should be usable before story derive refreshes config.
   assert.match(prBody, /Docs-only gate Story/);
 });
 
+test('pr prepare blocks PR freshness when base advanced after branch creation', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const feature = true;\n');
+  await git(repo, ['add', 'src/feature.js']);
+  await git(repo, ['commit', '-m', 'feat: add feature branch work']);
+
+  const freshResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(freshResult.exitCode, 0);
+  const freshGate = freshResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:pr_freshness');
+  assert.equal(freshGate.status, 'passed');
+  assert.equal(freshGate.head_contains_base, true);
+  assert.match(freshGate.reason, /contains current main/);
+
+  await git(repo, ['switch', 'main']);
+  await writeFile(path.join(repo, 'base-change.md'), 'main moved\n');
+  await git(repo, ['add', 'base-change.md']);
+  await git(repo, ['commit', '-m', 'docs: move base branch']);
+  await git(repo, ['switch', 'feature/test-story']);
+
+  const staleResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(staleResult.exitCode, 0);
+  const staleGate = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:pr_freshness');
+  assert.equal(staleGate.status, 'needs_rebase');
+  assert.equal(staleGate.head_contains_base, false);
+  assert.match(staleGate.reason, /does not contain current main/);
+  assert.equal(
+    staleResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:pr_freshness'),
+    true
+  );
+  const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
+  assert.match(actions, /git fetch origin/);
+  assert.match(actions, /vibepro pr prepare/);
+});
+
 test('check all leaves optional agent harness and public discovery checks out unless explicitly included', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
