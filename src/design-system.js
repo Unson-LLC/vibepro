@@ -144,6 +144,54 @@ export async function ingestVisualDesignBrief(repoRoot, options = {}) {
   return { outDir, result: nextDesignSystem };
 }
 
+export async function validateDesignSystem(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system validate requires --id <ds-id>');
+  }
+  if (!options.storyId) {
+    throw new Error('design-system validate requires --story-id <story-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const storyId = sanitizeStoryId(options.storyId);
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  let designSystem;
+  try {
+    designSystem = JSON.parse(await readFile(designSystemPath, 'utf8'));
+  } catch {
+    throw new Error(`Design System not found: ${path.relative(root, designSystemPath).split(path.sep).join('/')}. Run design-system derive first.`);
+  }
+
+  const storyContext = await collectDesignValidationStoryContext(root, storyId);
+  const artifactTexts = await readDesignSystemArtifactTexts(outDir);
+  const findings = [
+    ...validateDesignSystemShape(designSystem),
+    ...validateDesignSystemStoryDrift({ designSystem, storyContext }),
+    ...validateSecretLeakage(artifactTexts)
+  ];
+  const result = {
+    schema_version: '0.1.0',
+    workflow: 'design-system-validation',
+    design_system_id: designSystemId,
+    story_id: storyId,
+    generated_at: new Date().toISOString(),
+    authority: {
+      design_system: designSystem.authority ?? 'unknown',
+      implementation: 'current code, Story, Spec, Architecture, and VibePro gates remain authoritative',
+      generated_visuals: 'reference_only'
+    },
+    story_context: storyContext,
+    summary: summarizeValidationStatus(findings),
+    findings
+  };
+  const validationDir = path.join(outDir, 'validation');
+  await mkdir(validationDir, { recursive: true });
+  await writeFile(path.join(validationDir, `${storyId}.json`), `${JSON.stringify(result, null, 2)}\n`);
+  await writeFile(path.join(validationDir, `${storyId}.md`), renderDesignSystemValidationSummary(result));
+  return { outDir: validationDir, result };
+}
+
 export function renderNativeDesignSystemSummary(result) {
   return [
     `# Design System: ${result.product}`,
@@ -172,6 +220,35 @@ export function renderNativeDesignSystemSummary(result) {
     ...result.evidence_coverage.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`),
     ''
   ].join('\n');
+}
+
+export function renderDesignSystemValidationSummary(result) {
+  return `# Design System Validation: ${result.design_system_id}
+
+- story: ${result.story_id}
+- workflow: ${result.workflow}
+- status: ${result.summary.status}
+- pass: ${result.summary.pass}
+- needs_review: ${result.summary.needs_review}
+- needs_evidence: ${result.summary.needs_evidence}
+- block: ${result.summary.block}
+
+## Authority
+
+- design_system: ${result.authority.design_system}
+- implementation: ${result.authority.implementation}
+- generated_visuals: ${result.authority.generated_visuals}
+
+## Story Context
+
+- sources: ${result.story_context.sources.map((source) => source.path).join(', ') || 'not_found'}
+- ui_signal: ${result.story_context.ui_signal ? 'yes' : 'no'}
+- ds_signal: ${result.story_context.design_system_signal ? 'yes' : 'no'}
+
+## Findings
+
+${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n')}
+`;
 }
 
 async function writeDesignSystemArtifacts(outDir, designSystem) {
@@ -583,6 +660,177 @@ function summarizeScreenEvidence(screens) {
   }));
 }
 
+async function collectDesignValidationStoryContext(root, storyId) {
+  const files = (await listFiles(root))
+    .filter((file) => /\.(md|mdx|json)$/.test(file))
+    .filter((file) => !file.startsWith('.vibepro/'))
+    .filter((file) => file.includes(storyId) || /docs\/(management\/stories|specs|architecture)\//.test(file))
+    .slice(0, 120);
+  const sources = [];
+  for (const file of files) {
+    const absolutePath = path.join(root, file);
+    const text = await readFile(absolutePath, 'utf8').catch(() => '');
+    if (!text.includes(storyId) && !file.includes(storyId)) continue;
+    sources.push({
+      path: file,
+      kind: inferDesignValidationSourceKind(file),
+      excerpt: text.slice(0, 4000)
+    });
+  }
+  const combined = sources.map((source) => source.excerpt).join('\n');
+  return {
+    story_id: storyId,
+    sources: sources.map(({ path: sourcePath, kind }) => ({ path: sourcePath, kind })),
+    ui_signal: /ui|ux|screen|visual|design|cta|component|navigation|density|画面|導線|見た目|コンポーネント/.test(combined),
+    design_system_signal: /design system|design-system|ds|token|component role|state semantic|デザインシステム/.test(combined),
+    cta_signal: /cta|button|action|primary|secondary|ボタン|導線/.test(combined),
+    state_signal: /state|loading|disabled|error|empty|selected|状態|読込|エラー/.test(combined),
+    navigation_signal: /navigation|route|tab|back|link|遷移|ナビ|導線/.test(combined),
+    density_signal: /density|compact|scan|spacing|dense|情報密度|余白/.test(combined)
+  };
+}
+
+function inferDesignValidationSourceKind(file) {
+  if (file.includes('/management/stories/')) return 'story';
+  if (file.includes('/specs/')) return 'spec';
+  if (file.includes('/architecture/')) return 'architecture';
+  return 'context';
+}
+
+async function readDesignSystemArtifactTexts(outDir) {
+  const entries = await readdir(outDir, { withFileTypes: true }).catch(() => []);
+  const texts = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !/\.(json|md|css|js|txt)$/.test(entry.name)) continue;
+    const filePath = path.join(outDir, entry.name);
+    texts.push({
+      path: entry.name,
+      text: await readFile(filePath, 'utf8').catch(() => '')
+    });
+  }
+  return texts;
+}
+
+function validateDesignSystemShape(designSystem) {
+  const findings = [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-DRIFT',
+    status: designSystem.authority === 'vibepro_native_design_system' ? 'pass' : 'block',
+    summary: designSystem.authority === 'vibepro_native_design_system'
+      ? 'Design System authority is VibePro-native.'
+      : `Design System authority is ${designSystem.authority ?? 'missing'}; implementation must not trust external/generated DS as authoritative.`
+  }));
+  const ctaHierarchy = designSystem.cta_policy?.hierarchy;
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-CTA-PRIORITY',
+    status: Array.isArray(ctaHierarchy) && ctaHierarchy.length > 0 ? 'pass' : 'needs_evidence',
+    summary: Array.isArray(ctaHierarchy) && ctaHierarchy.length > 0
+      ? `${ctaHierarchy.length} CTA hierarchy item(s) are defined.`
+      : 'CTA priority hierarchy is missing.'
+  }));
+  const requiredStates = designSystem.component_states?.required_states;
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STATE-SEMANTICS',
+    status: Array.isArray(requiredStates) && requiredStates.length > 0 ? 'pass' : 'needs_evidence',
+    summary: Array.isArray(requiredStates) && requiredStates.length > 0
+      ? `${requiredStates.length} state semantic rule(s) are defined.`
+      : 'State semantics are missing.'
+  }));
+  const componentRoles = designSystem.component_roles?.roles;
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-COMPONENT-ROLES',
+    status: Array.isArray(componentRoles) && componentRoles.length > 0 ? 'pass' : 'needs_evidence',
+    summary: Array.isArray(componentRoles) && componentRoles.length > 0
+      ? `${componentRoles.length} component role(s) are defined.`
+      : 'Component roles are missing.'
+  }));
+  const navigationRules = designSystem.navigation_policy?.rules;
+  const densityRules = designSystem.density_policy?.rules;
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-NAV-DENSITY',
+    status: Array.isArray(navigationRules) && navigationRules.length > 0 && Array.isArray(densityRules) && densityRules.length > 0 ? 'pass' : 'needs_evidence',
+    summary: Array.isArray(navigationRules) && navigationRules.length > 0 && Array.isArray(densityRules) && densityRules.length > 0
+      ? 'Navigation and density policies are both defined.'
+      : 'Navigation or density policy is missing.'
+  }));
+  return findings;
+}
+
+function validateDesignSystemStoryDrift({ designSystem, storyContext }) {
+  const findings = [];
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STORY-CONTEXT',
+    status: storyContext.sources.length > 0 ? 'pass' : 'needs_evidence',
+    summary: storyContext.sources.length > 0
+      ? `${storyContext.sources.length} Story/Spec/Architecture source(s) found.`
+      : 'No Story/Spec/Architecture context found for this story.'
+  }));
+  const hasUiSignal = storyContext.ui_signal || storyContext.design_system_signal;
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STORY-UI-SIGNAL',
+    status: hasUiSignal ? 'pass' : 'needs_review',
+    summary: hasUiSignal
+      ? 'Story context contains UI/Design System signals.'
+      : 'Story context does not clearly say this is a UI/Design System change.'
+  }));
+  const missing = [];
+  if (storyContext.cta_signal && !(designSystem.cta_policy?.hierarchy?.length > 0)) missing.push('cta_policy.hierarchy');
+  if (storyContext.state_signal && !(designSystem.component_states?.required_states?.length > 0)) missing.push('component_states.required_states');
+  if (storyContext.navigation_signal && !(designSystem.navigation_policy?.rules?.length > 0)) missing.push('navigation_policy.rules');
+  if (storyContext.density_signal && !(designSystem.density_policy?.rules?.length > 0)) missing.push('density_policy.rules');
+  findings.push(validationFinding({
+    id: 'DS-VALIDATE-STORY-DS-ALIGNMENT',
+    status: missing.length === 0 ? 'pass' : 'needs_review',
+    summary: missing.length === 0
+      ? 'Story signals are covered by Design System sections.'
+      : `Story signals require missing DS sections: ${missing.join(', ')}.`
+  }));
+  return findings;
+}
+
+function validateSecretLeakage(artifactTexts) {
+  const patterns = [
+    /sk_live_[A-Za-z0-9_]{16,}/,
+    /ghp_[A-Za-z0-9_]{24,}/,
+    /xox[baprs]-[A-Za-z0-9-]{20,}/,
+    /AKIA[0-9A-Z]{16}/,
+    /(?:password|secret|token|api[_-]?key)["']?\s*[:=]\s*["'][^"']{12,}["']/i
+  ];
+  const matches = [];
+  for (const artifact of artifactTexts) {
+    if (patterns.some((pattern) => pattern.test(artifact.text))) matches.push(artifact.path);
+  }
+  return [validationFinding({
+    id: 'DS-VALIDATE-SECRET-SCAN',
+    status: matches.length > 0 ? 'block' : 'pass',
+    summary: matches.length > 0
+      ? `Potential secret material found in DS artifacts: ${matches.join(', ')}.`
+      : 'No likely secret material detected in DS artifacts.'
+  })];
+}
+
+function validationFinding({ id, status, summary }) {
+  return {
+    id,
+    status,
+    summary,
+    release_blocking: status === 'block'
+  };
+}
+
+function summarizeValidationStatus(findings) {
+  const block = findings.filter((finding) => finding.status === 'block').length;
+  const needsEvidence = findings.filter((finding) => finding.status === 'needs_evidence').length;
+  const needsReview = findings.filter((finding) => finding.status === 'needs_review').length;
+  return {
+    status: block > 0 ? 'block' : needsEvidence > 0 ? 'needs_evidence' : needsReview > 0 ? 'needs_review' : 'pass',
+    pass: findings.filter((finding) => finding.status === 'pass').length,
+    needs_review: needsReview,
+    needs_evidence: needsEvidence,
+    block
+  };
+}
+
 async function listFiles(root, dir = root) {
   let entries;
   try {
@@ -651,6 +899,13 @@ function sanitizeId(value) {
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-|-$/g, '') || 'design-system';
+}
+
+function sanitizeStoryId(value) {
+  return String(value ?? 'story')
+    .trim()
+    .replace(/[^A-Za-z0-9_-]+/g, '-')
+    .replace(/^-|-$/g, '') || 'story';
 }
 
 function inferProductName(repoRoot) {
