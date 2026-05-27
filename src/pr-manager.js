@@ -34,6 +34,7 @@ import {
   summarizeExploreEvidenceForPr
 } from './explore-evidence.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
+import { scoreAuthorization } from './authorization-scoring.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -230,6 +231,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
     suggestedBranch
   }));
   const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  const authorizationScoring = buildAuthorizationScoring({
+    fileGroups,
+    storySource: prContext.story_source,
+    decisionRecords
+  });
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: reviewGit.current_branch,
@@ -262,6 +268,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       language: outputLanguage
     },
     gate_status: gateStatus,
+    authorization_scoring: authorizationScoring,
     workspace: {
       initialized: workspace.initialized,
       artifact_location: workspace.initialized ? 'repo' : 'temporary'
@@ -755,6 +762,25 @@ ${agentReviewLine}
 ${agentReviewLine}
 `
   });
+}
+
+function buildAuthorizationScoring({ fileGroups, storySource, decisionRecords }) {
+  const riskProfile = classifyChangeRisk({
+    fileGroups: fileGroups ?? {},
+    storySource: storySource ?? {},
+    networkContracts: null
+  });
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  const scoringStorySource = storySource?.path ? storySource : null;
+  const scoring = scoreAuthorization({
+    riskProfile,
+    storySource: scoringStorySource,
+    decisions
+  });
+  return {
+    ...scoring,
+    risk_profile: riskProfile
+  };
 }
 
 function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
