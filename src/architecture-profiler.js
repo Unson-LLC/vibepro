@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORED_DIRS = new Set([
+const PROFILER_IGNORED_DIRS = new Set([
   '.git',
   '.next',
   '.turbo',
@@ -11,12 +11,12 @@ const IGNORED_DIRS = new Set([
   'node_modules',
   'graphify-out'
 ]);
-const PACKAGE_MANAGERS = [
+const PROFILER_PACKAGE_MANAGERS = [
   { file: 'pnpm-lock.yaml', name: 'pnpm' },
   { file: 'yarn.lock', name: 'yarn' },
   { file: 'package-lock.json', name: 'npm' }
 ];
-const LANGUAGE_EXTENSIONS = new Map([
+const PROFILER_FRAMEWORK_LANGUAGES = new Map([
   ['.ts', 'typescript'],
   ['.tsx', 'typescript'],
   ['.js', 'javascript'],
@@ -109,14 +109,14 @@ function toSystemType(appType) {
 }
 
 function detectPackageManager(fileSet) {
-  const manager = PACKAGE_MANAGERS.find((candidate) => fileSet.has(candidate.file));
+  const manager = PROFILER_PACKAGE_MANAGERS.find((candidate) => fileSet.has(candidate.file));
   if (manager) return manager.name;
   return fileSet.has('package.json') ? 'npm' : null;
 }
 
 function detectLanguages(files) {
   return [...new Set(files
-    .map((file) => LANGUAGE_EXTENSIONS.get(path.extname(file.relativePath).toLowerCase()))
+    .map((file) => PROFILER_FRAMEWORK_LANGUAGES.get(path.extname(file.relativePath).toLowerCase()))
     .filter(Boolean))]
     .sort();
 }
@@ -404,7 +404,7 @@ async function collectFiles(root, current = root) {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
+    if (entry.isDirectory() && PROFILER_IGNORED_DIRS.has(entry.name)) continue;
     const absolutePath = path.join(current, entry.name);
     const relativePath = path.relative(root, absolutePath).split(path.sep).join('/');
 
