@@ -10381,9 +10381,14 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
 
   assert.equal(packageJson.license, 'Apache-2.0');
   assert.equal(packageJson.version, '0.1.0-alpha.0');
+  assert.match(packageJson.description, /Product-intent gates/);
+  assert.equal(packageJson.keywords.includes('ai-agents'), true);
+  assert.equal(packageJson.keywords.includes('developer-tools'), true);
+  assert.equal(packageJson.keywords.includes('software-quality'), true);
   assert.equal(packageJson.publishConfig.access, 'public');
   assert.equal(packageJson.files.includes('docs/releases'), false);
-  assert.equal(packageJson.files.some((entry) => entry === 'docs' || entry.startsWith('docs/')), false);
+  assert.equal(packageJson.files.includes('docs/assets/vibepro-header.png'), true);
+  assert.equal(packageJson.files.some((entry) => entry === 'docs' || (entry.startsWith('docs/') && entry !== 'docs/assets/vibepro-header.png')), false);
   assert.equal(packageJson.files.includes('.vibepro'), false);
   assert.equal(packageJson.files.includes('node_modules'), false);
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
@@ -10402,14 +10407,14 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.doesNotMatch(readme, /Internal beta release notes/);
   assert.match(readmeJa, /Graphify は任意/);
   assert.match(readmeJa, /Graphify 本体や Graphify のコードを同梱しません/);
-  assert.match(readmeJa, /risk-adaptive Gate DAG/);
-  assert.match(readmeJa, /workflow-heavy/);
+  assert.match(readmeJa, /リスクに応じた Gate/);
+  assert.match(readmeJa, /複数の導線をまたぐ重い変更/);
   assert.match(readmeJa, /vibepro pr create/);
-  assert.match(readmeJa, /raw `gh pr create` は使わない/);
+  assert.match(readmeJa, /直接 `gh pr create` は使わない/);
   assert.match(readmeJa, /design-modernize/);
   assert.match(readmeJa, /derive-system/);
-  assert.match(readmeJa, /Derived Design System/);
-  assert.match(readmeJa, /既存の route、情報構造、CTA、状態、データ依存を保ったまま/);
+  assert.match(readmeJa, /派生デザインシステム/);
+  assert.match(readmeJa, /既存のルート、情報構造、CTA、状態、データ依存を保ったまま/);
   assert.match(readmeJa, /Apache License 2\.0/);
   assert.doesNotMatch(readmeJa, /現在 license file は含まれていません/);
   assert.doesNotMatch(readmeJa, /社内βリリースノート/);
@@ -10430,11 +10435,12 @@ test('npm dry-run package excludes VibePro workspace and internal artifacts', as
   assert.equal(files.includes('LICENSE'), true);
   assert.equal(files.includes('README.md'), true);
   assert.equal(files.includes('README.ja.md'), true);
+  assert.equal(files.includes('docs/assets/vibepro-header.png'), true);
   assert.equal(files.includes('bin/vibepro.js'), true);
   assert.equal(files.some((file) => file === '.vibepro' || file.startsWith('.vibepro/')), false);
   assert.equal(files.some((file) => file === 'node_modules' || file.startsWith('node_modules/')), false);
   assert.equal(files.some((file) => file === 'docs/releases' || file.startsWith('docs/releases/')), false);
-  assert.equal(files.some((file) => file.startsWith('docs/')), false);
+  assert.equal(files.some((file) => file.startsWith('docs/') && file !== 'docs/assets/vibepro-header.png'), false);
   assert.equal(files.some((file) => file.toLowerCase().includes('graphify') && !file.startsWith('src/') && !file.startsWith('README')), false);
 });
 

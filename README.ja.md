@@ -40,7 +40,11 @@ VibePro は AI に渡すための「プロダクト契約」を作ります。
 Story -> 設計 -> 仕様 -> Task -> AI実装 -> リスクに応じたGate -> PR証跡 -> VibePro経由でPR作成
 ```
 
-VibePro は対象アプリを自動で書き換えるツールではありません。人間が AI エージェントへ実装を渡し、その実装が意図したプロダクトからズレていないかを確認し、マージ可能な状態まで運ぶための制御レイヤです。変更が状態遷移、実行時の契約、検証証跡、レビュー運用にまたがる場合、VibePro は通常より重い Gate に切り替えます。
+VibePro は、アプリを代わりに作るツールではありません。AI が作った変更を「マージしてよい」と言える条件を決め、その条件が満たされたかを証跡で確認するためのツールです。
+
+小さな修正ならテスト結果だけで十分なこともあります。一方で、画面の流れ、API やデータの約束、性能、セキュリティ、エージェントレビューに影響する変更では、もっと強い証跡が必要です。VibePro は変更のリスクに応じて Gate を増やし、必要な証跡が揃うまで PR 作成を止めます。
+
+つまり、Codex や Claude Code に実装を任せても、作りたかったプロダクトからズレたままマージされないようにするのが VibePro です。
 
 ## 主な機能
 
@@ -89,6 +93,24 @@ VibePro本体を開発する場合:
 ```bash
 npm install
 node bin/vibepro.js --help
+```
+
+## 対象リポジトリにAIエージェント設定を入れる
+
+VibeProをインストールしたら、AIエージェントに作業させる各リポジトリへ、同梱の Claude / Claude Code Skills と Codex instructions を入れます。
+
+```bash
+vibepro skills install /path/to/repo
+vibepro skills verify /path/to/repo
+
+vibepro codex install /path/to/repo
+vibepro codex verify /path/to/repo
+```
+
+これにより、AIエージェントが Story と Spec を読み、検証証跡を作り、レビューや意思決定を記録し、PR Gate を守る流れを使いやすくなります。何が入るかを先に確認する場合は次を使います。
+
+```bash
+vibepro skills list
 ```
 
 ## 任意連携: Graphify
@@ -218,7 +240,7 @@ npx vibepro pr create /path/to/repo \
   --story-id story-internal-beta
 ```
 
-通常の PR 作成経路として raw `gh pr create` は使わないでください。VibePro の Gate DAG と例外判断の記録を通らないためです。
+通常の PR 作成経路として直接 `gh pr create` は使わないでください。VibePro の Gate DAG と例外判断の記録を通らないためです。
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。VibePro は `init` や `pr prepare` の出力で候補 branch も表示します。
 
@@ -439,7 +461,7 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `derive-system` は、プロダクト概要と現行UIの証跡から、VibePro内の派生デザインシステムを作ります。プロダクトの意味づけ、色の役割、コンポーネントの責務、画面構成ルール、仮説デザインの扱い、明示的なデザインシステムGateを生成し、画面候補を作る前に「そのプロダクトで許されるデザイン判断の範囲」を固定します。
 
-`design-modernize` は、既存の route、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための流れです。外部のデザインシステムや生成された画面案は参照材料であり、VibePro が作った Derived Design System、現行スクリーンショット、Graphify / Codex の証跡、Gate DAG が実装判断の正本です。
+`design-modernize` は、既存のルート、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための流れです。外部のデザインシステムや生成された画面案は参照材料であり、VibePro が作った派生デザインシステム、現行スクリーンショット、Graphify / Codex の証跡、Gate DAG が実装判断の正本です。
 
 主な成果物は `.vibepro/design-modernize/<story-id>/` 配下に出力されます。
 
