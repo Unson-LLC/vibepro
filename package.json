@@ -24,7 +24,7 @@
     "vibe-coding"
   ],
   "bin": {
-    "vibepro": "./bin/vibepro.js"
+    "vibepro": "bin/vibepro.js"
   },
   "files": [
     "agent-instructions",
