@@ -15,8 +15,8 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
     })),
     metricCard(labels.executionGate, executionGate?.status ?? 'unknown', executionGate?.pr_create_allowed ? labels.prCreateAllowed : labels.prCreateBlocked),
     metricCard(labels.agentReviews, agentReviews?.status ?? 'not_generated', localizedText(language, {
-      ja: `${agentReviews?.summary?.unmet_required_review_count ?? 0}件 未充足`,
-      en: `${agentReviews?.summary?.unmet_required_review_count ?? 0} unmet`
+      ja: `${(agentReviews?.summary?.unmet_required_review_count ?? 0) + (agentReviews?.summary?.unmet_checkpoint_review_count ?? 0)}件 未充足`,
+      en: `${(agentReviews?.summary?.unmet_required_review_count ?? 0) + (agentReviews?.summary?.unmet_checkpoint_review_count ?? 0)} unmet`
     })),
     metricCard(labels.requirement, requirement?.status ?? 'not_generated', localizedText(language, {
       ja: `${requirement?.summary?.contradiction_count ?? 0}件 矛盾`,
@@ -622,6 +622,7 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
     }]);
   }
   const unmet = agentReviews.unmet_required_reviews ?? [];
+  const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const stageCards = (agentReviews.stages ?? []).map((stage) => ({
     title: `${stage.stage}: ${stage.status}`,
     detail: `pass=${stage.pass_count}, missing=${stage.missing_count}, stale=${stage.stale_count}, block=${stage.block_count}`,
@@ -629,11 +630,18 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
     tone: toneForStatus(stage.status)
   }));
   const unmetCards = unmet.slice(0, 8).map((item) => ({
-    title: `${item.stage}:${item.role}`,
+    title: `PR-final ${item.stage}:${item.role}`,
     detail: item.detail ?? item.reason,
     meta: `${item.status} / ${item.policy}`,
     tone: item.status === 'block' ? 'danger' : 'warn'
   }));
+  const checkpointCards = checkpointUnmet.slice(0, 8).map((item) => ({
+    title: `Checkpoint ${item.stage}:${item.role}`,
+    detail: item.detail ?? item.reason,
+    meta: `${item.status} / ${item.policy}`,
+    tone: item.status === 'block' ? 'danger' : 'warn'
+  }));
+  const allUnmetCards = [...unmetCards, ...checkpointCards];
   return `
     <section>
       <h2>${escapeHtml(localizedText(language, { ja: 'Agent Review Gate', en: 'Agent Review Gate' }))}</h2>
@@ -641,14 +649,15 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
         ${metricCard(localizedText(language, { ja: '状態', en: 'Status' }), agentReviews.status, agentReviews.required ? localizedText(language, { ja: 'required', en: 'required' }) : localizedText(language, { ja: 'not required', en: 'not required' }))}
         ${metricCard(localizedText(language, { ja: '必須ロール', en: 'Required Roles' }), agentReviews.summary?.required_review_count ?? 0, 'policy')}
         ${metricCard(localizedText(language, { ja: '未充足ロール', en: 'Unmet Roles' }), agentReviews.summary?.unmet_required_review_count ?? 0, 'missing/stale/block')}
+        ${metricCard(localizedText(language, { ja: 'Checkpoint未充足', en: 'Checkpoint Unmet' }), agentReviews.summary?.unmet_checkpoint_review_count ?? 0, 'checkpoint')}
         ${metricCard(localizedText(language, { ja: '古い結果', en: 'Stale Results' }), agentReviews.summary?.stale_result_count ?? 0, 'current git binding')}
       </div>
       <h3>${escapeHtml(localizedText(language, { ja: '未充足の必須レビュー', en: 'Unmet Required Reviews' }))}</h3>
-      <div class="cards">${(unmetCards.length > 0 ? unmetCards : [{
+      <div class="cards">${(allUnmetCards.length > 0 ? allUnmetCards : [{
         title: localizedText(language, { ja: '未充足レビューなし', en: 'No unmet reviews' }),
         detail: localizedText(language, {
-          ja: '現在のgit状態に対する必須agent review roleは通過しています。',
-          en: 'Required agent review roles passed for the current git state.'
+          ja: '現在のgit状態に対するPR-final/checkpoint agent review roleは通過しています。',
+          en: 'PR-final and checkpoint agent review roles passed for the current git state.'
         }),
         tone: 'good'
       }]).map((card) => `

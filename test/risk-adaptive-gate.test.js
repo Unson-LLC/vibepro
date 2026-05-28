@@ -319,31 +319,44 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   const agentReviews = prepare.preparation.pr_context.agent_reviews;
 	  const required = new Set(agentReviews.required_reviews.map((item) => `${item.stage}:${item.role}`));
 	  assert.deepEqual([...required].sort(), [
-	    'architecture_spec:regression_risk',
-	    'gate:gate_evidence',
-    'gate:release_risk',
-    'implementation:runtime_contract',
-    'implementation:ux_completion',
-    'preview:human_usability',
-    'preview:network_runtime',
-    'preview:preview_smoke',
-    'test_plan:e2e_ux',
-	    'test_plan:gate_coverage'
+		    'gate:gate_evidence',
+	    'gate:release_risk',
+	    'preview:human_usability',
+	    'preview:network_runtime',
+	    'preview:preview_smoke'
+		  ]);
+	  assert.deepEqual(agentReviews.required_reviews
+	    .filter((item) => item.policy === 'workflow_heavy')
+	    .map((item) => `${item.stage}:${item.role}`)
+	    .sort(), [
+	    'gate:release_risk',
+	    'preview:network_runtime'
 	  ]);
-  assert.deepEqual(agentReviews.required_reviews
-    .filter((item) => item.policy === 'workflow_heavy')
+  assert.equal(agentReviews.required_reviews.some((item) => ['architecture_spec', 'test_plan', 'implementation'].includes(item.stage)), false);
+  assert.deepEqual(agentReviews.checkpoint_required_reviews
     .map((item) => `${item.stage}:${item.role}`)
     .sort(), [
     'architecture_spec:regression_risk',
-    'gate:release_risk',
     'implementation:runtime_contract',
     'implementation:ux_completion',
-    'preview:network_runtime',
     'test_plan:e2e_ux',
     'test_plan:gate_coverage'
   ]);
+  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 5);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').unmet_checkpoint_reviews.length, 5);
+  assert.deepEqual(agentReviews.parallel_dispatch.required_stages
+    .map((stage) => stage.stage)
+    .sort(), [
+    'architecture_spec',
+    'gate',
+    'implementation',
+    'preview',
+    'test_plan'
+  ]);
+  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'test_plan').roles.includes('gate_coverage'), true);
+  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'implementation').roles.includes('runtime_contract'), true);
 
-  const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
+	  const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
   await stat(gateDagJsonPath);
   const writtenGateDag = await readJson(gateDagJsonPath);
   assert.equal(writtenGateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);

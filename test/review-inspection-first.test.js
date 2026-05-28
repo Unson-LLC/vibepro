@@ -92,11 +92,11 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /inspection_evidence/);
 });
 
-test('recordAgentReview without inspection flags persists inspection: {summary:null, evidence:null} (INV-RIF-2)', async () => {
+test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
   await startCloseable(root);
-  const { review } = await recordAgentReview(root, {
+  await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
     stage: 'gate',
     role: 'gate_evidence',
@@ -106,8 +106,7 @@ test('recordAgentReview without inspection flags persists inspection: {summary:n
     executionMode: 'parallel_subagent',
     agentId: 'task-test-1',
     agentClosed: true
-  });
-  assert.deepEqual(review.inspection, { summary: null, evidence: null });
+  }), /requires --inspection-summary/);
 });
 
 test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async () => {
@@ -132,11 +131,11 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
   assert.equal(review.inspection.evidence, 'test/foo.test.js');
 });
 
-test('recordAgentReview ignores whitespace-only inspection flags', async () => {
+test('recordAgentReview rejects whitespace-only inspection for gate_evidence pass', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
   await startCloseable(root);
-  const { review } = await recordAgentReview(root, {
+  await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
     stage: 'gate',
     role: 'gate_evidence',
@@ -148,8 +147,7 @@ test('recordAgentReview ignores whitespace-only inspection flags', async () => {
     executionMode: 'parallel_subagent',
     agentId: 'task-test-1',
     agentClosed: true
-  });
-  assert.deepEqual(review.inspection, { summary: null, evidence: null });
+  }), /requires --inspection-summary/);
 });
 
 test('getAgentReviewStatus surfaces the inspection block per role', async () => {

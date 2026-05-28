@@ -181,6 +181,11 @@ export async function recordAgentReview(repoRoot, options = {}) {
       defaultRequestPath: getReviewRequestPath(reviewDir, role)
     })
   };
+  if (requiresInspectionForPass(result) && !result.inspection.summary) {
+    throw new Error(
+      `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
+    );
+  }
   const resultPath = getReviewResultPath(reviewDir, role);
   await writeJson(resultPath, result);
   if (result.agent_provenance.lifecycle?.agent_closed) {
@@ -202,6 +207,10 @@ export async function recordAgentReview(repoRoot, options = {}) {
     summary,
     artifact: toWorkspaceRelative(root, resultPath)
   };
+}
+
+function requiresInspectionForPass(result) {
+  return result.status === 'pass' && result.stage === 'gate' && result.role === 'gate_evidence';
 }
 
 export async function startAgentReviewLifecycle(repoRoot, options = {}) {
@@ -317,8 +326,10 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     : await collectReviewGitContext(root);
   const reviewPolicy = await readAgentReviewPolicy(root);
   const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy });
+  const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy });
   const stages = [...new Set([
     ...requiredReviews.map((item) => item.stage),
+    ...checkpointRequiredReviews.map((item) => item.stage),
     ...await listExistingReviewStages(root, storyId)
   ])].filter((stage) => REVIEW_STAGES.has(stage));
   const stageSummaries = [];
@@ -344,42 +355,64 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
   });
   const lifecycleRequiredReviews = requiredReviews.flatMap((requirement) => {
     const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
-    const lifecycle = role?.lifecycle;
-    const latest = lifecycle?.latest;
-    if (!lifecycle || !['running', 'timed_out'].includes(lifecycle.effective_status)) return [];
-    return [{
-      ...requirement,
-      status: lifecycle.effective_status,
-      detail: lifecycle.effective_status === 'timed_out'
-        ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} timed out; close and replace it before PR readiness`
-        : `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} is still running; close it before PR readiness`
-    }];
+    return buildLifecycleUnmetReview(requirement, role);
   });
   const allUnmetRequiredReviews = [
     ...unmetRequiredReviews,
     ...lifecycleRequiredReviews
   ];
+  const unmetCheckpointReviews = checkpointRequiredReviews.filter((requirement) => {
+    const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
+    return !role || role.effective_status !== 'pass';
+  }).map((requirement) => {
+    const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
+    return {
+      ...requirement,
+      status: role?.effective_status ?? 'missing',
+      detail: role?.stale ? role.stale_reason : role?.provenance_reason ?? role?.summary ?? null
+    };
+  });
+  const lifecycleCheckpointReviews = checkpointRequiredReviews.flatMap((requirement) => {
+    const role = roleLookup.get(`${requirement.stage}:${requirement.role}`);
+    return buildLifecycleUnmetReview(requirement, role);
+  });
+  const allUnmetCheckpointReviews = [
+    ...unmetCheckpointReviews,
+    ...lifecycleCheckpointReviews
+  ];
+  const allUnmetReviews = [
+    ...allUnmetRequiredReviews,
+    ...allUnmetCheckpointReviews
+  ];
 
-  const status = requiredReviews.length === 0
+  const hasAnyRequiredReviews = requiredReviews.length > 0 || checkpointRequiredReviews.length > 0;
+  const status = !hasAnyRequiredReviews
     ? 'not_required'
-    : allUnmetRequiredReviews.some((item) => item.status === 'block')
+    : allUnmetReviews.some((item) => item.status === 'block')
       ? 'block'
-      : allUnmetRequiredReviews.length > 0
+      : allUnmetReviews.length > 0
         ? 'needs_review'
         : 'pass';
   return {
     schema_version: '0.1.0',
     story_id: storyId,
     status,
-    required: requiredReviews.length > 0,
+    required: hasAnyRequiredReviews,
     current_git_context: currentGitContext,
     required_reviews: requiredReviews,
+    checkpoint_required_reviews: checkpointRequiredReviews,
     unmet_required_reviews: allUnmetRequiredReviews,
+    unmet_checkpoint_reviews: allUnmetCheckpointReviews,
     stages: stageSummaries,
-    parallel_dispatch: buildParallelDispatchSummary(root, storyId, stageSummaries, requiredReviews),
+    parallel_dispatch: buildParallelDispatchSummary(root, storyId, stageSummaries, [
+      ...requiredReviews,
+      ...checkpointRequiredReviews
+    ]),
     summary: {
       required_review_count: requiredReviews.length,
       unmet_required_review_count: allUnmetRequiredReviews.length,
+      checkpoint_required_review_count: checkpointRequiredReviews.length,
+      unmet_checkpoint_review_count: allUnmetCheckpointReviews.length,
       stage_count: stageSummaries.length,
       stale_result_count: stageSummaries.reduce((sum, stage) => sum + stage.stale_count, 0),
       block_result_count: stageSummaries.reduce((sum, stage) => sum + stage.block_count, 0),
@@ -387,6 +420,62 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
       lifecycle_timed_out_count: stageSummaries.reduce((sum, stage) => sum + (stage.lifecycle?.timed_out_count ?? 0), 0)
     }
   };
+}
+
+function buildLifecycleUnmetReview(requirement, role) {
+  const lifecycle = role?.lifecycle;
+  const latest = lifecycle?.latest;
+  if (!lifecycle || !['running', 'timed_out'].includes(lifecycle.effective_status)) return [];
+  return [{
+    ...requirement,
+    status: lifecycle.effective_status,
+    detail: lifecycle.effective_status === 'timed_out'
+      ? `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} timed out; close and replace it before PR readiness`
+      : `subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'} is still running; close it before PR readiness`
+  }];
+}
+
+function buildCheckpointReviewPolicy({ changeClassification, reviewPolicy, fileGroups }) {
+  const requirements = [];
+  const addRequirement = (item) => {
+    if (!isRequiredRoleActive(reviewPolicy, item.role, fileGroups)) return;
+    const key = `${item.stage}:${item.role}`;
+    if (requirements.some((existing) => `${existing.stage}:${existing.role}` === key)) return;
+    requirements.push(item);
+  };
+  if (changeClassification?.profile === 'workflow_heavy') {
+    addRequirement({
+      stage: 'architecture_spec',
+      role: 'regression_risk',
+      reason: 'workflow_heavy changes require checkpoint regression-risk review before PR readiness',
+      policy: 'workflow_heavy_checkpoint'
+    });
+    addRequirement({
+      stage: 'test_plan',
+      role: 'e2e_ux',
+      reason: 'workflow_heavy changes require checkpoint user-level workflow replay review before PR readiness',
+      policy: 'workflow_heavy_checkpoint'
+    });
+    addRequirement({
+      stage: 'test_plan',
+      role: 'gate_coverage',
+      reason: 'workflow_heavy changes require checkpoint gate coverage review before PR readiness',
+      policy: 'workflow_heavy_checkpoint'
+    });
+    addRequirement({
+      stage: 'implementation',
+      role: 'runtime_contract',
+      reason: 'workflow_heavy changes require checkpoint runtime contract review before PR readiness',
+      policy: 'workflow_heavy_checkpoint'
+    });
+    addRequirement({
+      stage: 'implementation',
+      role: 'ux_completion',
+      reason: 'workflow_heavy changes require checkpoint UX completion review before PR readiness',
+      policy: 'workflow_heavy_checkpoint'
+    });
+  }
+  return requirements;
 }
 
 export function renderAgentReviewPrepareSummary(result) {
@@ -462,9 +551,13 @@ ${nextRows}
 export function renderAgentReviewPrSection(agentReviews) {
   if (!agentReviews) return '- Agent Review未生成';
   const unmet = agentReviews.unmet_required_reviews ?? [];
+  const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const stages = agentReviews.stages ?? [];
   const unmetRows = unmet.slice(0, 12).map((item) => (
-    `- missing: ${item.stage}:${item.role} (${item.status}) - ${item.reason}${item.detail ? ` / ${item.detail}` : ''}`
+    `- PR-final missing: ${item.stage}:${item.role} (${item.status}) - ${item.reason}${item.detail ? ` / ${item.detail}` : ''}`
+  ));
+  const checkpointRows = checkpointUnmet.slice(0, 12).map((item) => (
+    `- checkpoint missing: ${item.stage}:${item.role} (${item.status}) - ${item.reason}${item.detail ? ` / ${item.detail}` : ''}`
   ));
   const stageRows = stages.map((stage) => (
     `- ${stage.stage}: ${stage.status} / stale=${stage.stale_count} / block=${stage.block_count}`
@@ -473,8 +566,11 @@ export function renderAgentReviewPrSection(agentReviews) {
     `- status: ${agentReviews.status}`,
     `- required reviews: ${agentReviews.summary?.required_review_count ?? 0}`,
     `- unmet required reviews: ${agentReviews.summary?.unmet_required_review_count ?? 0}`,
+    `- checkpoint required reviews: ${agentReviews.summary?.checkpoint_required_review_count ?? 0}`,
+    `- unmet checkpoint reviews: ${agentReviews.summary?.unmet_checkpoint_review_count ?? 0}`,
     renderParallelDispatchPrRows(agentReviews.parallel_dispatch),
-    unmetRows.join('\n') || '- required roles passed or not required',
+    unmetRows.join('\n') || '- PR-final roles passed or not required',
+    checkpointRows.join('\n') || '- checkpoint roles passed or not required',
     '### Stage Summary',
     stageRows.join('\n') || '- no review stages recorded'
   ].join('\n');
@@ -638,36 +734,6 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
     });
   }
   if (changeClassification?.profile === 'workflow_heavy') {
-    addRequirement({
-      stage: 'architecture_spec',
-      role: 'regression_risk',
-      reason: 'workflow_heavy changes require adjacent state and compatibility regression review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'test_plan',
-      role: 'e2e_ux',
-      reason: 'workflow_heavy changes require user-level workflow replay review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'test_plan',
-      role: 'gate_coverage',
-      reason: 'workflow_heavy changes require gate coverage review against state/path matrix risk',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'implementation',
-      role: 'runtime_contract',
-      reason: 'workflow_heavy changes require API/DB/queue/auth runtime contract review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'implementation',
-      role: 'ux_completion',
-      reason: 'workflow_heavy changes require end-to-end UX completion review',
-      policy: 'workflow_heavy'
-    });
     addRequirement({
       stage: 'gate',
       role: 'release_risk',
