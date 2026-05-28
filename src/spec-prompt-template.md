@@ -71,6 +71,43 @@ A clause is a single machine-checkable statement about the system. Four types:
 }
 ```
 
+## Design diagrams (MUST-HAVE, change-type-triggered)
+
+Some change types make a design diagram mandatory. VibePro detects the trigger
+and the `gate:design_diagrams` Gate blocks PR creation until the listed kinds
+are present in `diagrams[]`. The 8 kinds are:
+
+| kind | trigger | mermaid prefix |
+|---|---|---|
+| `er` | DB schema diff (`prisma/schema.prisma`, `db/migrations/**`, `*.sql` with CREATE/ALTER TABLE) | `erDiagram` |
+| `state` | `status`/`state` enum or column, `xstate` / `state-machine` / `workflow` paths | `stateDiagram-v2` / `stateDiagram` |
+| `sequence` | webhook route, queue/topic dep, 3rd party SDK (stripe/twilio/etc.) | `sequenceDiagram` |
+| `flow` | multi-step user workflow (Story.AC >= 3 with checkout/onboarding/wizard keyword, or `**/checkout/**` path) | `flowchart` / `graph` |
+| `c4_context` | new package boundary (`packages/<new>/package.json`), new `services/<new>/` | `C4Context` / `C4Container` |
+| `deployment` | IaC diff (`*.tf`, `infra/**`, `pulumi/**`), `fly.toml`/`vercel.json`/`serverless.yml`, k8s manifest | `flowchart` / `graph` / `C4Deployment` |
+| `threat_model` | auth/authz/PII/payment paths or deps (bcrypt/argon2/jose/stripe), PII column hints (email/phone/ssn/payment) | `flowchart` / `graph` |
+| `dfd` | async pipeline (cron paths, stream deps: kafkajs/inngest/temporal, etl/pipeline/ingest paths) | `flowchart` / `graph` |
+
+For `er`, `state`, `sequence`, `c4_context`, the `entities[]` field is **required and non-empty**.
+Names in `entities[]` should also appear in at least one clause statement or rationale
+(otherwise the validator emits a `diagram_entity_clause_mismatch` warning).
+
+Example diagrams[] entry:
+
+```jsonc
+"diagrams": [
+  {
+    "kind": "er",
+    "mermaid": "erDiagram\n  USER ||--o{ SUBSCRIPTION : has\n  SUBSCRIPTION { string id PK; int userType; string status }",
+    "entities": ["USER", "SUBSCRIPTION"],
+    "rationale": "schema diff at prisma/schema.prisma touches User and Subscription"
+  }
+]
+```
+
+If no trigger fires, omit `diagrams[]` entirely. Do not add a diagram just because
+it might be nice — only the triggered MUST-HAVE kinds should be present.
+
 ## What VibePro does with your output
 
 - Runs JSON schema validation.

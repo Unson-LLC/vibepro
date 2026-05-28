@@ -46,6 +46,11 @@
       "type": "array",
       "items": { "$ref": "#/$defs/clause" }
     },
+    "diagrams": {
+      "type": "array",
+      "description": "Design diagrams required by the change type. See diagram-requirement-resolver for which kinds are mandatory.",
+      "items": { "$ref": "#/$defs/diagram" }
+    },
     "open_questions": {
       "type": "array",
       "items": {
@@ -149,6 +154,30 @@
         },
         "first_seen_at": { "type": "string" },
         "last_revised_at": { "type": "string" }
+      }
+    },
+    "diagram": {
+      "type": "object",
+      "required": ["kind", "mermaid"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["er", "state", "sequence", "flow", "c4_context", "deployment", "threat_model", "dfd"]
+        },
+        "mermaid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Mermaid source. First non-empty line must match the kind-specific prefix."
+        },
+        "entities": {
+          "type": "array",
+          "description": "Names that appear in the diagram. Required non-empty for er/state/sequence/c4_context.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Why this diagram exists. Cite story acceptance criterion / code anchor."
+        }
       }
     },
     "pattern": {

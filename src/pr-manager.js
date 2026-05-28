@@ -20,6 +20,8 @@ import { collectRuntimeInfo } from './runtime-info.js';
 import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
+import { evaluateDesignDiagramsGate } from './spec-validator.js';
+import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import {
   renderPerformancePrSection,
@@ -3422,6 +3424,74 @@ function buildTargetedTestCommand(testFiles, testRunner = null) {
   return `npm test -- --runTestsByPath ${testFiles.join(' ')} --runInBand`;
 }
 
+const FLOW_AC_KEYWORDS = ['checkout', 'onboarding', 'wizard', 'multi-step', 'flow', 'purchase', 'signup'];
+
+function extractFlowKeywords(acceptanceCriteria) {
+  if (!Array.isArray(acceptanceCriteria)) return [];
+  const hits = new Set();
+  for (const criterion of acceptanceCriteria) {
+    const text = String(criterion ?? '').toLowerCase();
+    for (const keyword of FLOW_AC_KEYWORDS) {
+      if (text.includes(keyword)) hits.add(keyword);
+    }
+  }
+  return [...hits];
+}
+
+function collectChangedFilePaths(fileGroups) {
+  if (!fileGroups || typeof fileGroups !== 'object') return [];
+  const buckets = ['source', 'tests', 'architecture_docs', 'specifications', 'policy_docs', 'repo_control', 'other'];
+  const paths = [];
+  for (const bucket of buckets) {
+    const files = fileGroups[bucket]?.files;
+    if (Array.isArray(files)) paths.push(...files);
+  }
+  return paths;
+}
+
+function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
+  const acceptanceCriteria = Array.isArray(storySource?.acceptance_criteria) ? storySource.acceptance_criteria : [];
+  const story = {
+    ac_count: acceptanceCriteria.length,
+    ac_keywords: extractFlowKeywords(acceptanceCriteria)
+  };
+  const code_diff = {
+    files: collectChangedFilePaths(fileGroups).map((p) => ({ path: p })),
+    deps_added: []
+  };
+  const requirement = resolveRequiredDiagrams({ story, code_diff });
+  const verdict = evaluateDesignDiagramsGate({
+    required_diagrams: requirement.required_diagrams,
+    reasons: requirement.reasons,
+    spec: inferredSpec ?? null
+  });
+  let gateStatus;
+  let reasonText;
+  if (verdict.status === 'blocked') {
+    gateStatus = 'needs_evidence';
+    reasonText = `必須設計図が不足: ${verdict.missing.join(', ')} (spec.diagrams[] に該当 kind を追加してください)`;
+  } else if (verdict.status === 'pass') {
+    gateStatus = 'satisfied';
+    reasonText = `必須設計図が全て揃っている (${verdict.provided.join(', ')})`;
+  } else {
+    gateStatus = 'not_required';
+    reasonText = '該当する設計図トリガーなし';
+  }
+  return {
+    id: 'gate:design_diagrams',
+    type: 'design_diagrams_gate',
+    label: 'Design Diagrams (MUST-HAVE)',
+    status: gateStatus,
+    required: verdict.status !== 'not_applicable',
+    blocking: true,
+    reason: reasonText,
+    required_diagrams: verdict.required,
+    provided_diagrams: verdict.provided,
+    missing_diagrams: verdict.missing,
+    detection_reasons: verdict.reasons
+  };
+}
+
 function buildSpecGateNode({ fileGroups, inferredSpec, specDrift }) {
   const driftHighCount = Array.isArray(specDrift?.items)
     ? specDrift.items.filter((item) => item.severity === 'high').length
@@ -3879,6 +3949,7 @@ function buildGateDag({
   const ciStatusOrWaiverGate = buildCiStatusOrWaiverGate(prRoute, verificationEvidence, decisionRecords);
   const vibeproArtifactPolicyGate = buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords);
   const splitResolutionGate = buildSplitResolutionGate(scope, prRoute, decisionRecords);
+  const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git);
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
@@ -3945,6 +4016,7 @@ function buildGateDag({
     prFreshnessGate,
     architectureGate,
     specGate,
+    designDiagramsGate,
     {
       id: 'code',
       type: 'code_gate',
@@ -4001,7 +4073,8 @@ function buildGateDag({
     { from: 'gate:pr_freshness', to: 'architecture' },
     { from: 'gate:pr_freshness', to: 'spec' },
     { from: 'architecture', to: 'code' },
-    { from: 'spec', to: 'code' },
+    { from: 'spec', to: 'gate:design_diagrams' },
+    { from: 'gate:design_diagrams', to: 'code' },
     ...acceptanceNodes.flatMap((node) => [
       { from: 'story', to: node.id },
       { from: node.id, to: 'gate:requirement' },
@@ -4054,6 +4127,7 @@ function buildGateDag({
     splitResolutionGate,
     architectureGate,
     specGate,
+    designDiagramsGate,
     changeClassificationGate,
     prFreshnessGate,
     networkContractGate,
