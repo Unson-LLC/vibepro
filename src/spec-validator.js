@@ -3,6 +3,18 @@ import path from 'node:path';
 
 const CLAUSE_TYPES = new Set(['invariant', 'scenario', 'contract', 'sla']);
 const ORIGIN_KINDS = new Set(['acceptance_criteria', 'background', 'policy', 'frontmatter', 'other']);
+const DIAGRAM_KINDS = new Set(['er', 'state', 'sequence', 'flow', 'c4_context', 'deployment', 'threat_model', 'dfd']);
+const DIAGRAM_PREFIXES = {
+  er: ['erDiagram'],
+  state: ['stateDiagram-v2', 'stateDiagram'],
+  sequence: ['sequenceDiagram'],
+  flow: ['flowchart ', 'flowchart\n', 'graph ', 'graph\n'],
+  c4_context: ['C4Context', 'C4Container'],
+  deployment: ['flowchart ', 'flowchart\n', 'graph ', 'graph\n', 'C4Deployment'],
+  threat_model: ['flowchart ', 'flowchart\n', 'graph ', 'graph\n'],
+  dfd: ['flowchart ', 'flowchart\n', 'graph ', 'graph\n']
+};
+const DIAGRAM_KINDS_REQUIRING_ENTITIES = new Set(['er', 'state', 'sequence', 'c4_context']);
 
 export async function validateSpec(repoRoot, spec, options = {}) {
   const root = path.resolve(repoRoot);
@@ -37,6 +49,22 @@ export async function validateSpec(repoRoot, spec, options = {}) {
     if (report.errors.length > 0) errors.push(...report.errors);
     if (report.warnings.length > 0) warnings.push(...report.warnings);
     clauseReports.push(report);
+  }
+
+  if (spec.diagrams !== undefined) {
+    if (!Array.isArray(spec.diagrams)) {
+      errors.push({ code: 'diagrams_shape', message: 'diagrams must be an array when present' });
+    } else {
+      const clauseTexts = (spec.clauses ?? [])
+        .map((c) => `${c?.statement ?? ''}\n${c?.rationale ?? ''}`)
+        .join('\n');
+      for (let index = 0; index < spec.diagrams.length; index += 1) {
+        const diagram = spec.diagrams[index];
+        const report = validateDiagram(diagram, index, clauseTexts);
+        if (report.errors.length > 0) errors.push(...report.errors);
+        if (report.warnings.length > 0) warnings.push(...report.warnings);
+      }
+    }
   }
 
   if (Array.isArray(spec.open_questions)) {
@@ -333,4 +361,83 @@ export function globToRegExp(glob) {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function validateDiagram(diagram, index, clauseTexts) {
+  const errors = [];
+  const warnings = [];
+  const locator = `diagrams[${index}]`;
+
+  if (!diagram || typeof diagram !== 'object') {
+    errors.push({ code: 'diagram_shape', message: `${locator} must be an object` });
+    return { errors, warnings };
+  }
+  if (!DIAGRAM_KINDS.has(diagram.kind)) {
+    errors.push({
+      code: 'diagram_kind',
+      message: `${locator}.kind must be one of ${[...DIAGRAM_KINDS].join(', ')}`
+    });
+    return { errors, warnings };
+  }
+  if (typeof diagram.mermaid !== 'string' || diagram.mermaid.trim().length === 0) {
+    errors.push({ code: 'diagram_mermaid_missing', message: `${locator}.mermaid must be a non-empty string` });
+    return { errors, warnings };
+  }
+
+  const firstLine = diagram.mermaid.split(/\r?\n/).find((line) => line.trim().length > 0) ?? '';
+  const trimmed = firstLine.trimStart();
+  const prefixes = DIAGRAM_PREFIXES[diagram.kind] ?? [];
+  const matchesPrefix = prefixes.some((prefix) => trimmed.startsWith(prefix.trim()));
+  if (!matchesPrefix) {
+    errors.push({
+      code: 'diagram_mermaid_prefix',
+      message: `${locator}.mermaid first line must start with one of: ${prefixes.map((p) => p.trim()).join(' | ')} (got "${trimmed.slice(0, 40)}")`
+    });
+  }
+
+  if (DIAGRAM_KINDS_REQUIRING_ENTITIES.has(diagram.kind)) {
+    if (!Array.isArray(diagram.entities) || diagram.entities.length === 0) {
+      errors.push({
+        code: 'diagram_entities_required',
+        message: `${locator}.entities is required and non-empty for kind=${diagram.kind}`
+      });
+    } else if (clauseTexts) {
+      for (const entity of diagram.entities) {
+        if (typeof entity !== 'string' || entity.length === 0) continue;
+        if (!clauseTexts.includes(entity)) {
+          warnings.push({
+            code: 'diagram_entity_clause_mismatch',
+            message: `${locator}.entities entry "${entity}" does not appear in any clause statement or rationale`
+          });
+        }
+      }
+    }
+  }
+
+  return { errors, warnings };
+}
+
+// Compute the design_diagrams gate verdict by comparing required vs provided.
+// Pure function — no I/O.
+export function evaluateDesignDiagramsGate({ required_diagrams = [], reasons = [], spec } = {}) {
+  const providedKinds = new Set(
+    Array.isArray(spec?.diagrams)
+      ? spec.diagrams.map((d) => d?.kind).filter((k) => DIAGRAM_KINDS.has(k))
+      : []
+  );
+  const missing = required_diagrams.filter((kind) => !providedKinds.has(kind));
+  let status;
+  if (required_diagrams.length === 0) status = 'not_applicable';
+  else if (missing.length === 0) status = 'pass';
+  else status = 'blocked';
+  return {
+    id: 'gate:design_diagrams',
+    label: 'Design Diagrams (MUST-HAVE)',
+    blocking: true,
+    status,
+    required: [...required_diagrams],
+    provided: [...providedKinds],
+    missing,
+    reasons
+  };
 }
