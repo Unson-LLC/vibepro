@@ -300,13 +300,21 @@ function collectUnresolvedRequiredGates(gateDag) {
   return nodes
     .filter((node) => [
       'story',
+      'pr_route_gate',
+      'pr_body_contract_gate',
+      'mirror_source_traceability_gate',
+      'ci_status_or_waiver_gate',
+      'vibepro_artifact_policy_gate',
+      'split_resolution_gate',
       'architecture_gate',
       'spec_gate',
+      'decision_record_gate',
       'verification_gate',
       'requirement_gate',
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
+      'pr_freshness_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
@@ -326,6 +334,7 @@ function isUnresolvedStatus(status) {
     'needs_evidence',
     'needs_setup',
     'needs_review',
+    'needs_rebase',
     'needs_changes',
     'contradicted',
     'stale',
@@ -358,6 +367,14 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:mirror_source_traceability' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:decision_record' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';

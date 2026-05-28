@@ -72,22 +72,27 @@ These gates are release critical. If any is unresolved, `overall_status` MUST be
 
 Agent Review policy MUST be risk-adaptive.
 
-For `workflow_heavy`, required review roles include:
+For `workflow_heavy`, phase checkpoint review roles include:
 
 - `architecture_spec:regression_risk`
 - `test_plan:e2e_ux`
 - `test_plan:gate_coverage`
 - `implementation:runtime_contract`
 - `implementation:ux_completion`
+
+For `workflow_heavy`, PR-final review roles include:
+
 - `gate:release_risk`
 - `preview:preview_smoke`
 - `preview:network_runtime`
 - `preview:human_usability`
+
+`pr prepare` MUST NOT pull development-phase stages (`architecture_spec`, `test_plan`, `implementation`) into the PR-final Agent Review Gate.
 
 ## Tests
 
 - Unit: classifier selects `workflow_heavy` for cross-surface workflow changes.
 - Unit: classifier does not over-classify docs-only, API-only, or UI-only changes.
 - Integration: `pr prepare` emits workflow-heavy gates and blocks readiness without flow evidence.
-- Integration: workflow-heavy required Agent Review roles include preview/network/runtime/gate coverage roles.
+- Integration: workflow-heavy checkpoint Agent Review roles include runtime/gate-coverage roles, while PR-final Agent Review roles include gate/preview release-readiness roles.
 - Integration: blocker open questions and missing scenario clauses keep release confidence unresolved.

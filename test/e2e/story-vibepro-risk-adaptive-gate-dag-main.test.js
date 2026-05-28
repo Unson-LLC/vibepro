@@ -49,13 +49,16 @@ const workflowGateIds = [
 ];
 
 const workflowReviewRoles = [
-  'architecture_spec:regression_risk',
   'gate:release_risk',
-  'implementation:runtime_contract',
-  'implementation:ux_completion',
   'preview:human_usability',
   'preview:network_runtime',
-  'preview:preview_smoke',
+  'preview:preview_smoke'
+];
+
+const workflowCheckpointReviewStages = [
+  'architecture_spec:regression_risk',
+  'implementation:runtime_contract',
+  'implementation:ux_completion',
   'test_plan:e2e_ux',
   'test_plan:gate_coverage'
 ];
@@ -120,11 +123,12 @@ test('story-vibepro-risk-adaptive-gate-dag ac6 blocks on blocker open question',
 
 test('story-vibepro-risk-adaptive-gate-dag ac7 expands agent review roles', () => {
   // story-vibepro-risk-adaptive-gate-dag ac:7
-  // Agent Review required rolesは `workflow_heavy` でpreview/network/runtime/gate coverage/release riskまで増える
+  // PR-final Agent Review required rolesは `workflow_heavy` でpreview/network/release riskまで増える。
+  // development-phase reviewは checkpoint 側で実行する。
   assert.ok(workflowReviewRoles.includes('preview:network_runtime'));
-  assert.ok(workflowReviewRoles.includes('implementation:runtime_contract'));
-  assert.ok(workflowReviewRoles.includes('test_plan:gate_coverage'));
   assert.ok(workflowReviewRoles.includes('gate:release_risk'));
+  assert.ok(workflowCheckpointReviewStages.includes('implementation:runtime_contract'));
+  assert.ok(workflowCheckpointReviewStages.includes('test_plan:gate_coverage'));
   assert.ok('Agent Review required roles workflow_heavy preview network runtime gate coverage release risk'.includes('Agent Review'));
 });
 

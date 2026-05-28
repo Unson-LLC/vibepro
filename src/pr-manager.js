@@ -196,6 +196,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     }
   };
   const fileGroups = groupChangedFiles(reviewChangedFiles);
+  const committedChangedFiles = Array.isArray(git.committed_changed_files) ? git.committed_changed_files : git.changed_files;
+  const workspaceArtifactFiles = committedChangedFiles.filter((file) => isWorkspaceArtifactPath(file.path));
+  fileGroups.vibepro_artifacts = {
+    count: workspaceArtifactFiles.length,
+    files: workspaceArtifactFiles.map((file) => file.path)
+  };
   const scope = assessScope({
     changedFiles: reviewChangedFiles,
     fileGroups,
@@ -216,6 +222,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     taskContext,
     git: reviewGit,
     fileGroups,
+    scope,
     latestStoryRun,
     verificationEvidence,
     decisionRecords
@@ -539,6 +546,13 @@ export async function createPullRequest(repoRoot, options = {}) {
   // Memory rule: テスト/検証証跡なしの PR を機械的に防ぐ（CLAUDE.md 0.6 Deterministic Guards）
   const gateDag = preparation.pr_context?.gate_dag;
   const executionGate = preparation.pr_context?.execution_gate ?? buildExecutionGateStatus(gateDag);
+  const nonWorkspaceDirtyFiles = (preparation.git.dirty_files ?? []).filter((file) => !isWorkspaceArtifactPath(file.path));
+  if (nonWorkspaceDirtyFiles.length > 0) {
+    throw new Error(
+      `Pre-create dirty worktree check failed: ${nonWorkspaceDirtyFiles.length} non-workspace file(s) are dirty and would not be included in the pushed PR branch. ` +
+      `Commit, stash, or discard these files before \`vibepro pr create\`: ${nonWorkspaceDirtyFiles.map((file) => file.path).join(', ')}`
+    );
+  }
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
     const unresolved = collectUnresolvedRequiredGates(gateDag);
     throw new Error(
@@ -581,6 +595,7 @@ export async function createPullRequest(repoRoot, options = {}) {
   if (gateOverride?.allowed) {
     warnings.push(`Gate override used: ${gateOverride.reason}`);
     warnings.push(`Unresolved gates: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`);
+    await appendGateOverrideToPrBody(bodyFile, gateOverride);
   }
   if (headBranch === baseBranch) {
     warnings.push(`head branch equals base branch: ${headBranch}`);
@@ -964,12 +979,32 @@ async function collectGitState(repoRoot, options) {
     origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
     status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
+    committed_changed_files: committedChangedFiles,
     changed_files: changedFiles,
     dirty_files: dirtyFiles,
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
     commit_message_health: commitMessageHealth,
     commits
   };
+}
+
+async function appendGateOverrideToPrBody(bodyFile, gateOverride) {
+  const existing = await readFile(bodyFile, 'utf8');
+  if (existing.includes('## VibePro Gate Waiver')) return;
+  const unresolved = formatUnresolvedGateList(gateOverride.unresolved_gates);
+  const critical = formatUnresolvedGateList(gateOverride.critical_unresolved_gates);
+  const block = [
+    '',
+    '## VibePro Gate Waiver',
+    '',
+    `- waiver policy: ${gateOverride.waiver_policy}`,
+    `- severity: ${gateOverride.severity}`,
+    `- reason: ${gateOverride.reason}`,
+    `- unresolved gates: ${unresolved}`,
+    `- critical unresolved gates: ${critical}`,
+    ''
+  ].join('\n');
+  await writeFile(bodyFile, `${existing.trimEnd()}\n${block}`);
 }
 
 function mergeChangedAndDirtyFiles(changedFiles, dirtyFiles) {
@@ -1499,6 +1534,7 @@ ${renderPrSplitSection(splitPlan)}
 ## VibePro
 - latest story run: ${latestStoryRun?.run_id ?? '-'}
 - gate: ${latestStoryRun?.gate_status ?? '-'}
+- PR route: ${prContext.pr_route?.route_type ?? '-'} (${prContext.pr_route?.body_template ?? '-'})
 - PR strategy: ${scope.recommended_strategy}
 - runtime: ${renderRuntimeSummary(prContext, story)}
 `;
@@ -1525,6 +1561,7 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   return `## このPRで決めたいこと
 - このPRで閉じる問い: ${reviewQuestion}
 - Story: ${storyLabel}
+- PR Route: ${formatPrRouteForHuman(prContext.pr_route)}
 - 判断: ${decision}
 - レビュー入口: ${primaryReviewAreas}
 - Gate状況: ${gateNote}
@@ -1541,6 +1578,15 @@ function buildHumanReviewQuestion({ source = {}, fileGroups }) {
   return `${title} を満たす変更として、${areas} の差分をこのPRで受け入れてよいか。`;
 }
 
+function formatPrRouteForHuman(prRoute) {
+  if (!prRoute) return '未分類';
+  const confidence = typeof prRoute.confidence === 'number'
+    ? `${Math.round(prRoute.confidence * 100)}%`
+    : '-';
+  const sections = buildRouteBodyRequiredSections(prRoute.route_type).join(', ');
+  return `${prRoute.route_type} / body=${prRoute.body_template} / confidence=${confidence} / required=${sections}`;
+}
+
 function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
   const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
   const sourcePath = source.path ?? 'Story未検出';
@@ -1548,8 +1594,12 @@ function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan,
   const changeLinks = buildHumanDecisionFileLinks(fileGroups, git);
   const evidence = buildHumanEvidenceDigest(gateDag);
   const split = buildHumanSplitDigest(splitPlan);
+  const route = gateDag?.summary?.pr_route
+    ? `${gateDag.summary.pr_route} / body=${gateDag.summary.pr_body_template ?? '-'}`
+    : '未分類';
   return [
     `- 目的: ${title}`,
+    `- PR Route: ${route}`,
     `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
     `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
     `- 証跡: ${evidence}`,
@@ -1612,6 +1662,12 @@ function buildHumanChangeIntent(fileGroups) {
 function buildHumanEvidenceDigest(gateDag) {
   const nodes = gateDag?.nodes ?? [];
   const labels = [
+    ['gate:pr_route_classification', 'PR Route'],
+    ['gate:pr_body_contract', 'PR Body'],
+    ['gate:mirror_source_traceability', 'Source Trace'],
+    ['gate:ci_status_or_waiver', 'CI/Waiver'],
+    ['gate:vibepro_artifact_policy', 'Artifact Policy'],
+    ['gate:split_resolution', 'Split'],
     ['gate:requirement', 'Requirement'],
     ['gate:unit', 'Unit'],
     ['gate:integration', 'Integration'],
@@ -2482,7 +2538,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, latestStoryRun, verificationEvidence = null, decisionRecords = null }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   const hasSingleChangedStoryDoc = storyDocs.length === 1 && Boolean(primaryStory?.path);
@@ -2531,6 +2587,12 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     storySource: primaryStory,
     networkContracts
   });
+  const prRoute = buildPrRouteClassification({
+    git,
+    fileGroups,
+    scope,
+    changeClassification
+  });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
@@ -2549,6 +2611,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     story_source: primaryStory,
     architecture_decision: architectureDecision,
     requirement_consistency: requirementConsistency,
+    pr_route: prRoute,
     change_classification: changeClassification,
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
@@ -2597,7 +2660,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, l
     inferredSpec,
     specDrift,
     changeClassification,
-    git
+    git,
+    scope,
+    prRoute
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -3457,6 +3522,284 @@ function calculateFinal20AutoClosureRate({ e2eReachRate, visualQaPassRate, desig
   return Math.min(...knownRates);
 }
 
+function buildPrRouteClassification({ git = {}, fileGroups = {}, scope = null, changeClassification = null }) {
+  const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
+  const commitText = (git.commits ?? [])
+    .map((commit) => commit.subject ?? commit.message ?? commit.body ?? '')
+    .join('\n')
+    .toLowerCase();
+  const fileText = files.join('\n').toLowerCase();
+  const signals = [];
+  const route = {
+    route_type: 'general_change',
+    label: 'General Change',
+    confidence: 0.55,
+    body_template: 'standard_story_review',
+    required_gates: ['story', 'architecture', 'spec', 'pr_body_contract'],
+    signals
+  };
+
+  const setRoute = (routeType, label, confidence, bodyTemplate, requiredGates, routeSignals) => {
+    route.route_type = routeType;
+    route.label = label;
+    route.confidence = confidence;
+    route.body_template = bodyTemplate;
+    route.required_gates = requiredGates;
+    signals.push(...routeSignals);
+  };
+
+  if (/\b(release|deploy)\b.*\b(merge|promote|rollout)\b/.test(commitText)) {
+    setRoute(
+      'release_merge',
+      'Release Merge',
+      0.8,
+      'release_traceability_review',
+      ['source_pr_or_commit', 'ci_status_or_waiver', 'split_resolution', 'pr_body_contract'],
+      ['commit_message:release_merge']
+    );
+  } else if (/^\s*(sync|mirror)(\(.+\))?:/m.test(commitText) || /\b(sync|mirror)\b.*\b(upstream|release|deploy|main|production)\b/.test(commitText)) {
+    setRoute(
+      'mirror_sync',
+      'Mirror Sync',
+      0.78,
+      'mirror_traceability_review',
+      ['source_pr_or_commit', 'ci_status_or_waiver', 'artifact_policy', 'pr_body_contract'],
+      ['commit_or_path:sync_or_mirror']
+    );
+  } else if ((fileGroups.repo_control?.count ?? 0) > 0) {
+    setRoute(
+      'config_or_agent_policy',
+      'Config / Agent Policy',
+      0.74,
+      'policy_boundary_review',
+      ['repo_control_boundary', 'split_resolution', 'pr_body_contract'],
+      ['file_group:repo_control']
+    );
+  } else if ((fileGroups.source?.count ?? 0) > 0 && hasUiExperienceSourceChange(fileGroups)) {
+    setRoute(
+      'design_or_ui_change',
+      'Design / UI Change',
+      changeClassification?.profile === 'workflow_heavy' ? 0.82 : 0.72,
+      'ui_experience_review',
+      ['visual_qa', 'design_quality', 'story', 'pr_body_contract'],
+      ['file_group:ui_source']
+    );
+  } else if ((fileGroups.source?.count ?? 0) > 0) {
+    setRoute(
+      'runtime_change',
+      'Runtime Change',
+      changeClassification?.profile === 'workflow_heavy' ? 0.84 : 0.7,
+      'runtime_contract_review',
+      ['story', 'spec', 'verification', 'pr_body_contract'],
+      ['file_group:source']
+    );
+  } else if ((fileGroups.tests?.count ?? 0) > 0) {
+    setRoute(
+      'test_only',
+      'Test Only',
+      0.68,
+      'test_evidence_review',
+      ['test_intent', 'pr_body_contract'],
+      ['file_group:tests']
+    );
+  } else if (files.length > 0 && files.every((file) => isDocumentationPath(file))) {
+    setRoute(
+      'docs_only',
+      'Docs Only',
+      0.76,
+      'documentation_decision_review',
+      ['story_or_doc_intent', 'pr_body_contract'],
+      ['file_group:docs_only']
+    );
+  }
+
+  if ((fileGroups.vibepro_artifacts?.count ?? 0) > 0) {
+    route.required_gates = [...new Set([...route.required_gates, 'artifact_policy'])];
+    signals.push('file_group:vibepro_artifacts');
+  }
+  if (scope?.status === 'needs_clean_branch') {
+    route.required_gates = [...new Set([...route.required_gates, 'split_resolution'])];
+    signals.push('scope:needs_clean_branch');
+  }
+  if (changeClassification?.profile === 'workflow_heavy') {
+    route.required_gates = [...new Set([...route.required_gates, 'workflow_heavy'])];
+    signals.push('risk_profile:workflow_heavy');
+  }
+
+  return route;
+}
+
+function isDocumentationPath(filePath) {
+  return /^docs\//.test(filePath)
+    || /^README(\.[a-z]+)?\.md$/i.test(filePath)
+    || /^CHANGELOG(\.[a-z]+)?\.md$/i.test(filePath)
+    || /^NOTICE(\.[a-z]+)?$/i.test(filePath)
+    || /\.mdx?$/i.test(filePath);
+}
+
+function buildPrRouteGate(prRoute) {
+  return {
+    id: 'gate:pr_route_classification',
+    type: 'pr_route_gate',
+    label: 'PR Route Classification Gate',
+    status: prRoute?.route_type ? 'passed' : 'needs_review',
+    required: true,
+    route_type: prRoute?.route_type ?? 'unknown',
+    body_template: prRoute?.body_template ?? null,
+    confidence: prRoute?.confidence ?? null,
+    required_gates: prRoute?.required_gates ?? [],
+    signals: prRoute?.signals ?? [],
+    reason: prRoute?.route_type
+      ? `PR route selected: ${prRoute.route_type}; body template: ${prRoute.body_template}`
+      : 'PR route could not be classified'
+  };
+}
+
+function buildPrBodyContractGate(prRoute, { storySource, fileGroups, scope, git, verificationEvidence, decisionRecords }) {
+  const hasStorySource = Boolean(storySource?.path);
+  const hasDocIntent = (fileGroups.story_docs?.count ?? 0) > 0
+    || (fileGroups.specifications?.count ?? 0) > 0
+    || (fileGroups.architecture_docs?.count ?? 0) > 0
+    || (fileGroups.policy_docs?.count ?? 0) > 0;
+  const routeType = prRoute?.route_type ?? 'general_change';
+  const routeNeedsSourceTrace = ['mirror_sync', 'release_merge'].includes(routeType);
+  const hasRouteSpecificContract = ['docs_only', 'test_only'].includes(routeType);
+  const routeContractResolved = !routeNeedsSourceTrace || (
+    hasMirrorSourceEvidence({ git, decisionRecords })
+    && hasCiStatusOrWaiverEvidence({ verificationEvidence, decisionRecords })
+  );
+  const status = ((hasStorySource || hasDocIntent || hasRouteSpecificContract || routeNeedsSourceTrace) && routeContractResolved)
+    ? 'passed'
+    : 'needs_review';
+  return {
+    id: 'gate:pr_body_contract',
+    type: 'pr_body_contract_gate',
+    label: 'PR Body Contract Gate',
+    status,
+    required: true,
+    route_type: routeType,
+    body_template: prRoute?.body_template ?? 'standard_story_review',
+    required_sections: buildRouteBodyRequiredSections(routeType),
+    scope_status: scope?.status ?? null,
+    reason: status === 'passed'
+      ? `PR body must use ${prRoute?.body_template ?? 'standard_story_review'} and expose the route-specific decision contract`
+      : routeNeedsSourceTrace
+        ? 'PR body needs explicit source traceability plus CI/waiver evidence before the route-specific contract is complete'
+        : 'PR body needs a Story, Spec, Architecture, policy document, or explicit source traceability contract'
+  };
+}
+
+function buildRouteBodyRequiredSections(routeType) {
+  const base = ['decision_question', 'story_or_source_of_truth', 'gate_status', 'verification_or_waiver'];
+  if (routeType === 'mirror_sync') return [...base, 'source_pr_or_commit', 'source_ci_or_waiver', 'mirror_artifact_policy'];
+  if (routeType === 'release_merge') return [...base, 'release_source_prs', 'release_ci_status', 'deployment_scope'];
+  if (routeType === 'config_or_agent_policy') return [...base, 'policy_boundary', 'affected_agents_or_hooks'];
+  if (routeType === 'design_or_ui_change') return [...base, 'visual_evidence', 'ux_invariants'];
+  if (routeType === 'docs_only') return [...base, 'reader_decision'];
+  return base;
+}
+
+function buildMirrorSourceTraceabilityGate(prRoute, git, decisionRecords = null) {
+  if (!['mirror_sync', 'release_merge'].includes(prRoute?.route_type)) return null;
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:mirror_source_traceability');
+  const hasSourcePointer = hasMirrorSourceEvidence({ git, decisionRecords });
+  return {
+    id: 'gate:mirror_source_traceability',
+    type: 'mirror_source_traceability_gate',
+    label: prRoute.route_type === 'release_merge' ? 'Release Source Traceability Gate' : 'Mirror Source Traceability Gate',
+    status: hasSourcePointer ? 'passed' : 'needs_evidence',
+    required: true,
+    route_type: prRoute.route_type,
+    reason: hasSourcePointer
+      ? acceptedDecision
+        ? `Source traceability decision is recorded: ${acceptedDecision.summary}`
+        : 'Commit metadata includes a source PR/commit/ref pointer'
+      : 'Mirror/release route requires source PR, source commit, or upstream ref evidence in the VibePro PR contract'
+  };
+}
+
+function buildCiStatusOrWaiverGate(prRoute, verificationEvidence = null, decisionRecords = null) {
+  if (!['mirror_sync', 'release_merge'].includes(prRoute?.route_type)) return null;
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:ci_status_or_waiver');
+  const hasEvidence = hasCiStatusOrWaiverEvidence({ verificationEvidence, decisionRecords });
+  return {
+    id: 'gate:ci_status_or_waiver',
+    type: 'ci_status_or_waiver_gate',
+    label: 'CI Status / Waiver Gate',
+    status: hasEvidence ? 'passed' : 'needs_evidence',
+    required: true,
+    route_type: prRoute.route_type,
+    reason: hasEvidence
+      ? acceptedDecision
+        ? `CI/waiver decision is recorded: ${acceptedDecision.summary}`
+        : 'Current verification evidence cites CI status for this mirror/release route'
+      : 'Mirror/release route must cite source CI, target CI, or an explicit waiver before merge'
+  };
+}
+
+function buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords = null) {
+  if ((fileGroups.vibepro_artifacts?.count ?? 0) === 0) return null;
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:vibepro_artifact_policy');
+  return {
+    id: 'gate:vibepro_artifact_policy',
+    type: 'vibepro_artifact_policy_gate',
+    label: 'VibePro Artifact Policy Gate',
+    status: acceptedDecision ? 'passed' : 'needs_review',
+    required: true,
+    route_type: prRoute?.route_type ?? 'general_change',
+    artifact_files: fileGroups.vibepro_artifacts.files,
+    reason: acceptedDecision
+      ? `VibePro artifact policy decision is recorded: ${acceptedDecision.summary}`
+      : '.vibepro artifacts are diagnostic evidence; committing them requires an explicit artifact policy decision in the PR body'
+  };
+}
+
+function buildSplitResolutionGate(scope, prRoute, decisionRecords = null) {
+  if (scope?.status !== 'needs_clean_branch') return null;
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:split_resolution');
+  const status = acceptedDecision ? 'passed' : 'needs_review';
+  return {
+    id: 'gate:split_resolution',
+    type: 'split_resolution_gate',
+    label: 'Split Resolution Gate',
+    status,
+    required: true,
+    route_type: prRoute?.route_type ?? 'general_change',
+    reasons: scope?.reasons ?? [],
+    reason: acceptedDecision
+      ? `Split/clean-branch decision is explicitly recorded: ${acceptedDecision.summary}`
+      : 'Scope requires a split/clean-branch decision to be resolved or explicitly justified before PR creation',
+    decision_id: acceptedDecision?.decision_id ?? null
+  };
+}
+
+function findAcceptedDecisionForSource(decisionRecords, source) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  return decisions.find((decision) => (
+    decision.source === source
+    && decision.status === 'accepted'
+    && ['waiver', 'needs_review'].includes(decision.type)
+  )) ?? null;
+}
+
+function hasMirrorSourceEvidence({ git = {}, decisionRecords = null }) {
+  if (findAcceptedDecisionForSource(decisionRecords, 'gate:mirror_source_traceability')) return true;
+  const commitText = (git?.commits ?? [])
+    .map((commit) => [commit.subject, commit.message, commit.body].filter(Boolean).join('\n'))
+    .join('\n');
+  return /(https:\/\/github\.com\/\S+\/pull\/\d+|PR\s*#\d+|pull request\s*#\d+|source\s+(commit|pr)|origin\/\w+|[0-9a-f]{12,40})/i.test(commitText);
+}
+
+function hasCiStatusOrWaiverEvidence({ verificationEvidence = null, decisionRecords = null }) {
+  if (findAcceptedDecisionForSource(decisionRecords, 'gate:ci_status_or_waiver')) return true;
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.some((item) => (
+    item.binding?.status === 'current'
+    && ['pass', 'passed', 'success', 'ok'].includes(item.status)
+    && /\b(ci|github actions|source ci|target ci|check run|checks passed)\b/i.test(`${item.kind ?? ''}\n${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`)
+  ));
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -3476,7 +3819,9 @@ function buildGateDag({
   inferredSpec = null,
   specDrift = null,
   changeClassification = null,
-  git = null
+  git = null,
+  scope = null,
+  prRoute = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -3521,6 +3866,19 @@ function buildGateDag({
     ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
     required: true
   };
+  const routeGate = buildPrRouteGate(prRoute);
+  const prBodyContractGate = buildPrBodyContractGate(prRoute, {
+    storySource,
+    fileGroups,
+    scope,
+    git,
+    verificationEvidence,
+    decisionRecords
+  });
+  const mirrorSourceTraceabilityGate = buildMirrorSourceTraceabilityGate(prRoute, git, decisionRecords);
+  const ciStatusOrWaiverGate = buildCiStatusOrWaiverGate(prRoute, verificationEvidence, decisionRecords);
+  const vibeproArtifactPolicyGate = buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords);
+  const splitResolutionGate = buildSplitResolutionGate(scope, prRoute, decisionRecords);
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git);
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
@@ -3577,6 +3935,12 @@ function buildGateDag({
   });
   const nodes = [
     storyGate,
+    routeGate,
+    prBodyContractGate,
+    ...(mirrorSourceTraceabilityGate ? [mirrorSourceTraceabilityGate] : []),
+    ...(ciStatusOrWaiverGate ? [ciStatusOrWaiverGate] : []),
+    ...(vibeproArtifactPolicyGate ? [vibeproArtifactPolicyGate] : []),
+    ...(splitResolutionGate ? [splitResolutionGate] : []),
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
@@ -3614,7 +3978,25 @@ function buildGateDag({
   }));
 
   const edges = [
-    { from: 'story', to: 'gate:change_classification' },
+    { from: 'story', to: 'gate:pr_route_classification' },
+    { from: 'gate:pr_route_classification', to: 'gate:pr_body_contract' },
+    ...(mirrorSourceTraceabilityGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:mirror_source_traceability' },
+      { from: 'gate:mirror_source_traceability', to: 'gate:pr_body_contract' }
+    ] : []),
+    ...(ciStatusOrWaiverGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:ci_status_or_waiver' },
+      { from: 'gate:ci_status_or_waiver', to: 'gate:pr_body_contract' }
+    ] : []),
+    ...(vibeproArtifactPolicyGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:vibepro_artifact_policy' },
+      { from: 'gate:vibepro_artifact_policy', to: 'gate:pr_body_contract' }
+    ] : []),
+    ...(splitResolutionGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:split_resolution' },
+      { from: 'gate:split_resolution', to: 'gate:pr_body_contract' }
+    ] : []),
+    { from: 'gate:pr_body_contract', to: 'gate:change_classification' },
     { from: 'gate:change_classification', to: 'gate:pr_freshness' },
     { from: 'gate:pr_freshness', to: 'architecture' },
     { from: 'gate:pr_freshness', to: 'spec' },
@@ -3661,9 +4043,15 @@ function buildGateDag({
     { from: 'gate:agent_review', to: 'pr' }
   ];
 
-  const allNodes = [...nodes.slice(0, 4), ...acceptanceNodes, ...nodes.slice(4)];
+  const allNodes = [...nodes, ...acceptanceNodes];
   const requiredGates = [
     storyGate,
+    routeGate,
+    prBodyContractGate,
+    mirrorSourceTraceabilityGate,
+    ciStatusOrWaiverGate,
+    vibeproArtifactPolicyGate,
+    splitResolutionGate,
     architectureGate,
     specGate,
     changeClassificationGate,
@@ -3688,6 +4076,8 @@ function buildGateDag({
       acceptance_criteria_count: acceptanceCriteria.length,
       required_gate_count: requiredGates.length,
       needs_evidence_count: needsEvidence.length,
+      pr_route: prRoute?.route_type ?? null,
+      pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
@@ -4080,6 +4470,7 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
         ? 'not_required'
         : 'needs_review';
   const unmet = agentReviews.unmet_required_reviews ?? [];
+  const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const requiredActions = buildAgentReviewRequiredActions(agentReviews, status, unmet);
   return {
     id: 'gate:agent_review',
@@ -4091,7 +4482,7 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       ? 'Required staged agent reviews passed for the current git state'
       : status === 'not_required'
         ? 'No source/API/UI/performance policy required staged agent reviews'
-        : `${unmet.length} required agent review role(s) are missing, stale, or blocking; run the listed vibepro review prepare command(s), then dispatch the generated Codex/Claude Code subagent reviews in parallel and record their provenance.`,
+        : `${unmet.length} PR-final and ${checkpointUnmet.length} checkpoint agent review role(s) are missing, stale, or blocking; run the listed checkpoint/review commands and record their provenance.`,
     summary: agentReviews.summary,
     parallel_dispatch: agentReviews.parallel_dispatch,
     dispatch_contract: {
@@ -4103,13 +4494,15 @@ function buildAgentReviewGate(agentReviews, fileGroups) {
       applies_to: ['codex', 'claude_code']
     },
     required_actions: requiredActions,
-    unmet_required_reviews: unmet.slice(0, 20)
+    unmet_required_reviews: unmet.slice(0, 20),
+    unmet_checkpoint_reviews: checkpointUnmet.slice(0, 20)
   };
 }
 
 function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
   if (status === 'passed' || status === 'not_required') return [];
   const requiredStages = agentReviews.parallel_dispatch?.required_stages ?? [];
+  const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const actions = [];
   const missingOrUnpreparedStages = requiredStages
     .filter((stage) => stage.status !== 'pass' || stage.prepared !== true)
@@ -4127,6 +4520,13 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
       .map((item) => `${item.stage}:${item.role}(${item.status}${item.detail ? `: ${item.detail}` : ''})`)
       .join(', ');
     actions.push(`Complete and record current-git review results for: ${roleList}.`);
+  }
+  if (checkpointUnmet.length > 0) {
+    const stageList = [...new Set(checkpointUnmet.map((item) => item.stage))].join(', ');
+    const roleList = checkpointUnmet.slice(0, 12)
+      .map((item) => `${item.stage}:${item.role}(${item.status}${item.detail ? `: ${item.detail}` : ''})`)
+      .join(', ');
+    actions.push(`Complete checkpoint Agent Review stages before PR creation: ${stageList}. Missing checkpoint roles: ${roleList}. Run \`vibepro checkpoint <stage> . --story-id <story-id>\` or \`vibepro review prepare . --id <story-id> --stage <stage>\`, dispatch subagents, record results, then rerun \`vibepro pr prepare\`.`);
   }
   actions.push('After closing review subagents and recording all roles with parallel_subagent provenance and closed subagent lifecycle, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
   return actions;
@@ -4700,6 +5100,14 @@ function renderPrGateSummary(gateDag) {
   const storyGate = gateDag.nodes.find((node) => node.id === 'story');
   const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
   const specGate = gateDag.nodes.find((node) => node.id === 'spec');
+  const routeGates = [
+    'gate:pr_route_classification',
+    'gate:pr_body_contract',
+    'gate:mirror_source_traceability',
+    'gate:ci_status_or_waiver',
+    'gate:vibepro_artifact_policy',
+    'gate:split_resolution'
+  ].map((id) => gateDag.nodes.find((node) => node.id === id)).filter(Boolean);
   const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
   const lines = [
@@ -4714,6 +5122,11 @@ function renderPrGateSummary(gateDag) {
     specGate
       ? `- ${specGate.label}: ${specGate.status} (${specGate.required ? 'required' : 'optional'}) - ${specGate.reason ?? '-'}`
       : null,
+    ...routeGates.map((gate) => {
+      const required = gate.required ? 'required' : 'optional';
+      const sections = Array.isArray(gate.required_sections) ? ` sections=${gate.required_sections.join(',')}` : '';
+      return `- ${gate.label}: ${gate.status} (${required}) - ${gate.reason ?? '-'}${sections}`;
+    }),
     requirementGate
       ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
       : null,
@@ -4843,6 +5256,12 @@ function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',
+      'pr_route_gate',
+      'pr_body_contract_gate',
+      'mirror_source_traceability_gate',
+      'ci_status_or_waiver_gate',
+      'vibepro_artifact_policy_gate',
+      'split_resolution_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
@@ -4910,6 +5329,12 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
       if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
+      if (gate.id === 'gate:pr_route_classification') return 'PR Route Classification Gate requires a route before VibePro can choose the correct body contract and evidence path.';
+      if (gate.id === 'gate:pr_body_contract') return 'PR Body Contract Gate requires the PR text to expose the route-specific decision question, source of truth, gates, and waiver/evidence clauses.';
+      if (gate.id === 'gate:mirror_source_traceability') return 'Mirror/Release Source Traceability Gate requires the source PR, source commit, or upstream ref to be cited before merge.';
+      if (gate.id === 'gate:ci_status_or_waiver') return 'CI Status / Waiver Gate requires target CI, source CI inheritance, or an explicit waiver for mirror/release routes.';
+      if (gate.id === 'gate:vibepro_artifact_policy') return 'VibePro Artifact Policy Gate requires an explicit decision for committed `.vibepro/` diagnostic artifacts.';
+      if (gate.id === 'gate:split_resolution') return 'Split Resolution Gate requires the split/clean-branch recommendation to be resolved or explicitly justified.';
       if (gate.id?.startsWith('gate:workflow_') || gate.id === 'gate:production_path_matrix' || gate.id === 'gate:evidence_coverage' || gate.id === 'gate:release_confidence') {
         return `${gate.label ?? gate.id} requires workflow-heavy evidence: explicit scenario clauses, production path matrix coverage, and passing flow replay evidence.`;
       }
@@ -4962,6 +5387,12 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:mirror_source_traceability' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';

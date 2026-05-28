@@ -31,7 +31,19 @@ const CHECKPOINTS = {
   verification: {
     label: 'Verification checkpoint',
     description: 'Blocks PR handoff until verification, gate review, and current-head evidence are complete.',
-    gate_ids: ['gate:network_contract', 'gate:unit', 'gate:integration', 'gate:e2e', 'gate:visual_qa'],
+    gate_ids: [
+      'gate:pr_route_classification',
+      'gate:pr_body_contract',
+      'gate:mirror_source_traceability',
+      'gate:ci_status_or_waiver',
+      'gate:vibepro_artifact_policy',
+      'gate:split_resolution',
+      'gate:network_contract',
+      'gate:unit',
+      'gate:integration',
+      'gate:e2e',
+      'gate:visual_qa'
+    ],
     review_stages: ['gate']
   },
   pr: {
@@ -51,6 +63,7 @@ const UNRESOLVED_STATUSES = new Set([
   'needs_evidence',
   'needs_setup',
   'needs_review',
+  'needs_rebase',
   'needs_changes',
   'contradicted',
   'stale',
@@ -209,6 +222,12 @@ function buildGateAction(gate) {
   if (gate.id === 'gate:e2e') return 'Record current-head E2E evidence and Story acceptance coverage.';
   if (gate.id === 'gate:visual_qa') return 'Record Visual QA evidence for the current UI state.';
   if (gate.id === 'gate:network_contract') return 'Resolve API route/network contract findings or record network-aware E2E evidence.';
+  if (gate.id === 'gate:pr_route_classification') return 'Resolve PR route classification before PR handoff.';
+  if (gate.id === 'gate:pr_body_contract') return 'Resolve the route-specific PR body contract before PR handoff.';
+  if (gate.id === 'gate:mirror_source_traceability') return 'Add source PR, source commit, or upstream ref evidence for mirror/release routes.';
+  if (gate.id === 'gate:ci_status_or_waiver') return 'Add target CI, source CI inheritance, or an explicit waiver for mirror/release routes.';
+  if (gate.id === 'gate:vibepro_artifact_policy') return 'Record an explicit policy decision for committed `.vibepro/` diagnostic artifacts.';
+  if (gate.id === 'gate:split_resolution') return 'Resolve or explicitly justify the split/clean-branch recommendation.';
   if (gate.id === 'gate:agent_review') return 'Run required Agent Review stages with Codex/Claude Code parallel subagents, close/shutdown every review subagent after receiving its result, then record provenance with --agent-closed.';
   return `Resolve ${gate.label ?? gate.id}.`;
 }
