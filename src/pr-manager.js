@@ -3465,16 +3465,23 @@ function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
     reasons: requirement.reasons,
     spec: inferredSpec ?? null
   });
-  const reasonText = verdict.status === 'blocked'
-    ? `必須設計図が不足: ${verdict.missing.join(', ')}`
-    : verdict.status === 'pass'
-      ? `必須設計図が全て揃っている (${verdict.provided.join(', ')})`
-      : '該当する設計図トリガーなし';
+  let gateStatus;
+  let reasonText;
+  if (verdict.status === 'blocked') {
+    gateStatus = 'needs_evidence';
+    reasonText = `必須設計図が不足: ${verdict.missing.join(', ')} (spec.diagrams[] に該当 kind を追加してください)`;
+  } else if (verdict.status === 'pass') {
+    gateStatus = 'satisfied';
+    reasonText = `必須設計図が全て揃っている (${verdict.provided.join(', ')})`;
+  } else {
+    gateStatus = 'not_required';
+    reasonText = '該当する設計図トリガーなし';
+  }
   return {
     id: 'gate:design_diagrams',
     type: 'design_diagrams_gate',
     label: 'Design Diagrams (MUST-HAVE)',
-    status: verdict.status,
+    status: gateStatus,
     required: verdict.status !== 'not_applicable',
     blocking: true,
     reason: reasonText,
