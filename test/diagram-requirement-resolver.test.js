@@ -98,6 +98,30 @@ test('R4: checkout path file requires flow', () => {
   assert.ok(result.required_diagrams.includes('flow'));
 });
 
+test('R5: new package boundary requires c4_context', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: { files: [{ path: 'packages/billing/package.json', status: 'added' }] }
+  }));
+  assert.ok(result.required_diagrams.includes('c4_context'));
+  const reason = result.reasons.find((r) => r.kind === 'c4_context');
+  assert.ok(reason);
+  assert.ok(reason.signal.includes('packages/billing'));
+});
+
+test('R5: new service directory requires c4_context', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: { files: [{ path: 'services/notify/index.ts', status: 'added' }] }
+  }));
+  assert.ok(result.required_diagrams.includes('c4_context'));
+});
+
+test('R5: modified package.json does NOT trigger c4_context', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: { files: [{ path: 'packages/billing/package.json', status: 'modified' }] }
+  }));
+  assert.ok(!result.required_diagrams.includes('c4_context'));
+});
+
 test('R6: terraform file requires deployment', () => {
   const result = resolveRequiredDiagrams(input({
     code_diff: { files: [{ path: 'infra/main.tf', status: 'modified' }] }

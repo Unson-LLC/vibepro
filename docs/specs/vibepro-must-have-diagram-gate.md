@@ -55,11 +55,15 @@ Each rule is a pure function over `{ story, code_diff }`. Order of evaluation do
 
 ### Rule R5: C4 Context required for service / boundary changes
 
-- Detect any of:
-  - new top-level directory under `src/` (heuristic: file added with path depth 2 where component dir is new)
-  - new `package.json` introduced (monorepo new package)
-  - new external system import (dep with name suggesting external service)
+- Detect either:
+  - new file at `packages/<name>/package.json` with `status: "added"` (monorepo new package boundary)
+  - any new file with `status: "added"` under `services/<name>/` (new service directory)
 - → require `c4_context`
+
+Note: "new top-level directory under src/" and "new external system import" are
+out of scope for v1 because they require either snapshot diffing of the directory
+tree or dep-import classification, which the current resolver does not have. The
+sequence rule (R3) covers external SDK additions via the deps_added stream.
 
 ### Rule R6: Deployment required for IaC changes
 
