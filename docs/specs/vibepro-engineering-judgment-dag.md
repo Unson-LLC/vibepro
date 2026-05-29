@@ -19,6 +19,7 @@ title: Engineering Judgment DAG Spec
 - `S-EJD-2`: For mirror/release changes, `engineering_judgment.route_type` is `release_engineering` and release traceability judgment gates appear before PR route classification.
 - `S-EJD-3`: For VibePro agent/gate workflow changes, `engineering_judgment.route_type` is `agent_workflow` and context/tool/delegation/evidence lifecycle gates appear before PR route classification.
 - `S-EJD-4`: If a future node is added without a valid path from `story` to `pr`, DAG connectivity status is not `passed`.
+- `S-EJD-5`: For `security_trust` route changes, `gate:judgment_security_trust_security_regression` is an evidence-backed gate (`type: security_regression_gate`). Without a current-bound passing security regression test or an explicit waiver decision, its status is `needs_evidence` and `ready_for_pr_create` is `false`. A recorded waiver decision against the gate source resolves it. All other route-specific judgment gates remain advisory (`status: passed`).
 
 ## Anti-Patterns
 
@@ -31,4 +32,5 @@ title: Engineering Judgment DAG Spec
 
 - `V-EJD-1`: E2E route tests assert Engineering Judgment nodes and DAG connectivity for docs-only and release/mirror routes.
 - `V-EJD-2`: Focused PR prepare tests assert `agent_workflow` classification for VibePro gate/runtime workflow changes.
+- `V-EJD-4`: A focused PR prepare test asserts the `security_trust` route's security regression gate is `needs_evidence` (blocking) without evidence and `passed` after a waiver decision, while sibling judgment gates stay advisory.
 - `V-EJD-3`: `node --check src/pr-manager.js` passes.

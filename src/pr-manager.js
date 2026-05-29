@@ -862,6 +862,9 @@ function formatExecutionGateAction(gate) {
       ? gate.required_actions.join(' ')
       : `Run VibePro Agent Review workflow for the current git state: ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:judgment_security_trust_security_regression') {
+    return `Record a current-bound passing security regression test, or a waiver decision (\`vibepro decision record --source gate:judgment_security_trust_security_regression --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
@@ -3859,7 +3862,7 @@ function buildCommonJudgmentSpineGate(engineeringJudgment) {
   };
 }
 
-function buildRouteSpecificJudgmentGates(engineeringJudgment) {
+function buildRouteSpecificJudgmentGates(engineeringJudgment, evidenceContext = {}) {
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
   const definitions = {
     business_system: [
@@ -3923,16 +3926,35 @@ function buildRouteSpecificJudgmentGates(engineeringJudgment) {
       ['proof_plan', 'Proof Plan Gate', '変更に見合う証跡と検証ルートを選ぶ']
     ]
   };
-  return (definitions[routeType] ?? definitions.general_engineering).map(([suffix, label, reason]) => ({
-    id: `gate:judgment_${routeType}_${suffix}`,
-    type: 'route_specific_judgment_gate',
-    label,
-    status: 'passed',
-    required: true,
-    route_type: routeType,
-    route_dag: engineeringJudgment?.route_dag ?? `${routeType}_dag`,
-    reason
-  }));
+  return (definitions[routeType] ?? definitions.general_engineering).map(([suffix, label, reason]) => {
+    const base = {
+      id: `gate:judgment_${routeType}_${suffix}`,
+      type: 'route_specific_judgment_gate',
+      label,
+      status: 'passed',
+      required: true,
+      route_type: routeType,
+      route_dag: engineeringJudgment?.route_dag ?? `${routeType}_dag`,
+      reason
+    };
+    // Enforced route-specific judgment gate (narrow first step): the security/trust
+    // route's regression gate is promoted from advisory to evidence-backed. A
+    // current-bound passing security regression test or an explicit waiver decision
+    // must exist before PR creation; every other judgment gate stays advisory so the
+    // common spine and low-risk routes do not add mechanical friction.
+    if (routeType === 'security_trust' && suffix === 'security_regression') {
+      const hasEvidence = hasSecurityRegressionEvidence(evidenceContext);
+      return {
+        ...base,
+        type: 'security_regression_gate',
+        status: hasEvidence ? 'passed' : 'needs_evidence',
+        reason: hasEvidence
+          ? 'Security regression evidence (current-bound passing test) or an explicit waiver decision is recorded'
+          : 'Security/trust route requires a current-bound passing security regression test, or an explicit waiver decision recorded against gate:judgment_security_trust_security_regression, before PR creation'
+      };
+    }
+    return base;
+  });
 }
 
 function buildPrBodyContractGate(prRoute, { storySource, fileGroups, scope, git, verificationEvidence, decisionRecords }) {
@@ -4080,6 +4102,19 @@ function hasCiStatusOrWaiverEvidence({ verificationEvidence = null, decisionReco
   ));
 }
 
+function hasSecurityRegressionEvidence({ verificationEvidence = null, decisionRecords = null } = {}) {
+  if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_security_trust_security_regression')) return true;
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.some((item) => {
+    if (item.binding?.status !== 'current') return false;
+    if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
+    const haystack = `${item.kind ?? ''}\n${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`;
+    const looksLikeTest = /\b(unit|integration|e2e|test|spec)\b/i.test(haystack);
+    const looksSecurity = /\b(security|auth|authn|authz|permission|token|secret|regression|xss|csrf|injection|access control)\b/i.test(haystack);
+    return looksLikeTest && looksSecurity;
+  });
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -4150,7 +4185,10 @@ function buildGateDag({
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
-  const routeSpecificJudgmentGates = buildRouteSpecificJudgmentGates(engineeringJudgment);
+  const routeSpecificJudgmentGates = buildRouteSpecificJudgmentGates(engineeringJudgment, {
+    verificationEvidence,
+    decisionRecords
+  });
   const prBodyContractGate = buildPrBodyContractGate(prRoute, {
     storySource,
     fileGroups,
@@ -5634,6 +5672,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'ci_status_or_waiver_gate',
       'vibepro_artifact_policy_gate',
       'split_resolution_gate',
+      'security_regression_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
