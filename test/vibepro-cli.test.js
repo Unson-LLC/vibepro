@@ -7636,6 +7636,67 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
 });
 
+test('security_trust route enforces the security regression judgment gate with evidence or waiver', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'auth.js'),
+    'export function checkPermission(token) { return token; }\n'
+  );
+  await git(repo, ['add', 'src/auth.js']);
+  await git(repo, ['commit', '-m', 'feat: add auth permission token check']);
+
+  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(unresolved.exitCode, 0);
+  const prepare = unresolved.result.preparation;
+  assert.equal(prepare.pr_context.engineering_judgment.route_type, 'security_trust');
+  const gateDag = prepare.pr_context.gate_dag;
+  const regressionGate = gateDag.nodes.find((node) => node.id === 'gate:judgment_security_trust_security_regression');
+  // The security regression judgment gate is promoted to an evidence-backed gate.
+  assert.equal(regressionGate?.type, 'security_regression_gate');
+  assert.equal(regressionGate?.status, 'needs_evidence');
+  assert.equal(regressionGate?.required, true);
+  // Other security-route judgment gates stay advisory (narrow first step).
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_security_trust_threat_model')?.type, 'route_specific_judgment_gate');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_security_trust_threat_model')?.status, 'passed');
+  // It blocks PR creation and shows up as an unresolved gate.
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(
+    prepare.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:judgment_security_trust_security_regression'),
+    true
+  );
+  // DAG stays connected after the status change.
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+
+  // An explicit waiver decision resolves the gate.
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:judgment_security_trust_security_regression',
+    '--summary',
+    'No security-sensitive boundary changed; helper only echoes its argument.',
+    '--reason',
+    'Reviewed: not an auth/permission boundary change, no regression test required.',
+    '--reviewer',
+    'codex',
+    '--json'
+  ]);
+  const waived = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const waivedGate = waived.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:judgment_security_trust_security_regression');
+  assert.equal(waivedGate?.status, 'passed');
+  assert.equal(
+    waived.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:judgment_security_trust_security_regression'),
+    false
+  );
+});
+
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
