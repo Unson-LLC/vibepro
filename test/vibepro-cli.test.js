@@ -7758,6 +7758,74 @@ test('agent_workflow route enforces the evidence lifecycle judgment gate with ev
   );
 });
 
+test('secret/credential surface change enforces the safety gate with a decision or waiver', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, '.env'), 'API_KEY=abc123\n');
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'config.js'), 'export const cfg = process.env.API_KEY;\n');
+  await git(repo, ['add', '.env', 'src/config.js']);
+  await git(repo, ['commit', '-m', 'chore: wire api key from env']);
+
+  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(unresolved.exitCode, 0);
+  const prepare = unresolved.result.preparation;
+  const gateDag = prepare.pr_context.gate_dag;
+  const safetyGate = gateDag.nodes.find((node) => node.id === 'gate:safety_secret_surface');
+  assert.equal(safetyGate?.type, 'safety_surface_gate');
+  assert.equal(safetyGate?.status, 'needs_evidence');
+  assert.equal(safetyGate?.required, true);
+  assert.equal(safetyGate?.surface_files.includes('.env'), true);
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(
+    prepare.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:safety_secret_surface'),
+    true
+  );
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+
+  // A secret_exposure decision resolves the gate.
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'secret_exposure',
+    '--secret-location',
+    '.env:API_KEY',
+    '--secret-action',
+    'rotated',
+    '--summary',
+    'Rotated the leaked API key and updated the secret store.',
+    '--reason',
+    'Key rotated; .env entry is local-only and gitignored going forward.',
+    '--reviewer',
+    'codex',
+    '--json'
+  ]);
+  const resolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const resolvedGate = resolved.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:safety_secret_surface');
+  assert.equal(resolvedGate?.status, 'passed');
+  assert.equal(
+    resolved.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:safety_secret_surface'),
+    false
+  );
+});
+
+test('safety gate stays absent for non-secret changes and env templates', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'plain.js'), 'export const plain = 1;\n');
+  await writeFile(path.join(repo, '.env.example'), 'API_KEY=\n');
+  await git(repo, ['add', 'src/plain.js', '.env.example']);
+  await git(repo, ['commit', '-m', 'feat: plain change with env template']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  assert.equal(gateDag.nodes.some((node) => node.id === 'gate:safety_secret_surface'), false);
+});
+
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

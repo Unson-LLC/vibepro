@@ -868,6 +868,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle') {
     return `Close the agent review evidence lifecycle for the current git state (\`vibepro review prepare\` -> dispatch -> \`vibepro review record ...\`), or record a waiver decision (\`vibepro decision record --source gate:judgment_agent_workflow_evidence_lifecycle --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:safety_secret_surface') {
+    return `Record a secret_exposure decision (\`vibepro decision record --type secret_exposure --secret-location <ref> --secret-action redacted|rotated|revoked|false_positive\`) or a waiver against gate:safety_secret_surface: ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
@@ -4133,6 +4136,45 @@ function hasSecurityRegressionEvidence({ verificationEvidence = null, decisionRe
   });
 }
 
+function detectSafetySurfaceFiles(fileGroups = {}) {
+  const all = Object.values(fileGroups ?? {}).flatMap((group) => group?.files ?? []);
+  const isSecretSurface = (p) => {
+    const base = p.split('/').pop() ?? p;
+    // Template/example env files are safe by convention.
+    if (/^\.env(\.[\w.-]+)?$/.test(base) && !/\.(example|sample|template|dist)$/.test(base)) return true;
+    if (/(^|\.)(npmrc|pypirc|netrc)$/.test(base)) return true;
+    if (/\.(pem|p12|pfx|keystore|jks)$/.test(base)) return true;
+    if (/\.key$/.test(base) && !/\.pub\.key$/.test(base)) return true;
+    if (/^id_(rsa|ed25519|ecdsa|dsa)$/.test(base)) return true; // private keys (exclude .pub)
+    if (/(^|[\/_.-])(secret|secrets|credential|credentials)([\/_.-]|$)/i.test(p) && !/\.(example|sample|template)$/.test(base)) return true;
+    return false;
+  };
+  return all.filter(isSecretSurface);
+}
+
+function hasSafetyDecision(decisionRecords, source) {
+  if (findAcceptedDecisionForSource(decisionRecords, source)) return true;
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  return decisions.some((decision) => decision.type === 'secret_exposure' && decision.status === 'accepted');
+}
+
+function buildSafetySecretSurfaceGate(fileGroups, decisionRecords = null) {
+  const files = detectSafetySurfaceFiles(fileGroups);
+  if (files.length === 0) return null;
+  const resolved = hasSafetyDecision(decisionRecords, 'gate:safety_secret_surface');
+  return {
+    id: 'gate:safety_secret_surface',
+    type: 'safety_surface_gate',
+    label: 'Secret/Credential Safety Gate',
+    status: resolved ? 'passed' : 'needs_evidence',
+    required: true,
+    surface_files: files.slice(0, 20),
+    reason: resolved
+      ? 'Secret/credential surface change is covered by a recorded secret_exposure or waiver decision'
+      : 'Change touches secret/credential surfaces; record a secret_exposure decision (--secret-action redacted|rotated|revoked|false_positive) or an explicit waiver against gate:safety_secret_surface before PR creation'
+  };
+}
+
 function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null } = {}) {
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
   if (!agentReviews) return false;
@@ -4232,6 +4274,7 @@ function buildGateDag({
   const ciStatusOrWaiverGate = buildCiStatusOrWaiverGate(prRoute, verificationEvidence, decisionRecords);
   const vibeproArtifactPolicyGate = buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords);
   const splitResolutionGate = buildSplitResolutionGate(scope, prRoute, decisionRecords);
+  const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git);
@@ -4306,6 +4349,7 @@ function buildGateDag({
     ...(ciStatusOrWaiverGate ? [ciStatusOrWaiverGate] : []),
     ...(vibeproArtifactPolicyGate ? [vibeproArtifactPolicyGate] : []),
     ...(splitResolutionGate ? [splitResolutionGate] : []),
+    ...(safetySecretSurfaceGate ? [safetySecretSurfaceGate] : []),
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
@@ -4369,6 +4413,10 @@ function buildGateDag({
     ...(splitResolutionGate ? [
       { from: 'gate:pr_route_classification', to: 'gate:split_resolution' },
       { from: 'gate:split_resolution', to: 'gate:pr_body_contract' }
+    ] : []),
+    ...(safetySecretSurfaceGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:safety_secret_surface' },
+      { from: 'gate:safety_secret_surface', to: 'gate:pr_body_contract' }
     ] : []),
     { from: 'gate:pr_body_contract', to: 'gate:change_classification' },
     { from: 'gate:change_classification', to: 'gate:pr_freshness' },
@@ -5705,6 +5753,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'split_resolution_gate',
       'security_regression_gate',
       'agent_evidence_lifecycle_gate',
+      'safety_surface_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
