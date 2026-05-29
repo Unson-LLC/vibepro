@@ -1,67 +1,51 @@
 # VibePro
 
-![VibePro README header](docs/assets/vibepro-header.png)
-
 [![Language: English](https://img.shields.io/badge/Language-English-blue)](README.md)
 [![Language: Japanese](https://img.shields.io/badge/Language-%E6%97%A5%E6%9C%AC%E8%AA%9E-green)](README.ja.md)
 [![Node.js >=20](https://img.shields.io/badge/Node.js-%3E%3D20-339933)](package.json)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue)](LICENSE)
 
-Stop babysitting AI. Ship what you meant to build.
+VibePro is a CLI control plane for safer AI-driven PRs. It turns a feature story into architecture, spec, verification, agent-review, and PR evidence, then blocks PR creation until the required gates are satisfied.
 
-VibePro helps you delegate implementation to Codex, Claude Code, and other AI coding agents without losing product intent, architecture boundaries, or quality standards.
-
-It turns what you mean to build into repo-local `.vibepro/` artifacts: Story, Architecture, Spec, Task, risk-adaptive Gate DAG, verification evidence, agent review evidence, and PR evidence. AI agents can work from those artifacts in parallel, while humans keep control of what counts as done.
-
-When required evidence is missing, VibePro stops the workflow mechanically. It can ask for role-based Codex or Claude Code reviews along the way, bind their results to the current git state, and keep PR creation blocked until the required gates, waivers, or decision records exist.
+VibePro does not rewrite your application by itself. It creates a repo-local `.vibepro/` workspace and stores the evidence that an engineer or coding agent needs before changing, reviewing, or merging code.
 
 ## Why VibePro
 
-AI coding is fast when the task is small. It gets expensive when the product has to stay coherent.
+AI coding is fast until the final 20%: missing requirements, untested UI flows, broken API contracts, vague review scope, and PRs that look complete but are not actually usable. The bigger risk is that a broad workflow change can still look like an ordinary unit/API change.
 
-The real problem is not whether AI can write code. It can. The problem is keeping the product on track while multiple agents touch UI, APIs, data flows, performance paths, security boundaries, architectural responsibilities, and workflow state.
-
-That requires more than a checklist at the end. VibePro carries evidence through the work: it prepares the handoff, expands gates when risk increases, requests focused subagent reviews when needed, and refuses to treat the PR as ready when required artifacts are missing.
-
-VibePro gives AI work a product contract:
+VibePro is designed to make that final stretch explicit:
 
 - Story: what user value must be delivered.
-- Architecture: which boundaries, responsibilities, and dependency directions must hold.
-- Spec: which behaviors, invariants, and acceptance criteria define success.
-- Tasks: what can be handed to an agent without blurring scope.
+- Architecture: which boundaries and responsibilities must be preserved.
+- Spec: which behaviors and invariants must hold.
+- Code: what actually changed.
+- Gates: which unit, integration, E2E, performance, security, and review evidence is still missing.
 - Risk profile: whether the change is light, API contract, UI interaction, or workflow-heavy.
-- Gates: which UI, E2E, performance, security, integration, workflow, and review evidence is still missing.
-- Agent reviews: which Codex, Claude Code, or human review roles must pass for the current risk profile.
-- PR evidence: what humans and AI agents should read before changing, reviewing, or merging code.
+- PR evidence: what humans and AI agents should read before continuing.
 
-The intended workflow:
+The intended workflow is:
 
 ```text
-Story -> Architecture -> Spec -> Task -> AI Implementation -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
+Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
 ```
 
-VibePro does not write the app for you. It defines what must be true before an AI-made change can be merged.
-
-A small edit may only need tests. A change that affects user flows, API or data contracts, performance, security, or agent reviews needs stronger proof. VibePro expands the gates for that risk and blocks PR creation until the required evidence is present.
-
-That is the point: you can hand implementation to Codex or Claude Code without letting the product drift away from what you meant to build.
+Once the story and architecture are clear, implementation can be handed to AI agents with much less ambiguity. When the change touches workflow state, runtime contracts, verification evidence, or review orchestration, VibePro expands the Gate DAG automatically instead of treating the PR like a narrow code change.
 
 ## Features
 
-- Product-intent artifacts: Story, Architecture, Spec, Task, and acceptance criteria stored in `.vibepro/`.
-- Graphify-backed impact context: import code graphs so stories and tasks can point agents at the right files, hubs, and neighboring responsibilities.
-- Agent handoff packages: generate task briefs, implementation plans, and handoff artifacts for Codex, Claude Code, or human engineers.
-- Risk-adaptive Gate DAGs: show which quality gates block completion, including workflow-heavy release checks when the change is broader than a narrow code edit.
-- Mechanical gate blocking: keep PR creation blocked until required verification, review, waiver, and decision-record evidence exists.
-- Role-based agent reviews: prepare focused Codex/Claude Code review requests and record provenance for parallel subagent reviews against the current git state.
-- PR evidence: generate `pr-body.md`, `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` before opening a PR.
-- Quality checks: UI, flow design, gesture interaction, network contracts, security boundaries, database access, local dev, code quality, architecture, PR readiness, and launch readiness.
-- Verification evidence: record unit, integration, E2E, build, type-check, and Playwright flow results against the current git state.
-- Performance evidence: define metrics, record runs, and compare before/after behavior for story-level performance claims.
-- Decision records: capture `needs_review`, noise triage, waivers, and secret exposure decisions as VibePro artifacts instead of chat-only context.
-- PR create enforcement: use `vibepro pr create` so unresolved gates and waiver reasons are captured before the PR opens.
-- Design modernization: derive VibePro-native Design System artifacts and modernization plans from existing routes, code, style evidence, and optional Graphify context.
-- Skills and Codex instruction installation for standardizing AI-driven workflows.
+- Story, architecture, and spec aware PR preparation
+- Requirement consistency checks against changed code
+- Risk-adaptive Gate DAGs for completion dependencies and workflow-heavy release checks
+- PR split planning for large or risky changes
+- Verification evidence recording for unit, integration, E2E, build, and type-check results
+- Playwright-based flow verification with network error detection
+- Performance evidence definitions, run recording, and before/after comparison
+- Diagnosis packs for UI, security, performance, architecture, PR readiness, and launch readiness
+- Agent review requests and risk-adaptive review evidence recording
+- `vibepro pr create` path enforcement so unresolved gates and waiver reasons are captured
+- `design-system derive` for VibePro-native Design System artifacts from existing routes, code, style evidence, and optional Graphify context
+- `design-modernize` planning and derived Design System generation for existing UI modernization without changing current information architecture
+- Skills and Codex instruction installation for standardizing AI-driven workflows
 
 ## Installation
 
@@ -93,24 +77,6 @@ For local development of VibePro itself:
 ```bash
 npm install
 node bin/vibepro.js --help
-```
-
-## Set Up a Target Repository for AI Agents
-
-After installing VibePro, install the bundled Claude / Claude Code skills and Codex instructions into each repository where agents will work:
-
-```bash
-vibepro skills install /path/to/repo
-vibepro skills verify /path/to/repo
-
-vibepro codex install /path/to/repo
-vibepro codex verify /path/to/repo
-```
-
-This gives agents the local VibePro workflow: read the Story and Spec, produce verification evidence, record reviews and decisions, and respect PR gates. You can inspect what will be installed first:
-
-```bash
-vibepro skills list
 ```
 
 ## Optional Integration: Graphify
@@ -269,84 +235,6 @@ The most important PR artifacts are:
 - `pr-prepare.json`: machine-readable source of truth for agents.
 
 Humans usually read the Markdown and HTML artifacts. AI agents should receive `pr-body.md`, `review-cockpit.html`, `gate-dag.html`, `split-plan.html`, and the relevant JSON artifacts.
-
-## Configuration
-
-VibePro stores repo-local settings in `.vibepro/config.json`. Run `vibepro init` once in the target repository to create it:
-
-```bash
-npx vibepro init /path/to/repo \
-  --story-id story-<short-name> \
-  --title "<feature or bug title>" \
-  --language en
-```
-
-The default config looks like this:
-
-```json
-{
-  "schema_version": "0.1.0",
-  "tool": "vibepro",
-  "workspace": ".vibepro",
-  "output": {
-    "language": "en"
-  },
-  "brainbase": {
-    "stories": [
-      {
-        "story_id": "story-<short-name>",
-        "title": "<feature or bug title>",
-        "status": "active"
-      }
-    ]
-  }
-}
-```
-
-Important fields:
-
-- `output.language`: human-facing output language. Supported values are `ja` and `en`.
-- `brainbase.stories[]`: local Story catalog used by `story diagnose`, `pr prepare`, `checkpoint`, `verify record`, and Agent Review commands.
-- `brainbase.current_story_id`: optional default Story when a command does not receive `--story-id` / `--id`.
-- `brainbase.stories[].performanceMetrics[]`: optional Story-bound performance contracts created by `vibepro performance define`.
-- `flow_design`: optional UI-flow scanning and runtime probe settings used by `diagnose` and `verify flow`.
-
-Use the CLI for common config updates:
-
-```bash
-npx vibepro config language /path/to/repo --language ja
-npx vibepro performance define /path/to/repo --id <story-id> --metric-id <metric-id> \
-  --user-story "<user action>" \
-  --start-condition "<start condition>" \
-  --completion-condition "<completion condition>"
-```
-
-`flow_design` is edited in `.vibepro/config.json` when you need product-specific UI contracts or runtime probes:
-
-```json
-{
-  "flow_design": {
-    "profile": "case-management",
-    "value_contract": {
-      "forbidden_labels": ["退院予定日"],
-      "required_labels": ["退院目標日"]
-    },
-    "runtime_probes": [
-      {
-        "id": "readonly-search",
-        "title": "Readonly search path",
-        "path": "/search",
-        "mutates": false,
-        "steps": [
-          { "action": "expectVisible", "text": "Search" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-`.vibepro/` is a local evidence workspace and is added to `.gitignore` by `vibepro init`. Do not commit `.vibepro/` artifacts unless your repository has an explicit policy for storing generated evidence. Do commit Story / Spec / Architecture documents under `docs/` when they are the durable source of truth for a change.
 
 ## Common Workflows
 
