@@ -48,6 +48,8 @@ The common judgment spine and most route-specific judgment gates are advisory (`
 
 As a narrow first step, the `security_trust` route promotes `gate:judgment_security_trust_security_regression` to an evidence-backed gate (`type: security_regression_gate`). It is `needs_evidence` (blocking, but waivable with a recorded reason) until either a current-bound passing security regression test is recorded, or an explicit waiver decision is recorded against `gate:judgment_security_trust_security_regression`. Enforcement is deliberately scoped to one concrete, checkable artifact and grown only after observing real waiver behavior, so high-value routes gain teeth without adding blanket friction.
 
+The `agent_workflow` route adds the second enforced gate, `gate:judgment_agent_workflow_evidence_lifecycle` (`type: agent_evidence_lifecycle_gate`). This is the **route axis**, not the risk axis: `gate:agent_review` already scales staged reviews by risk profile, but a change to agent/gate/dag/skill/mcp machinery can classify as low risk and still ship with zero agent-review evidence. The lifecycle gate closes that gap. It reuses the existing `agent_reviews` lifecycle data (`required_review_count`, `unmet_required_review_count`, `stale_result_count`, `lifecycle_timed_out_count`, `block_result_count`) and is `passed` only when that lifecycle is closed for the current git state (or a waiver is recorded against the gate source). The other agent_workflow judgment gates (`context_acquisition`, `tool_boundary`, `delegation_policy`, `human_decision_contract`) stay advisory; `delegation_policy` is the natural next candidate to enforce on higher-risk agent changes.
+
 ## Connectivity
 
 `gate:dag_connectivity` checks that every DAG node except the final `pr` node:

@@ -7697,6 +7697,67 @@ test('security_trust route enforces the security regression judgment gate with e
   );
 });
 
+test('agent_workflow route enforces the evidence lifecycle judgment gate with evidence or waiver', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'agent-review.js'),
+    'export function buildAgentReviewGate() { return "mcp subagent codex review gate dag skill"; }\n'
+  );
+  await git(repo, ['add', 'src/agent-review.js']);
+  await git(repo, ['commit', '-m', 'feat: add agent subagent review gate']);
+
+  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(unresolved.exitCode, 0);
+  const prepare = unresolved.result.preparation;
+  assert.equal(prepare.pr_context.engineering_judgment.route_type, 'agent_workflow');
+  const gateDag = prepare.pr_context.gate_dag;
+  const lifecycleGate = gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_evidence_lifecycle');
+  // The agent evidence-lifecycle judgment gate is promoted to an evidence-backed gate.
+  assert.equal(lifecycleGate?.type, 'agent_evidence_lifecycle_gate');
+  assert.equal(lifecycleGate?.status, 'needs_evidence');
+  assert.equal(lifecycleGate?.required, true);
+  // Sibling agent_workflow judgment gates stay advisory (narrow, route-axis enforcement).
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_tool_boundary')?.type, 'route_specific_judgment_gate');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_tool_boundary')?.status, 'passed');
+  // It blocks PR creation and shows up as an unresolved gate.
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(
+    prepare.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle'),
+    true
+  );
+  // DAG stays connected after the status change.
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+
+  // An explicit waiver decision resolves the gate.
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:judgment_agent_workflow_evidence_lifecycle',
+    '--summary',
+    'Agent skill doc tweak; no runtime agent behavior path changed.',
+    '--reason',
+    'Reviewed: no behavioral agent change, recorded agent review evidence not warranted.',
+    '--reviewer',
+    'codex',
+    '--json'
+  ]);
+  const waived = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const waivedGate = waived.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:judgment_agent_workflow_evidence_lifecycle');
+  assert.equal(waivedGate?.status, 'passed');
+  assert.equal(
+    waived.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle'),
+    false
+  );
+});
+
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
