@@ -52,10 +52,19 @@ test('story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route class
   const prepare = await runVibepro(repo, ['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID]);
 
   assert.equal(prepare.pr_context.pr_route.route_type, 'docs_only');
+  assert.equal(prepare.pr_context.engineering_judgment.route_type, 'agent_workflow');
+  assert.equal(nodeById(prepare, 'gate:engineering_judgment_route').status, 'passed');
+  assert.equal(nodeById(prepare, 'gate:common_judgment_spine').status, 'passed');
+  assert.equal(nodeById(prepare, 'gate:judgment_agent_workflow_context_acquisition').status, 'passed');
+  assert.equal(nodeById(prepare, 'gate:dag_connectivity').status, 'passed');
+  assert.deepEqual(nodeById(prepare, 'gate:dag_connectivity').unreachable_nodes, []);
+  assert.deepEqual(nodeById(prepare, 'gate:dag_connectivity').dead_end_nodes, []);
   assert.equal(nodeById(prepare, 'gate:pr_route_classification').status, 'passed');
   assert.equal(nodeById(prepare, 'gate:pr_body_contract').status, 'passed');
+  assert.equal(prepare.pr_context.gate_dag.summary.engineering_judgment_dag, 'agent_workflow_dag');
   assert.equal(prepare.pr_context.gate_dag.summary.pr_body_template, 'documentation_decision_review');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
   assert.match(prBody, /PR Route: docs_only \/ body=documentation_decision_review/);
   assert.match(prBody, /### 判断グラフ/);
   assert.match('`vibepro pr prepare` はPR routeを `gate:pr_route_classification` としてGate DAGに出す。', /gate:pr_route_classification/);
@@ -72,7 +81,10 @@ test('story-vibepro-pr-route-gate-dag ac3 executes mirror and release routes wit
   await run('git', ['add', 'src/mirror.js'], mirrorRepo);
   await run('git', ['commit', '-m', 'sync: deploy mirror'], mirrorRepo);
   const mirrorPrepare = await runVibepro(mirrorRepo, ['pr', 'prepare', mirrorRepo, '--base', 'main', '--story-id', STORY_ID]);
+  assert.equal(mirrorPrepare.pr_context.engineering_judgment.route_type, 'release_engineering');
   assert.equal(mirrorPrepare.pr_context.pr_route.route_type, 'mirror_sync');
+  assert.equal(nodeById(mirrorPrepare, 'gate:judgment_release_engineering_release_traceability').status, 'passed');
+  assert.equal(nodeById(mirrorPrepare, 'gate:dag_connectivity').status, 'passed');
   assert.equal(nodeById(mirrorPrepare, 'gate:mirror_source_traceability').status, 'needs_evidence');
   assert.equal(nodeById(mirrorPrepare, 'gate:ci_status_or_waiver').status, 'needs_evidence');
 

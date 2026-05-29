@@ -5030,7 +5030,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
   assert.match(prBody, /\[src\/feature\/pr-prepare.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/src\/feature\/pr-prepare.js\)/);
   assert.match(prBody, /\[tests\/unit\/pr-prepare.test.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/tests\/unit\/pr-prepare.test.js\)/);
-  assert.match(prBody, /- 証跡: PR Route passed \/ PR Body passed \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed/);
+  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed \/ DAG Connectivity passed/);
   assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
@@ -7600,6 +7600,40 @@ test('pr prepare classifies docs-only PR route and renders the route contract', 
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:pr_body_contract')?.status, 'passed');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /PR Route: docs_only \/ body=documentation_decision_review/);
+});
+
+test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'pr-manager.js'),
+    'export function buildAgentGateDag() { return "agent workflow gate"; }\n'
+  );
+  await git(repo, ['add', 'src/pr-manager.js']);
+  await git(repo, ['commit', '-m', 'feat: add agent workflow gate']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.pr_context.engineering_judgment.route_type, 'agent_workflow');
+  assert.equal(prepare.pr_context.engineering_judgment.route_dag, 'agent_workflow_dag');
+  const gateDag = prepare.pr_context.gate_dag;
+  assert.equal(gateDag.summary.engineering_judgment_route, 'agent_workflow');
+  assert.equal(gateDag.summary.engineering_judgment_dag, 'agent_workflow_dag');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:engineering_judgment_route')?.status, 'passed');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine')?.status, 'passed');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_context_acquisition')?.status, 'passed');
+  const connectivityGate = gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity');
+  assert.equal(connectivityGate?.status, 'passed');
+  assert.deepEqual(connectivityGate?.unreachable_nodes, []);
+  assert.deepEqual(connectivityGate?.dead_end_nodes, []);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:engineering_judgment_route'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_agent_workflow_context_acquisition'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_agent_workflow_context_acquisition' && edge.to === 'gate:pr_route_classification'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
 });
 
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {

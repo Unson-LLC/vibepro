@@ -1536,6 +1536,7 @@ ${renderPrSplitSection(splitPlan)}
 ## VibePro
 - latest story run: ${latestStoryRun?.run_id ?? '-'}
 - gate: ${latestStoryRun?.gate_status ?? '-'}
+- Engineering Judgment: ${prContext.engineering_judgment?.route_type ?? '-'} (${prContext.engineering_judgment?.route_dag ?? '-'})
 - PR route: ${prContext.pr_route?.route_type ?? '-'} (${prContext.pr_route?.body_template ?? '-'})
 - PR strategy: ${scope.recommended_strategy}
 - runtime: ${renderRuntimeSummary(prContext, story)}
@@ -1563,6 +1564,7 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   return `## このPRで決めたいこと
 - このPRで閉じる問い: ${reviewQuestion}
 - Story: ${storyLabel}
+- Engineering Judgment: ${formatEngineeringJudgmentForHuman(prContext.engineering_judgment)}
 - PR Route: ${formatPrRouteForHuman(prContext.pr_route)}
 - 判断: ${decision}
 - レビュー入口: ${primaryReviewAreas}
@@ -1589,6 +1591,14 @@ function formatPrRouteForHuman(prRoute) {
   return `${prRoute.route_type} / body=${prRoute.body_template} / confidence=${confidence} / required=${sections}`;
 }
 
+function formatEngineeringJudgmentForHuman(engineeringJudgment) {
+  if (!engineeringJudgment) return '未分類';
+  const confidence = typeof engineeringJudgment.confidence === 'number'
+    ? `${Math.round(engineeringJudgment.confidence * 100)}%`
+    : '-';
+  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}`;
+}
+
 function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
   const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
   const sourcePath = source.path ?? 'Story未検出';
@@ -1599,8 +1609,12 @@ function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan,
   const route = gateDag?.summary?.pr_route
     ? `${gateDag.summary.pr_route} / body=${gateDag.summary.pr_body_template ?? '-'}`
     : '未分類';
+  const engineering = gateDag?.summary?.engineering_judgment_route
+    ? `${gateDag.summary.engineering_judgment_route} / dag=${gateDag.summary.engineering_judgment_dag ?? '-'}`
+    : '未分類';
   return [
     `- 目的: ${title}`,
+    `- Engineering Judgment: ${engineering}`,
     `- PR Route: ${route}`,
     `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
     `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
@@ -1664,6 +1678,8 @@ function buildHumanChangeIntent(fileGroups) {
 function buildHumanEvidenceDigest(gateDag) {
   const nodes = gateDag?.nodes ?? [];
   const labels = [
+    ['gate:engineering_judgment_route', 'Engineering Judgment'],
+    ['gate:common_judgment_spine', 'Judgment Spine'],
     ['gate:pr_route_classification', 'PR Route'],
     ['gate:pr_body_contract', 'PR Body'],
     ['gate:mirror_source_traceability', 'Source Trace'],
@@ -1675,7 +1691,8 @@ function buildHumanEvidenceDigest(gateDag) {
     ['gate:integration', 'Integration'],
     ['gate:e2e', 'E2E'],
     ['gate:agent_review', 'Agent Review'],
-    ['gate:network_contract', 'Network Contract']
+    ['gate:network_contract', 'Network Contract'],
+    ['gate:dag_connectivity', 'DAG Connectivity']
   ].map(([id, label]) => {
     const node = nodes.find((item) => item.id === id);
     if (!node) return null;
@@ -2595,6 +2612,13 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     scope,
     changeClassification
   });
+  const engineeringJudgment = buildEngineeringJudgmentClassification({
+    fileGroups,
+    storySource: primaryStory,
+    changeClassification,
+    prRoute,
+    networkContracts
+  });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
@@ -2614,6 +2638,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     architecture_decision: architectureDecision,
     requirement_consistency: requirementConsistency,
     pr_route: prRoute,
+    engineering_judgment: engineeringJudgment,
     change_classification: changeClassification,
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
@@ -2662,6 +2687,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     inferredSpec,
     specDrift,
     changeClassification,
+    engineeringJudgment,
     git,
     scope,
     prRoute
@@ -3725,6 +3751,190 @@ function buildPrRouteGate(prRoute) {
   };
 }
 
+function buildEngineeringJudgmentClassification({
+  fileGroups = {},
+  storySource = {},
+  changeClassification = null,
+  prRoute = null,
+  networkContracts = null
+} = {}) {
+  const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
+  const text = [
+    storySource?.title,
+    storySource?.requirement_title,
+    storySource?.background,
+    storySource?.policy,
+    ...(storySource?.acceptance_criteria ?? []),
+    ...files
+  ].filter(Boolean).join('\n').toLowerCase();
+  const route = {
+    route_type: 'general_engineering',
+    label: 'General Engineering',
+    confidence: 0.5,
+    route_dag: 'general_engineering_dag',
+    signals: []
+  };
+  const setRoute = (routeType, label, confidence, routeDag, signals) => {
+    route.route_type = routeType;
+    route.label = label;
+    route.confidence = confidence;
+    route.route_dag = routeDag;
+    route.signals.push(...signals);
+  };
+
+  if (/\b(release|deploy|publish|appcast|notariz|rollout|rollback)\b|リリース|デプロイ/.test(text)
+    || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type)) {
+    setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
+  } else if (/\b(agent|subagent|review|gate|dag|skill|mcp|codex|claude)\b|エージェント/.test(text)
+    || changeClassification?.risk_surfaces?.includes('gate_orchestration')
+    || changeClassification?.risk_surfaces?.includes('review_lifecycle')) {
+    setRoute('agent_workflow', 'AI Agent Workflow', 0.82, 'agent_workflow_dag', ['surface:agent_or_gate_workflow']);
+  } else if (/\b(auth|permission|security|secret|token|oauth|saml|rbac|acl|middleware)\b|権限|認証|監査/.test(text)
+    || changeClassification?.risk_surfaces?.includes('auth_boundary')) {
+    setRoute('security_trust', 'Security / Trust', 0.82, 'security_trust_dag', ['surface:auth_or_security']);
+  } else if (/\b(migration|schema|database|db|prisma|repository|backfill|etl|pipeline)\b|移行|データ|集計/.test(text)
+    || changeClassification?.risk_surfaces?.includes('database_state')) {
+    setRoute('data_pipeline', 'Data / Migration', 0.8, 'data_migration_dag', ['surface:data_or_migration']);
+  } else if (/\b(customer|invoice|billing|contract|approval|order|inventory|reservation|tenant|workflow)\b|業務|顧客|請求|契約|承認|在庫|予約/.test(text)) {
+    setRoute('business_system', 'Business System', 0.78, 'business_system_dag', ['domain:business_workflow']);
+  } else if (prRoute?.route_type === 'design_or_ui_change' || hasUiExperienceSourceChange(fileGroups)) {
+    setRoute('ui_ux_modernization', 'UI / UX Modernization', 0.76, 'ui_ux_modernization_dag', ['surface:ui_ux']);
+  } else if (/\b(cli|daemon|doctor|config|install|cache|local|tool|developer)\b/.test(text)) {
+    setRoute('developer_tool', 'Developer Tool', 0.74, 'developer_tool_dag', ['surface:developer_tool']);
+  } else if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0 || changeClassification?.risk_surfaces?.includes('server_api')) {
+    setRoute('api_platform', 'API Platform', 0.72, 'api_platform_dag', ['surface:api_contract']);
+  } else if ((fileGroups.repo_control?.count ?? 0) > 0) {
+    setRoute('infra_ops', 'Infra / Ops', 0.7, 'infra_ops_dag', ['surface:repo_control']);
+  } else if (prRoute?.route_type === 'docs_only') {
+    setRoute('knowledge_docs', 'Knowledge / Docs', 0.68, 'knowledge_docs_dag', ['surface:docs_only']);
+  }
+
+  if (changeClassification?.profile) route.signals.push(`risk_profile:${changeClassification.profile}`);
+  return {
+    schema_version: '0.1.0',
+    ...route,
+    common_spine: [
+      'intent',
+      'current_reality',
+      'invariants',
+      'domain_or_system_model',
+      'boundary',
+      'risk_classification',
+      'route_dag_selection',
+      'evidence_requirements',
+      'implementation_plan',
+      'verification',
+      'human_decision_contract',
+      'release_or_operation'
+    ]
+  };
+}
+
+function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
+  return {
+    id: 'gate:engineering_judgment_route',
+    type: 'engineering_judgment_route_gate',
+    label: 'Engineering Judgment Route Gate',
+    status: engineeringJudgment?.route_type ? 'passed' : 'needs_review',
+    required: true,
+    route_type: engineeringJudgment?.route_type ?? 'unknown',
+    route_dag: engineeringJudgment?.route_dag ?? null,
+    confidence: engineeringJudgment?.confidence ?? null,
+    signals: engineeringJudgment?.signals ?? [],
+    reason: engineeringJudgment?.route_type
+      ? `Engineering judgment route selected: ${engineeringJudgment.route_type}; DAG=${engineeringJudgment.route_dag}`
+      : 'Engineering judgment route could not be classified'
+  };
+}
+
+function buildCommonJudgmentSpineGate(engineeringJudgment) {
+  return {
+    id: 'gate:common_judgment_spine',
+    type: 'engineering_judgment_spine_gate',
+    label: 'Common Judgment Spine Gate',
+    status: 'passed',
+    required: true,
+    spine: engineeringJudgment?.common_spine ?? [],
+    reason: 'Intent, current reality, invariants, model, boundary, risk, evidence, verification, decision, and operation are the common judgment spine for every route DAG'
+  };
+}
+
+function buildRouteSpecificJudgmentGates(engineeringJudgment) {
+  const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
+  const definitions = {
+    business_system: [
+      ['business_reality', 'Business Reality Gate', '現場業務、例外運用、正本、締め/承認/監査影響を先に読む'],
+      ['domain_model', 'Domain Model Gate', '顧客、契約、請求、承認、在庫などの業務概念と関係をモデル化する'],
+      ['state_transition', 'State Transition Gate', 'draft/submitted/approved のような業務状態遷移を明示する'],
+      ['data_integrity', 'Data Integrity Gate', '既存データ、集計、移行、再実行、監査ログの整合性を守る'],
+      ['permission_matrix', 'Permission Matrix Gate', '誰が閲覧/編集/承認できるかをUI/APIの両方で固定する'],
+      ['operational_closure', 'Operational Closure Gate', '問い合わせ、監視、rollback、運用手順まで閉じる']
+    ],
+    developer_tool: [
+      ['developer_friction', 'Developer Friction Gate', '実際の開発摩擦を最小単位で定義する'],
+      ['workflow_loop', 'Workflow Loop Gate', 'copy/run/debug/release のような作業ループを閉じる'],
+      ['cli_api_contract', 'CLI / API Contract Gate', '人間向け出力、機械向けJSON、exit code、config precedenceを固定する'],
+      ['local_first_state', 'Local-First State Gate', '外部状態をローカルで高速・再現可能に読む'],
+      ['fast_feedback', 'Fast Feedback Gate', 'doctor/check/watch/smoke で短い検証ループを作る'],
+      ['install_release_path', 'Install / Release Path Gate', 'install、upgrade、package、releaseの導線を設計する']
+    ],
+    ui_ux_modernization: [
+      ['current_ux', 'Current UX Gate', '現行導線、情報構造、ユーザーが依存する表示を固定する'],
+      ['ux_invariants', 'UX Invariant Gate', '変えてよい見た目と壊してはいけない操作を分ける'],
+      ['interaction_states', 'Interaction State Gate', 'loading/error/empty/disabled/hover/focusなどの状態を設計する'],
+      ['visual_verification', 'Visual Verification Gate', '実ブラウザ/スクリーンショット/残差で見た目を確認する']
+    ],
+    agent_workflow: [
+      ['context_acquisition', 'Context Acquisition Gate', 'agentが読むべきrepo/docs/log/graph/current stateを先に集める'],
+      ['tool_boundary', 'Tool Boundary Gate', 'どのtool/agentがどの副作用を持つかを分離する'],
+      ['delegation_policy', 'Delegation Policy Gate', 'どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く'],
+      ['evidence_lifecycle', 'Evidence Lifecycle Gate', 'start/record/close/stale/timed-outを証跡として閉じる'],
+      ['human_decision_contract', 'Human Decision Contract Gate', '最後に人間が判断する問いと根拠をPRに出す']
+    ],
+    data_pipeline: [
+      ['source_of_truth', 'Source of Truth Gate', '入力、正本、外部ID、同期境界を決める'],
+      ['migration_rollback', 'Migration / Rollback Gate', '移行、再実行、rollback、backfillを設計する'],
+      ['idempotency', 'Idempotency Gate', '重複実行、partial failure、retryで壊れないことを確認する']
+    ],
+    security_trust: [
+      ['threat_model', 'Threat Model Gate', '攻撃経路、信頼境界、secret/token露出をモデル化する'],
+      ['permission_enforcement', 'Permission Enforcement Gate', 'UI非表示ではなくAPI/DB境界で権限を守る'],
+      ['security_regression', 'Security Regression Gate', '再発防止テストと監査証跡を残す']
+    ],
+    release_engineering: [
+      ['release_traceability', 'Release Traceability Gate', 'source PR/commit/tag/changelog/CIを結びつける'],
+      ['artifact_verification', 'Artifact Verification Gate', 'package、署名、appcast、tarball、integrityを確認する'],
+      ['rollout_rollback', 'Rollout / Rollback Gate', '配布後検証、rollback、ユーザー影響を分ける']
+    ],
+    api_platform: [
+      ['api_contract', 'API Contract Gate', 'route、client call、schema、error shape、compatを固定する'],
+      ['boundary_validation', 'Boundary Validation Gate', 'validation/auth/rate limit/idempotencyを境界で守る']
+    ],
+    infra_ops: [
+      ['blast_radius', 'Blast Radius Gate', '設定/CI/infra変更の影響範囲とrollbackを読む'],
+      ['ops_observability', 'Ops Observability Gate', 'ログ、status、alert、rerun手順を確認する']
+    ],
+    knowledge_docs: [
+      ['reader_decision', 'Reader Decision Gate', '読者が何を判断/実行できるようになるかを明確にする'],
+      ['doc_freshness', 'Doc Freshness Gate', '現行仕様・コマンド・リンクと矛盾しないことを確認する']
+    ],
+    general_engineering: [
+      ['system_model', 'System Model Gate', '対象システムのモデルと境界を明示する'],
+      ['proof_plan', 'Proof Plan Gate', '変更に見合う証跡と検証ルートを選ぶ']
+    ]
+  };
+  return (definitions[routeType] ?? definitions.general_engineering).map(([suffix, label, reason]) => ({
+    id: `gate:judgment_${routeType}_${suffix}`,
+    type: 'route_specific_judgment_gate',
+    label,
+    status: 'passed',
+    required: true,
+    route_type: routeType,
+    route_dag: engineeringJudgment?.route_dag ?? `${routeType}_dag`,
+    reason
+  }));
+}
+
 function buildPrBodyContractGate(prRoute, { storySource, fileGroups, scope, git, verificationEvidence, decisionRecords }) {
   const hasStorySource = Boolean(storySource?.path);
   const hasDocIntent = (fileGroups.story_docs?.count ?? 0) > 0
@@ -3889,6 +4099,7 @@ function buildGateDag({
   inferredSpec = null,
   specDrift = null,
   changeClassification = null,
+  engineeringJudgment = null,
   git = null,
   scope = null,
   prRoute = null
@@ -3937,6 +4148,9 @@ function buildGateDag({
     required: true
   };
   const routeGate = buildPrRouteGate(prRoute);
+  const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
+  const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
+  const routeSpecificJudgmentGates = buildRouteSpecificJudgmentGates(engineeringJudgment);
   const prBodyContractGate = buildPrBodyContractGate(prRoute, {
     storySource,
     fileGroups,
@@ -4004,8 +4218,19 @@ function buildGateDag({
     e2eCoverage,
     verificationEvidence
   });
+  const dagConnectivityGate = {
+    id: 'gate:dag_connectivity',
+    type: 'dag_connectivity_gate',
+    label: 'DAG Connectivity Gate',
+    status: 'pending',
+    required: true,
+    reason: 'DAG connectivity has not been evaluated yet'
+  };
   const nodes = [
     storyGate,
+    engineeringJudgmentGate,
+    commonJudgmentSpineGate,
+    ...routeSpecificJudgmentGates,
     routeGate,
     prBodyContractGate,
     ...(mirrorSourceTraceabilityGate ? [mirrorSourceTraceabilityGate] : []),
@@ -4033,6 +4258,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    dagConnectivityGate,
     {
       id: 'pr',
       type: 'pr_gate',
@@ -4050,7 +4276,14 @@ function buildGateDag({
   }));
 
   const edges = [
-    { from: 'story', to: 'gate:pr_route_classification' },
+    { from: 'story', to: 'gate:engineering_judgment_route' },
+    { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
+    ...(routeSpecificJudgmentGates.length > 0
+      ? routeSpecificJudgmentGates.flatMap((gate) => [
+        { from: 'gate:common_judgment_spine', to: gate.id },
+        { from: gate.id, to: 'gate:pr_route_classification' }
+      ])
+      : [{ from: 'gate:common_judgment_spine', to: 'gate:pr_route_classification' }]),
     { from: 'gate:pr_route_classification', to: 'gate:pr_body_contract' },
     ...(mirrorSourceTraceabilityGate ? [
       { from: 'gate:pr_route_classification', to: 'gate:mirror_source_traceability' },
@@ -4113,12 +4346,17 @@ function buildGateDag({
         stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
       })
     ]),
-    { from: 'gate:agent_review', to: 'pr' }
+    { from: 'gate:agent_review', to: 'gate:dag_connectivity' },
+    { from: 'gate:dag_connectivity', to: 'pr' }
   ];
 
   const allNodes = [...nodes, ...acceptanceNodes];
+  Object.assign(dagConnectivityGate, buildDagConnectivityGate(allNodes, edges));
   const requiredGates = [
     storyGate,
+    engineeringJudgmentGate,
+    commonJudgmentSpineGate,
+    ...routeSpecificJudgmentGates,
     routeGate,
     prBodyContractGate,
     mirrorSourceTraceabilityGate,
@@ -4138,7 +4376,8 @@ function buildGateDag({
     visualQaGate,
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
-    agentReviewGate
+    agentReviewGate,
+    dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
   return {
@@ -4150,6 +4389,8 @@ function buildGateDag({
       acceptance_criteria_count: acceptanceCriteria.length,
       required_gate_count: requiredGates.length,
       needs_evidence_count: needsEvidence.length,
+      engineering_judgment_route: engineeringJudgment?.route_type ?? null,
+      engineering_judgment_dag: engineeringJudgment?.route_dag ?? null,
       pr_route: prRoute?.route_type ?? null,
       pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
@@ -4422,6 +4663,63 @@ function buildWorkflowHeavyEdges({ workflowHeavyGates, defaultUpstreamNodeId }) 
     { from: 'gate:workflow_flow_replay', to: 'gate:evidence_coverage' },
     { from: 'gate:evidence_coverage', to: 'gate:release_confidence' }
   ];
+}
+
+function buildDagConnectivityGate(nodes = [], edges = []) {
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const invalidEdges = edges.filter((edge) => !nodeIds.has(edge.from) || !nodeIds.has(edge.to));
+  const outgoing = new Map();
+  const incoming = new Map();
+  for (const node of nodes) {
+    outgoing.set(node.id, []);
+    incoming.set(node.id, []);
+  }
+  for (const edge of edges) {
+    if (!nodeIds.has(edge.from) || !nodeIds.has(edge.to)) continue;
+    outgoing.get(edge.from).push(edge.to);
+    incoming.get(edge.to).push(edge.from);
+  }
+  const fromStory = walkGraph('story', outgoing);
+  const toPr = walkGraph('pr', incoming);
+  const connectedNodes = nodes.filter((node) => node.id !== 'pr');
+  const unreachableNodes = connectedNodes
+    .filter((node) => !fromStory.has(node.id))
+    .map((node) => node.id);
+  const deadEndNodes = connectedNodes
+    .filter((node) => !toPr.has(node.id))
+    .map((node) => node.id);
+  const status = invalidEdges.length === 0 && unreachableNodes.length === 0 && deadEndNodes.length === 0
+    ? 'passed'
+    : 'needs_review';
+  return {
+    id: 'gate:dag_connectivity',
+    type: 'dag_connectivity_gate',
+    label: 'DAG Connectivity Gate',
+    status,
+    required: true,
+    invalid_edges: invalidEdges,
+    unreachable_nodes: unreachableNodes,
+    dead_end_nodes: deadEndNodes,
+    unreachable_required_nodes: unreachableNodes.filter((id) => nodes.find((node) => node.id === id)?.required === true),
+    dead_end_required_nodes: deadEndNodes.filter((id) => nodes.find((node) => node.id === id)?.required === true),
+    reason: status === 'passed'
+      ? 'Every DAG node is reachable from story and can reach the final PR decision'
+      : `DAG has ${invalidEdges.length} invalid edge(s), ${unreachableNodes.length} unreachable node(s), and ${deadEndNodes.length} node(s) that cannot reach PR`
+  };
+}
+
+function walkGraph(start, adjacency) {
+  const seen = new Set();
+  const queue = [start];
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current || seen.has(current)) continue;
+    seen.add(current);
+    for (const next of adjacency.get(current) ?? []) {
+      if (!seen.has(next)) queue.push(next);
+    }
+  }
+  return seen;
 }
 
 function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
