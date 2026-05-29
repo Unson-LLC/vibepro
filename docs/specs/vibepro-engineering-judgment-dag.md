@@ -20,6 +20,7 @@ title: Engineering Judgment DAG Spec
 - `S-EJD-3`: For VibePro agent/gate workflow changes, `engineering_judgment.route_type` is `agent_workflow` and context/tool/delegation/evidence lifecycle gates appear before PR route classification.
 - `S-EJD-4`: If a future node is added without a valid path from `story` to `pr`, DAG connectivity status is not `passed`.
 - `S-EJD-5`: For `security_trust` route changes, `gate:judgment_security_trust_security_regression` is an evidence-backed gate (`type: security_regression_gate`). Without a current-bound passing security regression test or an explicit waiver decision, its status is `needs_evidence` and `ready_for_pr_create` is `false`. A recorded waiver decision against the gate source resolves it. All other route-specific judgment gates remain advisory (`status: passed`).
+- `S-EJD-6`: For `agent_workflow` route changes, `gate:judgment_agent_workflow_evidence_lifecycle` is an evidence-backed gate (`type: agent_evidence_lifecycle_gate`), enforced on the route axis (agent/gate/dag/skill/mcp machinery) regardless of risk tier. Its status is `passed` only when the agent review evidence lifecycle is closed for the current git state (agent reviews `status: pass`, or a clean summary with `required_review_count > 0` and zero unmet/stale/timed-out/blocked results) or an explicit waiver decision is recorded against the gate source; otherwise `needs_evidence` and `ready_for_pr_create` is `false`. Sibling agent_workflow judgment gates remain advisory.
 
 ## Anti-Patterns
 
@@ -33,4 +34,5 @@ title: Engineering Judgment DAG Spec
 - `V-EJD-1`: E2E route tests assert Engineering Judgment nodes and DAG connectivity for docs-only and release/mirror routes.
 - `V-EJD-2`: Focused PR prepare tests assert `agent_workflow` classification for VibePro gate/runtime workflow changes.
 - `V-EJD-4`: A focused PR prepare test asserts the `security_trust` route's security regression gate is `needs_evidence` (blocking) without evidence and `passed` after a waiver decision, while sibling judgment gates stay advisory.
+- `V-EJD-5`: A focused PR prepare test asserts the `agent_workflow` route's evidence lifecycle gate is `needs_evidence` (blocking) without agent-review evidence and `passed` after a waiver decision, while sibling judgment gates stay advisory.
 - `V-EJD-3`: `node --check src/pr-manager.js` passes.

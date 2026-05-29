@@ -865,6 +865,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:judgment_security_trust_security_regression') {
     return `Record a current-bound passing security regression test, or a waiver decision (\`vibepro decision record --source gate:judgment_security_trust_security_regression --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle') {
+    return `Close the agent review evidence lifecycle for the current git state (\`vibepro review prepare\` -> dispatch -> \`vibepro review record ...\`), or record a waiver decision (\`vibepro decision record --source gate:judgment_agent_workflow_evidence_lifecycle --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
@@ -3953,6 +3956,21 @@ function buildRouteSpecificJudgmentGates(engineeringJudgment, evidenceContext = 
           : 'Security/trust route requires a current-bound passing security regression test, or an explicit waiver decision recorded against gate:judgment_security_trust_security_regression, before PR creation'
       };
     }
+    // Enforced on the route axis (not the risk axis): a change to agent/gate/dag/skill/mcp
+    // machinery must close its agent-review evidence lifecycle for the current git state,
+    // even when the risk profile would not otherwise require staged reviews. Resolved by a
+    // clean, current-bound recorded review or an explicit waiver decision.
+    if (routeType === 'agent_workflow' && suffix === 'evidence_lifecycle') {
+      const hasEvidence = hasAgentEvidenceLifecycle(evidenceContext);
+      return {
+        ...base,
+        type: 'agent_evidence_lifecycle_gate',
+        status: hasEvidence ? 'passed' : 'needs_evidence',
+        reason: hasEvidence
+          ? 'Agent review evidence lifecycle is closed for the current git state (recorded review or explicit waiver)'
+          : 'Agent workflow route requires a current-bound recorded agent review with no unmet/stale/timed-out/blocked results, or an explicit waiver decision recorded against gate:judgment_agent_workflow_evidence_lifecycle, before PR creation'
+      };
+    }
     return base;
   });
 }
@@ -4115,6 +4133,18 @@ function hasSecurityRegressionEvidence({ verificationEvidence = null, decisionRe
   });
 }
 
+function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null } = {}) {
+  if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
+  if (!agentReviews) return false;
+  if (agentReviews.status === 'pass') return true;
+  const s = agentReviews.summary ?? {};
+  return (s.required_review_count ?? 0) > 0
+    && (s.unmet_required_review_count ?? 0) === 0
+    && (s.stale_result_count ?? 0) === 0
+    && (s.lifecycle_timed_out_count ?? 0) === 0
+    && (s.block_result_count ?? 0) === 0;
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -4187,7 +4217,8 @@ function buildGateDag({
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
   const routeSpecificJudgmentGates = buildRouteSpecificJudgmentGates(engineeringJudgment, {
     verificationEvidence,
-    decisionRecords
+    decisionRecords,
+    agentReviews
   });
   const prBodyContractGate = buildPrBodyContractGate(prRoute, {
     storySource,
@@ -5673,6 +5704,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'vibepro_artifact_policy_gate',
       'split_resolution_gate',
       'security_regression_gate',
+      'agent_evidence_lifecycle_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
