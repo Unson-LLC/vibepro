@@ -36,6 +36,7 @@ import {
   summarizeExploreEvidenceForPr
 } from './explore-evidence.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
+import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
 
 const execFileAsync = promisify(execFile);
@@ -870,6 +871,9 @@ function formatExecutionGateAction(gate) {
   }
   if (gate.id === 'gate:safety_secret_surface') {
     return `Record a secret_exposure decision (\`vibepro decision record --type secret_exposure --secret-location <ref> --secret-action redacted|rotated|revoked|false_positive\`) or a waiver against gate:safety_secret_surface: ${gate.reason ?? gate.status}`;
+  }
+  if (gate.id === 'gate:deploy_verification') {
+    return `Record current-bound deploy/smoke/health evidence (\`vibepro verify record ...\`) or a waiver against gate:deploy_verification (\`vibepro decision record --source gate:deploy_verification --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
@@ -2630,6 +2634,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
+  const environmentGraph = await readEnvironmentGraphIfExists(repoRoot);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
     story,
@@ -2697,6 +2702,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    environmentGraph,
     git,
     scope,
     prRoute
@@ -4175,6 +4181,49 @@ function buildSafetySecretSurfaceGate(fileGroups, decisionRecords = null) {
   };
 }
 
+function hasDeployVerificationEvidence({ verificationEvidence = null, decisionRecords = null } = {}) {
+  if (findAcceptedDecisionForSource(decisionRecords, 'gate:deploy_verification')) return true;
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.some((item) => {
+    if (item.binding?.status !== 'current') return false;
+    if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
+    const haystack = `${item.kind ?? ''}\n${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`;
+    return /\b(deploy|deployment|rollout|release|smoke|health\s*check|healthcheck|post-?deploy|prod(uction)?\s*verif)/i.test(haystack);
+  });
+}
+
+/**
+ * Route-independent, topology-driven gate. Fires only when (a) the Environment
+ * Graph has real deploy targets and (b) the change is risk-bearing
+ * (workflow_heavy / api_contract profile, or a release/mirror PR route).
+ * pr prepare runs pre-merge, so it does not require a completed production
+ * deploy; it requires the deploy/verification intent to be closed as evidence:
+ * a current-bound deploy/smoke/health record, or an explicit waiver decision.
+ * Returns null (gate absent, no friction) when there are no deploy targets or
+ * the change is low-risk.
+ */
+function buildDeployVerificationGate({ environmentGraph = null, changeClassification = null, prRoute = null, verificationEvidence = null, decisionRecords = null } = {}) {
+  const targets = deployTargetsFromGraph(environmentGraph);
+  if (targets.length === 0) return null;
+  const profile = changeClassification?.profile ?? null;
+  const riskBearing = ['workflow_heavy', 'api_contract'].includes(profile)
+    || ['mirror_sync', 'release_merge'].includes(prRoute?.route_type);
+  if (!riskBearing) return null;
+  const resolved = hasDeployVerificationEvidence({ verificationEvidence, decisionRecords });
+  return {
+    id: 'gate:deploy_verification',
+    type: 'deploy_verification_gate',
+    label: 'Deploy Verification Gate',
+    status: resolved ? 'passed' : 'needs_evidence',
+    required: true,
+    deploy_targets: targets.map((t) => ({ id: t.id, type: t.type, provider: t.provider ?? null, environment: t.environment ?? null })),
+    risk_profile: profile,
+    reason: resolved
+      ? 'Deploy/verification evidence (current-bound deploy/smoke/health record) or an explicit waiver decision is recorded for the change'
+      : `Change is risk-bearing and the Environment Graph has ${targets.length} deploy target(s); record current-bound deploy/smoke/health evidence, or an explicit waiver against gate:deploy_verification, before PR creation`
+  };
+}
+
 function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null } = {}) {
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
   if (!agentReviews) return false;
@@ -4207,6 +4256,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  environmentGraph = null,
   git = null,
   scope = null,
   prRoute = null
@@ -4275,6 +4325,7 @@ function buildGateDag({
   const vibeproArtifactPolicyGate = buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords);
   const splitResolutionGate = buildSplitResolutionGate(scope, prRoute, decisionRecords);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
+  const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git);
@@ -4350,6 +4401,7 @@ function buildGateDag({
     ...(vibeproArtifactPolicyGate ? [vibeproArtifactPolicyGate] : []),
     ...(splitResolutionGate ? [splitResolutionGate] : []),
     ...(safetySecretSurfaceGate ? [safetySecretSurfaceGate] : []),
+    ...(deployVerificationGate ? [deployVerificationGate] : []),
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
@@ -4417,6 +4469,10 @@ function buildGateDag({
     ...(safetySecretSurfaceGate ? [
       { from: 'gate:pr_route_classification', to: 'gate:safety_secret_surface' },
       { from: 'gate:safety_secret_surface', to: 'gate:pr_body_contract' }
+    ] : []),
+    ...(deployVerificationGate ? [
+      { from: 'gate:pr_route_classification', to: 'gate:deploy_verification' },
+      { from: 'gate:deploy_verification', to: 'gate:pr_body_contract' }
     ] : []),
     { from: 'gate:pr_body_contract', to: 'gate:change_classification' },
     { from: 'gate:change_classification', to: 'gate:pr_freshness' },
@@ -5754,6 +5810,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'security_regression_gate',
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
+      'deploy_verification_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',

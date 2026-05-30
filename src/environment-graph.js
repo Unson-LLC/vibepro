@@ -368,6 +368,32 @@ export async function deriveEnvironmentGraph(repoRoot, options = {}) {
   return artifact;
 }
 
+/**
+ * Read a previously-derived Environment Graph artifact, if present.
+ * Returns null when absent or unreadable (never throws on missing).
+ */
+export async function readEnvironmentGraphIfExists(repoRoot) {
+  const file = path.join(getWorkspaceDir(repoRoot), 'environment', 'graph.json');
+  try {
+    return JSON.parse(await readFile(file, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Deploy targets are the components that get deployed to a hosting provider
+ * (a component with a known provider/environment, or any confirmed deploy
+ * fact). These are what a deploy-verification gate must have evidence for.
+ * Returns [] for null/empty graphs.
+ */
+export function deployTargetsFromGraph(graph) {
+  if (!graph || !Array.isArray(graph.nodes)) return [];
+  return graph.nodes.filter((n) => (
+    n.kind === 'component' && (Boolean(n.provider) || Boolean(n.environment) || n.confidence === 'confirmed')
+  ));
+}
+
 export function renderEnvironmentGraphSummary(graph) {
   const lines = [
     `Environment Graph (${graph.derivation_level}) — bound to ${graph.generated_for_sha ?? 'no-git'}`,

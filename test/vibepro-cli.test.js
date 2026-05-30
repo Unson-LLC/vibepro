@@ -7826,6 +7826,84 @@ test('safety gate stays absent for non-secret changes and env templates', async 
   assert.equal(gateDag.nodes.some((node) => node.id === 'gate:safety_secret_surface'), false);
 });
 
+async function makeRiskBearingDeployRepo() {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({ dependencies: { next: '14', '@prisma/client': '5' } }));
+  await writeFile(path.join(repo, 'vercel.json'), '{}');
+  await writeFile(path.join(repo, 'fly.toml'), 'app="api"\nprimary_region="nrt"\n');
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: deploy config']);
+  await runCli(['env', 'graph', repo]); // derive Environment Graph so deploy targets exist
+  for (const f of ['src/api/route.js', 'src/ui/page.jsx', 'src/workflow/state.js', 'src/deploy.js']) {
+    await mkdir(path.join(repo, path.dirname(f)), { recursive: true });
+    await writeFile(path.join(repo, f), 'export const x = 1;\n');
+  }
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'feat: broad workflow change']);
+  return repo;
+}
+
+test('deploy verification gate fires for risk-bearing changes with deploy targets and is waivable', async () => {
+  const repo = await makeRiskBearingDeployRepo();
+  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(unresolved.exitCode, 0);
+  const prepare = unresolved.result.preparation;
+  const gateDag = prepare.pr_context.gate_dag;
+  const gate = gateDag.nodes.find((node) => node.id === 'gate:deploy_verification');
+  assert.equal(gate?.type, 'deploy_verification_gate');
+  assert.equal(gate?.status, 'needs_evidence');
+  assert.equal(gate?.required, true);
+  assert.equal(gate.deploy_targets.length >= 1, true);
+  assert.equal(gate.deploy_targets.some((t) => t.provider === 'vercel'), true);
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(prepare.gate_status.unresolved_gates.some((g) => g.id === 'gate:deploy_verification'), true);
+  // edges wired -> connectivity holds
+  assert.equal(gateDag.edges.some((e) => e.from === 'gate:pr_route_classification' && e.to === 'gate:deploy_verification'), true);
+  assert.equal(gateDag.edges.some((e) => e.from === 'gate:deploy_verification' && e.to === 'gate:pr_body_contract'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+
+  await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'waiver',
+    '--source', 'gate:deploy_verification',
+    '--summary', 'Staging smoke check passed; prod rollout tracked in release ticket.',
+    '--reason', 'Deploy verified on staging for this change; production rollout tracked out-of-band.',
+    '--reviewer', 'codex',
+    '--json'
+  ]);
+  const waived = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  const waivedGate = waived.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:deploy_verification');
+  assert.equal(waivedGate?.status, 'passed');
+  assert.equal(waived.result.preparation.gate_status.unresolved_gates.some((g) => g.id === 'gate:deploy_verification'), false);
+});
+
+test('deploy verification gate is absent without deploy targets or for low-risk changes', async () => {
+  const noGraph = await makeGitRepoWithStory();
+  for (const f of ['src/api/route.js', 'src/ui/page.jsx', 'src/workflow/state.js', 'src/deploy.js']) {
+    await mkdir(path.join(noGraph, path.dirname(f)), { recursive: true });
+    await writeFile(path.join(noGraph, f), 'export const x = 1;\n');
+  }
+  await git(noGraph, ['add', '-A']);
+  await git(noGraph, ['commit', '-m', 'feat: broad change, no deploy config']);
+  const a = await runCli(['pr', 'prepare', noGraph, '--base', 'main']);
+  assert.equal(a.result.preparation.pr_context.gate_dag.nodes.some((n) => n.id === 'gate:deploy_verification'), false);
+
+  const lowRisk = await makeGitRepoWithStory();
+  await writeFile(path.join(lowRisk, 'package.json'), JSON.stringify({ dependencies: { next: '14' } }));
+  await writeFile(path.join(lowRisk, 'vercel.json'), '{}');
+  await git(lowRisk, ['add', '-A']);
+  await git(lowRisk, ['commit', '-m', 'chore: deploy config']);
+  await runCli(['env', 'graph', lowRisk]);
+  await mkdir(path.join(lowRisk, 'src'), { recursive: true });
+  await writeFile(path.join(lowRisk, 'src', 'tiny.js'), 'export const tiny = 1;\n');
+  await git(lowRisk, ['add', '-A']);
+  await git(lowRisk, ['commit', '-m', 'chore: tiny change']);
+  const b = await runCli(['pr', 'prepare', lowRisk, '--base', 'main']);
+  assert.equal(b.result.preparation.pr_context.gate_dag.nodes.some((n) => n.id === 'gate:deploy_verification'), false);
+});
+
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
