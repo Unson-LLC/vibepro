@@ -1,7 +1,10 @@
 import { readFile, mkdir, writeFile, access } from 'node:fs/promises';
 import path from 'node:path';
-import { execFileAsync } from './exec.js';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { getWorkspaceDir } from './workspace.js';
+
+const execFileAsync = promisify(execFile);
 
 const SCHEMA_VERSION = '0.1.0';
 
