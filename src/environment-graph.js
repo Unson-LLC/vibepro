@@ -59,8 +59,15 @@ const HOST_PROVIDERS = [
   { match: /\.railway\.app$/i, provider: 'railway' }
 ];
 
+// Identity discriminator: infra resources are keyed by engine (postgres/redis/...)
+// so a dependency signal and a connection-string signal for the same datastore
+// merge even when only one knows the hosting provider. External/auth services are
+// keyed by provider so e.g. Stripe and OpenAI stay distinct.
+const ENGINE_KEYED = new Set(['database', 'cache', 'queue', 'storage']);
 function nodeKey(kind, type, provider, engine) {
-  return [kind, type, provider ?? engine ?? 'unknown'].join(':');
+  if (kind === 'component') return `component:${type}`;
+  const disc = ENGINE_KEYED.has(type) ? (engine ?? provider ?? 'unknown') : (provider ?? engine ?? type);
+  return `resource:${type}:${disc}`;
 }
 
 function rankConfidence(c) {
