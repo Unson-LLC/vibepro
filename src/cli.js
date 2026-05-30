@@ -575,6 +575,20 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'env') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] ?? process.cwd();
+      if (subcommand === 'graph') {
+        const graph = await deriveEnvironmentGraph(repoRoot, { write: !hasFlag(rest, '--no-write') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(graph, null, 2)}\n`
+          : renderEnvironmentGraphSummary(graph));
+        return { exitCode: 0, command, subcommand, result: graph };
+      }
+      write(stderr, `Unknown env command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
     if (command === 'doctor') {
       const repoRoot = rest[0] && !rest[0].startsWith('--') ? rest[0] : process.cwd();
       const result = await runDoctor(repoRoot, { fix: hasFlag(rest, '--fix') });
