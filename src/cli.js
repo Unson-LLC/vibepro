@@ -17,6 +17,7 @@ import {
   renderExploreStatusSummary
 } from './explore-evidence.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import {
   captureDesignModernizeScreens,
