@@ -216,6 +216,7 @@ Usage:
   vibepro harness learn [repo] --summary <text> [--kind <kind>] [--source <source>] [--evidence <ref>] [--pattern <text>] [--skill-candidate <text>] [--target <surface>] [--json]
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
+  vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
@@ -358,6 +359,7 @@ Usage:
   vibepro harness learn [repo] --summary <text> [--kind <kind>] [--source <source>] [--evidence <ref>] [--pattern <text>] [--skill-candidate <text>] [--target <surface>] [--json]
   vibepro harness review-learnings [repo] [--json]
   vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
+  vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--fail-on-findings] [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
@@ -573,6 +575,20 @@ export async function runCli(argv, io = {}) {
       });
       write(stdout, `graphify artifacts imported: ${result.graphifyDir}\n`);
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'env') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] ?? process.cwd();
+      if (subcommand === 'graph') {
+        const graph = await deriveEnvironmentGraph(repoRoot, { write: !hasFlag(rest, '--no-write') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(graph, null, 2)}\n`
+          : renderEnvironmentGraphSummary(graph));
+        return { exitCode: 0, command, subcommand, result: graph };
+      }
+      write(stderr, `Unknown env command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'doctor') {
