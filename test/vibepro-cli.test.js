@@ -11133,3 +11133,15 @@ function jsonResponse(body) {
     }
   };
 }
+
+test('env graph command runs end-to-end and derives an environment graph', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({ dependencies: { next: '14', '@prisma/client': '5' } }));
+  await writeFile(path.join(repo, '.env.example'), 'DATABASE_URL=postgres://u:p@x.neon.tech/db\n');
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: app deps and env']);
+  const result = await runCli(['env', 'graph', repo, '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.nodes.some((n) => n.type === 'database'), true);
+  assert.equal(result.result.nodes.some((n) => n.type === 'frontend'), true);
+});
