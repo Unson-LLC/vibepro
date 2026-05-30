@@ -402,6 +402,17 @@ Usage:
   vibepro spec drift [repo] --id <story-id> [--against <git-ref>] [--json]
 `;
 
+// Canonical set of top-level commands. Exported so the CLI smoke-test layer can
+// assert every command is exercised end-to-end — a missing/broken handler import
+// must fail a test before merge, not at runtime (the bug class behind #117/#118).
+export const TOP_LEVEL_COMMANDS = [
+  'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
+  'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
+  'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
+  'design-modernize', 'design-system', 'explore', 'performance',
+  'nocodb', 'repo-status'
+];
+
 export async function runCli(argv, io = {}) {
   const stdout = io.stdout ?? null;
   const stderr = io.stderr ?? null;
