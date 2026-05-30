@@ -102,3 +102,52 @@ test('V-ENV-2b: absence of IaC and package.json does not fail derivation', async
   assert.equal(graph.coverage.complete, false);
   assert.ok(graph.coverage.gaps.some((g) => g.kind === 'no_resources'));
 });
+
+test('V-ENV-L1-1: parseFlyToml and parseCompose produce confirmed deploy facts', async () => {
+  const { parseFlyToml, parseCompose } = await import('../src/environment-graph.js');
+  const fly = parseFlyToml('app = "my-api"\nprimary_region = "nrt"\n');
+  assert.equal(fly[0].type, 'backend');
+  assert.equal(fly[0].provider, 'fly');
+  assert.equal(fly[0].confidence, 'confirmed');
+  assert.equal(fly[0].environment, 'production:nrt');
+
+  const compose = parseCompose('services:\n  db:\n    image: postgres:16\n  cache:\n    image: redis:7\n');
+  assert.equal(compose.some((f) => f.type === 'database' && f.engine === 'postgres' && f.confidence === 'confirmed'), true);
+  assert.equal(compose.some((f) => f.type === 'cache' && f.engine === 'redis'), true);
+});
+
+test('V-ENV-L1-2: a confirmed deploy fact upgrades an inferred L0 node and removes the deploy gap', () => {
+  const graph = buildEnvironmentGraph({
+    deps: ['next', '@prisma/client'],
+    envEntries: [{ key: 'DATABASE_URL', host: 'x.neon.tech' }],
+    deployTargets: [
+      { kind: 'component', type: 'frontend', label: 'Vercel frontend', provider: 'vercel', environment: 'production', confidence: 'confirmed', source: 'vercel.json' },
+      { kind: 'resource', type: 'database', label: 'PostgreSQL (compose)', engine: 'postgres', provider: 'self_hosted', environment: 'local', confidence: 'confirmed', source: 'docker-compose.yml:postgres:16' }
+    ]
+  });
+  assert.equal(graph.derivation_level, 'L1');
+  const frontend = graph.nodes.find((n) => n.type === 'frontend');
+  assert.equal(frontend.provider, 'vercel');
+  assert.equal(frontend.confidence, 'confirmed');
+  const db = graph.nodes.find((n) => n.type === 'database');
+  assert.equal(db.confidence, 'confirmed'); // upgraded from inferred by the confirmed compose fact
+  assert.equal(graph.coverage.gaps.some((g) => g.kind === 'deploy_target_unknown'), false);
+});
+
+test('V-ENV-L1-3: deriveEnvironmentGraph reports L1 when a deploy config is present', async () => {
+  const repo = await mkdtemp(path.join(tmpdir(), 'envg-l1-'));
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.email', 't@e.com'], { cwd: repo });
+  await execFileAsync('git', ['config', 'user.name', 'T'], { cwd: repo });
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({ dependencies: { next: '14' } }));
+  await writeFile(path.join(repo, 'vercel.json'), '{}');
+  await writeFile(path.join(repo, 'fly.toml'), 'app = "api"\n');
+  await execFileAsync('git', ['add', '-A'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', 'init'], { cwd: repo });
+
+  const graph = await deriveEnvironmentGraph(repo);
+  assert.equal(graph.derivation_level, 'L1');
+  assert.equal(graph.sources_scanned.deploy_config, true);
+  assert.equal(graph.nodes.some((n) => n.provider === 'vercel' && n.confidence === 'confirmed'), true);
+  assert.equal(graph.nodes.some((n) => n.provider === 'fly'), true);
+});

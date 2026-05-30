@@ -85,11 +85,19 @@ function mergeNode(map, node, source) {
   if (!existing.sources.includes(source)) existing.sources.push(source);
   existing.provider = existing.provider ?? node.provider;
   existing.engine = existing.engine ?? node.engine;
-  // Two independent sources -> upgrade inferred -> confirmed is reserved for IaC (L2);
-  // in L0, corroboration upgrades ambiguous -> inferred.
-  if (existing.sources.length >= 2 && rankConfidence(existing.confidence) < rankConfidence('inferred')) {
-    existing.confidence = 'inferred';
+  existing.environment = existing.environment ?? node.environment;
+  // Confidence = strongest of the two signals (a confirmed deploy-config/IaC
+  // fact upgrades an inferred/ambiguous L0 node)...
+  let target = rankConfidence(node.confidence) > rankConfidence(existing.confidence)
+    ? node.confidence
+    : existing.confidence;
+  // ...with an L0 corroboration bump: two independent weak signals -> inferred.
+  if (existing.sources.length >= 2 && rankConfidence(target) < rankConfidence('inferred')) {
+    target = 'inferred';
   }
+  existing.confidence = target;
+  // A confirmed (deploy-config/IaC) fact provides the authoritative label.
+  if (rankConfidence(node.confidence) >= rankConfidence('confirmed') && node.label) existing.label = node.label;
 }
 
 /**
@@ -98,7 +106,7 @@ function mergeNode(map, node, source) {
  * @param {string[]} input.deps - dependency names (deps + devDeps)
  * @param {Array<{key:string, host:(string|null)}>} input.envEntries
  */
-export function buildEnvironmentGraph({ deps = [], envEntries = [] } = {}) {
+export function buildEnvironmentGraph({ deps = [], envEntries = [], deployTargets = [] } = {}) {
   const nodes = new Map();
   const gaps = [];
 
@@ -135,6 +143,20 @@ export function buildEnvironmentGraph({ deps = [], envEntries = [] } = {}) {
       // A single env key is weaker than a dependency: ambiguous, upgraded by corroboration.
       confidence: 'ambiguous'
     }, host ? `.env:${key}@${host}` : `.env:${key}`);
+  }
+
+  // L1: platform deploy configs / compose / IaC -> confirmed facts that upgrade
+  // confidence and attribute provider + environment.
+  for (const t of deployTargets) {
+    mergeNode(nodes, {
+      kind: t.kind,
+      type: t.type,
+      label: t.label,
+      provider: t.provider ?? null,
+      engine: t.engine ?? null,
+      environment: t.environment ?? null,
+      confidence: t.confidence ?? 'confirmed'
+    }, t.source);
   }
 
   const nodeList = [...nodes.values()];
@@ -175,7 +197,9 @@ export function buildEnvironmentGraph({ deps = [], envEntries = [] } = {}) {
   if (!nodeList.some((n) => n.kind === 'resource')) {
     gaps.push({ kind: 'no_resources', note: 'no managed runtime resources derived from L0 signals' });
   }
-  gaps.push({ kind: 'deploy_target_unknown', note: 'no L1/L2 deploy config (vercel/fly/Dockerfile/IaC) parsed in L0; provider/environment unverified' });
+  if (deployTargets.length === 0) {
+    gaps.push({ kind: 'deploy_target_unknown', note: 'no L1/L2 deploy config (vercel/fly/Dockerfile/compose/IaC) detected; provider/environment unverified' });
+  }
 
   const byConfidence = nodeList.reduce((acc, n) => {
     acc[n.confidence] = (acc[n.confidence] ?? 0) + 1; return acc;
@@ -183,7 +207,7 @@ export function buildEnvironmentGraph({ deps = [], envEntries = [] } = {}) {
 
   return {
     schema_version: SCHEMA_VERSION,
-    derivation_level: 'L0',
+    derivation_level: deployTargets.length > 0 ? 'L1' : 'L0',
     nodes: nodeList,
     edges,
     coverage: {
@@ -230,6 +254,74 @@ async function readIfExists(file) {
  * git head, and write it under .vibepro/environment/graph.json. No network,
  * no provisioning; reads files + `git rev-parse HEAD` only.
  */
+// L1 compose image -> typed Resource.
+const COMPOSE_IMAGE_RESOURCES = [
+  { match: /postgres|postgis/i, type: 'database', engine: 'postgres', label: 'PostgreSQL (compose)' },
+  { match: /mysql|mariadb/i, type: 'database', engine: 'mysql', label: 'MySQL (compose)' },
+  { match: /mongo/i, type: 'database', engine: 'mongodb', label: 'MongoDB (compose)' },
+  { match: /redis|valkey/i, type: 'cache', engine: 'redis', label: 'Redis (compose)' },
+  { match: /rabbitmq/i, type: 'queue', engine: 'amqp', label: 'RabbitMQ (compose)' },
+  { match: /(minio|localstack)/i, type: 'storage', engine: 's3', label: 'Object storage (compose)' }
+];
+
+export function parseFlyToml(text, source = 'fly.toml') {
+  const app = (text.match(/^\s*app\s*=\s*["']?([\w.-]+)/m) || [])[1] || null;
+  const region = (text.match(/primary_region\s*=\s*["']?([\w-]+)/m) || [])[1] || null;
+  return [{
+    kind: 'component', type: 'backend', label: app ? `Fly app: ${app}` : 'Fly backend',
+    provider: 'fly', environment: region ? `production:${region}` : 'production',
+    confidence: 'confirmed', source
+  }];
+}
+
+export function parseDockerfile(_text, source = 'Dockerfile') {
+  return [{
+    kind: 'component', type: 'backend', label: 'Containerized service',
+    provider: null, environment: null, confidence: 'confirmed', source
+  }];
+}
+
+export function parseCompose(text, source = 'docker-compose.yml') {
+  const facts = [];
+  for (const line of text.split('\n')) {
+    const m = line.match(/^\s*image:\s*["']?([^\s"']+)/);
+    if (!m) continue;
+    const r = COMPOSE_IMAGE_RESOURCES.find((x) => x.match.test(m[1]));
+    if (r) {
+      facts.push({
+        kind: 'resource', type: r.type, label: r.label, engine: r.engine,
+        provider: 'self_hosted', environment: 'local', confidence: 'confirmed',
+        source: `${source}:${m[1]}`
+      });
+    }
+  }
+  return facts;
+}
+
+async function collectDeployTargets(repoRoot) {
+  const targets = [];
+  const read = (f) => readIfExists(path.join(repoRoot, f));
+
+  if ((await read('vercel.json')) !== null) {
+    targets.push({ kind: 'component', type: 'frontend', label: 'Vercel frontend', provider: 'vercel', environment: 'production', confidence: 'confirmed', source: 'vercel.json' });
+  }
+  if ((await read('netlify.toml')) !== null) {
+    targets.push({ kind: 'component', type: 'frontend', label: 'Netlify frontend', provider: 'netlify', environment: 'production', confidence: 'confirmed', source: 'netlify.toml' });
+  }
+  if ((await read('render.yaml')) !== null) {
+    targets.push({ kind: 'component', type: 'backend', label: 'Render service', provider: 'render', environment: 'production', confidence: 'confirmed', source: 'render.yaml' });
+  }
+  const fly = await read('fly.toml');
+  if (fly !== null) targets.push(...parseFlyToml(fly));
+  const docker = await read('Dockerfile');
+  if (docker !== null) targets.push(...parseDockerfile(docker));
+  for (const name of ['docker-compose.yml', 'docker-compose.yaml', 'compose.yml', 'compose.yaml']) {
+    const c = await read(name);
+    if (c !== null) targets.push(...parseCompose(c, name));
+  }
+  return targets;
+}
+
 export async function deriveEnvironmentGraph(repoRoot, options = {}) {
   const pkgRaw = await readIfExists(path.join(repoRoot, 'package.json'));
   let deps = [];
@@ -246,7 +338,9 @@ export async function deriveEnvironmentGraph(repoRoot, options = {}) {
     if (text) for (const e of parseEnv(text)) envEntries.push(e);
   }
 
-  const graph = buildEnvironmentGraph({ deps, envEntries });
+  const deployTargets = await collectDeployTargets(repoRoot);
+
+  const graph = buildEnvironmentGraph({ deps, envEntries, deployTargets });
 
   let headSha = null;
   try {
@@ -259,7 +353,8 @@ export async function deriveEnvironmentGraph(repoRoot, options = {}) {
     generated_for_sha: headSha,
     sources_scanned: {
       package_json: Boolean(pkgRaw),
-      env_files: envEntries.length > 0
+      env_files: envEntries.length > 0,
+      deploy_config: deployTargets.length > 0
     }
   };
 
