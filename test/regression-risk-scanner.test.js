@@ -63,3 +63,43 @@ test('scanRegressionRisk gracefully skips when graphify graph is absent', async 
   assert.match(result.reason, /Graphify/);
   assert.deepEqual(result.hotspots, []);
 });
+
+test('coverage escalates a high-blast-radius low-coverage module to critical', () => {
+  const coverage = new Map([['src/hub.js', 0.2]]); // 20% on the fan-in-4 hub
+  const result = analyzeRegressionRisk(fixtureGraph(), {
+    highFanIn: 3,
+    moderateFanIn: 2,
+    coverage,
+    lowCoverage: 0.5
+  });
+  const hub = result.hotspots.find((h) => h.file === 'src/hub.js');
+  assert.equal(hub.coverage_pct, 20);
+  assert.equal(hub.priority, 'critical');
+  assert.equal(result.summary.critical, 1);
+  assert.equal(result.status, 'needs_review');
+  assert.equal(result.hotspots[0].file, 'src/hub.js'); // critical sorts first
+});
+
+test('a well-covered hub is not critical and does not trigger review', () => {
+  const coverage = new Map([['src/hub.js', 0.95]]);
+  const result = analyzeRegressionRisk(fixtureGraph(), {
+    highFanIn: 3,
+    moderateFanIn: 2,
+    coverage,
+    lowCoverage: 0.5
+  });
+  const hub = result.hotspots.find((h) => h.file === 'src/hub.js');
+  assert.equal(hub.coverage_pct, 95);
+  assert.equal(hub.priority, 'high'); // still high blast radius, but not critical
+  assert.equal(result.summary.critical, 0);
+  assert.equal(result.status, 'pass'); // coverage present + no critical => pass
+});
+
+test('without coverage data, behavior is unchanged (high fan-in triggers review)', () => {
+  const result = analyzeRegressionRisk(fixtureGraph(), { highFanIn: 3, moderateFanIn: 2 });
+  const hub = result.hotspots.find((h) => h.file === 'src/hub.js');
+  assert.equal(hub.coverage_pct, null);
+  assert.equal(hub.priority, 'high');
+  assert.equal(result.summary.coverage_source, null);
+  assert.equal(result.status, 'needs_review');
+});
