@@ -48,7 +48,10 @@ test('V-ENV-3: coverage counts, gaps, and ambiguous signals do not become confid
   });
   // an unrecognized *_TOKEN does not produce a confident node
   assert.equal(graph.nodes.length, 0);
-  assert.ok(graph.coverage.gaps.some((g) => g.kind === 'unclassified_env' && g.key === 'SOME_WEIRD_TOKEN'));
+  const unclassified = graph.coverage.gaps.find((g) => g.kind === 'unclassified_env' && g.key === 'SOME_WEIRD_TOKEN');
+  assert.ok(unclassified);
+  // the human-facing note must name the key so note-only renderers stay actionable
+  assert.match(unclassified.note, /SOME_WEIRD_TOKEN/);
   assert.ok(graph.coverage.gaps.some((g) => g.kind === 'deploy_target_unknown'));
   assert.equal(graph.coverage.complete, false);
 });
