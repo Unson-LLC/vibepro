@@ -74,6 +74,20 @@ function rankConfidence(c) {
   return { ambiguous: 0, inferred: 1, confirmed: 2 }[c] ?? 0;
 }
 
+// A named managed provider (neon, upstash, vercel, fly, ...) is more useful than
+// the `self_hosted`/`local` placeholder a compose image implies, which in turn
+// beats null. When two sources disagree, keep the most specific provider so a
+// connection-string host (e.g. neon) is not overwritten by a compose container.
+const PLACEHOLDER_PROVIDERS = new Set(['self_hosted', 'local']);
+function providerRank(p) {
+  if (!p) return 0;
+  if (PLACEHOLDER_PROVIDERS.has(p)) return 1;
+  return 2;
+}
+function preferProvider(a, b) {
+  return providerRank(b) > providerRank(a) ? b : (a ?? b ?? null);
+}
+
 function mergeNode(map, node, source) {
   const key = nodeKey(node.kind, node.type, node.provider, node.engine);
   const existing = map.get(key);
@@ -83,7 +97,7 @@ function mergeNode(map, node, source) {
   }
   // Corroboration: independent source pointing at the same service.
   if (!existing.sources.includes(source)) existing.sources.push(source);
-  existing.provider = existing.provider ?? node.provider;
+  existing.provider = preferProvider(existing.provider, node.provider);
   existing.engine = existing.engine ?? node.engine;
   existing.environment = existing.environment ?? node.environment;
   // Confidence = strongest of the two signals (a confirmed deploy-config/IaC
