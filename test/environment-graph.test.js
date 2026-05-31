@@ -154,3 +154,22 @@ test('V-ENV-L1-3: deriveEnvironmentGraph reports L1 when a deploy config is pres
   assert.equal(graph.nodes.some((n) => n.provider === 'vercel' && n.confidence === 'confirmed'), true);
   assert.equal(graph.nodes.some((n) => n.provider === 'fly'), true);
 });
+
+test('V-ENV-L1-4: a connection-string host provider outranks a compose self_hosted placeholder', () => {
+  const graph = buildEnvironmentGraph({
+    deps: ['@prisma/client', 'ioredis'],
+    envEntries: [
+      { key: 'DATABASE_URL', host: 'ep-x.neon.tech' },
+      { key: 'REDIS_URL', host: 'us1.upstash.io' }
+    ],
+    deployTargets: [
+      { kind: 'resource', type: 'database', engine: 'postgres', provider: 'self_hosted', environment: 'local', confidence: 'confirmed', source: 'docker-compose.yml:postgres:16' },
+      { kind: 'resource', type: 'cache', engine: 'redis', provider: 'self_hosted', environment: 'local', confidence: 'confirmed', source: 'docker-compose.yml:redis:7' }
+    ]
+  });
+  const db = graph.nodes.find((n) => n.type === 'database');
+  const cache = graph.nodes.find((n) => n.type === 'cache');
+  assert.equal(db.provider, 'neon');
+  assert.equal(cache.provider, 'upstash');
+  assert.equal(db.confidence, 'confirmed');
+});
