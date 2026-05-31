@@ -182,7 +182,7 @@ async function runNamedCheck(check, context) {
   if (check === 'public_discovery') return scanPublicDiscovery(root);
   if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId, env: options.env });
   if (check === 'oss_readiness') return scanOssReadiness(root, { env: options.env });
-  if (check === 'regression_risk') return scanRegressionRisk(root, { top: options.top });
+  if (check === 'regression_risk') return scanRegressionRisk(root, { top: options.top, coverageFile: options.coverageFile });
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -337,7 +337,7 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       status: normalizeCheckStatus(regression.status),
       summary: regression.status === 'skipped'
         ? regression.reason
-        : `${regression.summary?.scored_modules ?? 0} modules; high=${regression.summary?.high ?? 0}, moderate=${regression.summary?.moderate ?? 0}${top ? `; top=${top.file} (fan-in ${top.fan_in})` : ''}`
+        : `${regression.summary?.scored_modules ?? 0} modules; critical=${regression.summary?.critical ?? 0}, high=${regression.summary?.high ?? 0}, moderate=${regression.summary?.moderate ?? 0}${regression.summary?.coverage_source ? ` (coverage: ${regression.summary.coverage_source})` : ' (no coverage)'}${top ? `; top=${top.file} (fan-in ${top.fan_in}${top.coverage_pct !== null && top.coverage_pct !== undefined ? `, cov ${top.coverage_pct}%` : ''})` : ''}`
     });
   }
   if (evidence.pr_prepare) {
