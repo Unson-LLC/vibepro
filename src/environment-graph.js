@@ -130,7 +130,7 @@ export function buildEnvironmentGraph({ deps = [], envEntries = [], deployTarget
     if (!sig) {
       // Unrecognized *_URL / *_KEY -> ambiguous gap, not a confident node.
       if (/_(URL|URI|KEY|TOKEN|SECRET|DSN)$/i.test(key)) {
-        gaps.push({ kind: 'unclassified_env', key, note: 'environment key suggests an external dependency but could not be typed' });
+        gaps.push({ kind: 'unclassified_env', key, note: `environment key "${key}" suggests an external dependency but could not be typed` });
       }
       continue;
     }
