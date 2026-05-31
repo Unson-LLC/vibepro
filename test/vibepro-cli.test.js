@@ -909,7 +909,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
   assert.match(output, /vibepro harness learn \[repo\]/);
-  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|self-dogfood\|oss-readiness\|all>/);
+  assert.match(output, /vibepro check <ui\|security\|performance\|architecture\|pr-readiness\|launch-readiness\|agent-harness\|public-discovery\|self-dogfood\|oss-readiness\|regression-risk\|all>/);
   assert.match(output, /vibepro measure compare \[repo\].*--before <performance\.json>/);
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);

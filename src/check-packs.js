@@ -15,6 +15,7 @@ import { scanOssReadiness } from './oss-readiness-scanner.js';
 import { runPerformanceMeasurement } from './performance-measurer.js';
 import { preparePullRequest } from './pr-manager.js';
 import { scanPublicDiscovery } from './public-discovery-scanner.js';
+import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { scanSelfDogfood } from './self-dogfood-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
@@ -60,6 +61,10 @@ export const CHECK_PACKS = {
   'oss-readiness': {
     title: 'OSS publication readiness check',
     checks: ['oss_readiness']
+  },
+  'regression-risk': {
+    title: 'Regression-risk (blast-radius) check',
+    checks: ['regression_risk']
   },
   all: {
     title: 'All check packs',
@@ -177,6 +182,7 @@ async function runNamedCheck(check, context) {
   if (check === 'public_discovery') return scanPublicDiscovery(root);
   if (check === 'self_dogfood') return scanSelfDogfood(root, { storyId: options.storyId, env: options.env });
   if (check === 'oss_readiness') return scanOssReadiness(root, { env: options.env });
+  if (check === 'regression_risk') return scanRegressionRisk(root, { top: options.top });
   if (check === 'static_site') return scanStaticSite(root);
   if (check === 'component_style') return scanComponentStyle(root);
   if (check === 'flow_design') return scanFlowDesign(root, { story: { story_id: options.storyId ?? null, title: options.storyTitle ?? null } });
@@ -320,6 +326,18 @@ function summarizeChecks({ packId, evidence, architectureProfile }) {
       label: 'Performance Measurement',
       status: evidence.performance_measurement.summary?.items?.some((item) => /fail/i.test(String(item.value))) ? 'fail' : 'pass',
       summary: `${evidence.performance_measurement.summary?.items?.length ?? 0} measurement summaries`
+    });
+  }
+  if (evidence.regression_risk) {
+    const regression = evidence.regression_risk;
+    const top = regression.hotspots?.[0];
+    checks.push({
+      id: 'regression_risk',
+      label: 'Regression Risk (blast radius)',
+      status: normalizeCheckStatus(regression.status),
+      summary: regression.status === 'skipped'
+        ? regression.reason
+        : `${regression.summary?.scored_modules ?? 0} modules; high=${regression.summary?.high ?? 0}, moderate=${regression.summary?.moderate ?? 0}${top ? `; top=${top.file} (fan-in ${top.fan_in})` : ''}`
     });
   }
   if (evidence.pr_prepare) {

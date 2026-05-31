@@ -246,7 +246,7 @@ function calculateImpactScore(relatedEdgeCount, totalEdgeCount) {
   return Number(Math.min(1, relatedEdgeCount / totalEdgeCount).toFixed(4));
 }
 
-function extractGraphNodeSourceFile(node) {
+export function extractGraphNodeSourceFile(node) {
   return node.source_file
     ?? node.sourceFile
     ?? node.file
@@ -256,7 +256,7 @@ function extractGraphNodeSourceFile(node) {
     ?? null;
 }
 
-function getEdgeEndpoint(edge, endpoint) {
+export function getEdgeEndpoint(edge, endpoint) {
   if (!edge || typeof edge !== 'object') return null;
   if (endpoint === 'source') return edge.source ?? edge.from ?? edge._src ?? edge.source_id ?? edge.sourceId ?? null;
   return edge.target ?? edge.to ?? edge._dst ?? edge._tgt ?? edge.target_id ?? edge.targetId ?? null;
