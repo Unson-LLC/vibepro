@@ -7904,6 +7904,65 @@ test('deploy verification gate is absent without deploy targets or for low-risk 
   assert.equal(b.result.preparation.pr_context.gate_dag.nodes.some((n) => n.id === 'gate:deploy_verification'), false);
 });
 
+async function makeSchedulerStoryRepo() {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 't@e.com']);
+  await git(repo, ['config', 'user.name', 'T']);
+  await runCli(['init', repo, '--story-id', 'story-pr-prepare', '--title', 'Workflow Mission Control: scheduled job runner', '--view', 'dev', '--period', '2026-W18']);
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: init']);
+  await git(repo, ['switch', '-c', 'feature/x']);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'runner.js'), 'export const run = 1;\n');
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'feat: runner']);
+  return repo;
+}
+
+test('architecture blueprint gate blocks scheduler stories missing scheduling/infra dimensions (issue #128)', async () => {
+  const repo = await makeSchedulerStoryRepo();
+  const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(unresolved.exitCode, 0);
+  const gateDag = unresolved.result.preparation.pr_context.gate_dag;
+  assert.equal(gateDag.nodes.find((n) => n.id === 'architecture')?.status, 'satisfied');
+  const blueprint = gateDag.nodes.find((n) => n.id === 'gate:architecture_blueprint');
+  assert.equal(blueprint?.type, 'architecture_blueprint_gate');
+  assert.equal(blueprint?.status, 'needs_evidence');
+  assert.deepEqual(blueprint.missing_dimensions.map((d) => d.id).sort(), ['job_infrastructure', 'scheduling_owner']);
+  assert.equal(unresolved.result.preparation.gate_status.ready_for_pr_create, false);
+  assert.equal(unresolved.result.preparation.gate_status.unresolved_gates.some((g) => g.id === 'gate:architecture_blueprint'), true);
+  assert.equal(gateDag.nodes.find((n) => n.id === 'gate:dag_connectivity')?.status, 'passed');
+
+  await runCli([
+    'decision', 'record', repo, '--id', 'story-pr-prepare', '--type', 'waiver',
+    '--source', 'gate:architecture_blueprint',
+    '--summary', 'scheduling=launchd local; server jobs=fly worker',
+    '--reason', 'documented out of band', '--reviewer', 'codex', '--json'
+  ]);
+  const waived = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(waived.result.preparation.pr_context.gate_dag.nodes.find((n) => n.id === 'gate:architecture_blueprint')?.status, 'passed');
+});
+
+test('architecture blueprint gate is satisfied when the architecture doc covers the dimensions, and absent for non-scheduler stories', async () => {
+  const covered = await makeSchedulerStoryRepo();
+  await mkdir(path.join(covered, 'docs', 'architecture'), { recursive: true });
+  await writeFile(path.join(covered, 'docs', 'architecture', 'runner.md'),
+    '# Arch\nScheduling is run by launchd cron locally; server-side scheduled jobs run on Fly machine worker infrastructure.\n');
+  await git(covered, ['add', '-A']);
+  await git(covered, ['commit', '-m', 'docs: architecture']);
+  const a = await runCli(['pr', 'prepare', covered, '--base', 'main']);
+  assert.equal(a.result.preparation.pr_context.gate_dag.nodes.find((n) => n.id === 'gate:architecture_blueprint')?.status, 'passed');
+
+  const plain = await makeGitRepoWithStory();
+  await mkdir(path.join(plain, 'src'), { recursive: true });
+  await writeFile(path.join(plain, 'src', 'profile.js'), 'export const p = 1;\n');
+  await git(plain, ['add', '-A']);
+  await git(plain, ['commit', '-m', 'feat: profile']);
+  const b = await runCli(['pr', 'prepare', plain, '--base', 'main']);
+  assert.equal(b.result.preparation.pr_context.gate_dag.nodes.some((n) => n.id === 'gate:architecture_blueprint'), false);
+});
+
 test('pr prepare adds mirror route traceability and CI gates before PR creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

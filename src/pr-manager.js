@@ -875,6 +875,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:deploy_verification') {
     return `Record current-bound deploy/smoke/health evidence (\`vibepro verify record ...\`) or a waiver against gate:deploy_verification (\`vibepro decision record --source gate:deploy_verification --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:architecture_blueprint') {
+    return `Address the required architecture blueprint dimensions (${(gate.missing_dimensions ?? []).map((d) => d.label).join(', ')}) in the architecture doc, or record a waiver (\`vibepro decision record --source gate:architecture_blueprint --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'architecture') return `Add ADR or explicit ADR-unnecessary decision: ${gate.reason ?? gate.status}`;
   if (gate.id === 'spec') return `Regenerate or fix Spec evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:requirement') return `Resolve Requirement Gate findings: ${gate.reason ?? gate.status}`;
@@ -2634,6 +2637,10 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
+  const architectureBlueprint = await buildArchitectureBlueprintCoverage(repoRoot, {
+    storySource: primaryStory,
+    fileGroups
+  });
   const environmentGraph = await readEnvironmentGraphIfExists(repoRoot);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
@@ -2702,6 +2709,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    architectureBlueprint,
     environmentGraph,
     git,
     scope,
@@ -4164,6 +4172,91 @@ function hasSafetyDecision(decisionRecords, source) {
   return decisions.some((decision) => decision.type === 'secret_exposure' && decision.status === 'accepted');
 }
 
+// Issue #128: story-shape -> required architecture blueprint dimensions.
+// A data map (not logic) so new shapes/routes are a data change. Each dimension
+// has a keyword matcher used to check whether architecture evidence addresses it.
+// Deliberately starts narrow: only the workflow/scheduler shape.
+const ARCHITECTURE_BLUEPRINT_DIMENSIONS = {
+  workflow_scheduler: [
+    {
+      id: 'scheduling_owner',
+      label: 'Scheduling owner',
+      hint: 'what runs the scheduled jobs (local vs server-side) and how they are triggered',
+      keywords: /(schedul|cron|interval|routine|runner|launchd|systemd|polling|trigger|定期実行|スケジュ)/i
+    },
+    {
+      id: 'job_infrastructure',
+      label: 'Job infrastructure',
+      hint: 'what infrastructure runs server-side scheduled jobs (worker/queue/lambda/fly/actions/container)',
+      keywords: /(infrastructure|infra|worker|queue|server-?side|lambda|fly machine|github actions|container|daemon|常駐|インフラ)/i
+    }
+  ]
+};
+
+function storyEvidenceText(storySource) {
+  return [
+    storySource?.title,
+    storySource?.background,
+    storySource?.summary,
+    ...(storySource?.acceptance_criteria ?? [])
+  ].filter(Boolean).join('\n');
+}
+
+// Conservative, high-precision detector: only flag stories that clearly describe
+// scheduled / recurring workflow execution. The dimension list sits behind this
+// so ordinary stories never see the gate (issue #128 note).
+function detectBlueprintShapes(storySource) {
+  const text = storyEvidenceText(storySource);
+  const shapes = [];
+  if (/(schedul|cron|scheduled job|recurring|every \d|interval|polling|launchd|systemd timer|routine|runner|定期実行|スケジュール|常駐ジョブ)/i.test(text)) {
+    shapes.push('workflow_scheduler');
+  }
+  return shapes;
+}
+
+// Reads architecture doc content + story text and checks which required blueprint
+// dimensions are addressed. Returns null when no shape applies. Files only.
+async function buildArchitectureBlueprintCoverage(repoRoot, { storySource, fileGroups }) {
+  const shapes = detectBlueprintShapes(storySource);
+  if (shapes.length === 0) return null;
+  const required = shapes.flatMap((shape) =>
+    (ARCHITECTURE_BLUEPRINT_DIMENSIONS[shape] ?? []).map((d) => ({ ...d, shape })));
+  let evidence = storyEvidenceText(storySource);
+  for (const file of (fileGroups.architecture_docs?.files ?? [])) {
+    try {
+      evidence += '\n' + await readFile(path.join(repoRoot, file), 'utf8');
+    } catch {
+      // unreadable doc -> no coverage contribution from that file
+    }
+  }
+  const covered = [];
+  const missing = [];
+  for (const d of required) (d.keywords.test(evidence) ? covered : missing).push(d);
+  return { shapes, required, covered, missing };
+}
+
+function buildArchitectureBlueprintGate(blueprintCoverage, decisionRecords = null) {
+  if (!blueprintCoverage) return null;
+  const waiver = findAcceptedDecisionForSource(decisionRecords, 'gate:architecture_blueprint');
+  const missing = blueprintCoverage.missing ?? [];
+  const resolved = Boolean(waiver) || missing.length === 0;
+  return {
+    id: 'gate:architecture_blueprint',
+    type: 'architecture_blueprint_gate',
+    label: 'Architecture Blueprint Gate',
+    status: resolved ? 'passed' : 'needs_evidence',
+    required: true,
+    shapes: blueprintCoverage.shapes,
+    required_dimensions: blueprintCoverage.required.map((d) => d.id),
+    missing_dimensions: missing.map((d) => ({ id: d.id, label: d.label, hint: d.hint })),
+    reason: resolved
+      ? (waiver
+        ? `Architecture blueprint dimensions waived: ${waiver.summary ?? 'waiver recorded'}`
+        : 'Architecture evidence addresses the required blueprint dimensions for this story shape')
+      : `Story shape (${blueprintCoverage.shapes.join(', ')}) requires the architecture evidence to address: ${missing.map((d) => d.label).join(', ')}. Add these to the architecture doc, or record a waiver against gate:architecture_blueprint.`
+  };
+}
+
 function buildSafetySecretSurfaceGate(fileGroups, decisionRecords = null) {
   const files = detectSafetySurfaceFiles(fileGroups);
   if (files.length === 0) return null;
@@ -4256,6 +4349,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  architectureBlueprint = null,
   environmentGraph = null,
   git = null,
   scope = null,
@@ -4304,6 +4398,7 @@ function buildGateDag({
     ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift }),
     required: true
   };
+  const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
@@ -4405,6 +4500,7 @@ function buildGateDag({
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
+    ...(architectureBlueprintGate ? [architectureBlueprintGate] : []),
     specGate,
     designDiagramsGate,
     {
@@ -4478,7 +4574,12 @@ function buildGateDag({
     { from: 'gate:change_classification', to: 'gate:pr_freshness' },
     { from: 'gate:pr_freshness', to: 'architecture' },
     { from: 'gate:pr_freshness', to: 'spec' },
-    { from: 'architecture', to: 'code' },
+    ...(architectureBlueprintGate
+      ? [
+        { from: 'architecture', to: 'gate:architecture_blueprint' },
+        { from: 'gate:architecture_blueprint', to: 'code' }
+      ]
+      : [{ from: 'architecture', to: 'code' }]),
     { from: 'spec', to: 'gate:design_diagrams' },
     { from: 'gate:design_diagrams', to: 'code' },
     ...acceptanceNodes.flatMap((node) => [
@@ -5811,6 +5912,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
       'deploy_verification_gate',
+      'architecture_blueprint_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
