@@ -7909,14 +7909,17 @@ async function makeSchedulerStoryRepo() {
   await git(repo, ['init', '-b', 'main']);
   await git(repo, ['config', 'user.email', 't@e.com']);
   await git(repo, ['config', 'user.name', 'T']);
-  await runCli(['init', repo, '--story-id', 'story-pr-prepare', '--title', 'Workflow Mission Control: scheduled job runner', '--view', 'dev', '--period', '2026-W18']);
+  // "Recurring ... workflow" trips the scheduler shape detector while NOT
+  // containing any keyword that would mark scheduling_owner/job_infrastructure
+  // as covered, so both dimensions are genuinely missing.
+  await runCli(['init', repo, '--story-id', 'story-pr-prepare', '--title', 'Recurring batch sync workflow', '--view', 'dev', '--period', '2026-W18']);
   await git(repo, ['add', '-A']);
   await git(repo, ['commit', '-m', 'chore: init']);
   await git(repo, ['switch', '-c', 'feature/x']);
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await writeFile(path.join(repo, 'src', 'runner.js'), 'export const run = 1;\n');
+  await writeFile(path.join(repo, 'src', 'sync.js'), 'export const sync = 1;\n');
   await git(repo, ['add', '-A']);
-  await git(repo, ['commit', '-m', 'feat: runner']);
+  await git(repo, ['commit', '-m', 'feat: sync']);
   return repo;
 }
 
@@ -7925,11 +7928,16 @@ test('architecture blueprint gate blocks scheduler stories missing scheduling/in
   const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main']);
   assert.equal(unresolved.exitCode, 0);
   const gateDag = unresolved.result.preparation.pr_context.gate_dag;
-  assert.equal(gateDag.nodes.find((n) => n.id === 'architecture')?.status, 'satisfied');
+  // The blueprint gate is independent of the Architecture Gate: it fires on
+  // story shape regardless of the Architecture Gate's own status.
+  const architectureStatus = gateDag.nodes.find((n) => n.id === 'architecture')?.status;
   const blueprint = gateDag.nodes.find((n) => n.id === 'gate:architecture_blueprint');
   assert.equal(blueprint?.type, 'architecture_blueprint_gate');
   assert.equal(blueprint?.status, 'needs_evidence');
   assert.deepEqual(blueprint.missing_dimensions.map((d) => d.id).sort(), ['job_infrastructure', 'scheduling_owner']);
+  // Independence: the blueprint gate blocks even though the Architecture Gate
+  // is not itself failing in a way that masks it (it is satisfied or needs_review).
+  assert.ok(['satisfied', 'needs_review'].includes(architectureStatus));
   assert.equal(unresolved.result.preparation.gate_status.ready_for_pr_create, false);
   assert.equal(unresolved.result.preparation.gate_status.unresolved_gates.some((g) => g.id === 'gate:architecture_blueprint'), true);
   assert.equal(gateDag.nodes.find((n) => n.id === 'gate:dag_connectivity')?.status, 'passed');
