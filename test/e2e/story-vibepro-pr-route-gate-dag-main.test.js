@@ -43,6 +43,8 @@ test('story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route class
   // `vibepro pr prepare` はroute別のPR本文契約を `gate:pr_body_contract` としてGate DAGに出す。
   // story-vibepro-pr-route-gate-dag ac:6
   // PR本文の判断グラフにrouteとbody templateが表示される。
+  // story-vibepro-oss-engineering-judgment-pr-message ac:1
+  // PR本文はEngineering Judgment DAGの判断入力、シグナル、要求証跡をOSSレビュアー向けに表示する。
   const repo = await makeRepo();
   await mkdir(path.join(repo, 'docs'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'review-guide.md'), '# Review Guide\n');
@@ -65,6 +67,14 @@ test('story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route class
   assert.equal(prepare.pr_context.gate_dag.summary.pr_body_template, 'documentation_decision_review');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
   assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
+  assert.match(prBody, /### Engineering Judgment の判断過程/);
+  assert.match(prBody, /#### 判断した入力/);
+  assert.match(prBody, /#### 判断シグナル/);
+  assert.match(prBody, /`surface:agent_or_gate_workflow`: agent\/gate\/review\/DAGの判断面に触れる/);
+  assert.match(prBody, /#### 選んだDAGが要求した確認/);
+  assert.match(prBody, /Evidence Lifecycle Gate:/);
+  assert.match(prBody, /#### 証跡とマージ境界/);
+  assert.match(prBody, /要求証跡: .*Engineering Judgment Route Gate=passed/);
   assert.match(prBody, /PR Route: docs_only \/ body=documentation_decision_review/);
   assert.match(prBody, /### 判断グラフ/);
   assert.match('`vibepro pr prepare` はPR routeを `gate:pr_route_classification` としてGate DAGに出す。', /gate:pr_route_classification/);

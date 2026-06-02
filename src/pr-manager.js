@@ -1582,6 +1582,13 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
     splitPlan,
     git
   });
+  const engineeringReasoning = renderEngineeringJudgmentReasoning({
+    source: prContext.story_source,
+    fileGroups,
+    gateDag: prContext.gate_dag,
+    prContext,
+    git
+  });
   const gateNote = unresolved.length === 0
     ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
     : `未解決Gateがあります（対象: ${formatHumanGateSummary(unresolved)}）。詳細は監査ログの Gate DAG / Gate Enforcement を確認し、blocking か waiver 可能かを判断してください。`;
@@ -1596,6 +1603,8 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
 - Gate状況: ${gateNote}
 - Scope判断: ${scopeNote}
 - 変更規模: ${git.changed_files.length} files
+
+${engineeringReasoning}
 
 ### 判断グラフ
 ${decisionGraph}`;
@@ -1622,6 +1631,120 @@ function formatEngineeringJudgmentForHuman(engineeringJudgment) {
     ? `${Math.round(engineeringJudgment.confidence * 100)}%`
     : '-';
   return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}`;
+}
+
+function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, prContext = {}, git = {} }) {
+  const judgment = prContext.engineering_judgment;
+  if (!judgment) {
+    return `### Engineering Judgment の判断過程
+- 状態: Engineering Judgmentを分類できませんでした。Story、差分、Gate DAGを確認してください。`;
+  }
+  const title = source.requirement_title ?? source.title ?? source.story_id ?? 'Story';
+  const sourcePath = source.path ?? 'Story未検出';
+  const prRoute = prContext.pr_route;
+  const routeGates = collectEngineeringJudgmentRouteGates(gateDag, judgment.route_type);
+  const routeGateSummary = routeGates.length > 0
+    ? routeGates.slice(0, 5).map(formatEngineeringJudgmentGateForHuman).join('\n')
+    : '- route-specific judgment gateはありません。';
+  const extraRouteGateCount = Math.max(0, routeGates.length - 5);
+  const routeGateTail = extraRouteGateCount > 0 ? `\n- ほか${extraRouteGateCount}件はGate DAG監査ログを参照。` : '';
+  const signals = buildEngineeringSignalDigest(judgment.signals);
+  const evidence = buildEngineeringEvidenceReasoningDigest(gateDag);
+  const mergeBoundary = buildEngineeringMergeBoundary(gateDag);
+
+  return `### Engineering Judgment の判断過程
+このPRは、単なる差分量ではなく「何を壊してはいけない変更か」で読みます。入力と差分シグナルから \`${judgment.route_type}\` として読み、\`${judgment.route_dag}\` の確認順序に落としました。
+
+#### 判断した入力
+- 目的: ${title}
+- 正本: ${formatGithubFileLink(sourcePath, git)}
+- 差分面: ${buildHumanChangeIntent(fileGroups)}
+- PR Route: ${formatPrRouteForHuman(prRoute)}
+
+#### 判断シグナル
+${signals}
+
+#### 選んだDAGが要求した確認
+${routeGateSummary}${routeGateTail}
+
+#### 証跡とマージ境界
+- 要求証跡: ${evidence}
+- 判断境界: ${mergeBoundary}`;
+}
+
+function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
+  const nodes = gateDag?.nodes ?? [];
+  return nodes.filter((node) => node.id?.startsWith('gate:judgment_')
+    && (!routeType || node.route_type === routeType));
+}
+
+function formatEngineeringJudgmentGateForHuman(gate) {
+  return `- ${gate.label ?? gate.id}: ${describeEngineeringJudgmentGate(gate)}`;
+}
+
+function describeEngineeringJudgmentGate(gate) {
+  if (gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle') {
+    return 'agent/gate/DAG変更では、レビュー証跡が現在の差分に結びつき、missing/stale/timed-out/blockが残っていないことを確認する。';
+  }
+  if (gate.id === 'gate:judgment_security_trust_security_regression') {
+    return 'trust boundaryに触れる変更では、権限・secret・監査の回帰をテストまたは明示waiverで閉じる。';
+  }
+  return gate.reason ?? 'このDAGで必要なレビュー観点を確認する。';
+}
+
+function buildEngineeringSignalDigest(signals = []) {
+  if (!Array.isArray(signals) || signals.length === 0) {
+    return '- 明示シグナルなし。Story、差分、PR routeからgeneral engineeringとして扱います。';
+  }
+  return signals.slice(0, 6).map((signal) => `- \`${signal}\`: ${describeEngineeringSignal(signal)}`).join('\n');
+}
+
+function describeEngineeringSignal(signal) {
+  if (signal === 'route:release_or_mirror') return 'release/mirror経路に触れるため、成果物、CI、rollback、source traceabilityを先に見る。';
+  if (signal === 'surface:agent_or_gate_workflow') return 'agent/gate/review/DAGの判断面に触れるため、tool boundaryと証跡ライフサイクルを確認する。';
+  if (signal === 'surface:auth_or_security') return '認証・権限・secret・監査境界に触れるため、trust boundaryと回帰証跡を優先する。';
+  if (signal === 'surface:data_or_migration') return 'データ正本、migration、retry、rollbackで破壊的影響が出る面を優先する。';
+  if (signal === 'domain:business_workflow') return '顧客、契約、承認、請求などの業務状態と例外運用を壊さないかを見る。';
+  if (signal === 'surface:ui_ux') return 'ユーザーが依存する導線、状態、視覚回帰、アクセシビリティを優先する。';
+  if (signal === 'surface:developer_tool') return 'CLI/API契約、exit code、設定優先順位、短い検証ループを優先する。';
+  if (signal === 'surface:api_contract') return 'API route/client/schema/error shapeの互換性を優先する。';
+  if (signal === 'surface:repo_control') return 'CI、repo設定、実行環境のblast radiusとrollbackを優先する。';
+  if (signal === 'surface:docs_only') return '読者が判断・実行できる状態と現行仕様との整合を優先する。';
+  if (String(signal).startsWith('risk_profile:')) return `risk profileは ${String(signal).slice('risk_profile:'.length)}。証跡量とAgent Review要求の強さを決める入力にする。`;
+  return 'Story、差分、分類器が検出した判断入力。';
+}
+
+function buildEngineeringEvidenceReasoningDigest(gateDag) {
+  const nodes = gateDag?.nodes ?? [];
+  const importantIds = [
+    'gate:engineering_judgment_route',
+    'gate:common_judgment_spine',
+    'gate:requirement',
+    'gate:unit',
+    'gate:integration',
+    'gate:e2e',
+    'gate:agent_review',
+    'gate:network_contract',
+    'gate:dag_connectivity'
+  ];
+  const evidenceNodes = importantIds
+    .map((id) => nodes.find((node) => node.id === id))
+    .filter(Boolean);
+  const enforcedJudgmentNodes = nodes.filter((node) => node.required === true
+    && node.id?.startsWith('gate:judgment_')
+    && !['route_specific_judgment_gate'].includes(node.type));
+  const rows = [...evidenceNodes, ...enforcedJudgmentNodes]
+    .filter((node, index, list) => list.findIndex((item) => item.id === node.id) === index)
+    .map((node) => `${node.label ?? node.id}=${node.status}`);
+  return rows.length > 0 ? rows.join(' / ') : 'Gate DAG証跡なし';
+}
+
+function buildEngineeringMergeBoundary(gateDag) {
+  const unresolved = collectUnresolvedRequiredGates(gateDag);
+  if (unresolved.length === 0) {
+    return '必須Gateは閉じています。レビューでは、選ばれたDAGの前提と実差分が一致しているかを最終確認します。';
+  }
+  return `未解決Gateがあります（${formatHumanGateSummary(unresolved)}）。マージ判断は、証跡追加または理由付きwaiver後に行います。`;
 }
 
 function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan, git = {} }) {
