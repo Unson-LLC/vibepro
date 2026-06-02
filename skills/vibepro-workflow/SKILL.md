@@ -13,13 +13,14 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
 
 1. Confirm the target repository and current branch.
 2. Initialize only when needed: `vibepro init <repo> --language ja`.
-3. Select or create the Story before diagnosing or changing code.
-4. Import Graphify context before impact-sensitive work: `vibepro graph <repo> --run-graphify`.
-5. Diagnose and derive the repo context:
+3. Before manually adding or editing human-facing VibePro artifacts, resolve the output language from `.vibepro/config.json` `output.language` or the explicit CLI `--language` override.
+4. Select or create the Story before diagnosing or changing code.
+5. Import Graphify context before impact-sensitive work: `vibepro graph <repo> --run-graphify`.
+6. Diagnose and derive the repo context:
    - `vibepro story diagnose <repo> --id <story-id> --run-graphify`
    - `vibepro story derive <repo> --run-graphify`
    - `vibepro story map <repo>`
-6. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set:
+7. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set:
    - `vibepro check list`
    - `vibepro check ui <repo>`
    - `vibepro check security <repo>`
@@ -27,26 +28,26 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
    - `vibepro check architecture <repo>`
    - `vibepro check pr-readiness <repo> --base <ref> --head <ref>`
    - `vibepro check launch-readiness <repo>`
-7. For performance improvement stories, define and record Story-level performance evidence before claiming speedups:
+8. For performance improvement stories, define and record Story-level performance evidence before claiming speedups:
    - `vibepro performance define <repo> --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> --evidence-source <type>`
    - `vibepro performance record <repo> --id <story-id> --metric-id <id> --label before|after --status completed --duration-ms <ms> --evidence-source <type:ref:summary>`
    - `vibepro performance compare <repo> --id <story-id>`
-8. For existing UI modernization, derive the product-local Design System before screen implementation:
+9. For existing UI modernization, derive the product-local Design System before screen implementation:
    - Run Graphify first when available: `vibepro graph <repo> --run-graphify`.
    - Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code`.
    - Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json` before accepting the DS as an implementation constraint.
    - Treat `.vibepro/design-system/<ds-id>/design-system.json`, `semantic-tokens.json`, `component-roles.json`, `component-states.json`, `screen-patterns.json`, `cta-policy.json`, `density-policy.json`, `navigation-policy.json`, `anti-patterns.json`, and `implementation-mapping.json` as product-local DS evidence.
-9. For screen-level UI modernization, create the story-specific design decision space before screen implementation:
+10. For screen-level UI modernization, create the story-specific design decision space before screen implementation:
    - `vibepro design-modernize derive-system <repo> --id <story-id> --product <name> --routes <csv> --brief <text>`
    - `vibepro design-modernize plan <repo> --id <story-id> --product <name> --routes <csv> --base-url <url>`
    - Treat `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json` as implementation constraints.
    - External Design System bundles, screenshots, and image-generated ideas are visual hypotheses. The VibePro-derived Design System, current UI evidence, Story/Spec, and Gate DAG remain authoritative.
-10. Plan work from VibePro evidence: `vibepro story plan <repo>`.
-11. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
-12. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
-13. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
-14. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-15. Run parallel subagent review:
+11. Plan work from VibePro evidence: `vibepro story plan <repo>`.
+12. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
+13. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
+14. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
+15. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+16. Run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
    - Start the listed Codex/Claude Code subagents in parallel, one role per subagent.
@@ -56,8 +57,22 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-16. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
-17. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+17. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
+18. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+
+## Human Artifact Language
+
+- Human-facing Story, Journey, Architecture, Spec, Task, Review, Diagnosis, and PR artifacts should be written in the resolved output language.
+- Preserve machine-facing identifiers exactly: JSON keys, schema names, enums, Story IDs, Gate IDs, DAG node IDs, task IDs, role IDs, commands, file paths, package names, and external tool names.
+- Preserve user-provided text and external evidence text unless the artifact explicitly asks for translation or localization.
+- When CLI-generated artifacts are incomplete and the agent fills them manually, match the repository language policy instead of defaulting to English.
+
+## Managed Worktree Status
+
+- Recent VibePro Story / Spec / Architecture documents define a future managed worktree Execution DAG, but this is not evidence that the installed CLI already creates, reuses, or enforces managed worktrees.
+- Do not claim VibePro created a worktree unless a real command result records that state.
+- Until `vibepro execute start` actually reports managed worktree creation or reuse, create normal git worktrees manually when isolation is needed, and keep implementation, verification, review, PR preparation, and PR creation in that isolated worktree.
+- When a future VibePro CLI reports managed worktree state, prefer that state and run the rest of the VibePro flow from the reported worktree.
 
 ## Guardrails
 
