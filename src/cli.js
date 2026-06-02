@@ -142,6 +142,12 @@ import {
   showTask
 } from './task-manager.js';
 import {
+  deriveJourneyMap,
+  getJourneyStatus,
+  renderJourneyMap,
+  renderJourneyStatus
+} from './journey-map.js';
+import {
   installBundledSkills,
   listBundledSkills,
   renderSkillsInstall,
@@ -257,6 +263,9 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey map [repo] [--json]
+  vibepro journey status [repo] [--json]
   vibepro task list [repo] [--id <story-id>]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
   vibepro task show [repo] --task <task-id> [--id <story-id>]
@@ -392,6 +401,9 @@ Usage:
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey map [repo] [--json]
+  vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
@@ -408,6 +420,7 @@ Usage:
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
+  'journey',
   'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
   'design-modernize', 'design-system', 'explore', 'performance',
   'nocodb', 'repo-status'
@@ -1323,6 +1336,44 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'journey') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'derive') {
+        const result = await deriveJourneyMap(repoRoot, {
+          journeyId: getOption(rest, '--id')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.journey, null, 2)}\n`
+          : renderJourneyMap(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'map') {
+        const status = await getJourneyStatus(repoRoot);
+        if (status.status === 'missing') {
+          write(stderr, `${status.reason}\n`);
+          return { exitCode: 2, command, subcommand, status };
+        }
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(status.journey, null, 2)}\n`
+          : renderJourneyMap(status.journey));
+        return { exitCode: 0, command, subcommand, result: status.journey };
+      }
+      if (subcommand === 'status') {
+        const status = await getJourneyStatus(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(status, null, 2)}\n`
+          : renderJourneyStatus(status));
+        return { exitCode: 0, command, subcommand, result: status };
+      }
+      write(stderr, `Unknown journey command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
