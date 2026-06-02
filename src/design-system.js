@@ -6,12 +6,12 @@ import {
   buildDesignSystemGate,
   buildProductSemanticModel,
   collectScreens,
+  resolveDesignRoutes,
   normalizeDesignSystemBundle
 } from './design-modernize.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
 import { localizedText } from './language.js';
 
-const DEFAULT_ROUTES = ['/home', '/map', '/detail', '/hotel/[hotel_id]'];
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const IGNORED_DIRS = new Set(['.git', '.next', '.vibepro', 'coverage', 'dist', 'node_modules']);
@@ -20,7 +20,7 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const product = options.product ?? inferProductName(root);
   const designSystemId = sanitizeId(options.designSystemId ?? options.id ?? product);
-  const routes = options.routes?.length > 0 ? options.routes : DEFAULT_ROUTES;
+  const routes = await resolveDesignRoutes(root, options.routes);
   const visualFoundations = await readVisualFoundations(root, {
     designSystemId,
     product,

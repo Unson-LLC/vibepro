@@ -2,7 +2,7 @@ import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-const DEFAULT_SCREEN_ROUTES = ['/home', '/map', '/detail', '/hotel/[hotel_id]'];
+const DEFAULT_SCREEN_ROUTES = ['/'];
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const IGNORED_DIRS = new Set(['.git', '.next', '.vibepro', 'coverage', 'dist', 'node_modules']);
 
@@ -10,7 +10,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId ?? 'design-modernize';
   const product = options.product ?? inferProductName(root);
-  const routes = options.routes?.length > 0 ? options.routes : DEFAULT_SCREEN_ROUTES;
+  const routes = await resolveDesignRoutes(root, options.routes);
   const bundle = await readDesignSystemBundle(root, options.designSystemBundle);
   const designSystem = normalizeDesignSystemBundle(bundle, {
     designSystemId: options.designSystemId,
@@ -115,7 +115,7 @@ export async function deriveProductDesignSystem(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId ?? 'design-modernize';
   const product = options.product ?? inferProductName(root);
-  const routes = options.routes?.length > 0 ? options.routes : DEFAULT_SCREEN_ROUTES;
+  const routes = await resolveDesignRoutes(root, options.routes);
   const bundle = await readDesignSystemBundle(root, options.designSystemBundle);
   const referenceDesignSystem = normalizeDesignSystemBundle(bundle, {
     designSystemId: options.designSystemId,
@@ -173,7 +173,7 @@ export async function captureDesignModernizeScreens(repoRoot, options = {}) {
   const plan = await readPlan(outDir);
   const routes = options.routes?.length > 0
     ? options.routes
-    : plan?.screens?.map((screen) => screen.route) ?? DEFAULT_SCREEN_ROUTES;
+    : plan?.screens?.map((screen) => screen.route) ?? await resolveDesignRoutes(root, []);
   const plannedUrl = plan?.screens?.[0]?.capture?.url;
   const baseUrl = options.baseUrl ?? (/^https?:\/\//.test(plannedUrl ?? '') ? plannedUrl : null);
   const result = {
@@ -490,8 +490,35 @@ export async function collectScreens(repoRoot, routes, { product, designSystem, 
   return screens;
 }
 
+export async function resolveDesignRoutes(repoRoot, routes = []) {
+  if (Array.isArray(routes) && routes.length > 0) return routes;
+  return discoverDesignRoutes(repoRoot);
+}
+
+export async function discoverDesignRoutes(repoRoot) {
+  const roots = [
+    { dir: path.join(repoRoot, 'src', 'app'), kind: 'app' },
+    { dir: path.join(repoRoot, 'app'), kind: 'app' },
+    { dir: path.join(repoRoot, 'src', 'pages'), kind: 'pages' },
+    { dir: path.join(repoRoot, 'pages'), kind: 'pages' }
+  ];
+  const routes = [];
+  for (const root of roots) {
+    if (!await exists(root.dir)) continue;
+    const files = await listUiFiles(repoRoot, root.dir);
+    for (const file of files) {
+      const route = root.kind === 'app'
+        ? routeFromAppFile(file, root.dir, repoRoot)
+        : routeFromPagesFile(file, root.dir, repoRoot);
+      if (route) routes.push(route);
+    }
+  }
+  const discovered = unique(routes).sort((a, b) => a.localeCompare(b));
+  return discovered.length > 0 ? discovered.slice(0, 20) : DEFAULT_SCREEN_ROUTES;
+}
+
 export function buildProductSemanticModel({ product, brief, routes, screens }) {
-  const text = [
+  const rawText = [
     product,
     brief,
     routes.join(' '),
@@ -505,7 +532,9 @@ export function buildProductSemanticModel({ product, brief, routes, screens }) {
         ...file.data_dependencies
       ])
     ])
-  ].join(' ').toLowerCase();
+  ].join('\n');
+  const text = rawText.toLowerCase();
+  const positiveText = stripNegatedDomainEvidence(rawText).toLowerCase();
   const currentCtas = unique(screens.flatMap((screen) => screen.evidence.files.flatMap((file) => file.ctas))).slice(0, 20);
   const routeIntents = screens.map((screen) => ({
     route: screen.route,
@@ -514,8 +543,8 @@ export function buildProductSemanticModel({ product, brief, routes, screens }) {
     current_navigation: unique(screen.evidence.files.flatMap((file) => file.navigation)).slice(0, 12)
   }));
   const isJapanese = /日本|japanese|渋谷|新宿|休憩|宿泊|地図|検索|電話/.test(text);
-  const hotelDiscovery = /hotel|ホテル|宿泊|休憩|stay|map|地図|空室|電話/.test(text);
-  const aiPhone = /ai電話|ai phone|phone confirmation|空室確認|電話/.test(text);
+  const hotelDiscovery = hasHotelDiscoveryEvidence(positiveText);
+  const aiPhone = /ai電話|ai phone|phone confirmation|空室確認|電話/.test(positiveText);
   return {
     schema_version: '0.1.0',
     product,
@@ -524,14 +553,14 @@ export function buildProductSemanticModel({ product, brief, routes, screens }) {
     language_policy: isJapanese ? 'japanese_ui_first' : 'preserve_current_product_language',
     interaction_model: aiPhone ? 'discovery_to_ai_phone_confirmation' : 'preserve_current_primary_action_model',
     domain_concepts: unique([
-      ...(/current|現在地|location|map|地図/.test(text) ? ['location_search', 'map_exploration'] : []),
+      ...(/current|現在地|location|map|地図/.test(positiveText) && hotelDiscovery ? ['location_search', 'map_exploration'] : []),
       ...(/condition|filter|条件|絞り/.test(text) ? ['condition_search', 'filter_refinement'] : []),
-      ...(/休憩/.test(text) ? ['plan_rest'] : []),
-      ...(/宿泊|stay/.test(text) ? ['plan_stay'] : []),
-      ...(/サービスタイム|service/.test(text) ? ['plan_service_time'] : []),
-      ...(/今すぐ|now|空室/.test(text) ? ['plan_now', 'availability'] : []),
+      ...(/休憩/.test(positiveText) ? ['plan_rest'] : []),
+      ...(/宿泊|stay/.test(positiveText) && hotelDiscovery ? ['plan_stay'] : []),
+      ...(/サービスタイム|service/.test(positiveText) && hotelDiscovery ? ['plan_service_time'] : []),
+      ...(/今すぐ|now|空室/.test(positiveText) && hotelDiscovery ? ['plan_now', 'availability'] : []),
       ...(/price|価格|¥|円/.test(text) ? ['price'] : []),
-      ...(/distance|距離|徒歩|km|m/.test(text) ? ['distance'] : []),
+      ...(/distance|距離|徒歩|km|m/.test(text) && hotelDiscovery ? ['distance'] : []),
       ...(/facility|設備|wi-fi|駐車場/.test(text) ? ['facility'] : []),
       ...(/user posts|投稿|口コミ/.test(text) ? ['user_posts'] : [])
     ]),
@@ -644,13 +673,14 @@ function buildComponentRoleMap({ semanticModel, componentSamples, routeIntents }
         ['PlanBadge', 'domain plan identity marker']
       ]
     : [
+        ...inferGenericComponentRoleDefaults(names),
         ['PrimaryAction', 'highest-priority domain action'],
         ['FilterControl', 'condition refinement without route rewrite'],
         ['ResultCard', 'repeatable entity summary'],
         ['StatusBadge', 'state or status indicator'],
         ['NavigationShell', 'stable route navigation']
       ];
-  const roles = defaults.map(([name, responsibility]) => ({
+  const roles = uniqueRoleDefaults(defaults).map(([name, responsibility]) => ({
     name,
     responsibility,
     evidence: names.filter((sample) => sample.toLowerCase().includes(name.toLowerCase())).slice(0, 8),
@@ -666,6 +696,74 @@ function buildComponentRoleMap({ semanticModel, componentSamples, routeIntents }
       'component role changes require matching route-level regression evidence'
     ]
   };
+}
+
+function routeFromAppFile(file, appRoot, repoRoot) {
+  if (!/(^|\/)page\.[cm]?[jt]sx?$/.test(file)) return null;
+  const relativeRoot = path.relative(repoRoot, appRoot).split(path.sep).join('/');
+  const relative = file.slice(relativeRoot.length).replace(/^\//, '');
+  const segments = relative.split('/').slice(0, -1)
+    .filter((segment) => segment && !segment.startsWith('(') && !segment.startsWith('@'));
+  return `/${segments.join('/')}`.replace(/\/$/, '') || '/';
+}
+
+function routeFromPagesFile(file, pagesRoot, repoRoot) {
+  if (!/\.[cm]?[jt]sx?$/.test(file)) return null;
+  const relativeRoot = path.relative(repoRoot, pagesRoot).split(path.sep).join('/');
+  const relative = file.slice(relativeRoot.length).replace(/^\//, '');
+  if (relative.startsWith('api/') || /^_(app|document|error)\./.test(relative)) return null;
+  const withoutExt = relative.replace(/\.[cm]?[jt]sx?$/, '');
+  const segments = withoutExt.split('/').filter(Boolean);
+  if (segments.at(-1) === 'index') segments.pop();
+  return `/${segments.join('/')}`.replace(/\/$/, '') || '/';
+}
+
+function stripNegatedDomainEvidence(text) {
+  return String(text ?? '')
+    .split(/[\n.。!?！？;；]+/)
+    .filter((segment) => {
+      const value = segment.toLowerCase();
+      const hasDomainTerm = /hotel|ホテル|宿泊|休憩|stay|map|地図|空室|電話|booking|予約/.test(value);
+      if (!hasDomainTerm) return true;
+      return !/(do\s+not|don't|avoid|without|禁止|避け|使わない|使用しない|しない|ではない|not\s+a|not\s+an|no\s+)/i.test(segment);
+    })
+    .join('\n');
+}
+
+function hasHotelDiscoveryEvidence(text) {
+  const value = String(text ?? '').toLowerCase();
+  return /hotel|ホテル|宿泊|休憩|旅館|ラブホテル|空室|空室確認|ai電話|サービスタイム/.test(value);
+}
+
+function inferGenericComponentRoleDefaults(names) {
+  return unique(names)
+    .filter((name) => /^[A-Z][A-Za-z0-9_]*$/.test(name))
+    .map((name) => [name, inferGenericComponentResponsibility(name)])
+    .slice(0, 16);
+}
+
+function inferGenericComponentResponsibility(name) {
+  const text = String(name ?? '').toLowerCase();
+  if (/shell|layout|nav|sidebar|menu/.test(text)) return 'application navigation and layout surface';
+  if (/header|toolbar|topbar/.test(text)) return 'page-level orientation and action grouping';
+  if (/project|company|product|template|customer|account|user/.test(text) && /list|table|grid|card/.test(text)) return 'repeatable business entity summary';
+  if (/list|table|grid/.test(text)) return 'repeatable information management surface';
+  if (/form|editor|create|settings/.test(text)) return 'structured input and configuration workflow';
+  if (/dialog|modal|drawer|sheet/.test(text)) return 'focused decision or detail surface';
+  if (/badge|status|pill|tag/.test(text)) return 'state or classification indicator';
+  if (/filter|search|segment|tab/.test(text)) return 'finding and narrowing control';
+  if (/button|cta|action|submit/.test(text)) return 'explicit command surface';
+  return 'product-local component role discovered from current code';
+}
+
+function uniqueRoleDefaults(defaults) {
+  const byName = new Map();
+  for (const item of defaults) {
+    const [name, responsibility] = item;
+    if (!name || byName.has(name)) continue;
+    byName.set(name, [name, responsibility]);
+  }
+  return [...byName.values()];
 }
 
 function buildCompositionGuidelines(semanticModel) {
