@@ -12,36 +12,37 @@ Use this Skill when VibePro is driving a refactor. The goal is to find and fix c
 ## Required Workflow
 
 1. Start from a Story. If no Story exists, run `vibepro story derive` and inspect the Story map before implementing.
-2. Check Architecture. If the boundary, dependency direction, or responsibility split is missing, restore or add Architecture docs before changing code.
-3. Check Spec. If behavior, invariant, API, or data-flow expectations are missing, restore or add Spec docs before changing code.
-4. Use VibePro task context:
+2. Resolve the output language from `.vibepro/config.json` `output.language` or the explicit CLI `--language` override before manually adding or editing human-facing Story, Architecture, Spec, Task, Review, Diagnosis, Journey, or PR artifacts.
+3. Check Architecture. If the boundary, dependency direction, or responsibility split is missing, restore or add Architecture docs before changing code.
+4. Check Spec. If behavior, invariant, API, or data-flow expectations are missing, restore or add Spec docs before changing code.
+5. Use VibePro task context:
    - `vibepro story plan <repo>`
    - `vibepro task create <repo> --from-plan --id <story-id>`
    - `vibepro task brief|plan|handoff <repo> --task <task-id> --id <story-id>`
-5. Use a diagnosis package when the refactor has a clear purpose:
+6. Use a diagnosis package when the refactor has a clear purpose:
    - UI behavior: `vibepro check ui <repo> --story-id <story-id>`
    - Security boundary: `vibepro check security <repo> --story-id <story-id>`
    - Performance readiness: `vibepro check performance <repo> --story-id <story-id>`
    - Architecture boundary: `vibepro check architecture <repo> --story-id <story-id>`
    - Launch readiness: `vibepro check launch-readiness <repo> --story-id <story-id>`
-6. For performance refactors, define Story-level metrics before claiming improvement. Separate DB/server readiness from user-perceived readiness.
-7. For UI/UX modernization refactors, derive design constraints before changing components:
+7. For performance refactors, define Story-level metrics before claiming improvement. Separate DB/server readiness from user-perceived readiness.
+8. For UI/UX modernization refactors, derive design constraints before changing components:
    - run `vibepro design-modernize derive-system <repo> --id <story-id> ...`,
    - run `vibepro design-modernize plan <repo> --id <story-id> ...`,
    - preserve current routes, information architecture, CTA priority, state behavior, and data dependencies,
    - treat image-generated or external design proposals as visual hypotheses, not implementation authority.
-8. Implement with focused tests. Prefer small changes tied to the task target files.
-9. Run project verification and then `vibepro pr prepare`.
-10. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
-11. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
-12. Run the VibePro parallel subagent review workflow:
+9. Implement with focused tests. Prefer small changes tied to the task target files.
+10. Run project verification and then `vibepro pr prepare`.
+11. Read `pr-prepare.json` `gate_status` before treating the work as PR-ready.
+12. If Agent Review Gate is unresolved, it must be cleared before finalizing. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
+13. Run the VibePro parallel subagent review workflow:
    - `vibepro review prepare <repo> --id <story-id> --stage <stage>`
    - dispatch each role in `parallel-dispatch.md` as a separate parallel subagent review,
    - close/shutdown each review subagent after receiving its result,
    - `vibepro review record` each result with Codex/Claude Code provenance and lifecycle evidence (`--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id> --agent-closed` plus thread/session/call/transcript evidence),
    - rerun `vibepro pr prepare`.
    If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-13. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
+14. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
 
 ## Refactor Target Criteria
 
@@ -66,6 +67,8 @@ Prioritize candidates that VibePro surfaces as:
 - Do not satisfy Agent Review Gate with a manual `pass`. A passing review must include Codex or Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) so later audits can distinguish real subagent review from coordinator self-approval and closed review threads.
 - Do not treat visual redesign as a refactor unless the unchanged UX contracts are explicit. Current route, layout information hierarchy, CTA priority, state behavior, data dependencies, and accessibility expectations must be preserved or intentionally changed in Story/Spec.
 - Do not use color-token substitution as a substitute for a Design System. VibePro-derived DS should include semantic colors, state colors, component roles, CTA hierarchy, composition rules, anti-patterns, and visual hypothesis policy.
+- Do not translate machine-facing identifiers while localizing human-facing artifacts. Keep JSON keys, schema names, enums, Story IDs, Gate IDs, DAG node IDs, task IDs, role IDs, commands, file paths, package names, and external tool names unchanged.
+- Do not claim VibePro managed worktree execution exists just because Story / Spec / Architecture documents describe the planned DAG. Until `vibepro execute start` actually creates or reuses a worktree and records that state, use a normal git worktree manually when isolation is needed.
 - Do not clean dirty repository worktrees by reflexively stashing. First inspect `git status --short --branch`, unstaged diff, cached diff, and branch/HEAD reflog.
 - If a branch was advanced by external sync, merge, rebase, or another worktree, check whether the dirty state is a stale reverse diff from the previous branch commit to `HEAD`. Compare `git diff --stat <old> HEAD` with `git diff --cached --stat` / `git diff --stat` before deciding.
 - Only classify dirty state as safe to clean after proving it is already represented in `HEAD` and contains no extra user hunks. Otherwise report the exact files and keep the work intact.
