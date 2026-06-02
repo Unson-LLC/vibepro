@@ -36,6 +36,11 @@ import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
 } from './explore-evidence.js';
+import {
+  readLatestJourneyMap,
+  renderJourneyPrSection,
+  summarizeJourneyForPr
+} from './journey-map.js';
 import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decision-records.js';
 import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
@@ -1452,6 +1457,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const visualQaSection = renderPrVisualQaEvidence(prContext.visual_qa);
   const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
   const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
+  const journeyMapSection = renderJourneyPrSection(prContext.journey_map);
   const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
   const exploreEvidenceSection = renderExplorePrSection(prContext.explore_evidence);
   const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
@@ -1520,6 +1526,8 @@ ${renderRequirementPrSection(prContext.requirement_consistency, language)}
 
 ## Network Contract
 ${renderNetworkContractPrSection(prContext.network_contracts)}
+
+${journeyMapSection}
 
 ## Agent Review
 ${agentReviewSection}
@@ -2657,6 +2665,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
   });
+  const latestJourney = await readLatestJourneyMap(repoRoot);
+  const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id);
   const context = {
     story_source: primaryStory,
     architecture_decision: architectureDecision,
@@ -2676,6 +2686,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     visual_qa: visualQaEvidence,
     performance_evidence: performanceEvidence,
     network_contracts: networkContracts,
+    journey_map: journeyMap,
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     verification_evidence: boundVerificationEvidence,

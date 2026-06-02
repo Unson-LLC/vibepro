@@ -61,6 +61,7 @@ const SMOKE = {
   brainbase: { setup: 'none', args: () => ['brainbase'] },
   pr: { setup: 'story', args: (r) => ['pr', 'prepare', r, '--base', 'main'] },
   story: { setup: 'story', args: (r) => ['story', 'add', r, '--id', 'story-y', '--title', 'Y', '--view', 'dev', '--period', '2026-W18'] },
+  journey: { setup: 'story', args: (r) => ['journey', 'status', r] },
   task: { setup: 'story', args: (r) => ['task', r] },
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },
