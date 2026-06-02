@@ -694,6 +694,249 @@ export async function createPullRequest(repoRoot, options = {}) {
   };
 }
 
+export async function shipPullRequest(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const dryRun = options.dryRun === true;
+  const prepareResult = await preparePullRequest(root, options);
+  const { preparation } = prepareResult;
+  const gateStatus = preparation.gate_status
+    ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+  const agentReviewActions = buildAgentReviewShipActions(gateStatus, preparation.story.story_id);
+  const humanJudgments = buildShipHumanJudgments(gateStatus);
+  const safeOperations = [{
+    id: 'pr_prepare',
+    status: 'executed',
+    command: buildShipPrepareCommand(preparation, options),
+    artifact: prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null,
+    reason: 'pr ship always regenerates PR prepare artifacts before deciding the next step'
+  }];
+  const readyForPrCreate = gateStatus.ready_for_pr_create === true;
+  const prCreateCommand = buildShipPrCreateCommand(preparation, options);
+  const ship = {
+    schema_version: '0.1.0',
+    story_id: preparation.story.story_id,
+    created_at: new Date().toISOString(),
+    dry_run: dryRun,
+    status: readyForPrCreate
+      ? dryRun ? 'ready_for_pr_create' : 'pr_create_attempted'
+      : 'blocked',
+    stop_reason: readyForPrCreate
+      ? dryRun ? 'ready_for_pr_create_dry_run' : null
+      : buildShipStopReason(gateStatus),
+    safe_operations: safeOperations,
+    human_judgments_required: humanJudgments,
+    required_agent_review: agentReviewActions,
+    next_commands: readyForPrCreate
+      ? dryRun ? [prCreateCommand] : []
+      : buildShipNextCommands({ preparation, gateStatus, agentReviewActions, options }),
+    pr_create_command: readyForPrCreate ? prCreateCommand : null,
+    raw_gh_pr_create_suggested: false,
+    gate_status: gateStatus,
+    prepare_artifacts: mapArtifactPaths(root, prepareResult.artifacts)
+  };
+
+  if (!readyForPrCreate || dryRun) {
+    return {
+      story: preparation.story,
+      preparation,
+      ship,
+      execution: null,
+      artifacts: prepareResult.artifacts
+    };
+  }
+
+  const createResult = await createPullRequest(root, options);
+  ship.status = createResult.execution?.status ?? 'pr_created';
+  ship.execution = createResult.execution;
+  return {
+    ...createResult,
+    ship
+  };
+}
+
+export function renderPrShipSummary(result) {
+  const ship = result.ship;
+  const gateStatus = ship.gate_status ?? {};
+  const agentActions = ship.required_agent_review?.length
+    ? ship.required_agent_review.flatMap((action) => [
+        `- prepare: ${action.prepare_command}`,
+        `- start: ${action.start_command_template}`,
+        `- record: ${action.record_command_template}`
+      ]).join('\n')
+    : '- none';
+  const humanJudgments = ship.human_judgments_required?.length
+    ? ship.human_judgments_required.map((item) => `- ${item.kind}: ${item.reason}`).join('\n')
+    : '- none';
+  const nextCommands = ship.next_commands?.length
+    ? ship.next_commands.map((command) => `- ${command}`).join('\n')
+    : '- none';
+  return `# PR Ship
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${ship.story_id} |
+| Status | ${ship.status} |
+| Stop reason | ${ship.stop_reason ?? '-'} |
+| Gate readiness | ${gateStatus.overall_status ?? '-'} |
+| Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
+| Raw gh pr create suggested | ${ship.raw_gh_pr_create_suggested ? 'yes' : 'no'} |
+
+## Safe Operations
+
+${ship.safe_operations.map((operation) => `- ${operation.id}: ${operation.status} (${operation.command})`).join('\n')}
+
+## Human Judgment Required
+
+${humanJudgments}
+
+## Agent Review Actions
+
+${agentActions}
+
+## Next Commands
+
+${nextCommands}
+`;
+}
+
+function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
+  const unresolved = gateStatus?.unresolved_gates ?? [];
+  const rolesByStage = new Map();
+  for (const gate of unresolved) {
+    const parsed = parseAgentReviewRoleGate(gate.id);
+    if (!parsed) continue;
+    const roles = rolesByStage.get(parsed.stage) ?? new Set();
+    roles.add(parsed.role);
+    rolesByStage.set(parsed.stage, roles);
+  }
+  const prepareGateActions = unresolved
+    .filter((gate) => gate.type === 'agent_review_prepare_gate' && gate.command)
+    .map((gate) => {
+      const stage = String(gate.id ?? '').replace(/^review:prepare:/, '');
+      const roles = [...(rolesByStage.get(stage) ?? new Set(['<role>']))];
+      const roleArg = roles.length === 1 ? roles[0] : '<role>';
+      return {
+        stage,
+        roles,
+        prepare_command: gate.command,
+        start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
+        close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
+        record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+        artifact: gate.artifact ?? null,
+        reason: gate.reason ?? 'required Agent Review prepare is missing'
+      };
+    });
+  if (prepareGateActions.length > 0) return prepareGateActions;
+  return [...rolesByStage.entries()].map(([stage, roleSet]) => {
+    const roles = [...roleSet];
+    const roleArg = roles.length === 1 ? roles[0] : '<role>';
+    return {
+      stage,
+      roles,
+      prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
+      start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
+      close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
+      record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+      artifact: `.vibepro/reviews/${storyId}/${stage}/parallel-dispatch.md`,
+      reason: 'required Agent Review role is missing or stale'
+    };
+  });
+}
+
+function buildReviewPrepareCommand(storyId, stage, roles = []) {
+  const args = [
+    'vibepro review prepare .',
+    '--id',
+    shellQuote(storyId),
+    '--stage',
+    shellQuote(stage)
+  ];
+  for (const role of roles) {
+    args.push('--role', shellQuote(role));
+  }
+  return args.join(' ');
+}
+
+function buildShipHumanJudgments(gateStatus) {
+  const judgments = [];
+  const agentActions = buildAgentReviewShipActions(gateStatus);
+  if (agentActions.length > 0 || gateStatus?.agent_review_dispatch_required) {
+    judgments.push({
+      kind: 'subagent_dispatch',
+      reason: 'Required Agent Review must be dispatched and recorded with parallel_subagent provenance before PR creation.'
+    });
+  }
+  const critical = gateStatus?.critical_unresolved_gates ?? [];
+  for (const gate of critical) {
+    if (gate.type === 'agent_review_gate' || gate.type === 'agent_review_prepare_gate' || gate.type === 'agent_review_role_gate' || gate.type === 'agent_review_record_gate') continue;
+    judgments.push({
+      kind: 'critical_gate',
+      gate_id: gate.id,
+      reason: gate.reason ?? `${gate.label ?? gate.id} is unresolved`
+    });
+  }
+  const unresolved = gateStatus?.unresolved_gates ?? [];
+  const nonCritical = unresolved.filter((gate) => !(critical ?? []).some((criticalGate) => criticalGate.id === gate.id));
+  if (nonCritical.length > 0) {
+    judgments.push({
+      kind: 'waiver_or_evidence',
+      reason: `${nonCritical.length} non-critical unresolved gate(s) require evidence or an auditable waiver.`
+    });
+  }
+  return judgments;
+}
+
+function buildShipNextCommands({ preparation, gateStatus, agentReviewActions, options }) {
+  const commands = [];
+  for (const action of agentReviewActions) {
+    commands.push(action.prepare_command);
+    commands.push(action.start_command_template);
+    commands.push(action.record_command_template);
+  }
+  if (gateStatus?.agent_review_dispatch_required) {
+    commands.push(`vibepro review status . --id ${shellQuote(preparation.story.story_id)}`);
+  }
+  commands.push(buildShipPrepareCommand(preparation, options));
+  return [...new Set(commands)].filter((command) => !/(^|\s)gh\s+pr\s+create(\s|$)/.test(command));
+}
+
+function parseAgentReviewRoleGate(id) {
+  const value = String(id ?? '');
+  let match = value.match(/^review:record:([^:]+):(.+)$/);
+  if (match) return { stage: match[1], role: match[2] };
+  match = value.match(/^review:([^:]+):(.+)$/);
+  if (match) return { stage: match[1], role: match[2] };
+  return null;
+}
+
+function buildShipStopReason(gateStatus) {
+  if (gateStatus?.agent_review_dispatch_required) return 'required_agent_review_missing';
+  if ((gateStatus?.critical_unresolved_gate_count ?? 0) > 0) return 'critical_gate_unresolved';
+  if ((gateStatus?.unresolved_gate_count ?? 0) > 0) return 'unresolved_gate_requires_evidence_or_waiver';
+  return 'not_ready';
+}
+
+function buildShipPrepareCommand(preparation, options = {}) {
+  const args = ['vibepro pr prepare .'];
+  args.push('--story-id', shellQuote(preparation.story.story_id));
+  const base = options.baseRef ?? preparation.git?.base_ref;
+  if (base) args.push('--base', shellQuote(base));
+  const head = options.headRef;
+  if (head) args.push('--head', shellQuote(head));
+  return args.join(' ');
+}
+
+function buildShipPrCreateCommand(preparation, options = {}) {
+  const args = ['vibepro pr create .'];
+  args.push('--story-id', shellQuote(preparation.story.story_id));
+  const base = options.prBase ?? options.baseRef ?? preparation.git?.base_ref;
+  if (base) args.push('--base', shellQuote(base));
+  const head = options.headBranch ?? preparation.git?.current_branch;
+  if (head) args.push('--head', shellQuote(head));
+  if (options.title) args.push('--title', shellQuote(options.title));
+  return args.join(' ');
+}
+
 export function renderPrPrepareSummary(result) {
   const { preparation } = result;
   const language = preparation.output?.language ?? 'ja';
