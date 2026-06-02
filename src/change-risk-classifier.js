@@ -18,7 +18,7 @@ const WORKFLOW_KEYWORDS = [
   /キュー/
 ];
 
-export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkContracts = null } = {}) {
+export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkContracts = null, regressionRisk = null } = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   const testFiles = fileGroups.tests?.files ?? [];
   const allFiles = [
@@ -35,18 +35,34 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
     storySource?.policy,
     ...(storySource?.acceptance_criteria ?? [])
   ].filter(Boolean).join(' ');
-  const riskSurfaces = detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts });
+  // Regression-risk hotspots that the diff actually touches. A changed module
+  // with a large call-graph blast radius (and, when coverage is known, a thin
+  // safety net) warrants heavier gates than its file paths alone would suggest.
+  const regressionHits = resolveRegressionHits({ sourceFiles, regressionRisk });
+  const criticalRegressionHits = regressionHits.filter((hit) => hit.priority === 'critical');
+  const highRegressionHits = regressionHits.filter((hit) => hit.risk_tier === 'high' || hit.priority === 'critical');
+  const riskSurfaces = detectRiskSurfaces({
+    sourceFiles,
+    allFiles,
+    storyText,
+    networkContracts,
+    hasRegressionBlastRadius: highRegressionHits.length > 0
+  });
   const reasons = buildReasons({ riskSurfaces, sourceFiles, allFiles, storyText, networkContracts });
+  appendRegressionReasons(reasons, { criticalRegressionHits, highRegressionHits });
   const hasWorkflowSignal = WORKFLOW_KEYWORDS.some((pattern) => pattern.test(storyText) || allFiles.some((file) => pattern.test(file)));
   const crossSurface = riskSurfaces.filter((surface) => surface !== 'test_coverage').length >= 3;
   const coreWorkflowHeavy = riskSurfaces.includes('core_workflow_state') && hasWorkflowSignal;
-  const profile = (crossSurface && hasWorkflowSignal) || coreWorkflowHeavy
+  const baseProfile = (crossSurface && hasWorkflowSignal) || coreWorkflowHeavy
     ? 'workflow_heavy'
     : riskSurfaces.includes('frontend_interaction')
       ? 'ui_interaction'
       : (riskSurfaces.includes('server_api') || riskSurfaces.includes('auth_boundary') || riskSurfaces.includes('legacy_v1_compatibility'))
         ? 'api_contract'
         : 'light';
+  // A changed critical hotspot (large blast radius + low coverage) is the
+  // genuine regression trap, so it forces the heaviest gate profile outright.
+  const profile = criticalRegressionHits.length > 0 ? 'workflow_heavy' : baseProfile;
   const changeType = profile === 'workflow_heavy'
     ? 'cross_surface_workflow_change'
     : profile === 'ui_interaction'
@@ -60,12 +76,40 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
     change_type: changeType,
     risk_surfaces: riskSurfaces,
     reasons,
-    required_gate_profile: profile
+    required_gate_profile: profile,
+    regression_hotspots: regressionHits,
+    regression_escalated: criticalRegressionHits.length > 0
   };
 }
 
-function detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts }) {
+function resolveRegressionHits({ sourceFiles, regressionRisk }) {
+  const hotspots = regressionRisk?.hotspots ?? [];
+  if (!Array.isArray(hotspots) || hotspots.length === 0) return [];
+  const changedSource = new Set(sourceFiles);
+  return hotspots
+    .filter((hotspot) => hotspot && changedSource.has(hotspot.file))
+    .map((hotspot) => ({
+      file: hotspot.file,
+      fan_in: hotspot.fan_in,
+      coverage_pct: hotspot.coverage_pct ?? null,
+      risk_tier: hotspot.risk_tier,
+      priority: hotspot.priority ?? hotspot.risk_tier
+    }));
+}
+
+function appendRegressionReasons(reasons, { criticalRegressionHits, highRegressionHits }) {
+  if (criticalRegressionHits.length > 0) {
+    const files = criticalRegressionHits.map((hit) => hit.file).join(', ');
+    reasons.push(`critical regression hotspot changed (large blast radius + low coverage): ${files}`);
+  } else if (highRegressionHits.length > 0) {
+    const files = highRegressionHits.map((hit) => hit.file).join(', ');
+    reasons.push(`high blast-radius module changed (many call-graph dependents): ${files}`);
+  }
+}
+
+function detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts, hasRegressionBlastRadius = false }) {
   const surfaces = new Set();
+  if (hasRegressionBlastRadius) surfaces.add('regression_blast_radius');
   if (sourceFiles.some(isUiPath)) surfaces.add('frontend_interaction');
   if (sourceFiles.some(isApiPath) || (networkContracts?.introduced_api_client_call_count ?? 0) > 0) surfaces.add('server_api');
   if (sourceFiles.some(isServicePath)) surfaces.add('service_orchestration');
@@ -88,6 +132,7 @@ function detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts
 
 function buildReasons({ riskSurfaces, sourceFiles, allFiles, storyText, networkContracts }) {
   const reasons = [];
+  if (riskSurfaces.includes('regression_blast_radius')) reasons.push('changed module has a large call-graph blast radius');
   if (riskSurfaces.includes('frontend_interaction')) reasons.push('UI-facing source files changed');
   if (riskSurfaces.includes('server_api')) reasons.push('API/server boundary changed');
   if (riskSurfaces.includes('service_orchestration')) reasons.push('service/orchestration layer changed');

@@ -19,6 +19,7 @@ import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
 import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
+import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
@@ -2617,10 +2618,12 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     fileGroups,
     inferredSpec
   });
+  const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity });
   const changeClassification = classifyChangeRisk({
     fileGroups,
     storySource: primaryStory,
-    networkContracts
+    networkContracts,
+    regressionRisk
   });
   const prRoute = buildPrRouteClassification({
     git,
