@@ -125,6 +125,7 @@ import {
   stabilizeTalkingPointIds,
   writeNarrative
 } from './report-store.js';
+import { createUsageReport, renderUsageReport } from './usage-report.js';
 import {
   addStory,
   archiveStory,
@@ -236,6 +237,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--language ja|en] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -393,6 +395,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--language ja|en] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -669,6 +672,26 @@ export async function runCli(argv, io = {}) {
         ? `${JSON.stringify(status, null, 2)}\n`
         : renderRepoStatus(status));
       return { exitCode: 0, command, status };
+    }
+
+    if (command === 'usage') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'report') {
+        const result = await createUsageReport(repoRoot, {
+          since: getOption(rest, '--since'),
+          logs: getOptions(rest, '--log'),
+          codexLogs: getOptions(rest, '--codex-log'),
+          claudeLogs: getOptions(rest, '--claude-log'),
+          language: getOption(rest, '--language')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderUsageReport(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown usage command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'diagnose') {

@@ -11194,6 +11194,96 @@ test('status reports repository diagnosis state as text and json', async () => {
   assert.equal(status.artifacts.evidence, '.vibepro/diagnostics/run-alpha/evidence.json');
 });
 
+test('usage report aggregates VibePro artifacts, optional logs, and localized text', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'reviews', storyId, 'gate'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'executions', storyId), { recursive: true });
+  await mkdir(path.join(repo, 'logs'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    story: { story_id: storyId },
+    created_at: '2026-06-02T00:00:00.000Z',
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      execution_gate: { waiver_required: false },
+      critical_unresolved_gates: [{ id: 'gate:agent_review' }]
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-create.json'), {
+    story: { story_id: storyId },
+    created_at: '2026-06-02T00:10:00.000Z',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/1',
+    gate_override: {
+      allowed: true,
+      unresolved_gates: [{ id: 'gate:decision_record' }]
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json'), {
+    story_id: storyId,
+    generated_at: '2026-06-02T00:05:00.000Z',
+    nodes: [
+      { id: 'gate:agent_review', status: 'needs_review' },
+      { id: 'gate:decision_record', status: 'bypassed' }
+    ]
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-summary.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    updated_at: '2026-06-02T00:06:00.000Z',
+    roles: [{ role: 'gate_evidence' }],
+    pass_count: 1,
+    block_count: 0,
+    stale_count: 1,
+    lifecycle: {
+      timed_out_count: 1,
+      replaced_count: 1
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
+    story_id: storyId,
+    updated_at: '2026-06-02T00:07:00.000Z',
+    completion_status: 'blocked'
+  });
+  await writeFile(path.join(repo, 'logs', 'codex.log'), [
+    'story-pr-prepare used vibepro pr prepare . --story-id story-pr-prepare',
+    'story-other fallback mentioned raw `gh pr create` in notes',
+    'story-other also mentioned `vibepro pr create` in notes',
+    'story-pr-prepare manual fallback mentioned gh pr create --base main --head feature/test-story'
+  ].join('\n'));
+
+  const result = await runCli(['usage', 'report', repo, '--since', '2026-06-01', '--log', 'logs/codex.log', '--json']);
+  assert.equal(result.exitCode, 0);
+  const story = result.result.stories.find((item) => item.story_id === storyId);
+  assert.equal(story.prepared, true);
+  assert.equal(story.blocked, true);
+  assert.equal(story.ready_for_pr_create, false);
+  assert.equal(story.pr_created, true);
+  assert.equal(story.waiver_required, true);
+  assert.equal(story.raw_pr_bypass_suspected, true);
+  assert.equal(result.result.gate_metrics.find((gate) => gate.gate_id === 'gate:agent_review').block_count, 1);
+  assert.equal(result.result.gate_metrics.find((gate) => gate.gate_id === 'gate:agent_review').critical_unresolved_count, 1);
+  assert.equal(result.result.gate_metrics.find((gate) => gate.gate_id === 'gate:decision_record').waiver_count, 2);
+  assert.equal(result.result.agent_review.totals.required_role_count, 1);
+  assert.equal(result.result.agent_review.totals.pass_count, 1);
+  assert.equal(result.result.agent_review.totals.timeout_count, 1);
+  assert.equal(result.result.agent_review.totals.replaced_count, 1);
+  assert.equal(result.result.agent_review.totals.stale_count, 1);
+  assert.equal(result.result.log_signals.raw_pr_create_mentions.length, 2);
+  assert.equal(result.result.log_signals.raw_pr_create_mentions.some((mention) => mention.story_id === 'story-other'), true);
+  assert.equal(result.result.log_signals.vibepro_command_mentions.length, 2);
+  assert.equal(result.result.log_signals.vibepro_command_mentions.some((mention) => mention.command === 'vibepro pr create'), true);
+
+  let stdoutOutput = '';
+  const textResult = await runCli(['usage', 'report', repo, '--log', 'logs/codex.log'], {
+    stdout: { write: (text) => { stdoutOutput += text; } }
+  });
+  assert.equal(textResult.exitCode, 0);
+  assert.match(stdoutOutput, /# VibePro利用状況レポート/);
+  assert.match(stdoutOutput, /raw_pr_bypass_suspected=true/);
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);

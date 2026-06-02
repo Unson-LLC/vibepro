@@ -1,0 +1,371 @@
+import { readdir, readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
+
+import { resolveHumanOutputLanguage } from './language.js';
+import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+
+export async function createUsageReport(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const workspaceDir = getWorkspaceDir(root);
+  const since = parseSince(options.since);
+  const language = await resolveHumanOutputLanguage(root, { language: options.language }).catch(() => options.language ?? 'ja');
+  const prArtifacts = await collectPrArtifacts(root, workspaceDir, since);
+  const reviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
+  const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
+  const logs = await collectUsageLogs(root, options);
+  const storyMap = new Map();
+  for (const artifact of prArtifacts) {
+    const story = ensureStoryUsage(storyMap, artifact.story_id);
+    story.artifacts.push(artifact.path);
+    if (artifact.kind === 'pr_prepare') {
+      story.prepared = true;
+      story.prepare_count += 1;
+      story.ready_for_pr_create ||= artifact.data?.gate_status?.ready_for_pr_create === true;
+      story.blocked ||= artifact.data?.gate_status?.ready_for_pr_create === false;
+      story.waiver_required ||= artifact.data?.gate_status?.execution_gate?.waiver_required === true;
+      story.latest_gate_status = artifact.data?.gate_status?.overall_status ?? story.latest_gate_status;
+    }
+    if (artifact.kind === 'pr_create') {
+      story.pr_create_count += 1;
+      story.pr_created ||= Boolean(artifact.data?.pr_url) || artifact.data?.status === 'created';
+      story.waiver_required ||= artifact.data?.gate_override?.allowed === true;
+      story.latest_pr_url = artifact.data?.pr_url ?? story.latest_pr_url;
+    }
+    if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
+  }
+  for (const artifact of reviewArtifacts) {
+    const story = ensureStoryUsage(storyMap, artifact.story_id);
+    story.artifacts.push(artifact.path);
+    story.agent_review.required_role_count += artifact.data?.roles?.length ?? 0;
+    story.agent_review.pass_count += artifact.data?.pass_count ?? 0;
+    story.agent_review.block_count += artifact.data?.block_count ?? 0;
+    story.agent_review.stale_count += artifact.data?.stale_count ?? 0;
+    story.agent_review.timeout_count += artifact.data?.lifecycle?.timed_out_count ?? 0;
+    story.agent_review.replaced_count += artifact.data?.lifecycle?.replaced_count ?? 0;
+  }
+  for (const artifact of executionArtifacts) {
+    const story = ensureStoryUsage(storyMap, artifact.story_id);
+    story.artifacts.push(artifact.path);
+    story.execution_state_count += 1;
+    story.blocked ||= artifact.data?.completion_status === 'blocked';
+    story.latest_execution_status = artifact.data?.completion_status ?? story.latest_execution_status;
+  }
+  for (const finding of logs.raw_pr_create_mentions) {
+    const story = ensureStoryUsage(storyMap, finding.story_id ?? 'unknown-log-story');
+    story.raw_pr_bypass_suspected = true;
+    story.log_findings.push(finding);
+  }
+  const stories = [...storyMap.values()].sort((a, b) => a.story_id.localeCompare(b.story_id));
+  const gate_metrics = buildGateMetrics(prArtifacts);
+  const agent_review = buildAgentReviewMetrics(stories);
+  return {
+    schema_version: '0.1.0',
+    generated_at: new Date().toISOString(),
+    output: { language },
+    since: since ? since.toISOString() : null,
+    artifact_counts: {
+      pr: prArtifacts.length,
+      review: reviewArtifacts.length,
+      execution: executionArtifacts.length,
+      logs: logs.files.length
+    },
+    stories,
+    gate_metrics,
+    agent_review,
+    log_signals: logs
+  };
+}
+
+export function renderUsageReport(report) {
+  const language = report.output?.language ?? 'ja';
+  const storyRows = report.stories.length
+    ? report.stories.map((story) => (
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected}`
+      )).join('\n')
+    : '- none';
+  const gateRows = report.gate_metrics.length
+    ? report.gate_metrics.map((gate) => (
+        `- ${gate.gate_id}: block=${gate.block_count} waiver=${gate.waiver_count} critical_unresolved=${gate.critical_unresolved_count}`
+      )).join('\n')
+    : '- none';
+  const reviewRows = report.agent_review.by_story.length
+    ? report.agent_review.by_story.map((item) => (
+        `- ${item.story_id}: required=${item.required_role_count} pass=${item.pass_count} block=${item.block_count} timeout=${item.timeout_count} replaced=${item.replaced_count} stale=${item.stale_count}`
+      )).join('\n')
+    : '- none';
+  if (language === 'en') {
+    return `# VibePro Usage Report
+
+- since: ${report.since ?? 'all'}
+- stories: ${report.stories.length}
+- artifacts: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+
+## Stories
+
+${storyRows}
+
+## Gates
+
+${gateRows}
+
+## Agent Review
+
+${reviewRows}
+
+## Log Signals
+
+- raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
+- VibePro command mentions: ${report.log_signals.vibepro_command_mentions.length}
+`;
+  }
+  return `# VibePro利用状況レポート
+
+- 対象期間: ${report.since ?? '全期間'}
+- Story数: ${report.stories.length}
+- artifact数: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+
+## Story別
+
+${storyRows}
+
+## Gate別
+
+${gateRows}
+
+## Agent Review
+
+${reviewRows}
+
+## ログ補助シグナル
+
+- raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
+- VibePro command mentions: ${report.log_signals.vibepro_command_mentions.length}
+`;
+}
+
+function ensureStoryUsage(storyMap, storyId) {
+  const key = storyId || 'unknown';
+  if (!storyMap.has(key)) {
+    storyMap.set(key, {
+      story_id: key,
+      prepared: false,
+      blocked: false,
+      ready_for_pr_create: false,
+      pr_created: false,
+      waiver_required: false,
+      raw_pr_bypass_suspected: false,
+      prepare_count: 0,
+      pr_create_count: 0,
+      execution_state_count: 0,
+      latest_gate_status: null,
+      latest_execution_status: null,
+      latest_pr_url: null,
+      artifacts: [],
+      log_findings: [],
+      agent_review: {
+        required_role_count: 0,
+        pass_count: 0,
+        block_count: 0,
+        timeout_count: 0,
+        replaced_count: 0,
+        stale_count: 0
+      },
+      gate_metrics: {}
+    });
+  }
+  return storyMap.get(key);
+}
+
+async function collectPrArtifacts(root, workspaceDir, since) {
+  const prDir = path.join(workspaceDir, 'pr');
+  const storyDirs = await safeReaddir(prDir);
+  const artifacts = [];
+  for (const storyId of storyDirs) {
+    const storyDir = path.join(prDir, storyId);
+    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag']]) {
+      const filePath = path.join(storyDir, file);
+      const data = await readJsonIfExists(filePath);
+      if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at, since)) continue;
+      artifacts.push({ kind, story_id: data.story?.story_id ?? data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
+    }
+  }
+  return artifacts;
+}
+
+async function collectReviewArtifacts(root, workspaceDir, since) {
+  const reviewDir = path.join(workspaceDir, 'reviews');
+  const artifacts = [];
+  for (const storyId of await safeReaddir(reviewDir)) {
+    for (const stage of await safeReaddir(path.join(reviewDir, storyId))) {
+      const filePath = path.join(reviewDir, storyId, stage, 'review-summary.json');
+      const data = await readJsonIfExists(filePath);
+      if (!data || !isWithinSince(data.updated_at, since)) continue;
+      artifacts.push({ kind: 'review_summary', story_id: data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
+    }
+  }
+  return artifacts;
+}
+
+async function collectExecutionArtifacts(root, workspaceDir, since) {
+  const executionDir = path.join(workspaceDir, 'executions');
+  const artifacts = [];
+  for (const storyId of await safeReaddir(executionDir)) {
+    const filePath = path.join(executionDir, storyId, 'state.json');
+    const data = await readJsonIfExists(filePath);
+    if (!data || !isWithinSince(data.updated_at ?? data.started_at, since)) continue;
+    artifacts.push({ kind: 'execution_state', story_id: data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
+  }
+  return artifacts;
+}
+
+async function collectUsageLogs(root, options = {}) {
+  const files = [...(options.logs ?? []), ...(options.codexLogs ?? []), ...(options.claudeLogs ?? [])]
+    .map((file) => path.resolve(root, file));
+  const rawMentions = [];
+  const vibeproMentions = [];
+  for (const file of files) {
+    const text = await readTextIfExists(file);
+    if (!text) continue;
+    const relative = toWorkspaceRelative(root, file);
+    let latestStoryId = inferStoryId(text);
+    for (const [lineIndex, line] of text.split(/\r?\n/).entries()) {
+      const lineStoryId = inferStoryId(line);
+      if (lineStoryId) latestStoryId = lineStoryId;
+      const rawMatches = [...line.matchAll(/(?:^|[^A-Za-z0-9_-])(gh\s+pr\s+create)(?=$|[^A-Za-z0-9_-])/g)];
+      const vibeproMatches = [...line.matchAll(/(?:^|[^A-Za-z0-9_-])(vibepro\s+[a-z][^`]*)/g)];
+      for (const _match of rawMatches) {
+        rawMentions.push({
+          file: relative,
+          line: lineIndex + 1,
+          story_id: lineStoryId ?? latestStoryId,
+          signal: 'raw_gh_pr_create'
+        });
+      }
+      for (const match of vibeproMatches) {
+        vibeproMentions.push({
+          file: relative,
+          line: lineIndex + 1,
+          story_id: lineStoryId ?? latestStoryId,
+          command: normalizeLogCommand(match[1])
+        });
+      }
+    }
+  }
+  return {
+    files: files.map((file) => toWorkspaceRelative(root, file)),
+    raw_pr_create_mentions: rawMentions,
+    vibepro_command_mentions: vibeproMentions
+  };
+}
+
+function normalizeLogCommand(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/[`"'）)】\].,;:、。]+$/g, '')
+    .trim();
+}
+
+function buildGateMetrics(prArtifacts) {
+  const metrics = new Map();
+  const ensure = (gateId) => {
+    if (!metrics.has(gateId)) metrics.set(gateId, { gate_id: gateId, block_count: 0, waiver_count: 0, critical_unresolved_count: 0 });
+    return metrics.get(gateId);
+  };
+  for (const artifact of prArtifacts) {
+    if (artifact.kind === 'gate_dag') {
+      for (const node of artifact.data?.nodes ?? []) {
+        const metric = ensure(node.id ?? 'unknown_gate');
+        if (['block', 'needs_evidence', 'needs_review', 'failed'].includes(node.status)) metric.block_count += 1;
+        if (node.status === 'bypassed') metric.waiver_count += 1;
+      }
+    }
+    if (artifact.kind === 'pr_prepare') {
+      for (const gate of artifact.data?.gate_status?.critical_unresolved_gates ?? []) {
+        ensure(gate.id ?? 'unknown_gate').critical_unresolved_count += 1;
+      }
+    }
+    if (artifact.kind === 'pr_create' && artifact.data?.gate_override?.allowed) {
+      for (const gate of artifact.data?.gate_override?.unresolved_gates ?? []) {
+        ensure(gate.id ?? 'unknown_gate').waiver_count += 1;
+      }
+    }
+  }
+  return [...metrics.values()].sort((a, b) => a.gate_id.localeCompare(b.gate_id));
+}
+
+function collectGateMetrics(gateDag, storyId, storyMap) {
+  const story = ensureStoryUsage(storyMap, storyId);
+  for (const node of gateDag?.nodes ?? []) {
+    const gateId = node.id ?? 'unknown_gate';
+    const metric = story.gate_metrics[gateId] ?? { block_count: 0, waiver_count: 0, critical_unresolved_count: 0 };
+    if (['block', 'needs_evidence', 'needs_review', 'failed'].includes(node.status)) metric.block_count += 1;
+    if (node.status === 'bypassed') metric.waiver_count += 1;
+    story.gate_metrics[gateId] = metric;
+  }
+}
+
+function buildAgentReviewMetrics(stories) {
+  return {
+    totals: stories.reduce((totals, story) => ({
+      required_role_count: totals.required_role_count + story.agent_review.required_role_count,
+      pass_count: totals.pass_count + story.agent_review.pass_count,
+      block_count: totals.block_count + story.agent_review.block_count,
+      timeout_count: totals.timeout_count + story.agent_review.timeout_count,
+      replaced_count: totals.replaced_count + story.agent_review.replaced_count,
+      stale_count: totals.stale_count + story.agent_review.stale_count
+    }), { required_role_count: 0, pass_count: 0, block_count: 0, timeout_count: 0, replaced_count: 0, stale_count: 0 }),
+    by_story: stories.map((story) => ({ story_id: story.story_id, ...story.agent_review }))
+  };
+}
+
+async function safeReaddir(dir) {
+  try {
+    const entries = await readdir(dir);
+    const dirs = [];
+    for (const entry of entries) {
+      const full = path.join(dir, entry);
+      if ((await stat(full)).isDirectory()) dirs.push(entry);
+    }
+    return dirs.sort();
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+async function readJsonIfExists(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function readTextIfExists(filePath) {
+  try {
+    return await readFile(filePath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return '';
+    throw error;
+  }
+}
+
+function parseSince(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw new Error(`usage report --since is not a valid date: ${value}`);
+  return parsed;
+}
+
+function isWithinSince(value, since) {
+  if (!since || !value) return true;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return true;
+  return parsed >= since;
+}
+
+function inferStoryId(text) {
+  const match = text.match(/story-[a-z0-9][a-z0-9-]+/i);
+  return match ? match[0] : null;
+}
