@@ -875,6 +875,15 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:judgment_agent_workflow_evidence_lifecycle') {
     return `Close the agent review evidence lifecycle for the current git state (\`vibepro review prepare\` -> dispatch -> \`vibepro review record ...\`), or record a waiver decision (\`vibepro decision record --source gate:judgment_agent_workflow_evidence_lifecycle --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:bug_physics_triage') {
+    return `Record bug-physics probe evidence before selecting a gate profile: ${gate.reason ?? gate.status}`;
+  }
+  if (gate.type === 'bug_physics_profile_gate') {
+    return `Record verification evidence for selected bug-physics class ${gate.class ?? ''}: ${gate.reason ?? gate.status}`;
+  }
+  if (gate.id === 'gate:bug_physics_contradiction_feedback') {
+    return `Loop back to bug-physics triage because selected harness evidence contradicts the classification: ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'gate:safety_secret_surface') {
     return `Record a secret_exposure decision (\`vibepro decision record --type secret_exposure --secret-location <ref> --secret-action redacted|rotated|revoked|false_positive\`) or a waiver against gate:safety_secret_surface: ${gate.reason ?? gate.status}`;
   }
@@ -2770,6 +2779,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     networkContracts
   });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const bugPhysicsTriage = buildBugPhysicsTriage({
+    storySource: primaryStory,
+    inferredSpec,
+    verificationEvidence: boundVerificationEvidence
+  });
   const decisionRecordSummary = summarizeDecisionRecords(decisionRecords);
   const architectureBlueprint = await buildArchitectureBlueprintCoverage(repoRoot, {
     storySource: primaryStory,
@@ -2796,6 +2810,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     requirement_consistency: requirementConsistency,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
+    bug_physics_triage: bugPhysicsTriage,
     change_classification: changeClassification,
     inferred_spec: inferredSpec,
     spec_drift: specDrift,
@@ -2846,6 +2861,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    bugPhysicsTriage,
     architectureBlueprint,
     environmentGraph,
     git,
@@ -4466,6 +4482,243 @@ function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null
     && (s.block_result_count ?? 0) === 0;
 }
 
+const BUG_PHYSICS_CLASSES = ['timing', 'state-invariant', 'deterministic-byte', 'observability', 'deployment'];
+
+function buildBugPhysicsTriage({ storySource = {}, inferredSpec = null, verificationEvidence = null } = {}) {
+  const evidenceText = [
+    storyEvidenceText(storySource),
+    bugPhysicsSpecText(inferredSpec)
+  ].filter(Boolean).join('\n');
+  const text = evidenceText.toLowerCase();
+  const classes = BUG_PHYSICS_CLASSES.filter((className) => bugPhysicsClassMatchers[className].test(text));
+  const probeEvidence = collectBugPhysicsProbeEvidence({ evidenceText, verificationEvidence });
+  return {
+    schema_version: '0.1.0',
+    model: 'bug-physics-triage-v1',
+    enum: BUG_PHYSICS_CLASSES,
+    classes,
+    active: classes.length > 0,
+    probe_evidence: probeEvidence,
+    gate_profile: buildBugPhysicsGateProfile(classes),
+    contradiction_feedback: detectBugPhysicsContradiction(verificationEvidence)
+  };
+}
+
+const bugPhysicsClassMatchers = {
+  timing: /\b(timing|race|async|orphaned promise|intermittent|statistical|violation[-_\s]?rate|slo|settle[-_\s]?contract)\b|タイミング|競合|非同期/,
+  'state-invariant': /\b(state[-_\s]?invariant|illegal[-_\s]?state|unrepresentable|by[-_\s]?construction|sticky[-_\s]?done|two visible surfaces|2 visible surfaces)\b|不正状態|状態不変/,
+  'deterministic-byte': /\b(deterministic[-_\s]?byte|byte[-_\s]?sequence|real[-_\s]?byte|byte[-_\s]?fixture|headless replay|pty|xterm|alt[-_\s]?screen|terminal rendering|\\x1b)\b|バイト列|端末/,
+  observability: /\b(observability|authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?fusion|no reliable ground|monitoring|hook killed|indicator)\b|観測|監視|信号/,
+  deployment: /\b(deployment|deploy|version[-_\s]?stamp|artifact version|running session|expected artifact|settings\.json|browser cache|worktree)\b|デプロイ|配布|実行中/
+};
+
+function bugPhysicsSpecText(inferredSpec) {
+  const clauses = Array.isArray(inferredSpec?.clauses)
+    ? inferredSpec.clauses.map((clause) => `${clause.id ?? ''} ${clause.type ?? ''} ${clause.statement ?? ''}`)
+    : [];
+  const questions = Array.isArray(inferredSpec?.open_questions)
+    ? inferredSpec.open_questions.map((question) => `${question.id ?? ''} ${question.question ?? ''}`)
+    : [];
+  return [...clauses, ...questions].join('\n');
+}
+
+function collectBugPhysicsProbeEvidence({ evidenceText, verificationEvidence }) {
+  const text = [
+    evidenceText,
+    bugPhysicsVerificationText(verificationEvidence)
+  ].filter(Boolean).join('\n').toLowerCase();
+  const probes = [
+    ['phase_decomposition', /\b(phase[-_\s]?decompos|latency phase|timing phase)\b|フェーズ分解/],
+    ['violation_rate', /\b(violation[-_\s]?rate|slo harness|statistical harness|settle[-_\s]?contract)\b/],
+    ['real_byte_fixture', /\b(real[-_\s]?byte|byte[-_\s]?capture|byte[-_\s]?fixture|headless replay|pty|xterm)\b/],
+    ['signal_availability', /\b(authoritative[-_\s]?signal|signal[-_\s]?availability|signal[-_\s]?source|monitoring)\b/],
+    ['version_stamp', /\b(version[-_\s]?stamp|artifact version|running session|expected artifact)\b/],
+    ['invariant_probe', /\b(illegal[-_\s]?state|unrepresentable|invariant unit|by[-_\s]?construction)\b/]
+  ];
+  return probes
+    .filter(([, matcher]) => matcher.test(text))
+    .map(([kind]) => ({ kind, source: 'story_spec_or_verification' }));
+}
+
+function buildBugPhysicsGateProfile(classes) {
+  return {
+    required: classes.map((className) => bugPhysicsProfileDefinitions[className]?.required).filter(Boolean),
+    not_applicable: classes.flatMap((className) => bugPhysicsProfileDefinitions[className]?.not_applicable ?? [])
+  };
+}
+
+const bugPhysicsProfileDefinitions = {
+  timing: {
+    required: {
+      id: 'gate:bug_physics_timing_violation_rate',
+      class: 'timing',
+      label: 'Timing Violation-Rate Gate',
+      evidence: /\b(violation[-_\s]?rate|slo harness|statistical harness|settle[-_\s]?contract|phase[-_\s]?decompos)\b/i,
+      needs: 'timing bugs require phase decomposition plus violation-rate/SLO or settle-contract evidence'
+    },
+    not_applicable: [{
+      id: 'gate:bug_physics_timing_single_shot_e2e_na',
+      class: 'timing',
+      label: 'Single-shot E2E N/A',
+      reason: 'single-shot E2E green is not proof for statistical timing bugs'
+    }]
+  },
+  'state-invariant': {
+    required: {
+      id: 'gate:bug_physics_state_invariant_design',
+      class: 'state-invariant',
+      label: 'Illegal State Unrepresentable Gate',
+      evidence: /\b(illegal[-_\s]?state|unrepresentable|invariant unit|by[-_\s]?construction|state[-_\s]?invariant)\b/i,
+      needs: 'state-invariant bugs require illegal-state-unrepresentable design and invariant regression evidence'
+    },
+    not_applicable: [{
+      id: 'gate:bug_physics_state_slo_proof_only_na',
+      class: 'state-invariant',
+      label: 'SLO Proof-only N/A',
+      reason: 'SLO/violation-rate can support but cannot be the primary proof for illegal-state bugs'
+    }]
+  },
+  'deterministic-byte': {
+    required: {
+      id: 'gate:bug_physics_deterministic_byte_replay',
+      class: 'deterministic-byte',
+      label: 'Real-byte Replay Gate',
+      evidence: /\b(real[-_\s]?byte|byte[-_\s]?capture|byte[-_\s]?fixture|headless replay|pty|xterm|deterministic[-_\s]?byte)\b/i,
+      needs: 'deterministic-byte bugs require a real-byte fixture plus headless replay assertion'
+    },
+    not_applicable: [{
+      id: 'gate:bug_physics_deterministic_byte_slo_na',
+      class: 'deterministic-byte',
+      label: 'Violation-rate SLO N/A',
+      reason: 'fully deterministic byte bugs do not need violation-rate proof when real-byte replay is available'
+    }]
+  },
+  observability: {
+    required: {
+      id: 'gate:bug_physics_observability_signal_source',
+      class: 'observability',
+      label: 'Authoritative Signal Source Gate',
+      evidence: /\b(authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?availability|monitoring|observability)\b/i,
+      needs: 'observability bugs require a single authoritative signal source and monitoring evidence'
+    },
+    not_applicable: [{
+      id: 'gate:bug_physics_observability_e2e_code_lane_na',
+      class: 'observability',
+      label: 'Spec/E2E Code Lane N/A',
+      reason: 'observability bugs exit the code-gate lane when no reliable ground-truth signal exists in code'
+    }]
+  },
+  deployment: {
+    required: {
+      id: 'gate:bug_physics_deployment_version_stamp',
+      class: 'deployment',
+      label: 'Version-stamp Propagation Gate',
+      evidence: /\b(version[-_\s]?stamp|artifact version|running session|expected artifact|deployment stamp)\b/i,
+      needs: 'deployment bugs require evidence that the running session reads the expected artifact version'
+    },
+    not_applicable: [{
+      id: 'gate:bug_physics_deployment_code_gates_na',
+      class: 'deployment',
+      label: 'Code Gates N/A',
+      reason: 'deployment bugs are outside code correctness; code gates are typed N/A unless code is also the selected physics class'
+    }]
+  }
+};
+
+function buildBugPhysicsTriageGate(triage) {
+  const active = triage?.active === true;
+  const hasProbe = (triage?.probe_evidence?.length ?? 0) > 0;
+  return {
+    id: 'gate:bug_physics_triage',
+    type: 'bug_physics_triage_gate',
+    label: 'Bug Physics Triage Gate',
+    status: !active || hasProbe ? 'passed' : 'needs_evidence',
+    required: true,
+    classes: triage?.classes ?? [],
+    enum: BUG_PHYSICS_CLASSES,
+    probe_evidence: triage?.probe_evidence ?? [],
+    reason: !active
+      ? 'No bug-physics-specific route selected; ordinary gate profile remains in force'
+      : hasProbe
+        ? `Bug physics classes selected from probe evidence: ${(triage.classes ?? []).join(', ')}`
+        : 'Active bug physics triage requires probe evidence before selecting a gate profile'
+  };
+}
+
+function buildBugPhysicsProfileGates(triage, verificationEvidence) {
+  const required = triage?.gate_profile?.required ?? [];
+  const notApplicable = triage?.gate_profile?.not_applicable ?? [];
+  return [
+    ...required.map((definition) => {
+      const passed = hasCurrentBugPhysicsEvidence(verificationEvidence, definition.evidence);
+      return {
+        id: definition.id,
+        type: 'bug_physics_profile_gate',
+        label: definition.label,
+        status: passed ? 'passed' : 'needs_evidence',
+        required: true,
+        class: definition.class,
+        selected_by: 'gate:bug_physics_triage',
+        reason: passed
+          ? `Current verification evidence satisfies ${definition.class} profile`
+          : definition.needs
+      };
+    }),
+    ...notApplicable.map((definition) => ({
+      id: definition.id,
+      type: 'typed_na_gate',
+      label: definition.label,
+      status: 'not_applicable',
+      required: false,
+      class: definition.class,
+      selected_by: 'gate:bug_physics_triage',
+      distinct_from: 'waiver',
+      na_reason: definition.reason,
+      reason: `Typed N/A: ${definition.reason}`
+    }))
+  ];
+}
+
+function buildBugPhysicsContradictionGate(triage, verificationEvidence) {
+  const contradiction = triage?.contradiction_feedback ?? { detected: false };
+  return {
+    id: 'gate:bug_physics_contradiction_feedback',
+    type: 'bug_physics_feedback_gate',
+    label: 'Bug Physics Contradiction Feedback Gate',
+    status: contradiction.detected ? 'failed' : 'passed',
+    required: triage?.active === true,
+    feedback_to: 'gate:bug_physics_triage',
+    reason: contradiction.detected
+      ? contradiction.reason
+      : 'No evidence that the selected harness failed to reproduce the bug'
+  };
+}
+
+function bugPhysicsVerificationText(verificationEvidence) {
+  return (verificationEvidence?.commands ?? [])
+    .map((item) => `${item.kind ?? ''} ${item.status ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''}`)
+    .join('\n');
+}
+
+function hasCurrentBugPhysicsEvidence(verificationEvidence, matcher) {
+  return (verificationEvidence?.commands ?? []).some((item) => {
+    if (item.binding?.status !== 'current') return false;
+    if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
+    return matcher.test(`${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`);
+  });
+}
+
+function detectBugPhysicsContradiction(verificationEvidence) {
+  const current = (verificationEvidence?.commands ?? []).filter((item) => item.binding?.status === 'current');
+  const contradiction = current.find((item) => /cannot reproduce|could not reproduce|failed to reproduce|not reproducible|0 reproductions|harness .*not .*reproduce/i.test(`${item.command ?? ''}\n${item.summary ?? ''}`));
+  if (!contradiction) return { detected: false };
+  return {
+    detected: true,
+    source: contradiction.command ?? contradiction.kind ?? 'verification_evidence',
+    reason: 'Selected harness could not reproduce the bug; this is evidence of possible bug-physics misclassification and must loop back to triage'
+  };
+}
+
 function buildGateDag({
   story,
   storySource,
@@ -4486,6 +4739,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  bugPhysicsTriage = null,
   architectureBlueprint = null,
   environmentGraph = null,
   git = null,
@@ -4502,7 +4756,8 @@ function buildGateDag({
     flowVerification,
     e2eCoverage,
     visualQaEvidence,
-    verificationEvidence
+    verificationEvidence,
+    bugPhysicsTriage
   });
   const requirementGate = {
     id: 'gate:requirement',
@@ -4539,6 +4794,11 @@ function buildGateDag({
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
+  const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
+  const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
+  const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
+    ? buildBugPhysicsContradictionGate(bugPhysicsTriage, verificationEvidence)
+    : null;
   const routeSpecificJudgmentGates = buildRouteSpecificJudgmentGates(engineeringJudgment, {
     verificationEvidence,
     decisionRecords,
@@ -4625,6 +4885,9 @@ function buildGateDag({
     storyGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    bugPhysicsTriageGate,
+    ...bugPhysicsProfileGates,
+    ...(bugPhysicsContradictionGate ? [bugPhysicsContradictionGate] : []),
     ...routeSpecificJudgmentGates,
     routeGate,
     prBodyContractGate,
@@ -4676,12 +4939,23 @@ function buildGateDag({
   const edges = [
     { from: 'story', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
+    { from: 'gate:common_judgment_spine', to: 'gate:bug_physics_triage' },
     ...(routeSpecificJudgmentGates.length > 0
       ? routeSpecificJudgmentGates.flatMap((gate) => [
-        { from: 'gate:common_judgment_spine', to: gate.id },
+        { from: 'gate:bug_physics_triage', to: gate.id },
         { from: gate.id, to: 'gate:pr_route_classification' }
       ])
-      : [{ from: 'gate:common_judgment_spine', to: 'gate:pr_route_classification' }]),
+      : [{ from: 'gate:bug_physics_triage', to: 'gate:pr_route_classification' }]),
+    ...bugPhysicsProfileGates.flatMap((gate) => [
+      { from: 'gate:bug_physics_triage', to: gate.id },
+      { from: gate.id, to: 'gate:bug_physics_contradiction_feedback' }
+    ]),
+    ...(bugPhysicsContradictionGate
+      ? [
+        { from: 'gate:bug_physics_contradiction_feedback', to: 'gate:bug_physics_triage', feedback: true, reason: 'selected harness contradiction loops back to triage' },
+        { from: 'gate:bug_physics_contradiction_feedback', to: 'gate:change_classification' }
+      ]
+      : [{ from: 'gate:bug_physics_triage', to: 'gate:change_classification' }]),
     { from: 'gate:pr_route_classification', to: 'gate:pr_body_contract' },
     ...(mirrorSourceTraceabilityGate ? [
       { from: 'gate:pr_route_classification', to: 'gate:mirror_source_traceability' },
@@ -4767,6 +5041,9 @@ function buildGateDag({
     storyGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    bugPhysicsTriageGate,
+    ...bugPhysicsProfileGates,
+    bugPhysicsContradictionGate,
     ...routeSpecificJudgmentGates,
     routeGate,
     prBodyContractGate,
@@ -4802,6 +5079,8 @@ function buildGateDag({
       needs_evidence_count: needsEvidence.length,
       engineering_judgment_route: engineeringJudgment?.route_type ?? null,
       engineering_judgment_dag: engineeringJudgment?.route_dag ?? null,
+      bug_physics_classes: bugPhysicsTriage?.classes ?? [],
+      bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,
       pr_route: prRoute?.route_type ?? null,
       pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
@@ -5341,17 +5620,20 @@ function verificationCommandHasNetworkContractScope(item) {
   return /network[-_\s]?aware|network contract|route contract|api route|\/api\//.test(text);
 }
 
-function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence }) {
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence, bugPhysicsTriage = null }) {
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
-  const e2eRequired = shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
+  const gateOverride = buildBugPhysicsVerificationGateOverride(bugPhysicsTriage);
+  const e2eRequired = gateOverride.e2e
+    ? false
+    : shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
   const gateE2eCoverage = e2eRequired ? e2eCoverage : markE2eCoverageNotApplicable(e2eCoverage);
   const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage) : 'not_required';
   const e2eReason = e2eRequired
     ? buildE2eGateReason(e2eCommand, flowVerification, e2eCoverage)
-    : 'UI/E2E対象の差分ではないため、Unit / Integration証跡で完了判定する';
+    : gateOverride.e2e?.reason ?? 'UI/E2E対象の差分ではないため、Unit / Integration証跡で完了判定する';
   return [
-    {
+    gateOverride.unit ? buildTypedNaVerificationGate('gate:unit', 'Unit Gate', gateOverride.unit.reason) : {
       id: 'gate:unit',
       type: 'verification_gate',
       label: 'Unit Gate',
@@ -5360,7 +5642,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       command: unitCommand?.command ?? 'npm test',
       reason: unitCommand?.reason ?? '受け入れ基準に対応するUnitテストを追加・実行する'
     },
-    {
+    gateOverride.integration ? buildTypedNaVerificationGate('gate:integration', 'Integration Gate', gateOverride.integration.reason) : {
       id: 'gate:integration',
       type: 'verification_gate',
       label: 'Integration Gate',
@@ -5369,7 +5651,11 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       command: typecheckCommand?.command ?? 'npm test',
       reason: '最終出力経路や型境界を含む統合確認を実行する'
     },
-    {
+    gateOverride.e2e ? buildTypedNaVerificationGate('gate:e2e', 'E2E Gate', e2eReason, {
+      flow_verification: null,
+      acceptance_e2e_coverage: gateE2eCoverage,
+      artifact_expectation: null
+    }) : {
       id: 'gate:e2e',
       type: 'verification_gate',
       label: 'E2E Gate',
@@ -5382,6 +5668,43 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       artifact_expectation: e2eRequired ? '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す' : null
     }
   ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
+}
+
+function buildBugPhysicsVerificationGateOverride(triage) {
+  const classes = new Set(triage?.classes ?? []);
+  const override = {};
+  if (classes.has('deployment')) {
+    const reason = 'Typed N/A: deployment bug physics requires version-stamp propagation evidence; code correctness gates are not proof that the running session uses the expected artifact';
+    override.unit = { reason };
+    override.integration = { reason };
+    override.e2e = { reason };
+  } else if (classes.has('observability')) {
+    override.e2e = {
+      reason: 'Typed N/A: observability bug physics requires an authoritative signal source; single E2E proof exits the code-gate lane'
+    };
+  } else if (classes.has('timing')) {
+    override.e2e = {
+      reason: 'Typed N/A: timing bug physics requires violation-rate/SLO evidence; single-shot E2E green is not proof'
+    };
+  }
+  return override;
+}
+
+function buildTypedNaVerificationGate(id, label, reason, extra = {}) {
+  return {
+    id,
+    type: 'verification_gate',
+    label,
+    status: 'not_applicable',
+    required: false,
+    command: null,
+    reason,
+    distinct_from: 'waiver',
+    na_reason: reason,
+    selected_by: 'gate:bug_physics_triage',
+    skip_evidence_binding: true,
+    ...extra
+  };
 }
 
 function markE2eCoverageNotApplicable(e2eCoverage) {
@@ -5433,6 +5756,7 @@ function hasUiExperienceSourceChange(fileGroups) {
 }
 
 function applyVerificationEvidence(gate, verificationEvidence) {
+  if (gate.skip_evidence_binding) return gate;
   const evidence = findVerificationEvidenceForGate(gate, verificationEvidence);
   if (!evidence) return gate;
   const evidenceStatus = normalizeVerificationEvidenceStatus(evidence.status);
@@ -6049,6 +6373,9 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
       'deploy_verification_gate',
+      'bug_physics_triage_gate',
+      'bug_physics_profile_gate',
+      'bug_physics_feedback_gate',
       'architecture_blueprint_gate',
       'architecture_gate',
       'spec_gate',
@@ -6177,6 +6504,9 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:bug_physics_triage' && gate.status !== 'passed') return true;
+  if (gate.type === 'bug_physics_profile_gate' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:bug_physics_contradiction_feedback' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:mirror_source_traceability' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;

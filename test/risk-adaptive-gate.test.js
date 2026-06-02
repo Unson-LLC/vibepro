@@ -230,6 +230,133 @@ test('change classifier avoids workflow_heavy for narrow changes', () => {
   }).profile, 'ui_interaction');
 });
 
+test('bug physics triage requires probe evidence before selecting a timing gate profile', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Session switching race bug
+architecture_docs:
+  reason: triage fixture
+---
+
+# Session switching race bug
+
+## 背景
+
+Session switching is intermittent and looks like a race condition with async orphaned promise behavior.
+
+## 受け入れ基準
+
+- [ ] Race bugs are triaged before choosing verification gates
+`);
+  await writeFile(path.join(repo, 'src', 'session-switcher.js'), 'export function switchSession(){ return "race"; }\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const dag = result.result.preparation.pr_context.gate_dag;
+  const triage = dag.nodes.find((node) => node.id === 'gate:bug_physics_triage');
+
+  assert.equal(triage.status, 'needs_evidence');
+  assert.deepEqual(triage.classes, ['timing']);
+  assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
+});
+
+test('bug physics triage emits multi-label profiles typed N/A gates and feedback edge', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Terminal rendering deterministic byte and state invariant bug
+architecture_docs:
+  reason: triage fixture
+---
+
+# Terminal rendering deterministic byte and state invariant bug
+
+## 背景
+
+Terminal rendering has an illegal-state-representable surface plus deterministic-byte behavior. The probe evidence includes real-byte fixture capture from pty/xterm, headless replay, and an invariant unit check that makes the illegal state unrepresentable.
+
+## 受け入れ基準
+
+- [ ] Multi-label bug physics can select deterministic-byte and state-invariant
+- [ ] Harness contradiction loops back to triage
+`);
+  await writeFile(path.join(repo, 'src', 'terminal-renderer.js'), 'export function renderTerminal(){ return "xterm"; }\n');
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--summary', 'real-byte fixture and headless replay assertion passed; invariant unit makes illegal-state unrepresentable; selected harness could not reproduce one symptom, so contradiction feedback must re-triage'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const dag = result.result.preparation.pr_context.gate_dag;
+  const triage = dag.nodes.find((node) => node.id === 'gate:bug_physics_triage');
+  const feedback = dag.nodes.find((node) => node.id === 'gate:bug_physics_contradiction_feedback');
+
+  assert.deepEqual(triage.classes.sort(), ['deterministic-byte', 'state-invariant']);
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_deterministic_byte_replay').status, 'passed');
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_state_invariant_design').status, 'passed');
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_deterministic_byte_slo_na').status, 'not_applicable');
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_state_slo_proof_only_na').distinct_from, 'waiver');
+  assert.equal(feedback.status, 'failed');
+  assert.equal(dag.edges.some((edge) => edge.from === 'gate:bug_physics_contradiction_feedback' && edge.to === 'gate:bug_physics_triage' && edge.feedback === true), true);
+});
+
+test('deployment bug physics bypasses code gates through typed N/A instead of waiver', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Running session deployment artifact version bug
+architecture_docs:
+  reason: triage fixture
+---
+
+# Running session deployment artifact version bug
+
+## 背景
+
+The running session reads an unexpected artifact version. The deployment probe evidence is a version-stamp propagation check for the expected artifact version.
+
+## 受け入れ基準
+
+- [ ] Deployment bugs bypass code gates with typed N/A and require version-stamp propagation evidence
+`);
+  await writeFile(path.join(repo, 'src', 'artifact-version.js'), 'export const artifactVersion = "test";\n');
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--summary', 'version-stamp propagation evidence proves the running session reads the expected artifact version'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const dag = result.result.preparation.pr_context.gate_dag;
+
+  assert.deepEqual(dag.summary.bug_physics_classes, ['deployment']);
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_deployment_version_stamp').status, 'passed');
+  assert.equal(dag.nodes.find((node) => node.id === 'gate:bug_physics_deployment_code_gates_na').status, 'not_applicable');
+  for (const gateId of ['gate:unit', 'gate:integration', 'gate:e2e']) {
+    const gate = dag.nodes.find((node) => node.id === gateId);
+    assert.equal(gate.status, 'not_applicable');
+    assert.equal(gate.required, false);
+    assert.equal(gate.distinct_from, 'waiver');
+    assert.equal(gate.selected_by, 'gate:bug_physics_triage');
+  }
+});
+
 test('pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });

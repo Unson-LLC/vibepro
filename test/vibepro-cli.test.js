@@ -7787,7 +7787,8 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.deepEqual(connectivityGate?.unreachable_nodes, []);
   assert.deepEqual(connectivityGate?.dead_end_nodes, []);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:engineering_judgment_route'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_agent_workflow_context_acquisition'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:bug_physics_triage'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:bug_physics_triage' && edge.to === 'gate:judgment_agent_workflow_context_acquisition'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_agent_workflow_context_acquisition' && edge.to === 'gate:pr_route_classification'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
