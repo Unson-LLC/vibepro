@@ -35,7 +35,7 @@ import {
   renderNativeDesignSystemSummary,
   validateDesignSystem
 } from './design-system.js';
-import { assertOutputLanguage, localizedText, normalizeOutputLanguage, setOutputLanguage } from './language.js';
+import { assertOutputLanguage, localizedText, normalizeOutputLanguage, resolveHumanOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
 import {
@@ -637,8 +637,12 @@ export async function runCli(argv, io = {}) {
     if (command === 'diagnose') {
       const repoRoot = rest[0] ?? process.cwd();
       const runId = getOption(rest, '--run-id');
-      const result = await runDiagnosis(repoRoot, { runId });
-      write(stdout, `diagnosis created: ${result.runDir}\n`);
+      const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+      const result = await runDiagnosis(repoRoot, { runId, language });
+      write(stdout, localizedText(language, {
+        ja: `診断を作成しました: ${result.runDir}\n`,
+        en: `diagnosis created: ${result.runDir}\n`
+      }));
       return { exitCode: 0, command, result };
     }
 
@@ -646,6 +650,7 @@ export async function runCli(argv, io = {}) {
       const subcommand = rest[0] ?? 'derive';
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
       if (subcommand === 'derive') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await deriveNativeDesignSystem(repoRoot, {
           id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id') ?? getOption(rest, '--product'),
           designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
@@ -656,46 +661,53 @@ export async function runCli(argv, io = {}) {
           baseUrl: getOption(rest, '--base-url'),
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
-          graphifyOut: getOption(rest, '--from')
+          graphifyOut: getOption(rest, '--from'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'ingest') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await ingestExternalDesignSystemBundle(repoRoot, {
           id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           product: getOption(rest, '--product'),
-          bundleFile: getOption(rest, '--bundle') ?? getOption(rest, '--design-system-bundle')
+          bundleFile: getOption(rest, '--bundle') ?? getOption(rest, '--design-system-bundle'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'ingest-brief') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await ingestVisualDesignBrief(repoRoot, {
           id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           product: getOption(rest, '--product'),
-          briefFile: getOption(rest, '--brief-file')
+          briefFile: getOption(rest, '--brief-file'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderNativeDesignSystemSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'validate') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await validateDesignSystem(repoRoot, {
           id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
           designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
-          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--story')
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--story'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
-          : `${renderDesignSystemValidationSummary(result.result)}\nArtifacts: ${result.outDir}\n`);
+          : `${renderDesignSystemValidationSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown design-system command: ${subcommand ?? ''}\n\n${renderHelp()}`);
@@ -860,7 +872,8 @@ export async function runCli(argv, io = {}) {
           roles: [
             ...getOptions(rest, '--role'),
             ...parseCsvOption(rest, '--roles')
-          ]
+          ],
+          language: getOption(rest, '--language')
         });
         await reconcileExecutionState(repoRoot, {
           storyId: result.review?.story_id ?? result.summary?.story_id,
@@ -1101,7 +1114,8 @@ export async function runCli(argv, io = {}) {
         const result = await prepareExploreEvidence(repoRoot, {
           storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
           topic: getOption(rest, '--topic'),
-          roles: getOptions(rest, '--role')
+          roles: getOptions(rest, '--role'),
+          language: getOption(rest, '--language')
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
@@ -1386,67 +1400,91 @@ export async function runCli(argv, io = {}) {
       }
       if (subcommand === 'create') {
         if (!hasFlag(rest, '--from-plan')) throw new Error('task create currently requires --from-plan');
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTasksFromPlan(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
-          limit: parseNumberOption(rest, '--limit')
+          limit: parseNumberOption(rest, '--limit'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : renderTaskCreateSummary(result));
+          : renderTaskCreateSummary(result, language));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'list') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await listTasks(repoRoot, { storyId: getOption(rest, '--id') });
-        write(stdout, renderTaskList(result));
+        write(stdout, renderTaskList(result, language));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'show') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await showTask(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task')
         });
-        write(stdout, renderTaskShow(result));
+        write(stdout, renderTaskShow(result, language));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'brief') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTaskBrief(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group')
+          groupId: getOption(rest, '--group'),
+          language
         });
-        write(stdout, `Task briefing created: ${result.artifacts.markdown}\n`);
+        write(stdout, localizedText(language, {
+          ja: `Taskブリーフィングを作成しました: ${result.artifacts.markdown}\n`,
+          en: `Task briefing created: ${result.artifacts.markdown}\n`
+        }));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'plan') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTaskPlan(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group')
+          groupId: getOption(rest, '--group'),
+          language
         });
-        write(stdout, `Task plan created: ${result.artifacts.markdown}\n`);
+        write(stdout, localizedText(language, {
+          ja: `Task計画を作成しました: ${result.artifacts.markdown}\n`,
+          en: `Task plan created: ${result.artifacts.markdown}\n`
+        }));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'handoff') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTaskHandoff(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
-          groupId: getOption(rest, '--group')
+          groupId: getOption(rest, '--group'),
+          language
         });
-        write(stdout, `Task handoff created: ${result.artifacts.markdown}\n`);
+        write(stdout, localizedText(language, {
+          ja: `Task handoffを作成しました: ${result.artifacts.markdown}\n`,
+          en: `Task handoff created: ${result.artifacts.markdown}\n`
+        }));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'execute') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTaskExecution(repoRoot, {
           storyId: getOption(rest, '--id'),
           taskId: getOption(rest, '--task'),
           groupId: getOption(rest, '--group'),
           baseRef: getOption(rest, '--base'),
-          dryRunPrCreate: hasFlag(rest, '--dry-run-pr')
+          dryRunPrCreate: hasFlag(rest, '--dry-run-pr'),
+          language
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.execution, null, 2)}\n`
-          : `Task execution session created: ${result.artifacts.markdown}\n`);
+          : localizedText(language, {
+            ja: `Task実行セッションを作成しました: ${result.artifacts.markdown}\n`,
+            en: `Task execution session created: ${result.artifacts.markdown}\n`
+          }));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown task command: ${subcommand ?? ''}\n\n${renderHelp()}`);

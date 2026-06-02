@@ -9,6 +9,7 @@ import {
   normalizeDesignSystemBundle
 } from './design-modernize.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { localizedText } from './language.js';
 
 const DEFAULT_ROUTES = ['/home', '/map', '/detail', '/hotel/[hotel_id]'];
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
@@ -71,6 +72,7 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
     design_system_id: designSystemId,
     product,
     generated_at: new Date().toISOString(),
+    output: { language: options.language ?? 'ja' },
     authority: 'vibepro_native_design_system',
     external_generator_required: false,
     source_evidence: {
@@ -130,6 +132,7 @@ export async function ingestVisualDesignBrief(repoRoot, options = {}) {
   });
   const nextDesignSystem = {
     ...designSystem,
+    output: { language: options.language ?? designSystem.output?.language ?? 'ja' },
     visual_foundations: visualFoundations,
     source_evidence: {
       ...(designSystem.source_evidence ?? {}),
@@ -189,6 +192,7 @@ export async function ingestExternalDesignSystemBundle(repoRoot, options = {}) {
     design_system_id: designSystemId,
     product,
     generated_at: new Date().toISOString(),
+    output: { language: options.language ?? base.output?.language ?? 'ja' },
     authority: 'vibepro_native_design_system',
     external_generator_required: false,
     source_evidence: {
@@ -254,6 +258,7 @@ export async function validateDesignSystem(repoRoot, options = {}) {
     design_system_id: designSystemId,
     story_id: storyId,
     generated_at: new Date().toISOString(),
+    output: { language: options.language ?? designSystem.output?.language ?? 'ja' },
     authority: {
       design_system: designSystem.authority ?? 'unknown',
       implementation: 'current code, Story, Spec, Architecture, and VibePro gates remain authoritative',
@@ -266,13 +271,13 @@ export async function validateDesignSystem(repoRoot, options = {}) {
   const validationDir = path.join(outDir, 'validation');
   await mkdir(validationDir, { recursive: true });
   await writeFile(path.join(validationDir, `${storyId}.json`), `${JSON.stringify(result, null, 2)}\n`);
-  await writeFile(path.join(validationDir, `${storyId}.md`), renderDesignSystemValidationSummary(result));
+  await writeFile(path.join(validationDir, `${storyId}.md`), renderDesignSystemValidationSummary(result, result.output.language));
   return { outDir: validationDir, result };
 }
 
-export function renderNativeDesignSystemSummary(result) {
+export function renderNativeDesignSystemSummary(result, language = result.output?.language ?? 'ja') {
   return [
-    `# Design System: ${result.product}`,
+    localizedText(language, { ja: `# Design System: ${result.product}`, en: `# Design System: ${result.product}` }),
     '',
     `- id: ${result.design_system_id}`,
     `- workflow: ${result.workflow}`,
@@ -285,14 +290,14 @@ export function renderNativeDesignSystemSummary(result) {
     `- visual foundations: ${result.visual_foundations ? result.visual_foundations.source : 'not_provided'}`,
     `- gate fallback allowed: ${result.ds_gate.fallback_allowed}`,
     '',
-    '## Product Semantics',
+    localizedText(language, { ja: '## プロダクト意味論', en: '## Product Semantics' }),
     '',
     `- domain: ${result.product_semantics.primary_domain}`,
     `- language: ${result.product_semantics.language_policy}`,
     `- interaction: ${result.product_semantics.interaction_model}`,
     `- concepts: ${result.product_semantics.domain_concepts.join(', ') || '-'}`,
     '',
-    '## Evidence Coverage',
+    localizedText(language, { ja: '## 証跡カバレッジ', en: '## Evidence Coverage' }),
     '',
     `- status: ${result.evidence_coverage.status}`,
     ...result.evidence_coverage.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`),
@@ -300,8 +305,8 @@ export function renderNativeDesignSystemSummary(result) {
   ].join('\n');
 }
 
-export function renderDesignSystemValidationSummary(result) {
-  return `# Design System Validation: ${result.design_system_id}
+export function renderDesignSystemValidationSummary(result, language = result.output?.language ?? 'ja') {
+  return `${localizedText(language, { ja: `# Design System検証: ${result.design_system_id}`, en: `# Design System Validation: ${result.design_system_id}` })}
 
 - story: ${result.story_id}
 - workflow: ${result.workflow}
@@ -311,19 +316,19 @@ export function renderDesignSystemValidationSummary(result) {
 - needs_evidence: ${result.summary.needs_evidence}
 - block: ${result.summary.block}
 
-## Authority
+## ${localizedText(language, { ja: '正本境界', en: 'Authority' })}
 
 - design_system: ${result.authority.design_system}
 - implementation: ${result.authority.implementation}
 - generated_visuals: ${result.authority.generated_visuals}
 
-## Story Context
+## ${localizedText(language, { ja: 'Story文脈', en: 'Story Context' })}
 
 - sources: ${result.story_context.sources.map((source) => source.path).join(', ') || 'not_found'}
 - ui_signal: ${result.story_context.ui_signal ? 'yes' : 'no'}
 - ds_signal: ${result.story_context.design_system_signal ? 'yes' : 'no'}
 
-## Findings
+## ${localizedText(language, { ja: '検出事項', en: 'Findings' })}
 
 ${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n')}
 `;
@@ -356,9 +361,9 @@ async function writeDesignSystemArtifacts(outDir, designSystem) {
     writeFile(path.join(outDir, fileName), `${JSON.stringify(content, null, 2)}\n`)
   )));
   if (designSystem.visual_foundations) {
-    await writeFile(path.join(outDir, 'visual-foundations.md'), renderVisualFoundationsSummary(designSystem.visual_foundations));
+    await writeFile(path.join(outDir, 'visual-foundations.md'), renderVisualFoundationsSummary(designSystem.visual_foundations, designSystem.output?.language ?? 'ja'));
   }
-  await writeFile(path.join(outDir, 'design-system.md'), renderNativeDesignSystemSummary(designSystem));
+  await writeFile(path.join(outDir, 'design-system.md'), renderNativeDesignSystemSummary(designSystem, designSystem.output?.language ?? 'ja'));
 }
 
 async function readVisualFoundations(root, { designSystemId, product, briefFile }) {
@@ -435,25 +440,25 @@ function mergeVisualFoundationsGate(dsGate, visualFoundations) {
   };
 }
 
-function renderVisualFoundationsSummary(foundations) {
-  return `# Visual Foundations: ${foundations.product}
+function renderVisualFoundationsSummary(foundations, language = 'ja') {
+  return `${localizedText(language, { ja: `# Visual Foundations: ${foundations.product}`, en: `# Visual Foundations: ${foundations.product}` })}
 
 - source: ${foundations.source}
 - authority: ${foundations.authority}
 
-## Authority Boundary
+## ${localizedText(language, { ja: '正本境界', en: 'Authority Boundary' })}
 
 ${foundations.authority_boundary.map((item) => `- ${item}`).join('\n')}
 
-## Design Language
+## ${localizedText(language, { ja: 'デザイン言語', en: 'Design Language' })}
 
 ${formatList(foundations.design_language)}
 
-## Color Roles
+## ${localizedText(language, { ja: '色の役割', en: 'Color Roles' })}
 
 ${formatList(foundations.semantic_color_roles)}
 
-## Typography / Density / Motion
+## ${localizedText(language, { ja: 'Typography / Density / Motion', en: 'Typography / Density / Motion' })}
 
 ${formatList([
   ...foundations.typography,
@@ -461,7 +466,7 @@ ${formatList([
   ...foundations.spacing_radius_motion_shadow
 ])}
 
-## Components / Composition / CTA
+## ${localizedText(language, { ja: 'Components / Composition / CTA', en: 'Components / Composition / CTA' })}
 
 ${formatList([
   ...foundations.component_visual_requirements,

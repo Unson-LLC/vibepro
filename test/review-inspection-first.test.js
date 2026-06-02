@@ -63,7 +63,7 @@ test('INVESTIGATION_GUIDELINES_BLOCK exports a non-empty string mentioning read-
 
 test('review request markdown emits Investigation Guidelines between Mandatory Review Lenses and Instructions (INV-RIF-1)', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const requestPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'review-request-gate_evidence.md');
   const content = await readFile(requestPath, 'utf8');
   const lensesIdx = content.indexOf('## Mandatory Review Lenses');
@@ -83,7 +83,7 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
 
 test('parallel dispatch record command and prompt include inspection fields', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const dispatchPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md');
   const content = await readFile(dispatchPath, 'utf8');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
@@ -94,7 +94,7 @@ test('parallel dispatch record command and prompt include inspection fields', as
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
   await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
@@ -111,7 +111,7 @@ test('recordAgentReview without inspection flags rejects gate_evidence pass (INV
 
 test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
   const summaryText = 'ran node --test test/foo.test.js, read src/foo.js:1-100; no destructive paths touched';
   const { review } = await recordAgentReview(root, {
@@ -133,7 +133,7 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
 
 test('recordAgentReview rejects whitespace-only inspection for gate_evidence pass', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
   await assert.rejects(recordAgentReview(root, {
     storyId: 'story-test',
@@ -152,7 +152,7 @@ test('recordAgentReview rejects whitespace-only inspection for gate_evidence pas
 
 test('getAgentReviewStatus surfaces the inspection block per role', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
   await recordAgentReview(root, {
     storyId: 'story-test',
@@ -174,7 +174,7 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
 
 test('review record CLI persists inspection summary and evidence', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   await startCloseable(root);
   await runCli([
     'review',

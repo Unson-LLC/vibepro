@@ -7,6 +7,7 @@ related_stories:
   - story-vibepro-self-dogfood-audit-loop
   - story-vibepro-runtime-release-integrity
   - story-vibepro-worktree-pr-scope-isolation
+  - story-vibepro-managed-worktree-execution-dag
   - story-vibepro-preset-boundary-governance
   - story-vibepro-completion-quality-loop
 ---
@@ -40,6 +41,7 @@ Codex / VibePro execution logs
 | Outcome Analysis | 実行内容、価値、問題、残リスク、改善Storyを構造化する | 成果物の有無だけで成功扱いにする |
 | Runtime Provenance | 実際に呼ばれたCLI、checkout、HEAD、origin/main、Skill同期状態を検証する | 修正済みcheckoutと実行checkoutを同一視する |
 | PR Scope Isolation | committed diff、dirty、staged、untracked、generated artifactsを分離する | dirty fileをPR対象差分やsplit laneへ混ぜる |
+| Managed Worktree Execution | Storyごとの管理worktree、branch、Execution DAG、merge/cleanup状態を固定する | 既存checkout上の作業を暗黙にVibePro管理実行として扱う |
 | Preset Governance | generic presetとproject presetの境界を守る | 過去プロジェクト固有の語彙をgeneric出力へ漏らす |
 | Completion Quality | E2E、human review、visual QA、操作証跡を完了判定へ接続する | テスト通過やAI自己申告だけでShipped/Verifiedにする |
 

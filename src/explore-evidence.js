@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace, toWorkspaceRelative } from './workspace.js';
+import { localizedText, resolveHumanOutputLanguage } from './language.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_EXPLORE_ROLES = ['codebase_context', 'risk_surface', 'test_surface'];
@@ -13,6 +14,7 @@ export async function prepareExploreEvidence(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'explore prepare');
   const root = path.resolve(repoRoot);
   await initWorkspace(root);
+  const language = await resolveHumanOutputLanguage(root, options);
   const exploreDir = getExploreDir(root, storyId);
   const requestDir = path.join(exploreDir, 'requests');
   await mkdir(requestDir, { recursive: true });
@@ -24,14 +26,11 @@ export async function prepareExploreEvidence(repoRoot, options = {}) {
     story_id: storyId,
     topic: options.topic ?? 'read-only codebase exploration before implementation',
     created_at: new Date().toISOString(),
+    output: { language },
     mode: 'read_only_exploration',
     git_context: gitContext,
     roles,
-    instructions: [
-      'Use read-only exploration only. Do not edit files.',
-      'Prefer concrete file paths, commands, and observed risks over broad summaries.',
-      'Record the result with vibepro explore record so PR preparation can surface this context.'
-    ],
+    instructions: buildExploreInstructions(language),
     requests: roles.map((role) => ({
       role,
       artifact: toWorkspaceRelative(root, getExploreRequestPath(requestDir, role)),
@@ -40,9 +39,9 @@ export async function prepareExploreEvidence(repoRoot, options = {}) {
   };
 
   await writeJson(path.join(exploreDir, 'explore-plan.json'), plan);
-  await writeFile(path.join(exploreDir, 'parallel-dispatch.md'), renderExploreDispatch(plan));
+  await writeFile(path.join(exploreDir, 'parallel-dispatch.md'), renderExploreDispatch(plan, language));
   for (const role of roles) {
-    await writeFile(getExploreRequestPath(requestDir, role), renderExploreRequest({ plan, role }));
+    await writeFile(getExploreRequestPath(requestDir, role), renderExploreRequest({ plan, role, language }));
   }
   const summary = await buildExploreSummary(root, storyId);
   await writeExploreSummary(root, storyId, summary);
@@ -112,7 +111,19 @@ export async function summarizeExploreEvidenceForPr(repoRoot, options = {}) {
 }
 
 export function renderExplorePrepareSummary(result) {
+  const language = result.plan.output?.language ?? 'ja';
+  if (language === 'en') {
   return `# Explore Prepare
+
+- story: ${result.plan.story_id}
+- topic: ${result.plan.topic}
+- roles: ${result.plan.roles.join(', ')}
+- plan: ${result.artifacts.plan}
+- parallel dispatch: ${result.artifacts.parallel_dispatch}
+- summary: ${result.artifacts.summary_markdown}
+`;
+  }
+  return `# Explore準備
 
 - story: ${result.plan.story_id}
 - topic: ${result.plan.topic}
@@ -206,7 +217,23 @@ async function writeExploreSummary(root, storyId, summary) {
   await writeFile(path.join(exploreDir, 'explore-summary.md'), renderExploreStatusSummary(summary));
 }
 
-function renderExploreDispatch(plan) {
+function buildExploreInstructions(language = 'ja') {
+  return localizedText(language, {
+    ja: [
+      'read-only explorationだけを行い、fileを編集しない。',
+      '広いsummaryより、具体的なfile path、確認したcommand、観測したriskを優先する。',
+      'PR preparationがこのcontextを表示できるよう、vibepro explore recordで結果を記録する。'
+    ],
+    en: [
+      'Use read-only exploration only. Do not edit files.',
+      'Prefer concrete file paths, commands, and observed risks over broad summaries.',
+      'Record the result with vibepro explore record so PR preparation can surface this context.'
+    ]
+  });
+}
+
+function renderExploreDispatch(plan, language = plan?.output?.language ?? 'ja') {
+  if (language === 'en') {
   return `# VibePro Explore Dispatch
 
 Story: ${plan.story_id}
@@ -216,9 +243,20 @@ Dispatch these read-only exploration requests in parallel. Do not edit files.
 
 ${plan.requests.map((request) => `- ${request.role}: ${request.artifact}\n  - record: \`${request.record_command}\``).join('\n')}
 `;
+  }
+  return `# VibePro Explore Dispatch
+
+Story: ${plan.story_id}
+Topic: ${plan.topic}
+
+下記のread-only exploration requestをparallelでdispatchする。fileは編集しない。
+
+${plan.requests.map((request) => `- ${request.role}: ${request.artifact}\n  - record: \`${request.record_command}\``).join('\n')}
+`;
 }
 
-function renderExploreRequest({ plan, role }) {
+function renderExploreRequest({ plan, role, language = plan?.output?.language ?? 'ja' }) {
+  if (language === 'en') {
   return `# VibePro Explore Request
 
 Story: ${plan.story_id}
@@ -238,6 +276,29 @@ Topic: ${plan.topic}
 - findings
 
 ## Record
+
+\`${buildExploreRecordCommand({ storyId: plan.story_id, role })}\`
+`;
+  }
+  return `# VibePro Explore Request
+
+Story: ${plan.story_id}
+Role: ${role}
+Topic: ${plan.topic}
+
+## ルール
+
+- read-only explorationだけを行う。
+- 具体的なfile path、確認したcommand、risk、unknownを返す。
+- code changeは行わない。
+
+## 出力
+
+- status: pass | needs_review | block
+- summary
+- findings
+
+## 記録
 
 \`${buildExploreRecordCommand({ storyId: plan.story_id, role })}\`
 `;

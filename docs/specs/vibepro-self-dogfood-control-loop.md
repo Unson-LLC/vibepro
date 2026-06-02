@@ -9,6 +9,7 @@ related_stories:
   - story-vibepro-self-dogfood-audit-loop
   - story-vibepro-runtime-release-integrity
   - story-vibepro-worktree-pr-scope-isolation
+  - story-vibepro-managed-worktree-execution-dag
   - story-vibepro-preset-boundary-governance
   - story-vibepro-completion-quality-loop
 ---

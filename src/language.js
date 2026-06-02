@@ -20,6 +20,15 @@ export function resolveOutputLanguage(config, override = null) {
   return normalizeOutputLanguage(config?.output?.language);
 }
 
+export async function resolveHumanOutputLanguage(repoRoot, options = {}) {
+  const override = typeof options === 'string' ? options : options.language;
+  if (override) return assertOutputLanguage(override);
+  await initWorkspace(repoRoot);
+  const configPath = path.join(getWorkspaceDir(repoRoot), 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  return resolveOutputLanguage(config);
+}
+
 export function localizedText(language, values) {
   const normalized = normalizeOutputLanguage(language);
   return values[normalized] ?? values[DEFAULT_OUTPUT_LANGUAGE] ?? values.en ?? '';

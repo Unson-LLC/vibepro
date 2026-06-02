@@ -52,7 +52,7 @@ test('EVIDENCE_HANDLING_BLOCK names at least three evidence sources (INV-REH-4)'
 
 test('review prepare emits Evidence Handling section in review-request markdown', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const requestPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'review-request-gate_evidence.md');
   const content = await readFile(requestPath, 'utf8');
   assert.match(content, /## Evidence Handling/);
@@ -66,7 +66,7 @@ test('review prepare emits Evidence Handling section in review-request markdown'
 
 test('review prepare emits Evidence Handling section in parallel-dispatch markdown', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const dispatchPath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md');
   const content = await readFile(dispatchPath, 'utf8');
   assert.match(content, /## Evidence Handling/);
@@ -80,7 +80,7 @@ test('review prepare emits Evidence Handling section in parallel-dispatch markdo
 
 test('the Evidence Handling block in both artifacts is byte-identical (INV-REH-2)', async () => {
   const root = await setupRepo();
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'] });
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const request = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'review-request-gate_evidence.md'), 'utf8');
   const dispatch = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md'), 'utf8');
   function extract(content) {
