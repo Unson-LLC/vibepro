@@ -39,3 +39,15 @@ Agent Review Gate continues to require valid review results. Lifecycle state add
 - timed-out entries produce close/replace guidance;
 - closed evidence is auditable;
 - replacement does not erase the original stuck subagent.
+
+## Review Status Focus
+
+`vibepro review status` はPR作成を止めている current required role を最初に表示する。PR Gateの正本は最新の `pr prepare` が生成した Agent Review summary であり、status command側で別のrequired判定を作らない。
+
+通常表示は次を優先する。
+
+1. 次に実行すべき `review prepare` / `review record` / `pr prepare`
+2. PR-final required roleのblocking summary
+3. current required role一覧
+
+Optional role、古いstage、closed/replaced lifecycle、staleな監査履歴は `--all` または `--history` で表示する。JSONは互換の `stages` を維持しつつ、`required_current`、`optional`、`history`、`blocking_summary` を分ける。
