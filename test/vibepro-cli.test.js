@@ -461,6 +461,8 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
     'Aitle',
     '--routes',
     '/home,/map',
+    '--brief',
+    'Japanese hotel discovery app with map exploration, hotel cards, AI phone confirmation, and availability search.',
     '--design-system-bundle',
     'aitle-ds.json',
     '--design-system-id',
@@ -533,6 +535,85 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(derivedOnly.result.result.product_semantic_model.interaction_model, 'discovery_to_ai_phone_confirmation');
   assert.ok(derivedOnly.result.result.derived_design_system.anti_patterns.some((item) => /Book Now/.test(item.statement)));
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-modernize', 'story-aitle-derived-only', 'design-system-derivation.md')), true);
+
+  const operationalRepo = await makeRepo();
+  await mkdir(path.join(operationalRepo, 'src', 'app', 'dashboard'), { recursive: true });
+  await mkdir(path.join(operationalRepo, 'src', 'app', 'projects'), { recursive: true });
+  await mkdir(path.join(operationalRepo, 'src', 'app', 'companies'), { recursive: true });
+  await mkdir(path.join(operationalRepo, 'src', 'app', 'admin', 'templates'), { recursive: true });
+  await writeFile(path.join(operationalRepo, 'src', 'app', 'dashboard', 'page.tsx'), `
+    export function DashboardHeader() {
+      return <header><button>新規プロジェクト</button></header>;
+    }
+    export default function DashboardPage() {
+      return <DashboardHeader />;
+    }
+  `);
+  await writeFile(path.join(operationalRepo, 'src', 'app', 'projects', 'page.tsx'), `
+    export function ProjectListTable() {
+      return <section><button>プロジェクトを作成</button><a href="/companies">Companies</a></section>;
+    }
+    export default function ProjectsPage() {
+      return <ProjectListTable />;
+    }
+  `);
+  await writeFile(path.join(operationalRepo, 'src', 'app', 'companies', 'page.tsx'), `
+    export function CompanyManagementGrid() {
+      const [loading] = useState(false);
+      return <section>{loading ? 'loading' : <button>会社を追加</button>}</section>;
+    }
+    export default function CompaniesPage() {
+      return <CompanyManagementGrid />;
+    }
+  `);
+  await writeFile(path.join(operationalRepo, 'src', 'app', 'admin', 'templates', 'page.tsx'), `
+    export function TemplateOperationsPanel() {
+      return <section><button>テンプレートを保存</button></section>;
+    }
+    export default function TemplatesPage() {
+      return <TemplateOperationsPanel />;
+    }
+  `);
+
+  const salesTailorDs = await runCli([
+    'design-system',
+    'derive',
+    operationalRepo,
+    '--id',
+    'salestailor-core-uiux',
+    '--product',
+    'SalesTailor',
+    '--brief',
+    'Operational SaaS for sales engagement. Preserve dashboards, project management, company management, product management, and template operations. Do not use hotel, map, or booking metaphors.',
+    '--from-code',
+    '--json'
+  ]);
+  assert.equal(salesTailorDs.exitCode, 0);
+  assert.equal(salesTailorDs.result.result.product_semantics.primary_domain, 'product_workflow');
+  assert.doesNotMatch(JSON.stringify(salesTailorDs.result.result.product_semantics), /hotel_discovery|location_search|map_exploration/);
+  assert.deepEqual(salesTailorDs.result.result.source_evidence.routes.sort(), ['/admin/templates', '/companies', '/dashboard', '/projects']);
+  const salesTailorRoles = salesTailorDs.result.result.component_roles.roles.map((role) => role.name);
+  assert.ok(salesTailorRoles.includes('ProjectListTable'));
+  assert.ok(salesTailorRoles.includes('CompanyManagementGrid'));
+  assert.equal(salesTailorRoles.some((name) => ['HotelCard', 'MapPricePin', 'AIPhoneCTA'].includes(name)), false);
+
+  const negatedDerived = await runCli([
+    'design-modernize',
+    'derive-system',
+    operationalRepo,
+    '--id',
+    'story-sales-ops-ds',
+    '--product',
+    'SalesTailor',
+    '--routes',
+    '/dashboard,/projects',
+    '--brief',
+    'Sales operations workspace. Do not use hotel, map, or booking metaphors; keep project tables, company lists, filters, and admin templates.',
+    '--json'
+  ]);
+  assert.equal(negatedDerived.exitCode, 0);
+  assert.equal(negatedDerived.result.result.product_semantic_model.primary_domain, 'product_workflow');
+  assert.equal(negatedDerived.result.result.component_role_map.roles.some((role) => ['HotelCard', 'MapPricePin', 'AIPhoneCTA'].includes(role.name)), false);
 
   await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
