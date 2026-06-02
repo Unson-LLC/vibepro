@@ -578,6 +578,7 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   ]);
   assert.equal(nativeDesignSystem.exitCode, 0);
   assert.equal(nativeDesignSystem.result.result.workflow, 'native-design-system-derivation');
+  assert.equal(nativeDesignSystem.result.result.output.language, 'ja');
   assert.equal(nativeDesignSystem.result.result.design_system_id, 'aitle');
   assert.equal(nativeDesignSystem.result.result.authority, 'vibepro_native_design_system');
   assert.equal(nativeDesignSystem.result.result.external_generator_required, false);
@@ -634,6 +635,8 @@ test('INV-001 INV-002 INV-003 C-001 C-002 S-001 design-modernize plan creates De
   assert.equal(nativeScreenPatterns.graphify_status, 'available');
   assert.match(nativeSummary, /graphify: available/);
   assert.match(nativeSummary, /visual foundations: visual-brief.md/);
+  assert.match(nativeSummary, /## プロダクト意味論/);
+  assert.doesNotMatch(nativeSummary, /## Product Semantics/);
 
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-aitle-ui-refresh.md'), `---
@@ -659,6 +662,7 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   ]);
   assert.equal(validation.exitCode, 0);
   assert.equal(validation.result.result.workflow, 'design-system-validation');
+  assert.equal(validation.result.result.output.language, 'ja');
   assert.equal(validation.result.result.summary.status, 'pass');
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-CTA-PRIORITY').status, 'pass');
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-STATE-SEMANTICS').status, 'pass');
@@ -667,6 +671,10 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(validation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN').status, 'pass');
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.md')), true);
+  const validationSummary = await readFile(path.join(repo, '.vibepro', 'design-system', 'aitle', 'validation', 'story-aitle-ui-refresh.md'), 'utf8');
+  assert.match(validationSummary, /# Design System検証: aitle/);
+  assert.match(validationSummary, /## 検出事項/);
+  assert.doesNotMatch(validationSummary, /# Design System Validation:/);
 
   const dsWithDrift = await readJson(path.join(nativeOutDir, 'design-system.json'));
   dsWithDrift.authority = 'external_visual_reference';
@@ -994,6 +1002,30 @@ test('check self-dogfood detects verify evidence without final gate artifacts', 
   assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
 });
 
+test('check self-dogfood detects fixed English text in ja human artifacts', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-language', '--title', '言語検証', '--language', 'ja']);
+  const reviewDir = path.join(repo, '.vibepro', 'reviews', 'story-language', 'gate');
+  await mkdir(reviewDir, { recursive: true });
+  await writeFile(path.join(reviewDir, 'parallel-dispatch.md'), [
+    '# VibePro Parallel Agent Review Dispatch',
+    '',
+    '## Coordinator Instructions',
+    '',
+    'If your coordinator runtime supports subagents, start them.'
+  ].join('\n'));
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-language', '--run-id', 'self-dogfood-language', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  const languageFinding = findings.find((finding) => finding.id.includes('human_doc_language'));
+  assert.ok(languageFinding);
+  assert.match(languageFinding.path, /parallel-dispatch\.md/);
+  assert.match(languageFinding.detail, /fixed English text/);
+});
+
 test('check self-dogfood surfaces PR create bypass and finding details in markdown', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
@@ -1034,7 +1066,7 @@ test('check self-dogfood surfaces PR create bypass and finding details in markdo
   assert.equal(findings.some((finding) => finding.id.includes('final_gate_missing')), true);
   assert.equal(findings.some((finding) => finding.id.includes('pr_create_without_gate_override')), true);
   const markdown = await readFile(path.join(repo, '.vibepro', 'checks', 'self-dogfood', 'self-dogfood-bypass', 'check.md'), 'utf8');
-  assert.match(markdown, /## Findings \/ 検出事項/);
+  assert.match(markdown, /## 検出事項/);
   assert.match(markdown, /self_dogfood\.pr_create_without_gate_override\.story-self-dogfood/);
   assert.match(markdown, /Use vibepro pr create/);
   assert.equal(standaloneResult.exitCode, 0);
@@ -1866,8 +1898,8 @@ test('check security runs a purpose-level diagnosis pack and writes evidence', a
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.json')), true);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.md')), true);
   const checkMarkdown = await readFile(path.join(repo, '.vibepro', 'checks', 'security', 'security-pack-test', 'check.md'), 'utf8');
-  assert.match(checkMarkdown, /## Next Steps \/ 次に見る場所/);
-  assert.match(checkMarkdown, /## Share Template \/ 共有テンプレート/);
+  assert.match(checkMarkdown, /## 次に見る場所/);
+  assert.match(checkMarkdown, /## 共有テンプレート/);
   assert.match(checkMarkdown, /Report: \.vibepro\/checks\/security\/security-pack-test\/check\.md/);
   assert.match(checkMarkdown, /Needs review \/ fail:/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
@@ -4321,7 +4353,7 @@ test('story plan creates execution priorities from the generated story map', asy
   assert.equal(briefResult.exitCode, 0);
   assert.equal(briefResult.result.artifacts.markdown, '.vibepro/stories/story-product-auth-account-access/tasks/story-product-auth-account-access-spec-recovery/briefing.md');
   const briefing = await readFile(path.join(repo, '.vibepro', 'stories', 'story-product-auth-account-access', 'tasks', 'story-product-auth-account-access-spec-recovery', 'briefing.md'), 'utf8');
-  assert.match(briefing, /Source Recovery/);
+  assert.match(briefing, /Source復旧/);
   assert.match(briefing, /suggested_path: docs\/specs\/product-auth-account-access.md/);
   assert.match(briefing, /graph: matched=/);
 });
@@ -5624,7 +5656,7 @@ test('pr prepare uses node --test targeted command for node test runner', async 
 test('review prepare generates stage role requests', async () => {
   const repo = await makeGitRepoWithStory();
 
-  const result = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--json']);
+  const result = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--language', 'en', '--json']);
 
   assert.equal(result.exitCode, 0);
   assert.deepEqual(result.result.plan.roles, ['unit_integration', 'e2e_ux', 'gate_coverage']);
@@ -5681,12 +5713,57 @@ test('review prepare generates stage role requests', async () => {
 	  assert.match(request, /review close/);
 	  assert.match(request, /does not return by the timeout/);
 
-	  const subset = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk', '--json']);
+	  const subset = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk', '--language', 'en', '--json']);
 	  assert.equal(subset.exitCode, 0);
 	  assert.deepEqual(subset.result.plan.roles, ['gate_evidence', 'release_risk']);
 	  assert.deepEqual(subset.result.plan.review_policy.roles, ['gate_evidence', 'release_risk']);
 	  assert.deepEqual(subset.result.summary.roles.map((role) => role.role), ['gate_evidence', 'release_risk']);
 	});
+
+test('review and explore human dispatch artifacts follow ja output language', async () => {
+  const repo = await makeGitRepoWithStory({ language: 'ja' });
+
+  const reviewResult = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--json']);
+  assert.equal(reviewResult.exitCode, 0);
+  assert.equal(reviewResult.result.plan.output.language, 'ja');
+  const reviewDispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'parallel-dispatch.md'), 'utf8');
+  const reviewRequest = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-gate_evidence.md'), 'utf8');
+  assert.match(reviewDispatch, /## Coordinator指示/);
+  assert.match(reviewDispatch, /## 証跡の扱い/);
+  assert.match(reviewRequest, /## レビュー観点/);
+  assert.match(reviewRequest, /## 調査ガイドライン/);
+  assert.doesNotMatch(reviewDispatch, /## Coordinator Instructions/);
+  assert.doesNotMatch(reviewRequest, /## Evidence Handling/);
+  let reviewSummary = '';
+  const reviewSummaryResult = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence'], {
+    stdout: { write: (text) => { reviewSummary += text; } }
+  });
+  assert.equal(reviewSummaryResult.exitCode, 0);
+  assert.match(reviewSummary, /# Agent Review準備/);
+  assert.doesNotMatch(reviewSummary, /# Agent Review Prepare/);
+
+  const exploreResult = await runCli([
+    'explore',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--topic',
+    '対象範囲を確認する',
+    '--role',
+    'codebase_context',
+    '--json'
+  ]);
+  assert.equal(exploreResult.exitCode, 0);
+  assert.equal(exploreResult.result.plan.output.language, 'ja');
+  const exploreDispatch = await readFile(path.join(repo, '.vibepro', 'explore', 'story-pr-prepare', 'parallel-dispatch.md'), 'utf8');
+  const exploreRequest = await readFile(path.join(repo, '.vibepro', 'explore', 'story-pr-prepare', 'requests', 'codebase_context.md'), 'utf8');
+  assert.match(exploreDispatch, /read-only exploration requestをparallelでdispatchする/);
+  assert.match(exploreRequest, /## ルール/);
+  assert.match(exploreRequest, /## 出力/);
+  assert.doesNotMatch(exploreDispatch, /Dispatch these read-only exploration requests/);
+  assert.doesNotMatch(exploreRequest, /## Rules/);
+});
 
 test('review lifecycle tracks timed out subagents and replacement closure', async () => {
   const repo = await makeGitRepoWithStory();
@@ -8868,7 +8945,7 @@ export function middleware() {}
     stdout: { write: (text) => { listOutput += text; } }
   });
   assert.equal(listResult.exitCode, 0);
-  assert.match(listOutput, /# Story Tasks/);
+  assert.match(listOutput, /# Storyタスク/);
   assert.match(listOutput, /VP-TASK-API-001/);
   assert.match(listOutput, /queue\(2\)/);
 
@@ -8877,7 +8954,7 @@ export function middleware() {}
     stdout: { write: (text) => { showOutput += text; } }
   });
   assert.equal(showResult.exitCode, 0);
-  assert.match(showOutput, /## Target Groups/);
+  assert.match(showOutput, /## 対象グループ/);
   assert.match(showOutput, /queue/);
 
   const briefResult = await runCli(['task', 'brief', repo, '--task', 'VP-TASK-API-001', '--group', 'queue']);
@@ -8892,6 +8969,8 @@ export function middleware() {}
   assert.equal(briefingJson.guardrails.includes('このCLIは対象リポジトリのコードを修正しない'), true);
   const briefingMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'briefing.md'), 'utf8');
   assert.match(briefingMarkdown, /# 修正前ブリーフィング/);
+  assert.match(briefingMarkdown, /## Source整合性の検出事項/);
+  assert.doesNotMatch(briefingMarkdown, /## Source Alignment Findings/);
   assert.match(briefingMarkdown, /このCLIは対象リポジトリのコードを修正しない/);
   assert.match(briefingMarkdown, /\/api\/admin\/queue\/status/);
 
@@ -9250,6 +9329,7 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   assert.equal(evidence.graphify.extracted_edges.length, 1);
   assert.equal(evidence.graphify.ambiguous_edges.length, 1);
   assert.equal(evidence.requirement_consistency.status, 'not_applicable');
+  assert.equal(evidence.output.language, 'ja');
   assert.equal(evidence.toolchain.package.name, 'vibepro');
   assert.match(summary, /VibePro Runtime/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));

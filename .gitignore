@@ -1,0 +1,5 @@
+.vibepro/raw/
+.vibepro/**/raw/
+.vibepro/**/secrets*
+.vibepro/**/*.log
+.vibepro/

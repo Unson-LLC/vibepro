@@ -23,11 +23,14 @@ export async function scanSelfDogfood(root, options = {}) {
   const instructionFindings = await scanInstructionBypassLanguage(repoRoot, {
     storyId: options.storyId
   });
+  const languageFindings = await scanHumanArtifactLanguage(repoRoot, workspaceDir, {
+    storyId: options.storyId
+  });
   const githubPrFindings = await scanCurrentGitHubPr(repoRoot, workspaceDir, {
     storyId: options.storyId,
     env: options.env
   });
-  const findings = [...storyFindings, ...instructionFindings, ...githubPrFindings];
+  const findings = [...storyFindings, ...instructionFindings, ...languageFindings, ...githubPrFindings];
   const riskSummary = summarizeFindings(findings);
   return {
     schema_version: '0.1.0',
@@ -43,6 +46,83 @@ export async function scanSelfDogfood(root, options = {}) {
       findings: riskSummary
     }
   };
+}
+
+async function scanHumanArtifactLanguage(repoRoot, workspaceDir, options = {}) {
+  const config = await readJson(path.join(workspaceDir, 'config.json'));
+  const language = config?.output?.language ?? 'ja';
+  if (language !== 'ja') return [];
+  if (!(await exists(workspaceDir))) return [];
+  const files = await collectHumanArtifactFiles(workspaceDir);
+  const scopedFiles = options.storyId
+    ? files.filter((filePath) => filePath.includes(`${path.sep}${options.storyId}${path.sep}`) || filePath.includes(`${path.sep}${options.storyId}.`))
+    : files;
+  const findings = [];
+  for (const filePath of scopedFiles) {
+    const content = await readFile(filePath, 'utf8').catch(() => '');
+    const matches = ENGLISH_FIXED_TEXT_PATTERNS
+      .filter((item) => item.pattern.test(content))
+      .map((item) => item.label);
+    if (matches.length === 0) continue;
+    findings.push({
+      id: `self_dogfood.human_doc_language.${sanitizeFindingId(toWorkspaceRelative(repoRoot, filePath))}`,
+      severity: 'medium',
+      gate_effect: 'review',
+      story_id: options.storyId ?? null,
+      path: toWorkspaceRelative(repoRoot, filePath),
+      detail: `Human-facing artifact was generated in a ja workspace but still contains fixed English text: ${matches.slice(0, 5).join(', ')}.`,
+      required_action: 'Route this artifact renderer through output.language and localized fixed labels, or mark the detected text as machine-readable/externally sourced.'
+    });
+    if (findings.length >= 25) break;
+  }
+  return findings;
+}
+
+const ENGLISH_FIXED_TEXT_PATTERNS = [
+  { label: 'VibePro Agent Review Request', pattern: /^# VibePro Agent Review Request/m },
+  { label: 'VibePro Parallel Agent Review Dispatch', pattern: /^# VibePro Parallel Agent Review Dispatch/m },
+  { label: 'Coordinator Instructions', pattern: /^## Coordinator Instructions/m },
+  { label: 'Review Focus', pattern: /^## Review Focus/m },
+  { label: 'Evidence Handling', pattern: /^## Evidence Handling/m },
+  { label: 'Investigation Guidelines', pattern: /^## Investigation Guidelines/m },
+  { label: 'If your coordinator runtime supports subagents', pattern: /If your coordinator runtime supports subagents/ },
+  { label: 'VibePro Explore Dispatch', pattern: /^# VibePro Explore Dispatch/m },
+  { label: 'VibePro Explore Request', pattern: /^# VibePro Explore Request/m },
+  { label: 'Dispatch these read-only exploration requests', pattern: /Dispatch these read-only exploration requests/ },
+  { label: 'Where To Look First', pattern: /Where To Look First/ },
+  { label: 'What To Add Next', pattern: /What To Add Next/ },
+  { label: 'Human-readable report', pattern: /Human-readable report/ },
+  { label: 'VibePro Check Pack', pattern: /^# VibePro Check Pack/m },
+  { label: 'Story Tasks', pattern: /^# Story Tasks/m },
+  { label: 'Task Create', pattern: /^# Task Create/m },
+  { label: 'Story Task', pattern: /^# Story Task/m },
+  { label: 'Target Groups', pattern: /^## Target Groups/m },
+  { label: 'Source Recovery', pattern: /^## Source Recovery/m },
+  { label: 'Source Alignment Findings', pattern: /^## Source Alignment Findings/m },
+  { label: 'Product Semantics', pattern: /^## Product Semantics/m },
+  { label: 'Evidence Coverage', pattern: /^## Evidence Coverage/m },
+  { label: 'Design System Validation', pattern: /^# Design System Validation:/m },
+  { label: 'Authority Boundary', pattern: /^## Authority Boundary/m },
+  { label: 'Design Language', pattern: /^## Design Language/m },
+  { label: 'Color Roles', pattern: /^## Color Roles/m }
+];
+
+async function collectHumanArtifactFiles(dir) {
+  const results = [];
+  if (!(await exists(dir))) return results;
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...await collectHumanArtifactFiles(entryPath));
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    if (entry.name.endsWith('.md') || entry.name.endsWith('.html')) {
+      results.push(entryPath);
+    }
+  }
+  return results;
 }
 
 async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {

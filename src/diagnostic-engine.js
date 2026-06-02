@@ -41,6 +41,7 @@ import {
   renderPerformanceEvidenceSummary,
   summarizeStoryPerformanceEvidence
 } from './performance-evidence.js';
+import { assertOutputLanguage, resolveOutputLanguage } from './language.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
@@ -52,10 +53,12 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const graphPath = path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
   const graph = JSON.parse(await readFile(graphPath, 'utf8'));
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
+  const language = options.language ? assertOutputLanguage(options.language) : resolveOutputLanguage(config);
   const { currentStory } = resolveStoryContext(config);
   const manifest = await readManifest(root);
   const toolchain = await collectRuntimeInfo();
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
+  evidence.output = { language };
   evidence.toolchain = toolchain;
   evidence.performance_evidence = await summarizeStoryPerformanceEvidence(root, currentStory.story_id);
   const inferredSpec = await readInferredSpec(root, currentStory.story_id);

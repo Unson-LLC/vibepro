@@ -4,6 +4,7 @@ import path from 'node:path';
 import { getStoryStatus } from './story-manager.js';
 import { readStoryTasks, renderStoryTasks } from './story-task-generator.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { localizedText } from './language.js';
 
 export async function listTasks(repoRoot, options = {}) {
   const context = await loadTaskContext(repoRoot, options.storyId);
@@ -85,7 +86,7 @@ export async function createTaskBrief(repoRoot, options = {}) {
   const jsonPath = path.join(briefDir, 'briefing.json');
   const markdownPath = path.join(briefDir, 'briefing.md');
   await writeFile(jsonPath, `${JSON.stringify(briefing, null, 2)}\n`);
-  await writeFile(markdownPath, renderTaskBriefing(briefing));
+  await writeFile(markdownPath, renderTaskBriefing(briefing, options.language ?? 'ja'));
   return {
     story: context.story,
     task,
@@ -113,7 +114,7 @@ export async function createTaskPlan(repoRoot, options = {}) {
   const jsonPath = path.join(planDir, 'plan.json');
   const markdownPath = path.join(planDir, 'plan.md');
   await writeFile(jsonPath, `${JSON.stringify(plan, null, 2)}\n`);
-  await writeFile(markdownPath, renderTaskPlan(plan));
+  await writeFile(markdownPath, renderTaskPlan(plan, options.language ?? 'ja'));
   return {
     story: context.story,
     task,
@@ -141,7 +142,7 @@ export async function createTaskHandoff(repoRoot, options = {}) {
   const jsonPath = path.join(handoffDir, 'handoff.json');
   const markdownPath = path.join(handoffDir, 'handoff.md');
   await writeFile(jsonPath, `${JSON.stringify(handoff, null, 2)}\n`);
-  await writeFile(markdownPath, renderTaskHandoff(handoff));
+  await writeFile(markdownPath, renderTaskHandoff(handoff, options.language ?? 'ja'));
   return {
     story: briefingResult.story,
     task: briefingResult.task,
@@ -240,7 +241,7 @@ export async function createTaskExecution(repoRoot, options = {}) {
   const jsonPath = path.join(executionDir, 'execution.json');
   const markdownPath = path.join(executionDir, 'execution.md');
   await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
-  await writeFile(markdownPath, renderTaskExecution(execution));
+  await writeFile(markdownPath, renderTaskExecution(execution, options.language ?? 'ja'));
   return {
     story,
     task,
@@ -256,9 +257,14 @@ export async function createTaskExecution(repoRoot, options = {}) {
   };
 }
 
-export function renderTaskList(result) {
+export function renderTaskList(result, language = 'ja') {
   const tasks = Array.isArray(result.tasks) ? result.tasks : [];
-  return `# Story Tasks
+  const title = localizedText(language, { ja: '# Storyタスク', en: '# Story Tasks' });
+  const headers = localizedText(language, {
+    ja: '| ID | 優先度 | 対象 | グループ | 状態 | タイトル |',
+    en: '| ID | Priority | Targets | Groups | Status | Title |'
+  });
+  return `${title}
 
 | 項目 | 内容 |
 |------|------|
@@ -268,15 +274,15 @@ export function renderTaskList(result) {
 | Gate | ${result.source_run?.gate_status ?? '-'} |
 | タスク数 | ${tasks.length} |
 
-| ID | 優先度 | 対象 | グループ | 状態 | タイトル |
+${headers}
 |----|--------|------|----------|------|----------|
 ${tasks.length === 0 ? '| - | - | - | - | - | - |' : tasks.map((task) => `| ${task.id} | ${task.priority} | ${task.target_count ?? task.target_files?.length ?? 0}件 | ${formatTargetGroups(task.target_groups)} | ${task.status} | ${task.title} |`).join('\n')}
 `;
 }
 
-export function renderTaskCreateSummary(result) {
+export function renderTaskCreateSummary(result, language = 'ja') {
   const rows = result.results.flatMap((item) => item.taskState.tasks.map((task) => `| ${item.story.story_id} | ${task.id} | ${task.priority} | ${task.title} | ${item.artifacts.markdown} |`));
-  return `# Task Create
+  return `${localizedText(language, { ja: '# Task作成', en: '# Task Create' })}
 
 | 項目 | 内容 |
 |------|------|
@@ -290,9 +296,9 @@ ${rows.length === 0 ? '| - | - | - | - | - |' : rows.join('\n')}
 `;
 }
 
-export function renderTaskShow(result) {
+export function renderTaskShow(result, language = 'ja') {
   const task = result.task;
-  return `# Story Task
+  return `${localizedText(language, { ja: '# Storyタスク', en: '# Story Task' })}
 
 | 項目 | 内容 |
 |------|------|
@@ -300,35 +306,35 @@ export function renderTaskShow(result) {
 | Story | ${result.story?.title ?? '-'} |
 | Run ID | ${result.source_run?.run_id ?? '-'} |
 | Task ID | ${task.id} |
-| Title | ${task.title} |
-| Priority | ${task.priority} |
-| Status | ${task.status} |
+| ${localizedText(language, { ja: 'Title', en: 'Title' })} | ${task.title} |
+| ${localizedText(language, { ja: 'Priority', en: 'Priority' })} | ${task.priority} |
+| ${localizedText(language, { ja: 'Status', en: 'Status' })} | ${task.status} |
 | Execution | ${task.execution_policy} / mutates_repository=${task.mutates_repository} |
 | Strategy | ${task.recommended_strategy?.id ?? '-'} |
 
-## Target Files
+## ${localizedText(language, { ja: '対象ファイル', en: 'Target Files' })}
 
 ${formatList(task.target_files)}
 
-## Target Routes
+## ${localizedText(language, { ja: '対象route', en: 'Target Routes' })}
 
 ${formatRoutes(task.target_routes)}
 
-## Target Groups
+## ${localizedText(language, { ja: '対象グループ', en: 'Target Groups' })}
 
 ${formatGroups(task.target_groups)}
 
-## Read First
+## ${localizedText(language, { ja: '先に読むもの', en: 'Read First' })}
 
 ${formatReadFirst(task.read_first_files)}
 
-## Acceptance Criteria
+## ${localizedText(language, { ja: '完了条件', en: 'Acceptance Criteria' })}
 
 ${formatList(task.acceptance_criteria)}
 `;
 }
 
-export function renderTaskBriefing(briefing) {
+export function renderTaskBriefing(briefing, language = 'ja') {
   return `# 修正前ブリーフィング
 
 ## 前提
@@ -368,11 +374,11 @@ ${formatReadFirst(briefing.read_first_files)}
 
 - ${briefing.recommended_strategy?.id ?? '-'}: ${briefing.recommended_strategy?.reason ?? '-'}
 
-## Source Recovery
+## ${localizedText(language, { ja: 'Source復旧', en: 'Source Recovery' })}
 
 ${renderSourceRecovery(briefing.source_recovery, briefing.recovery_drafts)}
 
-## Source Alignment Findings
+## ${localizedText(language, { ja: 'Source整合性の検出事項', en: 'Source Alignment Findings' })}
 
 ${renderSourceAlignmentFindings(briefing.source_alignment_findings)}
 
@@ -386,7 +392,7 @@ ${formatList(briefing.acceptance_criteria)}
 `;
 }
 
-export function renderTaskPlan(plan) {
+export function renderTaskPlan(plan, language = 'ja') {
   return `# 実装修正計画
 
 ## 前提
@@ -475,7 +481,7 @@ function renderSourceAlignmentFindings(findings = []) {
   ].join('\n')).join('\n');
 }
 
-export function renderTaskHandoff(handoff) {
+export function renderTaskHandoff(handoff, language = 'ja') {
   return `# 実装依頼パッケージ
 
 ## 前提
@@ -543,7 +549,7 @@ ${handoff.completion_report_template.map((item) => `- ${item}`).join('\n')}
 `;
 }
 
-export function renderTaskExecution(execution) {
+export function renderTaskExecution(execution, language = 'ja') {
   return `# 実行セッション
 
 ## 前提

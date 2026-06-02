@@ -20,6 +20,7 @@ import { scanSelfDogfood } from './self-dogfood-scanner.js';
 import { scanStaticSite } from './static-site-scanner.js';
 import { scanTerminalLinkContracts } from './terminal-link-scanner.js';
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { localizedText, resolveHumanOutputLanguage } from './language.js';
 
 export const CHECK_PACKS = {
   ui: {
@@ -83,6 +84,7 @@ export function listCheckPacks() {
 export async function runCheckPack(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
   const root = path.resolve(repoRoot);
+  const language = await resolveHumanOutputLanguage(root, options);
   const packId = options.packId ?? 'all';
   const pack = CHECK_PACKS[packId];
   if (!pack) {
@@ -132,6 +134,7 @@ export async function runCheckPack(repoRoot, options = {}) {
     pack_id: packId,
     title: pack.title,
     status,
+    output: { language },
     repo: { root: '.' },
     checks,
     artifacts: {
@@ -459,17 +462,18 @@ function aggregateStatus(checks) {
 }
 
 export function renderCheckPack(result) {
+  const language = result.output?.language ?? 'ja';
   const reviewItems = checksNeedingAttention(result.checks);
   const lines = [
-    '# VibePro Check Pack',
+    localizedText(language, { ja: '# VibeProチェックパック', en: '# VibePro Check Pack' }),
     '',
-    `Run ID: ${result.run_id}`,
-    `Pack: ${result.pack_id} - ${result.title}`,
-    `Status: ${result.status}`,
+    `${localizedText(language, { ja: 'Run ID', en: 'Run ID' })}: ${result.run_id}`,
+    `${localizedText(language, { ja: 'Pack', en: 'Pack' })}: ${result.pack_id} - ${result.title}`,
+    `${localizedText(language, { ja: '状態', en: 'Status' })}: ${result.status}`,
     '',
-    '## Checks',
+    localizedText(language, { ja: '## チェック', en: '## Checks' }),
     '',
-    '| Check | Status | Summary |',
+    localizedText(language, { ja: '| Check | 状態 | Summary |', en: '| Check | Status | Summary |' }),
     '| ----- | ------ | ------- |'
   ];
   for (const check of result.checks) {
@@ -484,12 +488,16 @@ export function renderCheckPack(result) {
 }
 
 export function renderCheckPackSummary(result) {
+  const language = result.check.output?.language ?? 'ja';
   const reviewItems = checksNeedingAttention(result.check.checks);
   const lines = [
-    `check pack created: ${result.artifacts.markdown}`,
-    `status: ${result.check.status}`,
+    localizedText(language, {
+      ja: `check packを作成しました: ${result.artifacts.markdown}`,
+      en: `check pack created: ${result.artifacts.markdown}`
+    }),
+    `${localizedText(language, { ja: 'status', en: 'status' })}: ${result.check.status}`,
     '',
-    '| Check | Status | Summary |',
+    localizedText(language, { ja: '| Check | 状態 | Summary |', en: '| Check | Status | Summary |' }),
     '| ----- | ------ | ------- |'
   ];
   for (const check of result.check.checks) {
@@ -509,13 +517,14 @@ function checksNeedingAttention(checks) {
 }
 
 function renderCheckPackFindings(result) {
+  const language = result.output?.language ?? 'ja';
   const findings = collectCheckPackFindings(result);
   if (findings.length === 0) return [];
   const lines = [
     '',
-    '## Findings / 検出事項',
+    localizedText(language, { ja: '## 検出事項', en: '## Findings' }),
     '',
-    '| Severity | Finding | Path | Action |',
+    localizedText(language, { ja: '| Severity | Finding | Path | Action |', en: '| Severity | Finding | Path | Action |' }),
     '| -------- | ------- | ---- | ------ |'
   ];
   for (const finding of findings.slice(0, 50)) {
@@ -526,7 +535,10 @@ function renderCheckPackFindings(result) {
     lines.push(`| ${finding.severity ?? 'info'} | ${escapeTable(label)} | ${escapeTable(finding.path ?? finding.story_id ?? '')} | ${escapeTable(finding.required_action ?? '')} |`);
   }
   if (findings.length > 50) {
-    lines.push(`| info | ${findings.length - 50} additional findings omitted from markdown; see JSON evidence. |  | See machine-readable evidence. |`);
+    lines.push(`| info | ${localizedText(language, {
+      ja: `${findings.length - 50}件の追加findingはMarkdownから省略しました。JSON evidenceを確認してください。`,
+      en: `${findings.length - 50} additional findings omitted from markdown; see JSON evidence.`
+    })} |  | ${localizedText(language, { ja: 'machine-readable evidenceを確認する。', en: 'See machine-readable evidence.' })} |`);
   }
   return lines;
 }
@@ -546,34 +558,43 @@ function collectCheckPackFindings(result) {
 }
 
 function renderCheckPackOnboarding({ result, reviewItems, artifacts = null }) {
+  const language = result.output?.language ?? 'ja';
   const markdownPath = artifacts?.markdown ?? result.artifacts?.check_report ?? '.vibepro/checks/<pack>/<run-id>/check.md';
   const jsonPath = artifacts?.json ?? result.artifacts?.check_json ?? '.vibepro/checks/<pack>/<run-id>/check.json';
   const attentionSummary = reviewItems.length === 0
     ? ['- none']
     : reviewItems.map((check) => `- ${check.label}: ${check.status} - ${check.summary ?? ''}`);
+  const optionalAgentHarness = result.pack_id === 'all' && !result.evidence?.agent_harness
+    ? [localizedText(language, {
+        ja: '- このrepoでAI駆動開発の標準化も見る場合は `vibepro check agent-harness <repo>` または `vibepro check all <repo> --include-harness` を実行してください。',
+        en: '- If you also want to standardize AI-driven development in this repo, run `vibepro check agent-harness <repo>` or `vibepro check all <repo> --include-harness`.'
+      })]
+    : [];
+  const optionalPublicDiscovery = result.pack_id === 'all' && !result.evidence?.public_discovery
+    ? [localizedText(language, {
+        ja: '- public page / AI-search readiness診断も見る場合は `vibepro check public-discovery <repo>` または `vibepro check all <repo> --include-public-discovery` を実行してください。',
+        en: '- If you also want public page / AI-search readiness diagnostics, run `vibepro check public-discovery <repo>` or `vibepro check all <repo> --include-public-discovery`.'
+      })]
+    : [];
   return [
     '',
-    '## Next Steps / 次に見る場所',
+    localizedText(language, { ja: '## 次に見る場所', en: '## Next Steps' }),
     '',
-    `- Human-readable report: ${markdownPath}`,
-    `- Machine-readable evidence: ${jsonPath}`,
-    '- If this is only a first diagnosis, share the Status and the checks listed under needs_review / fail.',
-    '- If this is PR work, run `vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` after addressing or classifying findings.',
-    ...(result.pack_id === 'all' && !result.evidence?.agent_harness
-      ? ['- If you also want to standardize AI-driven development in this repo, run `vibepro check agent-harness <repo>` or `vibepro check all <repo> --include-harness`.']
-      : []),
-    ...(result.pack_id === 'all' && !result.evidence?.public_discovery
-      ? ['- If you also want public page / AI-search readiness diagnostics, run `vibepro check public-discovery <repo>` or `vibepro check all <repo> --include-public-discovery`.']
-      : []),
+    localizedText(language, { ja: `- 人間向けreport: ${markdownPath}`, en: `- Human-readable report: ${markdownPath}` }),
+    localizedText(language, { ja: `- 機械可読evidence: ${jsonPath}`, en: `- Machine-readable evidence: ${jsonPath}` }),
+    localizedText(language, { ja: '- 初回診断だけの場合は、Statusと needs_review / fail のcheckを共有してください。', en: '- If this is only a first diagnosis, share the Status and the checks listed under needs_review / fail.' }),
+    localizedText(language, { ja: '- PR作業の場合はfindingを対応または分類した後、`vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` を実行してください。', en: '- If this is PR work, run `vibepro pr prepare <repo> --story-id <story-id> --base <base-branch>` after addressing or classifying findings.' }),
+    ...optionalAgentHarness,
+    ...optionalPublicDiscovery,
     '',
-    '## Share Template / 共有テンプレート',
+    localizedText(language, { ja: '## 共有テンプレート', en: '## Share Template' }),
     '',
     '```text',
-    `VibePro check ${result.pack_id} completed.`,
+    localizedText(language, { ja: `VibePro check ${result.pack_id} が完了しました。`, en: `VibePro check ${result.pack_id} completed.` }),
     `Run ID: ${result.run_id}`,
     `Status: ${result.status}`,
     `Report: ${markdownPath}`,
-    'Needs review / fail:',
+    localizedText(language, { ja: 'Needs review / fail:', en: 'Needs review / fail:' }),
     ...attentionSummary,
     '```'
   ];
