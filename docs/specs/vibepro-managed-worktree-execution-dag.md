@@ -77,3 +77,14 @@ title: VibePro管理worktree Execution DAG Spec
 - worktree隔離の価値が薄いCIでは、`execution.managed_worktree=disabled` または明示CI mode flagを使える。
 - Emergency bypassには理由が必要で、decision recordとして保存する。
 - 実装は、ユーザー作成worktreeや非VibePro branchを削除してはいけない。
+
+## MVP実装範囲
+
+このPRでは、次の挙動を実装対象にする。
+
+- `execution.managed_worktree` の初期値を `preferred` とし、`.worktrees/vibepro/` をignoreする。
+- `vibepro execute start` が管理worktreeを作成または再利用し、`managed_worktree.mode/status/path/branch/base_ref/created_from_sha/current_head_sha/dirty/dirty_fingerprint` をstateへ保存する。
+- `execute status/next/reconcile` が管理worktree状態とExecution DAGを返す。
+- 管理worktreeが有効な場合、`pr_prepare` と `pr_create` のrequired commandおよび該当next actionは管理worktreeへの `cd` を含む。
+
+`required` modeの拒否制御、PR evidence binding、merge、cleanup、emergency bypassは、このSpecの必須挙動として残すが後続Storyで実装する。

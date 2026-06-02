@@ -2,6 +2,12 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getAgentReviewStatus } from './agent-review.js';
+import {
+  buildExecutionDag,
+  buildManagedWorktreeCommands,
+  ensureManagedWorktree,
+  refreshManagedWorktree
+} from './managed-worktree.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const SCHEMA_VERSION = '0.1.0';
@@ -10,11 +16,19 @@ const DEFAULT_TARGET = 'pr_create';
 export async function startExecution(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute start');
   await assertWorkspaceInitialized(repoRoot, 'execute start');
-  await readExecutionState(repoRoot, storyId);
+  const existing = await readExecutionState(repoRoot, storyId);
+  const managedWorktree = await ensureManagedWorktree(repoRoot, {
+    storyId,
+    baseRef: options.baseRef,
+    branchName: options.branchName,
+    worktreePath: options.worktreePath
+  });
   const state = await buildExecutionState(repoRoot, {
     ...options,
     storyId,
     target: options.target ?? DEFAULT_TARGET,
+    startedAt: existing?.started_at,
+    managedWorktree,
     preserveStartedAt: true
   });
   return writeExecutionState(repoRoot, state);
@@ -24,8 +38,20 @@ export async function getExecutionStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute status');
   const existing = await readExecutionState(repoRoot, storyId);
   if (existing) {
+    const managedWorktree = await refreshManagedWorktree(repoRoot, existing.managed_worktree).catch(() => existing.managed_worktree ?? null);
+    const state = managedWorktree
+      ? {
+          ...existing,
+          managed_worktree: managedWorktree,
+          execution_dag: buildExecutionDag({
+            managedWorktree,
+            completedPhases: existing.completed_phases ?? [],
+            completionStatus: existing.completion_status
+          })
+        }
+      : existing;
     return {
-      state: existing,
+      state,
       artifact: toWorkspaceRelative(repoRoot, getExecutionStatePath(repoRoot, storyId)),
       found: true
     };
@@ -64,6 +90,7 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
     startedAt: existing?.started_at,
+    managedWorktree: await refreshManagedWorktree(repoRoot, existing?.managed_worktree).catch(() => existing?.managed_worktree ?? null),
     preserveStartedAt: true
   });
   return writeExecutionState(repoRoot, state);
@@ -193,9 +220,17 @@ async function buildExecutionState(repoRoot, options = {}) {
     readyForPrCreate,
     prCreated
   });
+  const managedWorktree = options.managedWorktree
+    ? await refreshManagedWorktree(root, options.managedWorktree).catch(() => options.managedWorktree)
+    : null;
+  const requiredCommands = buildManagedWorktreeCommands({
+    pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
+    pr_create: buildPrCreateCommand({ storyId, baseRef: options.baseRef })
+  }, managedWorktree);
   const nextActions = deriveNextActions({
     storyId,
     baseRef: options.baseRef,
+    managedWorktree,
     prPrepare,
     gateStatus,
     unresolvedGates,
@@ -215,10 +250,9 @@ async function buildExecutionState(repoRoot, options = {}) {
     completion_status: completionStatus,
     blocking_gate: blockingGate,
     next_actions: nextActions,
-    required_commands: {
-      pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
-      pr_create: buildPrCreateCommand({ storyId, baseRef: options.baseRef })
-    },
+    required_commands: requiredCommands,
+    managed_worktree: managedWorktree,
+    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus }),
     last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
@@ -238,10 +272,13 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, r
   return phases;
 }
 
-function deriveNextActions({ storyId, baseRef, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
+function deriveNextActions({ storyId, baseRef, managedWorktree, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
+  const wrap = (command) => managedWorktree?.path && managedWorktree.mode !== 'disabled'
+    ? `cd ${shellQuote(managedWorktree.path)} && ${command}`
+    : command;
   if (prCreated) return [];
-  if (!prPrepare) return [buildPrPrepareCommand({ storyId, baseRef })];
-  if (readyForPrCreate) return [buildPrCreateCommand({ storyId, baseRef })];
+  if (!prPrepare) return [wrap(buildPrPrepareCommand({ storyId, baseRef }))];
+  if (readyForPrCreate) return [wrap(buildPrCreateCommand({ storyId, baseRef }))];
   if (waiverRequired) {
     const actions = unresolvedGates
       .flatMap((gate) => gate.required_actions?.length ? gate.required_actions : [gate.reason])
@@ -257,7 +294,7 @@ function deriveNextActions({ storyId, baseRef, prPrepare, gateStatus, unresolved
     ? gateStatus.next_required_actions
     : gateStatus?.execution_gate?.required_actions ?? [];
   if (actions.length > 0) return actions;
-  return [buildPrPrepareCommand({ storyId, baseRef })];
+  return [wrap(buildPrPrepareCommand({ storyId, baseRef }))];
 }
 
 function summarizePrPrepare(root, prPrepare) {

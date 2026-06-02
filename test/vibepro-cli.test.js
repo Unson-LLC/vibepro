@@ -6424,7 +6424,23 @@ title: PR準備 Spec
   assert.equal(started.exitCode, 0);
   assert.equal(started.result.state.completion_status, 'not_prepared');
   assert.equal(started.result.state.current_phase, 'prepare_pr');
-  assert.equal(started.result.state.next_actions[0], 'vibepro pr prepare . --story-id story-pr-prepare --base main');
+  assert.equal(started.result.state.managed_worktree.mode, 'preferred');
+  assert.equal(started.result.state.managed_worktree.status, 'created');
+  assert.equal(started.result.state.managed_worktree.branch.startsWith('vibepro/story-pr-prepare-'), true);
+  assert.equal(await pathExists(started.result.state.managed_worktree.path), true);
+  assert.equal(started.result.state.next_actions[0].startsWith(`cd ${started.result.state.managed_worktree.path} && `), true);
+  assert.equal(
+    started.result.state.next_actions[0].endsWith('vibepro pr prepare . --story-id story-pr-prepare --base main'),
+    true
+  );
+  assert.equal(
+    started.result.state.execution_dag.nodes.some((node) => node.id === 'worktree_created' && node.status === 'passed'),
+    true
+  );
+  assert.equal(
+    started.result.state.execution_dag.nodes.some((node) => node.id === 'branch_bound' && node.status === 'passed'),
+    true
+  );
 
   const statePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
   assert.equal(await pathExists(statePath), true);
@@ -6491,11 +6507,13 @@ title: PR準備 Spec
   const ready = await readJson(statePath);
   assert.equal(ready.completion_status, 'ready_for_pr_create');
   assert.equal(ready.current_phase, 'create_pr');
-  assert.equal(ready.next_actions[0], 'vibepro pr create . --story-id story-pr-prepare --base main');
+  assert.equal(ready.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+  assert.equal(ready.next_actions[0].endsWith('vibepro pr create . --story-id story-pr-prepare --base main'), true);
 
   const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(next.exitCode, 0);
   assert.equal(next.result.next.current_phase, 'create_pr');
+  assert.equal(next.result.next.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
 });
 
 test('execute start does not initialize or dirty an uninitialized repository', async () => {

@@ -77,3 +77,9 @@ project configで強制レベルを制御する。
 ## 失敗時の扱い
 
 worktree作成に失敗した場合、VibeProはgit command、target path、branch、復旧commandを表示する。`required` modeではexecutionをblockedのままにする。`preferred` modeではworktree外で継続できるが、bypassをExecution DAGとPR evidenceに記録する。
+
+## MVP実装範囲
+
+初回実装は、既存利用者のcheckoutやCIを壊さない移行経路として `preferred` をデフォルトにし、`execute start/status/next/reconcile` のExecution Stateに管理worktreeの作成・再利用・状態更新・PR次アクションを記録する範囲に限定する。
+
+`required` enforcement、verification/review evidenceのworktree binding、`execute merge`、`execute cleanup`、emergency bypassは、このArchitectureの不変条件として維持しつつ後続Storyで実装する。

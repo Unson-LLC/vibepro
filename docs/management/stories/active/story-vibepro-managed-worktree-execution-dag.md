@@ -26,21 +26,29 @@ updated_at: 2026-06-02
 
 ## 受け入れ基準
 
-- [ ] `vibepro execute start <repo> --story-id <id>` は、設定が `required` または `preferred` の場合にVibePro管理worktreeを作成または再利用する
-- [ ] 管理worktreeのstateには `execution_id`, `story_id`, `base_ref`, `branch`, `worktree_path`, `created_from_sha`, `head_sha`, `status`, `dag_nodes` が保存される
-- [ ] Execution DAGには `worktree_created`, `branch_bound`, `implementation_started`, `implementation_complete`, `verification_recorded`, `pr_prepare_ready`, `pr_created`, `merge_ready`, `merged_or_closed`, `worktree_cleaned` が含まれる
-- [ ] `managed_worktree=required` では、VibePro管理worktree外からの `task execute`, `verify record`, `review record`, `pr prepare`, `pr create`, `execute merge` を拒否する
-- [ ] `managed_worktree=preferred` では、管理worktree外の実行を許可するが Gate DAG / PR body / execution state に `gate:managed_worktree` の警告または `needs_review` を残す
-- [ ] `managed_worktree=disabled` では従来互換として管理worktree強制を行わない
-- [ ] `pr prepare` はverification/review/evidenceが同じ管理worktreeのHEADとdirty fingerprintに束縛されているかを確認する
-- [ ] `execute merge` はPR URL、CI状態、required review、base freshness、Gate DAG、未push commit、dirty状態を確認し、条件未達ならmergeを拒否する
-- [ ] mergeまたはclose後、`execute cleanup` が管理worktreeを安全に削除し、未cleanup状態をExecution DAGに残す
-- [ ] emergency bypassは設定または明示フラグで可能だが、理由、実行者、対象command、timestampをdecision recordとして残す
-- [ ] 既存のworktree非対応リポジトリ、CI、一時checkout、OSS利用者向けに互換モードの回帰テストがある
+- [x] `vibepro execute start <repo> --story-id <id>` は、設定が `required` または `preferred` の場合にVibePro管理worktreeを作成または再利用する
+- [x] 管理worktreeのstateには `story_id`, `base_ref`, `branch`, `path`, `created_from_sha`, `current_head_sha`, `status` が保存される
+- [x] Execution DAGには `worktree_created`, `branch_bound`, `verification_recorded`, `agent_review_recorded`, `pr_prepare_ready`, `pr_created` が含まれる
+- [x] 既存のworktree非対応リポジトリ、CI、一時checkout、OSS利用者向けに互換モードの回帰テストがある
 
-## 実装メモ
+## MVP優先順位
 
-- 対象候補: `src/execution-state.js`, `src/cli.js`, `src/pr-manager.js`, `src/verification-evidence.js`, `src/agent-review.js`, `src/repo-status.js`
-- 既存の `story-vibepro-execution-state-control` を拡張し、Execution Stateを単なる再開用viewからworktree-awareな制御DAGへ進化させる
-- 既存の `story-vibepro-worktree-pr-scope-isolation` はPR scope混入対策、このStoryは開発環境隔離とmerge/cleanup制御を扱う
-- デフォルト設定は `required` を目標にする。ただし導入リリースでは移行互換として `preferred` を一時デフォルトにする選択肢をSpecで明示する
+このStoryは最終的にmerge/cleanupまで扱うが、最初の実装単位は「管理worktreeで作業が始まったか」を証跡化することに絞る。
+
+1. `execute start` が管理worktreeを作成または再利用し、stateにpath/branch/base/headを保存する
+2. `execute status/next/reconcile` が管理worktree状態と次アクションを返す
+3. `verify record` / `review record` / `pr prepare` / `pr create` がstateの管理worktreeと現在cwdの一致を検証できる
+4. `preferred` modeでは警告のみ、`required` modeでは拒否する
+5. その後に `execute merge` と `execute cleanup` を追加する
+
+初回リリースでは `preferred` を安全な導入モードにし、VibePro自身のself-dogfood設定で `required` を検証する。
+
+## 後続Story候補
+
+- `managed_worktree=required` では、VibePro管理worktree外からの `task execute`, `verify record`, `review record`, `pr prepare`, `pr create`, `execute merge` を拒否する
+- `managed_worktree=preferred` では、管理worktree外の実行を許可するが Gate DAG / PR body / execution state に `gate:managed_worktree` の警告または `needs_review` を残す
+- `managed_worktree=disabled` では従来互換として管理worktree強制を行わない
+- `pr prepare` はverification/review/evidenceが同じ管理worktreeのHEADとdirty fingerprintに束縛されているかを確認する
+- `execute merge` はPR URL、CI状態、required review、base freshness、Gate DAG、未push commit、dirty状態を確認し、条件未達ならmergeを拒否する
+- mergeまたはclose後、`execute cleanup` が管理worktreeを安全に削除し、未cleanup状態をExecution DAGに残す
+- emergency bypassは設定または明示フラグで可能だが、理由、実行者、対象command、timestampをdecision recordとして残す
