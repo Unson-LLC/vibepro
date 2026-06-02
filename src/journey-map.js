@@ -70,7 +70,7 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
     ...unplacedStories.map((story) => ({
       id: `unplaced:${story.story_id}`,
       kind: 'unplaced_story',
-      question: `${story.story_id} をJourney stepへ配置するか、enabler/cross-cuttingとして扱うか確認する。`,
+      question: `${story.story_id} をJourney stepへ配置するか、補助Storyまたは横断関心として扱うか確認する。`,
       blocker: false,
       story_id: story.story_id
     }))
@@ -639,7 +639,11 @@ function normalizeStoryInput(story) {
 function mergeStoryInput(a, b) {
   return {
     ...a,
-    ...Object.fromEntries(Object.entries(b).filter(([, value]) => value !== null && value !== undefined && value !== '')),
+    ...Object.fromEntries(Object.entries(b).filter(([key, value]) => {
+      if (value === null || value === undefined || value === '') return false;
+      if (key === 'title' && value === b.story_id && a.title && a.title !== a.story_id) return false;
+      return true;
+    })),
     source_types: [...new Set([...(a.source_types ?? []), ...(b.source_types ?? [])])],
     source_paths: [...new Set([...(a.source_paths ?? []), ...(b.source_paths ?? [])])],
     acceptance_focus: [...new Set([...(a.acceptance_focus ?? []), ...(b.acceptance_focus ?? [])])],
@@ -809,14 +813,18 @@ function buildBackbone(placements) {
         label: placement.step_label,
         order: activity.steps.size,
         story_ids: [],
+        story_labels: {},
         enabler_story_ids: [],
+        enabler_story_labels: {},
         evidence: [],
         confidence: placement.confidence
       });
     }
     const step = activity.steps.get(placement.step_id);
     const target = placement.placement_kind === 'enabler' ? step.enabler_story_ids : step.story_ids;
+    const targetLabels = placement.placement_kind === 'enabler' ? step.enabler_story_labels : step.story_labels;
     target.push(placement.story_id);
+    targetLabels[placement.story_id] = formatStoryTitleForHuman(placement.title, placement.story_id);
     step.evidence.push(...placement.evidence);
     step.confidence = combineConfidence(step.confidence, placement.confidence);
   }
@@ -828,7 +836,9 @@ function buildBackbone(placements) {
         ...step,
         order: index,
         story_ids: [...new Set(step.story_ids)],
+        story_labels: selectStoryLabels(step.story_labels, step.story_ids),
         enabler_story_ids: [...new Set(step.enabler_story_ids)],
+        enabler_story_labels: selectStoryLabels(step.enabler_story_labels, step.enabler_story_ids),
         evidence: dedupeEvidence(step.evidence)
       }))
     }));
@@ -839,7 +849,7 @@ function buildReleaseSlices(placements, backbone) {
     const placed = placements.filter((placement) => placement.release_slice === sliceId);
     return {
       slice_id: sliceId,
-      label: sliceId === 'walking_skeleton' ? 'Walking Skeleton' : sliceId === 'next_slice' ? 'Next Slice' : 'Hardening',
+      label: formatReleaseSliceName({ slice_id: sliceId }),
       kind: sliceId,
       story_ids: placed.map((placement) => placement.story_id),
       required_step_ids: sliceId === 'walking_skeleton' ? inferWalkingSkeletonRequiredSteps(backbone) : [],
@@ -931,10 +941,21 @@ function findStoryPlacement(journey, storyId) {
 function renderJourneyMapMarkdown(journey) {
   const activities = journey.backbone ?? [];
   const slices = journey.release_slices ?? [];
-  const header = ['Release Slice', ...activities.map((activity) => activity.label)].join(' | ');
+  const generatedAt = journey.generated_at ?? '-';
+  const storyCount = journey.source_story_ids?.length ?? 0;
+  const walkingSkeletonStatus = journey.walking_skeleton?.status ?? 'unknown';
+  const conflictCount = journey.conflicts?.length ?? 0;
+  const openQuestionCount = journey.open_questions?.length ?? 0;
+  const unplacedCount = journey.unplaced_stories?.length ?? 0;
+  const headline = buildJourneyHeadline(journey);
+  const nextJudgments = buildJourneyNextJudgments(journey);
+  const flowRows = renderJourneyFlowRows(activities);
+  const sliceRows = renderReleaseSliceRows(slices, journey);
+  const storyLabels = buildStoryLabelIndex(activities);
+  const header = ['スライス', ...activities.map((activity) => activity.label)].join(' | ');
   const divider = ['---', ...activities.map(() => '---')].join(' | ');
   const rows = slices.map((slice) => [
-    `${slice.label} (${slice.status})`,
+    `${formatReleaseSliceName(slice)}（${formatJourneyStatus(slice.status)}）`,
     ...activities.map((activity) => renderJourneyCell(activity, slice))
   ].join(' | '));
   const conflicts = (journey.conflicts ?? []).length === 0
@@ -947,46 +968,235 @@ function renderJourneyMapMarkdown(journey) {
     ? '-'
     : journey.unplaced_stories.map((story) => `- ${story.story_id}: ${story.reason}`).join('\n');
   const evidenceBindings = renderEvidenceBindings(activities);
-  return `# Latest Journey Map
+  return `# VibePro Journey
 
 | 項目 | 内容 |
 |------|------|
-| Journey ID | ${journey.journey_id} |
-| Generated | ${journey.generated_at} |
-| Source Stories | ${journey.source_story_ids?.length ?? 0} |
-| Walking Skeleton | ${journey.walking_skeleton?.status ?? 'unknown'} |
-| Conflicts | ${journey.conflicts?.length ?? 0} |
-| Open Questions | ${journey.open_questions?.length ?? 0} |
+| Journey | ${journey.journey_id} |
+| 生成日時 | ${generatedAt} |
+| 対象Story | ${storyCount} |
+| 最小体験 | ${formatJourneyStatus(walkingSkeletonStatus)} |
+| Journey衝突 | ${conflictCount} |
+| 未配置Story | ${unplacedCount} |
+| 未解決の問い | ${openQuestionCount} |
 
-## Patton-style Map
+## いまの結論
+
+${headline}
+
+## 現在の体験フロー
+
+| 順 | 体験段階 | 状態 | 主なステップ | 判断 |
+|---:|---|---|---|---|
+${flowRows}
+
+## リリーススライス
+
+| スライス | 状態 | Story数 | 判断 |
+|---|---|---:|---|
+${sliceRows}
+
+## 次の判断
+
+${nextJudgments}
+
+## 監査ログ: Patton式マップ
 
 | ${header} |
 | ${divider} |
 ${rows.map((row) => `| ${row} |`).join('\n')}
 
-## Walking Skeleton
+## 監査ログ: 最小体験
 
-- Status: ${journey.walking_skeleton?.status ?? 'unknown'}
-- Required steps: ${(journey.walking_skeleton?.required_step_ids ?? []).join(', ') || '-'}
-- Covered steps: ${(journey.walking_skeleton?.covered_step_ids ?? []).join(', ') || '-'}
-- Story IDs: ${(journey.walking_skeleton?.story_ids ?? []).join(', ') || '-'}
+- 状態: ${formatJourneyStatus(walkingSkeletonStatus)}
+- 必須ステップ: ${(journey.walking_skeleton?.required_step_ids ?? []).join(', ') || '-'}
+- カバー済み: ${(journey.walking_skeleton?.covered_step_ids ?? []).join(', ') || '-'}
+- 対象Story: ${summarizeStoryRefs(journey.walking_skeleton?.story_ids ?? [], { labels: storyLabels, limit: 12 })}
 
-## Evidence Bindings
+## 監査ログ: 証跡バインディング
 
 ${evidenceBindings}
 
-## Conflicts
+## 監査ログ: Journey衝突
 
 ${conflicts}
 
-## Unplaced Stories
+## 監査ログ: 未配置Story
 
 ${unplaced}
 
-## Open Questions
+## 監査ログ: 未解決の問い
 
 ${questions}
 `;
+}
+
+function buildJourneyHeadline(journey) {
+  const walkingSkeletonStatus = journey.walking_skeleton?.status ?? 'unknown';
+  const conflictCount = journey.conflicts?.length ?? 0;
+  const openQuestionCount = journey.open_questions?.length ?? 0;
+  const unplacedCount = journey.unplaced_stories?.length ?? 0;
+  const nextSlice = (journey.release_slices ?? []).find((slice) => slice.slice_id === 'next_slice');
+  const lines = [];
+  if (walkingSkeletonStatus === 'covered' && conflictCount === 0 && openQuestionCount === 0 && unplacedCount === 0) {
+    lines.push('- 現在のJourneyは、最小体験が成立しており、未解決の衝突や未配置Storyはありません。');
+  } else if (walkingSkeletonStatus === 'needs_evidence') {
+    lines.push('- 現在のJourneyは、最小体験に不足があります。まず不足ステップを埋めるStoryまたは証跡を確認してください。');
+  } else {
+    lines.push(`- 現在のJourney状態は ${formatJourneyStatus(walkingSkeletonStatus)} です。衝突、未配置Story、未解決の問いを確認してください。`);
+  }
+  if (nextSlice?.status === 'empty') {
+    lines.push('- 次の成長領域はまだ空です。次に伸ばす体験を明示すると、Story追加とPR分割の判断がしやすくなります。');
+  }
+  if (conflictCount > 0) lines.push(`- Journey衝突が ${conflictCount} 件あります。ユーザー遷移の正本を決めるまで、関連PRでは判断材料として扱ってください。`);
+  if (unplacedCount > 0) lines.push(`- 未配置Storyが ${unplacedCount} 件あります。Journey stepへ置くか、補助Storyとして扱うかを決める必要があります。`);
+  return lines.join('\n');
+}
+
+function renderJourneyFlowRows(activities) {
+  if (!Array.isArray(activities) || activities.length === 0) return '| 1 | - | 未生成 | - | Journeyがまだ生成されていません。 |';
+  return activities.map((activity, index) => {
+    const storyCount = sumActivityStories(activity);
+    const enablerCount = sumActivityEnablers(activity);
+    const state = storyCount > 0 ? '成立' : enablerCount > 0 ? '強化中' : '未着手';
+    const steps = (activity.steps ?? [])
+      .map((step) => `${step.label}（${step.story_ids?.length ?? 0} Story${(step.enabler_story_ids?.length ?? 0) > 0 ? ` / 補助 ${step.enabler_story_ids.length}` : ''}）`)
+      .join('<br>') || '-';
+    return `| ${index + 1} | ${escapeMarkdownTableCell(activity.label)} | ${state} | ${escapeMarkdownTableCell(steps)} | ${escapeMarkdownTableCell(describeActivityJudgment(activity, state))} |`;
+  }).join('\n');
+}
+
+function renderReleaseSliceRows(slices, journey) {
+  if (!Array.isArray(slices) || slices.length === 0) return '| - | 未生成 | 0 | Journey deriveを実行してください。 |';
+  return slices.map((slice) => {
+    const storyCount = slice.story_ids?.length ?? 0;
+    return `| ${escapeMarkdownTableCell(formatReleaseSliceName(slice))} | ${formatJourneyStatus(slice.status)} | ${storyCount} | ${escapeMarkdownTableCell(describeReleaseSliceJudgment(slice, journey))} |`;
+  }).join('\n');
+}
+
+function buildJourneyNextJudgments(journey) {
+  const actions = [];
+  const nextSlice = (journey.release_slices ?? []).find((slice) => slice.slice_id === 'next_slice');
+  if (journey.walking_skeleton?.status === 'needs_evidence') {
+    const gaps = (journey.walking_skeleton.gaps ?? []).map((gap) => gap.label ?? gap.step_id).join(' / ');
+    actions.push(`- 最優先: 最小体験の不足を埋める。対象: ${gaps || '-'}`);
+  }
+  if ((journey.conflicts ?? []).length > 0) {
+    actions.push('- Journey衝突を解消する。特に同じstepで遷移先が割れているStoryは、どちらを正本にするか決める。');
+  }
+  if ((journey.unplaced_stories ?? []).length > 0) {
+    actions.push('- 未配置Storyを整理する。ユーザー体験のstepに置くか、品質・信頼・構造の補助Storyとして扱うかを決める。');
+  }
+  if (nextSlice?.status === 'empty') {
+    actions.push('- 次の成長領域を決める。今は次に強化するユーザー体験が空なので、対象体験をStoryとして切り出す。');
+  }
+  if (actions.length === 0) {
+    actions.push('- 未解決のJourney判断はありません。新しいStoryを追加するときは、この体験フローのどこに置くかを確認してください。');
+  }
+  return actions.join('\n');
+}
+
+function describeActivityJudgment(activity, state) {
+  if (state === '未着手') return 'まだ体験としては成立していません。';
+  const storyCount = sumActivityStories(activity);
+  const enablerCount = sumActivityEnablers(activity);
+  if (storyCount > 0 && enablerCount > 0) return '体験は成立しており、補助Storyで品質や信頼性を強化しています。';
+  if (storyCount > 0) return 'ユーザーが通る体験として成立しています。';
+  return '主体験ではなく、補助Storyとして体験を支えています。';
+}
+
+function describeReleaseSliceJudgment(slice, journey) {
+  if (slice.slice_id === 'walking_skeleton') {
+    return journey.walking_skeleton?.status === 'covered'
+      ? '最小体験は成立しています。'
+      : '最小体験に不足があります。';
+  }
+  if (slice.slice_id === 'next_slice') {
+    return slice.status === 'empty'
+      ? '次に伸ばす体験が未定義です。'
+      : '次の成長領域が定義されています。';
+  }
+  if (slice.slice_id === 'hardening') {
+    return slice.status === 'present'
+      ? '品質、信頼、運用、構造の補強Storyがあります。'
+      : '補強Storyはまだありません。';
+  }
+  return slice.status === 'present' ? 'Storyがあります。' : 'Storyはありません。';
+}
+
+function formatReleaseSliceName(slice) {
+  const names = {
+    walking_skeleton: '最小体験',
+    next_slice: '次の成長領域',
+    hardening: '信頼性・品質強化'
+  };
+  return names[slice.slice_id] ?? slice.label ?? slice.slice_id ?? '-';
+}
+
+function formatJourneyStatus(status) {
+  const statuses = {
+    covered: '成立',
+    present: 'あり',
+    empty: '空',
+    needs_evidence: '証跡不足',
+    not_applicable: '対象外',
+    available: '利用可能',
+    missing: '未生成',
+    unknown: '不明'
+  };
+  return statuses[status] ?? status ?? '不明';
+}
+
+function sumActivityStories(activity) {
+  return (activity.steps ?? []).reduce((sum, step) => sum + (step.story_ids?.length ?? 0), 0);
+}
+
+function sumActivityEnablers(activity) {
+  return (activity.steps ?? []).reduce((sum, step) => sum + (step.enabler_story_ids?.length ?? 0), 0);
+}
+
+function buildStoryLabelIndex(activities) {
+  const labels = {};
+  for (const activity of activities ?? []) {
+    for (const step of activity.steps ?? []) {
+      Object.assign(labels, step.story_labels ?? {}, step.enabler_story_labels ?? {});
+    }
+  }
+  return labels;
+}
+
+function selectStoryLabels(labels = {}, storyIds = []) {
+  return Object.fromEntries(
+    [...new Set(storyIds)]
+      .map((storyId) => [storyId, labels[storyId] ?? formatStoryIdForHuman(storyId)])
+  );
+}
+
+function summarizeStoryRefs(storyIds, { limit = 8, labels = {} } = {}) {
+  if (!Array.isArray(storyIds) || storyIds.length === 0) return '-';
+  const visible = storyIds.slice(0, limit).map((storyId) => formatStoryRefForHuman(storyId, labels));
+  const hidden = storyIds.length - visible.length;
+  return hidden > 0 ? `${visible.join(', ')} ほか${hidden}件` : visible.join(', ');
+}
+
+function formatStoryRefForHuman(storyId, labels = {}) {
+  const label = labels[storyId];
+  if (label && label !== storyId) return label;
+  return formatStoryIdForHuman(storyId);
+}
+
+function formatStoryTitleForHuman(title, storyId) {
+  const value = String(title ?? '').trim();
+  if (!value || value === storyId) return formatStoryIdForHuman(storyId);
+  return value.replace(/^["']|["']$/g, '');
+}
+
+function formatStoryIdForHuman(storyId) {
+  return String(storyId)
+    .replace(/^story-/, '')
+    .replace(/^vibepro-/, '')
+    .replace(/^product-/, '')
+    .replace(/-/g, ' ');
 }
 
 function renderEvidenceBindings(activities) {
@@ -999,13 +1209,25 @@ function renderEvidenceBindings(activities) {
         evidenceByType.get(evidence.type).push(evidence.ref);
       }
       const summary = [...evidenceByType.entries()]
-        .map(([type, refs]) => `${type}: ${[...new Set(refs)].slice(0, 6).join(', ')}`)
+        .map(([type, refs]) => `${formatEvidenceType(type)}: ${[...new Set(refs)].slice(0, 6).join(', ')}`)
         .join('; ');
-      rows.push(`| ${activity.activity_id}/${step.step_id} | ${(step.story_ids ?? []).join(', ') || '-'} | ${(step.enabler_story_ids ?? []).join(', ') || '-'} | ${summary || '-'} |`);
+      rows.push(`| ${escapeMarkdownTableCell(`${activity.label}/${step.label}`)} | ${escapeMarkdownTableCell(summarizeStoryRefs(step.story_ids ?? [], { labels: step.story_labels ?? {} }))} | ${escapeMarkdownTableCell(summarizeStoryRefs(step.enabler_story_ids ?? [], { labels: step.enabler_story_labels ?? {} }))} | ${escapeMarkdownTableCell(summary || '-')} |`);
     }
   }
   if (rows.length === 0) return '-';
-  return `| Step | Stories | Enablers | Evidence |\n|------|---------|----------|----------|\n${rows.join('\n')}`;
+  return `| ステップ | Story | 補助Story | 証跡 |\n|------|-------|---------|------|\n${rows.join('\n')}`;
+}
+
+function formatEvidenceType(type) {
+  const labels = {
+    source_path: '正本',
+    spec_clause: '仕様',
+    surface: '対象面',
+    gate_evidence: '検証',
+    workflow_position: '工程',
+    frontmatter: '明示設定'
+  };
+  return labels[type] ?? type;
 }
 
 function renderJourneyCell(activity, slice) {
@@ -1015,11 +1237,15 @@ function renderJourneyCell(activity, slice) {
       const storyIds = (step.story_ids ?? []).filter((storyId) => sliceStoryIds.has(storyId));
       const enablerIds = (step.enabler_story_ids ?? []).filter((storyId) => sliceStoryIds.has(storyId));
       if (storyIds.length === 0 && enablerIds.length === 0) return null;
-      const suffix = enablerIds.length > 0 ? ` enabler:${enablerIds.join(',')}` : '';
-      return `${step.label}: ${storyIds.join(',') || '-'}${suffix}`;
+      const suffix = enablerIds.length > 0 ? ` / 補助: ${summarizeStoryRefs(enablerIds, { labels: step.enabler_story_labels ?? {}, limit: 3 })}` : '';
+      return `${step.label}: ${summarizeStoryRefs(storyIds, { labels: step.story_labels ?? {}, limit: 3 })}${suffix}`;
     })
     .filter(Boolean);
   return items.length > 0 ? items.join('<br>') : '-';
+}
+
+function escapeMarkdownTableCell(value) {
+  return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
 }
 
 function buildSourceDigest(stories) {

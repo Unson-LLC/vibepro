@@ -94,9 +94,20 @@ status: active
   assert.ok(journey.release_slices.find((slice) => slice.slice_id === 'walking_skeleton').story_ids.includes('story-product-auth-account-access'));
 
   const markdown = await readFile(path.join(repo, '.vibepro', 'journey', 'latest-journey.md'), 'utf8');
-  assert.match(markdown, /Patton-style Map/);
-  assert.match(markdown, /Walking Skeleton/);
-  assert.match(markdown, /story-product-first-value/);
+  // story-vibepro-readable-journey-markdown ac:1
+  // Journey Markdownは、Story ID羅列より前に日本語の判断サマリーを表示する。
+  assert.match(markdown, /# VibePro Journey/);
+  assert.match(markdown, /## いまの結論/);
+  assert.match(markdown, /最小体験が成立/);
+  assert.match(markdown, /## 現在の体験フロー/);
+  assert.match(markdown, /## リリーススライス/);
+  assert.match(markdown, /次の成長領域/);
+  assert.match(markdown, /## 監査ログ: Patton式マップ/);
+  assert.match(markdown, /First value/);
+  assert.doesNotMatch(markdown, /Walking Skeleton/);
+  assert.doesNotMatch(markdown, /Next Slice/);
+  assert.doesNotMatch(markdown, /Hardening/);
+  assert.doesNotMatch(markdown.slice(0, markdown.indexOf('## 監査ログ: Patton式マップ')), /story-product-first-value/);
 });
 
 test('journey derive binds spec clauses, graphify surfaces, and gate evidence to steps', async () => {
@@ -164,10 +175,13 @@ title: Account access Spec
   assert.ok(signupStep.evidence.some((item) => item.type === 'gate_evidence' && item.ref === 'gate_dag:ready'));
 
   const markdown = await readFile(path.join(repo, '.vibepro', 'journey', 'latest-journey.md'), 'utf8');
-  assert.match(markdown, /Evidence Bindings/);
-  assert.match(markdown, /spec_clause: INV-AUTH-1/);
-  assert.match(markdown, /surface: .*route:src\/app\/signup\/page\.tsx/);
-  assert.match(markdown, /gate_evidence: unit:pass/);
+  // story-vibepro-readable-journey-markdown ac:2
+  // 詳細証跡は監査ログとして残し、type名は読み手向けの日本語ラベルへ寄せる。
+  assert.match(markdown, /監査ログ: 証跡バインディング/);
+  assert.match(markdown, /Account access/);
+  assert.match(markdown, /仕様: INV-AUTH-1/);
+  assert.match(markdown, /対象面: .*route:src\/app\/signup\/page\.tsx/);
+  assert.match(markdown, /検証: unit:pass/);
 });
 
 test('journey derive surfaces conflicting destinations on the same step', async () => {
