@@ -33,6 +33,10 @@ async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
+async function writeJson(filePath, value) {
+  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
 async function pathExists(filePath) {
   try {
     await stat(filePath);
@@ -255,6 +259,182 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
   assert.match(gitignore, /^\.vibepro\/$/m);
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
+});
+
+test('pr prepare reports preferred managed worktree gate without blocking', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'managed-worktree-preferred.js'), 'export const preferred = true;\n');
+  await git(repo, ['add', 'src/managed-worktree-preferred.js']);
+  await git(repo, ['commit', '-m', 'feat: add preferred worktree fixture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const gate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate.status, 'needs_review');
+  assert.equal(gate.required, false);
+  assert.equal(prepare.pr_context.managed_worktree_gate.status, 'needs_review');
+  assert.equal(prepare.pr_context.gate_dag.summary.managed_worktree_status, 'needs_review');
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((node) => node.id === 'gate:managed_worktree'), false);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- 管理worktree: needs_review/);
+});
+
+test('managed worktree gate is not applicable when disabled', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution.managed_worktree = 'disabled';
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'managed-worktree-disabled.js'), 'export const disabled = true;\n');
+  await git(repo, ['add', 'src/managed-worktree-disabled.js']);
+  await git(repo, ['commit', '-m', 'feat: add disabled worktree fixture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const gate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate.status, 'not_applicable');
+  assert.equal(gate.required, false);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- 管理worktree: disabled/);
+});
+
+test('required managed worktree gate blocks evidence commands outside managed worktree', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution.managed_worktree = 'required';
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'managed-worktree-required.js'), 'export const required = true;\n');
+  await git(repo, ['add', 'src/managed-worktree-required.js']);
+  await git(repo, ['commit', '-m', 'feat: add required worktree fixture']);
+
+  const prepareResult = await runCliWithStdout(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(prepareResult.exitCode, 1);
+  assert.match(prepareResult.stderr, /managed worktree required for pr prepare/);
+
+  let verifyStderr = '';
+  const verifyResult = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--summary',
+    'unit passed'
+  ], {
+    stderr: { write: (text) => { verifyStderr += text; } }
+  });
+  assert.equal(verifyResult.exitCode, 1);
+  assert.match(verifyStderr, /managed worktree required for verify record/);
+
+  let reviewStderr = '';
+  const reviewResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence passed',
+    '--inspection-summary',
+    'checked managed worktree gate',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'gate-agent',
+    '--agent-closed'
+  ], {
+    stderr: { write: (text) => { reviewStderr += text; } }
+  });
+  assert.equal(reviewResult.exitCode, 1);
+  assert.match(reviewStderr, /managed worktree required for review record/);
+});
+
+test('required managed worktree gate accepts local execution state or accepted waiver', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution.managed_worktree = 'required';
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    managed_worktree: {
+      mode: 'required',
+      status: 'available',
+      required: true,
+      path: repo,
+      branch: 'feature/test-story'
+    }
+  });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'managed-worktree-passed.js'), 'export const passed = true;\n');
+  await git(repo, ['add', 'src/managed-worktree-passed.js']);
+  await git(repo, ['commit', '-m', 'feat: add passed worktree fixture']);
+
+  const prepareResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(prepareResult.exitCode, 0);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  assert.equal(prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree').status, 'passed');
+
+  const outsideRepo = await makeGitRepoWithStory();
+  const outsideConfigPath = path.join(outsideRepo, '.vibepro', 'config.json');
+  const outsideConfig = await readJson(outsideConfigPath);
+  outsideConfig.execution.managed_worktree = 'required';
+  await writeJson(outsideConfigPath, outsideConfig);
+  await runCli([
+    'decision',
+    'record',
+    outsideRepo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:managed_worktree',
+    '--summary',
+    'Emergency fix can run outside the managed worktree.',
+    '--reason',
+    'CI recovery requires recording evidence before a managed worktree is available.',
+    '--reviewer',
+    'codex',
+    '--status',
+    'accepted'
+  ]);
+  const verifyResult = await runCli([
+    'verify',
+    'record',
+    outsideRepo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--summary',
+    'unit passed with accepted managed worktree waiver'
+  ]);
+  assert.equal(verifyResult.exitCode, 0);
 });
 
 test('decision record captures noise waiver and secret exposure in auditable artifacts', async () => {
@@ -7583,11 +7763,26 @@ test('pr prepare surfaces preferred managed worktree warning when run outside th
   const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
   assert.equal(gate?.status, 'needs_review');
   assert.equal(gate?.required, false);
-  assert.match(gate?.reason ?? '', /not recorded managed worktree/);
+  assert.match(gate?.reason ?? '', /outside VibePro managed worktree/);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /リリース判断Warning: Managed Worktree Gate/);
-  assert.match(prBody, /warning detail: Managed Worktree Gate: repo root .*not recorded managed worktree/);
-  assert.match(prBody, /warning action: Run the command from the recorded VibePro managed worktree/);
+  assert.match(prBody, /warning detail: Managed Worktree Gate: .*outside VibePro managed worktree/);
+});
+
+test('managed worktree gate keeps generated gate DAG acyclic around PR body contract', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src-managed-dag.js'), 'export const managedDag = true;\n');
+  await git(repo, ['add', 'src-managed-dag.js']);
+  await git(repo, ['commit', '-m', 'feat: add managed dag fixture']);
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(started.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_body_contract' && edge.to === 'gate:managed_worktree'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:managed_worktree' && edge.to === 'gate:change_classification'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:managed_worktree' && edge.to === 'gate:pr_body_contract'), false);
 });
 
 test('managed worktree command context uses current config mode after execution state exists', async () => {
@@ -7619,9 +7814,10 @@ test('managed worktree command context uses current config mode after execution 
   const disabledPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(disabledPrepare.exitCode, 0);
   const gate = disabledPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
-  assert.equal(gate, undefined);
+  assert.equal(gate?.status, 'not_applicable');
+  assert.equal(gate?.required, false);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.doesNotMatch(prBody, /Managed Worktree Gate/);
+  assert.match(prBody, /- 管理worktree: disabled/);
 });
 
 test('managed worktree command context uses source repo config from an existing managed worktree', async () => {
@@ -7646,7 +7842,7 @@ test('managed worktree command context uses source repo config from an existing 
   const requiredPrepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(requiredPrepare.exitCode, 0);
   const requiredGate = requiredPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
-  assert.equal(requiredGate?.status, 'satisfied');
+  assert.equal(requiredGate?.status, 'passed');
   assert.equal(requiredGate?.required, true);
 
   const disabledConfig = await readJson(configPath);
@@ -7656,7 +7852,8 @@ test('managed worktree command context uses source repo config from an existing 
   const disabledPrepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(disabledPrepare.exitCode, 0);
   const disabledGate = disabledPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
-  assert.equal(disabledGate, undefined);
+  assert.equal(disabledGate?.status, 'not_applicable');
+  assert.equal(disabledGate?.required, false);
 });
 
 test('generated managed worktree pr prepare path keeps execution binding', async () => {
@@ -7678,7 +7875,7 @@ test('generated managed worktree pr prepare path keeps execution binding', async
   const prepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const gate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
-  assert.equal(gate?.status, 'satisfied');
+  assert.equal(gate?.status, 'passed');
   assert.equal(gate?.required, true);
 
   const originalState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
@@ -7726,7 +7923,7 @@ test('managed worktree pr prepare recovers execution binding from the source che
   const prepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const gate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
-  assert.equal(gate?.status, 'satisfied');
+  assert.equal(gate?.status, 'passed');
   assert.equal(gate?.managed_worktree?.path, worktreePath);
   assert.equal(gate?.current_head_sha, prepare.result.preparation.git.head_sha);
   assert.equal(prepare.result.preparation.pr_context.managed_worktree.managed_worktree.path, worktreePath);

@@ -45,6 +45,7 @@ import { readDecisionRecordsIfExists, summarizeDecisionRecords } from './decisio
 import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environment-graph.js';
 import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
+import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -227,6 +228,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const decisionRecords = workspace.initialized
     ? await progress.stage('read_decision_records', () => readDecisionRecordsIfExists(root, story.story_id))
     : null;
+  const managedWorktreeGate = workspace.initialized
+    ? await progress.stage('evaluate_managed_worktree_gate', () => buildManagedWorktreePolicyGate(root, {
+      storyId: story.story_id,
+      decisionRecords
+    }))
+    : null;
   const prContext = await progress.stage('build_pr_context', () => buildPrContext(root, {
     story,
     taskContext,
@@ -235,7 +242,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     scope,
     latestStoryRun,
     verificationEvidence,
-    decisionRecords
+    decisionRecords,
+    managedWorktreeGate
   }));
   prContext.toolchain = toolchain;
   const suggestedBranch = options.branchName ?? buildBranchName(story);
@@ -1442,6 +1450,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const decisionSection = renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan });
   const reviewerChangeMap = renderReviewerChangeMap(fileGroups);
   const explicitNonGoals = renderExplicitNonGoals({ git, fileGroups });
+  const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   const source = prContext.story_source;
   const storyLabel = formatPrStoryLabel(story, source);
   const requirementTitle = source.requirement_title ?? source.title ?? story.title ?? story.story_id;
@@ -1501,6 +1510,7 @@ ${reviewerChangeMap}
 ## 監査ログ
 - ここから下は VibePro の機械証跡です。レビュー・マージ判断は上部の判断、変更内容、レビュー観点、検証、リスクを先に確認してください。
 - Gate / Agent Review / split plan / 実行メタデータは詳細確認と再現性のために残します。
+- 管理worktree: ${managedWorktreeStatus}
 
 ## 概要
 - Story: ${storyLabel}
@@ -1602,6 +1612,7 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
   });
   const gateNote = buildHumanGateNote(unresolved, warnings);
   const scopeNote = buildScopeDecisionNote(scope, splitPlan);
+  const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   return `## このPRで決めたいこと
 - このPRで閉じる問い: ${reviewQuestion}
 - Story: ${storyLabel}
@@ -1610,6 +1621,7 @@ function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, spl
 - 判断: ${decision}
 - レビュー入口: ${primaryReviewAreas}
 - Gate状況: ${gateNote}
+- 管理worktree: ${managedWorktreeStatus}
 - Scope判断: ${scopeNote}
 - 変更規模: ${git.changed_files.length} files
 
@@ -2747,7 +2759,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   const hasSingleChangedStoryDoc = storyDocs.length === 1 && Boolean(primaryStory?.path);
@@ -2866,6 +2878,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     agent_reviews: agentReviews,
     explore_evidence: exploreEvidence,
     managed_worktree: managedWorktreeContext,
+    managed_worktree_gate: managedWorktreeGate,
     verification_evidence: boundVerificationEvidence,
     decision_records: decisionRecords ? {
       ...decisionRecords,
@@ -2906,7 +2919,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     git,
     scope,
     prRoute,
-    managedWorktreeContext
+    managedWorktreeContext,
+    managedWorktreeGate
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -4857,7 +4871,8 @@ function buildGateDag({
   git = null,
   scope = null,
   prRoute = null,
-  managedWorktreeContext = null
+  managedWorktreeContext = null,
+  managedWorktreeGate = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -4929,7 +4944,7 @@ function buildGateDag({
   const ciStatusOrWaiverGate = buildCiStatusOrWaiverGate(prRoute, verificationEvidence, decisionRecords);
   const vibeproArtifactPolicyGate = buildVibeproArtifactPolicyGate(fileGroups, prRoute, decisionRecords);
   const splitResolutionGate = buildSplitResolutionGate(scope, prRoute, decisionRecords);
-  const managedWorktreeGate = buildManagedWorktreeGate(managedWorktreeContext);
+  const effectiveManagedWorktreeGate = managedWorktreeGate ?? buildManagedWorktreeGate(managedWorktreeContext);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
@@ -5009,7 +5024,7 @@ function buildGateDag({
     ...(ciStatusOrWaiverGate ? [ciStatusOrWaiverGate] : []),
     ...(vibeproArtifactPolicyGate ? [vibeproArtifactPolicyGate] : []),
     ...(splitResolutionGate ? [splitResolutionGate] : []),
-    ...(managedWorktreeGate ? [managedWorktreeGate] : []),
+    ...(effectiveManagedWorktreeGate ? [effectiveManagedWorktreeGate] : []),
     ...(safetySecretSurfaceGate ? [safetySecretSurfaceGate] : []),
     ...(deployVerificationGate ? [deployVerificationGate] : []),
     changeClassificationGate,
@@ -5088,10 +5103,6 @@ function buildGateDag({
       { from: 'gate:pr_route_classification', to: 'gate:split_resolution' },
       { from: 'gate:split_resolution', to: 'gate:pr_body_contract' }
     ] : []),
-    ...(managedWorktreeGate ? [
-      { from: 'gate:pr_route_classification', to: 'gate:managed_worktree' },
-      { from: 'gate:managed_worktree', to: 'gate:pr_body_contract' }
-    ] : []),
     ...(safetySecretSurfaceGate ? [
       { from: 'gate:pr_route_classification', to: 'gate:safety_secret_surface' },
       { from: 'gate:safety_secret_surface', to: 'gate:pr_body_contract' }
@@ -5100,7 +5111,12 @@ function buildGateDag({
       { from: 'gate:pr_route_classification', to: 'gate:deploy_verification' },
       { from: 'gate:deploy_verification', to: 'gate:pr_body_contract' }
     ] : []),
-    { from: 'gate:pr_body_contract', to: 'gate:change_classification' },
+    ...(effectiveManagedWorktreeGate ? [
+      { from: 'gate:pr_body_contract', to: 'gate:managed_worktree' },
+      { from: 'gate:managed_worktree', to: 'gate:change_classification' }
+    ] : [
+      { from: 'gate:pr_body_contract', to: 'gate:change_classification' }
+    ]),
     { from: 'gate:change_classification', to: 'gate:pr_freshness' },
     { from: 'gate:pr_freshness', to: 'architecture' },
     { from: 'gate:pr_freshness', to: 'spec' },
@@ -5170,7 +5186,7 @@ function buildGateDag({
     ciStatusOrWaiverGate,
     vibeproArtifactPolicyGate,
     splitResolutionGate,
-    managedWorktreeGate,
+    effectiveManagedWorktreeGate,
     architectureGate,
     specGate,
     designDiagramsGate,
@@ -5207,7 +5223,8 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
       requirement_status: requirementGate.status,
-      decision_record_status: decisionRecordGate.status
+      decision_record_status: decisionRecordGate.status,
+      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
     },
     nodes: allNodes,
     edges
@@ -6620,6 +6637,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
       if (gate.id === 'gate:pr_route_classification') return 'PR Route Classification Gate requires a route before VibePro can choose the correct body contract and evidence path.';
       if (gate.id === 'gate:pr_body_contract') return 'PR Body Contract Gate requires the PR text to expose the route-specific decision question, source of truth, gates, and waiver/evidence clauses.';
+      if (gate.id === 'gate:managed_worktree') return 'Managed Worktree Gate requires running VibePro evidence, review, and PR creation commands from the recorded `vibepro execute start` managed_worktree.path, or an accepted `gate:managed_worktree` waiver decision.';
       if (gate.id === 'gate:mirror_source_traceability') return 'Mirror/Release Source Traceability Gate requires the source PR, source commit, or upstream ref to be cited before merge.';
       if (gate.id === 'gate:ci_status_or_waiver') return 'CI Status / Waiver Gate requires target CI, source CI inheritance, or an explicit waiver for mirror/release routes.';
       if (gate.id === 'gate:vibepro_artifact_policy') return 'VibePro Artifact Policy Gate requires an explicit decision for committed `.vibepro/` diagnostic artifacts.';
@@ -6682,11 +6700,12 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:bug_physics_triage' && gate.status !== 'passed') return true;
   if (gate.type === 'bug_physics_profile_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:bug_physics_contradiction_feedback' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:managed_worktree' && !['passed', 'bypassed', 'not_applicable', 'satisfied'].includes(gate.status)) return true;
   if (gate.id === 'gate:mirror_source_traceability' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
-  if (gate.id === 'gate:managed_worktree' && gate.required && gate.status !== 'satisfied') return true;
+  if (gate.id === 'gate:managed_worktree' && gate.required && !['passed', 'bypassed', 'not_applicable', 'satisfied'].includes(gate.status)) return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;
   return gate.status === 'failed' || gate.status === 'contradicted';

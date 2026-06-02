@@ -1092,10 +1092,17 @@ export async function runCli(argv, io = {}) {
       }
       if (subcommand === 'record') {
         const storyId = getOption(rest, '--id');
-        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
-          storyId,
-          commandName: 'decision record'
-        });
+        const isManagedWorktreeWaiver = getOption(rest, '--type') === 'waiver'
+          && getOption(rest, '--source') === 'gate:managed_worktree';
+        const managedWorktreeContext = isManagedWorktreeWaiver
+          ? await evaluateManagedWorktreeCommandContext(repoRoot, {
+            storyId,
+            commandName: 'decision record'
+          })
+          : await assertManagedWorktreeCommandAllowed(repoRoot, {
+            storyId,
+            commandName: 'decision record'
+          });
         const result = await recordDecision(repoRoot, {
           storyId,
           type: getOption(rest, '--type'),
