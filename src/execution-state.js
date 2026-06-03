@@ -138,6 +138,8 @@ export function renderExecutionStateSummary(result) {
   const actions = state.next_actions?.length
     ? state.next_actions.map((action) => `- ${action}`).join('\n')
     : '- none';
+  const managedWorktree = formatManagedWorktreeSummary(state.managed_worktree);
+  const executionDag = formatExecutionDagSummary(state.execution_dag);
   return `# VibePro Execution State
 
 - story: ${state.story_id}
@@ -145,7 +147,17 @@ export function renderExecutionStateSummary(result) {
 - status: ${state.completion_status}
 - phase: ${state.current_phase}
 - blocking_gate: ${state.blocking_gate?.id ?? 'none'}
+- managed_worktree: ${managedWorktree.headline}
+- execution_dag: ${executionDag.headline}
 - artifact: ${result.artifact ?? '-'}
+
+## Managed Worktree
+
+${managedWorktree.details}
+
+## Execution DAG
+
+${executionDag.details}
 
 ## Next Actions
 
@@ -155,17 +167,69 @@ ${actions}
 
 export function renderExecutionNextSummary(result) {
   const next = result.next ?? result;
+  const state = result.state ?? result;
   const actions = next.next_actions?.length
     ? next.next_actions.map((action) => `- ${action}`).join('\n')
     : '- none';
+  const managedWorktree = formatManagedWorktreeSummary(state.managed_worktree);
+  const executionDag = formatExecutionDagSummary(state.execution_dag);
   return `# VibePro Next Action
 
 - status: ${next.completion_status}
 - phase: ${next.current_phase}
 - blocking_gate: ${next.blocking_gate?.id ?? 'none'}
+- managed_worktree: ${managedWorktree.headline}
+- execution_dag: ${executionDag.headline}
+
+## Managed Worktree
+
+${managedWorktree.details}
+
+## Execution DAG
+
+${executionDag.details}
 
 ${actions}
 `;
+}
+
+function formatManagedWorktreeSummary(managedWorktree) {
+  if (!managedWorktree) {
+    return {
+      headline: 'not_recorded',
+      details: '- status: not_recorded'
+    };
+  }
+  const headline = `${managedWorktree.mode ?? 'unknown'}/${managedWorktree.status ?? 'unknown'}`;
+  return {
+    headline,
+    details: [
+      `- mode: ${managedWorktree.mode ?? '-'}`,
+      `- status: ${managedWorktree.status ?? '-'}`,
+      `- path: ${managedWorktree.path ?? '-'}`,
+      `- branch: ${managedWorktree.branch ?? '-'}`,
+      `- actual_branch: ${managedWorktree.actual_branch ?? '-'}`,
+      `- branch_match: ${managedWorktree.branch_match === false ? 'false' : managedWorktree.branch_match === true ? 'true' : '-'}`,
+      `- dirty: ${managedWorktree.dirty === true ? 'true' : managedWorktree.dirty === false ? 'false' : '-'}`
+    ].join('\n')
+  };
+}
+
+function formatExecutionDagSummary(executionDag) {
+  const nodes = Array.isArray(executionDag?.nodes) ? executionDag.nodes : [];
+  if (nodes.length === 0) {
+    return {
+      headline: 'not_recorded',
+      details: '- nodes: none'
+    };
+  }
+  const blockers = nodes.filter((node) => ['blocked', 'needs_evidence', 'failed'].includes(node.status));
+  return {
+    headline: `${nodes.length} nodes, ${blockers.length} blockers`,
+    details: nodes
+      .map((node) => `- ${node.id}: ${node.status}${node.reason ? ` (${node.reason})` : ''}`)
+      .join('\n')
+  };
 }
 
 async function buildExecutionState(repoRoot, options = {}) {

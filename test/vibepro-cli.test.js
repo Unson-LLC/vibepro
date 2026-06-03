@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmod, mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, stat, symlink, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -45,6 +45,24 @@ async function pathExists(filePath) {
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function runCliWithStdout(args) {
+  let stdout = '';
+  let stderr = '';
+  const result = await runCli(args, {
+    stdout: {
+      write(chunk) {
+        stdout += chunk;
+      }
+    },
+    stderr: {
+      write(chunk) {
+        stderr += chunk;
+      }
+    }
+  });
+  return { ...result, stdout, stderr };
 }
 
 async function makeFakeGh(pr) {
@@ -6514,6 +6532,19 @@ title: PR準備 Spec
   assert.equal(next.exitCode, 0);
   assert.equal(next.result.next.current_phase, 'create_pr');
   assert.equal(next.result.next.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+
+  const statusText = await runCliWithStdout(['execute', 'status', repo, '--story-id', 'story-pr-prepare']);
+  assert.equal(statusText.exitCode, 0);
+  assert.match(statusText.stdout, /managed_worktree: preferred\/created/);
+  assert.match(statusText.stdout, /## Managed Worktree/);
+  assert.match(statusText.stdout, new RegExp(`path: ${ready.managed_worktree.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  assert.match(statusText.stdout, /worktree_created: passed/);
+  assert.match(statusText.stdout, /branch_bound: passed/);
+
+  const nextText = await runCliWithStdout(['execute', 'next', repo, '--story-id', 'story-pr-prepare']);
+  assert.equal(nextText.exitCode, 0);
+  assert.match(nextText.stdout, /managed_worktree: preferred\/created/);
+  assert.match(nextText.stdout, /execution_dag: /);
 });
 
 test('execute start does not initialize or dirty an uninitialized repository', async () => {
@@ -6522,6 +6553,66 @@ test('execute start does not initialize or dirty an uninitialized repository', a
   const result = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 1);
   assert.equal(await pathExists(path.join(repo, '.vibepro')), false);
+});
+
+test('execute start refuses to reuse an existing worktree on a foreign branch', async () => {
+  const repo = await makeGitRepoWithStory();
+  const worktreePath = path.join(repo, '.worktrees', 'vibepro', 'story-pr-prepare-foreign');
+  await mkdir(path.dirname(worktreePath), { recursive: true });
+  await git(repo, ['worktree', 'add', worktreePath, '-b', 'foreign', 'main']);
+
+  const result = await runCliWithStdout([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    worktreePath
+  ]);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /managed worktree branch mismatch/);
+});
+
+test('execute start recognizes an existing managed worktree through a symlinked path', async () => {
+  const repo = await makeGitRepoWithStory();
+  const realWorktreePath = path.join(repo, '.worktrees', 'vibepro', 'story-pr-prepare-real');
+  const aliasRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-worktree-alias-'));
+  const aliasPath = path.join(aliasRoot, 'story-pr-prepare-real');
+
+  const first = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    realWorktreePath
+  ]);
+  assert.equal(first.exitCode, 0);
+  await symlink(realWorktreePath, aliasPath);
+
+  const second = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    aliasPath,
+    '--json'
+  ]);
+
+  assert.equal(second.exitCode, 0);
+  assert.equal(second.result.state.managed_worktree.status, 'reused');
+  assert.equal(second.result.state.managed_worktree.branch_match, true);
 });
 
 test('execute start quarantines corrupt existing execution state before writing', async () => {

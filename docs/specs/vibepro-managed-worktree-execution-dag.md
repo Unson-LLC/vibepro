@@ -12,6 +12,7 @@ title: VibePro管理worktree Execution DAG Spec
 - 管理branchは、ユーザーが `--branch` を渡さない限り `vibepro/<story-id>-<shortid>` のような決定的prefixを使う。
 - VibeProはworktree metadataを `.vibepro/executions/<story-id>/state.json` に書き込む。
 - `vibepro execute status/next/reconcile` はExecution DAG statusと管理worktree statusを含める。
+- 既存worktreeを再利用する場合、pathは実pathで照合し、実branchが記録予定branchと一致しない場合は再利用してはいけない。
 - `vibepro task execute`, `vibepro verify record`, `vibepro review record`, `vibepro pr prepare`, `vibepro pr create` は、state fileが存在する場合、Storyの管理worktree内で実行されているかを検証する。
 - `vibepro execute merge` をVibePro管理のmerge経路として導入する。ただし明示的なユーザー意図を必須にし、`pr create` から暗黙実行してはいけない。
 - `vibepro execute cleanup` は、recorded executionとbranch/HEAD/stateが一致するVibePro所有worktreeだけを削除する。
