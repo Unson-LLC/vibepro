@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
-import { initWorkspace } from './workspace.js';
+import { getWorkspaceDir, initWorkspace } from './workspace.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
 import { renderAgentHarnessStatus, scanAgentHarness } from './agent-harness-scanner.js';
@@ -85,6 +85,12 @@ import {
   updateExecutionStateFromPrCreate,
   updateExecutionStateFromPrPrepare
 } from './execution-state.js';
+import {
+  assertManagedWorktreeCommandAllowed,
+  buildManagedWorktreeCommandBinding,
+  buildManagedWorktreeCommandWarning,
+  evaluateManagedWorktreeCommandContext
+} from './managed-worktree.js';
 import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
@@ -129,6 +135,7 @@ import {
   renderStoryPlanSummary,
   renderStoryRuns,
   renderStoryStatus,
+  resolveStoryContext,
   selectStory
 } from './story-manager.js';
 import {
@@ -253,7 +260,7 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
-  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--json]
+  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -406,7 +413,7 @@ Usage:
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--json]
-  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--json]
+  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
@@ -438,7 +445,7 @@ Usage:
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
-  'journey',
+  'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
   'design-modernize', 'design-system', 'explore', 'performance',
   'nocodb', 'repo-status'
@@ -867,30 +874,47 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
       if (subcommand === 'flow') {
+        const storyId = getOption(rest, '--id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify flow'
+        });
         const result = await runFlowVerification(repoRoot, {
           baseUrl: getOption(rest, '--base-url'),
-          storyId: getOption(rest, '--id'),
+          storyId,
           runId: getOption(rest, '--run-id'),
           journeyId: getOption(rest, '--journey'),
           allowMutation: hasFlag(rest, '--allow-mutation'),
           headed: hasFlag(rest, '--headed'),
           basicAuth: getOption(rest, '--basic-auth'),
           basicAuthEnv: getOption(rest, '--basic-auth-env'),
-          env: io.env
+          env: io.env,
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.verification?.story_id ?? storyId,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.verification, null, 2)}\n`
           : renderFlowVerificationSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify record'
+        });
         const result = await recordVerificationEvidence(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           kind: getOption(rest, '--kind'),
           status: getOption(rest, '--status'),
           command: getOption(rest, '--command'),
           summary: getOption(rest, '--summary'),
-          artifact: getOption(rest, '--artifact')
+          artifact: getOption(rest, '--artifact'),
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
         await reconcileExecutionState(repoRoot, {
           storyId: result.evidence.story_id,
@@ -913,8 +937,13 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
       if (subcommand === 'prepare') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'review prepare'
+        });
         const result = await prepareAgentReview(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           stage: getOption(rest, '--stage'),
           roles: [
             ...getOptions(rest, '--role'),
@@ -932,8 +961,13 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'start') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'review start'
+        });
         const result = await startAgentReviewLifecycle(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           stage: getOption(rest, '--stage'),
           role: getOption(rest, '--role'),
           agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
@@ -956,8 +990,13 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'close') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'review close'
+        });
         const result = await closeAgentReviewLifecycle(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           stage: getOption(rest, '--stage'),
           role: getOption(rest, '--role'),
           agentSystem: getOption(rest, '--agent-system') ?? getOption(rest, '--reviewer-system'),
@@ -976,6 +1015,11 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'review record'
+        });
         const inputPath = getOption(rest, '--input');
         const stdinText = hasFlag(rest, '--from-stdin')
           ? inputPath
@@ -983,7 +1027,7 @@ export async function runCli(argv, io = {}) {
             : await readStdin(io.stdin ?? process.stdin)
           : '';
         const result = await recordAgentReview(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           stage: getOption(rest, '--stage'),
           role: getOption(rest, '--role'),
           status: getOption(rest, '--status'),
@@ -1006,7 +1050,9 @@ export async function runCli(argv, io = {}) {
           inspectionSummary: getOption(rest, '--inspection-summary'),
           inspectionEvidence: getOption(rest, '--inspection-evidence'),
           recordedBy: getOption(rest, '--recorded-by'),
-          stdinText
+          stdinText,
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
         await reconcileExecutionState(repoRoot, {
           storyId: result.review?.story_id ?? result.summary?.story_id,
@@ -1018,14 +1064,16 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'status') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
+          storyId,
+          commandName: 'review status'
+        });
         const result = await getAgentReviewStatus(repoRoot, {
-          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          storyId,
           stage: getOption(rest, '--stage')
         });
-        await reconcileExecutionState(repoRoot, {
-          storyId: result.story_id,
-          target: 'pr_create'
-        }).catch(() => null);
+        void managedWorktreeContext;
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewStatusSummary(result));
@@ -1043,8 +1091,13 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
       }
       if (subcommand === 'record') {
+        const storyId = getOption(rest, '--id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'decision record'
+        });
         const result = await recordDecision(repoRoot, {
-          storyId: getOption(rest, '--id'),
+          storyId,
           type: getOption(rest, '--type'),
           source: getOption(rest, '--source'),
           sourceStatus: getOption(rest, '--source-status'),
@@ -1055,8 +1108,13 @@ export async function runCli(argv, io = {}) {
           status: getOption(rest, '--status'),
           secretLocation: getOption(rest, '--secret-location'),
           secretAction: getOption(rest, '--secret-action'),
-          stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(stdin) : ''
+          stdinText: hasFlag(rest, '--from-stdin') ? await readStdin(stdin) : '',
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.decision?.story_id ?? storyId,
+          target: 'pr_create'
+        }).catch(() => null);
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderDecisionRecordSummary(result));
@@ -1115,6 +1173,8 @@ export async function runCli(argv, io = {}) {
         storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
         target: getOption(rest, '--target') ?? 'pr_create',
         baseRef: getOption(rest, '--base'),
+        branchName: getOption(rest, '--branch'),
+        worktreePath: getOption(rest, '--worktree-path'),
         taskId: getOption(rest, '--task'),
         groupId: getOption(rest, '--group')
       };
@@ -1517,14 +1577,20 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'execute') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot);
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'task execute'
+        });
         const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await createTaskExecution(repoRoot, {
-          storyId: getOption(rest, '--id'),
+          storyId,
           taskId: getOption(rest, '--task'),
           groupId: getOption(rest, '--group'),
           baseRef: getOption(rest, '--base'),
           dryRunPrCreate: hasFlag(rest, '--dry-run-pr'),
-          language
+          language,
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
         });
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.execution, null, 2)}\n`
@@ -1548,8 +1614,13 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'prepare') {
         const jsonOutput = hasFlag(rest, '--json');
         const progressOutput = jsonOutput || hasFlag(rest, '--progress');
+        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'pr prepare'
+        });
         const result = await preparePullRequest(repoRoot, {
-          storyId: getOption(rest, '--story-id'),
+          storyId,
           taskId: getOption(rest, '--task'),
           groupId: getOption(rest, '--group'),
           baseRef: getOption(rest, '--base'),
@@ -1574,8 +1645,13 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'create') {
         const jsonOutput = hasFlag(rest, '--json');
         const progressOutput = jsonOutput || hasFlag(rest, '--progress');
+        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr create');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'pr create'
+        });
         const result = await createPullRequest(repoRoot, {
-          storyId: getOption(rest, '--story-id'),
+          storyId,
           taskId: getOption(rest, '--task'),
           groupId: getOption(rest, '--group'),
           baseRef: getOption(rest, '--base'),
@@ -1891,6 +1967,15 @@ async function readConfiguredOutputLanguage(repoRoot, fallback = null) {
   } catch {
     return normalizeOutputLanguage(fallback);
   }
+}
+
+async function resolveSelectedStoryId(repoRoot, commandName = 'task execute') {
+  const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+  const { currentStory } = resolveStoryContext(config);
+  if (!currentStory?.story_id) {
+    throw new Error(`${commandName} requires --id <story-id> or a configured current story`);
+  }
+  return currentStory.story_id;
 }
 
 async function gitRefExists(repoRoot, ref) {

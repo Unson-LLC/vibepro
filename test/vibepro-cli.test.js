@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmod, mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -45,6 +45,24 @@ async function pathExists(filePath) {
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function runCliWithStdout(args) {
+  let stdout = '';
+  let stderr = '';
+  const result = await runCli(args, {
+    stdout: {
+      write(chunk) {
+        stdout += chunk;
+      }
+    },
+    stderr: {
+      write(chunk) {
+        stderr += chunk;
+      }
+    }
+  });
+  return { ...result, stdout, stderr };
 }
 
 async function makeFakeGh(pr) {
@@ -185,6 +203,43 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
     ]);
     assert.equal(result.exitCode, 0);
   }
+}
+
+async function writeMinimalTaskState(repo, storyId = 'story-pr-prepare') {
+  const tasksDir = path.join(repo, '.vibepro', 'stories', storyId, 'tasks');
+  await mkdir(tasksDir, { recursive: true });
+  await writeFile(path.join(tasksDir, 'tasks.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    generated_at: '2026-04-30T00:00:00.000Z',
+    story: {
+      story_id: storyId,
+      title: 'PR準備'
+    },
+    source_run: {
+      run_id: 'story-plan',
+      gate_status: 'pass'
+    },
+    tasks: [{
+      id: 'TASK-001',
+      source_type: 'story_plan_candidate',
+      source_id: 'TASK-001',
+      title: 'PR準備Task',
+      priority: 'high',
+      status: 'todo',
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      target_count: 1,
+      target_files: ['src/cli-helper.js'],
+      target_routes: [],
+      target_groups: [],
+      read_first_files: [{ file: 'src/cli-helper.js', reason: '対象実装' }],
+      recommended_strategy: { id: 'task-driven-pr', reason: 'Task/HandoffとPRを接続する' },
+      implementation_steps: [],
+      acceptance_criteria: ['Task/HandoffがPR本文に入る'],
+      graph_context: null,
+      pre_fix_briefing: null
+    }]
+  }, null, 2));
 }
 
 test('init creates a repo-local VibePro workspace and updates gitignore only', async () => {
@@ -5252,7 +5307,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
   assert.match(prBody, /\[src\/feature\/pr-prepare.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/src\/feature\/pr-prepare.js\)/);
   assert.match(prBody, /\[tests\/unit\/pr-prepare.test.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/tests\/unit\/pr-prepare.test.js\)/);
-  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed \/ DAG Connectivity passed/);
+  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Managed Worktree needs_review \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed \/ DAG Connectivity passed/);
   assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
@@ -6533,7 +6588,23 @@ title: PR準備 Spec
   assert.equal(started.exitCode, 0);
   assert.equal(started.result.state.completion_status, 'not_prepared');
   assert.equal(started.result.state.current_phase, 'prepare_pr');
-  assert.equal(started.result.state.next_actions[0], 'vibepro pr prepare . --story-id story-pr-prepare --base main');
+  assert.equal(started.result.state.managed_worktree.mode, 'preferred');
+  assert.equal(started.result.state.managed_worktree.status, 'created');
+  assert.equal(started.result.state.managed_worktree.branch.startsWith('vibepro/story-pr-prepare-'), true);
+  assert.equal(await pathExists(started.result.state.managed_worktree.path), true);
+  assert.equal(started.result.state.next_actions[0].startsWith(`cd ${started.result.state.managed_worktree.path} && `), true);
+  assert.equal(
+    started.result.state.next_actions[0].endsWith('vibepro pr prepare . --story-id story-pr-prepare --base main'),
+    true
+  );
+  assert.equal(
+    started.result.state.execution_dag.nodes.some((node) => node.id === 'worktree_created' && node.status === 'passed'),
+    true
+  );
+  assert.equal(
+    started.result.state.execution_dag.nodes.some((node) => node.id === 'branch_bound' && node.status === 'passed'),
+    true
+  );
 
   const statePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
   assert.equal(await pathExists(statePath), true);
@@ -6545,6 +6616,7 @@ title: PR準備 Spec
   assert.equal(blocked.current_phase, 'agent_review');
   assert.equal(blocked.blocking_gate.id, 'gate:agent_review');
   assert.equal(blocked.next_actions.some((action) => action.includes('vibepro review prepare')), true);
+  assert.equal(blocked.next_actions.some((action) => action.includes(`cd ${started.result.state.managed_worktree.path} && vibepro review prepare`)), true);
 
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
   await runCli([
@@ -6600,11 +6672,26 @@ title: PR準備 Spec
   const ready = await readJson(statePath);
   assert.equal(ready.completion_status, 'ready_for_pr_create');
   assert.equal(ready.current_phase, 'create_pr');
-  assert.equal(ready.next_actions[0], 'vibepro pr create . --story-id story-pr-prepare --base main');
+  assert.equal(ready.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+  assert.equal(ready.next_actions[0].endsWith('vibepro pr create . --story-id story-pr-prepare --base main'), true);
 
   const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(next.exitCode, 0);
   assert.equal(next.result.next.current_phase, 'create_pr');
+  assert.equal(next.result.next.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+
+  const statusText = await runCliWithStdout(['execute', 'status', repo, '--story-id', 'story-pr-prepare']);
+  assert.equal(statusText.exitCode, 0);
+  assert.match(statusText.stdout, /managed_worktree: preferred\/created/);
+  assert.match(statusText.stdout, /## Managed Worktree/);
+  assert.match(statusText.stdout, new RegExp(`path: ${ready.managed_worktree.path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  assert.match(statusText.stdout, /worktree_created: passed/);
+  assert.match(statusText.stdout, /branch_bound: passed/);
+
+  const nextText = await runCliWithStdout(['execute', 'next', repo, '--story-id', 'story-pr-prepare']);
+  assert.equal(nextText.exitCode, 0);
+  assert.match(nextText.stdout, /managed_worktree: preferred\/created/);
+  assert.match(nextText.stdout, /execution_dag: /);
 });
 
 test('execute start does not initialize or dirty an uninitialized repository', async () => {
@@ -6613,6 +6700,1044 @@ test('execute start does not initialize or dirty an uninitialized repository', a
   const result = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 1);
   assert.equal(await pathExists(path.join(repo, '.vibepro')), false);
+});
+
+test('execute next guides fresh managed-worktree stories through execute start before PR preparation', async () => {
+  for (const mode of ['preferred', 'required']) {
+    const repo = await makeGitRepoWithStory();
+    const configPath = path.join(repo, '.vibepro', 'config.json');
+    const config = await readJson(configPath);
+    config.execution = { managed_worktree: mode };
+    await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+    const result = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+    assert.equal(result.exitCode, 0);
+    assert.equal(result.result.next.managed_worktree.mode, mode);
+    assert.equal(result.result.next.managed_worktree.status, 'missing');
+    assert.equal(
+      result.result.next.execution_dag.nodes.some((node) => (
+        node.id === 'worktree_created'
+        && node.status === (mode === 'required' ? 'blocked' : 'needs_evidence')
+        && node.required === (mode === 'required')
+      )),
+      true
+    );
+    assert.equal(result.result.next.next_actions[0], 'vibepro execute start . --story-id story-pr-prepare --base main');
+    assert.equal(await pathExists(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json')), false);
+  }
+});
+
+test('execute next keeps disabled managed-worktree fresh stories on direct PR preparation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'disabled' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.next.managed_worktree.mode, 'disabled');
+  assert.equal(result.result.next.managed_worktree.status, 'disabled');
+  assert.equal(result.result.next.next_actions[0], 'vibepro pr prepare . --story-id story-pr-prepare --base main');
+});
+
+test('execute start keeps fresh-init managed worktrees clean when generated ignore rules are uncommitted', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await git(repo, ['add', 'index.html']);
+  await git(repo, ['commit', '-m', 'chore: init bare repo']);
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--title',
+    'PR準備',
+    '--view',
+    'dev',
+    '--period',
+    '2026-W18'
+  ]);
+
+  const sourceStatus = await git(repo, ['status', '--porcelain', '-uall']);
+  assert.match(sourceStatus.stdout, /\?\? \.gitignore/);
+
+  const result = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  const managedWorktree = result.result.state.managed_worktree;
+  assert.equal(managedWorktree.status, 'created');
+  assert.equal(managedWorktree.dirty, false);
+  assert.equal(managedWorktree.dirty_fingerprint, 'clean');
+  const managedStatus = await git(managedWorktree.path, ['status', '--porcelain', '-uall']);
+  assert.equal(managedStatus.stdout.trim(), '');
+  const excludePath = (await git(managedWorktree.path, ['rev-parse', '--git-path', 'info/exclude'])).stdout.trim();
+  const exclude = await readFile(path.isAbsolute(excludePath) ? excludePath : path.join(managedWorktree.path, excludePath), 'utf8');
+  assert.match(exclude, /\/\.vibepro\/config\.json/);
+  assert.match(exclude, /\/\.vibepro\/vibepro-manifest\.json/);
+  assert.match(exclude, /\/\.vibepro\/executions\//);
+});
+
+test('execute start records preferred managed worktree creation failures without blocking the checkout', async () => {
+  const repo = await makeGitRepoWithStory();
+
+  const result = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'definitely-missing-ref',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.managed_worktree.mode, 'preferred');
+  assert.equal(result.result.state.managed_worktree.status, 'unavailable');
+  assert.match(result.result.state.managed_worktree.failure_reason, /definitely-missing-ref/);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json')), true);
+  assert.equal(
+    result.result.state.execution_dag.nodes.some((node) => (
+      node.id === 'worktree_created'
+      && node.status === 'needs_evidence'
+      && node.required === false
+    )),
+    true
+  );
+  assert.equal(result.result.state.next_actions[0].startsWith('cd '), false);
+});
+
+test('execute start records required managed worktree creation failures as a blocked execution DAG', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'definitely-missing-ref',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.state.completion_status, 'blocked');
+  assert.equal(result.result.state.managed_worktree.mode, 'required');
+  assert.equal(result.result.state.managed_worktree.required, true);
+  assert.equal(result.result.state.managed_worktree.status, 'unavailable');
+  assert.match(result.result.state.managed_worktree.failure_reason, /definitely-missing-ref/);
+  assert.equal(result.result.state.blocking_gate.id, 'execution:worktree_created');
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json')), true);
+  assert.equal(
+    result.result.state.execution_dag.nodes.some((node) => (
+      node.id === 'worktree_created'
+      && node.status === 'blocked'
+      && node.required === true
+    )),
+    true
+  );
+});
+
+test('execute start refuses to reuse an existing worktree on a foreign branch', async () => {
+  const repo = await makeGitRepoWithStory();
+  const worktreePath = path.join(repo, '.worktrees', 'vibepro', 'story-pr-prepare-foreign');
+  await mkdir(path.dirname(worktreePath), { recursive: true });
+  await git(repo, ['worktree', 'add', worktreePath, '-b', 'foreign', 'main']);
+
+  const result = await runCliWithStdout([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    worktreePath
+  ]);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /managed worktree branch mismatch/);
+});
+
+test('execute start recognizes an existing managed worktree through a symlinked path', async () => {
+  const repo = await makeGitRepoWithStory();
+  const realWorktreePath = path.join(repo, '.worktrees', 'vibepro', 'story-pr-prepare-real');
+  const aliasRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-worktree-alias-'));
+  const aliasPath = path.join(aliasRoot, 'story-pr-prepare-real');
+
+  const first = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    realWorktreePath
+  ]);
+  assert.equal(first.exitCode, 0);
+  await symlink(realWorktreePath, aliasPath);
+
+  const second = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--worktree-path',
+    aliasPath,
+    '--json'
+  ]);
+
+  assert.equal(second.exitCode, 0);
+  assert.equal(second.result.state.managed_worktree.status, 'reused');
+  assert.equal(second.result.state.managed_worktree.branch_match, true);
+});
+
+test('execute next blocks required managed worktree branch drift', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+  await git(worktreePath, ['switch', '-c', 'foreign']);
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.state.managed_worktree.status, 'branch_mismatch');
+  assert.equal(status.result.state.managed_worktree.branch_match, false);
+  assert.equal(status.result.state.completion_status, 'blocked');
+  assert.equal(status.result.state.blocking_gate.id, 'execution:worktree_created');
+  assert.equal(
+    status.result.state.required_commands.pr_prepare.startsWith(`cd ${worktreePath} && `),
+    false
+  );
+
+  const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(next.exitCode, 0);
+  assert.equal(next.result.next.blocking_gate.id, 'execution:worktree_created');
+  assert.equal(next.result.next.managed_worktree.status, 'branch_mismatch');
+  assert.equal(
+    next.result.next.next_actions.some((action) => action.includes(`cd ${worktreePath} && vibepro pr prepare`)),
+    false
+  );
+  assert.equal(next.result.next.next_actions.length > 0, true);
+});
+
+test('execute next does not route PR commands into a stale managed worktree head', async () => {
+  const repo = await makeGitRepoWithStory();
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+
+  await writeFile(path.join(repo, 'src-stale-head.js'), 'export const staleHead = true;\n');
+  await git(repo, ['add', 'src-stale-head.js']);
+  await git(repo, ['commit', '-m', 'feat: advance review head']);
+  const reviewHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(next.exitCode, 0);
+  assert.equal(next.result.next.managed_worktree.current_head_sha === reviewHead, false);
+  const headBound = next.result.next.execution_dag.nodes.find((node) => node.id === 'head_bound');
+  assert.equal(headBound.status, 'needs_evidence');
+  assert.match(headBound.reason, /does not match the current execution HEAD/);
+  assert.equal(
+    next.result.next.next_actions.some((action) => action.includes(`cd ${worktreePath} && vibepro pr prepare`)),
+    false
+  );
+
+  const nextText = await runCliWithStdout(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(nextText.exitCode, 0);
+  assert.match(nextText.stdout, /head_bound: needs_evidence/);
+  assert.match(nextText.stdout, /managed worktree HEAD does not match the current execution HEAD/);
+  assert.match(nextText.stdout, /current_head_sha:/);
+});
+
+test('execute status treats a normally advanced managed worktree as the current execution head', async () => {
+  const repo = await makeGitRepoWithStory();
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+
+  await writeFile(path.join(worktreePath, 'src-managed-advance.js'), 'export const managedAdvance = true;\n');
+  await git(worktreePath, ['add', 'src-managed-advance.js']);
+  await git(worktreePath, ['commit', '-m', 'feat: advance managed worktree']);
+  const managedHead = (await git(worktreePath, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.state.managed_worktree.current_head_sha, managedHead);
+  assert.notEqual(status.result.state.blocking_gate?.id, 'execution:head_bound');
+  const headBound = status.result.state.execution_dag.nodes.find((node) => node.id === 'head_bound');
+  assert.equal(headBound.status, 'passed');
+  assert.equal(
+    status.result.state.required_commands.pr_prepare.startsWith(`cd ${worktreePath} && `),
+    true
+  );
+
+  const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(next.exitCode, 0);
+  assert.equal(
+    next.result.next.next_actions.some((action) => action.includes(`cd ${worktreePath} && vibepro pr prepare`)),
+    true
+  );
+});
+
+test('execute start keeps legacy and disabled worktree modes compatible', async () => {
+  for (const mode of ['missing_execution_config', 'explicit_disabled']) {
+    const repo = await makeGitRepoWithStory();
+    const configPath = path.join(repo, '.vibepro', 'config.json');
+    const config = await readJson(configPath);
+    if (mode === 'missing_execution_config') {
+      delete config.execution;
+    } else {
+      config.execution = { managed_worktree: 'disabled' };
+    }
+    await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+    const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+    assert.equal(started.exitCode, 0);
+    assert.equal(started.result.state.managed_worktree.mode, 'disabled');
+    assert.equal(started.result.state.managed_worktree.status, 'disabled');
+    assert.equal(started.result.state.managed_worktree.path, null);
+    assert.equal(started.result.state.next_actions[0].startsWith('cd '), false);
+    assert.equal(started.result.state.required_commands.pr_prepare.startsWith('cd '), false);
+    assert.equal(
+      started.result.state.execution_dag.nodes.some((node) => node.id === 'worktree_created' && node.status === 'not_applicable'),
+      true
+    );
+  }
+});
+
+test('verify record rejects required managed worktree commands from the original checkout', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(started.exitCode, 0);
+
+  const result = await runCliWithStdout([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed'
+  ]);
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /managed worktree required for verify record/);
+});
+
+test('required managed worktree guard blocks protected commands before execute start', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = await runCliWithStdout([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed'
+  ]);
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /managed worktree required for verify record/);
+  assert.match(result.stderr, /no managed worktree execution state is recorded/);
+});
+
+test('required managed worktree guard covers review lifecycle, review record, task execute, and pr create', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(started.exitCode, 0);
+  const executionStatePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
+  const executionStateBeforeReviewStatus = await readFile(executionStatePath, 'utf8');
+
+  const reviewPrepare = await runCliWithStdout([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 1);
+  assert.match(reviewPrepare.stderr, /managed worktree required for review prepare/);
+
+  const reviewStart = await runCliWithStdout([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-1'
+  ]);
+  assert.equal(reviewStart.exitCode, 1);
+  assert.match(reviewStart.stderr, /managed worktree required for review start/);
+
+  const reviewClose = await runCliWithStdout([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-id',
+    'agent-1',
+    '--close-reason',
+    'completed'
+  ]);
+  assert.equal(reviewClose.exitCode, 1);
+  assert.match(reviewClose.stderr, /managed worktree required for review close/);
+
+  const reviewRecord = await runCliWithStdout([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence passed'
+  ]);
+  assert.equal(reviewRecord.exitCode, 1);
+  assert.match(reviewRecord.stderr, /managed worktree required for review record/);
+
+  const verifyFlow = await runCliWithStdout([
+    'verify',
+    'flow',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--base-url',
+    'http://127.0.0.1:9',
+    '--json'
+  ]);
+  assert.equal(verifyFlow.exitCode, 1);
+  assert.match(verifyFlow.stderr, /managed worktree required for verify flow/);
+
+  const reviewStatus = await runCliWithStdout([
+    'review',
+    'status',
+    repo,
+    '--id',
+    'story-pr-prepare'
+  ]);
+  assert.equal(reviewStatus.exitCode, 0);
+  assert.match(reviewStatus.stdout, /Agent Review Status/);
+  assert.equal(await readFile(executionStatePath, 'utf8'), executionStateBeforeReviewStatus);
+
+  const decisionRecord = await runCliWithStdout([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:split_resolution',
+    '--source-status',
+    'needs_review',
+    '--status',
+    'accepted',
+    '--summary',
+    'single PR scope accepted',
+    '--reason',
+    'scope remains cohesive'
+  ]);
+  assert.equal(decisionRecord.exitCode, 1);
+  assert.match(decisionRecord.stderr, /managed worktree required for decision record/);
+
+  const taskExecute = await runCliWithStdout([
+    'task',
+    'execute',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--task',
+    'TASK-001',
+    '--group',
+    'queue',
+    '--dry-run-pr'
+  ]);
+  assert.equal(taskExecute.exitCode, 1);
+  assert.match(taskExecute.stderr, /managed worktree required for task execute/);
+
+  const taskExecuteSelectedStory = await runCliWithStdout([
+    'task',
+    'execute',
+    repo,
+    '--task',
+    'TASK-001',
+    '--group',
+    'queue',
+    '--dry-run-pr'
+  ]);
+  assert.equal(taskExecuteSelectedStory.exitCode, 1);
+  assert.match(taskExecuteSelectedStory.stderr, /managed worktree required for task execute/);
+
+  const prCreate = await runCliWithStdout([
+    'pr',
+    'create',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--dry-run'
+  ]);
+  assert.equal(prCreate.exitCode, 1);
+  assert.match(prCreate.stderr, /managed worktree required for pr create/);
+});
+
+test('required managed worktree copies VibePro control files and allows record commands inside the managed worktree', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'config.json')), true);
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'vibepro-manifest.json')), true);
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'executions', 'story-pr-prepare', 'state.json')), true);
+
+  const verifyRecord = await runCli([
+    'verify',
+    'record',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed',
+    '--json'
+  ]);
+  assert.equal(verifyRecord.exitCode, 0);
+  assert.equal(verifyRecord.result.evidence.commands[0].kind, 'unit');
+
+  const reviewPrepare = await runCli([
+    'review',
+    'prepare',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--json'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 0);
+
+  const reviewRecord = await runCli([
+    'review',
+    'record',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence passed',
+    '--inspection-summary',
+    'managed worktree record path inspected',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-managed',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(reviewRecord.exitCode, 0);
+  assert.equal(reviewRecord.result.review.status, 'pass');
+
+  const prepareSelectedStory = await runCli([
+    'pr',
+    'prepare',
+    worktreePath,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(prepareSelectedStory.exitCode, 0);
+  assert.equal(prepareSelectedStory.result.preparation.story.story_id, 'story-pr-prepare');
+
+  const createSelectedStory = await runCliWithStdout([
+    'pr',
+    'create',
+    worktreePath,
+    '--base',
+    'main',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'selected story guard regression smoke',
+    '--json'
+  ]);
+  assert.doesNotMatch(createSelectedStory.stderr, /story id is required to evaluate managed worktree locality/);
+  assert.doesNotMatch(createSelectedStory.stderr, /managed worktree required for pr create/);
+});
+
+test('required managed worktree backfills VibePro control files when reusing an existing worktree', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const firstStart = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(firstStart.exitCode, 0);
+  const worktreePath = firstStart.result.state.managed_worktree.path;
+
+  await rm(path.join(worktreePath, '.vibepro', 'config.json'));
+  await rm(path.join(worktreePath, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'config.json')), false);
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'vibepro-manifest.json')), false);
+
+  const secondStart = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(secondStart.exitCode, 0);
+  assert.equal(secondStart.result.state.managed_worktree.status, 'reused');
+  assert.equal(secondStart.result.state.managed_worktree.path, worktreePath);
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'config.json')), true);
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'vibepro-manifest.json')), true);
+
+  const sourceManifestBeforeFlow = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  sourceManifestBeforeFlow.unrelated_source_marker = 'preserve-source-manifest-state';
+  sourceManifestBeforeFlow.flow_verification_runs = [{
+    run_id: 'source-only-flow',
+    story_id: 'story-other',
+    status: 'pass'
+  }];
+  await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify(sourceManifestBeforeFlow, null, 2)}\n`);
+
+  const verifyRecord = await runCli([
+    'verify',
+    'record',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed after reused worktree control file backfill',
+    '--json'
+  ]);
+  assert.equal(verifyRecord.exitCode, 0);
+  assert.equal(verifyRecord.result.evidence.commands[0].kind, 'unit');
+
+  const decisionRecord = await runCli([
+    'decision',
+    'record',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:split_resolution',
+    '--source-status',
+    'needs_review',
+    '--status',
+    'accepted',
+    '--summary',
+    'single PR scope accepted in managed worktree',
+    '--reason',
+    'scope remains cohesive',
+    '--json'
+  ]);
+  assert.equal(decisionRecord.exitCode, 0);
+  const sourceDecisionRecords = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json'));
+  assert.equal(sourceDecisionRecords.decisions[0].summary, 'single PR scope accepted in managed worktree');
+
+  const verifyFlow = await runCli([
+    'verify',
+    'flow',
+    worktreePath,
+    '--id',
+    'story-pr-prepare',
+    '--base-url',
+    'http://127.0.0.1:9',
+    '--run-id',
+    'managed-flow-sync',
+    '--json'
+  ]);
+  assert.equal(verifyFlow.exitCode, 0);
+  const sourceManifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(sourceManifest.unrelated_source_marker, 'preserve-source-manifest-state');
+  assert.equal(sourceManifest.latest_flow_verification_run, 'managed-flow-sync');
+  assert.equal(sourceManifest.flow_verification_runs.some((run) => run.run_id === 'source-only-flow'), true);
+  assert.equal(sourceManifest.flow_verification_runs.some((run) => run.run_id === 'managed-flow-sync'), true);
+  assert.equal(
+    await pathExists(path.join(repo, '.vibepro', 'verification', 'managed-flow-sync', 'flow-verification.json')),
+    true
+  );
+});
+
+test('preferred managed worktree warning is recorded on non-PR evidence surfaces', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeMinimalTaskState(repo);
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(started.exitCode, 0);
+
+  const verifyRecord = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit passed',
+    '--json'
+  ]);
+  assert.equal(verifyRecord.exitCode, 0);
+  assert.equal(verifyRecord.result.evidence.warnings[0].id, 'managed_worktree_locality');
+  assert.equal(verifyRecord.result.evidence.commands[0].warnings[0].command_name, 'verify record');
+  assert.equal(verifyRecord.result.evidence.commands[0].managed_worktree_context.command_name, 'verify record');
+  assert.equal(verifyRecord.result.evidence.commands[0].managed_worktree_context.managed_worktree.path, started.result.state.managed_worktree.path);
+
+  const reviewRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence passed',
+    '--inspection-summary',
+    'managed worktree preferred warning surface was inspected',
+    '--json'
+  ]);
+  assert.equal(reviewRecord.exitCode, 0);
+  assert.equal(reviewRecord.result.review.warnings[0].id, 'managed_worktree_locality');
+  assert.equal(reviewRecord.result.review.warnings[0].command_name, 'review record');
+  assert.equal(reviewRecord.result.review.managed_worktree_context.command_name, 'review record');
+  assert.equal(reviewRecord.result.review.managed_worktree_context.managed_worktree.path, started.result.state.managed_worktree.path);
+
+  const decisionRecord = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:split_resolution',
+    '--source-status',
+    'needs_review',
+    '--status',
+    'accepted',
+    '--summary',
+    'single PR scope accepted',
+    '--reason',
+    'scope remains cohesive',
+    '--json'
+  ]);
+  assert.equal(decisionRecord.exitCode, 0);
+  assert.equal(decisionRecord.result.decision.warnings[0].id, 'managed_worktree_locality');
+  assert.equal(decisionRecord.result.decision.warnings[0].command_name, 'decision record');
+  assert.equal(decisionRecord.result.records.warnings[0].id, 'managed_worktree_locality');
+
+  const verifyFlow = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--base-url',
+    'http://127.0.0.1:9',
+    '--run-id',
+    'preferred-managed-flow-warning',
+    '--json'
+  ]);
+  assert.equal(verifyFlow.exitCode, 0);
+  assert.equal(verifyFlow.result.verification.warnings[0].id, 'managed_worktree_locality');
+  assert.equal(verifyFlow.result.verification.warnings[0].command_name, 'verify flow');
+  const flowReport = await readFile(path.join(repo, '.vibepro', 'verification', 'preferred-managed-flow-warning', 'flow-verification.md'), 'utf8');
+  assert.match(flowReport, /managed_worktree_locality/);
+
+  const taskExecution = await runCli([
+    'task',
+    'execute',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--task',
+    'TASK-001',
+    '--dry-run-pr',
+    '--json'
+  ]);
+  assert.equal(taskExecution.exitCode, 0);
+  assert.equal(taskExecution.result.execution.warnings[0].id, 'managed_worktree_locality');
+  assert.equal(taskExecution.result.execution.warnings[0].command_name, 'task execute');
+  const executionMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'execution.md'), 'utf8');
+  assert.match(executionMarkdown, /managed_worktree_locality/);
+});
+
+test('pr prepare surfaces preferred managed worktree warning when run outside the managed worktree', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src-managed-warning.js'), 'export const managedWarning = true;\n');
+  await git(repo, ['add', 'src-managed-warning.js']);
+  await git(repo, ['commit', '-m', 'feat: add managed warning fixture']);
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(started.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate?.status, 'needs_review');
+  assert.equal(gate?.required, false);
+  assert.match(gate?.reason ?? '', /not recorded managed worktree/);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /リリース判断Warning: Managed Worktree Gate/);
+  assert.match(prBody, /warning detail: Managed Worktree Gate: repo root .*not recorded managed worktree/);
+  assert.match(prBody, /warning action: Run the command from the recorded VibePro managed worktree/);
+});
+
+test('managed worktree command context uses current config mode after execution state exists', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'preferred' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+
+  await writeFile(path.join(repo, 'src-mode-change.js'), 'export const managedModeChange = true;\n');
+  await git(repo, ['add', 'src-mode-change.js']);
+  await git(repo, ['commit', '-m', 'feat: add managed mode change fixture']);
+
+  const requiredConfig = await readJson(configPath);
+  requiredConfig.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(requiredConfig, null, 2)}\n`);
+
+  const requiredPrepare = await runCliWithStdout(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(requiredPrepare.exitCode, 1);
+  assert.match(requiredPrepare.stderr, /managed worktree required for pr prepare/);
+
+  const disabledConfig = await readJson(configPath);
+  disabledConfig.execution = { managed_worktree: 'disabled' };
+  await writeFile(configPath, `${JSON.stringify(disabledConfig, null, 2)}\n`);
+
+  const disabledPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(disabledPrepare.exitCode, 0);
+  const gate = disabledPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate, undefined);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(prBody, /Managed Worktree Gate/);
+});
+
+test('managed worktree command context uses source repo config from an existing managed worktree', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'preferred' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+
+  await writeFile(path.join(worktreePath, 'src-source-config-authority.js'), 'export const sourceConfigAuthority = true;\n');
+  await git(worktreePath, ['add', 'src-source-config-authority.js']);
+  await git(worktreePath, ['commit', '-m', 'feat: add source config authority fixture']);
+
+  const requiredConfig = await readJson(configPath);
+  requiredConfig.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(requiredConfig, null, 2)}\n`);
+
+  const requiredPrepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(requiredPrepare.exitCode, 0);
+  const requiredGate = requiredPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(requiredGate?.status, 'satisfied');
+  assert.equal(requiredGate?.required, true);
+
+  const disabledConfig = await readJson(configPath);
+  disabledConfig.execution = { managed_worktree: 'disabled' };
+  await writeFile(configPath, `${JSON.stringify(disabledConfig, null, 2)}\n`);
+
+  const disabledPrepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(disabledPrepare.exitCode, 0);
+  const disabledGate = disabledPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(disabledGate, undefined);
+});
+
+test('generated managed worktree pr prepare path keeps execution binding', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'required' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+  assert.equal(await pathExists(path.join(worktreePath, '.vibepro', 'executions', 'story-pr-prepare', 'state.json')), true);
+
+  await writeFile(path.join(worktreePath, 'src-managed-bound.js'), 'export const managedBound = true;\n');
+  await git(worktreePath, ['add', 'src-managed-bound.js']);
+  await git(worktreePath, ['commit', '-m', 'feat: managed bound fixture']);
+
+  const prepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const gate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate?.status, 'satisfied');
+  assert.equal(gate?.required, true);
+
+  const originalState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
+  assert.equal(originalState.last_pr_prepare?.head_sha, prepare.result.preparation.git.head_sha);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json')), true);
+
+  const originalStatus = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(originalStatus.exitCode, 0);
+  assert.equal(originalStatus.result.state.last_pr_prepare?.head_sha, prepare.result.preparation.git.head_sha);
+  assert.equal(
+    originalStatus.result.state.next_actions.some((action) => action === 'vibepro pr prepare . --story-id story-pr-prepare --base main'),
+    false
+  );
+});
+
+test('managed worktree pr prepare recovers execution binding from the source checkout state', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'preferred' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+
+  await writeFile(path.join(worktreePath, 'src-recovered-binding.js'), 'export const recoveredBinding = true;\n');
+  await git(worktreePath, ['add', 'src-recovered-binding.js']);
+  await git(worktreePath, ['commit', '-m', 'feat: recovered managed binding fixture']);
+
+  const localStatePath = path.join(worktreePath, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
+  await writeFile(localStatePath, `${JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    target: 'pr_create',
+    started_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    current_phase: 'prepare_pr',
+    completed_phases: [],
+    completion_status: 'not_prepared',
+    managed_worktree: null,
+    execution_dag: null
+  }, null, 2)}\n`);
+
+  const prepare = await runCli(['pr', 'prepare', worktreePath, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const gate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(gate?.status, 'satisfied');
+  assert.equal(gate?.managed_worktree?.path, worktreePath);
+  assert.equal(gate?.current_head_sha, prepare.result.preparation.git.head_sha);
+  assert.equal(prepare.result.preparation.pr_context.managed_worktree.managed_worktree.path, worktreePath);
+
+  const localState = await readJson(localStatePath);
+  assert.equal(localState.managed_worktree.path, worktreePath);
+  assert.equal(localState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
+  assert.equal(localState.execution_dag.nodes.some((node) => node.id === 'head_bound' && node.status === 'passed'), true);
+
+  const sourceState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
+  assert.equal(sourceState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
 });
 
 test('execute start quarantines corrupt existing execution state before writing', async () => {
@@ -6921,6 +8046,17 @@ architecture_docs:
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## Agent Review/);
   assert.match(prBody, /status: pass/);
+
+  await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
+  const staleResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const staleRoleNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:gate:gate_evidence');
+  assert.equal(staleRoleNode.status, 'stale');
+  assert.match(staleRoleNode.reason, /review was recorded for|dirty worktree fingerprint/);
+  assert.doesNotMatch(staleRoleNode.reason, /passed/);
+  const staleRecordNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence');
+  assert.equal(staleRecordNode.status, 'needs_review');
+  assert.match(staleRecordNode.reason, /review was recorded for|dirty worktree fingerprint/);
+  assert.doesNotMatch(staleRecordNode.reason, /current git state/);
 });
 
 test('pr prepare blocks timed out required review lifecycle even when review result passed', async () => {
@@ -7106,6 +8242,37 @@ title: PR準備
   assert.match(prBody, /- \[x\] `npm run typecheck`/);
   assert.match(prBody, /- \[ \] `npm run test:e2e`/);
   assert.match(prBody, /gate: failed/);
+});
+
+test('pr body verification checklist checks exact current evidence even when the integration gate uses another command', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-body-typecheck.js'), 'export const prBodyTypecheck = true;\n');
+  await git(repo, ['add', 'src/pr-body-typecheck.js']);
+  await git(repo, ['commit', '-m', 'feat: add pr body typecheck fixture']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--summary', 'risk-adaptive gate regression passed'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'typecheck',
+    '--status', 'pass',
+    '--command', 'npm run typecheck',
+    '--summary', 'typecheck passed'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /- \[x\] `npm run typecheck`/);
+  assert.doesNotMatch(prBody, /- \[ \] `npm run typecheck`.*gate: passed via `node --test test\/risk-adaptive-gate\.test\.js`/);
 });
 
 test('pr prepare rejects stale verification evidence recorded before a dirty UI change', async () => {
@@ -7538,6 +8705,67 @@ export async function updateVisited(isAdd: boolean) {
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /Spec Sources: 1/);
   assert.match(prBody, /Architecture Sources: 1/);
+});
+
+test('pr prepare prefers explicit Spec docs over inferred spec clauses for Spec Gate binding', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'settings'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+spec_docs:
+  - docs/specs/story-pr-prepare-spec.md
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- 設定画面の保存状態が明示Specで確認できる
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare-spec.md'), `---
+story_id: story-pr-prepare
+title: PR準備 Spec
+---
+
+# Spec
+
+- 設定画面は保存中状態を表示する。
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'settings', 'page.tsx'), `
+export function SettingsPage({ saving }) {
+  return saving ? 'saving' : 'ready';
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-05-16T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'The SettingsPage saving branch must remain visible while persistence is pending.'
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add settings state spec']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  const specGate = gateDag.nodes.find((node) => node.id === 'spec');
+  assert.equal(gateDag.summary.spec_status, 'present');
+  assert.equal(specGate.status, 'present');
+  assert.deepEqual(specGate.spec_docs, ['docs/specs/story-pr-prepare-spec.md']);
+  assert.equal(specGate.inferred_spec.clauses, 1);
+  assert.match(specGate.reason, /explicit Spec docs are present/);
 });
 
 test('pr prepare treats internal spec clauses as coverage for changed source scenario gaps', async () => {

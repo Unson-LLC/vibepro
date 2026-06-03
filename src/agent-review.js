@@ -229,6 +229,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
     findings: parseFindings(options.findings ?? []),
     artifacts: (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact)),
     inspection: buildInspectionBlock(options),
+    managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
+    warnings: normalizeWarnings([options.managedWorktreeWarning]),
     recorded_at: new Date().toISOString(),
     git_context: gitContext,
     source_fingerprint: sourceFingerprint,
@@ -559,6 +561,9 @@ export function renderAgentReviewPrepareSummary(result) {
 }
 
 export function renderAgentReviewRecordSummary(result) {
+  const warnings = result.review.warnings?.length
+    ? result.review.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
+    : '- none';
   return `# Agent Review Record
 
 - story: ${result.review.story_id}
@@ -567,6 +572,10 @@ export function renderAgentReviewRecordSummary(result) {
 - status: ${result.review.status}
 - agent provenance: ${result.review.agent_provenance.system}/${result.review.agent_provenance.execution_mode}/${result.review.agent_provenance.evidence_strength}
 - artifact: ${result.artifact}
+
+## Warnings
+
+${warnings}
 `;
 }
 
@@ -1777,6 +1786,14 @@ function fingerprintHashForContext(gitContext) {
 
 function hashFingerprint(value) {
   return crypto.createHash('sha256').update(String(value ?? '')).digest('hex');
+}
+
+function normalizeWarnings(warnings) {
+  return warnings.filter((warning) => warning && typeof warning === 'object');
+}
+
+function normalizeManagedWorktreeContext(context) {
+  return context && typeof context === 'object' ? context : null;
 }
 
 function hasNetworkContractRisk(networkContracts) {

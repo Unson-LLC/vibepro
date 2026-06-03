@@ -1,39 +1,75 @@
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { getAgentReviewStatus } from './agent-review.js';
+import {
+  buildExecutionDag,
+  buildManagedWorktreeCommands,
+  buildPendingManagedWorktree,
+  ensureManagedWorktree,
+  isManagedWorktreeCommandSafe,
+  readManagedExecutionState,
+  refreshManagedWorktree
+} from './managed-worktree.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const SCHEMA_VERSION = '0.1.0';
 const DEFAULT_TARGET = 'pr_create';
+const execFileAsync = promisify(execFile);
 
 export async function startExecution(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute start');
   await assertWorkspaceInitialized(repoRoot, 'execute start');
-  await readExecutionState(repoRoot, storyId);
+  const existing = await readManagedExecutionState(repoRoot, storyId);
+  const managedWorktree = await ensureManagedWorktree(repoRoot, {
+    storyId,
+    baseRef: options.baseRef,
+    branchName: options.branchName,
+    worktreePath: options.worktreePath
+  });
   const state = await buildExecutionState(repoRoot, {
     ...options,
     storyId,
     target: options.target ?? DEFAULT_TARGET,
+    startedAt: existing?.started_at,
+    managedWorktree,
     preserveStartedAt: true
   });
-  return writeExecutionState(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state);
 }
 
 export async function getExecutionStatus(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute status');
-  const existing = await readExecutionState(repoRoot, storyId);
+  const existing = await readManagedExecutionState(repoRoot, storyId);
   if (existing) {
+    const managedWorktree = await refreshManagedWorktree(repoRoot, existing.managed_worktree).catch(() => existing.managed_worktree ?? null);
+    const state = await buildExecutionState(repoRoot, {
+      ...options,
+      storyId,
+      target: options.target ?? existing.target ?? DEFAULT_TARGET,
+      startedAt: existing.started_at,
+      managedWorktree,
+      preserveStartedAt: true
+    });
     return {
-      state: existing,
+      state,
       artifact: toWorkspaceRelative(repoRoot, getExecutionStatePath(repoRoot, storyId)),
       found: true
     };
   }
+  const managedWorktree = await buildPendingManagedWorktree(repoRoot, {
+    storyId,
+    baseRef: options.baseRef,
+    branchName: options.branchName,
+    worktreePath: options.worktreePath
+  });
   const state = await buildExecutionState(repoRoot, {
     ...options,
     storyId,
-    target: options.target ?? DEFAULT_TARGET
+    target: options.target ?? DEFAULT_TARGET,
+    managedWorktree
   });
   return {
     state,
@@ -50,7 +86,9 @@ export async function getExecutionNext(repoRoot, options = {}) {
       completion_status: result.state.completion_status,
       current_phase: result.state.current_phase,
       blocking_gate: result.state.blocking_gate,
-      next_actions: result.state.next_actions
+      next_actions: result.state.next_actions,
+      managed_worktree: result.state.managed_worktree,
+      execution_dag: result.state.execution_dag
     }
   };
 }
@@ -58,15 +96,16 @@ export async function getExecutionNext(repoRoot, options = {}) {
 export async function reconcileExecutionState(repoRoot, options = {}) {
   const storyId = requireStoryId(options.storyId, 'execute reconcile');
   await assertWorkspaceInitialized(repoRoot, 'execute reconcile');
-  const existing = await readExecutionState(repoRoot, storyId);
+  const existing = await readManagedExecutionState(repoRoot, storyId);
   const state = await buildExecutionState(repoRoot, {
     ...options,
     storyId,
     target: options.target ?? existing?.target ?? DEFAULT_TARGET,
     startedAt: existing?.started_at,
+    managedWorktree: await refreshManagedWorktree(repoRoot, existing?.managed_worktree).catch(() => existing?.managed_worktree ?? null),
     preserveStartedAt: true
   });
-  return writeExecutionState(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state);
 }
 
 export async function updateExecutionStateFromPrPrepare(repoRoot, prepareResult, options = {}) {
@@ -103,7 +142,7 @@ export async function updateExecutionStateFromPrCreate(repoRoot, createResult, o
     blocking_gate: execution.pr_url ? null : result.state.blocking_gate,
     updated_at: new Date().toISOString()
   };
-  return writeExecutionState(repoRoot, state);
+  return writeExecutionStateWithLinkedCopies(repoRoot, state);
 }
 
 export function renderExecutionStateSummary(result) {
@@ -111,6 +150,8 @@ export function renderExecutionStateSummary(result) {
   const actions = state.next_actions?.length
     ? state.next_actions.map((action) => `- ${action}`).join('\n')
     : '- none';
+  const managedWorktree = formatManagedWorktreeSummary(state.managed_worktree);
+  const executionDag = formatExecutionDagSummary(state.execution_dag);
   return `# VibePro Execution State
 
 - story: ${state.story_id}
@@ -118,7 +159,17 @@ export function renderExecutionStateSummary(result) {
 - status: ${state.completion_status}
 - phase: ${state.current_phase}
 - blocking_gate: ${state.blocking_gate?.id ?? 'none'}
+- managed_worktree: ${managedWorktree.headline}
+- execution_dag: ${executionDag.headline}
 - artifact: ${result.artifact ?? '-'}
+
+## Managed Worktree
+
+${managedWorktree.details}
+
+## Execution DAG
+
+${executionDag.details}
 
 ## Next Actions
 
@@ -128,17 +179,70 @@ ${actions}
 
 export function renderExecutionNextSummary(result) {
   const next = result.next ?? result;
+  const state = result.state ?? result;
   const actions = next.next_actions?.length
     ? next.next_actions.map((action) => `- ${action}`).join('\n')
     : '- none';
+  const managedWorktree = formatManagedWorktreeSummary(state.managed_worktree);
+  const executionDag = formatExecutionDagSummary(state.execution_dag);
   return `# VibePro Next Action
 
 - status: ${next.completion_status}
 - phase: ${next.current_phase}
 - blocking_gate: ${next.blocking_gate?.id ?? 'none'}
+- managed_worktree: ${managedWorktree.headline}
+- execution_dag: ${executionDag.headline}
+
+## Managed Worktree
+
+${managedWorktree.details}
+
+## Execution DAG
+
+${executionDag.details}
 
 ${actions}
 `;
+}
+
+function formatManagedWorktreeSummary(managedWorktree) {
+  if (!managedWorktree) {
+    return {
+      headline: 'not_recorded',
+      details: '- status: not_recorded'
+    };
+  }
+  const headline = `${managedWorktree.mode ?? 'unknown'}/${managedWorktree.status ?? 'unknown'}`;
+  return {
+    headline,
+    details: [
+      `- mode: ${managedWorktree.mode ?? '-'}`,
+      `- status: ${managedWorktree.status ?? '-'}`,
+      `- path: ${managedWorktree.path ?? '-'}`,
+      `- branch: ${managedWorktree.branch ?? '-'}`,
+      `- actual_branch: ${managedWorktree.actual_branch ?? '-'}`,
+      `- current_head_sha: ${managedWorktree.current_head_sha ?? '-'}`,
+      `- branch_match: ${managedWorktree.branch_match === false ? 'false' : managedWorktree.branch_match === true ? 'true' : '-'}`,
+      `- dirty: ${managedWorktree.dirty === true ? 'true' : managedWorktree.dirty === false ? 'false' : '-'}`
+    ].join('\n')
+  };
+}
+
+function formatExecutionDagSummary(executionDag) {
+  const nodes = Array.isArray(executionDag?.nodes) ? executionDag.nodes : [];
+  if (nodes.length === 0) {
+    return {
+      headline: 'not_recorded',
+      details: '- nodes: none'
+    };
+  }
+  const blockers = nodes.filter((node) => ['blocked', 'needs_evidence', 'failed'].includes(node.status));
+  return {
+    headline: `${nodes.length} nodes, ${blockers.length} blockers`,
+    details: nodes
+      .map((node) => `- ${node.id}: ${node.status}${node.reason ? ` (${node.reason})` : ''}`)
+      .join('\n')
+  };
 }
 
 async function buildExecutionState(repoRoot, options = {}) {
@@ -156,13 +260,31 @@ async function buildExecutionState(repoRoot, options = {}) {
   const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? prCreate?.gate_dag ?? null;
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
-  const blockingGate = pickBlockingGate(blockingGates);
+  const managedWorktree = options.managedWorktree
+    ? await refreshManagedWorktree(root, options.managedWorktree).catch(() => options.managedWorktree)
+    : null;
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const expectedHeadSha = await resolveExecutionExpectedHead(root, managedWorktree, currentHeadSha);
+  const executionBlockers = collectRequiredExecutionBlockers(
+    buildExecutionDag({
+      managedWorktree,
+      completedPhases: [],
+      completionStatus: 'not_prepared',
+      expectedHeadSha
+    }),
+    { storyId, baseRef: options.baseRef, managedWorktree, expectedHeadSha }
+  );
+  const executionBlockingGate = executionBlockers[0] ?? null;
+  const blockingGate = executionBlockingGate ?? pickBlockingGate(blockingGates);
   const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
-  const readyForPrCreate = gateDag
+  const gatesReadyForPrCreate = gateDag
     ? Boolean(prPrepare && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
+  const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
   const waiverRequired = !prCreated && !readyForPrCreate && Boolean(prPrepare) && (
-    gateDag
+    executionBlockingGate
+      ? false
+      : gateDag
       ? unresolvedGates.length > 0 && blockingGates.length === 0
       : gateStatus?.execution_gate?.status === 'waiver_required'
   );
@@ -172,6 +294,8 @@ async function buildExecutionState(repoRoot, options = {}) {
       ? 'ready_for_pr_create'
       : waiverRequired
         ? 'waiver_required'
+      : executionBlockingGate
+        ? 'blocked'
       : prPrepare
         ? 'blocked'
         : 'not_prepared';
@@ -181,7 +305,9 @@ async function buildExecutionState(repoRoot, options = {}) {
       ? 'create_pr'
       : waiverRequired
         ? 'verification'
-      : blockingGate?.id === 'gate:agent_review' || blockingGate?.id?.startsWith('review:')
+        : executionBlockingGate
+          ? 'prepare_pr'
+        : blockingGate?.id === 'gate:agent_review' || blockingGate?.id?.startsWith('review:')
         ? 'agent_review'
         : blockingGate
           ? 'verification'
@@ -193,9 +319,15 @@ async function buildExecutionState(repoRoot, options = {}) {
     readyForPrCreate,
     prCreated
   });
+  const requiredCommands = buildManagedWorktreeCommands({
+    pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
+    pr_create: buildPrCreateCommand({ storyId, baseRef: options.baseRef })
+  }, managedWorktree, { expectedHeadSha });
   const nextActions = deriveNextActions({
     storyId,
     baseRef: options.baseRef,
+    managedWorktree,
+    expectedHeadSha,
     prPrepare,
     gateStatus,
     unresolvedGates,
@@ -215,15 +347,25 @@ async function buildExecutionState(repoRoot, options = {}) {
     completion_status: completionStatus,
     blocking_gate: blockingGate,
     next_actions: nextActions,
-    required_commands: {
-      pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
-      pr_create: buildPrCreateCommand({ storyId, baseRef: options.baseRef })
-    },
+    required_commands: requiredCommands,
+    managed_worktree: managedWorktree,
+    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha }),
     last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
     pr_url: prCreate?.pr_url ?? null
   };
+}
+
+async function resolveExecutionExpectedHead(root, managedWorktree, currentHeadSha) {
+  if (!currentHeadSha || !managedWorktree?.current_head_sha || !managedWorktree?.path) return currentHeadSha;
+  const currentRoot = path.resolve(root);
+  const managedRoot = path.resolve(managedWorktree.path);
+  if (currentRoot === managedRoot) return currentHeadSha;
+  if (await gitIsAncestor(root, currentHeadSha, managedWorktree.current_head_sha)) {
+    return managedWorktree.current_head_sha;
+  }
+  return currentHeadSha;
 }
 
 function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, readyForPrCreate, prCreated }) {
@@ -238,26 +380,40 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, r
   return phases;
 }
 
-function deriveNextActions({ storyId, baseRef, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
+function deriveNextActions({ storyId, baseRef, managedWorktree, expectedHeadSha, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
+  const wrap = (command) => isManagedWorktreeCommandSafe(managedWorktree, { expectedHeadSha })
+    ? `cd ${shellQuote(managedWorktree.path)} && ${command}`
+    : command;
+  const routeAction = (action) => routeActionThroughManagedWorktree(action, wrap);
+  const wrapActions = (actions) => actions.map(routeAction);
   if (prCreated) return [];
-  if (!prPrepare) return [buildPrPrepareCommand({ storyId, baseRef })];
-  if (readyForPrCreate) return [buildPrCreateCommand({ storyId, baseRef })];
+  if (!prPrepare && managedWorktree?.status === 'missing' && managedWorktree.mode !== 'disabled') {
+    return [buildExecuteStartCommand({ storyId, baseRef })];
+  }
+  if (!prPrepare) return [wrap(buildPrPrepareCommand({ storyId, baseRef }))];
+  if (readyForPrCreate) return [wrap(buildPrCreateCommand({ storyId, baseRef }))];
   if (waiverRequired) {
     const actions = unresolvedGates
       .flatMap((gate) => gate.required_actions?.length ? gate.required_actions : [gate.reason])
       .filter(Boolean);
-    if (actions.length > 0) return actions;
+    if (actions.length > 0) return wrapActions(actions);
     return ['Resolve unresolved non-critical gates or rerun PR create with an explicit verification waiver.'];
   }
   if (blockingGate) {
-    if (blockingGate.required_actions?.length) return blockingGate.required_actions;
+    if (blockingGate.required_actions?.length) return wrapActions(blockingGate.required_actions);
     return [blockingGate.reason ?? `Resolve ${blockingGate.label ?? blockingGate.id}`];
   }
   const actions = gateStatus?.next_required_actions?.length
     ? gateStatus.next_required_actions
     : gateStatus?.execution_gate?.required_actions ?? [];
-  if (actions.length > 0) return actions;
-  return [buildPrPrepareCommand({ storyId, baseRef })];
+  if (actions.length > 0) return wrapActions(actions);
+  return [wrap(buildPrPrepareCommand({ storyId, baseRef }))];
+}
+
+function routeActionThroughManagedWorktree(action, wrap) {
+  const text = String(action ?? '');
+  if (/^vibepro\s+/.test(text.trim())) return wrap(text);
+  return text.replace(/`(vibepro\s+[^`]+)`/g, (_match, command) => `\`${wrap(command)}\``);
 }
 
 function summarizePrPrepare(root, prPrepare) {
@@ -306,6 +462,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'ci_status_or_waiver_gate',
       'vibepro_artifact_policy_gate',
       'split_resolution_gate',
+      'managed_worktree_gate',
       'architecture_gate',
       'spec_gate',
       'decision_record_gate',
@@ -322,6 +479,48 @@ function collectUnresolvedRequiredGates(gateDag) {
     ].includes(node.type))
     .filter((node) => node.required)
     .filter((node) => isUnresolvedStatus(node.status));
+}
+
+function collectRequiredExecutionBlockers(executionDag, { storyId, baseRef, managedWorktree, expectedHeadSha }) {
+  const nodes = Array.isArray(executionDag?.nodes) ? executionDag.nodes : [];
+  const blockers = nodes
+    .filter((node) => node.required)
+    .filter((node) => ['blocked', 'needs_evidence', 'failed'].includes(node.status))
+    .map((node) => ({
+      id: `execution:${node.id}`,
+      label: node.id,
+      status: node.status,
+      reason: node.reason ?? null,
+      required_actions: buildExecutionBlockerActions(node, { storyId, baseRef, managedWorktree })
+    }));
+  return blockers;
+}
+
+function buildExecutionBlockerActions(node, { storyId, baseRef, managedWorktree }) {
+  const executeStart = buildExecuteStartCommand({ storyId, baseRef });
+  if (node.id === 'worktree_created' && managedWorktree?.status === 'branch_mismatch') {
+    return [
+      `Restore ${managedWorktree.path} to ${managedWorktree.branch} or rerun ${executeStart} with a clean managed worktree path before PR preparation.`
+    ];
+  }
+  if (node.id === 'branch_bound' && managedWorktree?.branch_match === false) {
+    return [
+      `Resolve the managed worktree branch mismatch (${managedWorktree.actual_branch ?? 'detached'} != ${managedWorktree.branch}) before running PR preparation.`
+    ];
+  }
+  if (node.id === 'head_bound' && managedWorktree?.current_head_sha) {
+    return [
+      `Update the managed worktree at ${managedWorktree.path} to the current execution HEAD before PR preparation.`
+    ];
+  }
+  if (node.id === 'worktree_created') {
+    return [
+      `Run ${executeStart} to create or rebind the VibePro managed worktree before PR preparation.`
+    ];
+  }
+  return [
+    `Resolve Execution DAG node ${node.id} before PR preparation.`
+  ];
 }
 
 function isUnresolvedStatus(status) {
@@ -373,6 +572,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:managed_worktree' && gate.required && gate.status !== 'satisfied') return true;
   if (gate.id === 'gate:decision_record' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
@@ -390,6 +590,119 @@ async function writeExecutionState(repoRoot, state) {
     artifact: toWorkspaceRelative(root, filePath),
     found: true
   };
+}
+
+async function writeExecutionStateWithLinkedCopies(repoRoot, state) {
+  const result = await writeExecutionState(repoRoot, state);
+  await writeLinkedExecutionStateCopies(repoRoot, state);
+  await syncManagedWorktreeArtifactsToSource(repoRoot, state);
+  return result;
+}
+
+async function writeLinkedExecutionStateCopies(repoRoot, state) {
+  const currentRoot = path.resolve(repoRoot);
+  const targets = collectLinkedExecutionRoots(state)
+    .filter((target) => path.resolve(target) !== currentRoot);
+  for (const target of targets) {
+    const filePath = getExecutionStatePath(target, state.story_id);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeJsonAtomic(filePath, state);
+  }
+}
+
+async function syncManagedWorktreeArtifactsToSource(repoRoot, state) {
+  const currentRoot = path.resolve(repoRoot);
+  const managedPath = state?.managed_worktree?.path ? path.resolve(state.managed_worktree.path) : null;
+  const sourceRepo = state?.managed_worktree?.source_repo ? path.resolve(state.managed_worktree.source_repo) : null;
+  if (!managedPath || !sourceRepo || currentRoot !== managedPath || sourceRepo === currentRoot) return;
+  const workspace = getWorkspaceDir(currentRoot);
+  const sourceWorkspace = getWorkspaceDir(sourceRepo);
+  await copyDirectoryIfExists(
+    path.join(workspace, 'pr', state.story_id),
+    path.join(sourceWorkspace, 'pr', state.story_id)
+  );
+  await copyDirectoryIfExists(
+    path.join(workspace, 'reviews', state.story_id),
+    path.join(sourceWorkspace, 'reviews', state.story_id)
+  );
+  await copyDirectoryIfExists(
+    path.join(workspace, 'verification'),
+    path.join(sourceWorkspace, 'verification')
+  );
+  await mergeManifestFileIfExists(
+    path.join(workspace, 'vibepro-manifest.json'),
+    path.join(sourceWorkspace, 'vibepro-manifest.json')
+  );
+}
+
+function collectLinkedExecutionRoots(state) {
+  if (!state?.managed_worktree || state.managed_worktree.mode === 'disabled') return [];
+  return unique([
+    state.managed_worktree.path,
+    state.managed_worktree.source_repo
+  ].filter(Boolean).map((target) => path.resolve(target)));
+}
+
+async function copyDirectoryIfExists(source, target) {
+  try {
+    await cp(source, target, { recursive: true, force: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+}
+
+async function copyFileIfExists(source, target) {
+  try {
+    await mkdir(path.dirname(target), { recursive: true });
+    await cp(source, target, { force: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return;
+    throw error;
+  }
+}
+
+async function mergeManifestFileIfExists(source, target) {
+  const managed = await readJsonIfExists(source);
+  if (!managed) return;
+  const existing = await readJsonIfExists(target);
+  const merged = mergeWorkspaceManifest(existing, managed);
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeJsonAtomic(target, merged);
+}
+
+function mergeWorkspaceManifest(existing, managed) {
+  const merged = {
+    ...(existing ?? {}),
+    ...managed
+  };
+  if (existing?.artifacts || managed?.artifacts) {
+    merged.artifacts = {
+      ...(existing?.artifacts ?? {}),
+      ...(managed?.artifacts ?? {})
+    };
+  }
+  if (Array.isArray(existing?.flow_verification_runs) || Array.isArray(managed?.flow_verification_runs)) {
+    merged.flow_verification_runs = mergeRunsById(
+      existing?.flow_verification_runs ?? [],
+      managed?.flow_verification_runs ?? []
+    );
+  }
+  return merged;
+}
+
+function mergeRunsById(existingRuns, managedRuns) {
+  const byId = new Map();
+  const anonymous = [];
+  for (const run of existingRuns) {
+    if (run?.run_id) byId.set(run.run_id, run);
+    else anonymous.push(run);
+  }
+  for (const run of managedRuns) {
+    if (run?.run_id) byId.set(run.run_id, { ...(byId.get(run.run_id) ?? {}), ...run });
+    else anonymous.push(run);
+  }
+  return [...anonymous, ...byId.values()];
 }
 
 async function readExecutionState(repoRoot, storyId) {
@@ -429,6 +742,26 @@ async function writeJsonAtomic(filePath, value) {
   }
 }
 
+async function gitOptional(repoRoot, args) {
+  try {
+    const result = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
+    return result.stdout.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+async function gitIsAncestor(repoRoot, ancestor, descendant) {
+  if (!ancestor || !descendant) return false;
+  if (ancestor === descendant) return true;
+  try {
+    await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function getExecutionStatePath(repoRoot, storyId) {
   return path.join(getWorkspaceDir(repoRoot), 'executions', storyId, 'state.json');
 }
@@ -452,6 +785,11 @@ function buildPrPrepareCommand({ storyId, baseRef }) {
 function buildPrCreateCommand({ storyId, baseRef }) {
   const base = baseRef ? ` --base ${shellQuote(baseRef)}` : ' --base <base-ref>';
   return `vibepro pr create . --story-id ${shellQuote(storyId)}${base}`;
+}
+
+function buildExecuteStartCommand({ storyId, baseRef }) {
+  const base = baseRef ? ` --base ${shellQuote(baseRef)}` : ' --base <base-ref>';
+  return `vibepro execute start . --story-id ${shellQuote(storyId)}${base}`;
 }
 
 function shellQuote(value) {

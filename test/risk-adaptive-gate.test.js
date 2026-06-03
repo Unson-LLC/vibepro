@@ -263,6 +263,39 @@ Session switching is intermittent and looks like a race condition with async orp
   assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
 });
 
+test('worktree feature stories do not trigger deployment bug physics without deployment evidence', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Managed worktree execution DAG
+architecture_docs:
+  reason: triage fixture
+---
+
+# Managed worktree execution DAG
+
+## 背景
+
+VibePro should create and reuse a managed worktree for story execution.
+
+## 受け入れ基準
+
+- [ ] Worktree execution state is visible in PR Gate artifacts
+`);
+  await writeFile(path.join(repo, 'src', 'managed-worktree.js'), 'export function status(){ return "worktree"; }\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const dag = result.result.preparation.pr_context.gate_dag;
+  const triage = dag.nodes.find((node) => node.id === 'gate:bug_physics_triage');
+
+  assert.deepEqual(triage.classes, []);
+  assert.equal(triage.status, 'passed');
+  assert.equal(dag.nodes.some((node) => node.id === 'gate:bug_physics_deployment_version_stamp'), false);
+});
+
 test('bug physics triage emits multi-label profiles typed N/A gates and feedback edge', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
