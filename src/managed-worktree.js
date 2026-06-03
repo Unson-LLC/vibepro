@@ -3,6 +3,7 @@ import { mkdir, readFile, realpath, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { readDecisionRecordsIfExists } from './decision-records.js';
 import { MANIFEST_FILE, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -315,9 +316,28 @@ async function resolveManagedWorktreeModeForState(root, state) {
 export async function assertManagedWorktreeCommandAllowed(repoRoot, options = {}) {
   const context = await evaluateManagedWorktreeCommandContext(repoRoot, options);
   if (context.status === 'blocked') {
+    const bypass = options.storyId
+      ? findAcceptedManagedWorktreeBypass(await readDecisionRecordsIfExists(path.resolve(repoRoot), options.storyId))
+      : null;
+    if (bypass) {
+      return {
+        ...context,
+        status: 'bypassed',
+        reason: `accepted bypass decision recorded: ${bypass.reason ?? bypass.summary ?? bypass.decision_id}`,
+        decision_id: bypass.decision_id
+      };
+    }
     throw new Error(`managed worktree required for ${options.commandName ?? 'this command'}: ${context.reason}`);
   }
   return context;
+}
+
+function findAcceptedManagedWorktreeBypass(decisionRecords) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  return decisions.find((decision) => decision
+    && decision.type === 'waiver'
+    && decision.status === 'accepted'
+    && decision.source === 'gate:managed_worktree') ?? null;
 }
 
 export function buildManagedWorktreeCommandWarning(context) {

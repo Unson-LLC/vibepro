@@ -6,6 +6,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 
 const execFileAsync = promisify(execFile);
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
@@ -25,6 +26,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
 
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
+  await assertManagedWorktreeCommandAllowed(root, {
+    storyId,
+    commandName: 'verify record'
+  });
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');

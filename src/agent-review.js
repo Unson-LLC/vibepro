@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
+import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -214,6 +215,10 @@ export async function recordAgentReview(repoRoot, options = {}) {
   if (!options.summary && !options.stdinText) {
     throw new Error('review record requires --summary <text> or --from-stdin');
   }
+  await assertManagedWorktreeCommandAllowed(root, {
+    storyId,
+    commandName: 'review record'
+  });
 
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
