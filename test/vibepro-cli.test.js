@@ -7011,7 +7011,7 @@ title: PR準備
 architecture_docs:
   reason: CLI-only utility change
 spec_docs:
-  - docs/specs/story-pr-prepare-spec.md
+  - ../../../specs/story-pr-prepare-spec.md
 ---
 
 # PR準備
@@ -8843,6 +8843,98 @@ test('story-pr-prepare acceptance criteria', async () => {
   assert.deepEqual(coveredGate.acceptance_e2e_coverage.matched_files, ['tests/e2e/story-pr-prepare-main.spec.ts']);
 });
 
+test('pr prepare requires scenario clause coverage in E2E specs', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'checkout'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  - ../../../architecture/story-pr-prepare.md
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [ ] 購入フローで確認画面から完了画面へ進める
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'story-pr-prepare.md'), `# Checkout IA
+
+## UI Flow
+
+Checkout moves from confirmation to completion after the user submits payment.
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'checkout', 'page.tsx'), 'export default function Checkout() { return <button>Pay</button>; }\n');
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-06-03T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'S-001',
+        type: 'scenario',
+        statement: 'Given checkout confirmation is visible, when the user submits payment, then the completion screen is shown.',
+        origin: {
+          story_refs: [{ kind: 'acceptance_criteria', index: 0 }],
+          architecture_refs: [{ file: 'docs/architecture/story-pr-prepare.md', section: 'UI Flow' }]
+        }
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add checkout scenario spec']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E command passed'
+  ])).exitCode, 0);
+
+  const missingCoverageResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(missingCoverageResult.exitCode, 0);
+  const missingCoverageGate = missingCoverageResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(missingCoverageGate.status, 'needs_evidence');
+  assert.equal(missingCoverageGate.acceptance_e2e_coverage.scenario_e2e_coverage.status, 'needs_evidence');
+  assert.deepEqual(missingCoverageGate.acceptance_e2e_coverage.missing_scenario_clauses.map((item) => item.id), ['S-001']);
+  assert.match(missingCoverageGate.reason, /S-001/);
+
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-checkout.spec.ts'), `
+import { expect, test } from '@playwright/test';
+test('story-pr-prepare S-001 checkout completion scenario', async () => {
+  // story-pr-prepare S-001
+  // Given checkout confirmation is visible, when the user submits payment, then the completion screen is shown.
+  expect('completion screen is shown').toContain('completion');
+});
+`);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e tests/e2e/story-pr-prepare-checkout.spec.ts',
+    '--summary', 'E2E command passed with scenario coverage'
+  ])).exitCode, 0);
+
+  const coveredResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(coveredResult.exitCode, 0);
+  const coveredGate = coveredResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(
+    coveredGate.acceptance_e2e_coverage.scenario_e2e_coverage.status,
+    'passed',
+    JSON.stringify(coveredGate.acceptance_e2e_coverage.scenario_e2e_coverage)
+  );
+  assert.equal(coveredGate.acceptance_e2e_coverage.covered_scenario_clause_count, 1);
+  assert.deepEqual(coveredGate.acceptance_e2e_coverage.missing_scenario_clauses, []);
+});
+
 test('pr prepare requires Visual QA evidence when UI source changes', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
@@ -9243,6 +9335,70 @@ export function SettingsPage({ saving }) {
   assert.deepEqual(specGate.spec_docs, ['docs/specs/story-pr-prepare-spec.md']);
   assert.equal(specGate.inferred_spec.clauses, 1);
   assert.match(specGate.reason, /explicit Spec docs are present/);
+});
+
+test('pr prepare blocks unresolved story-relative Spec docs in Spec Gate binding', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'settings'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+spec_docs:
+  - ../../specs/story-pr-prepare-spec.md
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- 設定画面の保存状態が明示Specで確認できる
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-pr-prepare-spec.md'), `---
+story_id: story-pr-prepare
+title: PR準備 Spec
+---
+
+# Spec
+
+- 設定画面は保存中状態を表示する。
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'settings', 'page.tsx'), `
+export function SettingsPage({ saving }) {
+  return saving ? 'saving' : 'ready';
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-05-16T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'The SettingsPage saving branch must remain visible while persistence is pending.'
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add unresolved settings state spec ref']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  const specGate = gateDag.nodes.find((node) => node.id === 'spec');
+  assert.equal(gateDag.summary.spec_status, 'needs_evidence');
+  assert.equal(specGate.status, 'needs_evidence');
+  assert.deepEqual(specGate.spec_docs, ['docs/specs/story-pr-prepare-spec.md']);
+  assert.deepEqual(specGate.missing_spec_docs, [
+    {
+      raw: '../../specs/story-pr-prepare-spec.md',
+      resolved_path: 'docs/management/specs/story-pr-prepare-spec.md'
+    }
+  ]);
+  assert.match(specGate.reason, /explicit Spec docs are missing or unresolved/);
 });
 
 test('pr prepare treats internal spec clauses as coverage for changed source scenario gaps', async () => {

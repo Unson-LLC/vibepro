@@ -88,7 +88,7 @@
         },
         "origin": {
           "type": "object",
-          "description": "Where this clause was derived from. At least one of story_refs / code_refs / test_refs must be non-empty.",
+          "description": "Where this clause was derived from. At least one of story_refs / architecture_refs / code_refs / test_refs must be non-empty.",
           "properties": {
             "story_refs": {
               "type": "array",
@@ -101,6 +101,19 @@
                     "enum": ["acceptance_criteria", "background", "policy", "frontmatter", "other"]
                   },
                   "index": { "type": "integer", "minimum": 0 },
+                  "text_snippet": { "type": "string" }
+                }
+              }
+            },
+            "architecture_refs": {
+              "type": "array",
+              "description": "Architecture, IA, route-flow, state, or boundary evidence that shaped this clause.",
+              "items": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                  "file": { "type": "string", "minLength": 1 },
+                  "section": { "type": "string" },
                   "text_snippet": { "type": "string" }
                 }
               }

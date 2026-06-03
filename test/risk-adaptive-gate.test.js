@@ -554,11 +554,14 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';
 test('story-risk-adaptive workflow state transitions', async () => {
+  // story-risk-adaptive S-001
+  // Given the workflow state is retrying or polling status, release readiness requires replaying the transition matrix before generation resumes.
   // story-risk-adaptive ac:1
   // Workflow states prevent generation until detection is ready
   // story-risk-adaptive ac:2
   // Retry and resume transitions are replayed before release
   expect('retry-status').toContain('status');
+  expect('transition matrix before generation resumes').toContain('transition');
   expect('Workflow states prevent generation until detection is ready').toContain('Workflow');
   expect('Retry and resume transitions are replayed before release').toContain('Retry');
 });
@@ -777,9 +780,12 @@ test('story-risk-adaptive generic marker', async () => {
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';
 test('story-risk-adaptive bound marker with assertion', async () => {
+  // story-risk-adaptive S-001
+  // Given the workflow state is polling status, release readiness requires replaying the transition matrix.
   // story-risk-adaptive ac:1
   // Workflow states prevent generation until detection is ready
   expect('retry-status').toContain('status');
+  expect('replaying the transition matrix').toContain('transition');
   expect('Workflow states prevent generation until detection is ready').toContain('Workflow');
 });
 `);
