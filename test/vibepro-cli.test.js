@@ -2028,6 +2028,56 @@ test('pr prepare blocks PR freshness when base advanced after branch creation', 
   assert.match(actions, /vibepro pr prepare/);
 });
 
+test('pr prepare exposes stale verification evidence through artifact consistency gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/artifact-consistency.js']);
+  await git(repo, ['commit', '-m', 'feat: add artifact consistency fixture']);
+
+  const recordResult = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit suite passed for artifact consistency fixture'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const currentResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(currentResult.exitCode, 0);
+  const currentGate = currentResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(currentGate.status, 'passed');
+  assert.equal(currentGate.artifact_count >= 1, true);
+  assert.equal(currentResult.result.preparation.pr_context.gate_dag.summary.artifact_consistency_status, 'passed');
+
+  await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), 'export const value = 2;\n');
+
+  const staleResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(staleResult.exitCode, 0);
+  const staleGate = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(staleGate.status, 'stale_evidence');
+  assert.equal(staleGate.inconsistent_artifact_count, 1);
+  assert.equal(staleGate.inconsistent_artifacts[0].artifact_type, 'verification_command');
+  assert.equal(staleGate.inconsistent_artifacts[0].kind, 'unit');
+  assert.match(staleGate.reason, /not bound to the current git state/);
+  assert.equal(
+    staleResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:artifact_consistency'),
+    true
+  );
+  const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
+  assert.match(actions, /Regenerate stale VibePro evidence artifacts/);
+  assert.match(actions, /Rerun current-bound verification evidence/);
+});
+
 test('check all leaves optional agent harness and public discovery checks out unless explicitly included', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);

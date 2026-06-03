@@ -1117,6 +1117,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:pr_freshness') {
     return `Refresh PR branch and regenerate VibePro evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:artifact_consistency') {
+    return `Regenerate stale VibePro evidence artifacts for the current git state: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -5324,6 +5327,12 @@ function buildGateDag({
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git);
+  const artifactConsistencyGate = buildArtifactConsistencyGate({
+    git,
+    verificationEvidence,
+    agentReviews,
+    managedWorktreeContext
+  });
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const designQualityGate = designQualityEvidence ? {
     id: 'gate:design_quality',
@@ -5423,6 +5432,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    artifactConsistencyGate,
     dagConnectivityGate,
     {
       id: 'pr',
@@ -5540,7 +5550,8 @@ function buildGateDag({
         stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
       })
     ]),
-    { from: 'gate:agent_review', to: 'gate:dag_connectivity' },
+    { from: 'gate:agent_review', to: 'gate:artifact_consistency' },
+    { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
     { from: 'gate:dag_connectivity', to: 'pr' }
   ];
 
@@ -5575,6 +5586,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    artifactConsistencyGate,
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
@@ -5598,6 +5610,7 @@ function buildGateDag({
       spec_status: specGate.status,
       requirement_status: requirementGate.status,
       decision_record_status: decisionRecordGate.status,
+      artifact_consistency_status: artifactConsistencyGate.status,
       managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
     },
     nodes: allNodes,
@@ -5718,6 +5731,94 @@ function buildPrFreshnessGate(git) {
     ],
     reason: freshness?.reason ?? 'PR freshness could not be proven'
   };
+}
+
+function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null } = {}) {
+  const current = {
+    head_sha: git?.head_sha ?? null,
+    status_fingerprint_hash: fingerprintHashForContext(git),
+    dirty: git?.dirty === true,
+    managed_worktree: managedWorktreeContext ? {
+      id: managedWorktreeContext.id ?? null,
+      path: managedWorktreeContext.path ?? null,
+      branch: managedWorktreeContext.branch ?? null,
+      head_sha: managedWorktreeContext.current_head_sha ?? managedWorktreeContext.head_sha ?? null,
+      dirty_fingerprint: managedWorktreeContext.dirty_fingerprint ?? null
+    } : null
+  };
+  const artifacts = [
+    ...collectVerificationArtifactBindings(verificationEvidence),
+    ...collectReviewArtifactBindings(agentReviews)
+  ];
+  const inconsistent = artifacts.filter((artifact) => artifact.status !== 'current');
+  const status = inconsistent.length === 0 ? 'passed' : 'stale_evidence';
+  return {
+    id: 'gate:artifact_consistency',
+    type: 'artifact_consistency_gate',
+    label: 'Artifact Consistency Gate',
+    status,
+    required: true,
+    current,
+    artifact_count: artifacts.length,
+    inconsistent_artifact_count: inconsistent.length,
+    artifacts,
+    inconsistent_artifacts: inconsistent.slice(0, 20),
+    required_actions: status === 'passed' ? [] : [
+      'Rerun current-bound verification evidence for stale command artifacts',
+      'Rerun `vibepro review prepare`, close review subagents, and record current-git review results for stale review artifacts',
+      'Rerun `vibepro pr prepare` so Gate DAG, PR body, verification evidence, and review summary are bound to the same HEAD and dirty fingerprint'
+    ],
+    reason: status === 'passed'
+      ? artifacts.length > 0
+        ? `${artifacts.length} recorded verification/review artifact(s) are bound to the current git state`
+        : 'No recorded verification/review artifacts are present; no cross-artifact binding conflict was found'
+      : `${inconsistent.length} recorded verification/review artifact(s) are not bound to the current git state`
+  };
+}
+
+function collectVerificationArtifactBindings(verificationEvidence = null) {
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.map((command) => {
+    const bindingStatus = command.binding?.status ?? (command.git_context?.head_sha ? 'unknown' : 'legacy');
+    return {
+      artifact_type: 'verification_command',
+      kind: command.kind ?? null,
+      command: command.command ?? null,
+      artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
+      recorded_head_sha: command.git_context?.head_sha ?? null,
+      recorded_status_fingerprint_hash: fingerprintHashForContext(command.git_context),
+      status: bindingStatus === 'current' ? 'current' : bindingStatus,
+      reason: command.binding?.reason ?? (bindingStatus === 'legacy'
+        ? 'verification evidence is not bound to a git head'
+        : 'verification evidence binding could not be proven current')
+    };
+  });
+}
+
+function collectReviewArtifactBindings(agentReviews = null) {
+  const stages = Array.isArray(agentReviews?.stages) ? agentReviews.stages : [];
+  const artifacts = [];
+  for (const stage of stages) {
+    for (const role of stage.roles ?? []) {
+      if (!role.artifact) continue;
+      const stale = role.effective_status === 'stale';
+      const unverified = role.effective_status === 'unverified_agent';
+      const current = !stale && !unverified;
+      artifacts.push({
+        artifact_type: 'agent_review_result',
+        stage: stage.stage ?? null,
+        role: role.role ?? null,
+        artifact: role.artifact ?? null,
+        recorded_head_sha: role.git_context?.head_sha ?? role.source_git_context?.head_sha ?? null,
+        recorded_status_fingerprint_hash: fingerprintHashForContext(role.git_context ?? role.source_git_context),
+        status: current ? 'current' : stale ? 'stale' : role.effective_status ?? 'not_current',
+        reason: current
+          ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'
+          : role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state'
+      });
+    }
+  }
+  return artifacts;
 }
 
 function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
@@ -6942,6 +7043,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'design_quality_gate',
       'workflow_heavy_gate',
       'pr_freshness_gate',
+      'artifact_consistency_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
@@ -6992,6 +7094,7 @@ function isUnresolvedGateStatus(status) {
     'needs_changes',
     'contradicted',
     'stale',
+    'stale_evidence',
     'block',
     'failed'
   ].includes(status);
@@ -7077,6 +7180,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:bug_physics_triage' && gate.status !== 'passed') return true;
