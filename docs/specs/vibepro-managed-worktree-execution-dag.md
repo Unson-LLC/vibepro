@@ -41,6 +41,21 @@ title: VibePro管理worktree Execution DAG Spec
 - `merged_or_closed`
 - `worktree_cleaned`
 
+```mermaid
+flowchart TD
+  story_selected --> worktree_created
+  worktree_created --> branch_bound
+  branch_bound --> implementation_started
+  implementation_started --> implementation_complete
+  implementation_complete --> verification_recorded
+  verification_recorded --> agent_review_recorded
+  agent_review_recorded --> pr_prepare_ready
+  pr_prepare_ready --> pr_created
+  pr_created --> merge_ready
+  merge_ready --> merged_or_closed
+  merged_or_closed --> worktree_cleaned
+```
+
 各nodeは次を含む。
 
 - `id`

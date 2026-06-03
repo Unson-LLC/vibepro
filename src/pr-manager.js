@@ -6384,6 +6384,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'visual_qa_gate',
       'design_quality_gate',
+      'design_diagrams_gate',
       'workflow_heavy_gate',
       'pr_freshness_gate',
       'agent_review_prepare_gate',
@@ -6400,6 +6401,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       status: node.status,
       command: node.command,
       artifact: node.artifact,
+      blocking: node.blocking,
+      missing_diagrams: node.missing_diagrams,
       required_actions: node.required_actions,
       reason: node.reason
     }));
@@ -6443,6 +6446,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
+      if (gate.id === 'gate:design_diagrams') return 'Design Diagrams Gate requires adding the listed missing diagram kinds to spec.diagrams[] before PR creation.';
       if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
       if (gate.id === 'gate:pr_route_classification') return 'PR Route Classification Gate requires a route before VibePro can choose the correct body contract and evidence path.';
       if (gate.id === 'gate:pr_body_contract') return 'PR Body Contract Gate requires the PR text to expose the route-specific decision question, source of truth, gates, and waiver/evidence clauses.';
@@ -6492,12 +6496,14 @@ function buildGateOverride(gateDag, options, context = {}) {
 }
 
 function isCriticalUnresolvedGate(gate) {
+  if (gate.blocking === true && gate.status !== 'passed') return true;
   if (gate.id === 'story' && gate.status === 'transient') return true;
   if (gate.id === 'architecture' && gate.status === 'needs_review') return true;
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:design_diagrams' && gate.status !== 'satisfied') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;

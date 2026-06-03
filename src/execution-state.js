@@ -350,6 +350,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'visual_qa_gate',
       'design_quality_gate',
+      'design_diagrams_gate',
       'workflow_heavy_gate',
       'pr_freshness_gate',
       'agent_review_prepare_gate',
@@ -396,12 +397,14 @@ function pickBlockingGate(gates) {
 }
 
 function isCriticalUnresolvedGate(gate) {
+  if (gate.blocking === true && gate.status !== 'passed') return true;
   if (gate.id === 'story' && gate.status === 'transient') return true;
   if (gate.id === 'architecture' && gate.status === 'needs_review') return true;
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:design_diagrams' && gate.status !== 'satisfied') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;

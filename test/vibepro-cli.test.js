@@ -7935,6 +7935,36 @@ test('agent_workflow route enforces the evidence lifecycle judgment gate with ev
   );
 });
 
+test('pr prepare surfaces missing required design diagrams in gate status and PR body', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'checkout'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'checkout', 'flow.js'),
+    'export function checkoutFlow() { return "checkout"; }\n'
+  );
+  await git(repo, ['add', 'src/checkout/flow.js']);
+  await git(repo, ['commit', '-m', 'feat: add checkout flow']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const designGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:design_diagrams');
+  assert.equal(designGate?.status, 'needs_evidence');
+  assert.equal(designGate?.blocking, true);
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(
+    prepare.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:design_diagrams'),
+    true
+  );
+  assert.equal(
+    prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:design_diagrams'),
+    true
+  );
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /Design Diagrams/);
+});
+
 test('secret/credential surface change enforces the safety gate with a decision or waiver', async () => {
   const repo = await makeGitRepoWithStory();
   await writeFile(path.join(repo, '.env'), 'API_KEY=abc123\n');
