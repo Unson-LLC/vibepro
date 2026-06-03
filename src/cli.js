@@ -91,7 +91,14 @@ import {
   buildManagedWorktreeCommandWarning,
   evaluateManagedWorktreeCommandContext
 } from './managed-worktree.js';
-import { createPullRequest, preparePullRequest, renderPrCreateSummary, renderPrPrepareSummary } from './pr-manager.js';
+import {
+  createPullRequest,
+  preparePullRequest,
+  renderPrCreateSummary,
+  renderPrPrepareSummary,
+  renderPrShipSummary,
+  shipPullRequest
+} from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import {
@@ -191,6 +198,7 @@ Typical PR-safety flow:
   vibepro review prepare <repo> --id <id> --stage gate
   vibepro review status <repo> --id <id>
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
+  vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
 
 PR prepare creates pr-body, gate-dag, split-plan, review-cockpit, and
@@ -291,6 +299,7 @@ Usage:
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
@@ -328,6 +337,8 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       人間レビューは監査文脈として記録できますが、required gate のpass代替にはなりません。
   vibepro review status <repo> --id <id>
       必須レビューの不足・stale・blockを確認します。
+  vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
+      pr prepareを再実行し、PR作成に進めるか、必要なreview prepare / review start / review recordを表示します。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
 
@@ -431,6 +442,7 @@ Usage:
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
@@ -1647,6 +1659,50 @@ export async function runCli(argv, io = {}) {
           target: 'pr_create',
           baseRef: getOption(rest, '--base')
         }).catch(() => null);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'ship') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
+        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr ship');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'pr ship'
+        });
+        const result = await shipPullRequest(repoRoot, {
+          storyId,
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
+          baseRef: getOption(rest, '--base'),
+          prBase: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head-ref'),
+          headBranch: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
+          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
+          title: getOption(rest, '--title'),
+          dryRun: hasFlag(rest, '--dry-run'),
+          allowNeedsVerification: hasFlag(rest, '--allow-needs-verification'),
+          verificationWaiver: getOption(rest, '--verification-waiver'),
+          strict: hasFlag(rest, '--strict'),
+          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
+          language: getOption(rest, '--language'),
+          env: io.env
+        });
+        write(stdout, jsonOutput
+          ? `${JSON.stringify(result.ship, null, 2)}\n`
+          : renderPrShipSummary(result));
+        await updateExecutionStateFromPrPrepare(repoRoot, result, {
+          target: 'pr_create',
+          baseRef: getOption(rest, '--base')
+        }).catch(() => null);
+        if (result.execution) {
+          await updateExecutionStateFromPrCreate(repoRoot, result, {
+            target: 'pr_create',
+            baseRef: getOption(rest, '--base')
+          }).catch(() => null);
+        }
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'create') {

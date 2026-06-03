@@ -5855,7 +5855,125 @@ process.exit(42);
   assert.equal(failedPrCreate.results.length, 2);
   assert.equal(failedPrCreate.results[1].exit_code, 42);
   assert.match(failedPrCreate.results[1].stderr, /gh create failed/);
-	});
+});
+
+test('pr ship dry-run reruns prepare and stops with Agent Review commands instead of raw gh create', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'ship-target.js'), 'export const shipTarget = true;\n');
+  await git(repo, ['add', 'src/ship-target.js']);
+  await git(repo, ['commit', '-m', 'feat: add ship target']);
+
+  let stdoutOutput = '';
+  const result = await runCli([
+    'pr',
+    'ship',
+    repo,
+    '--base',
+    'main',
+    '--head',
+    'feature/test-story',
+    '--story-id',
+    'story-pr-prepare',
+    '--dry-run',
+    '--json'
+  ], {
+    stdout: { write: (text) => { stdoutOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const ship = JSON.parse(stdoutOutput);
+  assert.equal(ship.status, 'blocked');
+  assert.equal(ship.safe_operations.some((operation) => operation.id === 'pr_prepare' && operation.status === 'executed'), true);
+  assert.equal(ship.raw_gh_pr_create_suggested, false);
+  assert.equal(ship.next_commands.some((command) => /^gh pr create\b/.test(command)), false);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review prepare')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review start')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review record')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro pr create')), false);
+  assert.equal(ship.required_agent_review.length > 0, true);
+  assert.equal(ship.required_agent_review.some((action) => action.prepare_command.includes('vibepro review prepare')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.start_command_template.includes('vibepro review start')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('vibepro review record')), true);
+  const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  assert.equal(prepare.story.story_id, 'story-pr-prepare');
+});
+
+test('pr ship dry-run restores Agent Review commands from stale role gates', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'ship-stale-review.js'), 'export const version = 1;\n');
+  await git(repo, ['add', 'src/ship-stale-review.js']);
+  await git(repo, ['commit', '-m', 'feat: add stale review target']);
+
+  await runCli([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence'
+  ]);
+  await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'current review before source change',
+    '--inspection-summary',
+    'reviewed current PR artifacts',
+    '--inspection-evidence',
+    '.vibepro/pr/story-pr-prepare/pr-prepare.json',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-stale-review',
+    '--agent-closed'
+  ]);
+  await writeFile(path.join(repo, 'src', 'ship-stale-review.js'), 'export const version = 2;\n');
+  await git(repo, ['add', 'src/ship-stale-review.js']);
+  await git(repo, ['commit', '-m', 'feat: update stale review target']);
+
+  let stdoutOutput = '';
+  const result = await runCli([
+    'pr',
+    'ship',
+    repo,
+    '--base',
+    'main',
+    '--head',
+    'feature/test-story',
+    '--story-id',
+    'story-pr-prepare',
+    '--dry-run',
+    '--json'
+  ], {
+    stdout: { write: (text) => { stdoutOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const ship = JSON.parse(stdoutOutput);
+  assert.equal(ship.status, 'blocked');
+  assert.equal(ship.required_agent_review.some((action) => action.stage === 'gate' && action.roles.includes('gate_evidence')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review prepare')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review start')), true);
+  assert.equal(ship.next_commands.some((command) => command.includes('vibepro review record')), true);
+  assert.equal(ship.raw_gh_pr_create_suggested, false);
+});
 
 test('pr prepare uses story source title and intro when explicit background heading is absent', async () => {
   const repo = await makeGitRepoWithStory();
@@ -7421,6 +7539,19 @@ test('required managed worktree guard covers review lifecycle, review record, ta
   ]);
   assert.equal(taskExecuteSelectedStory.exitCode, 1);
   assert.match(taskExecuteSelectedStory.stderr, /managed worktree required for task execute/);
+
+  const prShip = await runCliWithStdout([
+    'pr',
+    'ship',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--dry-run'
+  ]);
+  assert.equal(prShip.exitCode, 1);
+  assert.match(prShip.stderr, /managed worktree required for pr ship/);
 
   const prCreate = await runCliWithStdout([
     'pr',
