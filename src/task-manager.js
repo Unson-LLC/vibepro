@@ -172,6 +172,7 @@ export async function createTaskExecution(repoRoot, options = {}) {
     source_run: handoffResult.handoff.source_run,
     task,
     group,
+    warnings: normalizeWarnings([options.managedWorktreeWarning]),
     execution: {
       vibepro_mutates_repository: false,
       implementation_agent_may_mutate_repository: true,
@@ -550,6 +551,9 @@ ${handoff.completion_report_template.map((item) => `- ${item}`).join('\n')}
 }
 
 export function renderTaskExecution(execution, language = 'ja') {
+  const warnings = execution.warnings?.length
+    ? execution.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
+    : '- none';
   return `# 実行セッション
 
 ## 前提
@@ -559,6 +563,10 @@ export function renderTaskExecution(execution, language = 'ja') {
 - Group: ${execution.group?.id ?? '-'}
 - VibeProは実装の入口と証跡を管理する
 - 対象コードの修正は人間またはAIエージェントが行う
+
+## Warnings
+
+${warnings}
 
 ## 参照成果物
 
@@ -983,6 +991,10 @@ function formatReadFirst(files = []) {
 function formatList(items = []) {
   if (!Array.isArray(items) || items.length === 0) return '- なし';
   return items.map((item) => `- ${item}`).join('\n');
+}
+
+function normalizeWarnings(warnings) {
+  return warnings.filter((warning) => warning && typeof warning === 'object');
 }
 
 function formatCommunities(communities = []) {

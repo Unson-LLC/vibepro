@@ -62,6 +62,7 @@ const SMOKE = {
   pr: { setup: 'story', args: (r) => ['pr', 'prepare', r, '--base', 'main'] },
   story: { setup: 'story', args: (r) => ['story', 'add', r, '--id', 'story-y', '--title', 'Y', '--view', 'dev', '--period', '2026-W18'] },
   journey: { setup: 'story', args: (r) => ['journey', 'status', r] },
+  execute: { setup: 'story', args: (r) => ['execute', 'status', r, '--story-id', 'story-x', '--json'] },
   task: { setup: 'story', args: (r) => ['task', r] },
   decision: { setup: 'story', args: (r) => ['decision', 'status', r, '--id', 'story-x'] },
   verify: { setup: 'story', args: (r) => ['verify', r] },

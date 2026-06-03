@@ -3,3 +3,4 @@
 .vibepro/**/secrets*
 .vibepro/**/*.log
 .vibepro/
+.worktrees/vibepro/

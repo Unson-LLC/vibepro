@@ -31,6 +31,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const gitContext = await collectEvidenceGitContext(root);
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
+    const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
     const command = {
       kind: options.kind,
       status: options.status,
@@ -38,7 +39,9 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
       executed_at: options.executedAt ?? new Date().toISOString(),
-      git_context: gitContext
+      git_context: gitContext,
+      managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
+      warnings: managedWorktreeWarning ? [managedWorktreeWarning] : []
     };
     const commands = [
       command,
@@ -48,6 +51,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       schema_version: '0.1.0',
       story_id: storyId,
       updated_at: new Date().toISOString(),
+      warnings: mergeWarnings(existing.warnings, command.warnings),
       commands
     };
     await writeJsonAtomic(evidencePath, nextEvidence);
@@ -61,6 +65,9 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
 
 export function renderVerificationEvidenceSummary(result) {
   const latest = result.evidence.commands[0];
+  const warnings = latest.warnings?.length
+    ? latest.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
+    : '- none';
   return `# VibePro Verification Evidence
 
 - story: ${result.evidence.story_id}
@@ -68,6 +75,10 @@ export function renderVerificationEvidenceSummary(result) {
 - status: ${latest.status}
 - command: ${latest.command ?? '-'}
 - artifact: ${result.artifact}
+
+## Warnings
+
+${warnings}
 `;
 }
 
@@ -86,6 +97,7 @@ async function readEvidence(repoRoot, evidencePath, storyId) {
       return {
         schema_version: '0.1.0',
         story_id: storyId,
+        warnings: [],
         commands: []
       };
     }
@@ -98,6 +110,27 @@ async function readEvidence(repoRoot, evidencePath, storyId) {
     }
     throw error;
   }
+}
+
+function normalizeWarning(warning) {
+  return warning && typeof warning === 'object' ? warning : null;
+}
+
+function normalizeManagedWorktreeContext(context) {
+  return context && typeof context === 'object' ? context : null;
+}
+
+function mergeWarnings(existing = [], next = []) {
+  const warnings = [];
+  const seen = new Set();
+  for (const warning of [...next, ...existing]) {
+    if (!warning?.id) continue;
+    const key = `${warning.id}:${warning.command_name ?? ''}:${warning.reason ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    warnings.push(warning);
+  }
+  return warnings;
 }
 
 async function quarantineCorruptEvidence(repoRoot, evidencePath) {

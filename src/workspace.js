@@ -32,6 +32,9 @@ export async function initWorkspace(repoRoot, options = {}) {
     output: {
       language: outputLanguage
     },
+    execution: {
+      managed_worktree: 'preferred'
+    },
     brainbase: {
       stories: DEFAULT_BRAINBASE_STORIES
     }
@@ -104,7 +107,8 @@ async function writeJsonIfMissing(filePath, value, label = 'VibePro JSON') {
 async function ensureGitIgnore(repoRoot) {
   const ignorePath = path.join(path.resolve(repoRoot), '.gitignore');
   const required = [
-    '.vibepro/'
+    '.vibepro/',
+    '.worktrees/vibepro/'
   ];
 
   let existing = '';

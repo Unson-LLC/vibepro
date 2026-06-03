@@ -12,7 +12,9 @@ title: VibePro管理worktree Execution DAG Spec
 - 管理branchは、ユーザーが `--branch` を渡さない限り `vibepro/<story-id>-<shortid>` のような決定的prefixを使う。
 - VibeProはworktree metadataを `.vibepro/executions/<story-id>/state.json` に書き込む。
 - `vibepro execute status/next/reconcile` はExecution DAG statusと管理worktree statusを含める。
+- 既存worktreeを再利用する場合、pathは実pathで照合し、実branchが記録予定branchと一致しない場合は再利用してはいけない。
 - `vibepro task execute`, `vibepro verify record`, `vibepro review record`, `vibepro pr prepare`, `vibepro pr create` は、state fileが存在する場合、Storyの管理worktree内で実行されているかを検証する。
+- workflow-heavy gateのFlow Verification互換性として、既存の `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD` 分岐は環境変数から一時的にBasic Auth headerを組み立てるために使い、平文credentialをVibePro成果物へ保存してはいけない。
 - `vibepro execute merge` をVibePro管理のmerge経路として導入する。ただし明示的なユーザー意図を必須にし、`pr create` から暗黙実行してはいけない。
 - `vibepro execute cleanup` は、recorded executionとbranch/HEAD/stateが一致するVibePro所有worktreeだけを削除する。
 
@@ -31,6 +33,7 @@ title: VibePro管理worktree Execution DAG Spec
 - `story_selected`
 - `worktree_created`
 - `branch_bound`
+- `head_bound`
 - `implementation_started`
 - `implementation_complete`
 - `verification_recorded`
@@ -40,6 +43,27 @@ title: VibePro管理worktree Execution DAG Spec
 - `merge_ready`
 - `merged_or_closed`
 - `worktree_cleaned`
+
+```mermaid
+flowchart TD
+  story_selected --> worktree_created
+  worktree_created --> branch_bound
+  branch_bound --> head_bound
+  head_bound --> implementation_started
+  implementation_started --> implementation_complete
+  implementation_complete --> verification_recorded
+  verification_recorded --> agent_review_recorded
+  agent_review_recorded --> pr_prepare_ready
+  pr_prepare_ready --> pr_created
+  pr_created --> merge_ready
+  merge_ready --> merged_or_closed
+  merged_or_closed --> worktree_cleaned
+```
+
+## 明示シナリオ
+
+- Scenario S-001: `managed_worktree=preferred` または `required` のStoryで `vibepro execute start` を実行すると、workflow state transitionは `missing` または `created` の管理worktreeから `worktree_created`, `branch_bound`, `head_bound`, `implementation_started`, `verification_recorded`, `agent_review_recorded`, `pr_prepare_ready`, `pr_created` の順に進む。管理worktree外で保護対象commandを実行した場合、`preferred` は警告、`required` は拒否としてDAGとPR証跡に残る。
+- Scenario S-002: workflow replay evidenceとしてStory E2Eが `execute start`, `execute next`, `verify record`, `review record`, `pr prepare` の主要経路を実行し、現HEADに束縛されたE2E証跡が `gate:workflow_flow_replay` と `gate:evidence_coverage` を満たす。
 
 各nodeは次を含む。
 
@@ -77,3 +101,16 @@ title: VibePro管理worktree Execution DAG Spec
 - worktree隔離の価値が薄いCIでは、`execution.managed_worktree=disabled` または明示CI mode flagを使える。
 - Emergency bypassには理由が必要で、decision recordとして保存する。
 - 実装は、ユーザー作成worktreeや非VibePro branchを削除してはいけない。
+
+## MVP実装範囲
+
+このPRでは、次の挙動を実装対象にする。
+
+- `execution.managed_worktree` の初期値を `preferred` とし、`.worktrees/vibepro/` をignoreする。
+- `vibepro execute start` が管理worktreeを作成または再利用し、`managed_worktree.mode/status/source_repo/path/branch/base_ref/created_from_sha/current_head_sha/dirty/dirty_fingerprint` をstateへ保存する。
+- `execute status/next/reconcile` が管理worktree状態とExecution DAGを返す。
+- 管理worktreeが有効な場合、`pr_prepare` と `pr_create` のrequired commandおよび該当next actionは管理worktreeへの `cd` を含む。
+- 管理worktree内でPR/review/verification系commandがExecution Stateを更新した場合、元checkout側の `.vibepro/executions/<story-id>/state.json` と対象StoryのPR/review証跡も同期する。
+- Execution DAGは上記node setを出力する。`merge_ready`、`merged_or_closed`、`worktree_cleaned` はこのMVPでは `not_applicable` として明示する。
+
+PR evidence bindingの厳密なstale判定、merge、cleanup、emergency bypassは、このSpecの必須挙動として残すが後続Storyで実装する。

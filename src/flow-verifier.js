@@ -25,6 +25,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
   const playwright = await detectPlaywright(root);
   const startedAt = new Date().toISOString();
   const gitContext = await collectFlowGitContext(root);
+  const warnings = normalizeWarnings([options.managedWorktreeWarning]);
 
   let commandResult = null;
   let generatedSpecPath = null;
@@ -103,6 +104,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
     probes: probeResults,
     command: commandResult,
     runtime_contract_failures: commandResult?.runtime_contract_failures ?? [],
+    warnings,
     git_context: gitContext,
     generated_spec: generatedSpecPath ? toWorkspaceRelative(root, generatedSpecPath) : null,
     generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null
@@ -124,6 +126,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
       status: verification.status,
       base_url: verification.base_url,
       git_context: gitContext,
+      warnings,
       artifacts: {
         flow_verification_json: toWorkspaceRelative(root, jsonPath),
         flow_verification_report: toWorkspaceRelative(root, markdownPath),
@@ -148,6 +151,10 @@ export async function runFlowVerification(repoRoot, options = {}) {
     },
     verification
   };
+}
+
+function normalizeWarnings(warnings) {
+  return warnings.filter((warning) => warning && typeof warning === 'object');
 }
 
 async function collectFlowGitContext(repoRoot) {
@@ -811,6 +818,10 @@ ${verification.setup?.next_commands?.length > 0 ? verification.setup.next_comman
 ## Runtime Contract Failures
 
 ${verification.runtime_contract_failures?.length > 0 ? verification.runtime_contract_failures.map((item) => `- ${item.kind}: ${item.detail}`).join('\n') : '- なし'}
+
+## Warnings
+
+${verification.warnings?.length > 0 ? verification.warnings.map((warning) => `- ${warning.id}: ${warning.reason ?? warning.status ?? 'warning'}`).join('\n') : '- なし'}
 `;
 }
 

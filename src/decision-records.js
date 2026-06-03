@@ -52,6 +52,7 @@ export async function recordDecision(repoRoot, options = {}) {
   const rawText = options.stdinText?.trim() || options.summary;
   const summaryRedaction = redactSecrets(rawText);
   const reasonRedaction = redactSecrets(options.reason ?? '');
+  const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
   const decision = {
     schema_version: '0.1.0',
     decision_id: options.decisionId ?? `decision-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
@@ -75,6 +76,7 @@ export async function recordDecision(repoRoot, options = {}) {
       applied: summaryRedaction.redacted || reasonRedaction.redacted,
       hit_count: summaryRedaction.hitCount + reasonRedaction.hitCount
     },
+    warnings: managedWorktreeWarning ? [managedWorktreeWarning] : [],
     git_context: gitContext,
     recorded_at: new Date().toISOString()
   };
@@ -83,6 +85,7 @@ export async function recordDecision(repoRoot, options = {}) {
     model: 'vibepro-decision-records-v1',
     story_id: storyId,
     updated_at: new Date().toISOString(),
+    warnings: mergeWarnings(existing.warnings, decision.warnings),
     decisions: [
       decision,
       ...existing.decisions.filter((item) => item.decision_id !== decision.decision_id)
@@ -126,6 +129,9 @@ export async function readDecisionRecordsIfExists(repoRoot, storyId) {
 }
 
 export function renderDecisionRecordSummary(result) {
+  const warnings = result.decision.warnings?.length
+    ? result.decision.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
+    : '- none';
   return `# VibePro Decision Record
 
 - story: ${result.decision.story_id}
@@ -134,6 +140,10 @@ export function renderDecisionRecordSummary(result) {
 - status: ${result.decision.status}
 - source: ${result.decision.source ?? '-'}
 - artifact: ${result.artifact}
+
+## Warnings
+
+${warnings}
 `;
 }
 
@@ -165,6 +175,7 @@ export function summarizeDecisionRecords(records) {
     open: decisions.filter((decision) => decision.status === 'open').length,
     by_type: byType,
     by_status: byStatus,
+    warnings: Array.isArray(records?.warnings) ? records.warnings : [],
     latest: decisions[0] ?? null
   };
 }
@@ -182,6 +193,7 @@ async function readDecisionRecords(repoRoot, storyId) {
         schema_version: '0.1.0',
         model: 'vibepro-decision-records-v1',
         story_id: storyId,
+        warnings: [],
         decisions: []
       };
     }
@@ -227,6 +239,23 @@ function normalizeNullable(value) {
 
 function normalizeArtifact(repoRoot, artifact) {
   return toWorkspaceRelative(repoRoot, path.resolve(repoRoot, artifact));
+}
+
+function normalizeWarning(warning) {
+  return warning && typeof warning === 'object' ? warning : null;
+}
+
+function mergeWarnings(existing = [], next = []) {
+  const warnings = [];
+  const seen = new Set();
+  for (const warning of [...next, ...existing]) {
+    if (!warning?.id) continue;
+    const key = `${warning.id}:${warning.command_name ?? ''}:${warning.reason ?? ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    warnings.push(warning);
+  }
+  return warnings;
 }
 
 function redactSecrets(value) {
