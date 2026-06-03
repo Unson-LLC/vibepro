@@ -29,6 +29,8 @@ import {
 } from './design-modernize.js';
 import {
   deriveNativeDesignSystem,
+  exportDesignSystem,
+  initDesignSystem,
   ingestExternalDesignSystemBundle,
   ingestVisualDesignBrief,
   renderDesignSystemValidationSummary,
@@ -191,12 +193,18 @@ verification. Only use vibepro pr create for normal PR creation; do not use raw
 gh pr create as the standard path.
 
 Existing UI modernization:
+  vibepro design-system init <repo> --id <ds-id> --product <name>
+      Scaffold an empty-but-valid product-local Design System with explicit
+      needs_evidence gates before route/code evidence exists.
   vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --from-code
       Derive a product-local Design System from current route code, style/token
       files, optional Graphify evidence, and product semantics.
   vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
       Normalize external token/component/guideline bundles into VibePro-native
       DS sections as reference evidence only.
+  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css
+      Export the aggregate DS JSON, human-readable summary, or CSS custom
+      property aliases. CSS export reports needs_tokens when no tokens exist.
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
       Validate DS drift, CTA priority, state semantics, component roles,
       navigation/density policy, and secret leakage before UI implementation.
@@ -226,9 +234,11 @@ Usage:
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
+  vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
+  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -331,6 +341,9 @@ base branch:
   init後の案内と pr prepare の出力に候補を表示します。
 
 既存UI modernize:
+  vibepro design-system init <repo> --id <ds-id> --product <name>
+      route/code証跡がまだない段階で、needs_evidence Gate付きの空だがvalidな
+      プロダクトローカルDesign System正本を作ります。
   vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code
       現行route code、style/token files、任意のGraphify証跡、product semanticsから
       プロダクトローカルなDesign System正本を作ります。
@@ -339,6 +352,9 @@ base branch:
       VibePro-native DS sectionsへ取り込みます。
   vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
       外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
+  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css
+      aggregate DS JSON、人間向けMarkdown、CSS custom propertiesを出力します。
+      token未定義のCSS exportはneeds_tokensとして返します。
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
       DS drift、CTA優先度、状態意味、component role、navigation/density、secret混入を
       Story/Spec/Architecture文脈に対して検証します。
@@ -372,9 +388,11 @@ Usage:
   vibepro env graph [repo] [--json] [--no-write]
   vibepro diagnose [repo] [--run-id <id>]
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
+  vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
+  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -649,6 +667,19 @@ export async function runCli(argv, io = {}) {
     if (command === 'design-system') {
       const subcommand = rest[0] ?? 'derive';
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'init') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const result = await initDesignSystem(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          language
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'derive') {
         const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await deriveNativeDesignSystem(repoRoot, {
@@ -681,6 +712,22 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
           : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'export') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const format = getOption(rest, '--format') ?? 'json';
+        const result = await exportDesignSystem(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          format,
+          language
+        });
+        if (hasFlag(rest, '--json') && result.result.format !== 'json') {
+          write(stdout, `${JSON.stringify(result.result, null, 2)}\n`);
+        } else {
+          write(stdout, result.result.content);
+        }
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'ingest-brief') {

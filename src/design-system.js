@@ -108,6 +108,74 @@ export async function deriveNativeDesignSystem(repoRoot, options = {}) {
   return { outDir, result: designSystem };
 }
 
+export async function initDesignSystem(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system init requires --id <ds-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const product = options.product ?? designSystemId;
+  const designSystem = createEmptyDesignSystem({
+    designSystemId,
+    product,
+    language: options.language ?? 'ja'
+  });
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  await mkdir(outDir, { recursive: true });
+  await writeDesignSystemArtifacts(outDir, designSystem);
+  return { outDir, result: designSystem };
+}
+
+export async function exportDesignSystem(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system export requires --id <ds-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const format = String(options.format ?? 'json').toLowerCase();
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  const designSystem = await readJsonIfExists(designSystemPath);
+  if (!designSystem) {
+    throw new Error(`Design System not found: ${path.relative(root, designSystemPath).split(path.sep).join('/')}. Run design-system init or derive first.`);
+  }
+  if (format === 'json') {
+    return {
+      outDir,
+      result: {
+        schema_version: '0.1.0',
+        workflow: 'design-system-export',
+        design_system_id: designSystemId,
+        format,
+        status: 'pass',
+        content_type: 'application/json',
+        content: `${JSON.stringify(designSystem, null, 2)}\n`
+      }
+    };
+  }
+  if (format === 'markdown') {
+    return {
+      outDir,
+      result: {
+        schema_version: '0.1.0',
+        workflow: 'design-system-export',
+        design_system_id: designSystemId,
+        format,
+        status: 'pass',
+        content_type: 'text/markdown',
+        content: renderNativeDesignSystemSummary(designSystem, options.language ?? designSystem.output?.language ?? 'ja')
+      }
+    };
+  }
+  if (format === 'css') {
+    return {
+      outDir,
+      result: buildCssExport(designSystem, designSystemId)
+    };
+  }
+  throw new Error('design-system export requires --format json|markdown|css');
+}
+
 export async function ingestVisualDesignBrief(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   if (!options.designSystemId && !options.id) {
@@ -332,6 +400,184 @@ export function renderDesignSystemValidationSummary(result, language = result.ou
 
 ${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n')}
 `;
+}
+
+function createEmptyDesignSystem({ designSystemId, product, language }) {
+  const generatedAt = new Date().toISOString();
+  return {
+    schema_version: '0.1.0',
+    workflow: 'native-design-system-init',
+    design_system_id: designSystemId,
+    product_id: designSystemId,
+    product,
+    generated_at: generatedAt,
+    output: { language },
+    authority: 'vibepro_native_design_system',
+    authority_boundary: [
+      'this artifact is the VibePro-native Design System scaffold',
+      'Story, Spec, Architecture, current code, and VibePro gates remain implementation authority',
+      'empty sections require evidence before the DS can be treated as complete'
+    ],
+    external_generator_required: false,
+    source_evidence: {
+      routes: [],
+      graphify: emptyGraphifyEvidence(),
+      current_ui_code: [],
+      style_files: []
+    },
+    product_semantics: {
+      schema_version: '0.1.0',
+      product,
+      primary_domain: 'needs_evidence',
+      language_policy: 'needs_evidence',
+      interaction_model: 'needs_evidence',
+      domain_concepts: []
+    },
+    theme_tokens: {
+      schema_version: '0.1.0',
+      css_variables: [],
+      class_hints: [],
+      color_values: [],
+      spacing_values: []
+    },
+    semantic_tokens: {
+      schema_version: '0.1.0',
+      color_roles: [],
+      state_semantics: [],
+      cta_priority: [],
+      domain_semantics: [],
+      raw_token_coverage: {
+        css_variable_count: 0,
+        color_value_count: 0,
+        spacing_value_count: 0
+      }
+    },
+    component_roles: {
+      schema_version: '0.1.0',
+      roles: []
+    },
+    component_states: {
+      schema_version: '0.1.0',
+      required_states: [],
+      discovered_states: [],
+      state_policy: []
+    },
+    screen_patterns: {
+      schema_version: '0.1.0',
+      graphify_status: 'not_available',
+      patterns: []
+    },
+    cta_policy: {
+      schema_version: '0.1.0',
+      hierarchy: [],
+      discovered_ctas: [],
+      rules: []
+    },
+    density_policy: {
+      schema_version: '0.1.0',
+      policy: 'needs_evidence',
+      evidence: {
+        spacing_values: [],
+        compact_class_hints: []
+      },
+      rules: []
+    },
+    navigation_policy: {
+      schema_version: '0.1.0',
+      policy: 'needs_evidence',
+      navigation_targets: [],
+      rules: []
+    },
+    anti_patterns: {
+      schema_version: '0.1.0',
+      global_rules: []
+    },
+    implementation_mapping: {
+      schema_version: '0.1.0',
+      mapping_source: 'needs_evidence',
+      screen_mappings: [],
+      source_file_sample: [],
+      shared_component_candidates: []
+    },
+    evidence_coverage: {
+      schema_version: '0.1.0',
+      status: 'needs_evidence',
+      findings: [
+        {
+          id: 'DS-EVIDENCE-SCAFFOLD',
+          status: 'needs_evidence',
+          summary: 'Design System scaffold exists, but route, code, token, component, state, CTA, density, and navigation evidence have not been attached.'
+        }
+      ]
+    },
+    ds_gate: {
+      schema_version: '0.1.0',
+      status: 'needs_evidence',
+      fallback_allowed: false,
+      checks: [
+        {
+          id: 'DS-GATE-SCAFFOLD-EVIDENCE',
+          status: 'needs_evidence',
+          statement: 'A scaffolded Design System must collect product evidence before it can pass DS gate review.'
+        },
+        {
+          id: 'DS-GATE-AUTHORITY-BOUNDARY',
+          status: 'pass',
+          statement: 'The scaffold is VibePro-native and does not make external/generated visuals authoritative.'
+        }
+      ]
+    }
+  };
+}
+
+function buildCssExport(designSystem, designSystemId) {
+  const themeTokens = designSystem.theme_tokens ?? {};
+  const semanticTokens = designSystem.semantic_tokens ?? {};
+  const cssVariables = unique(themeTokens.css_variables ?? []);
+  const colorValues = unique(themeTokens.color_values ?? []);
+  const spacingValues = unique(themeTokens.spacing_values ?? []);
+  const colorRoles = Array.isArray(semanticTokens.color_roles) ? semanticTokens.color_roles : [];
+  const semanticAliases = colorRoles.flatMap((role) => {
+    const name = sanitizeId(role.name ?? role.role ?? 'color');
+    const candidates = Array.isArray(role.candidate_tokens) ? role.candidate_tokens : [];
+    if (candidates.length > 0) return [`  --vibepro-${name}: var(${candidates[0]});`];
+    return [];
+  });
+  const themeAliases = cssVariables.map((token) => `  --vibepro-theme-${sanitizeId(token.replace(/^--/, ''))}: var(${token});`);
+  const colorValueTokens = colorValues.map((value, index) => `  --vibepro-color-${index + 1}: ${value};`);
+  const spacingValueTokens = spacingValues.map((value, index) => `  --vibepro-space-${index + 1}: ${value};`);
+  const declarations = unique([
+    ...themeAliases,
+    ...semanticAliases,
+    ...colorValueTokens,
+    ...spacingValueTokens
+  ]);
+  if (declarations.length === 0) {
+    return {
+      schema_version: '0.1.0',
+      workflow: 'design-system-export',
+      design_system_id: designSystemId,
+      format: 'css',
+      status: 'needs_tokens',
+      content_type: 'text/css',
+      content: `/* VibePro Design System ${designSystemId}: needs_tokens - no semantic or theme tokens are available. */\n`
+    };
+  }
+  return {
+    schema_version: '0.1.0',
+    workflow: 'design-system-export',
+    design_system_id: designSystemId,
+    format: 'css',
+    status: 'pass',
+    content_type: 'text/css',
+    content: [
+      `/* VibePro Design System export: ${designSystemId} */`,
+      ':root {',
+      ...declarations,
+      '}',
+      ''
+    ].join('\n')
+  };
 }
 
 async function writeDesignSystemArtifacts(outDir, designSystem) {

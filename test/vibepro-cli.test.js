@@ -938,6 +938,111 @@ test('init fails explicitly instead of masking corrupt VibePro config', async ()
   assert.match(stderrOutput, /VibePro config is invalid JSON/);
 });
 
+test('design-system init and export cover scaffold lifecycle', async () => {
+  const repo = await makeRepo();
+
+  const initialized = await runCli([
+    'design-system',
+    'init',
+    repo,
+    '--id',
+    'sales-core',
+    '--product',
+    'Sales Core',
+    '--json'
+  ]);
+
+  assert.equal(initialized.exitCode, 0);
+  assert.equal(initialized.result.result.workflow, 'native-design-system-init');
+  assert.equal(initialized.result.result.design_system_id, 'sales-core');
+  assert.equal(initialized.result.result.product_id, 'sales-core');
+  assert.equal(initialized.result.result.product, 'Sales Core');
+  assert.equal(initialized.result.result.authority, 'vibepro_native_design_system');
+  assert.equal(initialized.result.result.ds_gate.status, 'needs_evidence');
+  assert.equal(initialized.result.result.ds_gate.fallback_allowed, false);
+  assert.equal(initialized.result.result.evidence_coverage.status, 'needs_evidence');
+  assert.equal(initialized.result.result.theme_tokens.css_variables.length, 0);
+  assert.equal(initialized.result.result.semantic_tokens.color_roles.length, 0);
+  assert.equal(initialized.result.result.component_roles.roles.length, 0);
+  assert.equal(initialized.result.result.component_states.required_states.length, 0);
+  assert.equal(initialized.result.result.cta_policy.hierarchy.length, 0);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'sales-core', 'design-system.json')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'sales-core', 'design-system.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'sales-core', 'ds-gate.json')), true);
+
+  let jsonOutput = '';
+  const jsonExport = await runCli([
+    'design-system',
+    'export',
+    repo,
+    '--id',
+    'sales-core',
+    '--format',
+    'json'
+  ], {
+    stdout: { write: (text) => { jsonOutput += text; } }
+  });
+  assert.equal(jsonExport.exitCode, 0);
+  assert.equal(JSON.parse(jsonOutput).design_system_id, 'sales-core');
+
+  let markdownOutput = '';
+  const markdownExport = await runCli([
+    'design-system',
+    'export',
+    repo,
+    '--id',
+    'sales-core',
+    '--format',
+    'markdown'
+  ], {
+    stdout: { write: (text) => { markdownOutput += text; } }
+  });
+  assert.equal(markdownExport.exitCode, 0);
+  assert.match(markdownOutput, /# Design System: Sales Core/);
+  assert.match(markdownOutput, /gate fallback allowed: false/);
+
+  const cssNeedsTokens = await runCli([
+    'design-system',
+    'export',
+    repo,
+    '--id',
+    'sales-core',
+    '--format',
+    'css',
+    '--json'
+  ]);
+  assert.equal(cssNeedsTokens.exitCode, 0);
+  assert.equal(cssNeedsTokens.result.result.status, 'needs_tokens');
+  assert.match(cssNeedsTokens.result.result.content, /needs_tokens/);
+
+  const dsPath = path.join(repo, '.vibepro', 'design-system', 'sales-core', 'design-system.json');
+  const designSystem = await readJson(dsPath);
+  designSystem.theme_tokens.css_variables = ['--ds-color-brand'];
+  designSystem.theme_tokens.color_values = ['#2563eb'];
+  designSystem.semantic_tokens.color_roles = [
+    { name: 'brand', purpose: 'primary action', candidate_tokens: ['--ds-color-brand'] }
+  ];
+  await writeFile(dsPath, `${JSON.stringify(designSystem, null, 2)}\n`);
+
+  let cssOutput = '';
+  const cssExport = await runCli([
+    'design-system',
+    'export',
+    repo,
+    '--id',
+    'sales-core',
+    '--format',
+    'css'
+  ], {
+    stdout: { write: (text) => { cssOutput += text; } }
+  });
+  assert.equal(cssExport.exitCode, 0);
+  assert.equal(cssExport.result.result.status, 'pass');
+  assert.match(cssOutput, /--vibepro-theme-ds-color-brand: var\(--ds-color-brand\);/);
+  assert.match(cssOutput, /--vibepro-brand: var\(--ds-color-brand\);/);
+  assert.match(cssOutput, /--vibepro-color-1: #2563eb;/);
+});
+
 test('status reports corrupt VibePro config as needs_repair', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -986,8 +1091,10 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(output, /vibepro design-system init \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
   assert.match(output, /vibepro design-system ingest \[repo\]/);
+  assert.match(output, /vibepro design-system export \[repo\]/);
   assert.match(output, /vibepro design-system validate \[repo\]/);
   assert.match(output, /既存UI modernize/);
   assert.match(output, /プロダクトローカルなDesign System正本/);
@@ -1022,8 +1129,10 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system init \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
   assert.match(englishOutput, /vibepro design-system ingest \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system export \[repo\]/);
   assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
   assert.match(englishOutput, /Existing UI modernization/);
   assert.match(englishOutput, /product-local Design System/);
