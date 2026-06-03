@@ -6500,6 +6500,155 @@ test('agent review PR policy honors role mode and changed-file activation', asyn
   assert.deepEqual(required.map((item) => `${item.stage}:${item.role}`), ['gate:gate_evidence']);
 });
 
+test('review status focuses required current blockers and moves optional history behind flags', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    roles: {
+      gate_evidence: {
+        when_changed: ['src/**']
+      },
+      pr_split_scope: {
+        mode: 'optional'
+      },
+      release_risk: {
+        mode: 'optional'
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'review-status-target.js'), 'export const reviewStatusTarget = true;\n');
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  assert.deepEqual(
+    prepare.result.preparation.pr_context.agent_reviews.required_reviews.map((item) => `${item.stage}:${item.role}`),
+    ['gate:gate_evidence']
+  );
+
+  await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'pr_split_scope',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'optional-scope-agent',
+    '--json'
+  ]);
+  await runCli([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'pr_split_scope',
+    '--agent-id',
+    'optional-scope-agent',
+    '--close-reason',
+    'completed',
+    '--close-evidence',
+    'optional review closed',
+    '--json'
+  ]);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.deepEqual(status.result.required_current.map((item) => `${item.stage}:${item.role}`), ['gate:gate_evidence']);
+  assert.deepEqual(status.result.blocking_summary.items.map((item) => `${item.stage}:${item.role}`), ['gate:gate_evidence']);
+  assert.equal(status.result.blocking_summary.next_commands.length > 0, true);
+  assert.equal(status.result.blocking_summary.next_commands.length <= 3, true);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review prepare')), true);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review record')), true);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+  assert.equal(status.result.optional.some((item) => item.role === 'pr_split_scope'), true);
+  assert.equal(status.result.history.some((item) => item.kind === 'lifecycle' && item.agent_id === 'optional-scope-agent' && item.blocking === false), true);
+
+  let defaultOutput = '';
+  const textStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare'], {
+    stdout: { write: (text) => { defaultOutput += text; } }
+  });
+  assert.equal(textStatus.exitCode, 0);
+  assert.ok(defaultOutput.indexOf('## Next Commands') < defaultOutput.indexOf('## Blocking Required Reviews'));
+  assert.match(defaultOutput, /gate:gate_evidence/);
+  assert.doesNotMatch(defaultOutput, /pr_split_scope/);
+  assert.match(defaultOutput, /hidden \(use --all\)/);
+  assert.match(defaultOutput, /hidden \(use --history or --all\)/);
+
+  let historyOutput = '';
+  const allStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--all', '--history'], {
+    stdout: { write: (text) => { historyOutput += text; } }
+  });
+  assert.equal(allStatus.exitCode, 0);
+  assert.match(historyOutput, /pr_split_scope/);
+  assert.match(historyOutput, /optional-scope-agent/);
+});
+
+test('review status ignores stale pr prepare required reviews from an older HEAD', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    roles: {
+      gate_evidence: {
+        when_changed: ['src/**']
+      },
+      release_risk: {
+        mode: 'optional'
+      }
+    }
+  };
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'review-status-stale.js'), 'export const firstHead = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add initial review target']);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  assert.deepEqual(
+    prepare.result.preparation.pr_context.agent_reviews.required_reviews.map((item) => `${item.stage}:${item.role}`),
+    ['gate:gate_evidence']
+  );
+
+  const currentConfig = await readJson(configPath);
+  currentConfig.agent_reviews.roles = {
+    gate_evidence: {
+      mode: 'optional'
+    },
+    release_risk: {
+      when_changed: ['src/**']
+    }
+  };
+  await writeJson(configPath, currentConfig);
+  await writeFile(path.join(repo, 'src', 'review-status-stale.js'), 'export const secondHead = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: update review policy']);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.pr_prepare_freshness.status, 'stale');
+  assert.notEqual(status.result.pr_prepare_freshness.artifact_head_sha, status.result.pr_prepare_freshness.current_head_sha);
+  const requiredKeys = status.result.required_current.map((item) => `${item.stage}:${item.role}`);
+  const blockingKeys = status.result.blocking_summary.items.map((item) => `${item.stage}:${item.role}`);
+  assert.equal(requiredKeys.includes('gate:release_risk'), true);
+  assert.equal(blockingKeys.includes('gate:release_risk'), true);
+  assert.equal(requiredKeys.includes('gate:gate_evidence'), false);
+  assert.equal(blockingKeys.includes('gate:gate_evidence'), false);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+});
+
 test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

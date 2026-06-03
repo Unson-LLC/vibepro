@@ -364,12 +364,30 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   for (const stage of stages) {
     stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
+  const latestPrPrepare = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
+  const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext);
+  const views = buildReviewStatusViews({
+    storyId,
+    stageSummaries,
+    reviewPolicy,
+    latestPrPrepare,
+    prPrepareFreshness,
+    stageFilter: options.stage ?? null,
+    includeAll: options.all === true,
+    includeHistory: options.history === true
+  });
   return {
     schema_version: '0.1.0',
     story_id: storyId,
     status: resolveOverallStatus(stageSummaries),
     current_git_context: currentGitContext,
     stages: stageSummaries,
+    required_current: views.required_current,
+    optional: views.optional,
+    history: views.history,
+    pr_prepare_freshness: views.pr_prepare_freshness,
+    blocking_summary: views.blocking_summary,
+    display: views.display,
     summary: {
       stage_count: stageSummaries.length,
       pass: stageSummaries.filter((stage) => stage.status === 'pass').length,
@@ -378,6 +396,231 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
       stale: stageSummaries.filter((stage) => stage.stale_count > 0).length
     }
   };
+}
+
+function buildReviewStatusViews({
+  storyId,
+  stageSummaries,
+  reviewPolicy,
+  latestPrPrepare,
+  prPrepareFreshness,
+  stageFilter,
+  includeAll,
+  includeHistory
+}) {
+  const stageLookup = new Map(stageSummaries.map((stage) => [stage.stage, stage]));
+  const roleLookup = new Map();
+  for (const stage of stageSummaries) {
+    for (const role of stage.roles) {
+      roleLookup.set(`${stage.stage}:${role.role}`, { stage, role });
+    }
+  }
+  const currentPrPrepare = prPrepareFreshness.status === 'current' ? latestPrPrepare : null;
+  const prAgentReviews = currentPrPrepare?.pr_context?.agent_reviews ?? null;
+  const prRequired = Array.isArray(prAgentReviews?.required_reviews) ? prAgentReviews.required_reviews : [];
+  const prUnmet = Array.isArray(prAgentReviews?.unmet_required_reviews) ? prAgentReviews.unmet_required_reviews : [];
+  const requiredRequirements = (prRequired.length > 0 ? prRequired : buildFallbackRequiredCurrent(stageSummaries, reviewPolicy))
+    .filter((item) => !stageFilter || item.stage === stageFilter);
+  const unmetLookup = new Map(prUnmet
+    .filter((item) => !stageFilter || item.stage === stageFilter)
+    .map((item) => [`${item.stage}:${item.role}:${item.status}:${item.detail ?? ''}`, item]));
+  const unmetByRole = new Map(prUnmet
+    .filter((item) => !stageFilter || item.stage === stageFilter)
+    .map((item) => [`${item.stage}:${item.role}`, item]));
+
+  const requiredCurrent = requiredRequirements.map((requirement) => {
+    const match = roleLookup.get(`${requirement.stage}:${requirement.role}`);
+    const unmet = unmetByRole.get(`${requirement.stage}:${requirement.role}`) ?? null;
+    return buildReviewStatusRoleItem({
+      storyId,
+      requirement,
+      stage: match?.stage ?? stageLookup.get(requirement.stage) ?? null,
+      role: match?.role ?? null,
+      blocking: Boolean(unmet),
+      blockingDetail: unmet?.detail ?? null,
+      blockingStatus: unmet?.status ?? null
+    });
+  });
+
+  const blockingItems = [];
+  for (const unmet of prUnmet.filter((item) => !stageFilter || item.stage === stageFilter)) {
+    const match = roleLookup.get(`${unmet.stage}:${unmet.role}`);
+    blockingItems.push(buildReviewStatusRoleItem({
+      storyId,
+      requirement: unmet,
+      stage: match?.stage ?? stageLookup.get(unmet.stage) ?? null,
+      role: match?.role ?? null,
+      blocking: true,
+      blockingDetail: unmet.detail ?? null,
+      blockingStatus: unmet.status ?? null
+    }));
+  }
+  if (blockingItems.length === 0) {
+    for (const item of requiredCurrent.filter((item) => item.effective_status !== 'pass')) {
+      blockingItems.push({ ...item, blocking: true });
+    }
+  }
+
+  const optional = [];
+  const history = [];
+  for (const stage of stageSummaries) {
+    for (const role of stage.roles) {
+      const rolePolicy = getRolePolicy(reviewPolicy, role.role);
+      const key = `${stage.stage}:${role.role}`;
+      const isRequiredCurrent = requiredRequirements.some((item) => `${item.stage}:${item.role}` === key);
+      const item = buildReviewStatusRoleItem({
+        storyId,
+        requirement: {
+          stage: stage.stage,
+          role: role.role,
+          reason: rolePolicy.mode === 'optional' ? 'optional review role' : 'configured review role',
+          policy: rolePolicy.mode
+        },
+        stage,
+        role,
+        blocking: unmetLookup.has(`${stage.stage}:${role.role}:${role.effective_status}:${role.stale_reason ?? role.provenance_reason ?? role.summary ?? ''}`),
+        blockingDetail: role.stale_reason ?? role.provenance_reason ?? null,
+        blockingStatus: role.effective_status
+      });
+      if (rolePolicy.mode === 'optional') optional.push(item);
+      if (!isRequiredCurrent || ['stale', 'unverified_agent', 'block', 'needs_changes'].includes(role.effective_status)) {
+        history.push({
+          ...item,
+          history_reason: isRequiredCurrent ? 'current required role audit trail' : 'not part of current PR-final required roles'
+        });
+      }
+    }
+    for (const entry of stage.lifecycle?.entries ?? []) {
+      history.push({
+        kind: 'lifecycle',
+        stage: stage.stage,
+        role: entry.role,
+        status: entry.effective_status ?? entry.status,
+        agent_id: entry.agent_id ?? null,
+        lifecycle_id: entry.lifecycle_id ?? null,
+        blocking: ['running', 'timed_out'].includes(entry.effective_status ?? entry.status)
+          && requiredRequirements.some((item) => item.stage === stage.stage && item.role === entry.role),
+        history_reason: ['closed', 'replaced'].includes(entry.effective_status ?? entry.status)
+          ? 'audit history only'
+          : 'lifecycle may affect current readiness'
+      });
+    }
+  }
+
+  const nextCommands = buildReviewStatusNextCommands(blockingItems, {
+    storyId,
+    latestPrPrepare,
+    prPrepareFreshness,
+    stageLookup
+  });
+  return {
+    required_current: requiredCurrent,
+    optional,
+    history,
+    pr_prepare_freshness: prPrepareFreshness,
+    blocking_summary: {
+      status: blockingItems.length > 0 ? 'blocked' : 'pass',
+      blocking_count: blockingItems.length,
+      items: blockingItems,
+      pr_prepare_freshness: prPrepareFreshness,
+      next_commands: nextCommands
+    },
+    display: {
+      default_focus: 'required_current_blocking',
+      includes_optional: includeAll,
+      includes_history: includeAll || includeHistory
+    }
+  };
+}
+
+function buildFallbackRequiredCurrent(stageSummaries, reviewPolicy) {
+  const requirements = [];
+  for (const stage of stageSummaries) {
+    for (const role of stage.roles) {
+      if (getRolePolicy(reviewPolicy, role.role).mode !== 'required') continue;
+      requirements.push({
+        stage: stage.stage,
+        role: role.role,
+        reason: 'No latest pr prepare required-review summary was found; falling back to configured required review roles.',
+        policy: 'review_status_fallback'
+      });
+    }
+  }
+  return requirements;
+}
+
+function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
+  const currentHead = normalizeNullable(currentGitContext?.head_sha);
+  if (!latestPrPrepare) {
+    return {
+      status: 'missing',
+      current: false,
+      artifact_head_sha: null,
+      current_head_sha: currentHead,
+      base_ref: null,
+      reason: 'No latest pr prepare artifact was found; current required reviews fall back to configured required review roles.'
+    };
+  }
+  const artifactHead = normalizeNullable(
+    latestPrPrepare.git?.head_sha
+      ?? latestPrPrepare.pr_context?.current_git_context?.head_sha
+      ?? latestPrPrepare.pr_context?.git?.head_sha
+  );
+  const baseRef = normalizeNullable(latestPrPrepare.git?.base_ref ?? latestPrPrepare.pr_context?.base_ref);
+  const current = Boolean(artifactHead && currentHead && artifactHead === currentHead);
+  return {
+    status: current ? 'current' : 'stale',
+    current,
+    artifact_head_sha: artifactHead,
+    current_head_sha: currentHead,
+    base_ref: baseRef,
+    artifact: latestPrPrepare.artifact ?? '.vibepro/pr/<story-id>/pr-prepare.json',
+    reason: current
+      ? 'Latest pr prepare artifact matches the current git HEAD.'
+      : 'Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun.'
+  };
+}
+
+function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking, blockingDetail, blockingStatus }) {
+  const effectiveStatus = blockingStatus ?? role?.effective_status ?? 'missing';
+  const detail = blockingDetail ?? role?.stale_reason ?? role?.provenance_reason ?? role?.summary ?? null;
+  const required = requirement.policy !== 'optional' && requirement.policy !== 'disabled';
+  return {
+    kind: 'role',
+    stage: requirement.stage,
+    role: requirement.role,
+    required,
+    policy: requirement.policy ?? null,
+    status: role?.status ?? 'missing',
+    effective_status: effectiveStatus,
+    blocking,
+    blocking_reason: blocking ? detail ?? requirement.reason ?? `${requirement.stage}:${requirement.role} is not pass` : null,
+    audit_reason: blocking ? null : detail,
+    reason: requirement.reason ?? null,
+    prepared: stage?.parallel_dispatch?.prepared ?? false,
+    prepare_command: buildReviewPrepareCommand({ storyId, stage: requirement.stage, roles: [requirement.role] }),
+    record_command: buildReviewRecordCommand({ storyId, stage: requirement.stage, role: requirement.role }),
+    artifact: role?.artifact ?? null,
+    lifecycle: role?.lifecycle ?? null
+  };
+}
+
+function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare, prPrepareFreshness, stageLookup }) {
+  const commands = [];
+  for (const item of blockingItems) {
+    const stage = stageLookup.get(item.stage);
+    if (!stage?.parallel_dispatch?.prepared) commands.push(item.prepare_command);
+    if (item.effective_status !== 'running') commands.push(item.record_command);
+  }
+  const baseRef = prPrepareFreshness?.base_ref ?? latestPrPrepare?.git?.base_ref ?? '<base-ref>';
+  const prPrepareCommand = `vibepro pr prepare . --story-id ${storyId} --base ${baseRef}`;
+  commands.push(prPrepareCommand);
+  const uniqueCommands = [...new Set(commands)];
+  const nextCommands = uniqueCommands.slice(0, 3);
+  if (!nextCommands.includes(prPrepareCommand)) {
+    nextCommands[nextCommands.length - 1] = prPrepareCommand;
+  }
+  return nextCommands;
 }
 
 export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
@@ -611,22 +854,74 @@ export function renderAgentReviewLifecycleCloseSummary(result) {
 }
 
 export function renderAgentReviewStatusSummary(status) {
+  const nextRows = status.blocking_summary?.next_commands?.length
+    ? status.blocking_summary.next_commands.map((action) => `- ${action}`).join('\n')
+    : '- none';
+  const blockingRows = status.blocking_summary?.items?.length
+    ? status.blocking_summary.items.map((item) => (
+        `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.blocking_reason ?? item.reason ?? 'needs review'}`
+      )).join('\n')
+    : '- none';
+  const requiredRows = status.required_current?.length
+    ? status.required_current.map((item) => (
+        `- ${item.stage}:${item.role} (${item.effective_status})${item.blocking ? ' blocking' : ''}`
+      )).join('\n')
+    : '- none';
+  const optionalRows = status.display?.includes_optional
+    ? (status.optional?.length
+        ? status.optional.map((item) => `- ${item.stage}:${item.role} (${item.effective_status})`).join('\n')
+        : '- none')
+    : '- hidden (use --all)';
+  const historyRows = status.display?.includes_history
+    ? (status.history?.length
+        ? status.history.slice(0, 30).map((item) => (
+            item.kind === 'lifecycle'
+              ? `- lifecycle ${item.stage}:${item.role} ${item.status} ${item.agent_id ?? item.lifecycle_id ?? ''}`.trim()
+              : `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.history_reason ?? 'history'}`
+          )).join('\n')
+        : '- none')
+    : '- hidden (use --history or --all)';
+  const prPrepareFreshness = status.pr_prepare_freshness;
+  const prPrepareFreshnessRow = prPrepareFreshness
+    ? `- ${prPrepareFreshness.status}: ${prPrepareFreshness.reason ?? 'unknown'}`
+    : '- unknown';
   const rows = status.stages.map((stage) => (
     `- ${stage.stage}: ${stage.status} (${stage.roles.filter((role) => role.effective_status === 'pass').length}/${stage.roles.length} pass, stale=${stage.stale_count}, running=${stage.lifecycle?.running_count ?? 0}, timed_out=${stage.lifecycle?.timed_out_count ?? 0})`
   ));
-  const nextActions = status.stages.flatMap((stage) => stage.next_actions ?? []);
-  const nextRows = nextActions.length ? nextActions.map((action) => `- ${action}`).join('\n') : '- none';
   return `# Agent Review Status
 
 - story: ${status.story_id}
 - status: ${status.status}
 - stages: ${status.summary.stage_count}
+- blocking: ${status.blocking_summary?.blocking_count ?? 0}
 
-${rows.join('\n') || '- no stages'}
-
-## Lifecycle Next Actions
+## Next Commands
 
 ${nextRows}
+
+## Blocking Required Reviews
+
+${blockingRows}
+
+## Required Current Reviews
+
+${requiredRows}
+
+## Optional Reviews
+
+${optionalRows}
+
+## History
+
+${historyRows}
+
+## PR Prepare Freshness
+
+${prPrepareFreshnessRow}
+
+## Stage Summary
+
+${rows.join('\n') || '- no stages'}
 `;
 }
 
