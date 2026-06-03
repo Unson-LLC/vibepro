@@ -81,6 +81,72 @@ test('spec fingerprint emits story, code, test, schema, and digests', async () =
   assert.ok(typeof fp.instructions === 'string' && fp.instructions.length > 0);
 });
 
+test('spec fingerprint includes architecture IA and flow evidence for scenario synthesis', async () => {
+  const repo = await makeSpecRepo();
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'architecture', `${STORY_ID}.md`), `# Premium Journey Architecture
+
+## Information Architecture
+
+Account settings shows subscription status before cancellation controls.
+
+## UI Flow
+
+Given a premium user, when cancellation is pending, then the account screen keeps the premium status visible until current period end.
+
+## Boundary
+
+Billing state remains owned by the billing service and the UI only renders the derived status.
+`);
+
+  const { exitCode, stdout } = await captureRunCli(['spec', 'fingerprint', repo, '--id', STORY_ID, '--include-instructions']);
+  assert.equal(exitCode, 0);
+  const fp = JSON.parse(stdout);
+  assert.equal(fp.architecture_fingerprint.files_scanned, 1);
+  assert.equal(fp.architecture_fingerprint.files[0].path, `docs/architecture/${STORY_ID}.md`);
+  assert.ok(fp.architecture_fingerprint.files[0].evidence_kind.includes('information_architecture'));
+  assert.ok(fp.architecture_fingerprint.files[0].evidence_kind.includes('flow'));
+  assert.equal(typeof fp.inputs_digest.architecture_sha, 'string');
+  assert.match(fp.instructions, /BDD-style scenario guidance/);
+  assert.match(fp.instructions, /origin\.architecture_refs/);
+});
+
+test('spec write accepts scenario clauses derived from architecture refs', async () => {
+  const repo = await makeSpecRepo();
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'architecture', `${STORY_ID}.md`), `# Premium IA
+
+## UI Flow
+
+Premium users see the current subscription status before cancellation controls.
+`);
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    clauses: [{
+      id: 'S-NEW-1',
+      type: 'scenario',
+      statement: 'Given a premium user on account settings, when cancellation is pending, then premium status remains visible before cancellation controls.',
+      rationale: 'Story acceptance criteria plus account IA flow.',
+      origin: {
+        story_refs: [{ kind: 'acceptance_criteria', index: 0 }],
+        architecture_refs: [{ file: `docs/architecture/${STORY_ID}.md`, section: 'UI Flow' }]
+      }
+    }]
+  };
+
+  const write = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'codex'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(write.exitCode, 0);
+
+  const show = await captureRunCli(['spec', 'show', repo, '--id', STORY_ID]);
+  const stored = JSON.parse(show.stdout);
+  assert.equal(stored.clauses[0].id, 'S-001');
+  assert.equal(stored.clauses[0].origin.architecture_refs[0].file, `docs/architecture/${STORY_ID}.md`);
+});
+
 test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-spec-story-id-'));
   await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });

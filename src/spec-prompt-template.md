@@ -14,7 +14,9 @@ A clause is a single machine-checkable statement about the system. Four types:
 - `invariant` — a property that must hold always (e.g., "premium user keeps
   `userType=2` until `current_period_end`").
 - `scenario` — a concrete given/when/then path (e.g., "Stripe webhook with
-  invalid signature returns 400 without DB write").
+  invalid signature returns 400 without DB write"). Derive scenario clauses
+  from Story acceptance criteria plus Architecture / IA / route-flow / state /
+  boundary evidence when available.
 - `contract` — an interface obligation (e.g., "`GET /api/foo` returns 200 with
   shape X").
 - `sla` — a measurable bound (e.g., "p95 of /api/foo < 200ms").
@@ -23,7 +25,8 @@ A clause is a single machine-checkable statement about the system. Four types:
 
 1. **One statement per clause.** Split compound sentences.
 2. **Every clause must cite at least one origin.** `origin.story_refs[]`,
-   `origin.code_refs[]`, or `origin.test_refs[]` must be non-empty.
+   `origin.architecture_refs[]`, `origin.code_refs[]`, or
+   `origin.test_refs[]` must be non-empty.
 3. **`code_refs[].file` must be a real path** in the repo (relative to repo
    root). `code_refs[].anchor` must be a substring grep-findable in that file.
 4. **`verifiable_by` patterns must actually match** when run by the validator.
@@ -51,6 +54,7 @@ A clause is a single machine-checkable statement about the system. Four types:
       "rationale": "Story acceptance_criteria[2] と src/billing.ts:142 cancelAtPeriodEnd 分岐から",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [],
         "code_refs": [{ "file": "src/billing.ts", "anchor": "cancelAtPeriodEnd" }],
         "test_refs": []
       },
@@ -108,6 +112,22 @@ Example diagrams[] entry:
 If no trigger fires, omit `diagrams[]` entirely. Do not add a diagram just because
 it might be nice — only the triggered MUST-HAVE kinds should be present.
 
+## BDD-style scenario guidance
+
+VibePro does not require an external BDD runner. Do not output free-form Gherkin
+documents. Use `type: "scenario"` clauses as the machine-checkable BDD surface.
+
+For each scenario clause:
+
+- Include one concrete user/system state, one action/event, and one expected
+  result in `statement`.
+- Prefer Story acceptance criteria as the primary origin.
+- Add `origin.architecture_refs[]` when Architecture / IA / route-flow / state /
+  boundary docs explain the path.
+- If the Story and Architecture imply a path but the expected result is
+  ambiguous, add a blocker `open_questions[]` item instead of inventing behavior.
+- Make the clause easy to connect to tests by keeping stable `S-<n>` ids.
+
 ## What VibePro does with your output
 
 - Runs JSON schema validation.
@@ -131,3 +151,5 @@ it might be nice — only the triggered MUST-HAVE kinds should be present.
   does `src/**/*.ts` actually contain a file that matches `must_contain`?
 - **Trying to author Story.** You are not editing Story. Story is the input.
   Treat NocoDB Story acceptance criteria as immutable for this session.
+- **Turning IA into Spec.** IA and route-flow evidence explain structure and
+  navigation. The Spec clause must still state verifiable behavior.

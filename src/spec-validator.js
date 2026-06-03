@@ -117,12 +117,13 @@ async function validateClause(repoRoot, clause, index) {
 
   const origin = clause.origin ?? {};
   const storyRefs = Array.isArray(origin.story_refs) ? origin.story_refs : [];
+  const architectureRefs = Array.isArray(origin.architecture_refs) ? origin.architecture_refs : [];
   const codeRefs = Array.isArray(origin.code_refs) ? origin.code_refs : [];
   const testRefs = Array.isArray(origin.test_refs) ? origin.test_refs : [];
-  if (storyRefs.length === 0 && codeRefs.length === 0 && testRefs.length === 0) {
+  if (storyRefs.length === 0 && architectureRefs.length === 0 && codeRefs.length === 0 && testRefs.length === 0) {
     errors.push({
       code: 'origin_empty',
-      message: `${locator}.origin must include at least one of story_refs / code_refs / test_refs`
+      message: `${locator}.origin must include at least one of story_refs / architecture_refs / code_refs / test_refs`
     });
   }
 
@@ -132,6 +133,21 @@ async function validateClause(repoRoot, clause, index) {
       errors.push({
         code: 'story_ref_kind',
         message: `${locator}.origin.story_refs[${i}].kind must be one of ${[...ORIGIN_KINDS].join('|')}`
+      });
+    }
+  }
+
+  for (let i = 0; i < architectureRefs.length; i += 1) {
+    const ref = architectureRefs[i];
+    if (!ref?.file || typeof ref.file !== 'string') {
+      errors.push({ code: 'architecture_ref_file', message: `${locator}.origin.architecture_refs[${i}].file required` });
+      continue;
+    }
+    const fileResult = await verifyFileExists(repoRoot, ref.file);
+    if (!fileResult.exists) {
+      errors.push({
+        code: 'architecture_ref_missing',
+        message: `${locator}.origin.architecture_refs[${i}].file "${ref.file}" not found in repository`
       });
     }
   }

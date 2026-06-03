@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -3031,7 +3032,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const visualQaEvidence = await readVisualQaEvidence(repoRoot);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
-  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const networkContracts = await scanNetworkContracts(repoRoot, {
     changedFiles: git.changed_files,
@@ -3039,6 +3039,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
   });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
+  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, { inferredSpec });
   const specDrift = await readDrift(repoRoot, story.story_id);
   const requirementConsistency = await buildRequirementConsistency(repoRoot, {
     story,
@@ -3137,6 +3138,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     risks: []
   };
   context.gate_dag = buildGateDag({
+    repoRoot,
     story,
     storySource: primaryStory,
     architectureDecision,
@@ -3412,8 +3414,9 @@ async function readDesignQualityEvidence(repoRoot, storyId) {
   };
 }
 
-async function buildStoryE2eCoverage(repoRoot, story, storySource) {
+async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {}) {
   const acceptanceCriteria = storySource?.acceptance_criteria ?? [];
+  const scenarioClauses = extractScenarioCoverageClauses(options.inferredSpec);
   const storySlug = slugifyStoryId(story.story_id);
   const expectedFilePatterns = [
     `tests/e2e/${storySlug}-*.spec.ts`,
@@ -3451,23 +3454,62 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource) {
     };
   });
   const missing = covered.filter((item) => !item.covered);
+  const scenarioCovered = scenarioClauses.map((clause, index) => {
+    const files = candidates
+      .filter((candidate) => candidate.executable && e2eCandidateCoversScenario(candidate, story.story_id, clause, index))
+      .map((candidate) => candidate.path);
+    return {
+      id: clause.id,
+      statement: clause.statement,
+      covered: files.length > 0,
+      files
+    };
+  });
+  const missingScenarios = scenarioCovered.filter((item) => !item.covered);
+  const required = acceptanceCriteria.length > 0 || scenarioClauses.length > 0;
+  const status = !required
+    ? 'not_applicable'
+    : missing.length === 0 && missingScenarios.length === 0
+      ? 'passed'
+      : 'needs_evidence';
   return {
     schema_version: '0.1.0',
     story_id: story.story_id,
-    required: acceptanceCriteria.length > 0,
-    status: acceptanceCriteria.length === 0
-      ? 'not_applicable'
-      : missing.length === 0
-        ? 'passed'
-        : 'needs_evidence',
+    required,
+    status,
     expected_file_patterns: expectedFilePatterns,
     matched_files: candidates.map((candidate) => candidate.path),
     executable_matched_files: candidates.filter((candidate) => candidate.executable).map((candidate) => candidate.path),
     acceptance_criteria_count: acceptanceCriteria.length,
     covered_acceptance_criteria_count: covered.length - missing.length,
     covered_acceptance_criteria: covered.filter((item) => item.covered),
-    missing_acceptance_criteria: missing
+    missing_acceptance_criteria: missing,
+    scenario_clause_count: scenarioClauses.length,
+    covered_scenario_clause_count: scenarioCovered.length - missingScenarios.length,
+    covered_scenario_clauses: scenarioCovered.filter((item) => item.covered),
+    missing_scenario_clauses: missingScenarios,
+    scenario_e2e_coverage: {
+      required: scenarioClauses.length > 0,
+      status: scenarioClauses.length === 0
+        ? 'not_applicable'
+        : missingScenarios.length === 0
+          ? 'passed'
+          : 'needs_evidence',
+      scenario_clause_count: scenarioClauses.length,
+      covered_scenario_clause_count: scenarioCovered.length - missingScenarios.length,
+      covered_scenario_clauses: scenarioCovered.filter((item) => item.covered),
+      missing_scenario_clauses: missingScenarios
+    }
   };
+}
+
+function extractScenarioCoverageClauses(inferredSpec) {
+  return (Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [])
+    .filter((clause) => clause?.type === 'scenario' && typeof clause.statement === 'string' && clause.statement.trim())
+    .map((clause) => ({
+      id: clause.id,
+      statement: clause.statement
+    }));
 }
 
 function hasExecutableE2eAssertions(content) {
@@ -3501,6 +3543,37 @@ function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
   });
 }
 
+function e2eCandidateCoversScenario(candidate, storyId, clause, index) {
+  const markers = scenarioCoverageMarkers(storyId, clause?.id, index);
+  const statementMarker = normalizeCoverageText(clause?.statement);
+  return getExecutableE2eBlocks(candidate.content).some((block) => {
+    const content = normalizeCoverageText(block);
+    return statementMarker.length > 0
+      && (content.includes(statementMarker) || blockHasCriterionAssertion(block, clause.statement))
+      && markers.some((marker) => marker.length > 0 && content.includes(marker))
+      && blockHasCriterionAssertion(block, clause.statement);
+  });
+}
+
+function scenarioCoverageMarkers(storyId, clauseId, index) {
+  const normalizedClauseId = String(clauseId ?? '').trim();
+  const withoutLeadingZeros = normalizedClauseId.replace(/^([A-Za-z]+)-0+(\d+)$/, '$1-$2');
+  return [
+    `${storyId} ${normalizedClauseId}`,
+    `${storyId} ${withoutLeadingZeros}`,
+    `${storyId} scenario:${index + 1}`,
+    `${storyId} scenario-${index + 1}`,
+    `${storyId} s:${index + 1}`,
+    `${storyId} s-${index + 1}`,
+    normalizedClauseId,
+    withoutLeadingZeros,
+    `scenario:${index + 1}`,
+    `scenario-${index + 1}`,
+    `s:${index + 1}`,
+    `s-${index + 1}`
+  ].map(normalizeCoverageText);
+}
+
 function blockHasCriterionAssertion(block, criterion) {
   const tokens = coverageAssertionTokens(criterion);
   if (tokens.length === 0) return hasExecutableE2eAssertionsInText(block);
@@ -3514,11 +3587,12 @@ function blockHasCriterionAssertion(block, criterion) {
 }
 
 function coverageAssertionTokens(text) {
-  const normalized = normalizeCoverageText(text);
-  const ascii = normalized.match(/[a-z0-9_:-]{4,}/g) ?? [];
-  const japanese = normalized.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]{2,}/gu) ?? [];
+  const raw = String(text ?? '').toLowerCase();
+  const ascii = raw.match(/[a-z0-9_:-]{4,}/g) ?? [];
+  const japanese = raw.match(/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー]{2,}/gu) ?? [];
   return [...new Set([...ascii, ...japanese])]
-    .filter((token) => !['with', 'when', 'case', 'true', 'false', 'status', '場合'].includes(token))
+    .map(normalizeCoverageText)
+    .filter((token) => token.length >= 2 && !['with', 'when', 'case', 'true', 'false', 'status', 'given', 'then', 'user', '場合'].includes(token))
     .slice(0, 12);
 }
 
@@ -3571,6 +3645,40 @@ function normalizeCoverageText(value) {
 
 function normalizeRepoPath(value) {
   return String(value).replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+function resolveStoryDocReferences(repoRoot, storySource, refs) {
+  return refs
+    .map((ref) => resolveStoryDocReference(repoRoot, storySource, ref))
+    .filter(Boolean);
+}
+
+function resolveStoryDocReference(repoRoot, storySource, ref) {
+  const raw = String(ref ?? '').trim();
+  if (!raw) return null;
+  const normalizedRaw = normalizeRepoPath(raw);
+  const candidates = [];
+  if (path.isAbsolute(raw)) {
+    candidates.push(path.resolve(raw));
+  } else {
+    candidates.push(path.resolve(repoRoot, normalizedRaw));
+    if (storySource?.path) {
+      candidates.push(path.resolve(repoRoot, path.dirname(storySource.path), normalizedRaw));
+    }
+  }
+  const insideCandidates = candidates.filter((candidate) => isPathInsideRepo(repoRoot, candidate));
+  const existing = insideCandidates.find((candidate) => existsSync(candidate));
+  const selected = existing ?? insideCandidates.at(-1);
+  return {
+    raw: normalizedRaw,
+    path: selected ? normalizeRepoPath(path.relative(repoRoot, selected)) : normalizedRaw,
+    exists: Boolean(existing)
+  };
+}
+
+function isPathInsideRepo(repoRoot, candidate) {
+  const relative = path.relative(repoRoot, candidate);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
 async function readVisualQaRun(repoRoot, qaDir, qaId) {
@@ -4007,14 +4115,36 @@ function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
   };
 }
 
-function buildSpecGateNode({ fileGroups, inferredSpec, specDrift, storySource }) {
+function buildSpecGateNode({ repoRoot, fileGroups, inferredSpec, specDrift, storySource }) {
   const driftHighCount = Array.isArray(specDrift?.items)
     ? specDrift.items.filter((item) => item.severity === 'high').length
     : 0;
+  const storySpecDocRefs = resolveStoryDocReferences(repoRoot, storySource, storySource?.spec_docs ?? []);
+  const missingStorySpecDocs = storySpecDocRefs.filter((ref) => !ref.exists);
   const explicitSpecDocs = [...new Set([
-    ...(storySource?.spec_docs ?? []),
+    ...storySpecDocRefs.filter((ref) => ref.exists).map((ref) => ref.path),
     ...(fileGroups.specifications?.files ?? [])
   ].filter(Boolean))];
+  if (missingStorySpecDocs.length > 0) {
+    return {
+      id: 'spec',
+      type: 'spec_gate',
+      label: 'Spec Gate',
+      status: 'needs_evidence',
+      reason: `explicit Spec docs are missing or unresolved (${formatFileList(missingStorySpecDocs.map((ref) => ref.raw))})`,
+      spec_docs: explicitSpecDocs,
+      missing_spec_docs: missingStorySpecDocs.map((ref) => ({
+        raw: ref.raw,
+        resolved_path: ref.path
+      })),
+      inferred_spec: inferredSpec ? {
+        story_id: inferredSpec.story_id,
+        clauses: Array.isArray(inferredSpec.clauses) ? inferredSpec.clauses.length : 0,
+        generated_at: inferredSpec.generated_at ?? null
+      } : null,
+      drift: specDrift?.summary ?? null
+    };
+  }
   if (explicitSpecDocs.length > 0) {
     const status = driftHighCount > 0 ? 'needs_review' : 'present';
     const reason = driftHighCount > 0
@@ -5089,6 +5219,7 @@ function detectBugPhysicsContradiction(verificationEvidence) {
 }
 
 function buildGateDag({
+  repoRoot,
   story,
   storySource,
   architectureDecision,
@@ -5158,7 +5289,7 @@ function buildGateDag({
     reason: architectureDecision
   };
   const specGate = {
-    ...buildSpecGateNode({ fileGroups, inferredSpec, specDrift, storySource }),
+    ...buildSpecGateNode({ repoRoot, fileGroups, inferredSpec, specDrift, storySource }),
     required: true
   };
   const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
@@ -6275,13 +6406,21 @@ function requiresStoryE2eCoverage(e2eCoverage) {
 function buildE2eCoverageReason(e2eCoverage) {
   if (!requiresStoryE2eCoverage(e2eCoverage)) return null;
   if (e2eCoverage.status === 'passed') {
-    return `Story E2E coverage passed: ${e2eCoverage.matched_files.join(', ')}`;
+    const scenarioSuffix = (e2eCoverage.scenario_clause_count ?? 0) > 0
+      ? `; scenario clauses covered: ${e2eCoverage.covered_scenario_clause_count}/${e2eCoverage.scenario_clause_count}`
+      : '';
+    return `Story E2E coverage passed: ${e2eCoverage.matched_files.join(', ')}${scenarioSuffix}`;
   }
   if ((e2eCoverage.matched_files?.length ?? 0) > 0 && (e2eCoverage.executable_matched_files?.length ?? 0) === 0) {
     return `Story E2E coverage needs evidence: matched files contain no executable assertions (${e2eCoverage.matched_files.join(', ')})`;
   }
   const missing = e2eCoverage.missing_acceptance_criteria ?? [];
-  const missingLabel = missing.map((item) => item.id).join(', ') || 'acceptance criteria';
+  const missingScenarios = e2eCoverage.missing_scenario_clauses ?? [];
+  const missingLabels = [
+    ...missing.map((item) => item.id),
+    ...missingScenarios.map((item) => item.id)
+  ];
+  const missingLabel = missingLabels.join(', ') || 'acceptance criteria or scenario clauses';
   if ((e2eCoverage.matched_files?.length ?? 0) > 0) {
     return `Story E2E coverage needs evidence: ${missingLabel} must be covered by executable assertions in ${e2eCoverage.expected_file_patterns.join(' or ')}`;
   }

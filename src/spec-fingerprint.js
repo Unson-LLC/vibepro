@@ -22,6 +22,12 @@ const TEST_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs']);
 const TEST_FILE_PATTERN = /\.(test|spec)\.(?:m|c)?[jt]sx?$/i;
 const MAX_TEST_FILES = 120;
 const MAX_TEST_CASES_PER_FILE = 24;
+const MAX_ARCHITECTURE_DOCS = 12;
+const ARCHITECTURE_DOC_DIRS = [
+  path.join('docs', 'architecture'),
+  path.join('docs', 'adr'),
+  path.join('docs', 'design')
+];
 
 export async function buildSpecFingerprint(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -39,18 +45,20 @@ export async function buildSpecFingerprint(repoRoot, options = {}) {
   const codeScenarios = await collectCodeScenarios(root, codeFiles);
   const testFingerprint = await collectTestFingerprint(root);
   const previousSpec = storyId ? await readInferredSpec(root, storyId) : null;
+  const architectureFingerprint = await collectArchitectureFingerprint(root, storySource, storyId);
   const schema = await readSchema();
   const instructions = options.includeInstructions ? await readInstructions() : null;
 
   const story = buildStoryFingerprint(storySource, storyOption, storyId);
   const codeFingerprint = buildCodeFingerprint(codeScenarios);
-  const inputsDigest = buildInputsDigest({ story, codeFingerprint, testFingerprint });
+  const inputsDigest = buildInputsDigest({ story, codeFingerprint, testFingerprint, architectureFingerprint });
 
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
     story_id: storyId,
     story,
+    architecture_fingerprint: architectureFingerprint,
     code_fingerprint: codeFingerprint,
     test_fingerprint: testFingerprint,
     previous_spec: previousSpec,
@@ -136,6 +144,186 @@ async function collectTestFingerprint(repoRoot) {
   };
 }
 
+async function collectArchitectureFingerprint(repoRoot, storySource, storyId) {
+  const explicitRefs = extractArchitectureDocRefs(storySource);
+  const relatedRefs = await findRelatedArchitectureDocs(repoRoot, storyId);
+  const paths = [...new Set([...explicitRefs, ...relatedRefs])].slice(0, MAX_ARCHITECTURE_DOCS);
+  const docs = [];
+  for (const relative of paths) {
+    let content = '';
+    try {
+      content = await readFile(path.join(repoRoot, relative), 'utf8');
+    } catch {
+      continue;
+    }
+    docs.push({
+      path: relative,
+      title: findMarkdownTitle(content),
+      evidence_kind: inferArchitectureEvidenceKind(content),
+      flow_state_boundary_snippets: extractArchitectureSnippets(content)
+    });
+  }
+  return {
+    files_scanned: docs.length,
+    files: docs
+  };
+}
+
+function extractArchitectureDocRefs(storySource) {
+  const refs = [];
+  const content = storySource?.content ?? '';
+  const storyDir = storySource?.path ? path.posix.dirname(storySource.path) : '.';
+  for (const ref of extractFrontmatterRefs(content, 'architecture_docs')) {
+    refs.push(resolveStoryDocRef(storyDir, ref));
+  }
+  const frontmatterRef = storySource?.frontmatter?.architecture_docs;
+  if (typeof frontmatterRef === 'string') refs.push(resolveStoryDocRef(storyDir, frontmatterRef));
+  return refs.filter(Boolean);
+}
+
+function extractFrontmatterRefs(content, key) {
+  const match = String(content ?? '').match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return [];
+  const lines = match[1].split('\n');
+  const refs = [];
+  let inBlock = false;
+  for (const line of lines) {
+    const direct = line.match(new RegExp(`^${key}:\\s*(.*?)\\s*$`));
+    if (direct) {
+      const value = direct[1].trim();
+      if (value && value !== '|' && value !== '>') refs.push(stripYamlQuote(value));
+      inBlock = value === '' || value === '|' || value === '>';
+      continue;
+    }
+    if (inBlock) {
+      const item = line.match(/^\s*-\s+(.+?)\s*$/);
+      if (item) {
+        refs.push(stripYamlQuote(item[1]));
+        continue;
+      }
+      if (/^[A-Za-z0-9_-]+:/.test(line)) inBlock = false;
+    }
+  }
+  return refs;
+}
+
+function stripYamlQuote(value) {
+  return String(value).replace(/^['"]|['"]$/g, '').trim();
+}
+
+function resolveStoryDocRef(storyDir, ref) {
+  const clean = stripYamlQuote(ref);
+  if (!clean || /^reason\s*:/.test(clean)) return null;
+  const resolved = clean.startsWith('.')
+    ? path.posix.normalize(path.posix.join(storyDir, clean))
+    : path.posix.normalize(clean);
+  return resolved.replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+async function findRelatedArchitectureDocs(repoRoot, storyId) {
+  if (!storyId) return [];
+  const needle = String(storyId).toLowerCase();
+  const shortNeedle = needle.replace(/^story-/, '');
+  const files = [];
+  for (const dir of ARCHITECTURE_DOC_DIRS) {
+    const absolute = path.join(repoRoot, dir);
+    try {
+      await walkMarkdownFiles(absolute, repoRoot, files);
+    } catch {
+      // optional architecture directories may not exist
+    }
+  }
+  const matches = [];
+  for (const relative of files) {
+    const lower = relative.toLowerCase();
+    if (lower.includes(needle) || lower.includes(shortNeedle)) {
+      matches.push(relative);
+      continue;
+    }
+    try {
+      const content = await readFile(path.join(repoRoot, relative), 'utf8');
+      if (content.toLowerCase().includes(needle)) matches.push(relative);
+    } catch {
+      // ignore unreadable docs
+    }
+  }
+  return matches;
+}
+
+async function walkMarkdownFiles(absolute, repoRoot, collected) {
+  let entries = [];
+  try {
+    entries = await readdir(absolute, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const entry of entries) {
+    const next = path.join(absolute, entry.name);
+    if (entry.isDirectory()) {
+      await walkMarkdownFiles(next, repoRoot, collected);
+      continue;
+    }
+    if (/\.mdx?$/i.test(entry.name)) {
+      collected.push(path.relative(repoRoot, next).split(path.sep).join('/'));
+    }
+  }
+}
+
+function inferArchitectureEvidenceKind(content) {
+  const text = String(content ?? '');
+  const kinds = [];
+  if (/(IA|information architecture|情報構造|navigation|ナビゲーション|route|screen|画面)/i.test(text)) kinds.push('information_architecture');
+  if (/(flow|journey|画面遷移|遷移|導線|workflow|sequence)/i.test(text)) kinds.push('flow');
+  if (/(state|status|状態|ステート)/i.test(text)) kinds.push('state');
+  if (/(boundary|responsibility|責務|境界|dependency|依存)/i.test(text)) kinds.push('boundary');
+  return kinds.length > 0 ? kinds : ['architecture'];
+}
+
+function extractArchitectureSnippets(content) {
+  const headings = [
+    'Intent',
+    'Boundary',
+    'Data Flow',
+    'Information Architecture',
+    'IA',
+    'UI Flow',
+    'Flow',
+    'Journey',
+    'State',
+    'Responsibilities',
+    '責務',
+    '境界',
+    '情報構造',
+    '画面遷移',
+    '導線',
+    '状態'
+  ];
+  const snippets = [];
+  for (const heading of headings) {
+    const section = extractMarkdownSection(content, heading);
+    if (section) snippets.push({ section: heading, text: compactSnippet(section) });
+    if (snippets.length >= 6) break;
+  }
+  if (snippets.length === 0) snippets.push({ section: 'summary', text: compactSnippet(content) });
+  return snippets;
+}
+
+function extractMarkdownSection(content, heading) {
+  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(content ?? '').match(new RegExp(`^##+\\s+.*${escaped}.*\\n([\\s\\S]*?)(?=^##+\\s+|(?![\\s\\S]))`, 'im'));
+  return match?.[1] ?? null;
+}
+
+function compactSnippet(value) {
+  return String(value ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('---'))
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .slice(0, 700);
+}
+
 function extractCallStrings(content, regex) {
   const results = [];
   for (const match of content.matchAll(regex)) {
@@ -203,7 +391,7 @@ async function walkTests(absolute, repoRoot, collected) {
   }
 }
 
-function buildInputsDigest({ story, codeFingerprint, testFingerprint }) {
+function buildInputsDigest({ story, codeFingerprint, testFingerprint, architectureFingerprint }) {
   return {
     story_sha: sha256({
       story_id: story?.story_id ?? null,
@@ -224,8 +412,20 @@ function buildInputsDigest({ story, codeFingerprint, testFingerprint }) {
         describes: file.describes,
         cases: file.cases.map((entry) => entry.name)
       }))
+    }),
+    architecture_sha: sha256({
+      files: (architectureFingerprint?.files ?? []).map((file) => ({
+        path: file.path,
+        evidence_kind: file.evidence_kind,
+        snippets: file.flow_state_boundary_snippets
+      }))
     })
   };
+}
+
+function findMarkdownTitle(content) {
+  const match = String(content ?? '').match(/^#\s+(.+)$/m);
+  return match?.[1]?.trim() ?? null;
 }
 
 function sha256(value) {
