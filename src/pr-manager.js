@@ -2004,7 +2004,16 @@ function buildEngineeringEvidenceReasoningDigest(gateDag) {
     && !['route_specific_judgment_gate'].includes(node.type));
   const rows = [...evidenceNodes, ...enforcedJudgmentNodes]
     .filter((node, index, list) => list.findIndex((item) => item.id === node.id) === index)
-    .map((node) => `${node.label ?? node.id}=${node.status}`);
+    .map((node) => {
+      if (node.id === 'gate:common_judgment_spine' && Array.isArray(node.subchecks)) {
+        const missing = node.subchecks
+          .filter((check) => isUnresolvedGateStatus(check.status))
+          .map((check) => `${check.id}:${check.status}`);
+        const suffix = missing.length > 0 ? ` (${missing.join(', ')})` : '';
+        return `${node.label ?? node.id}=${node.status}${suffix}`;
+      }
+      return `${node.label ?? node.id}=${node.status}`;
+    });
   return rows.length > 0 ? rows.join(' / ') : 'Gate DAG証跡なし';
 }
 
@@ -4493,16 +4502,112 @@ function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
   };
 }
 
-function buildCommonJudgmentSpineGate(engineeringJudgment) {
+function buildCommonJudgmentSpineGate(engineeringJudgment, evidenceContext = {}) {
+  const subchecks = buildCommonJudgmentSpineSubchecks(engineeringJudgment, evidenceContext);
+  const missing = subchecks.filter((check) => isUnresolvedGateStatus(check.status));
+  const status = missing.length === 0 ? 'passed' : 'needs_evidence';
   return {
     id: 'gate:common_judgment_spine',
     type: 'engineering_judgment_spine_gate',
     label: 'Common Judgment Spine Gate',
-    status: 'passed',
+    status,
     required: true,
     spine: engineeringJudgment?.common_spine ?? [],
-    reason: 'Intent, current reality, invariants, model, boundary, risk, evidence, verification, decision, and operation are the common judgment spine for every route DAG'
+    subchecks,
+    missing_subchecks: missing.map((check) => check.id),
+    reason: status === 'passed'
+      ? 'Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile'
+      : `Common judgment spine is missing evidence for: ${missing.map((check) => `${check.id}=${check.status}`).join(', ')}`
   };
+}
+
+function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
+  storySource = null,
+  fileGroups = null,
+  verificationEvidence = null,
+  inferredSpec = null,
+  changeClassification = null,
+  agentReviews = null,
+  decisionRecords = null
+} = {}) {
+  const acceptanceCount = storySource?.acceptance_criteria?.length ?? 0;
+  const storyHasIntent = Boolean(storySource?.title || storySource?.requirement_title || storySource?.background || acceptanceCount > 0);
+  const changedFileCount = Object.values(fileGroups ?? {})
+    .filter((group) => Array.isArray(group?.files))
+    .reduce((count, group) => count + group.files.length, 0);
+  const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
+  const acceptedDecisions = (decisionRecords?.decisions ?? []).filter((decision) => decision.status === 'accepted');
+  const reviewPassCount = (agentReviews?.stages ?? [])
+    .flatMap((stage) => stage.roles ?? [])
+    .filter((role) => role.effective_status === 'pass')
+    .length;
+  const specClauseCount = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses.length : 0;
+  const hasExplicitSpecOrArchitecture = (fileGroups?.specifications?.count ?? 0) > 0 || (fileGroups?.architecture_docs?.count ?? 0) > 0;
+  const hasTests = (fileGroups?.tests?.count ?? 0) > 0;
+  const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
+  const highRisk = changeClassification?.profile === 'workflow_heavy'
+    || ['business_system', 'data_pipeline', 'security_trust', 'release_engineering', 'api_platform', 'infra_ops'].includes(routeType)
+    || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => riskSurfaces.has(surface));
+  const boundarySensitive = highRisk || routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration');
+  return [
+    {
+      id: 'intent',
+      status: storyHasIntent ? 'passed' : 'needs_story',
+      evidence: storyHasIntent ? storySource?.path ?? storySource?.story_id ?? 'story_source' : null,
+      reason: storyHasIntent
+        ? `${acceptanceCount} acceptance criterion/criteria or Story intent text found`
+        : 'Story purpose or Acceptance Criteria could not be resolved'
+    },
+    {
+      id: 'current_reality',
+      status: changedFileCount > 0 || currentVerification.length > 0 ? 'passed' : 'needs_evidence',
+      evidence: currentVerification[0]?.command ?? `${changedFileCount} changed file(s) classified`,
+      reason: changedFileCount > 0
+        ? `${changedFileCount} changed file(s) provide current reality for the PR diff`
+        : 'No changed-file or current verification evidence was available'
+    },
+    {
+      id: 'invariants',
+      status: !highRisk || specClauseCount > 0 || hasExplicitSpecOrArchitecture || hasTests ? 'passed' : 'needs_evidence',
+      evidence: specClauseCount > 0
+        ? `${specClauseCount} inferred spec clause(s)`
+        : hasExplicitSpecOrArchitecture
+          ? 'explicit spec/architecture docs'
+          : hasTests
+            ? 'test files in diff'
+            : null,
+      reason: highRisk
+        ? 'High-risk changes need Spec, Architecture, or test evidence for invariants'
+        : 'Light route does not require additional invariant evidence beyond Story and diff classification'
+    },
+    {
+      id: 'boundaries',
+      status: !boundarySensitive || hasExplicitSpecOrArchitecture || acceptedDecisions.length > 0 || currentVerification.length > 0 ? 'passed' : 'needs_evidence',
+      evidence: hasExplicitSpecOrArchitecture
+        ? 'explicit spec/architecture docs'
+        : acceptedDecisions[0]?.decision_id ?? currentVerification[0]?.command ?? null,
+      reason: boundarySensitive
+        ? 'Boundary-sensitive changes need architecture/spec, decision, or current verification evidence'
+        : 'No high-risk boundary surface was detected'
+    },
+    {
+      id: 'failure_modes',
+      status: !highRisk || currentVerification.length > 0 || hasTests ? 'passed' : 'needs_evidence',
+      evidence: currentVerification[0]?.command ?? (hasTests ? 'test files in diff' : null),
+      reason: highRisk
+        ? 'High-risk changes need test or verification evidence that can cover failure behavior'
+        : 'Light route does not require additional failure-mode evidence'
+    },
+    {
+      id: 'done_evidence',
+      status: !highRisk || currentVerification.length > 0 || reviewPassCount > 0 ? 'passed' : 'needs_evidence',
+      evidence: currentVerification[0]?.command ?? (reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
+      reason: highRisk
+        ? 'High-risk changes need current verification or review evidence before ready state'
+        : 'Light route completion is covered by the downstream Unit/Integration/Agent Review gates'
+    }
+  ];
 }
 
 function buildRouteSpecificJudgmentGates(engineeringJudgment, evidenceContext = {}) {
@@ -5298,7 +5403,15 @@ function buildGateDag({
   const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
-  const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment);
+  const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment, {
+    storySource,
+    fileGroups,
+    verificationEvidence,
+    inferredSpec,
+    changeClassification,
+    agentReviews,
+    decisionRecords
+  });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
   const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
   const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
@@ -7019,6 +7132,7 @@ function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',
+      'engineering_judgment_spine_gate',
       'pr_route_gate',
       'pr_body_contract_gate',
       'mirror_source_traceability_gate',
@@ -7088,6 +7202,7 @@ function isUnresolvedGateStatus(status) {
     'implicit',
     'inferred_empty',
     'needs_evidence',
+    'needs_story',
     'needs_setup',
     'needs_review',
     'needs_rebase',
@@ -7181,6 +7296,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:bug_physics_triage' && gate.status !== 'passed') return true;
