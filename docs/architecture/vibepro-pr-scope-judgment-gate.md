@@ -13,6 +13,8 @@ VibePro already calculates scope and split plans, but those results were surface
 
 `gate:pr_scope_judgment` sits immediately after the common Engineering Judgment spine and before route-specific triage. It reuses existing `assessScope` results and file group classification.
 
+The expected edge order is `gate:common_judgment_spine -> gate:pr_scope_judgment -> gate:bug_physics_triage`, so DAG connectivity tests assert the scope judgment as an explicit engineering decision point.
+
 The gate classifies scope as:
 
 - `focused`
