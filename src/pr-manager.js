@@ -1120,6 +1120,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:artifact_consistency') {
     return `Regenerate stale VibePro evidence artifacts for the current git state: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:failure_mode_coverage') {
+    return `Record current failure-mode coverage evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -5489,6 +5492,13 @@ function buildGateDag({
     verificationEvidence
   });
   const decisionRecordGate = buildDecisionRecordGate(decisionRecords);
+  const failureModeCoverageGate = buildFailureModeCoverageGate({
+    storySource,
+    fileGroups,
+    changeClassification,
+    verificationEvidence,
+    inferredSpec
+  });
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
   const workflowHeavyGates = buildWorkflowHeavyGates({
@@ -5538,6 +5548,7 @@ function buildGateDag({
     },
     networkContractGate,
     requirementGate,
+    failureModeCoverageGate,
     decisionRecordGate,
     ...gates,
     ...(designQualityGate ? [designQualityGate] : []),
@@ -5634,7 +5645,8 @@ function buildGateDag({
     ]),
     { from: 'code', to: 'gate:network_contract' },
     { from: 'gate:network_contract', to: 'gate:requirement' },
-    { from: 'gate:requirement', to: 'gate:decision_record' },
+    { from: 'gate:requirement', to: 'gate:failure_mode_coverage' },
+    { from: 'gate:failure_mode_coverage', to: 'gate:decision_record' },
     { from: 'gate:decision_record', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
@@ -5692,6 +5704,7 @@ function buildGateDag({
     prFreshnessGate,
     networkContractGate,
     requirementGate,
+    failureModeCoverageGate,
     decisionRecordGate,
     ...gates,
     designQualityGate,
@@ -5722,6 +5735,7 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
       requirement_status: requirementGate.status,
+      failure_mode_coverage_status: failureModeCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
       managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
@@ -5932,6 +5946,96 @@ function collectReviewArtifactBindings(agentReviews = null) {
     }
   }
   return artifacts;
+}
+
+function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, inferredSpec = null } = {}) {
+  const modes = deriveFailureModeCandidates({ storySource, fileGroups, changeClassification, inferredSpec });
+  const highRisk = changeClassification?.profile === 'workflow_heavy'
+    || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
+  const currentEvidence = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
+  const evidenceText = currentEvidence
+    .map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`)
+    .join('\n')
+    .toLowerCase();
+  const coveredModes = modes.map((mode) => ({
+    ...mode,
+    status: failureModeCoveredByEvidence(mode, evidenceText) ? 'covered' : highRisk ? 'missing_coverage' : 'not_required',
+    evidence: failureModeCoveredByEvidence(mode, evidenceText)
+      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`.toLowerCase()))?.command ?? 'verification_evidence'
+      : null
+  }));
+  const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
+  const status = missing.length === 0 ? 'passed' : 'missing_coverage';
+  return {
+    id: 'gate:failure_mode_coverage',
+    type: 'failure_mode_coverage_gate',
+    label: 'Failure Mode Coverage Gate',
+    status,
+    required: true,
+    high_risk: highRisk,
+    candidate_count: coveredModes.length,
+    missing_count: missing.length,
+    modes: coveredModes,
+    missing_modes: missing.map((mode) => mode.id),
+    required_actions: missing.length === 0 ? [] : [
+      `Record current-bound verification evidence for failure modes: ${missing.map((mode) => mode.id).join(', ')}`,
+      'Use executable Unit/Integration/E2E/Flow evidence; source markers or static mentions alone do not satisfy failure-mode coverage',
+      'If a mode is genuinely not applicable, record a decision with the non-applicability reason before PR creation'
+    ],
+    reason: missing.length === 0
+      ? coveredModes.length === 0
+        ? 'No route-specific failure mode candidates were detected'
+        : `${coveredModes.length} failure mode candidate(s) are covered or not critical for this route profile`
+      : `${missing.length} high-risk failure mode candidate(s) lack current verification evidence`
+  };
+}
+
+function deriveFailureModeCandidates({ storySource = null, fileGroups = null, changeClassification = null, inferredSpec = null } = {}) {
+  const text = [
+    storySource?.title,
+    storySource?.background,
+    storySource?.policy,
+    ...(storySource?.acceptance_criteria ?? []),
+    ...(inferredSpec?.clauses ?? []).map((clause) => clause.statement)
+  ].filter(Boolean).join('\n').toLowerCase();
+  const files = [
+    ...(fileGroups?.source?.files ?? []),
+    ...(fileGroups?.tests?.files ?? []),
+    ...(fileGroups?.other?.files ?? [])
+  ].join('\n').toLowerCase();
+  const surfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  const candidates = [];
+  const add = (id, reason, keywords) => {
+    if (candidates.some((mode) => mode.id === id)) return;
+    candidates.push({ id, reason, keywords });
+  };
+  if (/\b(timeout|deadline|time out|タイムアウト)\b/.test(text) || /\b(timeout|retry|poll)\b/.test(files)) {
+    add('timeout', 'Timeout/deadline behavior is mentioned by Story or touched runtime code', ['timeout', 'deadline', 'time out']);
+  }
+  if (/\b(json|parse|parser|解析|パース)\b/.test(text) || /\b(parser|json|extract)\b/.test(files)) {
+    add('parse_failure', 'Parser/JSON extraction behavior can fail on malformed input', ['parse', 'parser', 'json', 'malformed']);
+  }
+  if (/\b(schema|validation|validate|検証)\b/.test(text) || /\b(schema|validator|validation)\b/.test(files)) {
+    add('schema_failure', 'Schema/validation behavior can reject malformed or partial data', ['schema', 'validation', 'validate']);
+  }
+  if (/\b(provider|external|api|http|network|外部)\b/.test(text) || surfaces.has('api_contract')) {
+    add('provider_failure', 'External provider/API/network dependency can fail or return incomplete data', ['provider', 'external', 'api', 'http', 'network']);
+  }
+  if (/\b(retry|queue|worker|poll|非同期)\b/.test(text) || /\b(queue|worker|retry|poll)\b/.test(files)) {
+    add('retry_or_async_failure', 'Retry/queue/worker/polling paths can fail or duplicate work', ['retry', 'queue', 'worker', 'poll']);
+  }
+  if (/\b(auth|permission|role|security|認可|認証)\b/.test(text) || surfaces.has('auth') || surfaces.has('security')) {
+    add('auth_denied', 'Auth/permission boundary can deny or leak access', ['auth', 'permission', 'security', 'denied']);
+  }
+  if (/\b(db|database|persist|保存|永続)\b/.test(text) || surfaces.has('database') || surfaces.has('persistence')) {
+    add('persistence_failure', 'Persistence paths can fail or store partial state', ['database', 'persist', 'storage', 'db']);
+  }
+  return candidates;
+}
+
+function failureModeCoveredByEvidence(mode, evidenceText) {
+  if (!evidenceText) return false;
+  return mode.keywords.some((keyword) => evidenceText.includes(keyword));
 }
 
 function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
@@ -7153,6 +7257,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'decision_record_gate',
       'verification_gate',
       'requirement_gate',
+      'failure_mode_coverage_gate',
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
@@ -7208,6 +7313,7 @@ function isUnresolvedGateStatus(status) {
     'needs_rebase',
     'needs_changes',
     'contradicted',
+    'missing_coverage',
     'stale',
     'stale_evidence',
     'block',
@@ -7296,6 +7402,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
