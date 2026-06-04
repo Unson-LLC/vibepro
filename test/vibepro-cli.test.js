@@ -9787,7 +9787,12 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
     path.join(repo, 'src', 'pr-manager.js'),
     'export function buildAgentGateDag() { return "agent workflow gate"; }\n'
   );
-  await git(repo, ['add', 'src/pr-manager.js']);
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'architecture', 'agent-workflow-gate.md'),
+    '# Agent Workflow Gate\n\nThis fixture records the agent workflow boundary for the route DAG test.\n'
+  );
+  await git(repo, ['add', 'src/pr-manager.js', 'docs/architecture/agent-workflow-gate.md']);
   await git(repo, ['commit', '-m', 'feat: add agent workflow gate']);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
@@ -9800,7 +9805,12 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.summary.engineering_judgment_route, 'agent_workflow');
   assert.equal(gateDag.summary.engineering_judgment_dag, 'agent_workflow_dag');
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:engineering_judgment_route')?.status, 'passed');
-  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine')?.status, 'passed');
+  const spineGate = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  assert.equal(spineGate?.status, 'passed');
+  assert.deepEqual(
+    spineGate?.subchecks.map((check) => check.id),
+    ['intent', 'current_reality', 'invariants', 'boundaries', 'failure_modes', 'done_evidence']
+  );
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_context_acquisition')?.status, 'passed');
   const connectivityGate = gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity');
   assert.equal(connectivityGate?.status, 'passed');
