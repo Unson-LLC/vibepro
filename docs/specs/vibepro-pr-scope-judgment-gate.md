@@ -14,3 +14,4 @@ title: PR Scope Judgment Gate Spec
 ## Verification
 
 - `V-PSJ-1`: `test/vibepro-cli.test.js` asserts broad session diffs produce `gate:pr_scope_judgment=needs_split` and block PR creation.
+- `V-PSJ-2`: `test/vibepro-cli.test.js` asserts the Engineering Judgment DAG edge order includes `gate:pr_scope_judgment` between the common spine and bug-physics triage.
