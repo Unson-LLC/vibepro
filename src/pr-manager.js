@@ -1123,6 +1123,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:failure_mode_coverage') {
     return `Record current failure-mode coverage evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:path_surface_matrix') {
+    return `Record current path/surface evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -5501,6 +5504,13 @@ function buildGateDag({
   });
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
+  const pathSurfaceMatrixGate = buildPathSurfaceMatrixGate({
+    storySource,
+    fileGroups,
+    changeClassification,
+    verificationEvidence,
+    flowVerification
+  });
   const workflowHeavyGates = buildWorkflowHeavyGates({
     changeClassification,
     inferredSpec,
@@ -5547,6 +5557,7 @@ function buildGateDag({
       files: fileGroups.source.files
     },
     networkContractGate,
+    pathSurfaceMatrixGate,
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -5644,7 +5655,8 @@ function buildGateDag({
       { from: node.id, to: 'gate:e2e' }
     ]),
     { from: 'code', to: 'gate:network_contract' },
-    { from: 'gate:network_contract', to: 'gate:requirement' },
+    { from: 'gate:network_contract', to: 'gate:path_surface_matrix' },
+    { from: 'gate:path_surface_matrix', to: 'gate:requirement' },
     { from: 'gate:requirement', to: 'gate:failure_mode_coverage' },
     { from: 'gate:failure_mode_coverage', to: 'gate:decision_record' },
     { from: 'gate:decision_record', to: 'gate:unit' },
@@ -5703,6 +5715,7 @@ function buildGateDag({
     changeClassificationGate,
     prFreshnessGate,
     networkContractGate,
+    pathSurfaceMatrixGate,
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -5734,6 +5747,7 @@ function buildGateDag({
       story_status: storyGate.status,
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
+      path_surface_matrix_status: pathSurfaceMatrixGate.status,
       requirement_status: requirementGate.status,
       failure_mode_coverage_status: failureModeCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
@@ -6036,6 +6050,115 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 function failureModeCoveredByEvidence(mode, evidenceText) {
   if (!evidenceText) return false;
   return mode.keywords.some((keyword) => evidenceText.includes(keyword));
+}
+
+function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null } = {}) {
+  const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
+  const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
+  const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
+  const evidenceText = [
+    ...currentVerification.map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`),
+    flowCurrent ? JSON.stringify(flowVerification?.verification ?? flowVerification) : ''
+  ].join('\n').toLowerCase();
+  const highRisk = changeClassification?.profile === 'workflow_heavy';
+  const rows = surfaces.map((surface) => {
+    const evidence = pathSurfaceCoveredByEvidence(surface, evidenceText);
+    const required = highRisk || surface.required;
+    return {
+      ...surface,
+      required,
+      status: evidence ? 'covered' : required ? 'missing_surface_evidence' : 'not_required',
+      evidence: evidence ? currentVerification[0]?.command ?? 'flow_verification' : null
+    };
+  });
+  const missing = rows.filter((row) => row.status === 'missing_surface_evidence');
+  const status = missing.length === 0 ? 'passed' : 'partial_surface';
+  return {
+    id: 'gate:path_surface_matrix',
+    type: 'path_surface_matrix_gate',
+    label: 'Path Surface Matrix Gate',
+    status,
+    required: true,
+    high_risk: highRisk,
+    row_count: rows.length,
+    missing_surface_count: missing.length,
+    rows,
+    missing_surfaces: missing.map((row) => row.surface),
+    required_actions: missing.length === 0 ? [] : [
+      `Record current-bound verification evidence for changed surface(s): ${[...new Set(missing.map((row) => row.surface))].join(', ')}`,
+      'Trace the value/state from input through persistence/API/UI/report/review surface, or mark the surface not applicable with an auditable decision',
+      'Rerun `vibepro pr prepare` after the surface evidence is recorded'
+    ],
+    reason: missing.length === 0
+      ? rows.length === 0
+        ? 'No user-visible or cross-surface path rows were detected'
+        : `${rows.length} path surface row(s) are covered or not critical for this route`
+      : `${missing.length} changed path surface row(s) lack current evidence`
+  };
+}
+
+function derivePathSurfaceRows({ storySource = null, fileGroups = null, changeClassification = null } = {}) {
+  const rows = [];
+  const files = [
+    ...(fileGroups?.source?.files ?? []),
+    ...(fileGroups?.tests?.files ?? []),
+    ...(fileGroups?.specifications?.files ?? []),
+    ...(fileGroups?.architecture_docs?.files ?? [])
+  ];
+  const text = [
+    storySource?.title,
+    storySource?.background,
+    storySource?.policy,
+    ...(storySource?.acceptance_criteria ?? [])
+  ].filter(Boolean).join('\n').toLowerCase();
+  const add = (surface, pathType, reason, required = false) => {
+    if (rows.some((row) => row.surface === surface && row.path_type === pathType)) return;
+    rows.push({ surface, path_type: pathType, reason, required });
+  };
+  for (const file of files) {
+    const normalized = file.toLowerCase();
+    if (/\.(tsx|jsx|vue|svelte)$/.test(normalized) || normalized.includes('/components/') || normalized.includes('/app/')) {
+      add('ui', 'output_surface', `UI file changed: ${file}`, true);
+    }
+    if (normalized.includes('/api/') || /route\.(ts|js)$/.test(normalized)) {
+      add('api', 'contract_surface', `API route/client file changed: ${file}`, true);
+    }
+    if (normalized.includes('/services/') || normalized.includes('/lib/')) {
+      add('service', 'transform_surface', `Service/transform file changed: ${file}`);
+    }
+    if (normalized.includes('/worker') || normalized.includes('/queue')) {
+      add('worker', 'async_surface', `Worker/queue file changed: ${file}`, true);
+    }
+    if (normalized.includes('pr-manager') || normalized.includes('report') || normalized.includes('html-report')) {
+      add('review_surface', 'gate_or_report_surface', `Gate/report artifact code changed: ${file}`, true);
+    }
+    if (normalized.includes('schema') || normalized.includes('prisma') || normalized.includes('migration') || normalized.includes('database')) {
+      add('persistence', 'state_surface', `Persistence/schema file changed: ${file}`, true);
+    }
+  }
+  if (/\b(report|summary|hq|review|artifact|pr body|gate)\b/.test(text)) {
+    add('review_surface', 'story_surface', 'Story mentions report/review/gate artifact output', true);
+  }
+  if (/\b(ui|screen|browser|画面)\b/.test(text)) {
+    add('ui', 'story_surface', 'Story mentions UI/screen output', false);
+  }
+  if (/\b(api|http|network)\b/.test(text) || (changeClassification?.risk_surfaces ?? []).includes('api_contract')) {
+    add('api', 'story_surface', 'Story or classifier mentions API/network surface', false);
+  }
+  return rows;
+}
+
+function pathSurfaceCoveredByEvidence(surface, evidenceText) {
+  if (!evidenceText) return false;
+  const terms = {
+    ui: ['ui', 'screen', 'browser', 'playwright', 'visual'],
+    api: ['api', 'http', 'network', 'route'],
+    service: ['service', 'transform', 'unit'],
+    worker: ['worker', 'queue', 'retry', 'async', 'poll'],
+    review_surface: ['gate', 'report', 'pr body', 'artifact', 'review'],
+    persistence: ['database', 'db', 'schema', 'persist', 'storage']
+  }[surface.surface] ?? [surface.surface];
+  return terms.some((term) => evidenceText.includes(term));
 }
 
 function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
@@ -7258,6 +7381,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'verification_gate',
       'requirement_gate',
       'failure_mode_coverage_gate',
+      'path_surface_matrix_gate',
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
@@ -7314,6 +7438,7 @@ function isUnresolvedGateStatus(status) {
     'needs_changes',
     'contradicted',
     'missing_coverage',
+    'partial_surface',
     'stale',
     'stale_evidence',
     'block',
@@ -7403,6 +7528,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;

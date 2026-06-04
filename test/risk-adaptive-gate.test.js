@@ -445,6 +445,10 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(failureModeGate.status, 'missing_coverage');
   assert.equal(failureModeGate.missing_modes.includes('retry_or_async_failure'), true);
   assert.equal(failureModeGate.missing_modes.includes('provider_failure'), true);
+  const pathSurfaceGate = gateDag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(pathSurfaceGate.status, 'partial_surface');
+  assert.equal(pathSurfaceGate.missing_surfaces.includes('ui'), true);
+  assert.equal(pathSurfaceGate.missing_surfaces.includes('api'), true);
 
   const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
   const manifest = await readJson(manifestPath);
