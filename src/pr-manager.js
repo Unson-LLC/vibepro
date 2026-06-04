@@ -1129,6 +1129,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:review_inspection_required') {
     return `Record required review inspection evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:pr_scope_judgment') {
+    return `Reduce or split PR scope before creation: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -4619,6 +4622,57 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   ];
 }
 
+function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null } = {}) {
+  const storyDocCount = fileGroups?.story_docs?.count ?? 0;
+  const sourceCount = fileGroups?.source?.count ?? 0;
+  const testCount = fileGroups?.tests?.count ?? 0;
+  const docCount = (fileGroups?.architecture_docs?.count ?? 0)
+    + (fileGroups?.specifications?.count ?? 0)
+    + (fileGroups?.policy_docs?.count ?? 0);
+  const changedFileCount = scope?.changed_file_count ?? git?.changed_files?.length ?? 0;
+  const riskSurfaceCount = prRoute?.required_sections?.length ?? 0;
+  const mixedUnrelated = storyDocCount > 1 || (fileGroups?.repo_control?.count ?? 0) > 0 && (sourceCount + docCount > 0);
+  const needsSplit = scope?.status !== 'reviewable' || mixedUnrelated;
+  const classification = needsSplit
+    ? 'needs_split'
+    : changedFileCount > Math.max(12, (scope?.reviewable_file_limit ?? DEFAULT_MAX_REVIEWABLE_FILES) / 2)
+      ? 'large_but_coherent'
+      : sourceCount > 0 && docCount > 0 && testCount > 0
+        ? 'focused'
+        : 'focused';
+  const status = needsSplit ? 'needs_split' : 'passed';
+  const splitSuggestions = [];
+  if (storyDocCount > 1) splitSuggestions.push('Split multiple Story docs into separate PRs or explicitly justify the bundled scope.');
+  if ((fileGroups?.repo_control?.count ?? 0) > 0 && sourceCount + docCount > 0) splitSuggestions.push('Separate repo-control/agent configuration changes from product/source changes.');
+  if (scope?.status !== 'reviewable') splitSuggestions.push(scope.recommended_strategy ?? 'Split the PR by lane and rerun VibePro pr prepare.');
+  return {
+    id: 'gate:pr_scope_judgment',
+    type: 'pr_scope_judgment_gate',
+    label: 'PR Scope Judgment Gate',
+    status,
+    required: true,
+    classification,
+    scope_status: scope?.status ?? null,
+    recommended_strategy: scope?.recommended_strategy ?? null,
+    changed_file_count: changedFileCount,
+    reviewable_file_limit: scope?.reviewable_file_limit ?? null,
+    story_doc_count: storyDocCount,
+    source_file_count: sourceCount,
+    test_file_count: testCount,
+    doc_file_count: docCount,
+    risk_surface_count: riskSurfaceCount,
+    reasons: scope?.reasons ?? [],
+    split_suggestions: splitSuggestions,
+    required_actions: status === 'passed' ? [] : [
+      ...splitSuggestions,
+      'Regenerate `vibepro pr prepare` after the PR scope is reduced or an auditable split decision is recorded'
+    ],
+    reason: status === 'passed'
+      ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
+      : `PR scope is not reviewable as one PR: ${(scope?.reasons ?? splitSuggestions).join('; ') || classification}`
+  };
+}
+
 function buildRouteSpecificJudgmentGates(engineeringJudgment, evidenceContext = {}) {
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
   const definitions = {
@@ -5421,6 +5475,7 @@ function buildGateDag({
     agentReviews,
     decisionRecords
   });
+  const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
   const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
   const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
@@ -5538,6 +5593,7 @@ function buildGateDag({
     storyGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    prScopeJudgmentGate,
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
     ...(bugPhysicsContradictionGate ? [bugPhysicsContradictionGate] : []),
@@ -5597,7 +5653,8 @@ function buildGateDag({
   const edges = [
     { from: 'story', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
-    { from: 'gate:common_judgment_spine', to: 'gate:bug_physics_triage' },
+    { from: 'gate:common_judgment_spine', to: 'gate:pr_scope_judgment' },
+    { from: 'gate:pr_scope_judgment', to: 'gate:bug_physics_triage' },
     ...(routeSpecificJudgmentGates.length > 0
       ? routeSpecificJudgmentGates.flatMap((gate) => [
         { from: 'gate:bug_physics_triage', to: gate.id },
@@ -5708,6 +5765,7 @@ function buildGateDag({
     storyGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    prScopeJudgmentGate,
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
     bugPhysicsContradictionGate,
@@ -5751,6 +5809,7 @@ function buildGateDag({
       needs_evidence_count: needsEvidence.length,
       engineering_judgment_route: engineeringJudgment?.route_type ?? null,
       engineering_judgment_dag: engineeringJudgment?.route_dag ?? null,
+      pr_scope_judgment_status: prScopeJudgmentGate.status,
       bug_physics_classes: bugPhysicsTriage?.classes ?? [],
       bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,
       pr_route: prRoute?.route_type ?? null,
@@ -7421,6 +7480,7 @@ function collectUnresolvedRequiredGates(gateDag) {
     .filter((node) => [
       'story',
       'engineering_judgment_spine_gate',
+      'pr_scope_judgment_gate',
       'pr_route_gate',
       'pr_body_contract_gate',
       'mirror_source_traceability_gate',
@@ -7497,6 +7557,7 @@ function isUnresolvedGateStatus(status) {
     'needs_setup',
     'needs_review',
     'needs_inspection',
+    'needs_split',
     'needs_rebase',
     'needs_changes',
     'contradicted',
@@ -7593,6 +7654,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:pr_scope_judgment' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;

@@ -9738,6 +9738,13 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.scope.status, 'needs_clean_branch');
   assert.equal(result.result.preparation.scope.recommended_strategy, 'clean_branch_or_split_pr');
+  const scopeGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:pr_scope_judgment');
+  assert.equal(scopeGate.status, 'needs_split');
+  assert.equal(scopeGate.classification, 'needs_split');
+  assert.equal(
+    result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:pr_scope_judgment'),
+    true
+  );
   assert.equal(result.result.preparation.file_groups.repo_control.count, 1);
   assert.equal(result.result.preparation.split_plan.status, 'split_recommended');
   assert.equal(result.result.preparation.split_plan.graph_context.available, true);
