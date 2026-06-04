@@ -9886,6 +9886,56 @@ test('security_trust route enforces the security regression judgment gate with e
   );
 });
 
+test('high-risk review pass requires inspection evidence in PR gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'auth.js'),
+    'export function checkPermission(token) { return token; }\n'
+  );
+  await git(repo, ['add', 'src/auth.js']);
+  await git(repo, ['commit', '-m', 'feat: add auth permission token review fixture']);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence']);
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'security review passed after reading auth fixture',
+    '--inspection-summary',
+    'read src/auth.js and checked the security route fixture',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'security-review-without-inspection-evidence',
+    '--agent-closed'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  const inspectionGate = gateDag.nodes.find((node) => node.id === 'gate:review_inspection_required');
+  assert.equal(inspectionGate.status, 'needs_inspection');
+  assert.equal(inspectionGate.high_risk, true);
+  assert.equal(inspectionGate.missing_inspections[0].missing.includes('inspection_evidence'), true);
+  assert.equal(
+    result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:review_inspection_required'),
+    true
+  );
+});
+
 test('agent_workflow route enforces the evidence lifecycle judgment gate with evidence or waiver', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

@@ -1126,6 +1126,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:path_surface_matrix') {
     return `Record current path/surface evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:review_inspection_required') {
+    return `Record required review inspection evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:agent_review') {
     return (gate.required_actions?.length ?? 0) > 0
       ? gate.required_actions.join(' ')
@@ -5504,6 +5507,11 @@ function buildGateDag({
   });
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
   const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
+  const reviewInspectionRequiredGate = buildReviewInspectionRequiredGate({
+    agentReviews,
+    changeClassification,
+    engineeringJudgment
+  });
   const pathSurfaceMatrixGate = buildPathSurfaceMatrixGate({
     storySource,
     fileGroups,
@@ -5567,6 +5575,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewInspectionRequiredGate,
     artifactConsistencyGate,
     dagConnectivityGate,
     {
@@ -5687,7 +5696,8 @@ function buildGateDag({
         stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
       })
     ]),
-    { from: 'gate:agent_review', to: 'gate:artifact_consistency' },
+    { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
+    { from: 'gate:review_inspection_required', to: 'gate:artifact_consistency' },
     { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
     { from: 'gate:dag_connectivity', to: 'pr' }
   ];
@@ -5725,6 +5735,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewInspectionRequiredGate,
     artifactConsistencyGate,
     dagConnectivityGate
   ].filter((gate) => gate?.required);
@@ -5751,6 +5762,7 @@ function buildGateDag({
       requirement_status: requirementGate.status,
       failure_mode_coverage_status: failureModeCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
+      review_inspection_required_status: reviewInspectionRequiredGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
       managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
     },
@@ -6562,6 +6574,55 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
   }
   actions.push('After closing review subagents and recording all roles with parallel_subagent provenance and closed subagent lifecycle, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
   return actions;
+}
+
+function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassification = null, engineeringJudgment = null } = {}) {
+  const highRisk = changeClassification?.profile === 'workflow_heavy'
+    || ['security_trust', 'release_engineering', 'data_pipeline', 'business_system', 'api_platform', 'infra_ops'].includes(engineeringJudgment?.route_type)
+    || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
+  const recordedRoles = (agentReviews?.stages ?? [])
+    .flatMap((stage) => (stage.roles ?? []).map((role) => ({ stage: stage.stage, ...role })))
+    .filter((role) => role.artifact);
+  const inspectedRoles = recordedRoles.map((role) => {
+    const summary = role.inspection?.summary ?? null;
+    const evidence = role.inspection?.evidence ?? null;
+    const missing = [];
+    if (highRisk && !summary) missing.push('inspection_summary');
+    if (highRisk && !evidence) missing.push('inspection_evidence');
+    return {
+      stage: role.stage,
+      role: role.role,
+      status: role.effective_status ?? role.status ?? null,
+      artifact: role.artifact,
+      inspection_summary_present: Boolean(summary),
+      inspection_evidence_present: Boolean(evidence),
+      missing
+    };
+  });
+  const missing = inspectedRoles.filter((role) => role.missing.length > 0);
+  const status = missing.length === 0 ? 'passed' : 'needs_inspection';
+  return {
+    id: 'gate:review_inspection_required',
+    type: 'review_inspection_required_gate',
+    label: 'Review Inspection Required Gate',
+    status,
+    required: true,
+    high_risk: highRisk,
+    recorded_review_count: inspectedRoles.length,
+    missing_inspection_count: missing.length,
+    inspected_roles: inspectedRoles,
+    missing_inspections: missing,
+    required_actions: missing.length === 0 ? [] : [
+      `Record inspection summary and evidence for high-risk review role(s): ${missing.map((role) => `${role.stage}:${role.role}`).join(', ')}`,
+      'Use `vibepro review record --inspection-summary "<summary>" --inspection-evidence <ref> ... --agent-closed` for each missing role',
+      'Rerun `vibepro pr prepare` after current-bound inspection evidence is recorded'
+    ],
+    reason: status === 'passed'
+      ? highRisk
+        ? `${inspectedRoles.length} recorded high-risk review role(s) include required inspection fields, or no recorded high-risk review is present yet`
+        : 'Review inspection evidence is not critical for this route profile'
+      : `${missing.length} high-risk review role(s) are missing inspection summary or evidence`
+  };
 }
 
 function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
@@ -7382,6 +7443,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
+      'review_inspection_required_gate',
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',
@@ -7434,6 +7496,7 @@ function isUnresolvedGateStatus(status) {
     'needs_story',
     'needs_setup',
     'needs_review',
+    'needs_inspection',
     'needs_rebase',
     'needs_changes',
     'contradicted',
@@ -7529,6 +7592,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;
