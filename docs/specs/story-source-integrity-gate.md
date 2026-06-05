@@ -17,4 +17,3 @@ architecture_ref: docs/architecture/ADR-story-source-integrity-gate.md
 - 不一致Story文書を含むPR準備で `story_source_mismatch` を検出する回帰テストを持つ。
 - 既存の旧形式Story文書fixtureは、同一slugまたは `vibepro_story_id` により正しくStory sourceとして扱われる。
 - Gate DAG connectivity testはStory Source Integrity Gateを経由するedgeを検証する。
-

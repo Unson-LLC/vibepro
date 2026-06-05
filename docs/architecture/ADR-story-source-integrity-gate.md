@@ -20,4 +20,3 @@ PR evidenceの価値は、Story、Spec、Architecture、差分、検証結果が
 
 この判断により、Story sourceが曖昧な変更はPR作成前に止まる。
 一方で既存の `STR-001-foo.md` 形式をすべて壊さないため、slug正規化で `story-foo` との対応を許可する。
-

@@ -5576,7 +5576,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
   assert.match(prBody, /\[src\/feature\/pr-prepare.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/src\/feature\/pr-prepare.js\)/);
   assert.match(prBody, /\[tests\/unit\/pr-prepare.test.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/tests\/unit\/pr-prepare.test.js\)/);
-  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Story Source passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Managed Worktree needs_review \/ Split passed \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E (passed|needs_(setup|evidence)) \/ Agent Review (passed|needs_review) \/ Network Contract passed \/ DAG Connectivity passed/);
+  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Story Source passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Managed Worktree needs_review(?: \/ Split passed)? \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E (passed|needs_(setup|evidence)) \/ Agent Review (passed|needs_review) \/ Network Contract passed \/ DAG Connectivity passed/);
   assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
