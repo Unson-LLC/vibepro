@@ -4705,7 +4705,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   ];
 }
 
-function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null } = {}) {
+function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null, decisionRecords = null } = {}) {
   const storyDocCount = fileGroups?.story_docs?.count ?? 0;
   const sourceCount = fileGroups?.source?.count ?? 0;
   const testCount = fileGroups?.tests?.count ?? 0;
@@ -4723,7 +4723,9 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
       : sourceCount > 0 && docCount > 0 && testCount > 0
         ? 'focused'
         : 'focused';
-  const status = needsSplit ? 'needs_split' : 'passed';
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:pr_scope_judgment')
+    ?? findAcceptedDecisionForSource(decisionRecords, 'gate:split_resolution');
+  const status = needsSplit && !acceptedDecision ? 'needs_split' : 'passed';
   const splitSuggestions = [];
   if (storyDocCount > 1) splitSuggestions.push('Split multiple Story docs into separate PRs or explicitly justify the bundled scope.');
   if ((fileGroups?.repo_control?.count ?? 0) > 0 && sourceCount + docCount > 0) splitSuggestions.push('Separate repo-control/agent configuration changes from product/source changes.');
@@ -4744,14 +4746,21 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
     test_file_count: testCount,
     doc_file_count: docCount,
     risk_surface_count: riskSurfaceCount,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
     reasons: scope?.reasons ?? [],
     split_suggestions: splitSuggestions,
     required_actions: status === 'passed' ? [] : [
       ...splitSuggestions,
       'Regenerate `vibepro pr prepare` after the PR scope is reduced or an auditable split decision is recorded'
     ],
-    reason: status === 'passed'
-      ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
+    reason: acceptedDecision
+      ? `PR scope split risk accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`
+      : status === 'passed'
+        ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
       : `PR scope is not reviewable as one PR: ${(scope?.reasons ?? splitSuggestions).join('; ') || classification}`
   };
 }
@@ -5560,7 +5569,7 @@ function buildGateDag({
     agentReviews,
     decisionRecords
   });
-  const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute });
+  const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
   const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
   const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
