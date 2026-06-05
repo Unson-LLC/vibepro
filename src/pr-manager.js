@@ -5666,7 +5666,8 @@ function buildGateDag({
     fileGroups,
     changeClassification,
     verificationEvidence,
-    flowVerification
+    flowVerification,
+    decisionRecords
   });
   const workflowHeavyGates = buildWorkflowHeavyGates({
     changeClassification,
@@ -6221,7 +6222,7 @@ function failureModeCoveredByEvidence(mode, evidenceText) {
   return mode.keywords.some((keyword) => evidenceText.includes(keyword));
 }
 
-function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null } = {}) {
+function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
@@ -6241,7 +6242,8 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     };
   });
   const missing = rows.filter((row) => row.status === 'missing_surface_evidence');
-  const status = missing.length === 0 ? 'passed' : 'partial_surface';
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:path_surface_matrix');
+  const status = missing.length === 0 || acceptedDecision ? 'passed' : 'partial_surface';
   return {
     id: 'gate:path_surface_matrix',
     type: 'path_surface_matrix_gate',
@@ -6251,6 +6253,11 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     high_risk: highRisk,
     row_count: rows.length,
     missing_surface_count: missing.length,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
     rows,
     missing_surfaces: missing.map((row) => row.surface),
     required_actions: missing.length === 0 ? [] : [
@@ -6258,7 +6265,9 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
       'Trace the value/state from input through persistence/API/UI/report/review surface, or mark the surface not applicable with an auditable decision',
       'Rerun `vibepro pr prepare` after the surface evidence is recorded'
     ],
-    reason: missing.length === 0
+    reason: acceptedDecision
+      ? `Path/surface matrix accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`
+      : missing.length === 0
       ? rows.length === 0
         ? 'No user-visible or cross-surface path rows were detected'
         : `${rows.length} path surface row(s) are covered or not critical for this route`
