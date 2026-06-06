@@ -3572,17 +3572,25 @@ function isStoryE2eCandidate(relativePath, content, storyId, storySlug) {
 }
 
 function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
-  const markers = [
+  const storyBoundMarkers = [
     `${storyId} ac:${index + 1}`,
     `${storyId} ac-${index + 1}`,
     `${storyId} acceptance:${index + 1}`
+  ].map(normalizeCoverageText);
+  const assertionMessageMarkers = [
+    `ac:${index + 1}`,
+    `ac-${index + 1}`,
+    `acceptance:${index + 1}`
   ].map(normalizeCoverageText);
   const criterionMarker = normalizeCoverageText(criterion);
   return getExecutableE2eBlocks(candidate.content).some((block) => {
     const content = normalizeCoverageText(block);
     return criterionMarker.length > 0
       && content.includes(criterionMarker)
-      && markers.some((marker) => marker.length > 0 && content.includes(marker))
+      && (
+        storyBoundMarkers.some((marker) => marker.length > 0 && content.includes(marker))
+        || blockHasAssertionMessageMarker(block, assertionMessageMarkers)
+      )
       && blockHasCriterionAssertion(block, criterion);
   });
 }
@@ -3627,6 +3635,16 @@ function blockHasCriterionAssertion(block, criterion) {
     .some((line) => {
       const normalized = normalizeCoverageText(line);
       return tokens.some((token) => normalized.includes(token));
+    });
+}
+
+function blockHasAssertionMessageMarker(block, markers) {
+  return String(block ?? '')
+    .split('\n')
+    .filter(hasExecutableE2eAssertionsInText)
+    .some((line) => {
+      const normalized = normalizeCoverageText(line);
+      return markers.some((marker) => marker.length > 0 && normalized.includes(marker));
     });
 }
 

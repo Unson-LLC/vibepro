@@ -791,6 +791,18 @@ test('story-risk-adaptive generic marker', async () => {
 
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';
+test('story-risk-adaptive assertion message marker', async () => {
+  expect('retry-status', 'ac:1 Workflow states prevent generation until detection is ready').toContain('status');
+  expect('transition matrix', 'story-risk-adaptive S-001 Given the workflow state is polling status, release readiness requires replaying the transition matrix.').toContain('transition');
+});
+`);
+
+  const assertionMessageMarker = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(assertionMessageMarker.exitCode, 0);
+  assert.equal(assertionMessageMarker.result.preparation.pr_context.acceptance_e2e_coverage.status, 'passed');
+
+  await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
+import { expect, test } from '@playwright/test';
 test('story-risk-adaptive bound marker with assertion', async () => {
   // story-risk-adaptive S-001
   // Given the workflow state is polling status, release readiness requires replaying the transition matrix.
