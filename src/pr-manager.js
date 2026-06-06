@@ -4623,7 +4623,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   inferredSpec = null,
   changeClassification = null,
   agentReviews = null,
-  decisionRecords = null
+  decisionRecords = null,
+  prRoute = null
 } = {}) {
   const acceptanceCount = storySource?.acceptance_criteria?.length ?? 0;
   const storyHasIntent = Boolean(storySource?.title || storySource?.requirement_title || storySource?.background || acceptanceCount > 0);
@@ -4641,10 +4642,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   const hasTests = (fileGroups?.tests?.count ?? 0) > 0;
   const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
+  const documentationOnlyRoute = prRoute?.route_type === 'docs_only';
   const highRisk = changeClassification?.profile === 'workflow_heavy'
     || ['business_system', 'data_pipeline', 'security_trust', 'release_engineering', 'api_platform', 'infra_ops'].includes(routeType)
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => riskSurfaces.has(surface));
-  const boundarySensitive = highRisk || routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration');
+  const boundarySensitive = highRisk
+    || (!documentationOnlyRoute && (routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration')));
   return [
     {
       id: 'intent',
@@ -5567,7 +5570,8 @@ function buildGateDag({
     inferredSpec,
     changeClassification,
     agentReviews,
-    decisionRecords
+    decisionRecords,
+    prRoute
   });
   const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
