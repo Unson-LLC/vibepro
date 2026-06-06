@@ -876,6 +876,7 @@ function buildStoryExecutionPlan(catalog, options = {}) {
 function scoreStoryForExecution(story, catalog, graphIndex = null) {
   const fields = new Set((story.derived?.open_questions ?? []).map((item) => item.field));
   const meaning = story.derived?.meaning ?? {};
+  const storyContract = story.derived?.story_contract ?? null;
   const sourceType = story.source?.type ?? '';
   const targetFiles = resolveStoryPlanTargetFiles(story, graphIndex);
   const graphContext = buildGraphContextForFiles(targetFiles, graphIndex);
@@ -893,6 +894,8 @@ function scoreStoryForExecution(story, catalog, graphIndex = null) {
   if (fields.has('missing_spec')) add(24, 'コード由来だが仕様/Story根拠が不足');
   if (fields.has('business_metric')) add(14, 'KPIまたは効果測定指標が未定');
   if (fields.has('business_context')) add(10, 'biz視点の意味づけが不足');
+  if (fields.has('story_contract_source_role')) add(32, 'Story Contractでsource roleの誤読リスクが未解決');
+  if (storyContract?.status === 'needs_clarification') add(18, 'Story Contractが開発可能な契約として未解決');
   if (fields.has('period')) add(6, 'NocoDB Periodが未確定');
   if (meaning.confidence === 'low') add(18, 'Story意味づけの総合信頼度が低い');
   if (meaning.confidence === 'medium') add(8, 'Story意味づけに確認余地がある');
@@ -912,11 +915,17 @@ function scoreStoryForExecution(story, catalog, graphIndex = null) {
     period: story.period ?? null,
     source_type: sourceType,
     confidence: meaning.confidence ?? story.derived?.confidence ?? 'unknown',
+    story_type: storyContract?.story_type ?? null,
+    story_contract: storyContract,
     workflow_stage: meaning.workflow_position?.stage ?? 'unknown',
     target_files: targetFiles,
     read_first_files: resolveStoryPlanReadFirstFiles(story, graphContext),
     graph_context: graphContext,
     acceptance_focus: story.derived?.story_definition?.acceptance_focus ?? [],
+    derived: {
+      open_questions: story.derived?.open_questions ?? [],
+      story_contract: storyContract
+    },
     source_recovery: sourceRecovery,
     reasons,
     next_command: `vibepro story select . --id ${story.story_id}`
@@ -1201,6 +1210,7 @@ function buildSourceAlignmentFindings(stories) {
 
 function buildSourceAlignmentFindingsForStory(story) {
   const recovery = story.source_recovery ?? {};
+  const storyContract = story.story_contract ?? story.derived?.story_contract ?? null;
   const sourceStatus = recovery.sources?.story?.status ?? 'unknown';
   const specStatus = recovery.sources?.spec?.status ?? 'unknown';
   const architectureStatus = recovery.sources?.architecture?.status ?? 'unknown';
@@ -1229,6 +1239,22 @@ function buildSourceAlignmentFindingsForStory(story) {
       mutates_repository: false
     });
   };
+
+  if (fields.has('story_contract_source_role') || storyContractCheckStatus(storyContract, 'source_role_integrity') === 'needs_clarification') {
+    add(
+      'story_contract_source_role_mismatch',
+      'high',
+      'Story Contractがsource roleの不一致を検出している。',
+      '内部ツールや開発運用の文書を、ユーザー向けproduct storyとして誤読し、不要または誤った実装へ進む可能性がある。',
+      '根拠文書が本当にproduct要求か、開発者向け内部仕様かを確認し、必要ならStory ID、category、preset、または根拠文書を修正する。',
+      {
+        evidence: {
+          open_question: 'story_contract_source_role',
+          story_contract: summarizeStoryContractForEvidence(storyContract)
+        }
+      }
+    );
+  }
 
   if (specStatus === 'needs_recovery') {
     add(
@@ -1343,6 +1369,7 @@ function buildSourceAlignmentEvidence(story, graph, refs, extra = {}) {
     source_type: story.source_type ?? null,
     confidence: story.confidence ?? null,
     open_questions: (story.derived?.open_questions ?? []).map((item) => item.field).slice(0, 8),
+    story_contract: summarizeStoryContractForEvidence(story.story_contract ?? story.derived?.story_contract ?? null),
     docs: [...refs.story, ...refs.spec, ...refs.architecture].slice(0, 12),
     files: [
       ...(graph?.matched_files ?? []),
@@ -1350,6 +1377,21 @@ function buildSourceAlignmentEvidence(story, graph, refs, extra = {}) {
       ...(graph?.hub_nodes ?? []).map((node) => node.source_file).filter(Boolean)
     ].filter((file, index, files) => file && files.indexOf(file) === index).slice(0, 12),
     ...extra
+  };
+}
+
+function storyContractCheckStatus(storyContract, checkId) {
+  return (storyContract?.checks ?? []).find((check) => check.id === checkId)?.status ?? null;
+}
+
+function summarizeStoryContractForEvidence(storyContract) {
+  if (!storyContract) return null;
+  return {
+    status: storyContract.status ?? null,
+    story_type: storyContract.story_type ?? null,
+    unresolved_checks: (storyContract.checks ?? [])
+      .filter((check) => check.status === 'needs_clarification')
+      .map((check) => check.id)
   };
 }
 
@@ -1612,6 +1654,7 @@ function buildSourceRecoveryQuestions(story) {
 }
 
 function questionPriority(field) {
+  if (String(field ?? '').startsWith('story_contract_')) return field === 'story_contract_source_role' ? 'high' : 'medium';
   if (field === 'coverage' || field === 'missing_spec' || field === 'missing_evidence' || field === 'source_spec_recovery' || field === 'source_architecture_recovery' || field === 'source_alignment') return 'high';
   if (field === 'business_metric' || field === 'business_context') return 'medium';
   return 'low';
@@ -1655,6 +1698,17 @@ function buildTaskCandidatesForStory(story) {
     ], {
       source_recovery: story.source_recovery,
       recovery_drafts: (story.source_recovery?.drafts ?? []).filter((draft) => draft.kind === 'spec')
+    });
+  }
+  if (story.story_contract?.status === 'needs_clarification') {
+    push('story-contract-recovery', 'Story Contractを確定する', 'ビジネス意図、開発境界、source role、受け入れ例、検証方針を実装前に確認する', [
+      'story_contract の未解決checkが説明できる',
+      'source roleがproduct要求、内部開発仕様、運用変更のどれかに分類されている',
+      '開発境界と検証方針がStory/Spec/Architectureのいずれかに残る',
+      '誤読リスクがある場合はStory ID、category、preset、または根拠文書を修正する'
+    ], {
+      story_contract: story.story_contract,
+      source_recovery: story.source_recovery
     });
   }
   if (story.source_recovery?.sources?.architecture?.status === 'needs_decision') {

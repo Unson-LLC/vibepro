@@ -177,7 +177,10 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
       : 'Preset was selected by VibePro default with repo profile applicability gates.'
   };
   const currentStory = findCurrentStory(options.config);
-  const defaults = buildDefaultStoryFields(currentStory, activePreset);
+  const defaults = buildDefaultStoryFields(currentStory, activePreset, {
+    repoProfile,
+    presetExplicit: Boolean(explicitPresetId)
+  });
   const graph = await readGraph(root);
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files, activePreset);
@@ -655,7 +658,25 @@ function buildDerivedStory({
   const planning = inferPlanning({ category, docs, defaults, diagnosisBased, codeDerived });
   const normalizedDefinition = normalizeStoryDefinition(storyDefinition, docs);
   const businessContext = summarizeBusinessContext(docs, codeDerived);
-  const openQuestions = planning.open_questions;
+  const storyContract = buildStoryContract({
+    id,
+    title,
+    category,
+    sourceType,
+    paths,
+    evidence,
+    docs,
+    definition: normalizedDefinition,
+    businessContext,
+    planning,
+    diagnosisBased,
+    codeDerived,
+    defaults
+  });
+  const openQuestions = [
+    ...planning.open_questions,
+    ...storyContract.open_questions
+  ];
   const meaning = buildStoryMeaning({
     id,
     category,
@@ -692,12 +713,362 @@ function buildDerivedStory({
       related_findings: relatedFindings,
       confidence: paths.length > 0 || evidence.length > 0 ? 'medium' : 'low',
       story_definition: normalizedDefinition,
+      story_contract: storyContract,
       meaning,
       predictions: planning.predictions,
       business_context: businessContext,
       open_questions: openQuestions
     }
   };
+}
+
+function buildStoryContract({
+  id,
+  title,
+  category,
+  sourceType,
+  paths = [],
+  evidence = [],
+  docs = [],
+  definition,
+  businessContext,
+  planning,
+  diagnosisBased,
+  codeDerived,
+  defaults
+}) {
+  const preset = defaults.preset;
+  const storyType = inferStoryContractType({ id, title, category, sourceType, diagnosisBased, codeDerived });
+  const codePaths = paths.filter((item) => isCodePath(item, preset));
+  const docPathsList = docs.map((doc) => doc.path);
+  const sourceRole = evaluateStorySourceRoleIntegrity({
+    id,
+    category,
+    sourceType,
+    paths,
+    docs,
+    codePaths,
+    defaults
+  });
+  const intentStatus = hasStoryIntent(definition) ? 'passed' : 'needs_clarification';
+  const boundaryStatus = codePaths.length > 0 || docPathsList.length > 0
+    ? 'passed'
+    : evidence.length > 0 || sourceType === 'architecture_profile' || sourceType === 'config_story' || diagnosisBased
+      ? 'inferred'
+      : 'needs_clarification';
+  const acceptanceStatus = (definition.acceptance_focus ?? []).length > 0 ? 'passed' : 'needs_clarification';
+  const verification = inferStoryContractVerification({ storyType, category, definition, codePaths, docs });
+  const checks = [
+    buildStoryContractCheck('story_type_fit', storyType === 'story_contract_review' ? 'inferred' : 'passed', `Story typeを ${storyType} と推定した。`, { story_type: storyType }),
+    buildStoryContractCheck('source_role_integrity', sourceRole.status, sourceRole.reason, sourceRole.evidence),
+    buildStoryContractCheck('business_intent', intentStatus, intentStatus === 'passed'
+      ? 'who/problem/outcome が実装判断の枠組みとして利用できる。'
+      : 'who/problem/outcome が十分に分離されていない。', summarizeStoryIntentEvidence(definition)),
+    buildStoryContractCheck('developer_boundary', boundaryStatus, boundaryStatus === 'needs_clarification'
+      ? 'コード、Spec、Architecture、診断、文書のいずれからも開発境界を置けない。'
+      : inferDeveloperBoundaryReason({ sourceType, codePaths, docs, evidence }), {
+      code_paths: codePaths.slice(0, 8),
+      docs: docPathsList.slice(0, 8),
+      inferred_evidence: evidence.filter((item) => typeof item === 'string').slice(0, 8)
+    }),
+    buildStoryContractCheck('acceptance_examples', acceptanceStatus, acceptanceStatus === 'passed'
+      ? '受け入れ観点が利用できる。'
+      : '受け入れ例が不足している。', {
+      acceptance_focus: (definition.acceptance_focus ?? []).slice(0, 8)
+    }),
+    buildStoryContractCheck('verification_strategy', verification.status, verification.reason, {
+      approach: verification.approach,
+      required_evidence: verification.required_evidence
+    })
+  ];
+  const openQuestions = checks
+    .filter((check) => check.status === 'needs_clarification')
+    .map((check) => storyContractQuestionForCheck(check, { id, title, category, storyType, repoProfile: defaults.repoProfile }));
+  const status = checks.some((check) => check.status === 'needs_clarification') ? 'needs_clarification' : 'ready';
+  return {
+    schema_version: '0.1.0',
+    story_type: storyType,
+    status,
+    checks,
+    open_questions: dedupeStoryContractQuestions(openQuestions),
+    developer_boundary_hypothesis: inferDeveloperBoundaryHypothesis({ codePaths, docs, evidence, sourceType }),
+    risk_surface_hypothesis: inferStoryContractRiskSurface({
+      category,
+      storyType,
+      businessContext,
+      planning,
+      sourceRole,
+      codePaths
+    }),
+    verification_strategy: {
+      status: verification.status,
+      approach: verification.approach,
+      required_evidence: verification.required_evidence
+    }
+  };
+}
+
+function buildStoryContractCheck(id, status, reason, evidence = {}) {
+  return {
+    id,
+    status,
+    reason,
+    evidence
+  };
+}
+
+function inferStoryContractType({ id, title, category, sourceType, diagnosisBased, codeDerived }) {
+  const text = [id, title, category, sourceType].join(' ').toLowerCase();
+  if (/regression|回帰|再発/.test(text)) return 'regression_fix';
+  if (/bug|fix|failure|error|不具合|障害|失敗|修正/.test(text) || diagnosisBased) return 'bug_fix';
+  if (/refactor|cleanup|整理|リファクタ/.test(text)) return 'refactor';
+  if (category === 'architecture') return 'architecture_decision';
+  if (category === 'docs') return 'docs_policy_change';
+  if (category === 'security' || category === 'quality') return 'quality_hardening';
+  if (category === 'ops') return 'operational_change';
+  if (category === 'product' && codeDerived) return 'enhancement';
+  if (category === 'product') return 'new_capability';
+  return 'story_contract_review';
+}
+
+function evaluateStorySourceRoleIntegrity({ id, category, sourceType, paths, docs, codePaths, defaults }) {
+  const repoProfile = defaults.repoProfile;
+  const docOnly = docs.length > 0 && codePaths.length === 0;
+  const productTemplate = category === 'product' && id.startsWith('story-product-');
+  const productSurfaceApplicable = repoProfile?.product_surface_applicable === true;
+  const presetExplicit = defaults.presetExplicit === true;
+  const explicitProductEvidence = hasExplicitProductStoryEvidence(id, docs);
+  if (productTemplate && docOnly && !productSurfaceApplicable && !presetExplicit && !explicitProductEvidence) {
+    return {
+      status: 'needs_clarification',
+      reason: 'product surfaceではないrepoのdocument-only根拠は、ユーザー向けproduct storyではなく内部ツール仕様を指している可能性がある。',
+      evidence: {
+        repo_profile: repoProfile?.id ?? 'unknown',
+        product_surface_applicable: productSurfaceApplicable,
+        preset_explicit: presetExplicit,
+        source_type: sourceType,
+        paths: paths.slice(0, 8),
+        doc_story_ids: uniqueList(docs.map((doc) => doc.story_id)).slice(0, 8)
+      }
+    };
+  }
+  if (productTemplate && docOnly && !productSurfaceApplicable) {
+    return {
+      status: 'inferred',
+      reason: 'product surfaceではないrepoだが、文書の役割が明示されているためStory仮説として保持する。',
+      evidence: {
+        repo_profile: repoProfile?.id ?? 'unknown',
+        product_surface_applicable: productSurfaceApplicable,
+        preset_explicit: presetExplicit,
+        explicit_product_evidence: explicitProductEvidence,
+        paths: paths.slice(0, 8)
+      }
+    };
+  }
+  return {
+    status: 'passed',
+    reason: 'repo profile、明示preset、またはコード根拠とsource roleが整合している。',
+    evidence: {
+      repo_profile: repoProfile?.id ?? 'unknown',
+      product_surface_applicable: productSurfaceApplicable,
+      preset_explicit: presetExplicit,
+      code_paths: codePaths.slice(0, 8),
+      docs: docs.map((doc) => doc.path).slice(0, 8)
+    }
+  };
+}
+
+function hasExplicitProductStoryEvidence(storyId, docs) {
+  return docs.some((doc) => {
+    if (doc.story_id === storyId) return true;
+    if (typeof doc.story_id === 'string' && doc.story_id.startsWith('story-product-')) return true;
+    if (doc.path.startsWith('docs/user_stories/')) return true;
+    if (doc.path.startsWith('docs/features/')) return true;
+    if (doc.path.startsWith('docs/requirements/')) return true;
+    return false;
+  });
+}
+
+function hasStoryIntent(definition) {
+  return [definition.who, definition.problem, definition.outcome]
+    .filter((value) => typeof value === 'string' && value.trim().length > 0)
+    .length >= 2;
+}
+
+function summarizeStoryIntentEvidence(definition) {
+  return {
+    has_who: Boolean(definition.who),
+    has_problem: Boolean(definition.problem),
+    has_want: Boolean(definition.want),
+    has_outcome: Boolean(definition.outcome),
+    has_business_value: Boolean(definition.business_value)
+  };
+}
+
+function inferDeveloperBoundaryReason({ sourceType, codePaths, docs, evidence }) {
+  if (codePaths.length > 0) return 'コードパスから実装境界を置ける。';
+  if (docs.some((doc) => doc.path.startsWith('docs/specs/'))) return 'Spec文書から実装境界を置ける。';
+  if (docs.some((doc) => doc.path.startsWith('docs/architecture/'))) return 'Architecture文書から実装境界を置ける。';
+  if (docs.length > 0) return '関連文書から暫定的な境界を置ける。';
+  if (evidence.length > 0) return 'Architecture profileまたは診断根拠から暫定的な境界を置ける。';
+  return `${sourceType} から暫定的な境界を置く。`;
+}
+
+function inferDeveloperBoundaryHypothesis({ codePaths, docs, evidence, sourceType }) {
+  if (codePaths.length > 0) {
+    return {
+      status: 'code_backed',
+      summary: `実装境界は ${codePaths.slice(0, 3).join(', ')} から開始する。`,
+      evidence_paths: codePaths.slice(0, 8)
+    };
+  }
+  const specOrArchitecture = docs
+    .filter((doc) => doc.path.startsWith('docs/specs/') || doc.path.startsWith('docs/architecture/'))
+    .map((doc) => doc.path);
+  if (specOrArchitecture.length > 0) {
+    return {
+      status: 'document_backed',
+      summary: `境界は ${specOrArchitecture.slice(0, 3).join(', ')} から推定する。`,
+      evidence_paths: specOrArchitecture.slice(0, 8)
+    };
+  }
+  if (docs.length > 0) {
+    return {
+      status: 'story_or_feature_doc_backed',
+      summary: `境界は ${docs.slice(0, 3).map((doc) => doc.path).join(', ')} から暫定推定する。`,
+      evidence_paths: docs.map((doc) => doc.path).slice(0, 8)
+    };
+  }
+  return {
+    status: evidence.length > 0 ? 'inferred' : 'unknown',
+    summary: evidence.length > 0
+      ? `${sourceType} の根拠から境界を推定する。`
+      : '開発境界はまだ置けない。',
+    evidence_paths: evidence.filter((item) => typeof item === 'string').slice(0, 8)
+  };
+}
+
+function inferStoryContractRiskSurface({ category, storyType, businessContext, planning, sourceRole, codePaths }) {
+  if (sourceRole.status === 'needs_clarification') {
+    return {
+      level: 'high',
+      summary: 'source roleの不一致により、内部ツール文書を誤ったproduct実装タスクへ変換する可能性がある。',
+      drivers: ['source_role_integrity']
+    };
+  }
+  if (category === 'security') {
+    return {
+      level: 'high',
+      summary: 'Security境界Storyは前提が誤ると本番露出リスクにつながる。',
+      drivers: ['security_boundary']
+    };
+  }
+  if (storyType === 'bug_fix' || storyType === 'regression_fix') {
+    return {
+      level: 'medium',
+      summary: '修正Storyには明確な失敗モードと回帰証跡が必要である。',
+      drivers: [storyType]
+    };
+  }
+  const businessGap = (planning.open_questions ?? []).some((item) => item.field === 'business_metric' || item.field === 'business_context');
+  if (category === 'product' && businessGap) {
+    return {
+      level: 'medium',
+      summary: 'product価値はあり得るが、成功指標またはビジネス文脈が明示されていない。',
+      drivers: ['business_context', 'business_metric'].filter((field) => (planning.open_questions ?? []).some((item) => item.field === field))
+    };
+  }
+  if (codePaths.length > 5) {
+    return {
+      level: 'medium',
+      summary: '実装境界が複数ファイルに広がっており、分割可能性の確認が必要である。',
+      drivers: ['code_scope']
+    };
+  }
+  return {
+    level: businessContext.signals?.length > 0 ? 'low' : 'medium',
+    summary: businessContext.signals?.length > 0
+      ? 'business signalとsource roleは計画に使える程度に整合している。'
+      : 'business signalが薄いため、明示的な仮説として扱う。',
+    drivers: businessContext.signals ?? []
+  };
+}
+
+function inferStoryContractVerification({ storyType, category, definition, codePaths, docs }) {
+  const acceptance = definition.acceptance_focus ?? [];
+  if (acceptance.length === 0) {
+    return {
+      status: 'needs_clarification',
+      reason: '受け入れ例がないため検証方法を選べない。',
+      approach: '実装前に受け入れ例を定義する。',
+      required_evidence: ['acceptance_examples']
+    };
+  }
+  if (storyType === 'docs_policy_change') {
+    return {
+      status: 'inferred',
+      reason: 'Documentation Storyはsource linkとreview evidenceで検証できる。',
+      approach: 'Story/Spec/Architectureリンクを確認し、story map/planを再生成する。',
+      required_evidence: ['story-map.md', 'story-plan.json']
+    };
+  }
+  if (storyType === 'architecture_decision') {
+    return {
+      status: 'inferred',
+      reason: 'Architecture StoryはUI実行よりもgraph/context reviewが重要である。',
+      approach: 'graph/story planを実行し、影響境界をADRまたはArchitecture文書と照合する。',
+      required_evidence: ['graphify', 'architecture_doc_or_adr']
+    };
+  }
+  if (storyType === 'bug_fix' || storyType === 'regression_fix') {
+    return {
+      status: 'inferred',
+      reason: '修正Storyには回帰観点の検証経路が必要である。',
+      approach: '最小の回帰テストまたは再現確認と、影響ファイルの重点inspectionを行う。',
+      required_evidence: ['regression_test_or_manual_repro', ...codePaths.slice(0, 3)]
+    };
+  }
+  const hasSpec = docs.some((doc) => doc.path.startsWith('docs/specs/'));
+  return {
+    status: 'inferred',
+    reason: hasSpec
+      ? 'Specに紐づく受け入れ観点から検証を組み立てられる。'
+      : '受け入れ観点はあるため、task planning時に検証方法を選べる。',
+    approach: category === 'product'
+      ? 'PR前に受け入れ観点をunit/integration/E2Eまたは明示的な手動証跡へ対応づける。'
+      : 'PR前に受け入れ観点をCLI/test/inspection証跡へ対応づける。',
+    required_evidence: hasSpec ? ['spec_acceptance_trace'] : ['acceptance_trace']
+  };
+}
+
+function storyContractQuestionForCheck(check, context) {
+  const field = {
+    story_type_fit: 'story_contract_story_type',
+    source_role_integrity: 'story_contract_source_role',
+    business_intent: 'story_contract_business_intent',
+    developer_boundary: 'story_contract_developer_boundary',
+    acceptance_examples: 'story_contract_acceptance_examples',
+    verification_strategy: 'story_contract_verification_strategy'
+  }[check.id] ?? `story_contract_${check.id}`;
+  const question = check.id === 'source_role_integrity'
+    ? `このStoryの根拠は本当に ${context.storyType} として実装すべき要求か。repo profile:${context.repoProfile?.id ?? 'unknown'} で、内部ツール文書の語彙一致ではないことを確認する。`
+    : `${context.title} のStory Contract check '${check.id}' が未解決: ${check.reason}`;
+  return {
+    field,
+    question
+  };
+}
+
+function dedupeStoryContractQuestions(questions) {
+  const seen = new Set();
+  const result = [];
+  for (const question of questions) {
+    const key = `${question.field}:${question.question}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(question);
+  }
+  return result;
 }
 
 function codeStoryDefinitionFor(storyId, paths, docs = [], preset = null) {
@@ -1948,14 +2319,16 @@ function findCurrentStory(config) {
     ?? null;
 }
 
-function buildDefaultStoryFields(currentStory, preset) {
+function buildDefaultStoryFields(currentStory, preset, context = {}) {
   const today = new Date();
   return {
     view: currentStory?.view ?? 'dev',
     period: currentStory?.period ?? formatIsoWeek(today),
     started_at: currentStory?.started_at ?? formatLocalDate(today),
     due_at: null,
-    preset
+    preset,
+    repoProfile: context.repoProfile ?? null,
+    presetExplicit: context.presetExplicit === true
   };
 }
 
@@ -2139,6 +2512,7 @@ function renderExecutiveSummary(catalog, stories) {
   const viewCounts = countBy(stories, (story) => story.view ?? 'unknown');
   const categoryCounts = countBy(stories, (story) => story.category ?? 'unknown');
   const sourceCounts = countBy(stories, (story) => story.source?.type ?? 'unknown');
+  const contractCounts = countBy(stories, (story) => story.derived?.story_contract?.status ?? 'unknown');
   const questionCounts = countBy(catalog.open_questions ?? [], (item) => item.field ?? 'unknown');
   const coverage = catalog.coverage;
   const warnings = catalog.source?.warnings ?? [];
@@ -2153,6 +2527,7 @@ function renderExecutiveSummary(catalog, stories) {
     `- View: ${formatCounts(viewCounts)}`,
     `- Category: ${formatCounts(categoryCounts)}`,
     `- Source: ${formatCounts(sourceCounts)}`,
+    `- Story Contract: ${formatCounts(contractCounts) || '-'}`,
     `- Graph: nodes ${catalog.source?.graphify?.node_count ?? 0}, edges ${catalog.source?.graphify?.edge_count ?? 0}`,
     `- Coverage Gate: ${coverage?.status ?? 'unavailable'} (${formatCoverageRatio(coverage?.totals?.coverage_ratio)})`,
     `- 主な不明点: ${formatCounts(questionCounts) || '-'}`
@@ -2178,6 +2553,11 @@ function renderReviewQueue(catalog, stories) {
   const periodUnknownCount = (catalog.open_questions ?? []).filter((item) => item.field === 'period').length;
   if (periodUnknownCount > 0) {
     items.push(`- Period未確定が ${periodUnknownCount} 件ある。NocoDB同期前に実行期を確定するか、未定として扱う方針を決める。`);
+  }
+
+  const contractUnknown = stories.filter((story) => story.derived?.story_contract?.status === 'needs_clarification');
+  if (contractUnknown.length > 0) {
+    items.push(`- Story Contract未解決が ${contractUnknown.length} 件ある。優先確認: ${contractUnknown.slice(0, 5).map((story) => story.story_id).join(', ')}`);
   }
 
   const topUncovered = (coverage?.uncovered ?? []).slice(0, 8);
@@ -2211,6 +2591,7 @@ function renderStoryPortfolio(stories) {
 function renderStoryCard(story) {
   const definition = story.derived?.story_definition ?? {};
   const meaning = story.derived?.meaning ?? {};
+  const storyContract = story.derived?.story_contract ?? {};
   const evidence = sourceSynthesisLines(definition.source_synthesis ?? [], 4);
   const questions = story.derived?.open_questions ?? [];
   const importantQuestions = questions
@@ -2224,12 +2605,15 @@ function renderStoryCard(story) {
     ? definition.acceptance_focus.slice(0, 4).map((item) => `  - ${item}`).join('\n')
     : '  - -';
   const meaningLines = renderMeaningLines(meaning);
+  const contractLines = renderStoryContractLines(storyContract);
 
   return `### ${story.title}
 
 - Story ID: \`${story.story_id}\`
 - 管理: view:${story.view ?? '-'} / category:${story.category ?? '-'} / horizon:${story.horizon ?? '-'} / period:${story.period ?? '-'}
 - 根拠: ${story.source?.type ?? '-'}${story.source?.paths?.length ? ` (${story.source.paths.length} paths)` : ''}
+- Story Contract:
+${contractLines}
 - 誰のため: ${definition.who ?? '-'}
 - 課題: ${definition.problem ?? '-'}
 - 望む変化: ${definition.want ?? '-'}
@@ -2244,6 +2628,19 @@ ${evidence}
 - 未決事項:
 ${questionLines}
 ${periodQuestion ? `- Period: ${periodQuestion.question}` : '- Period: -'}`;
+}
+
+function renderStoryContractLines(storyContract) {
+  if (!storyContract || Object.keys(storyContract).length === 0) return '  - -';
+  const unresolved = (storyContract.checks ?? [])
+    .filter((check) => check.status === 'needs_clarification')
+    .map((check) => check.id);
+  return [
+    `  - status:${storyContract.status ?? '-'} / type:${storyContract.story_type ?? '-'}`,
+    `  - boundary:${storyContract.developer_boundary_hypothesis?.status ?? '-'} / risk:${storyContract.risk_surface_hypothesis?.level ?? '-'}`,
+    `  - verification:${storyContract.verification_strategy?.approach ?? '-'}`,
+    `  - unresolved:${unresolved.length > 0 ? unresolved.join(', ') : '-'}`
+  ].join('\n');
 }
 
 function renderMeaningLines(meaning) {
@@ -2320,6 +2717,7 @@ function storyFlags(story) {
   if (fields.includes('missing_spec')) flags.push('missing_spec');
   if (fields.includes('business_metric')) flags.push('metric_unknown');
   if (fields.includes('period')) flags.push('period_unknown');
+  if (story.derived?.story_contract?.status === 'needs_clarification') flags.push('contract_needs_clarification');
   return flags.join(', ');
 }
 

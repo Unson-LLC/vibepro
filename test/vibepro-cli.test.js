@@ -13455,6 +13455,78 @@ Profile personalization is an explicit product requirement.
   assert.equal(JSON.stringify(profileStory.derived?.story_definition ?? {}).includes('src/session_learning.py'), false);
 });
 
+test('story contract flags ambiguous internal authorization documents before product auth implementation', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'scripts'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'authorization_scoring.py'), 'def score_authorization(): return "advisory"\n');
+  await writeFile(path.join(repo, 'scripts', 'run_authorization_audit.py'), 'print("audit")\n');
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-vibepro-pr-prepare-authorization-scoring.md'), `---
+story_id: story-vibepro-pr-prepare-authorization-scoring
+title: VibePro pr prepare should embed authorization scoring next to gate_status
+---
+
+# Story
+
+VibePro should expose authorization scoring in pr prepare artifacts for reviewers.
+This is internal developer tooling, not a user-facing account access feature.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'vibepro-pr-prepare-authorization-scoring.md'), `---
+story_id: story-vibepro-pr-prepare-authorization-scoring
+---
+
+# Spec
+
+authorization_scoring is advisory metadata next to gate_status.
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'vibepro-pr-prepare-authorization-scoring.md'), `---
+story_id: story-vibepro-pr-prepare-authorization-scoring
+---
+
+# Architecture
+
+The authorization scoring module is called from pr prepare.
+`);
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'authorization_scoring', source_file: 'src/authorization_scoring.py', label: 'score_authorization' },
+      { id: 'authorization_story', source_file: 'docs/management/stories/active/story-vibepro-pr-prepare-authorization-scoring.md', label: 'authorization scoring story' }
+    ],
+    links: []
+  }));
+
+  const result = await runCli(['story', 'derive', repo]);
+  assert.equal(result.exitCode, 0);
+
+  const catalog = await readJson(path.join(repo, '.vibepro', 'stories', 'story-catalog.json'));
+  assert.equal(catalog.source.repo_profile.product_surface_applicable, false);
+  const authStory = catalog.stories.find((item) => item.story_id === 'story-product-auth-account-access');
+  assert.ok(authStory, `expected doc-promoted auth story, got ${catalog.stories.map((item) => item.story_id).join(', ')}`);
+  assert.equal(authStory.source.paths.some((item) => item.startsWith('src/')), false);
+  assert.equal(authStory.derived.story_contract.status, 'needs_clarification');
+  assert.equal(authStory.derived.story_contract.story_type, 'new_capability');
+  const sourceRoleCheck = authStory.derived.story_contract.checks.find((check) => check.id === 'source_role_integrity');
+  assert.equal(sourceRoleCheck.status, 'needs_clarification');
+  assert.equal(sourceRoleCheck.evidence.doc_story_ids.includes('story-vibepro-pr-prepare-authorization-scoring'), true);
+  assert.equal(authStory.derived.open_questions.some((item) => item.field === 'story_contract_source_role'), true);
+  assert.equal(catalog.open_questions.some((item) => item.story_id === 'story-product-auth-account-access' && item.field === 'story_contract_source_role'), true);
+
+  const map = await readFile(path.join(repo, '.vibepro', 'stories', 'story-map.md'), 'utf8');
+  assert.match(map, /Story Contract/);
+  assert.match(map, /contract_needs_clarification/);
+
+  await runCli(['story', 'plan', repo, '--limit', '5']);
+  const plan = await readJson(path.join(repo, '.vibepro', 'stories', 'story-plan.json'));
+  assert.equal(plan.questions.some((question) => question.field === 'story_contract_source_role'), true);
+  assert.equal(plan.source_alignment_findings.items.some((finding) => finding.type === 'story_contract_source_role_mismatch'), true);
+  assert.equal(plan.task_candidates.some((task) => task.id === 'story-product-auth-account-access-story-contract-recovery'), true);
+});
+
 test('pr prepare --strict requires --task option', async () => {
   const repo = await makeGitRepoWithStory();
   let stderrOut = '';
