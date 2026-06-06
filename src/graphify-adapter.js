@@ -1,5 +1,7 @@
-import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
+import { constants as fsConstants } from 'node:fs';
+import { access, copyFile, mkdir, rm, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
+import os from 'node:os';
 import path from 'node:path';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -64,12 +66,9 @@ async function runGraphify(repoRoot, outputArg, env) {
   const result = await runProcess('graphify', args, {
     cwd: repoRoot,
     env: env ?? process.env
-  }).catch((error) => {
+  }).catch(async (error) => {
     if (error.code === 'ENOENT') {
-      throw new Error(
-        'graphify is not installed. Graphify is optional but recommended for impact-scope discovery. ' +
-        'You can continue without --run-graphify, or install it with: uv tool install graphifyy'
-      );
+      throw new Error(await buildGraphifyNotFoundMessage(env ?? process.env));
     }
     throw error;
   });
@@ -87,6 +86,52 @@ async function runGraphify(repoRoot, outputArg, env) {
     finished_at: new Date().toISOString(),
     exit_code: result.exitCode
   };
+}
+
+async function buildGraphifyNotFoundMessage(env) {
+  const candidates = await findGraphifyPathCandidates(env);
+  const pathValue = env?.PATH ?? '';
+  const lines = [
+    'graphify command was not found on PATH. Graphify is optional but recommended for impact-scope discovery.',
+    `Current PATH: ${pathValue || '(empty)'}`,
+    'You can continue without --run-graphify.'
+  ];
+  if (candidates.length > 0) {
+    lines.push(`Found graphify outside PATH: ${candidates.join(', ')}`);
+    lines.push('Retry by adding the directory to PATH, for example: PATH="$HOME/.local/bin:$PATH" <your vibepro command> --run-graphify');
+  } else {
+    lines.push('No graphify executable was found in common install locations.');
+    lines.push('Install it with: uv tool install graphifyy');
+  }
+  return lines.join(' ');
+}
+
+async function findGraphifyPathCandidates(env) {
+  const homeDir = env?.HOME || os.homedir();
+  const candidateDirs = [
+    homeDir ? path.join(homeDir, '.local', 'bin') : null,
+    homeDir ? path.join(homeDir, '.cargo', 'bin') : null,
+    '/opt/homebrew/bin',
+    '/usr/local/bin'
+  ].filter(Boolean);
+  const pathDirs = new Set(String(env?.PATH ?? '').split(path.delimiter).filter(Boolean).map((dir) => path.resolve(dir)));
+  const candidates = [];
+  for (const dir of candidateDirs) {
+    const resolvedDir = path.resolve(dir);
+    if (pathDirs.has(resolvedDir)) continue;
+    const candidate = path.join(resolvedDir, graphifyExecutableName());
+    try {
+      await access(candidate, fsConstants.X_OK);
+      candidates.push(candidate);
+    } catch (error) {
+      if (!['ENOENT', 'EACCES', 'ENOTDIR'].includes(error.code)) throw error;
+    }
+  }
+  return [...new Set(candidates)];
+}
+
+function graphifyExecutableName() {
+  return process.platform === 'win32' ? 'graphify.exe' : 'graphify';
 }
 
 async function mirrorGraphifyOutput(repoRoot, outputArg) {
