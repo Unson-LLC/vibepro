@@ -42,9 +42,13 @@ title: VibePro Story Contract DAG Spec
 - `INV-SC-2`: Explicit preset selection remains an opt-in to product template stories, but Story Contract may still expose missing business/verification evidence.
 - `INV-SC-3`: Document evidence remains usable. The new behavior distinguishes "document explicitly says product requirement" from "document merely contains product-like vocabulary".
 - `INV-SC-4`: JSON output must remain backward compatible; existing fields are preserved.
+- `INV-SC-5`: Existing architecture-profile story derivation for `profile.has_auth` and `views.security.auth_boundaries` MUST remain inherited behavior; this story does not change how `story-security-auth-boundary` is derived from auth/security architecture signals.
+- `INV-SC-6`: Existing Story Manager signature-helper handling for `hasSignatureHelper` MUST remain inherited behavior; this story does not change auth/webhook signature helper detection or the `!hasSignatureHelper` fallback path.
 
 ## Non Goals
 
 - Replacing Story/Spec/Architecture documents.
 - Introducing external LLM calls in `story derive`.
 - Changing PR creation readiness.
+- Changing architecture-profile auth/security story derivation.
+- Changing Story Manager signature helper or webhook signature review behavior.
