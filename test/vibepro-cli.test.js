@@ -2905,19 +2905,46 @@ writeFileSync(path.join(outDir, 'GRAPH_REPORT.md'), '# Generated Graph Report\\n
   assert.equal(manifest.graphify.last_execution.command, 'graphify update .');
 });
 
-test('graph reports install guidance when graphify is missing', async () => {
+test('graph reports install guidance when graphify is missing (INV-GPD-3)', async () => {
   const repo = await makeRepo();
+  const homeDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-empty-home-'));
   let stderrOutput = '';
 
   const result = await runCli(['graph', repo, '--run-graphify'], {
-    env: { ...process.env, PATH: '' },
+    env: { ...process.env, HOME: homeDir, PATH: '' },
     stderr: { write: (text) => { stderrOutput += text; } }
   });
 
   assert.equal(result.exitCode, 1);
   assert.equal(result.command, 'graph');
+  assert.match(stderrOutput, /graphify command was not found on PATH/);
   assert.match(stderrOutput, /optional but recommended/);
+  assert.match(stderrOutput, /No graphify executable was found in common install locations/);
   assert.match(stderrOutput, /uv tool install graphifyy/);
+});
+
+test('graph reports PATH guidance when graphify exists outside PATH (INV-GPD-1, INV-GPD-2)', async () => {
+  const repo = await makeRepo();
+  const homeDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-home-'));
+  const localBin = path.join(homeDir, '.local', 'bin');
+  await mkdir(localBin, { recursive: true });
+  const graphifyBin = path.join(localBin, 'graphify');
+  await writeFile(graphifyBin, '#!/bin/sh\nexit 0\n');
+  await chmod(graphifyBin, 0o755);
+  let stderrOutput = '';
+
+  const result = await runCli(['graph', repo, '--run-graphify'], {
+    env: { ...process.env, HOME: homeDir, PATH: '' },
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOutput, /graphify command was not found on PATH/);
+  assert.match(stderrOutput, /Found graphify outside PATH/);
+  assert.match(stderrOutput, new RegExp(graphifyBin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(stderrOutput, /PATH="\$HOME\/\.local\/bin:\$PATH"/);
+  assert.doesNotMatch(stderrOutput, /graphify is not installed/);
+  assert.doesNotMatch(stderrOutput, /uv tool install graphifyy/);
 });
 
 test('component style scanner inventories UI components and flags legacy tokens', async () => {
