@@ -519,11 +519,37 @@ export async function resolveCodeFiles(repoRoot, options) {
     ? options.files
     : options.fileGroups
       ? [...(options.fileGroups.source?.files ?? [])]
-      : await listLikelyRuntimeFiles(repoRoot);
-  return [...new Set(files.map(normalizePath))]
+      : await resolveInferredSpecCodeFiles(repoRoot, options.inferredSpec);
+  const effectiveFiles = files.length > 0 ? files : await listLikelyRuntimeFiles(repoRoot);
+  return [...new Set(effectiveFiles.map(normalizePath))]
     .filter((file) => CODE_EXTENSIONS.has(path.extname(file)))
     .filter((file) => !file.includes('/node_modules/') && !file.startsWith('.vibepro/'))
     .slice(0, MAX_SCAN_FILES);
+}
+
+async function resolveInferredSpecCodeFiles(repoRoot, spec) {
+  const patterns = extractInferredSpecFilePatterns(spec);
+  if (patterns.length === 0) return [];
+  const exactFiles = patterns.filter((file) => !file.includes('*'));
+  const globPatterns = patterns.filter((file) => file.includes('*'));
+  if (globPatterns.length === 0) return exactFiles;
+  const repoFiles = (await listFiles(repoRoot))
+    .filter((file) => CODE_EXTENSIONS.has(path.extname(file)))
+    .map((file) => normalizePath(path.relative(repoRoot, file)));
+  return [
+    ...exactFiles,
+    ...repoFiles.filter((file) => globPatterns.some((pattern) => pathPatternMatches(pattern, file)))
+  ];
+}
+
+function extractInferredSpecFilePatterns(spec) {
+  if (!spec || !Array.isArray(spec.clauses)) return [];
+  return [...new Set(spec.clauses.flatMap((clause) => [
+    ...(Array.isArray(clause?.origin?.code_refs) ? clause.origin.code_refs.map((ref) => ref?.file) : []),
+    ...(Array.isArray(clause?.verifiable_by?.code_pattern) ? clause.verifiable_by.code_pattern.map((pattern) => pattern?.file_glob) : [])
+  ])
+    .filter(Boolean)
+    .map(normalizePath))];
 }
 
 async function listLikelyRuntimeFiles(repoRoot) {

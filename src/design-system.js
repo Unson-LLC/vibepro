@@ -1413,16 +1413,9 @@ function validateDesignSystemStoryDrift({ designSystem, storyContext }) {
 }
 
 function validateSecretLeakage(artifactTexts) {
-  const patterns = [
-    /sk_live_[A-Za-z0-9_]{16,}/,
-    /ghp_[A-Za-z0-9_]{24,}/,
-    /xox[baprs]-[A-Za-z0-9-]{20,}/,
-    /AKIA[0-9A-Z]{16}/,
-    /(?:password|secret|token|api[_-]?key)["']?\s*[:=]\s*["'][^"']{12,}["']/i
-  ];
   const matches = [];
   for (const artifact of artifactTexts) {
-    if (patterns.some((pattern) => pattern.test(artifact.text))) matches.push(artifact.path);
+    if (hasLikelySecretMaterial(artifact.text)) matches.push(artifact.path);
   }
   return [validationFinding({
     id: 'DS-VALIDATE-SECRET-SCAN',
@@ -1468,11 +1461,13 @@ function sanitizeExternalBundle(value) {
   let redactedCount = 0;
   const sanitize = (item, key = '') => {
     if (typeof item === 'string') {
-      if (isLikelySecretValue(item) || isSecretKey(key)) {
+      if (isSecretKey(key)) {
         redactedCount += 1;
         return undefined;
       }
-      return item;
+      const redacted = redactLikelySecretText(item);
+      redactedCount += redacted.count;
+      return redacted.text;
     }
     if (Array.isArray(item)) {
       return item.map((entry) => sanitize(entry, key)).filter((entry) => entry !== undefined);
@@ -1498,17 +1493,37 @@ function sanitizeExternalBundle(value) {
 }
 
 function isSecretKey(key) {
-  return /secret|password|passwd|api[_-]?key|private[_-]?key|access[_-]?token|refresh[_-]?token|auth[_-]?token|bearer|credential/i.test(String(key ?? ''));
+  const text = String(key ?? '');
+  return /secret|password|passwd|api[_-]?key|private[_-]?key|access[_-]?token|refresh[_-]?token|auth[_-]?token|api[_-]?token|bearer|credential|^token$/i.test(text);
 }
 
-function isLikelySecretValue(value) {
+function hasLikelySecretMaterial(value) {
+  return secretMaterialPatterns().some((pattern) => pattern.test(String(value ?? '')));
+}
+
+function redactLikelySecretText(value) {
   const text = String(value ?? '');
-  return /sk_live_[A-Za-z0-9_]{16,}/.test(text)
-    || /ghp_[A-Za-z0-9_]{24,}/.test(text)
-    || /xox[baprs]-[A-Za-z0-9-]{20,}/.test(text)
-    || /AKIA[0-9A-Z]{16}/.test(text)
-    || /Bearer\s+[A-Za-z0-9._-]{24,}/i.test(text)
-    || /(?:password|secret|token|api[_-]?key)["']?\s*[:=]\s*["'][^"']{12,}["']/i.test(text);
+  let count = 0;
+  let redacted = text;
+  for (const pattern of secretMaterialPatterns()) {
+    redacted = redacted.replace(pattern, (...args) => {
+      count += 1;
+      const prefix = typeof args[1] === 'string' && pattern.source.startsWith('((?:') ? args[1] : null;
+      return prefix ? `${prefix}[REDACTED:secret]` : '[REDACTED:secret]';
+    });
+  }
+  return { text: redacted, count };
+}
+
+function secretMaterialPatterns() {
+  return [
+    /sk_live_[A-Za-z0-9_]{16,}/g,
+    /ghp_[A-Za-z0-9_]{24,}/g,
+    /xox[baprs]-[A-Za-z0-9-]{20,}/g,
+    /AKIA[0-9A-Z]{16}/g,
+    /Bearer\s+[A-Za-z0-9._-]{24,}/gi,
+    /((?:password|passwd|secret|credential|api[_-]?key|api[_-]?token|access[_-]?token|refresh[_-]?token|auth[_-]?token|private[_-]?key)["']?\s*[:=]\s*["']?)([^"'\s,;)}\]]{4,})/gi
+  ];
 }
 
 function flattenText(value) {

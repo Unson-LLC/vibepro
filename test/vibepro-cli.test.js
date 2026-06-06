@@ -1039,6 +1039,23 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(blockedValidation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN').status, 'block');
 
   await writeFile(path.join(nativeOutDir, 'design-system.json'), JSON.stringify(nativeDesignSystemJson, null, 2));
+  const dsWithFreeTextSecret = await readJson(path.join(nativeOutDir, 'design-system.json'));
+  dsWithFreeTextSecret.anti_patterns.global_rules.push('Do not store api_token=secret-value in DS artifacts.');
+  await writeFile(path.join(nativeOutDir, 'design-system.json'), JSON.stringify(dsWithFreeTextSecret, null, 2));
+  const freeTextSecretValidation = await runCli([
+    'design-system',
+    'validate',
+    repo,
+    '--id',
+    'aitle',
+    '--story-id',
+    'story-aitle-ui-refresh',
+    '--json'
+  ]);
+  assert.equal(freeTextSecretValidation.result.result.summary.status, 'block');
+  assert.equal(freeTextSecretValidation.result.result.findings.find((finding) => finding.id === 'DS-VALIDATE-SECRET-SCAN').status, 'block');
+
+  await writeFile(path.join(nativeOutDir, 'design-system.json'), JSON.stringify(nativeDesignSystemJson, null, 2));
   await writeFile(path.join(repo, 'external-ds-bundle.json'), JSON.stringify({
     title: 'Aitle External Reference DS',
     version: { versionNumber: 2 },
@@ -1050,7 +1067,8 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
         'CTA: AI電話で空室確認 is primary; map and filter actions are secondary.',
         'States: loading, disabled, error, selected, available, limited, unavailable.',
         'Density: compact scannable hotel comparison, preserve navigation and bottom sheet.',
-        'Avoid generic Book Now language.'
+        'Avoid generic Book Now language.',
+        'Do not store api_token=secret-value in Design System artifacts.'
       ].join('\n')
     },
     credentials: {
@@ -1070,7 +1088,7 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   assert.equal(bundleIngest.exitCode, 0);
   assert.equal(bundleIngest.result.result.authority, 'vibepro_native_design_system');
   assert.equal(bundleIngest.result.result.source_evidence.external_bundle.source, 'external-ds-bundle.json');
-  assert.equal(bundleIngest.result.result.external_bundle.redacted_value_count, 1);
+  assert.equal(bundleIngest.result.result.external_bundle.redacted_value_count, 2);
   assert.ok(bundleIngest.result.result.theme_tokens.css_variables.includes('--ds-color-brand'));
   assert.ok(bundleIngest.result.result.component_roles.roles.some((role) => role.name === 'PrimaryCta'));
   assert.match(JSON.stringify(bundleIngest.result.result.component_states.required_states), /available/);
@@ -1084,6 +1102,8 @@ Refresh the existing UI using the Design System while preserving CTA priority, l
   const ingestedExternalBundleText = await readFile(path.join(nativeOutDir, 'external-bundle.json'), 'utf8');
   assert.doesNotMatch(ingestedDesignSystemText, /sk_live_1234567890abcdef1234567890abcdef/);
   assert.doesNotMatch(ingestedExternalBundleText, /sk_live_1234567890abcdef1234567890abcdef/);
+  assert.doesNotMatch(ingestedDesignSystemText, /secret-value/);
+  assert.doesNotMatch(ingestedExternalBundleText, /secret-value/);
 
   await writeFile(path.join(repo, 'string-token-ds-bundle.json'), JSON.stringify({
     files: {
@@ -11721,6 +11741,73 @@ test('diagnose creates a run, evidence, reports, and updates the manifest', asyn
   assert.equal(manifest.runs[0].toolchain.package.name, 'vibepro');
   assert.equal(manifest.runs[0].artifacts.summary, '.vibepro/diagnostics/2026-04-28T120000Z/summary.md');
   assert.equal(manifest.runs[0].artifacts.requirement_consistency, '.vibepro/diagnostics/2026-04-28T120000Z/requirement-consistency.md');
+});
+
+test('diagnose scopes requirement consistency to inferred spec code refs for selected story', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo, '--story-id', 'story-selected-scope', '--title', 'Selected story scope']);
+  await mkdir(path.join(repo, 'src', 'lib', 'candidate'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'v1', 'hotels', 'search'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lib', 'candidate', 'value-parser.ts'), `
+export function parseCandidateValue(candidate) {
+  if (candidate.kind === 'room') {
+    return { id: candidate.id, status: 'parsed-room' };
+  }
+  return { id: candidate.id, status: 'parsed' };
+}
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'v1', 'hotels', 'search', 'route.ts'), `
+export async function GET(auth) {
+  if (!auth.authorized) {
+    return Response.json({ message: 'unauthorized' }, { status: 401 });
+  }
+  return Response.json({ hotels: [] });
+}
+`);
+  await writeInferredSpec(repo, 'story-selected-scope', {
+    schema_version: '0.1.0',
+    story_id: 'story-selected-scope',
+    clauses: [
+      {
+        id: 'INV-001',
+        type: 'invariant',
+        statement: 'Selected story candidate value parsing is limited to the Candidate Layer parser file.',
+        origin: {
+          code_refs: [{ file: 'src/lib/candidate/value-parser.ts', anchor: 'parseCandidateValue' }]
+        },
+        verifiable_by: {
+          code_pattern: [{ file_glob: 'src/lib/candidate/value-parser.ts', must_contain: 'parseCandidateValue' }]
+        }
+      }
+    ],
+    open_questions: []
+  });
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeFile(path.join(graphDir, 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'candidate-parser', file: 'src/lib/candidate/value-parser.ts' },
+      { id: 'legacy-hotel-search', file: 'src/app/api/v1/hotels/search/route.ts' }
+    ],
+    links: []
+  }));
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await runCli(['graph', repo, '--from', graphDir]);
+
+  const result = await runCli(['diagnose', repo, '--run-id', '2026-04-28T130000Z']);
+
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T130000Z', 'evidence.json'));
+  assert.equal(evidence.requirement_consistency.status, 'pass');
+  assert.deepEqual(
+    evidence.requirement_consistency.code_scenarios.map((scenario) => scenario.file),
+    ['src/lib/candidate/value-parser.ts']
+  );
+  assert.equal(
+    evidence.requirement_consistency.code_scenarios.some((scenario) => scenario.file.includes('hotels/search')),
+    false
+  );
+  assert.equal(evidence.findings.some((finding) => finding.id === 'VP-REQ-002'), false);
 });
 
 test('diagnose creates static site evidence and a static site report under the run directory', async () => {
