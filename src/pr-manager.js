@@ -2124,6 +2124,7 @@ function buildHumanEvidenceDigest(gateDag) {
   const nodes = gateDag?.nodes ?? [];
   const labels = [
     ['gate:engineering_judgment_route', 'Engineering Judgment'],
+    ['gate:story_source_integrity', 'Story Source'],
     ['gate:common_judgment_spine', 'Judgment Spine'],
     ['gate:pr_route_classification', 'PR Route'],
     ['gate:pr_body_contract', 'PR Body'],
@@ -2555,6 +2556,23 @@ function buildVisualQaGateReason(visualQa) {
     return parts.join(' ');
   });
   return `Visual QA needs review: ${summaries.join('; ')}`;
+}
+
+function buildStorySourceIntegrityGate(integrity = null) {
+  const status = integrity?.status ?? 'passed';
+  return {
+    id: 'gate:story_source_integrity',
+    type: 'story_source_integrity_gate',
+    label: 'Story Source Integrity Gate',
+    status,
+    required: true,
+    selected_story_id: integrity?.selected_story_id ?? null,
+    source: integrity?.source ?? null,
+    changed_story_docs: integrity?.changed_story_docs ?? [],
+    mismatched_changed_story_docs: integrity?.mismatched_changed_story_docs ?? [],
+    required_actions: integrity?.required_actions ?? [],
+    reason: integrity?.reason ?? 'Story source integrity was not evaluated'
+  };
 }
 
 function formatPrDeltaStatus(status) {
@@ -3030,8 +3048,7 @@ function normalizeGraphPath(filePath) {
 async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
-  const hasSingleChangedStoryDoc = storyDocs.length === 1 && Boolean(primaryStory?.path);
-  if (!storyDocMatchesStory(primaryStory, story) && !hasSingleChangedStoryDoc) {
+  if (!storyDocMatchesStory(primaryStory, story)) {
     const filesystemStory = await findStorySource(repoRoot, story);
     if (filesystemStory?.path) {
       try {
@@ -3044,9 +3061,10 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
       primaryStory = filesystemStory;
     }
   }
-  if (!storyDocMatchesStory(primaryStory, story) && !hasSingleChangedStoryDoc) {
+  if (!storyDocMatchesStory(primaryStory, story)) {
     primaryStory = buildUnresolvedStorySource(story);
   }
+  const storySourceIntegrity = buildStorySourceIntegrity(story, primaryStory, storyDocs);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const typecheckCommand = await detectTypecheckCommand(repoRoot);
   const testRunner = await detectTestRunner(repoRoot);
@@ -3124,6 +3142,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id);
   const context = {
     story_source: primaryStory,
+    story_source_integrity: storySourceIntegrity,
     architecture_decision: architectureDecision,
     requirement_consistency: requirementConsistency,
     pr_route: prRoute,
@@ -3165,6 +3184,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     repoRoot,
     story,
     storySource: primaryStory,
+    storySourceIntegrity,
     architectureDecision,
     requirementConsistency,
     fileGroups,
@@ -3982,9 +4002,72 @@ function storyDocMatchesStory(doc, story) {
   if (!doc?.path) return false;
   if (doc.story_id === story.story_id || doc.vibepro_story_id === story.story_id) return true;
   if (doc.path.includes(story.story_id)) return true;
+  const storySlug = canonicalStoryBindingSlug(story.story_id);
+  const docSlugs = [
+    doc.story_id,
+    doc.vibepro_story_id,
+    doc.path?.split('/').pop()?.replace(/\.[^.]+$/, '')
+  ].map(canonicalStoryBindingSlug).filter(Boolean);
+  if (storySlug && docSlugs.includes(storySlug)) return true;
   if (doc.title && doc.title === story.title) return true;
   if (doc.requirement_title && doc.requirement_title === story.title) return true;
   return false;
+}
+
+function canonicalStoryBindingSlug(value) {
+  const slug = slugifyStoryId(value ?? '');
+  return slug
+    .replace(/^story-/, '')
+    .replace(/^str-\d+-/, '')
+    .replace(/^us-\d+-/, '')
+    .replace(/^bug-\d+-/, '');
+}
+
+function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
+  const changedDocs = changedStoryDocs
+    .filter((doc) => doc?.path)
+    .map((doc) => ({
+      path: doc.path,
+      story_id: doc.story_id ?? null,
+      vibepro_story_id: doc.vibepro_story_id ?? null,
+      title: doc.title ?? doc.requirement_title ?? null,
+      matches_selected_story: storyDocMatchesStory(doc, story)
+    }));
+  const mismatchedChangedDocs = changedDocs.filter((doc) => !doc.matches_selected_story);
+  const sourceMatches = storyDocMatchesStory(storySource, story);
+  const sourceMismatch = Boolean(storySource?.path) && !sourceMatches;
+  const changedDocMismatch = mismatchedChangedDocs.length > 0;
+  const status = sourceMismatch || changedDocMismatch ? 'story_source_mismatch' : 'passed';
+  const reasons = [];
+  if (sourceMismatch) {
+    reasons.push(`resolved Story source ${storySource.path} does not match selected Story ${story.story_id}`);
+  }
+  if (changedDocMismatch) {
+    reasons.push(`changed Story doc(s) do not match selected Story ${story.story_id}: ${mismatchedChangedDocs.map((doc) => doc.path).join(', ')}`);
+  }
+  return {
+    schema_version: '0.1.0',
+    status,
+    selected_story_id: story.story_id,
+    selected_story_title: story.title ?? null,
+    source: storySource?.path ? {
+      path: storySource.path,
+      story_id: storySource.story_id ?? null,
+      vibepro_story_id: storySource.vibepro_story_id ?? null,
+      title: storySource.title ?? storySource.requirement_title ?? null,
+      matches_selected_story: sourceMatches
+    } : null,
+    changed_story_docs: changedDocs,
+    mismatched_changed_story_docs: mismatchedChangedDocs,
+    required_actions: status === 'passed' ? [] : [
+      'Select the Story that matches the changed Story document, or move the unrelated Story document to a separate PR.',
+      'Add story_id/vibepro_story_id frontmatter or rename the Story document so it clearly binds to the selected Story.',
+      'Rerun `vibepro pr prepare` before using the PR body as review evidence.'
+    ],
+    reason: status === 'passed'
+      ? 'Resolved and changed Story documents match the selected Story, or no changed Story document needs binding.'
+      : reasons.join('; ')
+  };
 }
 
 function resolveArchitectureDecision(storyDoc, fileGroups) {
@@ -4540,7 +4623,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   inferredSpec = null,
   changeClassification = null,
   agentReviews = null,
-  decisionRecords = null
+  decisionRecords = null,
+  prRoute = null
 } = {}) {
   const acceptanceCount = storySource?.acceptance_criteria?.length ?? 0;
   const storyHasIntent = Boolean(storySource?.title || storySource?.requirement_title || storySource?.background || acceptanceCount > 0);
@@ -4558,10 +4642,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   const hasTests = (fileGroups?.tests?.count ?? 0) > 0;
   const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
+  const documentationOnlyRoute = prRoute?.route_type === 'docs_only';
   const highRisk = changeClassification?.profile === 'workflow_heavy'
     || ['business_system', 'data_pipeline', 'security_trust', 'release_engineering', 'api_platform', 'infra_ops'].includes(routeType)
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => riskSurfaces.has(surface));
-  const boundarySensitive = highRisk || routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration');
+  const boundarySensitive = highRisk
+    || (!documentationOnlyRoute && (routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration')));
   return [
     {
       id: 'intent',
@@ -4622,7 +4708,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   ];
 }
 
-function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null } = {}) {
+function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null, decisionRecords = null } = {}) {
   const storyDocCount = fileGroups?.story_docs?.count ?? 0;
   const sourceCount = fileGroups?.source?.count ?? 0;
   const testCount = fileGroups?.tests?.count ?? 0;
@@ -4640,7 +4726,9 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
       : sourceCount > 0 && docCount > 0 && testCount > 0
         ? 'focused'
         : 'focused';
-  const status = needsSplit ? 'needs_split' : 'passed';
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:pr_scope_judgment')
+    ?? findAcceptedDecisionForSource(decisionRecords, 'gate:split_resolution');
+  const status = needsSplit && !acceptedDecision ? 'needs_split' : 'passed';
   const splitSuggestions = [];
   if (storyDocCount > 1) splitSuggestions.push('Split multiple Story docs into separate PRs or explicitly justify the bundled scope.');
   if ((fileGroups?.repo_control?.count ?? 0) > 0 && sourceCount + docCount > 0) splitSuggestions.push('Separate repo-control/agent configuration changes from product/source changes.');
@@ -4661,14 +4749,21 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
     test_file_count: testCount,
     doc_file_count: docCount,
     risk_surface_count: riskSurfaceCount,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
     reasons: scope?.reasons ?? [],
     split_suggestions: splitSuggestions,
     required_actions: status === 'passed' ? [] : [
       ...splitSuggestions,
       'Regenerate `vibepro pr prepare` after the PR scope is reduced or an auditable split decision is recorded'
     ],
-    reason: status === 'passed'
-      ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
+    reason: acceptedDecision
+      ? `PR scope split risk accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`
+      : status === 'passed'
+        ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
       : `PR scope is not reviewable as one PR: ${(scope?.reasons ?? splitSuggestions).join('; ') || classification}`
   };
 }
@@ -5393,6 +5488,7 @@ function buildGateDag({
   repoRoot,
   story,
   storySource,
+  storySourceIntegrity = null,
   architectureDecision,
   requirementConsistency,
   fileGroups,
@@ -5451,6 +5547,7 @@ function buildGateDag({
       ? 'Story source is present'
       : 'Story source could not be resolved; implementation cannot be treated as human-confirmed scope'
   };
+  const storySourceIntegrityGate = buildStorySourceIntegrityGate(storySourceIntegrity);
   const architectureGate = {
     id: 'architecture',
     type: 'architecture_gate',
@@ -5473,9 +5570,10 @@ function buildGateDag({
     inferredSpec,
     changeClassification,
     agentReviews,
-    decisionRecords
+    decisionRecords,
+    prRoute
   });
-  const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute });
+  const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
   const bugPhysicsProfileGates = buildBugPhysicsProfileGates(bugPhysicsTriage, verificationEvidence);
   const bugPhysicsContradictionGate = bugPhysicsProfileGates.length > 0
@@ -5572,7 +5670,8 @@ function buildGateDag({
     fileGroups,
     changeClassification,
     verificationEvidence,
-    flowVerification
+    flowVerification,
+    decisionRecords
   });
   const workflowHeavyGates = buildWorkflowHeavyGates({
     changeClassification,
@@ -5591,6 +5690,7 @@ function buildGateDag({
   };
   const nodes = [
     storyGate,
+    storySourceIntegrityGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     prScopeJudgmentGate,
@@ -5651,7 +5751,8 @@ function buildGateDag({
   }));
 
   const edges = [
-    { from: 'story', to: 'gate:engineering_judgment_route' },
+    { from: 'story', to: 'gate:story_source_integrity' },
+    { from: 'gate:story_source_integrity', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
     { from: 'gate:common_judgment_spine', to: 'gate:pr_scope_judgment' },
     { from: 'gate:pr_scope_judgment', to: 'gate:bug_physics_triage' },
@@ -5763,6 +5864,7 @@ function buildGateDag({
   Object.assign(dagConnectivityGate, buildDagConnectivityGate(allNodes, edges));
   const requiredGates = [
     storyGate,
+    storySourceIntegrityGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     prScopeJudgmentGate,
@@ -5815,6 +5917,7 @@ function buildGateDag({
       pr_route: prRoute?.route_type ?? null,
       pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
+      story_source_integrity_status: storySourceIntegrityGate.status,
       architecture_status: architectureGate.status,
       spec_status: specGate.status,
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
@@ -6123,7 +6226,7 @@ function failureModeCoveredByEvidence(mode, evidenceText) {
   return mode.keywords.some((keyword) => evidenceText.includes(keyword));
 }
 
-function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null } = {}) {
+function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
@@ -6143,7 +6246,8 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     };
   });
   const missing = rows.filter((row) => row.status === 'missing_surface_evidence');
-  const status = missing.length === 0 ? 'passed' : 'partial_surface';
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:path_surface_matrix');
+  const status = missing.length === 0 || acceptedDecision ? 'passed' : 'partial_surface';
   return {
     id: 'gate:path_surface_matrix',
     type: 'path_surface_matrix_gate',
@@ -6153,6 +6257,11 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     high_risk: highRisk,
     row_count: rows.length,
     missing_surface_count: missing.length,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
     rows,
     missing_surfaces: missing.map((row) => row.surface),
     required_actions: missing.length === 0 ? [] : [
@@ -6160,7 +6269,9 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
       'Trace the value/state from input through persistence/API/UI/report/review surface, or mark the surface not applicable with an auditable decision',
       'Rerun `vibepro pr prepare` after the surface evidence is recorded'
     ],
-    reason: missing.length === 0
+    reason: acceptedDecision
+      ? `Path/surface matrix accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`
+      : missing.length === 0
       ? rows.length === 0
         ? 'No user-visible or cross-surface path rows were detected'
         : `${rows.length} path surface row(s) are covered or not critical for this route`
@@ -7479,6 +7590,7 @@ function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',
+      'story_source_integrity_gate',
       'engineering_judgment_spine_gate',
       'pr_scope_judgment_gate',
       'pr_route_gate',
@@ -7565,6 +7677,7 @@ function isUnresolvedGateStatus(status) {
     'partial_surface',
     'stale',
     'stale_evidence',
+    'story_source_mismatch',
     'block',
     'failed'
   ].includes(status);
@@ -7583,6 +7696,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
     .map((gate) => {
       if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification, plus Story acceptance coverage in tests/e2e/<story-id>-*.spec.ts.';
       if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence.';
+      if (gate.id === 'gate:story_source_integrity') return 'Story Source Integrity Gate requires the selected Story and resolved/changed Story document to match before Requirement and PR body evidence can be trusted.';
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
@@ -7641,6 +7755,7 @@ function buildGateOverride(gateDag, options, context = {}) {
 
 function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'story' && gate.status === 'transient') return true;
+  if (gate.id === 'gate:story_source_integrity' && gate.status !== 'passed') return true;
   if (gate.id === 'architecture' && gate.status === 'needs_review') return true;
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;

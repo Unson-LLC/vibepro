@@ -1991,6 +1991,101 @@ Docs-only Story should be usable before story derive refreshes config.
   assert.match(prBody, /Docs-only gate Story/);
 });
 
+test('pr prepare blocks mismatched changed Story docs before building trusted PR evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['story', 'add', repo, '--id', 'story-terminal-history-scrollback', '--title', 'Terminal session history remains scrollable', '--view', 'runtime']);
+  const storyDir = path.join(repo, 'docs', 'stories');
+  await mkdir(storyDir, { recursive: true });
+  await writeFile(path.join(storyDir, 'STR-001-wiki-project-filter.md'), `---
+story_id: STR-001
+title: Wiki検索結果にページのproject_idフィルタを追加
+---
+
+# Wiki検索結果にページのproject_idフィルタを追加
+
+## 背景
+
+brainbaseのWikiには複数プロジェクトのナレッジが格納されている。
+
+## 受け入れ基準
+
+- search_wiki に project_id を追加する
+`);
+  await mkdir(path.join(repo, 'server', 'services'), { recursive: true });
+  await writeFile(path.join(repo, 'server', 'services', 'terminal-transport-service.js'), 'export const scrollback = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-terminal-history-scrollback', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.pr_context.story_source.path, null);
+  assert.equal(prepare.pr_context.story_source_integrity.status, 'story_source_mismatch');
+  assert.equal(prepare.gate_status.ready_for_pr_create, false);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:story_source_integrity'), true);
+  const integrityGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:story_source_integrity');
+  assert.equal(integrityGate.status, 'story_source_mismatch');
+  assert.equal(integrityGate.mismatched_changed_story_docs[0].path, 'docs/stories/STR-001-wiki-project-filter.md');
+  const prBody = await readFile(result.result.artifacts.pr_body, 'utf8');
+  assert.match(prBody, /Story Source story_source_mismatch/);
+  assert.doesNotMatch(prBody, /search_wiki に project_id を追加する/);
+});
+
+test('pr prepare accepts path surface matrix decision records', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'stories'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'stories', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- Gate review surface evidence is explicit.
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return \"gate review surface\"; }\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: update gate review surface']);
+
+  const before = await runCli(['pr', 'prepare', repo, '--base', 'main', '--json']);
+
+  assert.equal(before.exitCode, 0);
+  const beforeGate = before.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(beforeGate.status, 'partial_surface');
+  await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--source',
+    'gate:path_surface_matrix',
+    '--source-status',
+    'partial_surface',
+    '--summary',
+    'Gate review surface is covered by generated PR evidence.',
+    '--reason',
+    'This fixture has no runtime user path; the review surface is the generated VibePro PR evidence.',
+    '--reviewer',
+    'codex',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+
+  const after = await runCli(['pr', 'prepare', repo, '--base', 'main', '--json']);
+
+  assert.equal(after.exitCode, 0);
+  const afterGate = after.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(afterGate.status, 'passed');
+  assert.equal(afterGate.accepted_decision.source, 'gate:path_surface_matrix');
+  assert.match(afterGate.reason, /Path\/surface matrix accepted by decision record/);
+});
+
 test('pr prepare blocks PR freshness when base advanced after branch creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -5537,7 +5632,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /- 差分: runtime 1件 \/ contract docs 5件 \/ tests 2件を変更/);
   assert.match(prBody, /\[src\/feature\/pr-prepare.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/src\/feature\/pr-prepare.js\)/);
   assert.match(prBody, /\[tests\/unit\/pr-prepare.test.js\]\(https:\/\/github.com\/Unson-LLC\/vibepro\/blob\/feature\/test-story\/tests\/unit\/pr-prepare.test.js\)/);
-  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Managed Worktree needs_review \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E needs_(setup|evidence) \/ Agent Review needs_review \/ Network Contract passed \/ DAG Connectivity passed/);
+  assert.match(prBody, /- 証跡: Engineering Judgment passed \/ Story Source passed \/ Judgment Spine passed \/ PR Route passed \/ PR Body passed \/ Managed Worktree needs_review(?: \/ Split passed)? \/ Requirement not_applicable \/ Unit candidate \/ Integration needs_evidence \/ E2E (passed|needs_(setup|evidence)) \/ Agent Review (passed|needs_review) \/ Network Contract passed \/ DAG Connectivity passed/);
   assert.match(prBody, /- 分割判断: single_pr_ok \/ keep_current_pr/);
   assert.match(prBody, /Gate状況: 未解決Gateがあります（対象: .*Gate/);
   assert.ok(prBody.indexOf('## このPRで決めたいこと') < prBody.indexOf('## 変更内容'));
@@ -9196,6 +9291,7 @@ test('pr prepare flags requirement contradictions from story invariants and code
   await mkdir(path.join(repo, 'src', 'app', 'api', 'stripe', 'cancel-subscription'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'STR-REQ-001-billing-cancel.md'), `---
 story_id: STR-REQ-001
+vibepro_story_id: story-pr-prepare
 title: Stripe cancel keeps premium until period end
 architecture_docs:
   - path: docs/architecture/ADR-billing-subscription.md
@@ -9823,7 +9919,8 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(connectivityGate?.status, 'passed');
   assert.deepEqual(connectivityGate?.unreachable_nodes, []);
   assert.deepEqual(connectivityGate?.dead_end_nodes, []);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:engineering_judgment_route'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:story_source_integrity'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:engineering_judgment_route'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:pr_scope_judgment'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_scope_judgment' && edge.to === 'gate:bug_physics_triage'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:bug_physics_triage' && edge.to === 'gate:judgment_agent_workflow_context_acquisition'), true);
