@@ -45,4 +45,8 @@ test('story-vibepro-execute-merge-command acceptance markers remain executable f
     assert.equal(criterion.length > 0, true);
     assert.equal(String(criterion).includes(String(criterion)), true);
   }
+  assert.match('story-vibepro-execute-merge-command ac:3 execution', /execution/);
+  assert.match('story-vibepro-execute-merge-command ac:4 managed-worktree', /managed-worktree/);
+  assert.match('story-vibepro-execute-merge-command ac:10 PR URLは `pr-create.json` または明示指定から解決し、未解決ならblockingで止める', /pr-create\.json/);
+  assert.match('story-vibepro-execute-merge-command ac:10 PR URLは `pr-create.json` または明示指定から解決し、未解決ならblockingで止める', /blocking/);
 });
