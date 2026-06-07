@@ -22,6 +22,15 @@ export const DEFAULT_REVIEW_STAGE_ROLES = {
 
 export const REVIEW_STAGE_ROLES = DEFAULT_REVIEW_STAGE_ROLES;
 export const REVIEW_STAGES = new Set(Object.keys(REVIEW_STAGE_ROLES));
+const REVIEW_STAGE_SERIAL_ORDER = [
+  'planning_spec',
+  'requirement',
+  'architecture_spec',
+  'test_plan',
+  'implementation',
+  'preview',
+  'gate'
+];
 const REVIEW_STATUSES = new Set(['pass', 'needs_changes', 'block']);
 const PASSING_ROLE_STATUS = new Set(['pass']);
 const VERIFIED_REVIEW_PROVENANCE_STATUSES = new Set(['verified_agent']);
@@ -117,6 +126,7 @@ function buildCoordinatorInstructions(language = 'ja') {
       'Agent Review Gateがこのstageを要求する場合、このprepare outputはlisted reviewを取得するためのcoordinator指示である。runtimeがsubagentをspawnできない場合は、silent skipせずblockするかhuman waiver decisionを記録する。',
       'すべてのrole reviewはmandatory review lensをすべて含める。roleのpassは、role concern、regression_guard、path_surface_coverageが十分に満たされたことだけを意味する。',
       'coordinatorにsubagent capabilityがある場合は、listed reviewerを直接dispatchし、parallel_subagent provenanceを記録する。',
+      'parallel実行はstage内だけに限定する。このstageの必須roleがすべてcloseされrecordされるまで、別stageのreviewをdispatchしない。',
       'subagent resultを受け取ったら、review記録前にそのsubagent thread/sessionをcloseまたはshutdownし、--agent-closedでlifecycle closureを記録する。',
       '各reviewerはstatus pass, needs_changes, blockのいずれかと具体的なfindingを返す。'
     ],
@@ -126,6 +136,7 @@ function buildCoordinatorInstructions(language = 'ja') {
       'When Agent Review Gate requires this stage, this prepare output is the coordinator instruction to obtain the listed reviews; if the runtime cannot spawn subagents, block or record a human waiver decision instead of silently skipping the gate.',
       'Every role review must include all mandatory review lenses; passing a role only means the role concern, regression_guard, and path_surface_coverage are adequately covered.',
       'If the coordinator has subagent capability, dispatch the listed reviewers directly and record parallel_subagent provenance.',
+      'Parallelism is stage-local: do not dispatch another review stage until this stage has closed and recorded every required role.',
       'After receiving a subagent result, close or shut down that subagent thread/session before recording the review, then record the lifecycle closure with --agent-closed.',
       'Each reviewer should return status pass, needs_changes, or block with concrete findings.'
     ]
@@ -161,12 +172,18 @@ export async function prepareAgentReview(repoRoot, options = {}) {
       mode: 'policy_aware_parallel_reviews',
       subagent_count: roles.length,
       artifact: toWorkspaceRelative(root, getParallelDispatchPath(reviewDir)),
+      stage_parallelism: {
+        scope: 'single_stage',
+        stage,
+        rule: 'Dispatch only this stage in parallel; wait for all roles to close and record before starting any later stage.'
+      },
       coordinator_behavior: {
         expected: 'dispatch_parallel_subagents',
         user_confirmation_required_by_vibepro: false,
         runner_policy_may_require_user_delegation: false,
         subagent_lifecycle: 'close_before_record',
         closure_required_for_pass: true,
+        serial_stage_barrier: 'complete_stage_before_next_stage',
         fallback: 'If the runtime cannot spawn subagents, block or record a human waiver decision; manual_review does not satisfy Agent Review Gate.'
       },
       record_commands: Object.fromEntries(roles.map((role) => [
@@ -1361,6 +1378,7 @@ timeout/replacement/manual shutdown用Lifecycle close command:
 - Required subagents: ${roles.length}
 - Current head: ${plan.git_context.head_sha ?? '-'}
 - Dirty: ${plan.git_context.dirty}
+- Parallel scope: this stage only; do not combine with another review stage
 
 ## Coordinator Instructions
 
@@ -1368,14 +1386,14 @@ Agent Review Gate treats this file as required execution guidance. VibePro requi
 
 If your coordinator runtime supports subagents, start them as part of this gate workflow. If subagents are unavailable, block or record a human waiver decision; do not silently skip the gate and do not treat manual_review as satisfying required subagent review.
 
-1. Start all subagents below in parallel when the runtime provides subagent capability.
+1. Start all subagents below in parallel only when this stage is the current allowed Agent Review stage.
 2. Record \`vibepro review start\` for each subagent with its agent id and timeout.
 3. Give each subagent only its own review request.
 4. Do not let subagents edit files during review.
 5. If a subagent times out, close/shutdown it, record \`vibepro review close --close-reason timeout\`, then Start replacement with \`vibepro review start --replacement-for <lifecycle-id>\`.
 6. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
 7. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`.
-8. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\`.
+8. Do not dispatch any other Agent Review stage in the same batch. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` to advance to the next stage.
 
 ## Evidence Handling
 ${EVIDENCE_HANDLING_BLOCK}
@@ -1394,6 +1412,7 @@ ${items}
 - Required subagents: ${roles.length}
 - Current head: ${plan.git_context.head_sha ?? '-'}
 - Dirty: ${plan.git_context.dirty}
+- Parallel scope: このstageのみ。別review stageと同じbatchで混ぜない
 
 ## Coordinator指示
 
@@ -1401,14 +1420,14 @@ Agent Review Gateはこのfileを必須の実行ガイドとして扱う。VibeP
 
 coordinator runtimeがsubagentを使える場合は、このgate workflowの一部として開始する。subagentが利用できない場合はblockするかhuman waiver decisionを記録し、gateをsilent skipしない。manual_reviewをrequired subagent reviewの充足として扱わない。
 
-1. runtimeがsubagent capabilityを提供する場合、下記subagentをすべてparallelで開始する。
+1. このstageが現在dispatch可能なAgent Review stageである場合だけ、下記subagentをすべてparallelで開始する。
 2. 各subagentについてagent idとtimeoutを付けて \`vibepro review start\` を記録する。
 3. 各subagentには自身のreview requestだけを渡す。
 4. review中にsubagentへfile編集させない。
 5. subagentがtimeoutしたらclose/shutdownし、\`vibepro review close --close-reason timeout\` を記録してから \`vibepro review start --replacement-for <lifecycle-id>\` でreplacementを開始する。
 6. 各subagentの結果受領後、そのsubagent thread/sessionをclose/shutdownする。review subagentを走らせたままにしない。
 7. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` を含める。
-8. \`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` を実行する。
+8. 他のAgent Review stageを同じbatchでdispatchしない。\`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` で次stageへ進む。
 
 ## 証跡の扱い
 ${localizedEvidenceHandlingBlock(language)}
@@ -1447,21 +1466,53 @@ function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
   return `vibepro review prepare . --id ${storyId} --stage ${stage}${roleArgs}`;
 }
 
+function orderReviewStagesForDispatch(requiredReviews) {
+  const requiredStageSet = new Set(requiredReviews.map((item) => item.stage).filter(Boolean));
+  return [
+    ...REVIEW_STAGE_SERIAL_ORDER.filter((stage) => requiredStageSet.has(stage)),
+    ...[...requiredStageSet].filter((stage) => !REVIEW_STAGE_SERIAL_ORDER.includes(stage))
+  ];
+}
+
 function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
-  const requiredStages = [...new Set(requiredReviews.map((item) => item.stage))];
+  const requiredStages = orderReviewStagesForDispatch(requiredReviews);
+  const stageStatusLookup = new Map(stageSummaries.map((item) => [item.stage, item.status]));
+  const firstIncompleteStage = requiredStages.find((stage) => stageStatusLookup.get(stage) !== 'pass') ?? null;
+  const maxParallelSubagentsPerStage = requiredStages.reduce((max, stage) => {
+    return Math.max(max, requiredReviews.filter((item) => item.stage === stage).length);
+  }, 0);
   return {
     required: requiredStages.length > 0,
     mode: 'policy_aware_parallel_reviews',
-    required_stages: requiredStages.map((stage) => {
+    stage_execution: {
+      serial_between_stages: true,
+      parallel_within_stage: true,
+      current_stage: firstIncompleteStage,
+      max_parallel_subagents_per_stage: maxParallelSubagentsPerStage,
+      barrier: 'A later review stage must not be dispatched until the current stage has closed and recorded every required role.'
+    },
+    required_stages: requiredStages.map((stage, index) => {
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
       const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
+      const stageStatus = summary?.status ?? 'missing';
+      const previousStage = requiredStages[index - 1] ?? null;
+      const nextStage = requiredStages[index + 1] ?? null;
       return {
         stage,
+        serial_index: index + 1,
+        depends_on_stage: previousStage,
+        next_stage: nextStage,
         roles,
         role_count: roles.length,
-        status: summary?.status ?? 'missing',
+        status: stageStatus,
         prepared: summary?.parallel_dispatch?.prepared ?? false,
+        dispatch_state: stageStatus === 'pass'
+          ? 'complete'
+          : stage === firstIncompleteStage
+            ? 'current'
+            : 'blocked_by_previous_stage',
+        dispatch_rule: 'Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.',
         prepare_command: buildReviewPrepareCommand({ storyId, stage, roles }),
         dispatch_artifact: toWorkspaceRelative(repoRoot, getParallelDispatchPath(reviewDir))
       };
@@ -1472,7 +1523,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
 function renderParallelDispatchPrRows(parallelDispatch) {
   if (!parallelDispatch?.required) return '- parallel dispatch: not required';
   const rows = parallelDispatch.required_stages.map((stage) => (
-    `- parallel dispatch: ${stage.stage} (${stage.status}) - ${stage.prepare_command} -> ${stage.dispatch_artifact}`
+    `- parallel dispatch: ${stage.serial_index ?? '-'} ${stage.stage} (${stage.dispatch_state ?? stage.status}) - ${stage.prepare_command} -> ${stage.dispatch_artifact}`
   ));
   return rows.join('\n');
 }

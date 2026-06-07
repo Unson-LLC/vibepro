@@ -875,6 +875,7 @@ function renderGateDagSvg(gateDag) {
     nodes.filter((node) => node.type === 'agent_review_prepare_gate'),
     nodes.filter((node) => node.type === 'agent_review_role_gate'),
     nodes.filter((node) => node.type === 'agent_review_record_gate'),
+    nodes.filter((node) => node.type === 'agent_review_stage_join_gate'),
     nodes.filter((node) => node.id === 'gate:agent_review'),
     nodes.filter((node) => node.id === 'pr')
   ];

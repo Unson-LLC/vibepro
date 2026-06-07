@@ -529,10 +529,30 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     'preview',
     'test_plan'
   ]);
+  assert.equal(agentReviews.parallel_dispatch.stage_execution.serial_between_stages, true);
+  assert.equal(agentReviews.parallel_dispatch.stage_execution.parallel_within_stage, true);
+  assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'architecture_spec');
+  assert.deepEqual(agentReviews.parallel_dispatch.required_stages
+    .map((stage) => `${stage.serial_index}:${stage.stage}:${stage.dispatch_state}`), [
+    '1:architecture_spec:current',
+    '2:test_plan:blocked_by_previous_stage',
+    '3:implementation:blocked_by_previous_stage',
+    '4:preview:blocked_by_previous_stage',
+    '5:gate:blocked_by_previous_stage'
+  ]);
   assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'test_plan').roles.includes('gate_coverage'), true);
   assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'implementation').roles.includes('runtime_contract'), true);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), true);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:architecture_spec' && edge.to === 'review:prepare:test_plan'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:prepare:implementation'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:gate' && edge.to === 'gate:agent_review'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:prepare:preview' && edge.to === 'review:prepare:gate'), false);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('Current Agent Review stage 1'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('architecture_spec'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions.some((action) => action.includes('Later Agent Review stages are serial-barriered')), true);
 
-	  const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
+  const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
   await stat(gateDagJsonPath);
   const writtenGateDag = await readJson(gateDagJsonPath);
   assert.equal(writtenGateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);
