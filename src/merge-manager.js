@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -31,6 +32,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const gateDag = prCreate?.gate_dag ?? prPrepare?.pr_context?.gate_dag ?? null;
   const baseBranch = stripRemote(options.baseRef ?? prCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? prCreate?.pr_url ?? executionState?.pr_url ?? null;
+  const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate, prPrepare, executionState });
   const createdAt = new Date().toISOString();
   const merge = {
     schema_version: '0.1.0',
@@ -45,6 +47,7 @@ export async function executeMerge(repoRoot, options = {}) {
     base: baseBranch,
     current_branch: currentBranch,
     current_head_sha: currentHeadSha,
+    repository_slug: repositorySlug,
     pr: {
       selector: prSelector,
       url: null,
@@ -93,6 +96,19 @@ export async function executeMerge(repoRoot, options = {}) {
     warnings: [],
     commands: [],
     results: [],
+    branch_cleanup: {
+      requested: deleteBranch,
+      remote: {
+        attempted: false,
+        deleted: false,
+        command: null
+      },
+      local: {
+        attempted: false,
+        deleted: false,
+        command: null
+      }
+    },
     status: 'blocked',
     stop_reason: null,
     merge_commit_sha: null,
@@ -107,8 +123,11 @@ export async function executeMerge(repoRoot, options = {}) {
   }
 
   merge.commands.push(formatCommand(['git', ['fetch', 'origin', baseBranch]]));
-  merge.commands.push(formatCommand(['gh', ['pr', 'view', String(prSelector), '--json', PR_VIEW_FIELDS]]));
-  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, deleteBranch)]));
+  merge.commands.push(formatCommand(['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)]));
+  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
+  if (deleteBranch) {
+    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
+  }
 
   const fetchResult = await runCommand(root, ['git', ['fetch', 'origin', baseBranch]], options);
   merge.results.push(fetchResult);
@@ -124,7 +143,7 @@ export async function executeMerge(repoRoot, options = {}) {
   merge.preconditions.base_freshness.status = containsBase ? 'passed' : 'blocked';
   merge.preconditions.base_freshness.merge_base_contains_base = containsBase;
 
-  const prViewResult = await runCommand(root, ['gh', ['pr', 'view', String(prSelector), '--json', PR_VIEW_FIELDS]], options);
+  const prViewResult = await runCommand(root, ['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)], options);
   merge.results.push(prViewResult);
   if (prViewResult.exit_code !== 0) {
     merge.stop_reason = 'pr_view_failed';
@@ -190,7 +209,12 @@ export async function executeMerge(repoRoot, options = {}) {
     return { merge, artifacts };
   }
 
-  const mergeResult = await runCommand(root, ['gh', buildMergeArgs(prSelector, strategy, deleteBranch)], options);
+  const mergeResult = await runCommand(
+    root,
+    ['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)],
+    options,
+    { cwd: os.tmpdir() }
+  );
   merge.results.push(mergeResult);
   if (mergeResult.exit_code !== 0) {
     merge.status = 'failed';
@@ -200,7 +224,38 @@ export async function executeMerge(repoRoot, options = {}) {
     return { merge, artifacts };
   }
 
-  const mergedViewResult = await runCommand(root, ['gh', ['pr', 'view', String(prSelector), '--json', 'url,state,mergedAt,mergeCommit']], options);
+  if (deleteBranch && merge.pr.head_ref_name) {
+    const remoteDeleteArgs = ['git', ['push', 'origin', '--delete', merge.pr.head_ref_name]];
+    merge.branch_cleanup.remote.attempted = true;
+    merge.branch_cleanup.remote.command = formatCommand(remoteDeleteArgs);
+    const remoteDeleteResult = await runCommand(root, remoteDeleteArgs, options);
+    merge.results.push(remoteDeleteResult);
+    merge.branch_cleanup.remote.deleted = remoteDeleteResult.exit_code === 0;
+    if (!merge.branch_cleanup.remote.deleted) {
+      merge.warnings.push(`Remote branch deletion failed: ${remoteDeleteResult.command}`);
+    }
+
+    if (currentBranch && currentBranch !== merge.pr.head_ref_name) {
+      const localDeleteArgs = ['git', ['branch', '-d', merge.pr.head_ref_name]];
+      merge.branch_cleanup.local.attempted = true;
+      merge.branch_cleanup.local.command = formatCommand(localDeleteArgs);
+      const localDeleteResult = await runCommand(root, localDeleteArgs, options);
+      merge.results.push(localDeleteResult);
+      merge.branch_cleanup.local.deleted = localDeleteResult.exit_code === 0;
+      if (!merge.branch_cleanup.local.deleted) {
+        merge.warnings.push(`Local branch deletion failed: ${localDeleteResult.command}`);
+      }
+    } else {
+      merge.warnings.push('Local branch deletion skipped because the merged branch is checked out in the current worktree.');
+    }
+  }
+
+  const mergedViewResult = await runCommand(
+    root,
+    ['gh', buildPrViewArgs(prSelector, repositorySlug, 'url,state,mergedAt,mergeCommit')],
+    options,
+    { cwd: os.tmpdir() }
+  );
   merge.results.push(mergedViewResult);
   if (mergedViewResult.exit_code === 0) {
     const mergedView = JSON.parse(mergedViewResult.stdout || '{}');
@@ -260,9 +315,16 @@ function normalizeMergeStrategy(strategy) {
   return normalized;
 }
 
-function buildMergeArgs(prSelector, strategy, deleteBranch) {
+function buildMergeArgs(prSelector, strategy, repositorySlug, matchHeadCommit) {
   const args = ['pr', 'merge', String(prSelector), `--${strategy}`];
-  if (deleteBranch) args.push('--delete-branch');
+  if (repositorySlug) args.push('--repo', repositorySlug);
+  if (matchHeadCommit) args.push('--match-head-commit', matchHeadCommit);
+  return args;
+}
+
+function buildPrViewArgs(prSelector, repositorySlug, fields) {
+  const args = ['pr', 'view', String(prSelector), '--json', fields];
+  if (repositorySlug) args.push('--repo', repositorySlug);
   return args;
 }
 
@@ -310,12 +372,12 @@ function shellQuote(value) {
   return `'${String(value).replaceAll("'", "'\\''")}'`;
 }
 
-async function runCommand(repoRoot, command, options = {}) {
+async function runCommand(repoRoot, command, options = {}, execution = {}) {
   const [bin, args] = command;
   const startedAt = new Date().toISOString();
   try {
     const result = await execFileAsync(bin, args, {
-      cwd: repoRoot,
+      cwd: execution.cwd ?? repoRoot,
       encoding: 'utf8',
       env: options.env
     });
@@ -413,3 +475,27 @@ const PR_VIEW_FIELDS = [
   'baseRefName',
   'statusCheckRollup'
 ].join(',');
+
+async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
+  const candidates = [
+    context.prCreate?.toolchain?.source_git?.origin_url,
+    context.prPrepare?.toolchain?.source_git?.origin_url,
+    await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']),
+    context.prCreate?.pr_url,
+    context.executionState?.pr_url
+  ];
+  for (const candidate of candidates) {
+    const slug = githubRepositorySlug(candidate);
+    if (slug) return slug;
+  }
+  return null;
+}
+
+function githubRepositorySlug(value) {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  const sshMatch = value.match(/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
+  if (sshMatch) return sshMatch[1];
+  const httpMatch = value.match(/^https?:\/\/github\.com\/([^/]+\/[^/.]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/i);
+  if (httpMatch) return httpMatch[1];
+  return null;
+}

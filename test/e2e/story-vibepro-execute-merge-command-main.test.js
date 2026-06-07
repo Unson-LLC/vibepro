@@ -16,8 +16,8 @@ const merge = {
   },
   commands: [
     'git fetch origin main',
-    'gh pr view https://github.example.test/unson/vibepro/pull/161 --json url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup',
-    'gh pr merge https://github.example.test/unson/vibepro/pull/161 --merge'
+    'gh pr view https://github.example.test/unson/vibepro/pull/161 --json url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup --repo unson/vibepro',
+    'gh pr merge https://github.example.test/unson/vibepro/pull/161 --merge --repo unson/vibepro --match-head-commit deadbeef'
   ]
 };
 
