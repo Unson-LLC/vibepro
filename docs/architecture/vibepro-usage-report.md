@@ -20,7 +20,7 @@ title: VibePro Usage Report Architecture
 
 ## 出力
 
-ReportはStory別、Gate別、Agent Review別、ログ補助シグナルに分ける。Human-readable出力はVibeProの言語設定に従い、JSONは同じ構造を安定して返す。
+ReportはStory別、Gate別、Agent Review別、Value Signals別、ログ補助シグナルに分ける。Value Signalsは `.vibepro` artifact から観測できた `waiver_required`、`stale_evidence`、`story_source_mismatch` の story count/rate を返す。Human-readable出力はVibeProの言語設定に従い、JSONは同じ構造を安定して返す。
 
 ## 境界
 
