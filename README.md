@@ -51,30 +51,26 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 
 VibePro requires Node.js 20 or newer.
 
-VibePro is currently an alpha OSS release candidate. If it is not available in the public npm registry yet, do not run `npm install -D vibepro` or `pnpm add -D vibepro` and expect it to resolve from npm.
+VibePro is currently an early beta OSS release. The CLI, report schemas, and diagnosis packs may change before a stable 1.0 release, so use the `beta` dist-tag explicitly.
 
-Use one of these installation modes:
+Try the published CLI without installing it globally:
 
 ```bash
-# From a local clone of this repository
-cd /path/to/vibepro
-npm install
-node bin/vibepro.js --help
+npx vibepro@beta --help
+```
 
-# Or install from GitHub before the npm package is published
-npm install -g git+https://github.com/Unson-LLC/vibepro.git
+Or install the beta CLI globally:
+
+```bash
+npm install -g vibepro@beta
 vibepro --help
 ```
 
-After VibePro is published to npm:
+For local development of VibePro itself, use a source checkout:
 
 ```bash
-npx vibepro --help
-```
-
-For local development of VibePro itself:
-
-```bash
+git clone https://github.com/Unson-LLC/vibepro.git
+cd vibepro
 npm install
 node bin/vibepro.js --help
 ```
@@ -513,7 +509,7 @@ Machine-readable JSON keys remain stable and English-oriented.
 
 ## Project Status
 
-VibePro is currently an alpha OSS release candidate. APIs, report schemas, and diagnosis packs may change before a stable public release.
+VibePro is currently an early beta OSS release. APIs, report schemas, and diagnosis packs may change before a stable 1.0 release.
 
 ## License
 
