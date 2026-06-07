@@ -9975,6 +9975,9 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
+  assert.match(prBody, /#### 共通spineの確認/);
+  assert.match(prBody, /- intent: passed \/ evidence=/);
+  assert.match(prBody, /- done_evidence: passed \/ evidence=/);
 });
 
 test('security_trust route enforces the security regression judgment gate with evidence or waiver', async () => {

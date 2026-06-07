@@ -1928,6 +1928,7 @@ function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, 
     : '- route-specific judgment gateはありません。';
   const extraRouteGateCount = Math.max(0, routeGates.length - 5);
   const routeGateTail = extraRouteGateCount > 0 ? `\n- ほか${extraRouteGateCount}件はGate DAG監査ログを参照。` : '';
+  const commonSpine = buildCommonSpineReasoning(gateDag);
   const signals = buildEngineeringSignalDigest(judgment.signals);
   const evidence = buildEngineeringEvidenceReasoningDigest(gateDag);
   const mergeBoundary = buildEngineeringMergeBoundary(gateDag);
@@ -1944,6 +1945,9 @@ function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, 
 #### 判断シグナル
 ${signals}
 
+#### 共通spineの確認
+${commonSpine}
+
 #### 選んだDAGが要求した確認
 ${routeGateSummary}${routeGateTail}
 
@@ -1956,6 +1960,20 @@ function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
   const nodes = gateDag?.nodes ?? [];
   return nodes.filter((node) => node.id?.startsWith('gate:judgment_')
     && (!routeType || node.route_type === routeType));
+}
+
+function buildCommonSpineReasoning(gateDag) {
+  const spineGate = gateDag?.nodes?.find((node) => node.id === 'gate:common_judgment_spine');
+  if (!spineGate || !Array.isArray(spineGate.subchecks) || spineGate.subchecks.length === 0) {
+    return '- 共通spineの監査情報はありません。';
+  }
+  return spineGate.subchecks
+    .map((check) => {
+      const evidence = check.evidence ?? 'evidenceなし';
+      const reason = check.reason ?? '理由なし';
+      return `- ${check.id}: ${check.status} / evidence=${evidence} / ${reason}`;
+    })
+    .join('\n');
 }
 
 function formatEngineeringJudgmentGateForHuman(gate) {
