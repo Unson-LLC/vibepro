@@ -83,8 +83,10 @@ import {
   renderExecutionStateSummary,
   startExecution,
   updateExecutionStateFromPrCreate,
+  updateExecutionStateFromPrMerge,
   updateExecutionStateFromPrPrepare
 } from './execution-state.js';
+import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -201,12 +203,14 @@ Typical PR-safety flow:
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
   vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
+  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase]
 
 PR prepare creates pr-body, gate-dag, split-plan, review-cockpit, and
 machine-readable evidence under .vibepro/pr/<story-id>/ when initialized.
 If required gates are unresolved, next_commands points back to review or
 verification. Only use vibepro pr create for normal PR creation; do not use raw
-gh pr create as the standard path.
+gh pr create as the standard path. After PR creation, use vibepro execute merge
+to record merge-time checks and GitHub merge results.
 
 Existing UI modernization:
   vibepro design-system init <repo> --id <ds-id> --product <name>
@@ -270,7 +274,7 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
-  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--json]
+  vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -343,6 +347,8 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       pr prepareを再実行し、PR作成に進めるか、必要なreview prepare / review start / review recordを表示します。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
+  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase]
+      PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 risk-adaptive Gate DAG:
   workflow_heavy 変更では、workflow replay / production path / release confidence /
@@ -427,7 +433,7 @@ Usage:
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
-  vibepro execute <start|status|next|reconcile> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--json]
+  vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
@@ -1249,6 +1255,36 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result.state, null, 2)}\n`
           : renderExecutionStateSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'merge') {
+        const storyId = executionOptions.storyId ?? await resolveSelectedStoryId(repoRoot, 'execute merge');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'execute merge'
+        });
+        const result = await executeMerge(repoRoot, {
+          ...executionOptions,
+          storyId,
+          strategy: getOption(rest, '--strategy'),
+          deleteBranch: hasFlag(rest, '--delete-branch'),
+          pr: getOption(rest, '--pr'),
+          dryRun: hasFlag(rest, '--dry-run'),
+          env: io.env
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.merge, null, 2)}\n`
+          : renderPrMergeSummary(result));
+        await updateExecutionStateFromPrMerge(repoRoot, result, {
+          target: executionOptions.target,
+          baseRef: executionOptions.baseRef,
+          storyId
+        }).catch(() => null);
+        return {
+          exitCode: result.merge.status === 'blocked' ? 2 : result.merge.status === 'failed' ? 1 : 0,
+          command,
+          subcommand,
+          result
+        };
       }
       write(stderr, `Unknown execute command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
