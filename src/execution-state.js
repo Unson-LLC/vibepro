@@ -510,6 +510,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
+      'agent_review_stage_join_gate',
       'agent_review_gate'
     ].includes(node.type))
     .filter((node) => node.required)

@@ -869,7 +869,7 @@ function buildShipHumanJudgments(gateStatus) {
   }
   const critical = gateStatus?.critical_unresolved_gates ?? [];
   for (const gate of critical) {
-    if (gate.type === 'agent_review_gate' || gate.type === 'agent_review_prepare_gate' || gate.type === 'agent_review_role_gate' || gate.type === 'agent_review_record_gate') continue;
+    if (gate.type === 'agent_review_gate' || gate.type === 'agent_review_prepare_gate' || gate.type === 'agent_review_role_gate' || gate.type === 'agent_review_record_gate' || gate.type === 'agent_review_stage_join_gate') continue;
     judgments.push({
       kind: 'critical_gate',
       gate_id: gate.id,
@@ -1173,7 +1173,7 @@ function buildAgentReviewGateInstruction(unresolvedGates) {
   if (!agentGate) return null;
   const actions = agentGate.required_actions ?? [];
   const actionText = actions.length > 0 ? ` Required actions: ${actions.join(' ')}` : '';
-  return `Agent Review Gate requires staged role reviews. Run the listed \`vibepro review prepare\` command(s), dispatch the generated Codex/Claude Code subagent reviews in parallel when the coordinator runtime provides subagent capability, close/shutdown each review subagent after receiving its result, record each result with \`vibepro review record --execution-mode parallel_subagent --agent-closed\`, then rerun \`vibepro pr prepare\`. If the runtime has no subagent capability, block or record a human waiver decision; do not silently skip the gate.${actionText}`;
+  return `Agent Review Gate requires staged role reviews. Run only the current listed \`vibepro review prepare\` stage, dispatch that stage's Codex/Claude Code subagent reviews in parallel when the coordinator runtime provides subagent capability, close/shutdown each review subagent after receiving its result, record each result with \`vibepro review record --execution-mode parallel_subagent --agent-closed\`, then rerun \`vibepro pr prepare\` to advance to the next stage. If the runtime has no subagent capability, block or record a human waiver decision; do not silently skip the gate.${actionText}`;
 }
 
 export function renderPrCreateSummary(result) {
@@ -5971,22 +5971,45 @@ function buildGateDag({
 
 function buildAgentReviewProcessDag(agentReviews) {
   const stages = agentReviews?.parallel_dispatch?.required_stages ?? [];
-  if (!agentReviews?.required || stages.length === 0) return { nodes: [], terminal_nodes: [] };
+  if (!agentReviews?.required || stages.length === 0) return { nodes: [], terminal_nodes: [], stage_order: [] };
   const stageLookup = new Map((agentReviews.stages ?? []).map((stage) => [stage.stage, stage]));
   const requiredRoleLookup = new Map(stages.map((stage) => [stage.stage, new Set(stage.roles ?? [])]));
   const nodes = [];
-  const terminalNodes = [];
+  const joinNodes = [];
+  const stageOrder = stages.map((stage) => stage.stage);
   for (const requiredStage of stages) {
     const stage = stageLookup.get(requiredStage.stage);
     const prepareId = `review:prepare:${requiredStage.stage}`;
+    const joinId = `review:join:${requiredStage.stage}`;
     const dispatch = stage?.parallel_dispatch ?? {};
     const dispatchPrepared = Boolean(dispatch.prepared || stage?.roles?.some((role) => role.artifact));
+    const requiredRoles = requiredRoleLookup.get(requiredStage.stage);
+    const stageRoleLookup = new Map((stage?.roles ?? []).map((item) => [item.role, item]));
+    const stageRoles = requiredRoles
+      ? [...requiredRoles].map((role) => stageRoleLookup.get(role) ?? {
+        role,
+        status: 'missing',
+        effective_status: 'missing',
+        summary: null,
+        artifact: null
+      })
+      : (stage?.roles ?? []);
+    const recordStatuses = stageRoles.map((role) => normalizeAgentReviewRecordStatus(role.effective_status));
+    const joinStatus = recordStatuses.some((status) => status === 'failed')
+      ? 'failed'
+      : recordStatuses.length > 0 && recordStatuses.every((status) => status === 'passed')
+        ? 'passed'
+        : 'needs_review';
     nodes.push({
       id: prepareId,
       type: 'agent_review_prepare_gate',
       label: `Review Prepare: ${requiredStage.stage}`,
       status: dispatchPrepared ? 'passed' : 'needs_review',
       required: true,
+      serial_index: requiredStage.serial_index ?? stageOrder.indexOf(requiredStage.stage) + 1,
+      depends_on_stage: requiredStage.depends_on_stage ?? null,
+      next_stage: requiredStage.next_stage ?? null,
+      dispatch_state: requiredStage.dispatch_state ?? null,
       command: requiredStage.prepare_command,
       artifact: requiredStage.dispatch_artifact,
       reason: dispatchPrepared
@@ -5994,8 +6017,7 @@ function buildAgentReviewProcessDag(agentReviews) {
         : 'Policy-aware agent review dispatch instructions have not been generated'
     });
 
-    const requiredRoles = requiredRoleLookup.get(requiredStage.stage);
-    for (const role of (stage?.roles ?? []).filter((item) => !requiredRoles || requiredRoles.has(item.role))) {
+    for (const role of stageRoles) {
       const reviewId = `review:${requiredStage.stage}:${role.role}`;
       const recordId = `review:record:${requiredStage.stage}:${role.role}`;
       const reviewStatus = normalizeAgentReviewNodeStatus(role.effective_status);
@@ -6019,10 +6041,35 @@ function buildAgentReviewProcessDag(agentReviews) {
         artifact: role.artifact,
         reason: buildAgentReviewRecordReason(requiredStage.stage, role)
       });
-      terminalNodes.push(recordId);
     }
+    nodes.push({
+      id: joinId,
+      type: 'agent_review_stage_join_gate',
+      label: `Review Stage Join: ${requiredStage.stage}`,
+      status: joinStatus,
+      required: true,
+      serial_index: requiredStage.serial_index ?? stageOrder.indexOf(requiredStage.stage) + 1,
+      depends_on_stage: requiredStage.depends_on_stage ?? null,
+      next_stage: requiredStage.next_stage ?? null,
+      role_count: stageRoles.length,
+      reason: buildAgentReviewStageJoinReason(requiredStage.stage, joinStatus, stageRoles)
+    });
+    joinNodes.push(joinId);
   }
-  return { nodes, terminal_nodes: terminalNodes };
+  return { nodes, terminal_nodes: joinNodes, stage_order: stageOrder };
+}
+
+function buildAgentReviewStageJoinReason(stage, status, roles) {
+  if (status === 'passed') {
+    return `All parallel ${stage} agent review roles are closed and recorded for the current git state`;
+  }
+  if (status === 'failed') {
+    return `At least one parallel ${stage} agent review role returned block`;
+  }
+  const remaining = roles
+    .filter((role) => normalizeAgentReviewRecordStatus(role.effective_status) !== 'passed')
+    .map((role) => role.role);
+  return `Wait for all parallel ${stage} reviews to close and record before dispatching the next review stage${remaining.length > 0 ? `: ${remaining.join(', ')}` : ''}`;
 }
 
 function buildAgentReviewRecordReason(stage, role) {
@@ -6619,20 +6666,51 @@ function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
 function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {} }) {
   if (!agentReviewDag.nodes.length) return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
   const edges = [];
-  const prepareNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_prepare_gate');
-  for (const prepareNode of prepareNodes) {
-    const [, , stage] = prepareNode.id.split(':');
-    edges.push({ from: stageUpstreams[stage] ?? defaultUpstreamNodeId, to: prepareNode.id });
+  const stageOrder = agentReviewDag.stage_order?.length
+    ? agentReviewDag.stage_order
+    : agentReviewDag.nodes
+      .filter((node) => node.type === 'agent_review_prepare_gate')
+      .map((node) => node.id.split(':')[2]);
+  const firstStage = stageOrder[0];
+  if (firstStage) {
+    const entryUpstreams = [...new Set([
+      defaultUpstreamNodeId,
+      ...Object.values(stageUpstreams).filter(Boolean)
+    ])];
+    for (const upstream of entryUpstreams) {
+      edges.push({
+        from: upstream,
+        to: `review:prepare:${firstStage}`,
+        reason: 'serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch'
+      });
+    }
+  }
+  for (const [index, stage] of stageOrder.entries()) {
+    const prepareId = `review:prepare:${stage}`;
+    const joinId = `review:join:${stage}`;
+    const previousStage = stageOrder[index - 1] ?? null;
+    if (previousStage) {
+      edges.push({
+        from: `review:join:${previousStage}`,
+        to: prepareId,
+        reason: 'next Agent Review stage is blocked until the previous stage join passes'
+      });
+    }
     const roleNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_role_gate' && node.id.startsWith(`review:${stage}:`));
+    if (roleNodes.length === 0) {
+      edges.push({ from: prepareId, to: joinId });
+    }
     for (const roleNode of roleNodes) {
       const role = roleNode.id.slice(`review:${stage}:`.length);
       const recordId = `review:record:${stage}:${role}`;
-      edges.push({ from: prepareNode.id, to: roleNode.id });
+      edges.push({ from: prepareId, to: roleNode.id });
       edges.push({ from: roleNode.id, to: recordId });
+      edges.push({ from: recordId, to: joinId });
     }
   }
-  for (const terminalNode of agentReviewDag.terminal_nodes) {
-    edges.push({ from: terminalNode, to: 'gate:agent_review' });
+  const lastStage = stageOrder[stageOrder.length - 1];
+  if (lastStage) {
+    edges.push({ from: `review:join:${lastStage}`, to: 'gate:agent_review' });
   }
   return edges;
 }
@@ -6753,32 +6831,30 @@ function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
   if (status === 'passed' || status === 'not_required') return [];
   const requiredStages = agentReviews.parallel_dispatch?.required_stages ?? [];
   const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
+  const allUnmet = [
+    ...unmet,
+    ...checkpointUnmet
+  ];
   const actions = [];
-  const missingOrUnpreparedStages = requiredStages
-    .filter((stage) => stage.status !== 'pass' || stage.prepared !== true)
-    .map((stage) => ({
-      stage: stage.stage,
-      command: stage.prepare_command,
-      artifact: stage.dispatch_artifact,
-      prepared: stage.prepared
-    }));
-  for (const stage of missingOrUnpreparedStages) {
-    actions.push(`Run \`${stage.command}\` and use ${stage.artifact}; dispatch the listed Codex/Claude Code subagent reviews in parallel, close/shutdown each review subagent after receiving its result, then record every result with parallel_subagent provenance and --agent-closed.`);
+  const currentStage = requiredStages.find((stage) => stage.dispatch_state === 'current')
+    ?? requiredStages.find((stage) => stage.status !== 'pass' || stage.prepared !== true);
+  if (currentStage) {
+    actions.push(`Current Agent Review stage ${currentStage.serial_index ?? '?'}: run \`${currentStage.prepare_command}\` and use ${currentStage.dispatch_artifact}; dispatch only the listed ${currentStage.stage} role subagents in parallel, close/shutdown each returned subagent, then record every result with parallel_subagent provenance and --agent-closed. Do not dispatch later Agent Review stages in the same batch.`);
   }
-  if (unmet.length > 0) {
-    const roleList = unmet.slice(0, 12)
+  const currentStageUnmet = currentStage
+    ? allUnmet.filter((item) => item.stage === currentStage.stage)
+    : allUnmet;
+  if (currentStageUnmet.length > 0) {
+    const roleList = currentStageUnmet.slice(0, 12)
       .map((item) => `${item.stage}:${item.role}(${item.status}${item.detail ? `: ${item.detail}` : ''})`)
       .join(', ');
-    actions.push(`Complete and record current-git review results for: ${roleList}.`);
+    actions.push(`Complete and record current-stage review results for: ${roleList}.`);
   }
-  if (checkpointUnmet.length > 0) {
-    const stageList = [...new Set(checkpointUnmet.map((item) => item.stage))].join(', ');
-    const roleList = checkpointUnmet.slice(0, 12)
-      .map((item) => `${item.stage}:${item.role}(${item.status}${item.detail ? `: ${item.detail}` : ''})`)
-      .join(', ');
-    actions.push(`Complete checkpoint Agent Review stages before PR creation: ${stageList}. Missing checkpoint roles: ${roleList}. Run \`vibepro checkpoint <stage> . --story-id <story-id>\` or \`vibepro review prepare . --id <story-id> --stage <stage>\`, dispatch subagents, record results, then rerun \`vibepro pr prepare\`.`);
+  const blockedStages = requiredStages.filter((stage) => stage.dispatch_state === 'blocked_by_previous_stage');
+  if (blockedStages.length > 0) {
+    actions.push(`Later Agent Review stages are serial-barriered and must wait: ${blockedStages.map((stage) => `${stage.serial_index ?? '?'}:${stage.stage}`).join(', ')}. Rerun \`vibepro pr prepare\` after the current stage is closed and recorded to reveal the next dispatch stage.`);
   }
-  actions.push('After closing review subagents and recording all roles with parallel_subagent provenance and closed subagent lifecycle, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
+  actions.push('After closing review subagents and recording the current stage with parallel_subagent provenance and closed subagent lifecycle, run `vibepro review status . --id <story-id>` and `vibepro pr prepare . --story-id <story-id> --base <base-ref>` again.');
   return actions;
 }
 
@@ -7660,6 +7736,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
+      'agent_review_stage_join_gate',
       'agent_review_gate'
     ].includes(node.type))
     .filter((node) => node.required)
