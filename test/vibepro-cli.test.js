@@ -8211,6 +8211,7 @@ test('execute merge dry-run resolves PR metadata and records merge readiness art
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } },
     results: []
   });
   await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
@@ -8249,6 +8250,8 @@ test('execute merge dry-run resolves PR metadata and records merge readiness art
   assert.equal(result.result.merge.preconditions.remote_head_match.status, 'passed');
   assert.equal(result.result.merge.preconditions.checks_ready.status, 'passed');
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
+  assert.equal(result.result.merge.commands.some((command) => command.includes('--repo unson/vibepro')), true);
+  assert.equal(result.result.merge.commands.some((command) => command.includes('--match-head-commit')), true);
 
   const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
   assert.equal(artifact.status, 'ready_to_merge');
@@ -8331,11 +8334,86 @@ test('execute merge completes merge artifacts and execution state after a succes
   assert.equal(result.result.merge.status, 'merged');
   assert.equal(result.result.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
+  assert.equal(result.result.merge.branch_cleanup.requested, false);
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'passed');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
+});
+
+test('execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/125',
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } },
+    results: []
+  });
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/125',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
+    mergedAt: '2026-06-07T00:32:55Z'
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--delete-branch',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.branch_cleanup.requested, true);
+  assert.equal(result.result.merge.branch_cleanup.remote.deleted, true);
+  assert.equal(result.result.merge.branch_cleanup.local.attempted, false);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Local branch deletion skipped')), true);
 });
 
 test('preferred managed worktree warning is recorded on non-PR evidence surfaces', async () => {
