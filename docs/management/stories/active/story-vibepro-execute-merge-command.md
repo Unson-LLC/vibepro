@@ -6,7 +6,7 @@ priority: high
 owner: codex
 created_at: 2026-06-07
 updated_at: 2026-06-07
-architecture_reason: 既存の execute merge アーキテクチャ内で merge 実行と branch cleanup の責務を分離する変更であり、新しい境界やコンポーネントは導入しない
+reason: 既存の execute merge アーキテクチャ内で merge 実行と branch cleanup の責務を分離する変更であり、新しい境界やコンポーネントは導入しない
 tags:
   - cli
   - pr
