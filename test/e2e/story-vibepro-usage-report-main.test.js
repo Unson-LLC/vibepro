@@ -34,7 +34,9 @@ const report = {
     ready_for_pr_create: false,
     pr_created: true,
     waiver_required: true,
-    raw_pr_bypass_suspected: true
+    raw_pr_bypass_suspected: true,
+    stale_evidence: true,
+    story_source_mismatch: true
   }],
   gate_metrics: [{
     gate_id: 'gate:agent_review',
@@ -52,6 +54,15 @@ const report = {
       replaced_count: 1,
       stale_count: 0
     }]
+  },
+  value_signals: {
+    story_count: 1,
+    waiver_required_story_count: 1,
+    stale_evidence_story_count: 1,
+    story_source_mismatch_story_count: 1,
+    waiver_required_rate: 1,
+    stale_evidence_rate: 1,
+    story_source_mismatch_rate: 1
   },
   log_signals: {
     raw_pr_create_mentions: [{ signal: 'raw_gh_pr_create' }],
@@ -71,14 +82,16 @@ test('story-vibepro-usage-report ac1 ac2 adds usage report command and artifact 
 
 test('story-vibepro-usage-report ac3 ac4 reports story and gate metrics', () => {
   // story-vibepro-usage-report ac:3
-  // Storyごとに `prepared`, `blocked`, `ready_for_pr_create`, `pr_created`, `waiver_required`, `raw_pr_bypass_suspected` を表示する。
+  // Storyごとに `prepared`, `blocked`, `ready_for_pr_create`, `pr_created`, `waiver_required`, `raw_pr_bypass_suspected`, `stale_evidence`, `story_source_mismatch` を表示する。
   assert.deepEqual(Object.keys(report.stories[0]).filter((key) => key !== 'story_id'), [
     'prepared',
     'blocked',
     'ready_for_pr_create',
     'pr_created',
     'waiver_required',
-    'raw_pr_bypass_suspected'
+    'raw_pr_bypass_suspected',
+    'stale_evidence',
+    'story_source_mismatch'
   ]);
 
   // story-vibepro-usage-report ac:4
@@ -106,6 +119,10 @@ test('story-vibepro-usage-report ac5 ac6 ac7 reports review logs and language su
   // story-vibepro-usage-report ac:7
   // human-readable reportは言語設定に従う。
   assert.match('# VibePro利用状況レポート', /利用状況/);
+
+  // story-vibepro-usage-report ac:8 ac:9
+  assert.equal(report.value_signals.stale_evidence_story_count, 1);
+  assert.equal(report.value_signals.story_source_mismatch_rate, 1);
 });
 
 test('story-vibepro-usage-report runs usage report against real VibePro artifacts', async () => {
@@ -143,7 +160,9 @@ test('story-vibepro-usage-report runs usage report against real VibePro artifact
     generated_at: '2026-06-02T00:05:00.000Z',
     nodes: [
       { id: 'gate:agent_review', status: 'needs_review' },
-      { id: 'gate:decision_record', status: 'bypassed' }
+      { id: 'gate:decision_record', status: 'bypassed' },
+      { id: 'gate:artifact_consistency', status: 'stale_evidence' },
+      { id: 'gate:story_source_integrity', status: 'story_source_mismatch' }
     ]
   });
   await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-summary.json'), {
@@ -180,7 +199,12 @@ test('story-vibepro-usage-report runs usage report against real VibePro artifact
   assert.equal(story.pr_created, true);
   assert.equal(story.waiver_required, true);
   assert.equal(story.raw_pr_bypass_suspected, true);
+  assert.equal(story.stale_evidence, true);
+  assert.equal(story.story_source_mismatch, true);
   assert.equal(report.gate_metrics.find((gate) => gate.gate_id === 'gate:agent_review').critical_unresolved_count, 1);
+  assert.equal(report.value_signals.waiver_required_story_count, 1);
+  assert.equal(report.value_signals.stale_evidence_story_count, 1);
+  assert.equal(report.value_signals.story_source_mismatch_story_count, 1);
   assert.equal(report.agent_review.totals.timeout_count, 1);
   assert.equal(report.log_signals.raw_pr_create_mentions.length, 2);
   assert.equal(report.log_signals.raw_pr_create_mentions.some((mention) => mention.story_id === 'story-vibepro-other'), true);
@@ -193,4 +217,7 @@ test('story-vibepro-usage-report runs usage report against real VibePro artifact
   assert.equal(textResult.exitCode, 0);
   assert.match(textOutput, /# VibePro利用状況レポート/);
   assert.match(textOutput, /raw_pr_bypass_suspected=true/);
+  assert.match(textOutput, /stale_evidence=true story_source_mismatch=true/);
+  assert.match(textOutput, /## Value Signals/);
+  assert.match(textOutput, /stale_evidence: 1\/2 \(50%\)/);
 });

@@ -58,6 +58,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   const stories = [...storyMap.values()].sort((a, b) => a.story_id.localeCompare(b.story_id));
   const gate_metrics = buildGateMetrics(prArtifacts);
   const agent_review = buildAgentReviewMetrics(stories);
+  const value_signals = buildValueSignals(stories);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -72,6 +73,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     stories,
     gate_metrics,
     agent_review,
+    value_signals,
     log_signals: logs
   };
 }
@@ -80,7 +82,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -93,6 +95,12 @@ export function renderUsageReport(report) {
         `- ${item.story_id}: required=${item.required_role_count} pass=${item.pass_count} block=${item.block_count} timeout=${item.timeout_count} replaced=${item.replaced_count} stale=${item.stale_count}`
       )).join('\n')
     : '- none';
+  const valueSignals = report.value_signals ?? {};
+  const valueRows = [
+    `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
+    `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
+    `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`
+  ].join('\n');
   if (language === 'en') {
     return `# VibePro Usage Report
 
@@ -111,6 +119,10 @@ ${gateRows}
 ## Agent Review
 
 ${reviewRows}
+
+## Value Signals
+
+${valueRows}
 
 ## Log Signals
 
@@ -136,6 +148,10 @@ ${gateRows}
 
 ${reviewRows}
 
+## Value Signals
+
+${valueRows}
+
 ## ログ補助シグナル
 
 - raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
@@ -154,6 +170,8 @@ function ensureStoryUsage(storyMap, storyId) {
       pr_created: false,
       waiver_required: false,
       raw_pr_bypass_suspected: false,
+      stale_evidence: false,
+      story_source_mismatch: false,
       prepare_count: 0,
       pr_create_count: 0,
       execution_state_count: 0,
@@ -301,7 +319,35 @@ function collectGateMetrics(gateDag, storyId, storyMap) {
     if (['block', 'needs_evidence', 'needs_review', 'failed'].includes(node.status)) metric.block_count += 1;
     if (node.status === 'bypassed') metric.waiver_count += 1;
     story.gate_metrics[gateId] = metric;
+    if (node.status === 'stale_evidence') story.stale_evidence = true;
+    if (node.status === 'story_source_mismatch') story.story_source_mismatch = true;
   }
+}
+
+function buildValueSignals(stories) {
+  const storyCount = stories.length;
+  const waiverRequiredCount = stories.filter((story) => story.waiver_required).length;
+  const staleEvidenceCount = stories.filter((story) => story.stale_evidence).length;
+  const storySourceMismatchCount = stories.filter((story) => story.story_source_mismatch).length;
+  return {
+    story_count: storyCount,
+    waiver_required_story_count: waiverRequiredCount,
+    stale_evidence_story_count: staleEvidenceCount,
+    story_source_mismatch_story_count: storySourceMismatchCount,
+    waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
+    stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),
+    story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount)
+  };
+}
+
+function calculateRate(count, total) {
+  if (!total) return null;
+  return Number((count / total).toFixed(4));
+}
+
+function formatRate(value) {
+  if (typeof value !== 'number') return '-';
+  return `${Math.round(value * 100)}%`;
 }
 
 function buildAgentReviewMetrics(stories) {

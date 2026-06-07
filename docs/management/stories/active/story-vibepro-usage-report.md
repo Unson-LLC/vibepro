@@ -11,7 +11,7 @@ spec_docs:
   - docs/specs/vibepro-usage-report.md
 status: active
 created_at: 2026-06-02
-updated_at: 2026-06-02
+updated_at: 2026-06-07
 ---
 
 # Story: VibePro usage reportで利用状況と価値発現を可視化する
@@ -35,6 +35,8 @@ updated_at: 2026-06-02
 - [x] Agent Review別にrequired role数、pass数、block数、timeout/replaced数、stale数を表示する
 - [x] optionalでClaude Code / Codex local logsを指定した場合、raw `gh pr create` やVibePro command mentionを補助的に検出する
 - [x] human-readable reportは言語設定に従う
+- [x] Story別に `stale_evidence` と `story_source_mismatch` を表示する
+- [x] `value_signals` として `waiver_required` / `stale_evidence` / `story_source_mismatch` の story count/rate を返す
 
 ## 実装メモ
 
