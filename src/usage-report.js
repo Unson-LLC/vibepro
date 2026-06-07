@@ -1,8 +1,12 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import { resolveHumanOutputLanguage } from './language.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+
+const execFileAsync = promisify(execFile);
 
 export async function createUsageReport(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -59,17 +63,20 @@ export async function createUsageReport(repoRoot, options = {}) {
   const gate_metrics = buildGateMetrics(prArtifacts);
   const agent_review = buildAgentReviewMetrics(stories);
   const value_signals = buildValueSignals(stories);
+  const artifactCounts = {
+    pr: prArtifacts.length,
+    review: reviewArtifacts.length,
+    execution: executionArtifacts.length,
+    logs: logs.files.length
+  };
+  const artifact_source_hints = await buildArtifactSourceHints(root, since, artifactCounts);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
     output: { language },
     since: since ? since.toISOString() : null,
-    artifact_counts: {
-      pr: prArtifacts.length,
-      review: reviewArtifacts.length,
-      execution: executionArtifacts.length,
-      logs: logs.files.length
-    },
+    artifact_counts: artifactCounts,
+    artifact_source_hints,
     stories,
     gate_metrics,
     agent_review,
@@ -101,12 +108,14 @@ export function renderUsageReport(report) {
     `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
     `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`
   ].join('\n');
+  const artifactHintRows = renderArtifactSourceHints(report);
   if (language === 'en') {
     return `# VibePro Usage Report
 
 - since: ${report.since ?? 'all'}
 - stories: ${report.stories.length}
 - artifacts: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+${artifactHintRows}
 
 ## Stories
 
@@ -135,6 +144,7 @@ ${valueRows}
 - 対象期間: ${report.since ?? '全期間'}
 - Story数: ${report.stories.length}
 - artifact数: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+${artifactHintRows}
 
 ## Story別
 
@@ -274,6 +284,138 @@ async function collectUsageLogs(root, options = {}) {
     raw_pr_create_mentions: rawMentions,
     vibepro_command_mentions: vibeproMentions
   };
+}
+
+async function buildArtifactSourceHints(root, since, artifactCounts) {
+  const localArtifactCount = artifactCounts.pr + artifactCounts.review + artifactCounts.execution;
+  if (localArtifactCount > 0) {
+    return {
+      status: 'not_applicable',
+      reason: 'current checkout contains VibePro artifacts',
+      current_repo_root: root,
+      current_workspace_dir: getWorkspaceDir(root),
+      candidates: []
+    };
+  }
+
+  const worktrees = await listGitWorktrees(root);
+  if (worktrees.length === 0) {
+    return {
+      status: 'no_git_worktrees_found',
+      reason: 'git worktree list did not return alternative checkouts',
+      current_repo_root: root,
+      current_workspace_dir: getWorkspaceDir(root),
+      candidates: []
+    };
+  }
+
+  const current = await canonicalPath(root);
+  const candidates = [];
+  for (const worktree of worktrees) {
+    const candidateRoot = path.resolve(worktree.path);
+    const candidateCanonical = await canonicalPath(candidateRoot);
+    if (candidateCanonical && current && candidateCanonical === current) continue;
+    if (worktree.prunable) continue;
+
+    const workspaceDir = getWorkspaceDir(candidateRoot);
+    const [prArtifacts, reviewArtifacts, executionArtifacts] = await Promise.all([
+      collectPrArtifacts(candidateRoot, workspaceDir, since),
+      collectReviewArtifacts(candidateRoot, workspaceDir, since),
+      collectExecutionArtifacts(candidateRoot, workspaceDir, since)
+    ]);
+    const counts = {
+      pr: prArtifacts.length,
+      review: reviewArtifacts.length,
+      execution: executionArtifacts.length
+    };
+    if (counts.pr + counts.review + counts.execution === 0) continue;
+    candidates.push({
+      repo_root: candidateRoot,
+      workspace_dir: workspaceDir,
+      branch: worktree.branch,
+      head: worktree.head,
+      artifact_counts: counts
+    });
+  }
+
+  candidates.sort((a, b) => (
+    (b.artifact_counts.pr + b.artifact_counts.review + b.artifact_counts.execution)
+    - (a.artifact_counts.pr + a.artifact_counts.review + a.artifact_counts.execution)
+  ));
+
+  return {
+    status: candidates.length > 0 ? 'possible_worktree_false_negative' : 'no_alternative_artifacts_found',
+    reason: candidates.length > 0
+      ? 'current checkout has no VibePro artifacts, but another git worktree for the same repository does'
+      : 'current checkout has no VibePro artifacts and no alternative git worktree with artifacts was found',
+    current_repo_root: root,
+    current_workspace_dir: getWorkspaceDir(root),
+    candidates
+  };
+}
+
+async function listGitWorktrees(root) {
+  try {
+    const { stdout } = await execFileAsync('git', ['worktree', 'list', '--porcelain'], {
+      cwd: root,
+      encoding: 'utf8'
+    });
+    return parseGitWorktreePorcelain(stdout);
+  } catch (_error) {
+    return [];
+  }
+}
+
+function parseGitWorktreePorcelain(output) {
+  const records = [];
+  let record = null;
+  for (const line of String(output ?? '').split(/\r?\n/)) {
+    if (!line.trim()) {
+      if (record) records.push(record);
+      record = null;
+      continue;
+    }
+    if (line.startsWith('worktree ')) {
+      if (record) records.push(record);
+      record = {
+        path: line.slice('worktree '.length),
+        head: null,
+        branch: null,
+        prunable: false
+      };
+      continue;
+    }
+    if (!record) continue;
+    if (line.startsWith('HEAD ')) record.head = line.slice('HEAD '.length);
+    if (line.startsWith('branch ')) record.branch = line.slice('branch '.length).replace(/^refs\/heads\//, '');
+    if (line.startsWith('prunable')) record.prunable = true;
+  }
+  if (record) records.push(record);
+  return records.filter((item) => item.path);
+}
+
+async function canonicalPath(filePath) {
+  try {
+    return path.resolve(await realpath(filePath));
+  } catch (_error) {
+    return null;
+  }
+}
+
+function renderArtifactSourceHints(report) {
+  const hints = report.artifact_source_hints;
+  if (!hints || hints.status !== 'possible_worktree_false_negative' || hints.candidates.length === 0) return '';
+  const rows = hints.candidates.slice(0, 3).map((candidate) => (
+    `- ${candidate.repo_root}: pr=${candidate.artifact_counts.pr} review=${candidate.artifact_counts.review} execution=${candidate.artifact_counts.execution}`
+  )).join('\n');
+  if (report.output?.language === 'en') {
+    return `
+- artifact source warning: this checkout has no VibePro artifacts, but another git worktree does. Run the report against one of these roots:
+${rows}`;
+  }
+  return `
+- artifact source warning: この checkout には VibePro artifacts がありませんが、同じ git repo の別 worktree には存在します。以下の root で report を再実行してください:
+${rows}`;
 }
 
 function normalizeLogCommand(value) {
