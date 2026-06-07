@@ -12016,6 +12016,35 @@ test('usage report aggregates VibePro artifacts, optional logs, and localized te
   assert.match(stdoutOutput, /raw_pr_bypass_suspected=true/);
 });
 
+test('usage report warns when an empty linked worktree may hide artifacts in another checkout', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-create.json'), {
+    story: { story_id: storyId },
+    created_at: '2026-06-02T00:10:00.000Z',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/1'
+  });
+
+  const linkedWorktree = await mkdtemp(path.join(os.tmpdir(), 'vibepro-empty-worktree-'));
+  await rm(linkedWorktree, { recursive: true, force: true });
+  await git(repo, ['worktree', 'add', '--detach', linkedWorktree, 'HEAD']);
+
+  const result = await runCli(['usage', 'report', linkedWorktree, '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.artifact_counts.pr, 0);
+  assert.equal(result.result.stories.length, 0);
+  assert.equal(result.result.artifact_source_hints.status, 'possible_worktree_false_negative');
+  const candidate = result.result.artifact_source_hints.candidates.find((item) => item.artifact_counts.pr === 1);
+  assert.ok(candidate);
+  assert.equal(candidate.artifact_counts.pr, 1);
+
+  const textResult = await runCliWithStdout(['usage', 'report', linkedWorktree]);
+  assert.equal(textResult.exitCode, 0);
+  assert.match(textResult.stdout, /artifact source warning/);
+  assert.match(textResult.stdout, /pr=1 review=0 execution=0/);
+});
+
 test('diagnose creates a run, evidence, reports, and updates the manifest', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
