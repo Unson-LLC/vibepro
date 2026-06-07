@@ -449,6 +449,10 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(pathSurfaceGate.status, 'partial_surface');
   assert.equal(pathSurfaceGate.missing_surfaces.includes('ui'), true);
   assert.equal(pathSurfaceGate.missing_surfaces.includes('api'), true);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /#### 共通spineの確認/);
+  assert.match(prBody, /- invariants: needs_evidence \/ evidence=/);
+  assert.match(prBody, /- done_evidence: needs_evidence \/ evidence=/);
 
   const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
   const manifest = await readJson(manifestPath);
