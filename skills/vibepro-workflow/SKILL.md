@@ -59,6 +59,7 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 17. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
 18. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+19. After PR creation, use `vibepro execute merge <repo> --story-id <id>` for merge-time checks and merge recording; do not treat raw `gh pr merge` as the standard path when auditability matters.
 
 ## Human Artifact Language
 
