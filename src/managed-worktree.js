@@ -385,12 +385,14 @@ export function buildManagedWorktreeCommandBinding(context) {
   };
 }
 
-export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null }) {
+export function buildExecutionDag({ managedWorktree, completedPhases = [], completionStatus = 'not_prepared', expectedHeadSha = null, prMerge = null }) {
   const hasWorktree = Boolean(managedWorktree?.path && managedWorktree.mode !== 'disabled');
   const worktreeAvailable = ['created', 'reused', 'available'].includes(managedWorktree?.status);
   const branchBound = worktreeAvailable && managedWorktree.branch && managedWorktree.branch_match !== false;
   const headBound = branchBound
     && (!expectedHeadSha || !managedWorktree.current_head_sha || managedWorktree.current_head_sha === expectedHeadSha);
+  const mergeReady = prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged';
+  const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
   const nodes = [
     {
       id: 'story_selected',
@@ -499,15 +501,35 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'merge_ready',
-      status: 'not_applicable',
+      status: completionStatus === 'merged'
+        ? 'passed'
+        : mergeReady
+          ? 'passed'
+          : prMerge?.status === 'blocked'
+            ? 'blocked'
+            : completionStatus === 'pr_created'
+              ? 'pending'
+              : 'not_applicable',
       required: false,
-      reason: 'execute merge enforcement is outside this MVP implementation scope'
+      reason: completionStatus === 'merged'
+        ? 'merge preconditions were satisfied before the recorded merge'
+        : mergeReady
+          ? 'execute merge preconditions were satisfied for the current PR'
+          : prMerge?.status === 'blocked'
+            ? prMerge.stop_reason ?? 'execute merge recorded blocking preconditions'
+            : completionStatus === 'pr_created'
+              ? 'PR exists but execute merge has not recorded merge readiness yet'
+              : 'PR has not been created yet'
     },
     {
       id: 'merged_or_closed',
-      status: 'not_applicable',
+      status: merged ? 'passed' : completionStatus === 'pr_created' ? 'pending' : 'not_applicable',
       required: false,
-      reason: 'merge or close tracking is outside this MVP implementation scope'
+      reason: merged
+        ? 'merge commit and merged_at are recorded'
+        : completionStatus === 'pr_created'
+          ? 'PR is still open or merge result has not been recorded yet'
+          : 'PR has not been created yet'
     },
     {
       id: 'worktree_cleaned',

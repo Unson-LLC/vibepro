@@ -242,6 +242,69 @@ export function renderPrCreateHtml(execution, options = {}) {
   });
 }
 
+export function renderPrMergeHtml(merge, options = {}) {
+  const results = merge.results.length === 0
+    ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
+    : merge.results;
+  return renderDocument({
+    title: 'VibePro Execute Merge',
+    reportType: 'pr-merge',
+    generatedAt: merge.created_at,
+    language: options.language ?? merge.output?.language ?? 'ja',
+    body: `
+      <section class="hero" data-dry-run="${escapeAttr(String(merge.dry_run))}">
+        <div>
+          <p class="eyebrow">PR merge audit</p>
+          <h2>${escapeHtml(merge.story?.story_id ?? '-')}</h2>
+          <p class="muted">${escapeHtml(merge.pr?.url ?? merge.pr?.selector ?? '-')}</p>
+        </div>
+        <span class="${statusClass(merge.status)}">${escapeHtml(merge.status)}</span>
+      </section>
+      <section class="metrics">
+        ${metricCard('Strategy', merge.strategy, merge.delete_branch ? 'delete branch' : 'keep branch')}
+        ${metricCard('Base', merge.base ?? '-', merge.pr?.base_ref_name ?? '-')}
+        ${metricCard('Merge commit', merge.merge_commit_sha ?? '-', merge.merged_at ?? 'not merged')}
+        ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
+      </section>
+      <section class="grid-2">
+        <div>
+          <h2>Preconditions</h2>
+          ${renderList([
+            `gate_ready: ${merge.preconditions?.gate_ready ? 'passed' : 'blocked'}`,
+            `clean_worktree: ${merge.preconditions?.clean_worktree ? 'passed' : 'blocked'}`,
+            `base_freshness: ${merge.preconditions?.base_freshness?.status ?? '-'}`,
+            `remote_head_match: ${merge.preconditions?.remote_head_match?.status ?? '-'}`,
+            `checks_ready: ${merge.preconditions?.checks_ready?.status ?? '-'}`,
+            `review_policy: ${merge.preconditions?.review_policy?.status ?? '-'}`,
+            `open_pull_request: ${merge.preconditions?.open_pull_request?.status ?? '-'}`
+          ])}
+        </div>
+        <div>
+          <h2>Warnings</h2>
+          ${renderList(merge.warnings?.length ? merge.warnings : ['なし'])}
+        </div>
+      </section>
+      <section>
+        <h2>Check Rollup</h2>
+        ${renderList((merge.pr?.checks ?? []).map((check) => `${check.name}: ${check.status}/${check.conclusion || '-'}`))}
+      </section>
+      <section>
+        <h2>Command Timeline</h2>
+        <div class="timeline">
+          ${results.map((item, index) => `
+            <article class="timeline-item" data-command-index="${index}">
+              <strong>${escapeHtml(item.command)}</strong>
+              <span class="${statusClass(item.exit_code === 0 ? 'pass' : 'failed')}">exit=${escapeHtml(item.exit_code)}</span>
+              ${item.stdout ? `<pre>${escapeHtml(item.stdout)}</pre>` : ''}
+              ${item.stderr ? `<pre>${escapeHtml(item.stderr)}</pre>` : ''}
+            </article>
+          `).join('')}
+        </div>
+      </section>
+    `
+  });
+}
+
 function renderPrPrepareGuide({ preparation, bodyPath, gateDagPath, splitPlanPath, language }) {
   const gateDag = preparation.pr_context.gate_dag;
   const requirement = preparation.pr_context.requirement_consistency;

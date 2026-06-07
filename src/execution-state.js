@@ -145,6 +145,29 @@ export async function updateExecutionStateFromPrCreate(repoRoot, createResult, o
   return writeExecutionStateWithLinkedCopies(repoRoot, state);
 }
 
+export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, options = {}) {
+  const storyId = mergeResult?.merge?.story?.story_id ?? options.storyId;
+  if (!storyId) return null;
+  const result = await reconcileExecutionState(repoRoot, {
+    ...options,
+    storyId,
+    target: options.target ?? DEFAULT_TARGET
+  });
+  const merge = mergeResult?.merge;
+  if (!merge || merge.status !== 'merged') return result;
+  const state = {
+    ...result.state,
+    completion_status: 'merged',
+    current_phase: 'complete',
+    completed_phases: unique([...result.state.completed_phases, 'merge_ready', 'merge']),
+    pr_url: merge.pr?.url ?? result.state.pr_url ?? null,
+    next_actions: [],
+    blocking_gate: null,
+    updated_at: new Date().toISOString()
+  };
+  return writeExecutionStateWithLinkedCopies(repoRoot, state);
+}
+
 export function renderExecutionStateSummary(result) {
   const state = result.state ?? result;
   const actions = state.next_actions?.length
@@ -249,10 +272,11 @@ async function buildExecutionState(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = requireStoryId(options.storyId, 'execution state');
   const now = new Date().toISOString();
-  const [prPrepare, verificationEvidence, prCreate, gateDagArtifact, agentReview] = await Promise.all([
+  const [prPrepare, verificationEvidence, prCreate, prMerge, gateDagArtifact, agentReview] = await Promise.all([
     readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-create.json')),
+    readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json')),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'gate-dag.json')),
     getAgentReviewStatus(root, { storyId }).catch(() => null)
   ]);
@@ -277,6 +301,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   const executionBlockingGate = executionBlockers[0] ?? null;
   const blockingGate = executionBlockingGate ?? pickBlockingGate(blockingGates);
   const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
+  const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
   const gatesReadyForPrCreate = gateDag
     ? Boolean(prPrepare && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
@@ -288,7 +313,9 @@ async function buildExecutionState(repoRoot, options = {}) {
       ? unresolvedGates.length > 0 && blockingGates.length === 0
       : gateStatus?.execution_gate?.status === 'waiver_required'
   );
-  const completionStatus = prCreated
+  const completionStatus = merged
+    ? 'merged'
+    : prCreated
     ? 'pr_created'
     : readyForPrCreate
       ? 'ready_for_pr_create'
@@ -299,7 +326,9 @@ async function buildExecutionState(repoRoot, options = {}) {
       : prPrepare
         ? 'blocked'
         : 'not_prepared';
-  const currentPhase = prCreated
+  const currentPhase = merged
+    ? 'complete'
+    : prCreated
     ? 'complete'
     : readyForPrCreate
       ? 'create_pr'
@@ -317,7 +346,9 @@ async function buildExecutionState(repoRoot, options = {}) {
     verificationEvidence,
     agentReview,
     readyForPrCreate,
-    prCreated
+    prCreated,
+    merged,
+    prMerge
   });
   const requiredCommands = buildManagedWorktreeCommands({
     pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
@@ -334,7 +365,8 @@ async function buildExecutionState(repoRoot, options = {}) {
     blockingGate,
     waiverRequired,
     readyForPrCreate,
-    prCreated
+    prCreated,
+    merged
   });
   return {
     schema_version: SCHEMA_VERSION,
@@ -349,7 +381,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     next_actions: nextActions,
     required_commands: requiredCommands,
     managed_worktree: managedWorktree,
-    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha }),
+    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha, prMerge }),
     last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
@@ -368,7 +400,7 @@ async function resolveExecutionExpectedHead(root, managedWorktree, currentHeadSh
   return currentHeadSha;
 }
 
-function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, readyForPrCreate, prCreated }) {
+function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, readyForPrCreate, prCreated, merged, prMerge }) {
   const phases = [];
   if (prPrepare) phases.push('prepare_pr');
   if ((verificationEvidence?.commands ?? []).length > 0) phases.push('verify');
@@ -377,16 +409,19 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, r
   }
   if (readyForPrCreate) phases.push('ready_for_pr_create');
   if (prCreated) phases.push('create_pr');
+  if (prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged') phases.push('merge_ready');
+  if (merged) phases.push('merge');
   return phases;
 }
 
-function deriveNextActions({ storyId, baseRef, managedWorktree, expectedHeadSha, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated }) {
+function deriveNextActions({ storyId, baseRef, managedWorktree, expectedHeadSha, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated, merged }) {
   const wrap = (command) => isManagedWorktreeCommandSafe(managedWorktree, { expectedHeadSha })
     ? `cd ${shellQuote(managedWorktree.path)} && ${command}`
     : command;
   const routeAction = (action) => routeActionThroughManagedWorktree(action, wrap);
   const wrapActions = (actions) => actions.map(routeAction);
-  if (prCreated) return [];
+  if (merged) return [];
+  if (prCreated) return [wrap(buildExecuteMergeCommand({ storyId, baseRef }))];
   if (!prPrepare && managedWorktree?.status === 'missing' && managedWorktree.mode !== 'disabled') {
     return [buildExecuteStartCommand({ storyId, baseRef })];
   }
@@ -785,6 +820,11 @@ function buildPrPrepareCommand({ storyId, baseRef }) {
 function buildPrCreateCommand({ storyId, baseRef }) {
   const base = baseRef ? ` --base ${shellQuote(baseRef)}` : ' --base <base-ref>';
   return `vibepro pr create . --story-id ${shellQuote(storyId)}${base}`;
+}
+
+function buildExecuteMergeCommand({ storyId, baseRef }) {
+  const base = baseRef ? ` --base ${shellQuote(baseRef)}` : ' --base <base-ref>';
+  return `vibepro execute merge . --story-id ${shellQuote(storyId)}${base}`;
 }
 
 function buildExecuteStartCommand({ storyId, baseRef }) {

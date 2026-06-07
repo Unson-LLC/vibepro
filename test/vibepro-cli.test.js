@@ -84,6 +84,62 @@ console.log(${JSON.stringify(JSON.stringify(pr))});
   return binDir;
 }
 
+async function makeFakeGhMerge(state) {
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-merge-bin-'));
+  const ghPath = path.join(binDir, 'gh');
+  const statePath = path.join(binDir, 'state.json');
+  await writeJson(statePath, state);
+  await writeFile(ghPath, `#!/usr/bin/env node
+const fs = require('node:fs');
+const statePath = ${JSON.stringify(statePath)};
+const args = process.argv.slice(2);
+const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+if (args[0] !== 'pr') {
+  process.stderr.write('unexpected gh command: ' + args.join(' '));
+  process.exit(1);
+}
+if (args[1] === 'view') {
+  const merged = state.merged === true;
+  const fieldsArg = args[args.indexOf('--json') + 1] || '';
+  if (fieldsArg.includes('mergedAt')) {
+    console.log(JSON.stringify({
+      url: state.url,
+      state: merged ? 'MERGED' : 'OPEN',
+      mergedAt: merged ? state.mergedAt : null,
+      mergeCommit: merged ? { oid: state.mergeCommit } : null
+    }));
+    process.exit(0);
+  }
+  console.log(JSON.stringify({
+    url: state.url,
+    state: merged ? 'MERGED' : 'OPEN',
+    isDraft: false,
+    mergeStateStatus: merged ? 'UNKNOWN' : state.mergeStateStatus,
+    reviewDecision: state.reviewDecision,
+    headRefName: state.headRefName,
+    headRefOid: state.headRefOid,
+    baseRefName: state.baseRefName,
+    statusCheckRollup: state.statusCheckRollup
+  }));
+  process.exit(0);
+}
+if (args[1] === 'merge') {
+  if (state.mergeExitCode && state.mergeExitCode !== 0) {
+    process.stderr.write(state.mergeStderr || 'merge failed');
+    process.exit(state.mergeExitCode);
+  }
+  state.merged = true;
+  fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\\n');
+  console.log(state.mergeStdout || 'merged');
+  process.exit(0);
+}
+process.stderr.write('unexpected gh command: ' + args.join(' '));
+process.exit(1);
+`);
+  await chmod(ghPath, 0o755);
+  return { binDir, statePath };
+}
+
 async function gitFingerprintHash(repo) {
   const [status, diff, untracked] = await Promise.all([
     git(repo, ['status', '--porcelain', '-uall']),
@@ -1345,6 +1401,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /workflow_heavy/);
   assert.match(output, /\.vibepro\/ の意味/);
   assert.match(output, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(output, /vibepro execute merge <repo> --story-id <id>/);
   assert.match(output, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(output, /vibepro design-system init \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
@@ -1383,6 +1440,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /risk-adaptive Gate DAG/);
   assert.match(englishOutput, /vibepro pr prepare <repo> --base <base-branch>/);
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
+  assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
   assert.match(englishOutput, /vibepro design-system init \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
@@ -7906,6 +7964,17 @@ test('required managed worktree guard covers review lifecycle, review record, ta
   ]);
   assert.equal(prCreate.exitCode, 1);
   assert.match(prCreate.stderr, /managed worktree required for pr create/);
+
+  const executeMerge = await runCliWithStdout([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--dry-run'
+  ]);
+  assert.equal(executeMerge.exitCode, 1);
+  assert.match(executeMerge.stderr, /managed worktree required for execute merge/);
 });
 
 test('required managed worktree copies VibePro control files and allows record commands inside the managed worktree', async () => {
@@ -8107,6 +8176,166 @@ test('required managed worktree backfills VibePro control files when reusing an 
     await pathExists(path.join(repo, '.vibepro', 'verification', 'managed-flow-sync', 'flow-verification.json')),
     true
   );
+});
+
+test('execute merge dry-run resolves PR metadata and records merge readiness artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    results: []
+  });
+  await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' },
+      { name: 'analyze', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CodeQL' }
+    ],
+    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
+    mergedAt: '2026-06-07T00:32:55Z'
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--dry-run',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.status, 'ready_to_merge');
+  assert.equal(result.result.merge.preconditions.base_freshness.status, 'passed');
+  assert.equal(result.result.merge.preconditions.remote_head_match.status, 'passed');
+  assert.equal(result.result.merge.preconditions.checks_ready.status, 'passed');
+  assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
+
+  const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(artifact.status, 'ready_to_merge');
+  assert.equal(artifact.dry_run, true);
+  const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
+  assert.match(html, /data-vibepro-report="pr-merge"/);
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
+});
+
+test('execute merge completes merge artifacts and execution state after a successful GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/124',
+    results: []
+  });
+  await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(next.exitCode, 0);
+  assert.match(next.result.next.next_actions[0], /vibepro execute merge/);
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/124',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
+    mergedAt: '2026-06-07T00:32:55Z'
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
+  assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
+
+  const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
+  assert.equal(executionState.completion_status, 'merged');
+  assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'passed');
+  assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
 });
 
 test('preferred managed worktree warning is recorded on non-PR evidence surfaces', async () => {
