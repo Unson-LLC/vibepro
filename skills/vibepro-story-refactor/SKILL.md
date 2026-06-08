@@ -43,6 +43,7 @@ Use this Skill when VibePro is driving a refactor. The goal is to find and fix c
    - rerun `vibepro pr prepare`.
    If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
 14. Use the review cockpit to decide whether to proceed, split, add evidence, waive with reason, or block.
+15. After `vibepro pr create`, use `vibepro execute merge <repo> --story-id <id>` to complete the standard VibePro path and capture merge-time evidence.
 
 ## Refactor Target Criteria
 
@@ -62,6 +63,7 @@ Prioritize candidates that VibePro surfaces as:
 - Do not mix repo-control changes, requirement SSOT recovery, runtime behavior, and E2E gate fixes unless the split-plan allows it.
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
 - Do not merge or create a PR unless `gate_status.ready_for_pr_create=true` and `gate_status.overall_status=ready_for_review`.
+- Do not use raw `gh pr merge` as the default merge path when VibePro-managed evidence is expected; use `vibepro execute merge` so merge-time checks and outcomes are recorded.
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not call a VibePro refactor complete while `gate:agent_review` is `needs_review`, `missing`, `stale`, `block`, or `failed`; complete the parallel subagent reviews first.
 - Do not satisfy Agent Review Gate with a manual `pass`. A passing review must include Codex or Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) so later audits can distinguish real subagent review from coordinator self-approval and closed review threads.
@@ -87,3 +89,4 @@ Before calling the work done:
 - `review-cockpit.html` has a clear recommended decision.
 - `human-review.json` can record the human decision.
 - `vibepro pr create` is the PR creation path.
+- `vibepro execute merge` is the merge path when the Story is actually being shipped.
