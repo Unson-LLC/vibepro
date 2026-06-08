@@ -17,6 +17,8 @@ function workflowProfile() {
         'blocker open question blocks readiness',
         'expanded agent review roles',
         'narrow changes avoid workflow-heavy',
+        'low-risk evidence reuse',
+        'head changed evidence remains stale',
         'tests pass'
       ]
     },
@@ -143,8 +145,40 @@ test('story-vibepro-risk-adaptive-gate-dag ac8 avoids overclassifying narrow cha
   assert.equal(docsOnly.profile, 'light');
 });
 
-test('story-vibepro-risk-adaptive-gate-dag ac9 keeps flow evidence bound and secret-redacted', () => {
+test('story-vibepro-risk-adaptive-gate-dag ac9 reuses low-risk evidence with audit status', () => {
   // story-vibepro-risk-adaptive-gate-dag ac:9
+  // Story/Spec/test markerだけの低リスク証跡変更は `low_risk_evidence_change` になり、同一HEADでdirty fingerprintだけ違う既存pass証跡を `reused_low_risk` として再利用できる
+  const classification = {
+    change_type: 'low_risk_evidence_change',
+    evidence_reuse_policy: { allowed: true, mode: 'path_scoped_low_risk_reuse' }
+  };
+  const reusedEvidence = {
+    status: 'pass',
+    binding: { status: 'reused_low_risk', reason: 'low-risk evidence change reused passing verification despite dirty fingerprint change' }
+  };
+  assert.equal(classification.change_type, 'low_risk_evidence_change');
+  assert.equal(classification.evidence_reuse_policy.allowed, true);
+  assert.equal(reusedEvidence.binding.status, 'reused_low_risk');
+});
+
+test('story-vibepro-risk-adaptive-gate-dag ac10 keeps head changed evidence stale', () => {
+  // story-vibepro-risk-adaptive-gate-dag ac:10
+  // Head SHAが変わった証跡や失敗証跡は低リスク変更でも再利用されず、staleとして止まる
+  const evidence = {
+    status: 'pass',
+    binding: { status: 'stale', reason: 'verification evidence was recorded for old head, current head is new head' }
+  };
+  const failedEvidence = {
+    status: 'fail',
+    binding: { status: 'stale', reason: 'verification evidence was recorded with a different dirty worktree fingerprint' }
+  };
+  assert.equal(evidence.binding.status, 'stale');
+  assert.match(evidence.binding.reason, /recorded for/);
+  assert.equal(failedEvidence.status, 'fail');
+});
+
+test('story-vibepro-risk-adaptive-gate-dag ac11 keeps flow evidence bound and secret-redacted', () => {
+  // story-vibepro-risk-adaptive-gate-dag ac:11
   // Flow Verificationはcurrent git bindingを持ち、既存の `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD` env利用をログ/成果物へ平文保存しない
   const flowEvidence = {
     binding: { status: 'current' },
@@ -155,8 +189,8 @@ test('story-vibepro-risk-adaptive-gate-dag ac9 keeps flow evidence bound and sec
   assert.ok('BASIC_AUTH_USER BASIC_AUTH_PASSWORD current git binding'.includes('BASIC_AUTH_PASSWORD'));
 });
 
-test('story-vibepro-risk-adaptive-gate-dag ac10 records test and typecheck evidence', () => {
-  // story-vibepro-risk-adaptive-gate-dag ac:10
+test('story-vibepro-risk-adaptive-gate-dag ac12 records test and typecheck evidence', () => {
+  // story-vibepro-risk-adaptive-gate-dag ac:12
   // `npm test` と `npm run typecheck` が通る
   const commands = ['npm test', 'npm run typecheck'];
   assert.ok(commands.includes('npm test'));

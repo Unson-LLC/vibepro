@@ -5562,7 +5562,8 @@ function buildGateDag({
     e2eCoverage,
     visualQaEvidence,
     verificationEvidence,
-    bugPhysicsTriage
+    bugPhysicsTriage,
+    changeClassification
   });
   const requirementGate = {
     id: 'gate:requirement',
@@ -5642,7 +5643,8 @@ function buildGateDag({
     git,
     verificationEvidence,
     agentReviews,
-    managedWorktreeContext
+    managedWorktreeContext,
+    changeClassification
   });
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const designQualityGate = designQualityEvidence ? {
@@ -6131,7 +6133,7 @@ function buildPrFreshnessGate(git) {
   };
 }
 
-function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null } = {}) {
+function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null } = {}) {
   const current = {
     head_sha: git?.head_sha ?? null,
     status_fingerprint_hash: fingerprintHashForContext(git),
@@ -6145,10 +6147,10 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
     } : null
   };
   const artifacts = [
-    ...collectVerificationArtifactBindings(verificationEvidence),
+    ...collectVerificationArtifactBindings(verificationEvidence, changeClassification),
     ...collectReviewArtifactBindings(agentReviews)
   ];
-  const inconsistent = artifacts.filter((artifact) => artifact.status !== 'current');
+  const inconsistent = artifacts.filter((artifact) => !isArtifactBindingAccepted(artifact.status));
   const status = inconsistent.length === 0 ? 'passed' : 'stale_evidence';
   return {
     id: 'gate:artifact_consistency',
@@ -6174,10 +6176,16 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
   };
 }
 
-function collectVerificationArtifactBindings(verificationEvidence = null) {
+function collectVerificationArtifactBindings(verificationEvidence = null, changeClassification = null) {
   const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   return commands.map((command) => {
     const bindingStatus = command.binding?.status ?? (command.git_context?.head_sha ? 'unknown' : 'legacy');
+    const reusableLowRisk = canReuseLowRiskEvidence(command, changeClassification);
+    const status = bindingStatus === 'current'
+      ? 'current'
+      : reusableLowRisk
+        ? 'reused_low_risk'
+        : bindingStatus;
     return {
       artifact_type: 'verification_command',
       kind: command.kind ?? null,
@@ -6185,12 +6193,19 @@ function collectVerificationArtifactBindings(verificationEvidence = null) {
       artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
       recorded_status_fingerprint_hash: fingerprintHashForContext(command.git_context),
-      status: bindingStatus === 'current' ? 'current' : bindingStatus,
-      reason: command.binding?.reason ?? (bindingStatus === 'legacy'
+      status,
+      reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
+      reason: reusableLowRisk
+        ? `low-risk evidence change reused passing verification despite dirty fingerprint change: ${command.binding?.reason ?? 'dirty worktree fingerprint changed'}`
+        : command.binding?.reason ?? (bindingStatus === 'legacy'
         ? 'verification evidence is not bound to a git head'
         : 'verification evidence binding could not be proven current')
     };
   });
+}
+
+function isArtifactBindingAccepted(status) {
+  return status === 'current' || status === 'reused_low_risk';
 }
 
 function collectReviewArtifactBindings(agentReviews = null) {
@@ -6933,7 +6948,7 @@ function verificationCommandHasNetworkContractScope(item) {
   return /network[-_\s]?aware|network contract|route contract|api route|\/api\//.test(text);
 }
 
-function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence, bugPhysicsTriage = null }) {
+function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, flowVerification, e2eCoverage, visualQaEvidence, verificationEvidence, bugPhysicsTriage = null, changeClassification = null }) {
   const unitCommand = verificationCommands.find((item) => item.kind === 'unit' || item.command.startsWith('npm test')) ?? null;
   const typecheckCommand = verificationCommands.find((item) => item.kind === 'typecheck' || /\b(type-?check|tsc)\b/.test(item.command)) ?? null;
   const gateOverride = buildBugPhysicsVerificationGateOverride(bugPhysicsTriage);
@@ -6980,7 +6995,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
       acceptance_e2e_coverage: gateE2eCoverage,
       artifact_expectation: e2eRequired ? '.vibepro/verification/<run-id>/ にPlaywright CLIのログとスクリーンショットを残す' : null
     }
-  ].map((gate) => applyVerificationEvidence(gate, verificationEvidence));
+  ].map((gate) => applyVerificationEvidence(gate, verificationEvidence, { changeClassification }));
 }
 
 function buildBugPhysicsVerificationGateOverride(triage) {
@@ -7068,9 +7083,9 @@ function hasUiExperienceSourceChange(fileGroups) {
   });
 }
 
-function applyVerificationEvidence(gate, verificationEvidence) {
+function applyVerificationEvidence(gate, verificationEvidence, options = {}) {
   if (gate.skip_evidence_binding) return gate;
-  const evidence = findVerificationEvidenceForGate(gate, verificationEvidence);
+  const evidence = findVerificationEvidenceForGate(gate, verificationEvidence, options);
   if (!evidence) return gate;
   const evidenceStatus = normalizeVerificationEvidenceStatus(evidence.status);
   const artifact = evidence.artifact ?? verificationEvidence?.artifact ?? null;
@@ -7101,7 +7116,7 @@ function applyVerificationEvidence(gate, verificationEvidence) {
   };
 }
 
-function findVerificationEvidenceForGate(gate, verificationEvidence) {
+function findVerificationEvidenceForGate(gate, verificationEvidence, options = {}) {
   const items = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   if (items.length === 0) return null;
   const kindMap = {
@@ -7118,6 +7133,17 @@ function findVerificationEvidenceForGate(gate, verificationEvidence) {
       ?? currentMatches.find((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status))
       ?? currentMatches[0];
   }
+  const reusableLowRisk = matches.find((item) => canReuseLowRiskEvidence(item, options.changeClassification));
+  if (reusableLowRisk) {
+    return {
+      ...reusableLowRisk,
+      binding: {
+        ...reusableLowRisk.binding,
+        status: 'reused_low_risk',
+        reason: `low-risk evidence change reused passing verification despite dirty fingerprint change: ${reusableLowRisk.binding?.reason ?? 'dirty worktree fingerprint changed'}`
+      }
+    };
+  }
   const stale = matches[0];
   return {
     kind: stale.kind,
@@ -7131,6 +7157,14 @@ function findVerificationEvidenceForGate(gate, verificationEvidence) {
       reason: 'legacy verification evidence is not bound to a git head'
     }
   };
+}
+
+function canReuseLowRiskEvidence(item, changeClassification = null) {
+  if (changeClassification?.change_type !== 'low_risk_evidence_change') return false;
+  if (changeClassification?.evidence_reuse_policy?.allowed !== true) return false;
+  if (!['pass', 'passed', 'success', 'ok'].includes(item?.status)) return false;
+  if (item?.binding?.status !== 'stale') return false;
+  return /dirty worktree fingerprint/i.test(item.binding?.reason ?? '');
 }
 
 function normalizeVerificationEvidenceStatus(status) {
