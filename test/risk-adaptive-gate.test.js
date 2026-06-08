@@ -230,6 +230,37 @@ test('change classifier avoids workflow_heavy for narrow changes', () => {
   }).profile, 'ui_interaction');
 });
 
+test('change classifier marks Story Spec and test marker edits as low-risk evidence changes', () => {
+  const docsOnly = classifyChangeRisk({
+    fileGroups: {
+      source: { files: [] },
+      tests: { files: [] },
+      story_docs: { files: ['docs/management/stories/active/story-risk-adaptive.md'] },
+      specifications: { files: ['docs/specs/story-risk-adaptive.md'] }
+    },
+    storySource: {
+      title: 'Risk-adaptive Gate DAG',
+      background: 'Docs and Spec coverage are being clarified after existing runtime verification passed.'
+    }
+  });
+  assert.equal(docsOnly.profile, 'light');
+  assert.equal(docsOnly.change_type, 'low_risk_evidence_change');
+  assert.equal(docsOnly.evidence_reuse_policy.allowed, true);
+  assert.equal(docsOnly.evidence_reuse_policy.docs_only, true);
+
+  const markerOnly = classifyChangeRisk({
+    fileGroups: {
+      source: { files: [] },
+      tests: { files: ['test/e2e/story-risk-adaptive-main.spec.ts'] },
+      story_docs: { files: [] },
+      specifications: { files: [] }
+    },
+    storySource: { title: 'Add AC marker coverage' }
+  });
+  assert.equal(markerOnly.change_type, 'low_risk_evidence_change');
+  assert.deepEqual(markerOnly.evidence_reuse_policy.rerun_required_for, ['test/e2e/story-risk-adaptive-main.spec.ts']);
+});
+
 test('bug physics triage requires probe evidence before selecting a timing gate profile', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -261,6 +292,88 @@ Session switching is intermittent and looks like a race condition with async orp
   assert.equal(triage.status, 'needs_evidence');
   assert.deepEqual(triage.classes, ['timing']);
   assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
+});
+
+test('pr prepare reuses same-head passing verification for low-risk evidence changes only', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Risk Adaptive Gate
+spec_docs:
+  - ../../../specs/story-risk-adaptive.md
+architecture_docs:
+  reason: existing gate policy only
+---
+
+# Risk Adaptive Gate
+
+## 受け入れ基準
+
+- [ ] Low-risk evidence edits can reuse current-head verification.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Risk Adaptive Gate Spec
+---
+
+# Spec
+
+## Invariants
+
+- INV-001: Low-risk evidence edits do not change runtime behavior.
+`);
+  await git(repo, ['add', 'docs']);
+  await git(repo, ['commit', '-m', 'docs: add risk adaptive sources']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E passed before Spec wording clarification'
+  ])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Risk Adaptive Gate Spec
+---
+
+# Spec
+
+## Invariants
+
+- INV-001: Low-risk evidence edits do not change runtime behavior.
+
+## Verification
+
+- Existing same-head runtime evidence can be reused when only the Spec wording changes.
+`);
+
+  const dirtyResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'HEAD', '--json']);
+  assert.equal(dirtyResult.exitCode, 0);
+  const dirtyContext = dirtyResult.result.preparation.pr_context;
+  assert.equal(dirtyContext.change_classification.change_type, 'low_risk_evidence_change');
+  const dirtyE2eGate = dirtyContext.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(dirtyE2eGate.status, 'passed');
+  assert.equal(dirtyE2eGate.evidence.binding.status, 'reused_low_risk');
+  const dirtyArtifactGate = dirtyContext.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(dirtyArtifactGate.status, 'passed');
+  assert.equal(dirtyArtifactGate.artifacts[0].status, 'reused_low_risk');
+
+  await git(repo, ['add', 'docs/specs/story-risk-adaptive.md']);
+  await git(repo, ['commit', '-m', 'docs: clarify risk evidence reuse']);
+
+  const headChangedResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'HEAD~1', '--json']);
+  assert.equal(headChangedResult.exitCode, 0);
+  const headChangedContext = headChangedResult.result.preparation.pr_context;
+  assert.equal(headChangedContext.change_classification.change_type, 'low_risk_evidence_change');
+  const staleArtifactGate = headChangedContext.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(staleArtifactGate.status, 'stale_evidence');
+  assert.equal(staleArtifactGate.inconsistent_artifacts[0].status, 'stale');
+  assert.match(staleArtifactGate.inconsistent_artifacts[0].reason, /recorded for/);
 });
 
 test('worktree feature stories do not trigger deployment bug physics without deployment evidence', async () => {
