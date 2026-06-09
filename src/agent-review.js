@@ -1612,9 +1612,12 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const roles = [];
+  const preparedStageRoles = await readPreparedStageRoles(reviewDir);
   const stageRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
     ? summaryRoles
-    : getStageRoles(reviewPolicy, stage);
+    : preparedStageRoles.length > 0
+      ? preparedStageRoles
+      : getStageRoles(reviewPolicy, stage);
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
   for (const role of stageRoles) {
@@ -1679,6 +1682,13 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       prepare_command: buildReviewPrepareCommand({ storyId, stage, roles: stageRoles })
     }
   };
+}
+
+async function readPreparedStageRoles(reviewDir) {
+  const plan = await readJsonIfExists(path.join(reviewDir, 'review-plan.json'));
+  const roles = Array.isArray(plan?.roles) ? plan.roles : plan?.review_policy?.roles;
+  if (!Array.isArray(roles)) return [];
+  return [...new Set(roles.map((role) => String(role).trim()).filter(Boolean))];
 }
 
 async function pathExists(filePath) {

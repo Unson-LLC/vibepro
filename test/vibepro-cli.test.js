@@ -234,7 +234,16 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
 }
 
 async function recordAgentReviewStage(repo, storyId, stage, roles) {
-  await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', stage]);
+  await runCli([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    storyId,
+    '--stage',
+    stage,
+    ...roles.flatMap((role) => ['--role', role])
+  ]);
   for (const role of roles) {
     const result = await runCli([
       'review',
@@ -9654,6 +9663,11 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   assert.equal(archStage.status, 'pass');
   assert.equal(archStage.dispatch_state, 'complete');
   assert.equal(testPlanStage.dispatch_state, 'current');
+  const architectureSummary = result.result.preparation.pr_context.agent_reviews.stages.find((stage) => stage.stage === 'architecture_spec');
+  assert.equal(architectureSummary.status, 'pass');
+  assert.deepEqual(architectureSummary.roles.map((role) => role.role), ['regression_risk']);
+  assert.equal(architectureSummary.next_actions.some((action) => action.includes('architecture_boundary')), false);
+  assert.equal(architectureSummary.next_actions.some((action) => action.includes('spec_consistency')), false);
   const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   assert.equal(agentGate.required_actions.some((action) => action.includes('--stage test_plan')), true);
   assert.equal(agentGate.required_actions.some((action) => action.includes('--stage architecture_spec')), false);
