@@ -8828,6 +8828,28 @@ architecture_docs:
   assert.equal(preflightResult.result.state.blocking_gate.id, 'review:preflight:gate:gate_evidence');
   assert.equal(preflightResult.result.state.completion_status, 'blocked');
   assert.deepEqual(preflightResult.result.state.next_actions, ['stale review preflight blocks dispatch']);
+
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'gate:judgment_agent_workflow_evidence_lifecycle',
+        type: 'agent_evidence_lifecycle_gate',
+        label: 'Evidence Lifecycle Gate',
+        required: true,
+        status: 'needs_evidence',
+        reason: 'Agent workflow route requires current-bound recorded agent review evidence'
+      }
+    ]
+  }, null, 2)}\n`);
+  const lifecycleResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(lifecycleResult.exitCode, 0);
+  assert.equal(lifecycleResult.result.state.blocking_gate, null);
+  assert.equal(lifecycleResult.result.state.completion_status, 'waiver_required');
+  assert.equal(lifecycleResult.result.state.completed_phases.includes('ready_for_pr_create'), false);
+  assert.equal(
+    lifecycleResult.result.state.next_actions.some((action) => action.includes('current-bound recorded agent review evidence')),
+    true
+  );
 });
 
 test('execute state treats route contract gates as PR blockers', async () => {
