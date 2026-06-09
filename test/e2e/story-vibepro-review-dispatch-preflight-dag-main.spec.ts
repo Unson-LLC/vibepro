@@ -99,7 +99,7 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
 
   const nodeIds = gateDag.nodes.map((node: { id: string }) => node.id);
   // story-vibepro-review-dispatch-preflight-dag ac:1
-  // Gate DAG contains a stage-level agent_review_dispatch_batch_gate before review prepare.
+  // Gate DAG contains a stage-level `agent_review_dispatch_batch_gate` before `review:prepare:<stage>`.
   assert.deepEqual(
     prPrepare.git.changed_files.map((file: { path: string }) => file.path).sort(),
     ['src/agent-review.js', 'src/pr-manager.js']
