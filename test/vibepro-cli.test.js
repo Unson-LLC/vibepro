@@ -6815,40 +6815,52 @@ test('review lifecycle preserves concurrent stage starts', async () => {
   const repo = await makeGitRepoWithStory();
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk']);
 
-  const [evidence, release] = await Promise.all([
-    runCli([
-      'review',
-      'start',
-      repo,
-      '--id',
-      'story-pr-prepare',
-      '--stage',
-      'gate',
-      '--role',
-      'gate_evidence',
-      '--agent-system',
-      'codex',
-      '--agent-id',
-      'agent-evidence',
-      '--json'
-    ]),
-    runCli([
-      'review',
-      'start',
-      repo,
-      '--id',
-      'story-pr-prepare',
-      '--stage',
-      'gate',
-      '--role',
-      'release_risk',
-      '--agent-system',
-      'codex',
-      '--agent-id',
-      'agent-release',
-      '--json'
-    ])
-  ]);
+  const previousDelay = process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
+  process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = '50';
+  let evidence;
+  let release;
+  try {
+    [evidence, release] = await Promise.all([
+      runCli([
+        'review',
+        'start',
+        repo,
+        '--id',
+        'story-pr-prepare',
+        '--stage',
+        'gate',
+        '--role',
+        'gate_evidence',
+        '--agent-system',
+        'codex',
+        '--agent-id',
+        'agent-evidence',
+        '--json'
+      ]),
+      runCli([
+        'review',
+        'start',
+        repo,
+        '--id',
+        'story-pr-prepare',
+        '--stage',
+        'gate',
+        '--role',
+        'release_risk',
+        '--agent-system',
+        'codex',
+        '--agent-id',
+        'agent-release',
+        '--json'
+      ])
+    ]);
+  } finally {
+    if (previousDelay === undefined) {
+      delete process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS;
+    } else {
+      process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS = previousDelay;
+    }
+  }
 
   assert.equal(evidence.exitCode, 0);
   assert.equal(release.exitCode, 0);

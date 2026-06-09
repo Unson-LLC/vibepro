@@ -2161,7 +2161,11 @@ async function updateLifecycle(repoRoot, storyId, stage, updater, afterWrite = n
     const lifecycle = await readLifecycle(repoRoot, storyId, stage);
     await updater(lifecycle);
     await writeLifecycle(repoRoot, storyId, stage, lifecycle);
-    if (afterWrite) await afterWrite(lifecycle);
+    if (afterWrite) {
+      const testDelayMs = Number(process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS ?? 0);
+      if (Number.isFinite(testDelayMs) && testDelayMs > 0) await sleep(testDelayMs);
+      await afterWrite(lifecycle);
+    }
   });
 }
 
