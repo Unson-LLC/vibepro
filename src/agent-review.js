@@ -621,6 +621,7 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
     prepare_command: buildReviewPrepareCommand({ storyId, stage: requirement.stage, roles: [requirement.role] }),
     record_command: buildReviewRecordCommand({ storyId, stage: requirement.stage, role: requirement.role }),
     artifact: role?.artifact ?? null,
+    history_artifacts: role?.history_artifacts ?? [],
     lifecycle: role?.lifecycle ?? null
   };
 }
@@ -832,6 +833,7 @@ export function renderAgentReviewRecordSummary(result) {
   const warnings = result.review.warnings?.length
     ? result.review.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
     : '- none';
+  const historyArtifact = result.history_artifact ?? '-';
   return `# Agent Review Record
 
 - story: ${result.review.story_id}
@@ -840,6 +842,7 @@ export function renderAgentReviewRecordSummary(result) {
 - status: ${result.review.status}
 - agent provenance: ${result.review.agent_provenance.system}/${result.review.agent_provenance.execution_mode}/${result.review.agent_provenance.evidence_strength}
 - artifact: ${result.artifact}
+- history artifact: ${historyArtifact}
 
 ## Warnings
 
@@ -884,7 +887,7 @@ export function renderAgentReviewStatusSummary(status) {
     : '- none';
   const requiredRows = status.required_current?.length
     ? status.required_current.map((item) => (
-        `- ${item.stage}:${item.role} (${item.effective_status})${item.blocking ? ' blocking' : ''}`
+        `- ${item.stage}:${item.role} (${item.effective_status})${item.blocking ? ' blocking' : ''} / artifact: ${item.artifact ?? '-'}${formatHistoryArtifactSuffix(item.history_artifacts)}`
       )).join('\n')
     : '- none';
   const optionalRows = status.display?.includes_optional
@@ -897,7 +900,7 @@ export function renderAgentReviewStatusSummary(status) {
         ? status.history.slice(0, 30).map((item) => (
             item.kind === 'lifecycle'
               ? `- lifecycle ${item.stage}:${item.role} ${item.status} ${item.agent_id ?? item.lifecycle_id ?? ''}`.trim()
-              : `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.history_reason ?? 'history'}`
+              : `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.history_reason ?? 'history'} / artifact: ${item.artifact ?? '-'}${formatHistoryArtifactSuffix(item.history_artifacts)}`
           )).join('\n')
         : '- none')
     : '- hidden (use --history or --all)';
@@ -959,6 +962,11 @@ export function renderAgentReviewPrSection(agentReviews) {
   const stageRows = stages.map((stage) => (
     `- ${stage.stage}: ${stage.status} / stale=${stage.stale_count} / block=${stage.block_count}`
   ));
+  const artifactRows = stages.flatMap((stage) => (stage.roles ?? [])
+    .filter((role) => role.artifact || role.history_artifacts?.length)
+    .map((role) => (
+      `- ${stage.stage}:${role.role} (${role.effective_status}) artifact: ${role.artifact ?? '-'}${formatHistoryArtifactSuffix(role.history_artifacts)}`
+    )));
   return [
     `- status: ${agentReviews.status}`,
     `- required reviews: ${agentReviews.summary?.required_review_count ?? 0}`,
@@ -969,8 +977,17 @@ export function renderAgentReviewPrSection(agentReviews) {
     unmetRows.join('\n') || '- PR-final roles passed or not required',
     checkpointRows.join('\n') || '- checkpoint roles passed or not required',
     '### Stage Summary',
-    stageRows.join('\n') || '- no review stages recorded'
+    stageRows.join('\n') || '- no review stages recorded',
+    '### Review Artifacts',
+    artifactRows.slice(0, 20).join('\n') || '- no review artifacts recorded'
   ].join('\n');
+}
+
+function formatHistoryArtifactSuffix(historyArtifacts) {
+  if (!Array.isArray(historyArtifacts) || historyArtifacts.length === 0) return '';
+  const shown = historyArtifacts.slice(0, 3).join(', ');
+  const more = historyArtifacts.length > 3 ? ` (+${historyArtifacts.length - 3} more)` : '';
+  return ` / history: ${shown}${more}`;
 }
 
 async function readAgentReviewPolicy(repoRoot) {

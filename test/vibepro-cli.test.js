@@ -7080,7 +7080,7 @@ test('review record keeps append-only history for replaced review findings', asy
   assert.equal(needsChanges.exitCode, 0);
   assert.match(needsChanges.result.history_artifact, /history\/review-result-regression_risk-/);
 
-  const pass = await runCli([
+  const pass = await runCliWithStdout([
     'review',
     'record',
     repo,
@@ -7108,6 +7108,7 @@ test('review record keeps append-only history for replaced review findings', asy
   ]);
   assert.equal(pass.exitCode, 0);
   assert.match(pass.result.history_artifact, /history\/review-result-regression_risk-/);
+  assert.match(pass.stdout, /history artifact: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
 
   const latest = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'architecture_spec', 'review-result-regression_risk.json'));
   assert.equal(latest.status, 'pass');
@@ -7118,6 +7119,11 @@ test('review record keeps append-only history for replaced review findings', asy
   const historyResults = await Promise.all(role.history_artifacts.map((artifact) => readJson(path.join(repo, artifact))));
   assert.equal(historyResults.some((result) => result.status === 'needs_changes' && result.findings[0]?.id === 'history-gap'), true);
   assert.equal(historyResults.some((result) => result.status === 'pass'), true);
+
+  const statusText = await runCliWithStdout(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'architecture_spec', '--history']);
+  assert.equal(statusText.exitCode, 0);
+  assert.match(statusText.stdout, /artifact: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/review-result-regression_risk\.json/);
+  assert.match(statusText.stdout, /history: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
 });
 
 test('review pass requires verified subagent or explicit manual review provenance', async () => {
