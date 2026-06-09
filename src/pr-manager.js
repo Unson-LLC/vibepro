@@ -858,6 +858,16 @@ function buildReviewPrepareCommand(storyId, stage, roles = []) {
   return args.join(' ');
 }
 
+function isAgentReviewInternalGate(gate) {
+  return gate?.type === 'agent_review_gate'
+    || gate?.type === 'agent_review_dispatch_batch_gate'
+    || gate?.type === 'agent_review_dispatch_preflight_gate'
+    || gate?.type === 'agent_review_prepare_gate'
+    || gate?.type === 'agent_review_role_gate'
+    || gate?.type === 'agent_review_record_gate'
+    || gate?.type === 'agent_review_stage_join_gate';
+}
+
 function buildShipHumanJudgments(gateStatus) {
   const judgments = [];
   const agentActions = buildAgentReviewShipActions(gateStatus);
@@ -869,7 +879,7 @@ function buildShipHumanJudgments(gateStatus) {
   }
   const critical = gateStatus?.critical_unresolved_gates ?? [];
   for (const gate of critical) {
-    if (gate.type === 'agent_review_gate' || gate.type === 'agent_review_dispatch_batch_gate' || gate.type === 'agent_review_dispatch_preflight_gate' || gate.type === 'agent_review_prepare_gate' || gate.type === 'agent_review_role_gate' || gate.type === 'agent_review_record_gate' || gate.type === 'agent_review_stage_join_gate') continue;
+    if (isAgentReviewInternalGate(gate)) continue;
     judgments.push({
       kind: 'critical_gate',
       gate_id: gate.id,
@@ -877,7 +887,7 @@ function buildShipHumanJudgments(gateStatus) {
     });
   }
   const unresolved = gateStatus?.unresolved_gates ?? [];
-  const nonCritical = unresolved.filter((gate) => !(critical ?? []).some((criticalGate) => criticalGate.id === gate.id));
+  const nonCritical = unresolved.filter((gate) => !isAgentReviewInternalGate(gate) && !(critical ?? []).some((criticalGate) => criticalGate.id === gate.id));
   if (nonCritical.length > 0) {
     judgments.push({
       kind: 'waiver_or_evidence',

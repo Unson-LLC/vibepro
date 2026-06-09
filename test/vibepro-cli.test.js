@@ -9339,6 +9339,25 @@ architecture_docs:
     assert.doesNotMatch(judgmentText, /review:record:gate:gate_evidence/);
     assert.doesNotMatch(judgmentText, /review:join:gate/);
     assert.equal(ship.human_judgments_required.some((judgment) => judgment.kind === 'subagent_dispatch'), true);
+    const prepareArtifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+    const isInternalReviewGate = (gate) => [
+      'agent_review_gate',
+      'agent_review_dispatch_batch_gate',
+      'agent_review_dispatch_preflight_gate',
+      'agent_review_prepare_gate',
+      'agent_review_role_gate',
+      'agent_review_record_gate',
+      'agent_review_stage_join_gate'
+    ].includes(gate.type);
+    const criticalIds = new Set(prepareArtifact.gate_status.critical_unresolved_gates.map((gate) => gate.id));
+    const nonCriticalNonReviewCount = prepareArtifact.gate_status.unresolved_gates
+      .filter((gate) => !criticalIds.has(gate.id) && !isInternalReviewGate(gate)).length;
+    const waiverJudgment = ship.human_judgments_required.find((judgment) => judgment.kind === 'waiver_or_evidence');
+    if (nonCriticalNonReviewCount > 0) {
+      assert.match(waiverJudgment.reason, new RegExp(`${nonCriticalNonReviewCount} non-critical unresolved gate`));
+    } else {
+      assert.equal(waiverJudgment, undefined);
+    }
   };
 
   await assertRecordedBlocker('block');
