@@ -6758,6 +6758,44 @@ test('review status and summary tell operators to close running subagents before
   assert.match(reviewSummary, /vibepro review close/);
 });
 
+test('review status orders running close commands before stale record commands', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--role', 'e2e_ux', '--role', 'gate_coverage']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage']);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'mixed-review-order.js'), 'export const changed = true;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: stale one role while another runs']);
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--role', 'e2e_ux', '--role', 'gate_coverage']);
+  await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'test_plan',
+    '--role',
+    'gate_coverage',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-running-mixed',
+    '--json'
+  ]);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan', '--json']);
+  assert.equal(status.exitCode, 0);
+  const closeIndex = status.result.blocking_summary.next_commands.findIndex((command) => command.includes('vibepro review close') && command.includes('agent-running-mixed'));
+  const recordIndex = status.result.blocking_summary.next_commands.findIndex((command) => command.includes('vibepro review record'));
+  assert.equal(closeIndex >= 0, true);
+  assert.equal(recordIndex >= 0, true);
+  assert.equal(closeIndex < recordIndex, true);
+
+  const statusText = await runCliWithStdout(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'test_plan']);
+  assert.equal(statusText.stdout.indexOf('vibepro review close') < statusText.stdout.indexOf('vibepro review record'), true);
+});
+
 test('review policy config customizes stage roles and role timeout', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');

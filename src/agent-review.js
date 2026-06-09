@@ -676,22 +676,29 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
 }
 
 function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare, prPrepareFreshness, stageLookup }) {
-  const commands = [];
+  const closeCommands = [];
+  const recordCommands = [];
+  const prepareCommands = [];
   for (const item of blockingItems) {
     const stage = stageLookup.get(item.stage);
-    if (!stage?.parallel_dispatch?.prepared) commands.push(item.prepare_command);
+    if (!stage?.parallel_dispatch?.prepared) prepareCommands.push(item.prepare_command);
     if (item.lifecycle?.effective_status === 'running') {
       const latest = item.lifecycle.latest;
       const selector = latest?.agent_id
         ? `--agent-id "${latest.agent_id}"`
         : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`;
-      commands.push(`vibepro review close . --id ${storyId} --stage ${item.stage} --role ${item.role} ${selector} --close-reason completed --close-evidence <evidence>`);
+      closeCommands.push(`vibepro review close . --id ${storyId} --stage ${item.stage} --role ${item.role} ${selector} --close-reason completed --close-evidence <evidence>`);
     } else if (item.effective_status !== 'running') {
-      commands.push(item.record_command);
+      recordCommands.push(item.record_command);
     }
   }
   const baseRef = prPrepareFreshness?.base_ref ?? latestPrPrepare?.git?.base_ref ?? '<base-ref>';
   const prPrepareCommand = `vibepro pr prepare . --story-id ${storyId} --base ${baseRef}`;
+  const commands = [
+    ...closeCommands,
+    ...prepareCommands,
+    ...recordCommands
+  ];
   commands.push(prPrepareCommand);
   const uniqueCommands = [...new Set(commands)];
   const nextCommands = uniqueCommands.slice(0, 3);
