@@ -9216,6 +9216,7 @@ architecture_docs:
   assert.equal(manualShutdownPreflight.status, 'needs_review');
   assert.equal(manualShutdownPreflight.preflight_kind, 'lifecycle_recovery');
   assert.match(manualShutdownPreflight.reason, /manual_shutdown/);
+  assert.equal(manualShutdownResult.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'review:preflight:gate:gate_evidence'), true);
 
   const unverifiedRepo = await makePreparedReviewRepo();
   await runCli(['review', 'prepare', unverifiedRepo, '--id', 'story-pr-prepare', '--stage', 'gate']);

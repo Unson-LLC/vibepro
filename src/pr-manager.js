@@ -7915,6 +7915,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       'workflow_heavy_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
+      'agent_review_dispatch_batch_gate',
+      'agent_review_dispatch_preflight_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',
