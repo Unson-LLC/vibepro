@@ -6668,6 +6668,42 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   const replacementEntry = lifecycle.entries.find((entry) => entry.agent_id === 'agent-replacement');
   assert.equal(replacementEntry.status, 'closed');
   assert.equal(replacementEntry.close_reason, 'completed');
+
+  await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-manual-stop'
+  ]);
+  const manualClose = await runCli([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-id',
+    'agent-manual-stop',
+    '--close-reason',
+    'manual_shutdown',
+    '--json'
+  ]);
+  assert.equal(manualClose.exitCode, 0);
+  assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
+  const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
 });
 
 test('review policy config customizes stage roles and role timeout', async () => {
@@ -8972,6 +9008,8 @@ architecture_docs:
   assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.checkpoint_required_review_count, 0);
   assert.equal(missingResult.result.preparation.pr_context.agent_reviews.summary.unmet_checkpoint_review_count, 0);
   const missingDag = missingResult.result.preparation.pr_context.gate_dag;
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:dispatch_batch:gate' && node.type === 'agent_review_dispatch_batch_gate'), true);
+  assert.equal(missingDag.nodes.some((node) => node.id === 'review:preflight:gate:gate_evidence' && node.type === 'agent_review_dispatch_preflight_gate' && node.preflight_kind === 'ready_for_dispatch'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:gate' && node.type === 'agent_review_prepare_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:gate:gate_evidence' && node.type === 'agent_review_role_gate'), true);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:record:gate:gate_evidence' && node.type === 'agent_review_record_gate'), true);
@@ -8980,6 +9018,9 @@ architecture_docs:
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:planning_spec'), false);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:test_plan'), false);
   assert.equal(missingDag.nodes.some((node) => node.id === 'review:prepare:implementation'), false);
+  assert.equal(missingDag.edges.some((edge) => edge.to === 'review:dispatch_batch:gate'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:dispatch_batch:gate' && edge.to === 'review:preflight:gate:gate_evidence'), true);
+  assert.equal(missingDag.edges.some((edge) => edge.from === 'review:preflight:gate:gate_evidence' && edge.to === 'review:prepare:gate'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:prepare:gate' && edge.to === 'review:gate:gate_evidence'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:gate:gate_evidence' && edge.to === 'review:record:gate:gate_evidence'), true);
   assert.equal(missingDag.edges.some((edge) => edge.from === 'review:record:gate:gate_evidence' && edge.to === 'review:join:gate'), true);
@@ -8990,6 +9031,8 @@ architecture_docs:
   assert.equal(missingResult.result.preparation.gate_status.agent_review_runner_policy_may_require_user_delegation, false);
   assert.equal(missingResult.result.preparation.gate_status.next_required_actions.some((action) => action.includes('vibepro review prepare')), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  assert.match(gateDagHtml, /data-node-id="review:dispatch_batch:gate"/);
+  assert.match(gateDagHtml, /data-node-id="review:preflight:gate:gate_evidence"/);
   assert.match(gateDagHtml, /data-node-id="review:prepare:gate"/);
   assert.match(gateDagHtml, /data-node-id="review:gate:gate_evidence"/);
   assert.match(gateDagHtml, /data-node-id="review:record:gate:gate_evidence"/);
@@ -9019,6 +9062,8 @@ architecture_docs:
   const passedDag = passedResult.result.preparation.pr_context.gate_dag;
   assert.equal(passedGate.status, 'passed');
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:prepare:gate').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:dispatch_batch:gate').status, 'passed');
+  assert.equal(passedDag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence').preflight_kind, 'dedupe_current_pass');
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:gate:gate_evidence').status, 'passed');
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence').status, 'passed');
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:join:gate').status, 'passed');
@@ -9029,6 +9074,11 @@ architecture_docs:
 
   await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
   const staleResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const staleBatchNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:dispatch_batch:gate');
+  assert.equal(staleBatchNode.status, 'failed');
+  const stalePreflightNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(stalePreflightNode.status, 'failed');
+  assert.equal(stalePreflightNode.preflight_kind, 'git_stability');
   const staleRoleNode = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:gate:gate_evidence');
   assert.equal(staleRoleNode.status, 'stale');
   assert.match(staleRoleNode.reason, /review was recorded for|dirty worktree fingerprint/);
@@ -9079,6 +9129,11 @@ architecture_docs:
   const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   assert.equal(agentGate.status, 'needs_review');
   assert.equal(agentGate.required_actions.some((action) => action.includes('agent-stuck-after-pass')), true);
+  const batchNode = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:dispatch_batch:gate');
+  assert.equal(batchNode.status, 'failed');
+  const preflightNode = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(preflightNode.status, 'failed');
+  assert.equal(preflightNode.preflight_kind, 'lifecycle_recovery');
   assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
   assert.equal(result.result.preparation.pr_context.agent_reviews.summary.lifecycle_timed_out_count, 1);
 });

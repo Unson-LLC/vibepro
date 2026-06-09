@@ -2022,12 +2022,16 @@ function summarizeLifecycle(entries) {
 function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
   const actions = [];
   for (const entry of lifecycleSummary.entries ?? []) {
-    if (entry.effective_status !== 'timed_out') continue;
     const closeSelector = entry.agent_id
       ? `--agent-id "${entry.agent_id}"`
       : `--lifecycle-id ${entry.lifecycle_id}`;
-    actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
-    actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    if (entry.effective_status === 'timed_out') {
+      actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
+      actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    }
+    if (entry.close_reason === 'manual_shutdown') {
+      actions.push(`Record replacement intent for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    }
   }
   return actions;
 }
