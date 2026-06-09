@@ -7043,6 +7043,83 @@ test('review record updates status summary and marks stale after source change',
   assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
 });
 
+test('review record keeps append-only history for replaced review findings', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'agent-review-history.js'), 'export const value = 1;\n');
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'architecture_spec', '--role', 'regression_risk']);
+  const needsChanges = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'architecture_spec',
+    '--role',
+    'regression_risk',
+    '--status',
+    'needs_changes',
+    '--summary',
+    'execute readiness omits lifecycle gate history',
+    '--finding',
+    'medium:history-gap:previous needs_changes result must remain reconstructable',
+    '--inspection-summary',
+    'inspected review artifact overwrite behavior',
+    '--inspection-evidence',
+    '.vibepro/pr/story-pr-prepare/gate-dag.json',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-history-reviewer-1',
+    '--agent-closed'
+  ]);
+  assert.equal(needsChanges.exitCode, 0);
+  assert.match(needsChanges.result.history_artifact, /history\/review-result-regression_risk-/);
+
+  const pass = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'architecture_spec',
+    '--role',
+    'regression_risk',
+    '--status',
+    'pass',
+    '--summary',
+    'history artifact retained previous needs_changes finding',
+    '--inspection-summary',
+    'inspected append-only review history',
+    '--inspection-evidence',
+    '.vibepro/reviews/story-pr-prepare/architecture_spec/history',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-history-reviewer-2',
+    '--agent-closed'
+  ]);
+  assert.equal(pass.exitCode, 0);
+  assert.match(pass.result.history_artifact, /history\/review-result-regression_risk-/);
+
+  const latest = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'architecture_spec', 'review-result-regression_risk.json'));
+  assert.equal(latest.status, 'pass');
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'architecture_spec', '--json']);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'regression_risk');
+  assert.equal(role.effective_status, 'pass');
+  assert.equal(role.history_artifacts.length, 2);
+  const historyResults = await Promise.all(role.history_artifacts.map((artifact) => readJson(path.join(repo, artifact))));
+  assert.equal(historyResults.some((result) => result.status === 'needs_changes' && result.findings[0]?.id === 'history-gap'), true);
+  assert.equal(historyResults.some((result) => result.status === 'pass'), true);
+});
+
 test('review pass requires verified subagent or explicit manual review provenance', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

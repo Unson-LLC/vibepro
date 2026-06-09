@@ -267,7 +267,9 @@ export async function recordAgentReview(repoRoot, options = {}) {
     );
   }
   const resultPath = getReviewResultPath(reviewDir, role);
+  const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
   await writeJson(resultPath, result);
+  await writeJson(historyPath, result);
   if (result.agent_provenance.lifecycle?.agent_closed) {
     await closeMatchingLifecycleEntry(root, {
       storyId,
@@ -285,7 +287,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
   return {
     review: result,
     summary,
-    artifact: toWorkspaceRelative(root, resultPath)
+    artifact: toWorkspaceRelative(root, resultPath),
+    history_artifact: toWorkspaceRelative(root, historyPath)
   };
 }
 
@@ -1540,6 +1543,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
+    const historyArtifacts = await listReviewResultHistoryArtifacts(repoRoot, reviewDir, role);
     const binding = result ? bindReviewResult(result, currentGitContext) : null;
     const provenance = result ? validateAgentProvenance(result) : null;
     const effectiveStatus = !result
@@ -1563,7 +1567,8 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
       lifecycle: summarizeRoleLifecycle(lifecycleEntries, role),
-      artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null
+      artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null,
+      history_artifacts: historyArtifacts
     });
   }
   const status = resolveStageStatus(roles);
@@ -1875,6 +1880,31 @@ function getLifecyclePath(reviewDir) {
 
 function getReviewResultPath(reviewDir, role) {
   return path.join(reviewDir, `review-result-${role}.json`);
+}
+
+function getReviewResultHistoryDir(reviewDir) {
+  return path.join(reviewDir, 'history');
+}
+
+function getReviewResultHistoryPath(reviewDir, role, recordedAt) {
+  const timestamp = String(recordedAt).replace(/[^0-9A-Za-z.-]/g, '-');
+  return path.join(getReviewResultHistoryDir(reviewDir), `review-result-${role}-${timestamp}.json`);
+}
+
+async function listReviewResultHistoryArtifacts(repoRoot, reviewDir, role) {
+  const historyDir = getReviewResultHistoryDir(reviewDir);
+  try {
+    const entries = await readdir(historyDir, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => name.startsWith(`review-result-${role}-`) && name.endsWith('.json'))
+      .sort()
+      .map((name) => toWorkspaceRelative(repoRoot, path.join(historyDir, name)));
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 async function listExistingReviewStages(repoRoot, storyId) {
