@@ -6976,6 +6976,37 @@ test('review status marks pr prepare stale when newer review dispatch artifacts 
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
 });
 
+test('review status keeps pr prepare current when dispatch artifact predates pr prepare', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'review-artifact-current.js'), 'export const value = 1;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add current review artifact target']);
+
+  const reviewPrepare = await runCli([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 0);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.pr_prepare_freshness.status, 'current');
+  assert.equal(status.result.pr_prepare_freshness.newest_review_artifact, null);
+  assert.match(status.result.pr_prepare_freshness.reason, /matches the current git HEAD/);
+});
+
 test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });

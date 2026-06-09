@@ -618,25 +618,29 @@ function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt, latestPrPre
   if (requiredKeys.size === 0) return null;
   let newest = null;
   for (const stage of stageSummaries ?? []) {
-    const updatedTime = Date.parse(stage.updated_at ?? '');
-    if (!Number.isFinite(updatedTime) || updatedTime <= prTime) continue;
     const requiredRoles = (stage.roles ?? []).filter((role) => requiredKeys.has(`${stage.stage}:${role.role}`));
     if (requiredRoles.length === 0) continue;
+    const dispatchTime = Date.parse(stage.parallel_dispatch?.artifact_updated_at ?? '');
     const hasRelevantDispatch = stage.parallel_dispatch?.prepared
+      && Number.isFinite(dispatchTime)
+      && dispatchTime > prTime
       && requiredRoles.some((role) => role.effective_status !== 'pass');
+    let newestTime = hasRelevantDispatch ? dispatchTime : null;
     const hasRelevantResult = requiredRoles.some((role) => {
       const recordedAt = Date.parse(role.recorded_at ?? '');
       const lifecycleAt = Date.parse(role.lifecycle?.latest?.closed_at ?? role.lifecycle?.latest?.started_at ?? '');
-      return (Number.isFinite(recordedAt) && recordedAt > prTime)
-        || (Number.isFinite(lifecycleAt) && lifecycleAt > prTime);
+      const roleTimes = [recordedAt, lifecycleAt].filter((time) => Number.isFinite(time) && time > prTime);
+      if (roleTimes.length === 0) return false;
+      newestTime = Math.max(newestTime ?? 0, ...roleTimes);
+      return true;
     });
     if (!hasRelevantDispatch && !hasRelevantResult) continue;
     const artifact = stage.parallel_dispatch?.artifact ?? null;
-    if (!newest || updatedTime > newest.updated_time) {
+    if (Number.isFinite(newestTime) && (!newest || newestTime > newest.updated_time)) {
       newest = {
         stage: stage.stage,
-        updated_at: stage.updated_at,
-        updated_time: updatedTime,
+        updated_at: new Date(newestTime).toISOString(),
+        updated_time: newestTime,
         artifact
       };
     }
@@ -1611,6 +1615,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
+  const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
   const preparedStageRoles = await readPreparedStageRoles(reviewDir);
   const stageRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
@@ -1679,6 +1684,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       mode: 'policy_aware_parallel_reviews',
       prepared: parallelDispatchPrepared,
       artifact: toWorkspaceRelative(repoRoot, parallelDispatchPath),
+      artifact_updated_at: parallelDispatchUpdatedAt,
       prepare_command: buildReviewPrepareCommand({ storyId, stage, roles: stageRoles })
     }
   };
@@ -1689,6 +1695,15 @@ async function readPreparedStageRoles(reviewDir) {
   const roles = Array.isArray(plan?.roles) ? plan.roles : plan?.review_policy?.roles;
   if (!Array.isArray(roles)) return [];
   return [...new Set(roles.map((role) => String(role).trim()).filter(Boolean))];
+}
+
+async function getFileMtimeIso(filePath) {
+  try {
+    return (await stat(filePath)).mtime.toISOString();
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 async function pathExists(filePath) {
