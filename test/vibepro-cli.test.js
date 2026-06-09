@@ -9251,6 +9251,100 @@ architecture_docs:
   assert.match(unverifiedPreflight.reason, /human manual review provenance|parallel subagent provenance|manual_review/);
 });
 
+test('pr prepare marks recorded blocker dispatch preflight and pr ship excludes internal review gates from human judgments', async () => {
+  const makePreparedReviewRepo = async () => {
+    const repo = await makeGitRepoWithStory();
+    await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+    await mkdir(path.join(repo, 'src'), { recursive: true });
+    await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+    await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+    return repo;
+  };
+
+  const assertRecordedBlocker = async (status) => {
+    const repo = await makePreparedReviewRepo();
+    await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence']);
+    const recordResult = await runCli([
+      'review',
+      'record',
+      repo,
+      '--id',
+      'story-pr-prepare',
+      '--stage',
+      'gate',
+      '--role',
+      'gate_evidence',
+      '--status',
+      status,
+      '--summary',
+      `${status} recorded blocker`,
+      '--agent-system',
+      'codex',
+      '--execution-mode',
+      'parallel_subagent',
+      '--agent-id',
+      `agent-${status}`,
+      '--agent-closed',
+      '--json'
+    ]);
+    assert.equal(recordResult.exitCode, 0);
+
+    const prepareResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+    assert.equal(prepareResult.exitCode, 0);
+    const dag = prepareResult.result.preparation.pr_context.gate_dag;
+    const batchNode = dag.nodes.find((node) => node.id === 'review:dispatch_batch:gate');
+    const preflightNode = dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+    const roleNode = dag.nodes.find((node) => node.id === 'review:gate:gate_evidence');
+    const recordNode = dag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence');
+    const joinNode = dag.nodes.find((node) => node.id === 'review:join:gate');
+    assert.equal(batchNode.status, 'failed');
+    assert.equal(preflightNode.status, 'failed');
+    assert.equal(preflightNode.preflight_kind, 'recorded_blocker');
+    assert.match(preflightNode.reason, new RegExp(status));
+    assert.equal(roleNode.status, status === 'block' ? 'failed' : 'needs_review');
+    assert.equal(recordNode.status, status === 'block' ? 'failed' : 'needs_review');
+    assert.equal(joinNode.status, status === 'block' ? 'failed' : 'needs_review');
+
+    let shipStdout = '';
+    const shipResult = await runCli([
+      'pr',
+      'ship',
+      repo,
+      '--base',
+      'main',
+      '--head',
+      'feature/test-story',
+      '--story-id',
+      'story-pr-prepare',
+      '--dry-run',
+      '--json'
+    ], {
+      stdout: { write: (text) => { shipStdout += text; } }
+    });
+    assert.equal(shipResult.exitCode, 0);
+    const ship = JSON.parse(shipStdout);
+    const judgmentText = JSON.stringify(ship.human_judgments_required);
+    assert.doesNotMatch(judgmentText, /review:dispatch_batch:gate/);
+    assert.doesNotMatch(judgmentText, /review:preflight:gate:gate_evidence/);
+    assert.doesNotMatch(judgmentText, /review:prepare:gate/);
+    assert.doesNotMatch(judgmentText, /review:gate:gate_evidence/);
+    assert.doesNotMatch(judgmentText, /review:record:gate:gate_evidence/);
+    assert.doesNotMatch(judgmentText, /review:join:gate/);
+    assert.equal(ship.human_judgments_required.some((judgment) => judgment.kind === 'subagent_dispatch'), true);
+  };
+
+  await assertRecordedBlocker('block');
+  await assertRecordedBlocker('needs_changes');
+});
+
 test('pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
