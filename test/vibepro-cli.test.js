@@ -6715,6 +6715,42 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
 });
 
+test('review status and summary tell operators to close running subagents before recording', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence']);
+
+  const start = await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-running',
+    '--timeout-ms',
+    '600000',
+    '--json'
+  ]);
+  assert.equal(start.exitCode, 0);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.stages[0].lifecycle.running_count, 1);
+  assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('Wait for running gate:gate_evidence subagent agent-running')), true);
+  assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('review close') && action.includes('agent-running')), true);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review record')), false);
+
+  const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
+  assert.match(reviewSummary, /Wait for running gate:gate_evidence subagent agent-running/);
+  assert.match(reviewSummary, /vibepro review close/);
+});
+
 test('review policy config customizes stage roles and role timeout', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');

@@ -680,7 +680,9 @@ function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare
   for (const item of blockingItems) {
     const stage = stageLookup.get(item.stage);
     if (!stage?.parallel_dispatch?.prepared) commands.push(item.prepare_command);
-    if (item.effective_status !== 'running') commands.push(item.record_command);
+    if (item.effective_status !== 'running' && item.lifecycle?.effective_status !== 'running') {
+      commands.push(item.record_command);
+    }
   }
   const baseRef = prPrepareFreshness?.base_ref ?? latestPrPrepare?.git?.base_ref ?? '<base-ref>';
   const prPrepareCommand = `vibepro pr prepare . --story-id ${storyId} --base ${baseRef}`;
@@ -1734,6 +1736,11 @@ function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parall
   const prepareCommand = buildReviewPrepareCommand({ storyId, stage, roles: stageRoles });
   for (const role of roles) {
     if (role.effective_status === 'pass') continue;
+    if (role.lifecycle?.effective_status === 'running') {
+      const latest = role.lifecycle.latest;
+      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${storyId} --stage ${stage} --role ${role.role} ${latest?.agent_id ? `--agent-id "${latest.agent_id}"` : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`} --close-reason completed --close-evidence <evidence>\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      continue;
+    }
     if (!parallelDispatchPrepared) {
       actions.push(`Prepare ${stage} review dispatch: \`${prepareCommand}\``);
       continue;
@@ -2186,6 +2193,9 @@ function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
     const closeSelector = entry.agent_id
       ? `--agent-id "${entry.agent_id}"`
       : `--lifecycle-id ${entry.lifecycle_id}`;
+    if (entry.effective_status === 'running') {
+      actions.push(`Wait for running ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}, then close it before recording: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason completed --close-evidence <evidence>`);
+    }
     if (entry.effective_status === 'timed_out') {
       actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
       actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
