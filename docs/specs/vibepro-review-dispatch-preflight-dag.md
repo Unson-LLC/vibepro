@@ -14,6 +14,7 @@ title: Review Dispatch Preflight DAG Spec
 - `S-RDP-5`: Dispatch preflight passes for a current role pass, explicitly marking duplicate dispatch as unnecessary, and for missing roles that are ready for the next dispatch batch.
 - `S-RDP-6`: Gate DAG edges preserve stage serialization and add the order `dispatch_batch -> preflight -> prepare -> role -> record -> join`.
 - `S-RDP-7`: Review lifecycle summaries include recovery actions for timed-out and manually shut down role lifecycles so handoff can reconstruct the next action.
+- `S-RDP-8`: Scenario: The Agent Review dispatch workflow moves through the states `dispatch_batch`, `preflight`, `prepare`, `role_review`, `record`, and `join`; stale git evidence, running duplicate reviewers, timed-out lifecycles, and manual shutdown recovery must stop or require review before the transition into `prepare`.
 
 ## Evidence
 
