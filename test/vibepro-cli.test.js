@@ -9619,6 +9619,46 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   assert.equal(agentGate.status, 'needs_review');
 });
 
+test('pr prepare advances current review stage after required roles pass despite default missing roles', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Workflow staged review current stage
+architecture_docs:
+  reason: workflow-heavy fixture
+---
+
+# Workflow staged review current stage
+
+## 背景
+
+The workflow runs UI, API, service, worker, retry, and status transitions.
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start</button>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "queued" }); }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
+  await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
+
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'architecture_spec', ['regression_risk']);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const dispatch = result.result.preparation.pr_context.agent_reviews.parallel_dispatch;
+  assert.equal(dispatch.stage_execution.current_stage, 'test_plan');
+  const archStage = dispatch.required_stages.find((stage) => stage.stage === 'architecture_spec');
+  const testPlanStage = dispatch.required_stages.find((stage) => stage.stage === 'test_plan');
+  assert.equal(archStage.status, 'pass');
+  assert.equal(archStage.dispatch_state, 'complete');
+  assert.equal(testPlanStage.dispatch_state, 'current');
+  const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
+  assert.equal(agentGate.required_actions.some((action) => action.includes('--stage test_plan')), true);
+  assert.equal(agentGate.required_actions.some((action) => action.includes('--stage architecture_spec')), false);
+});
+
 test('verify record promotes gate evidence into the next pr prepare', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });

@@ -1541,7 +1541,11 @@ function orderReviewStagesForDispatch(requiredReviews) {
 
 function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
   const requiredStages = orderReviewStagesForDispatch(requiredReviews);
-  const stageStatusLookup = new Map(stageSummaries.map((item) => [item.stage, item.status]));
+  const stageStatusLookup = new Map(requiredStages.map((stage) => {
+    const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
+    const requiredRoles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
+    return [stage, resolveRequiredStageStatus(summary, requiredRoles)];
+  }));
   const firstIncompleteStage = requiredStages.find((stage) => stageStatusLookup.get(stage) !== 'pass') ?? null;
   const maxParallelSubagentsPerStage = requiredStages.reduce((max, stage) => {
     return Math.max(max, requiredReviews.filter((item) => item.stage === stage).length);
@@ -1560,7 +1564,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
       const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
-      const stageStatus = summary?.status ?? 'missing';
+      const stageStatus = stageStatusLookup.get(stage) ?? 'missing';
       const previousStage = requiredStages[index - 1] ?? null;
       const nextStage = requiredStages[index + 1] ?? null;
       return {
@@ -1583,6 +1587,16 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
       };
     })
   };
+}
+
+function resolveRequiredStageStatus(summary, requiredRoles) {
+  if (!summary) return 'missing';
+  const requiredSet = new Set(requiredRoles);
+  const roles = (summary.roles ?? []).filter((role) => requiredSet.has(role.role));
+  if (roles.length === 0) return 'missing';
+  if (roles.some((role) => role.effective_status === 'block')) return 'block';
+  if (roles.every((role) => role.effective_status === 'pass')) return 'pass';
+  return 'needs_review';
 }
 
 function renderParallelDispatchPrRows(parallelDispatch) {
