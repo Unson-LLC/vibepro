@@ -150,6 +150,7 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
   const repo = await makeStoryRepo();
 
   const { gateDag, prPrepare, prBody } = await preparePrArtifacts(repo);
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
 
   const nodeIds = gateDag.nodes.map((node: { id: string }) => node.id);
   // story-vibepro-review-dispatch-preflight-dag ac:1
@@ -182,6 +183,8 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
     true,
     'stage-level agent_review_dispatch_batch_gate is before review prepare'
   );
+  assert.match(gateDagHtml, new RegExp(`data-node-id="${dispatchNode.id}"`));
+  assert.match(gateDagHtml, new RegExp(`data-node-id="${preflightNode.id}"`));
 
   // story-vibepro-review-dispatch-preflight-dag ac:3
   // DAG edges force dispatch_batch -> preflight -> prepare -> role -> record -> join, preserving serial stage barriers.
