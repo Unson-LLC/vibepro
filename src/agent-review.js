@@ -306,7 +306,6 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const rolePolicy = getRolePolicy(reviewPolicy, role);
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
-  const lifecycle = await readLifecycle(root, storyId, stage);
   const now = new Date().toISOString();
   const entry = {
     schema_version: '0.1.0',
@@ -329,8 +328,9 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
-  lifecycle.entries.push(entry);
-  await writeLifecycle(root, storyId, stage, lifecycle);
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    lifecycle.entries.push(entry);
+  });
   const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
@@ -348,22 +348,23 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewPolicy = await readAgentReviewPolicy(root);
   const role = requireRole(reviewPolicy, stage, options.role, 'review close');
   const reviewDir = getReviewStageDir(root, storyId, stage);
-  const lifecycle = await readLifecycle(root, storyId, stage);
-  const match = findLifecycleEntry(lifecycle.entries, {
-    lifecycleId: options.lifecycleId,
-    role,
-    agentId: options.agentId,
-    agentSystem: options.agentSystem
-  });
-  if (!match) {
-    throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
-  }
   const closeReason = normalizeCloseReason(options.closeReason);
-  match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
-  match.closed_at = new Date().toISOString();
-  match.close_reason = closeReason;
-  match.close_evidence = normalizeNullable(options.closeEvidence);
-  await writeLifecycle(root, storyId, stage, lifecycle);
+  let match = null;
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    match = findLifecycleEntry(lifecycle.entries, {
+      lifecycleId: options.lifecycleId,
+      role,
+      agentId: options.agentId,
+      agentSystem: options.agentSystem
+    });
+    if (!match) {
+      throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
+    }
+    match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
+    match.closed_at = new Date().toISOString();
+    match.close_reason = closeReason;
+    match.close_evidence = normalizeNullable(options.closeEvidence);
+  });
   const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
@@ -1632,14 +1633,9 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
   const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
-  const preparedStageRoles = await readPreparedStageRoles(reviewDir);
-  const stageRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
-    ? summaryRoles
-    : preparedStageRoles.length > 0
-      ? preparedStageRoles
-      : getStageRoles(reviewPolicy, stage);
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
+  const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles, lifecycleEntries });
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
     const historyArtifacts = await listReviewResultHistoryArtifacts(repoRoot, reviewDir, role);
@@ -1705,11 +1701,45 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   };
 }
 
+async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles = null, lifecycleEntries = [] }) {
+  const requestedRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
+    ? summaryRoles
+    : await readPreparedStageRoles(reviewDir);
+  const existingRoles = await listExistingReviewResultRoles(reviewDir);
+  const lifecycleRoles = lifecycleEntries.map((entry) => entry.role).filter(Boolean);
+  const stageRoleOrder = getStageRoles(reviewPolicy, stage);
+  const extraRoles = [...new Set([...existingRoles, ...lifecycleRoles])]
+    .filter((role) => !requestedRoles.includes(role))
+    .sort((a, b) => {
+      const aIndex = stageRoleOrder.indexOf(a);
+      const bIndex = stageRoleOrder.indexOf(b);
+      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  const roles = [...new Set([...requestedRoles, ...extraRoles])];
+  return roles.length > 0 ? roles : getStageRoles(reviewPolicy, stage);
+}
+
 async function readPreparedStageRoles(reviewDir) {
   const plan = await readJsonIfExists(path.join(reviewDir, 'review-plan.json'));
   const roles = Array.isArray(plan?.roles) ? plan.roles : plan?.review_policy?.roles;
   if (!Array.isArray(roles)) return [];
   return [...new Set(roles.map((role) => String(role).trim()).filter(Boolean))];
+}
+
+async function listExistingReviewResultRoles(reviewDir) {
+  try {
+    const entries = await readdir(reviewDir, { withFileTypes: true });
+    return [...new Set(entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name.match(/^review-result-(.+)\.json$/)?.[1])
+      .filter(Boolean))];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 async function getFileMtimeIso(filePath) {
@@ -2113,21 +2143,67 @@ async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
   });
 }
 
+async function updateLifecycle(repoRoot, storyId, stage, updater) {
+  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  await mkdir(reviewDir, { recursive: true });
+  const lockDir = path.join(reviewDir, '.lifecycle.lock');
+  await withDirectoryLock(lockDir, async () => {
+    const lifecycle = await readLifecycle(repoRoot, storyId, stage);
+    await updater(lifecycle);
+    await writeLifecycle(repoRoot, storyId, stage, lifecycle);
+  });
+}
+
+async function withDirectoryLock(lockDir, callback) {
+  const staleAfterMs = 30_000;
+  const start = Date.now();
+  while (true) {
+    try {
+      await mkdir(lockDir);
+      break;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      const lockStat = await stat(lockDir).catch((statError) => {
+        if (statError.code === 'ENOENT') return null;
+        throw statError;
+      });
+      if (lockStat && Date.now() - lockStat.mtimeMs > staleAfterMs) {
+        await rm(lockDir, { recursive: true, force: true });
+        continue;
+      }
+      if (Date.now() - start > staleAfterMs) {
+        throw new Error(`timed out waiting for lifecycle lock: ${lockDir}`);
+      }
+      await sleep(25);
+    }
+  }
+  try {
+    return await callback();
+  } finally {
+    await rm(lockDir, { recursive: true, force: true });
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function closeMatchingLifecycleEntry(repoRoot, options = {}) {
   if (!options.agentId) return null;
-  const lifecycle = await readLifecycle(repoRoot, options.storyId, options.stage);
-  const entry = findLifecycleEntry(lifecycle.entries, {
-    role: options.role,
-    agentId: options.agentId,
-    agentSystem: options.agentSystem
+  let entry = null;
+  await updateLifecycle(repoRoot, options.storyId, options.stage, (lifecycle) => {
+    entry = findLifecycleEntry(lifecycle.entries, {
+      role: options.role,
+      agentId: options.agentId,
+      agentSystem: options.agentSystem
+    });
+    if (!entry || entry.closed_at) return;
+    entry.status = 'closed';
+    entry.closed_at = new Date().toISOString();
+    entry.close_reason = options.closeReason ?? 'completed';
+    entry.close_evidence = options.closeEvidence ?? null;
+    entry.result_artifact = options.resultArtifact ?? null;
   });
-  if (!entry || entry.closed_at) return null;
-  entry.status = 'closed';
-  entry.closed_at = new Date().toISOString();
-  entry.close_reason = options.closeReason ?? 'completed';
-  entry.close_evidence = options.closeEvidence ?? null;
-  entry.result_artifact = options.resultArtifact ?? null;
-  await writeLifecycle(repoRoot, options.storyId, options.stage, lifecycle);
   return entry;
 }
 

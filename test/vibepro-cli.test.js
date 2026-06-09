@@ -6520,6 +6520,59 @@ test('review prepare generates stage role requests', async () => {
 	  assert.deepEqual(subset.result.plan.roles, ['gate_evidence', 'release_risk']);
 	  assert.deepEqual(subset.result.plan.review_policy.roles, ['gate_evidence', 'release_risk']);
 	  assert.deepEqual(subset.result.summary.roles.map((role) => role.role), ['gate_evidence', 'release_risk']);
+
+  const network = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'preview',
+    '--role',
+    'network_runtime',
+    '--status',
+    'pass',
+    '--summary',
+    'network runtime passed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-network',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(network.exitCode, 0);
+  const usability = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'preview',
+    '--role',
+    'human_usability',
+    '--status',
+    'pass',
+    '--summary',
+    'human usability passed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-usability',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(usability.exitCode, 0);
+  const replacement = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'preview', '--role', 'preview_smoke', '--language', 'en', '--json']);
+  assert.equal(replacement.exitCode, 0);
+  assert.deepEqual(replacement.result.plan.roles, ['preview_smoke']);
+  assert.deepEqual(replacement.result.summary.roles.map((role) => role.role), ['preview_smoke', 'network_runtime', 'human_usability']);
 	});
 
 test('review and explore human dispatch artifacts follow ja output language', async () => {
@@ -6756,6 +6809,52 @@ test('review status and summary tell operators to close running subagents before
   const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
   assert.match(reviewSummary, /Wait for running gate:gate_evidence subagent agent-running/);
   assert.match(reviewSummary, /vibepro review close/);
+});
+
+test('review lifecycle preserves concurrent stage starts', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence', '--role', 'release_risk']);
+
+  const [evidence, release] = await Promise.all([
+    runCli([
+      'review',
+      'start',
+      repo,
+      '--id',
+      'story-pr-prepare',
+      '--stage',
+      'gate',
+      '--role',
+      'gate_evidence',
+      '--agent-system',
+      'codex',
+      '--agent-id',
+      'agent-evidence',
+      '--json'
+    ]),
+    runCli([
+      'review',
+      'start',
+      repo,
+      '--id',
+      'story-pr-prepare',
+      '--stage',
+      'gate',
+      '--role',
+      'release_risk',
+      '--agent-system',
+      'codex',
+      '--agent-id',
+      'agent-release',
+      '--json'
+    ])
+  ]);
+
+  assert.equal(evidence.exitCode, 0);
+  assert.equal(release.exitCode, 0);
+  const lifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
+  assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-evidence'), true);
+  assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-release'), true);
 });
 
 test('review status orders running close commands before stale record commands', async () => {
