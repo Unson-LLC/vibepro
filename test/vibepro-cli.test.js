@@ -7047,6 +7047,8 @@ test('review record keeps append-only history for replaced review findings', asy
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'agent-review-history.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/agent-review-history.js']);
+  await git(repo, ['commit', '-m', 'feat: add agent review history target']);
 
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'architecture_spec', '--role', 'regression_risk']);
   const needsChanges = await runCli([
@@ -7124,6 +7126,17 @@ test('review record keeps append-only history for replaced review findings', asy
   assert.equal(statusText.exitCode, 0);
   assert.match(statusText.stdout, /artifact: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/review-result-regression_risk\.json/);
   assert.match(statusText.stdout, /history: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
+
+  const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'architecture_spec', 'review-summary.md'), 'utf8');
+  assert.match(reviewSummary, /artifact=\.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/review-result-regression_risk\.json/);
+  assert.match(reviewSummary, /history: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /### Review Artifacts/);
+  assert.match(prBody, /architecture_spec:regression_risk \(pass\) artifact: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/review-result-regression_risk\.json/);
+  assert.match(prBody, /history: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
 });
 
 test('review pass requires verified subagent or explicit manual review provenance', async () => {

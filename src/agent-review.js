@@ -1676,7 +1676,7 @@ async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
 
 function renderReviewSummaryMarkdown(summary) {
   const rows = summary.roles.map((role) => (
-    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}`
+    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}`
   ));
   const lifecycle = summary.lifecycle ?? {};
   const nextActions = summary.next_actions?.length
