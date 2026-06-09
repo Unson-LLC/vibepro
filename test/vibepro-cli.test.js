@@ -6744,7 +6744,14 @@ test('review status and summary tell operators to close running subagents before
   assert.equal(status.result.stages[0].lifecycle.running_count, 1);
   assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('Wait for running gate:gate_evidence subagent agent-running')), true);
   assert.equal(status.result.stages[0].next_actions.some((action) => action.includes('review close') && action.includes('agent-running')), true);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review close') && command.includes('agent-running')), true);
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro review record')), false);
+
+  const statusText = await runCliWithStdout(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+  assert.equal(statusText.exitCode, 0);
+  assert.match(statusText.stdout, /## Next Commands/);
+  assert.match(statusText.stdout, /vibepro review close .*agent-running/);
+  assert.doesNotMatch(statusText.stdout, /## Next Commands\n\n- vibepro review record/);
 
   const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
   assert.match(reviewSummary, /Wait for running gate:gate_evidence subagent agent-running/);

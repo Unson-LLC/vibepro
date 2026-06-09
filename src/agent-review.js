@@ -680,7 +680,13 @@ function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare
   for (const item of blockingItems) {
     const stage = stageLookup.get(item.stage);
     if (!stage?.parallel_dispatch?.prepared) commands.push(item.prepare_command);
-    if (item.effective_status !== 'running' && item.lifecycle?.effective_status !== 'running') {
+    if (item.lifecycle?.effective_status === 'running') {
+      const latest = item.lifecycle.latest;
+      const selector = latest?.agent_id
+        ? `--agent-id "${latest.agent_id}"`
+        : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`;
+      commands.push(`vibepro review close . --id ${storyId} --stage ${item.stage} --role ${item.role} ${selector} --close-reason completed --close-evidence <evidence>`);
+    } else if (item.effective_status !== 'running') {
       commands.push(item.record_command);
     }
   }
