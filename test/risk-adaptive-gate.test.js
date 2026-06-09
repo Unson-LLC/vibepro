@@ -657,8 +657,12 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'implementation').roles.includes('runtime_contract'), true);
   assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), true);
   assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:architecture_spec' && edge.to === 'review:prepare:test_plan'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:prepare:implementation'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:architecture_spec' && edge.to === 'review:dispatch_batch:test_plan'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:test_plan' && edge.to === 'review:preflight:test_plan:gate_coverage'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:test_plan:gate_coverage' && edge.to === 'review:prepare:test_plan'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:dispatch_batch:implementation'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:implementation' && edge.to === 'review:preflight:implementation:runtime_contract'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:implementation:runtime_contract' && edge.to === 'review:prepare:implementation'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:gate' && edge.to === 'gate:agent_review'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:prepare:preview' && edge.to === 'review:prepare:gate'), false);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('Current Agent Review stage 1'), true);
