@@ -105,7 +105,11 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
     ['src/agent-review.js', 'src/pr-manager.js']
   );
   assert.equal(nodeIds.includes('gate:agent_review'), true);
-  assert.equal(nodeIds.some((id: string) => id.startsWith('review:dispatch_batch:')), true);
+  assert.equal(
+    nodeIds.some((id: string) => id.startsWith('review:dispatch_batch:')),
+    true,
+    'Gate DAG contains a stage-level agent_review_dispatch_batch_gate before review prepare'
+  );
 
   // story-vibepro-review-dispatch-preflight-dag ac:2
   // Gate DAG contains per-role agent_review_dispatch_preflight_gate nodes for stale git evidence, running duplicate lifecycle, timeout/manual shutdown recovery, current pass dedupe, and missing-role readiness.
@@ -117,6 +121,13 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
   assert.equal(dispatchNode.type, 'agent_review_dispatch_batch_gate');
   const preflightNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:preflight:'));
   assert.equal(preflightNode.type, 'agent_review_dispatch_preflight_gate');
+  const prepareNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:prepare:'));
+  assert.equal(
+    gateDag.edges.some((edge: { from: string; to: string }) => edge.from === dispatchNode.id && edge.to === preflightNode.id)
+      && gateDag.edges.some((edge: { from: string; to: string }) => edge.from === preflightNode.id && edge.to === prepareNode.id),
+    true,
+    'stage-level agent_review_dispatch_batch_gate is before review prepare'
+  );
 
   // story-vibepro-review-dispatch-preflight-dag ac:3
   // DAG edges force dispatch_batch -> preflight -> prepare -> role -> record -> join, preserving serial stage barriers.
