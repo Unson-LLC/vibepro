@@ -9138,6 +9138,119 @@ architecture_docs:
   assert.equal(result.result.preparation.pr_context.agent_reviews.summary.lifecycle_timed_out_count, 1);
 });
 
+test('pr prepare marks dispatch preflight for running manual shutdown and unverified review evidence', async () => {
+  const makePreparedReviewRepo = async () => {
+    const repo = await makeGitRepoWithStory();
+    await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+    await mkdir(path.join(repo, 'src'), { recursive: true });
+    await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+    await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+    return repo;
+  };
+
+  const runningRepo = await makePreparedReviewRepo();
+  await recordAgentReviewStage(runningRepo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  await runCli([
+    'review',
+    'start',
+    runningRepo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-running-after-pass'
+  ]);
+  const runningResult = await runCli(['pr', 'prepare', runningRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const runningPreflight = runningResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(runningPreflight.status, 'failed');
+  assert.equal(runningPreflight.preflight_kind, 'dedupe_running');
+  assert.match(runningPreflight.reason, /already running/);
+
+  const manualShutdownRepo = await makePreparedReviewRepo();
+  await recordAgentReviewStage(manualShutdownRepo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  await runCli([
+    'review',
+    'start',
+    manualShutdownRepo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-manual-shutdown-after-pass'
+  ]);
+  await runCli([
+    'review',
+    'close',
+    manualShutdownRepo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-id',
+    'agent-manual-shutdown-after-pass',
+    '--close-reason',
+    'manual_shutdown'
+  ]);
+  const manualShutdownResult = await runCli(['pr', 'prepare', manualShutdownRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const manualShutdownPreflight = manualShutdownResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(manualShutdownPreflight.status, 'needs_review');
+  assert.equal(manualShutdownPreflight.preflight_kind, 'lifecycle_recovery');
+  assert.match(manualShutdownPreflight.reason, /manual_shutdown/);
+
+  const unverifiedRepo = await makePreparedReviewRepo();
+  await runCli(['review', 'prepare', unverifiedRepo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+  const manualRecord = await runCli([
+    'review',
+    'record',
+    unverifiedRepo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'manual pass is audit context only',
+    '--inspection-summary',
+    'manual review intentionally lacks parallel subagent provenance',
+    '--agent-system',
+    'human',
+    '--execution-mode',
+    'manual_review',
+    '--recorded-by',
+    'reviewer@example.com',
+    '--json'
+  ]);
+  assert.equal(manualRecord.exitCode, 0);
+  const unverifiedResult = await runCli(['pr', 'prepare', unverifiedRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const unverifiedPreflight = unverifiedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(unverifiedPreflight.status, 'needs_review');
+  assert.equal(unverifiedPreflight.preflight_kind, 'provenance_recovery');
+  assert.match(unverifiedPreflight.reason, /human manual review provenance|parallel subagent provenance|manual_review/);
+});
+
 test('pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
