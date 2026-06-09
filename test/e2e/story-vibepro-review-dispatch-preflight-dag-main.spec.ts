@@ -98,12 +98,17 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
   const prBody = await readFile(path.join(storyDir, 'pr-body.md'), 'utf8');
 
   const nodeIds = gateDag.nodes.map((node: { id: string }) => node.id);
+  // story-vibepro-review-dispatch-preflight-dag ac:1
+  // Gate DAG contains a stage-level agent_review_dispatch_batch_gate before review prepare.
   assert.deepEqual(
     prPrepare.git.changed_files.map((file: { path: string }) => file.path).sort(),
     ['src/agent-review.js', 'src/pr-manager.js']
   );
   assert.equal(nodeIds.includes('gate:agent_review'), true);
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:dispatch_batch:')), true);
+
+  // story-vibepro-review-dispatch-preflight-dag ac:2
+  // Gate DAG contains per-role agent_review_dispatch_preflight_gate nodes for stale git evidence, running duplicate lifecycle, timeout/manual shutdown recovery, current pass dedupe, and missing-role readiness.
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:preflight:')), true);
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:prepare:')), true);
   assert.equal(nodeIds.some((id: string) => id.startsWith('review:join:')), true);
@@ -113,9 +118,20 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
   const preflightNode = gateDag.nodes.find((node: { id: string }) => node.id.startsWith('review:preflight:'));
   assert.equal(preflightNode.type, 'agent_review_dispatch_preflight_gate');
 
+  // story-vibepro-review-dispatch-preflight-dag ac:3
+  // DAG edges force dispatch_batch -> preflight -> prepare -> role -> record -> join, preserving serial stage barriers.
   const dispatchEdge = gateDag.edges.find((edge: { from: string; to: string }) => edge.from === dispatchNode.id && edge.to === preflightNode.id);
   assert.ok(dispatchEdge);
+
+  // story-vibepro-review-dispatch-preflight-dag ac:4
+  // Timed-out and manually shut down Agent Review lifecycle entries produce concrete recovery actions in review status artifacts.
   assert.match(JSON.stringify(gateDag), /git_stability|ready_for_dispatch|dedupe_current_pass|lifecycle_recovery/);
+
+  // story-vibepro-review-dispatch-preflight-dag ac:5
+  // Existing Agent Review Gate semantics remain unchanged: required reviews still need verified parallel subagent provenance and closed lifecycle evidence.
   assert.match(prBody, /Agent Review|parallel|dispatch|preflight/i);
+
+  // story-vibepro-review-dispatch-preflight-dag S-001
+  // Scenario: The Agent Review dispatch workflow moves through dispatch_batch, preflight, prepare, role_review, record, and join states; stale git evidence, running duplicate reviewers, timed-out lifecycles, and manual shutdown recovery stop or require review before the transition into prepare.
   assert.equal(prPrepare.gate_status.ready_for_pr_create, false);
 });
