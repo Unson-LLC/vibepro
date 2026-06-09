@@ -858,6 +858,16 @@ function buildReviewPrepareCommand(storyId, stage, roles = []) {
   return args.join(' ');
 }
 
+function isAgentReviewInternalGate(gate) {
+  return gate?.type === 'agent_review_gate'
+    || gate?.type === 'agent_review_dispatch_batch_gate'
+    || gate?.type === 'agent_review_dispatch_preflight_gate'
+    || gate?.type === 'agent_review_prepare_gate'
+    || gate?.type === 'agent_review_role_gate'
+    || gate?.type === 'agent_review_record_gate'
+    || gate?.type === 'agent_review_stage_join_gate';
+}
+
 function buildShipHumanJudgments(gateStatus) {
   const judgments = [];
   const agentActions = buildAgentReviewShipActions(gateStatus);
@@ -869,7 +879,7 @@ function buildShipHumanJudgments(gateStatus) {
   }
   const critical = gateStatus?.critical_unresolved_gates ?? [];
   for (const gate of critical) {
-    if (gate.type === 'agent_review_gate' || gate.type === 'agent_review_prepare_gate' || gate.type === 'agent_review_role_gate' || gate.type === 'agent_review_record_gate' || gate.type === 'agent_review_stage_join_gate') continue;
+    if (isAgentReviewInternalGate(gate)) continue;
     judgments.push({
       kind: 'critical_gate',
       gate_id: gate.id,
@@ -877,7 +887,7 @@ function buildShipHumanJudgments(gateStatus) {
     });
   }
   const unresolved = gateStatus?.unresolved_gates ?? [];
-  const nonCritical = unresolved.filter((gate) => !(critical ?? []).some((criticalGate) => criticalGate.id === gate.id));
+  const nonCritical = unresolved.filter((gate) => !isAgentReviewInternalGate(gate) && !(critical ?? []).some((criticalGate) => criticalGate.id === gate.id));
   if (nonCritical.length > 0) {
     judgments.push({
       kind: 'waiver_or_evidence',
@@ -5981,6 +5991,7 @@ function buildAgentReviewProcessDag(agentReviews) {
   const stageOrder = stages.map((stage) => stage.stage);
   for (const requiredStage of stages) {
     const stage = stageLookup.get(requiredStage.stage);
+    const dispatchBatchId = `review:dispatch_batch:${requiredStage.stage}`;
     const prepareId = `review:prepare:${requiredStage.stage}`;
     const joinId = `review:join:${requiredStage.stage}`;
     const dispatch = stage?.parallel_dispatch ?? {};
@@ -5996,12 +6007,43 @@ function buildAgentReviewProcessDag(agentReviews) {
         artifact: null
       })
       : (stage?.roles ?? []);
+    const preflightItems = stageRoles.map((role) => buildAgentReviewDispatchPreflight(requiredStage.stage, role));
+    const dispatchBatchStatus = resolveAgentReviewDispatchBatchStatus(preflightItems, dispatchPrepared);
     const recordStatuses = stageRoles.map((role) => normalizeAgentReviewRecordStatus(role.effective_status));
     const joinStatus = recordStatuses.some((status) => status === 'failed')
       ? 'failed'
       : recordStatuses.length > 0 && recordStatuses.every((status) => status === 'passed')
         ? 'passed'
         : 'needs_review';
+    nodes.push({
+      id: dispatchBatchId,
+      type: 'agent_review_dispatch_batch_gate',
+      label: `Review Dispatch Batch: ${requiredStage.stage}`,
+      status: dispatchBatchStatus,
+      required: true,
+      serial_index: requiredStage.serial_index ?? stageOrder.indexOf(requiredStage.stage) + 1,
+      depends_on_stage: requiredStage.depends_on_stage ?? null,
+      next_stage: requiredStage.next_stage ?? null,
+      dispatch_state: requiredStage.dispatch_state ?? null,
+      role_count: stageRoles.length,
+      dispatch_ready_count: preflightItems.filter((item) => item.status === 'passed').length,
+      dispatch_blocker_count: preflightItems.filter((item) => item.status === 'failed').length,
+      dispatch_warning_count: preflightItems.filter((item) => item.status === 'needs_review').length,
+      reason: buildAgentReviewDispatchBatchReason(requiredStage.stage, preflightItems, dispatchPrepared)
+    });
+    for (const item of preflightItems) {
+      nodes.push({
+        id: item.id,
+        type: 'agent_review_dispatch_preflight_gate',
+        label: `Review Dispatch Preflight: ${item.role}`,
+        status: item.status,
+        required: true,
+        stage: requiredStage.stage,
+        role: item.role,
+        preflight_kind: item.kind,
+        reason: item.reason
+      });
+    }
     nodes.push({
       id: prepareId,
       type: 'agent_review_prepare_gate',
@@ -6059,6 +6101,103 @@ function buildAgentReviewProcessDag(agentReviews) {
     joinNodes.push(joinId);
   }
   return { nodes, terminal_nodes: joinNodes, stage_order: stageOrder };
+}
+
+function buildAgentReviewDispatchPreflight(stage, role) {
+  const lifecycle = role.lifecycle ?? {};
+  const latest = lifecycle.latest ?? {};
+  const latestCloseReason = latest.close_reason ?? null;
+  const preflightId = `review:preflight:${stage}:${role.role}`;
+  if (role.effective_status === 'stale') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'failed',
+      kind: 'git_stability',
+      reason: role.stale_reason ?? `Recorded ${stage}:${role.role} review is stale; rerun review prepare and dispatch only after evidence matches the current git state`
+    };
+  }
+  if (lifecycle.effective_status === 'running' || lifecycle.running_count > 0) {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'failed',
+      kind: 'dedupe_running',
+      reason: `A ${stage}:${role.role} review subagent is already running; close or record it before dispatching another reviewer for the same role`
+    };
+  }
+  if (lifecycle.effective_status === 'timed_out' || lifecycle.timed_out_count > 0) {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'failed',
+      kind: 'lifecycle_recovery',
+      reason: `A ${stage}:${role.role} review lifecycle timed out; close it and record replacement evidence before starting a new dispatch batch`
+    };
+  }
+  if (lifecycle.effective_status === 'manual_shutdown' || latestCloseReason === 'manual_shutdown') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'needs_review',
+      kind: 'lifecycle_recovery',
+      reason: `A ${stage}:${role.role} review lifecycle ended with manual_shutdown; record closure/replacement intent before re-dispatching`
+    };
+  }
+  if (role.effective_status === 'pass') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'passed',
+      kind: 'dedupe_current_pass',
+      reason: `Current ${stage}:${role.role} review already passed; do not dispatch a duplicate reviewer for the same git state`
+    };
+  }
+  if (role.effective_status === 'block' || role.effective_status === 'needs_changes') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'failed',
+      kind: 'recorded_blocker',
+      reason: role.summary ?? `Recorded ${stage}:${role.role} review must be resolved before re-dispatching`
+    };
+  }
+  if (role.effective_status === 'unverified_agent') {
+    return {
+      id: preflightId,
+      role: role.role,
+      status: 'needs_review',
+      kind: 'provenance_recovery',
+      reason: role.provenance_reason ?? `Recorded ${stage}:${role.role} review lacks verified parallel subagent provenance; fix evidence before dispatching more reviewers`
+    };
+  }
+  return {
+    id: preflightId,
+    role: role.role,
+    status: 'passed',
+    kind: 'ready_for_dispatch',
+    reason: `${stage}:${role.role} has no current review result or active lifecycle blocker; it is eligible for the next stage-local dispatch batch`
+  };
+}
+
+function resolveAgentReviewDispatchBatchStatus(preflightItems, dispatchPrepared) {
+  if (preflightItems.some((item) => item.status === 'failed')) return 'failed';
+  if (preflightItems.some((item) => item.status === 'needs_review')) return 'needs_review';
+  return dispatchPrepared ? 'passed' : 'needs_review';
+}
+
+function buildAgentReviewDispatchBatchReason(stage, preflightItems, dispatchPrepared) {
+  const blocked = preflightItems.filter((item) => item.status === 'failed');
+  if (blocked.length > 0) {
+    return `Do not dispatch ${stage} review batch until preflight blockers are resolved: ${blocked.map((item) => `${item.role}:${item.kind}`).join(', ')}`;
+  }
+  const warnings = preflightItems.filter((item) => item.status === 'needs_review');
+  if (warnings.length > 0) {
+    return `Review ${stage} dispatch preflight before starting more subagents: ${warnings.map((item) => `${item.role}:${item.kind}`).join(', ')}`;
+  }
+  return dispatchPrepared
+    ? `All ${stage} role preflight checks passed and dispatch instructions are prepared`
+    : `All ${stage} role preflight checks passed; run review prepare before dispatching the stage-local batch`;
 }
 
 function buildAgentReviewStageJoinReason(stage, status, roles) {
@@ -6695,21 +6834,30 @@ function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, s
     for (const upstream of entryUpstreams) {
       edges.push({
         from: upstream,
-        to: `review:prepare:${firstStage}`,
+        to: `review:dispatch_batch:${firstStage}`,
         reason: 'serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch'
       });
     }
   }
   for (const [index, stage] of stageOrder.entries()) {
+    const dispatchBatchId = `review:dispatch_batch:${stage}`;
     const prepareId = `review:prepare:${stage}`;
     const joinId = `review:join:${stage}`;
     const previousStage = stageOrder[index - 1] ?? null;
     if (previousStage) {
       edges.push({
         from: `review:join:${previousStage}`,
-        to: prepareId,
+        to: dispatchBatchId,
         reason: 'next Agent Review stage is blocked until the previous stage join passes'
       });
+    }
+    const preflightNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_dispatch_preflight_gate' && node.id.startsWith(`review:preflight:${stage}:`));
+    if (preflightNodes.length === 0) {
+      edges.push({ from: dispatchBatchId, to: prepareId });
+    }
+    for (const preflightNode of preflightNodes) {
+      edges.push({ from: dispatchBatchId, to: preflightNode.id });
+      edges.push({ from: preflightNode.id, to: prepareId });
     }
     const roleNodes = agentReviewDag.nodes.filter((node) => node.type === 'agent_review_role_gate' && node.id.startsWith(`review:${stage}:`));
     if (roleNodes.length === 0) {
@@ -7767,6 +7915,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       'workflow_heavy_gate',
       'pr_freshness_gate',
       'artifact_consistency_gate',
+      'agent_review_dispatch_batch_gate',
+      'agent_review_dispatch_preflight_gate',
       'agent_review_prepare_gate',
       'agent_review_role_gate',
       'agent_review_record_gate',

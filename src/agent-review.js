@@ -267,25 +267,32 @@ export async function recordAgentReview(repoRoot, options = {}) {
     );
   }
   const resultPath = getReviewResultPath(reviewDir, role);
+  const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
   await writeJson(resultPath, result);
-  if (result.agent_provenance.lifecycle?.agent_closed) {
-    await closeMatchingLifecycleEntry(root, {
-      storyId,
-      stage,
+  await writeJson(historyPath, result);
+  let summary = null;
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    if (!result.agent_provenance.lifecycle?.agent_closed) return;
+    const entry = findLifecycleEntry(lifecycle.entries, {
       role,
-      agentSystem: result.agent_provenance.system,
       agentId: result.agent_provenance.agent_id,
-      closeReason: 'completed',
-      closeEvidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath),
-      resultArtifact: toWorkspaceRelative(root, resultPath)
+      agentSystem: result.agent_provenance.system
     });
-  }
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
+    if (!entry || entry.closed_at) return;
+    entry.status = 'closed';
+    entry.closed_at = new Date().toISOString();
+    entry.close_reason = 'completed';
+    entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
+    entry.result_artifact = toWorkspaceRelative(root, resultPath);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  });
   return {
     review: result,
     summary,
-    artifact: toWorkspaceRelative(root, resultPath)
+    artifact: toWorkspaceRelative(root, resultPath),
+    history_artifact: toWorkspaceRelative(root, historyPath)
   };
 }
 
@@ -303,7 +310,6 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const rolePolicy = getRolePolicy(reviewPolicy, role);
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
-  const lifecycle = await readLifecycle(root, storyId, stage);
   const now = new Date().toISOString();
   const entry = {
     schema_version: '0.1.0',
@@ -326,10 +332,14 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
-  lifecycle.entries.push(entry);
-  await writeLifecycle(root, storyId, stage, lifecycle);
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  const gitContext = await collectReviewGitContext(root);
+  let summary = null;
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    lifecycle.entries.push(entry);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  });
   return {
     lifecycle: entry,
     summary,
@@ -345,24 +355,28 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewPolicy = await readAgentReviewPolicy(root);
   const role = requireRole(reviewPolicy, stage, options.role, 'review close');
   const reviewDir = getReviewStageDir(root, storyId, stage);
-  const lifecycle = await readLifecycle(root, storyId, stage);
-  const match = findLifecycleEntry(lifecycle.entries, {
-    lifecycleId: options.lifecycleId,
-    role,
-    agentId: options.agentId,
-    agentSystem: options.agentSystem
-  });
-  if (!match) {
-    throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
-  }
   const closeReason = normalizeCloseReason(options.closeReason);
-  match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
-  match.closed_at = new Date().toISOString();
-  match.close_reason = closeReason;
-  match.close_evidence = normalizeNullable(options.closeEvidence);
-  await writeLifecycle(root, storyId, stage, lifecycle);
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  let match = null;
+  const gitContext = await collectReviewGitContext(root);
+  let summary = null;
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    match = findLifecycleEntry(lifecycle.entries, {
+      lifecycleId: options.lifecycleId,
+      role,
+      agentId: options.agentId,
+      agentSystem: options.agentSystem
+    });
+    if (!match) {
+      throw new Error('review close could not find a matching lifecycle entry; pass --lifecycle-id or matching --role/--agent-id');
+    }
+    match.status = closeReason === 'replaced' ? 'replaced' : 'closed';
+    match.closed_at = new Date().toISOString();
+    match.close_reason = closeReason;
+    match.close_evidence = normalizeNullable(options.closeEvidence);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  });
   return {
     lifecycle: decorateLifecycleEntry(match),
     summary,
@@ -382,7 +396,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
     stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
   const latestPrPrepare = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
-  const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext);
+  const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries);
   const views = buildReviewStatusViews({
     storyId,
     stageSummaries,
@@ -566,7 +580,7 @@ function buildFallbackRequiredCurrent(stageSummaries, reviewPolicy) {
   return requirements;
 }
 
-function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
+function buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries = []) {
   const currentHead = normalizeNullable(currentGitContext?.head_sha);
   if (!latestPrPrepare) {
     return {
@@ -584,7 +598,10 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
       ?? latestPrPrepare.pr_context?.git?.head_sha
   );
   const baseRef = normalizeNullable(latestPrPrepare.git?.base_ref ?? latestPrPrepare.pr_context?.base_ref);
-  const current = Boolean(artifactHead && currentHead && artifactHead === currentHead);
+  const headCurrent = Boolean(artifactHead && currentHead && artifactHead === currentHead);
+  const createdAt = normalizeNullable(latestPrPrepare.created_at);
+  const reviewArtifactDrift = findReviewArtifactDrift(stageSummaries, createdAt, latestPrPrepare);
+  const current = headCurrent && !reviewArtifactDrift;
   return {
     status: current ? 'current' : 'stale',
     current,
@@ -592,10 +609,56 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
     current_head_sha: currentHead,
     base_ref: baseRef,
     artifact: latestPrPrepare.artifact ?? '.vibepro/pr/<story-id>/pr-prepare.json',
+    artifact_created_at: createdAt,
+    newest_review_artifact: reviewArtifactDrift,
     reason: current
       ? 'Latest pr prepare artifact matches the current git HEAD.'
-      : 'Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun.'
+      : reviewArtifactDrift
+        ? `Latest pr prepare artifact predates newer review artifact ${reviewArtifactDrift.artifact ?? reviewArtifactDrift.stage}; rerun pr prepare so PR body and Gate DAG match current review dispatch state.`
+        : 'Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun.'
   };
+}
+
+function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt, latestPrPrepare) {
+  const prTime = Date.parse(prPrepareCreatedAt ?? '');
+  if (!Number.isFinite(prTime)) return null;
+  const requiredKeys = new Set([
+    ...latestPrPrepare?.pr_context?.agent_reviews?.required_reviews ?? [],
+    ...latestPrPrepare?.pr_context?.agent_reviews?.checkpoint_required_reviews ?? []
+  ].map((item) => `${item.stage}:${item.role}`));
+  if (requiredKeys.size === 0) return null;
+  let newest = null;
+  for (const stage of stageSummaries ?? []) {
+    const requiredRoles = (stage.roles ?? []).filter((role) => requiredKeys.has(`${stage.stage}:${role.role}`));
+    if (requiredRoles.length === 0) continue;
+    const dispatchTime = Date.parse(stage.parallel_dispatch?.artifact_updated_at ?? '');
+    const hasRelevantDispatch = stage.parallel_dispatch?.prepared
+      && Number.isFinite(dispatchTime)
+      && dispatchTime > prTime
+      && requiredRoles.some((role) => role.effective_status !== 'pass');
+    let newestTime = hasRelevantDispatch ? dispatchTime : null;
+    const hasRelevantResult = requiredRoles.some((role) => {
+      const recordedAt = Date.parse(role.recorded_at ?? '');
+      const lifecycleAt = Date.parse(role.lifecycle?.latest?.closed_at ?? role.lifecycle?.latest?.started_at ?? '');
+      const roleTimes = [recordedAt, lifecycleAt].filter((time) => Number.isFinite(time) && time > prTime);
+      if (roleTimes.length === 0) return false;
+      newestTime = Math.max(newestTime ?? 0, ...roleTimes);
+      return true;
+    });
+    if (!hasRelevantDispatch && !hasRelevantResult) continue;
+    const artifact = stage.parallel_dispatch?.artifact ?? null;
+    if (Number.isFinite(newestTime) && (!newest || newestTime > newest.updated_time)) {
+      newest = {
+        stage: stage.stage,
+        updated_at: new Date(newestTime).toISOString(),
+        updated_time: newestTime,
+        artifact
+      };
+    }
+  }
+  if (!newest) return null;
+  delete newest.updated_time;
+  return newest;
 }
 
 function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking, blockingDetail, blockingStatus }) {
@@ -618,19 +681,35 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
     prepare_command: buildReviewPrepareCommand({ storyId, stage: requirement.stage, roles: [requirement.role] }),
     record_command: buildReviewRecordCommand({ storyId, stage: requirement.stage, role: requirement.role }),
     artifact: role?.artifact ?? null,
+    history_artifacts: role?.history_artifacts ?? [],
     lifecycle: role?.lifecycle ?? null
   };
 }
 
 function buildReviewStatusNextCommands(blockingItems, { storyId, latestPrPrepare, prPrepareFreshness, stageLookup }) {
-  const commands = [];
+  const closeCommands = [];
+  const recordCommands = [];
+  const prepareCommands = [];
   for (const item of blockingItems) {
     const stage = stageLookup.get(item.stage);
-    if (!stage?.parallel_dispatch?.prepared) commands.push(item.prepare_command);
-    if (item.effective_status !== 'running') commands.push(item.record_command);
+    if (!stage?.parallel_dispatch?.prepared) prepareCommands.push(item.prepare_command);
+    if (item.lifecycle?.effective_status === 'running') {
+      const latest = item.lifecycle.latest;
+      const selector = latest?.agent_id
+        ? `--agent-id "${latest.agent_id}"`
+        : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`;
+      closeCommands.push(`vibepro review close . --id ${storyId} --stage ${item.stage} --role ${item.role} ${selector} --close-reason completed --close-evidence <evidence>`);
+    } else if (item.effective_status !== 'running') {
+      recordCommands.push(item.record_command);
+    }
   }
   const baseRef = prPrepareFreshness?.base_ref ?? latestPrPrepare?.git?.base_ref ?? '<base-ref>';
   const prPrepareCommand = `vibepro pr prepare . --story-id ${storyId} --base ${baseRef}`;
+  const commands = [
+    ...closeCommands,
+    ...prepareCommands,
+    ...recordCommands
+  ];
   commands.push(prPrepareCommand);
   const uniqueCommands = [...new Set(commands)];
   const nextCommands = uniqueCommands.slice(0, 3);
@@ -829,6 +908,7 @@ export function renderAgentReviewRecordSummary(result) {
   const warnings = result.review.warnings?.length
     ? result.review.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
     : '- none';
+  const historyArtifact = result.history_artifact ?? '-';
   return `# Agent Review Record
 
 - story: ${result.review.story_id}
@@ -837,6 +917,7 @@ export function renderAgentReviewRecordSummary(result) {
 - status: ${result.review.status}
 - agent provenance: ${result.review.agent_provenance.system}/${result.review.agent_provenance.execution_mode}/${result.review.agent_provenance.evidence_strength}
 - artifact: ${result.artifact}
+- history artifact: ${historyArtifact}
 
 ## Warnings
 
@@ -881,7 +962,7 @@ export function renderAgentReviewStatusSummary(status) {
     : '- none';
   const requiredRows = status.required_current?.length
     ? status.required_current.map((item) => (
-        `- ${item.stage}:${item.role} (${item.effective_status})${item.blocking ? ' blocking' : ''}`
+        `- ${item.stage}:${item.role} (${item.effective_status})${item.blocking ? ' blocking' : ''} / artifact: ${item.artifact ?? '-'}${formatHistoryArtifactSuffix(item.history_artifacts)}`
       )).join('\n')
     : '- none';
   const optionalRows = status.display?.includes_optional
@@ -894,7 +975,7 @@ export function renderAgentReviewStatusSummary(status) {
         ? status.history.slice(0, 30).map((item) => (
             item.kind === 'lifecycle'
               ? `- lifecycle ${item.stage}:${item.role} ${item.status} ${item.agent_id ?? item.lifecycle_id ?? ''}`.trim()
-              : `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.history_reason ?? 'history'}`
+              : `- ${item.stage}:${item.role} (${item.effective_status}) - ${item.history_reason ?? 'history'} / artifact: ${item.artifact ?? '-'}${formatHistoryArtifactSuffix(item.history_artifacts)}`
           )).join('\n')
         : '- none')
     : '- hidden (use --history or --all)';
@@ -956,6 +1037,11 @@ export function renderAgentReviewPrSection(agentReviews) {
   const stageRows = stages.map((stage) => (
     `- ${stage.stage}: ${stage.status} / stale=${stage.stale_count} / block=${stage.block_count}`
   ));
+  const artifactRows = stages.flatMap((stage) => (stage.roles ?? [])
+    .filter((role) => role.artifact || role.history_artifacts?.length)
+    .map((role) => (
+      `- ${stage.stage}:${role.role} (${role.effective_status}) artifact: ${role.artifact ?? '-'}${formatHistoryArtifactSuffix(role.history_artifacts)}`
+    )));
   return [
     `- status: ${agentReviews.status}`,
     `- required reviews: ${agentReviews.summary?.required_review_count ?? 0}`,
@@ -966,8 +1052,17 @@ export function renderAgentReviewPrSection(agentReviews) {
     unmetRows.join('\n') || '- PR-final roles passed or not required',
     checkpointRows.join('\n') || '- checkpoint roles passed or not required',
     '### Stage Summary',
-    stageRows.join('\n') || '- no review stages recorded'
+    stageRows.join('\n') || '- no review stages recorded',
+    '### Review Artifacts',
+    artifactRows.slice(0, 20).join('\n') || '- no review artifacts recorded'
   ].join('\n');
+}
+
+function formatHistoryArtifactSuffix(historyArtifacts) {
+  if (!Array.isArray(historyArtifacts) || historyArtifacts.length === 0) return '';
+  const shown = historyArtifacts.slice(0, 3).join(', ');
+  const more = historyArtifacts.length > 3 ? ` (+${historyArtifacts.length - 3} more)` : '';
+  return ` / history: ${shown}${more}`;
 }
 
 async function readAgentReviewPolicy(repoRoot) {
@@ -1476,7 +1571,11 @@ function orderReviewStagesForDispatch(requiredReviews) {
 
 function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, requiredReviews) {
   const requiredStages = orderReviewStagesForDispatch(requiredReviews);
-  const stageStatusLookup = new Map(stageSummaries.map((item) => [item.stage, item.status]));
+  const stageStatusLookup = new Map(requiredStages.map((stage) => {
+    const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
+    const requiredRoles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
+    return [stage, resolveRequiredStageStatus(summary, requiredRoles)];
+  }));
   const firstIncompleteStage = requiredStages.find((stage) => stageStatusLookup.get(stage) !== 'pass') ?? null;
   const maxParallelSubagentsPerStage = requiredStages.reduce((max, stage) => {
     return Math.max(max, requiredReviews.filter((item) => item.stage === stage).length);
@@ -1495,7 +1594,7 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
       const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
       const summary = stageSummaries.find((item) => item.stage === stage) ?? null;
       const roles = requiredReviews.filter((item) => item.stage === stage).map((item) => item.role);
-      const stageStatus = summary?.status ?? 'missing';
+      const stageStatus = stageStatusLookup.get(stage) ?? 'missing';
       const previousStage = requiredStages[index - 1] ?? null;
       const nextStage = requiredStages[index + 1] ?? null;
       return {
@@ -1520,6 +1619,16 @@ function buildParallelDispatchSummary(repoRoot, storyId, stageSummaries, require
   };
 }
 
+function resolveRequiredStageStatus(summary, requiredRoles) {
+  if (!summary) return 'missing';
+  const requiredSet = new Set(requiredRoles);
+  const roles = (summary.roles ?? []).filter((role) => requiredSet.has(role.role));
+  if (roles.length === 0) return 'missing';
+  if (roles.some((role) => role.effective_status === 'block')) return 'block';
+  if (roles.every((role) => role.effective_status === 'pass')) return 'pass';
+  return 'needs_review';
+}
+
 function renderParallelDispatchPrRows(parallelDispatch) {
   if (!parallelDispatch?.required) return '- parallel dispatch: not required';
   const rows = parallelDispatch.required_stages.map((stage) => (
@@ -1532,14 +1641,14 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
+  const parallelDispatchUpdatedAt = parallelDispatchPrepared ? await getFileMtimeIso(parallelDispatchPath) : null;
   const roles = [];
-  const stageRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
-    ? summaryRoles
-    : getStageRoles(reviewPolicy, stage);
   const lifecycle = await readLifecycle(repoRoot, storyId, stage);
   const lifecycleEntries = lifecycle.entries.map(decorateLifecycleEntry);
+  const stageRoles = await resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles, lifecycleEntries });
   for (const role of stageRoles) {
     const result = await readJsonIfExists(getReviewResultPath(reviewDir, role));
+    const historyArtifacts = await listReviewResultHistoryArtifacts(repoRoot, reviewDir, role);
     const binding = result ? bindReviewResult(result, currentGitContext) : null;
     const provenance = result ? validateAgentProvenance(result) : null;
     const effectiveStatus = !result
@@ -1563,7 +1672,8 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
       lifecycle: summarizeRoleLifecycle(lifecycleEntries, role),
-      artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null
+      artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null,
+      history_artifacts: historyArtifacts
     });
   }
   const status = resolveStageStatus(roles);
@@ -1581,16 +1691,74 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
     lifecycle: lifecycleSummary,
-    next_actions: buildLifecycleNextActions({ storyId, stage, lifecycleSummary }),
+    next_actions: buildStageNextActions({
+      storyId,
+      stage,
+      roles,
+      lifecycleSummary,
+      parallelDispatchPrepared,
+      stageRoles
+    }),
     updated_at: new Date().toISOString(),
     current_git_context: currentGitContext,
     parallel_dispatch: {
       mode: 'policy_aware_parallel_reviews',
       prepared: parallelDispatchPrepared,
       artifact: toWorkspaceRelative(repoRoot, parallelDispatchPath),
+      artifact_updated_at: parallelDispatchUpdatedAt,
       prepare_command: buildReviewPrepareCommand({ storyId, stage, roles: stageRoles })
     }
   };
+}
+
+async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summaryRoles = null, lifecycleEntries = [] }) {
+  const requestedRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
+    ? summaryRoles
+    : await readPreparedStageRoles(reviewDir);
+  const existingRoles = await listExistingReviewResultRoles(reviewDir);
+  const lifecycleRoles = lifecycleEntries.map((entry) => entry.role).filter(Boolean);
+  const stageRoleOrder = getStageRoles(reviewPolicy, stage);
+  const extraRoles = [...new Set([...existingRoles, ...lifecycleRoles])]
+    .filter((role) => !requestedRoles.includes(role))
+    .sort((a, b) => {
+      const aIndex = stageRoleOrder.indexOf(a);
+      const bIndex = stageRoleOrder.indexOf(b);
+      if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  const roles = [...new Set([...requestedRoles, ...extraRoles])];
+  return roles.length > 0 ? roles : getStageRoles(reviewPolicy, stage);
+}
+
+async function readPreparedStageRoles(reviewDir) {
+  const plan = await readJsonIfExists(path.join(reviewDir, 'review-plan.json'));
+  const roles = Array.isArray(plan?.roles) ? plan.roles : plan?.review_policy?.roles;
+  if (!Array.isArray(roles)) return [];
+  return [...new Set(roles.map((role) => String(role).trim()).filter(Boolean))];
+}
+
+async function listExistingReviewResultRoles(reviewDir) {
+  try {
+    const entries = await readdir(reviewDir, { withFileTypes: true });
+    return [...new Set(entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name.match(/^review-result-(.+)\.json$/)?.[1])
+      .filter(Boolean))];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+async function getFileMtimeIso(filePath) {
+  try {
+    return (await stat(filePath)).mtime.toISOString();
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 async function pathExists(filePath) {
@@ -1613,6 +1781,34 @@ function resolveOverallStatus(stageSummaries) {
   if (stageSummaries.some((stage) => stage.status === 'block')) return 'block';
   if (stageSummaries.length > 0 && stageSummaries.every((stage) => stage.status === 'pass')) return 'pass';
   return 'needs_review';
+}
+
+function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parallelDispatchPrepared, stageRoles }) {
+  const actions = [];
+  actions.push(...buildLifecycleNextActions({ storyId, stage, lifecycleSummary }));
+  const prepareCommand = buildReviewPrepareCommand({ storyId, stage, roles: stageRoles });
+  for (const role of roles) {
+    if (role.effective_status === 'pass') continue;
+    if (role.lifecycle?.effective_status === 'running') {
+      const latest = role.lifecycle.latest;
+      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${storyId} --stage ${stage} --role ${role.role} ${latest?.agent_id ? `--agent-id "${latest.agent_id}"` : `--lifecycle-id ${latest?.lifecycle_id ?? '<lifecycle-id>'}`} --close-reason completed --close-evidence <evidence>\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+      continue;
+    }
+    if (!parallelDispatchPrepared) {
+      actions.push(`Prepare ${stage} review dispatch: \`${prepareCommand}\``);
+      continue;
+    }
+    if (role.effective_status === 'missing') {
+      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'stale') {
+      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'unverified_agent') {
+      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'needs_changes' || role.effective_status === 'block') {
+      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    }
+  }
+  return [...new Set(actions)];
 }
 
 function bindReviewResult(result, currentGitContext) {
@@ -1654,7 +1850,7 @@ async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
 
 function renderReviewSummaryMarkdown(summary) {
   const rows = summary.roles.map((role) => (
-    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}`
+    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}`
   ));
   const lifecycle = summary.lifecycle ?? {};
   const nextActions = summary.next_actions?.length
@@ -1877,6 +2073,31 @@ function getReviewResultPath(reviewDir, role) {
   return path.join(reviewDir, `review-result-${role}.json`);
 }
 
+function getReviewResultHistoryDir(reviewDir) {
+  return path.join(reviewDir, 'history');
+}
+
+function getReviewResultHistoryPath(reviewDir, role, recordedAt) {
+  const timestamp = String(recordedAt).replace(/[^0-9A-Za-z.-]/g, '-');
+  return path.join(getReviewResultHistoryDir(reviewDir), `review-result-${role}-${timestamp}.json`);
+}
+
+async function listReviewResultHistoryArtifacts(repoRoot, reviewDir, role) {
+  const historyDir = getReviewResultHistoryDir(reviewDir);
+  try {
+    const entries = await readdir(historyDir, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => name.startsWith(`review-result-${role}-`) && name.endsWith('.json'))
+      .sort()
+      .map((name) => toWorkspaceRelative(repoRoot, path.join(historyDir, name)));
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
 async function listExistingReviewStages(repoRoot, storyId) {
   const dir = path.join(getWorkspaceDir(repoRoot), 'reviews', storyId);
   try {
@@ -1932,22 +2153,54 @@ async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
   });
 }
 
-async function closeMatchingLifecycleEntry(repoRoot, options = {}) {
-  if (!options.agentId) return null;
-  const lifecycle = await readLifecycle(repoRoot, options.storyId, options.stage);
-  const entry = findLifecycleEntry(lifecycle.entries, {
-    role: options.role,
-    agentId: options.agentId,
-    agentSystem: options.agentSystem
+async function updateLifecycle(repoRoot, storyId, stage, updater, afterWrite = null) {
+  const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
+  await mkdir(reviewDir, { recursive: true });
+  const lockDir = path.join(reviewDir, '.lifecycle.lock');
+  await withDirectoryLock(lockDir, async () => {
+    const lifecycle = await readLifecycle(repoRoot, storyId, stage);
+    await updater(lifecycle);
+    await writeLifecycle(repoRoot, storyId, stage, lifecycle);
+    if (afterWrite) {
+      const testDelayMs = Number(process.env.VIBEPRO_TEST_LIFECYCLE_SUMMARY_DELAY_MS ?? 0);
+      if (Number.isFinite(testDelayMs) && testDelayMs > 0) await sleep(testDelayMs);
+      await afterWrite(lifecycle);
+    }
   });
-  if (!entry || entry.closed_at) return null;
-  entry.status = 'closed';
-  entry.closed_at = new Date().toISOString();
-  entry.close_reason = options.closeReason ?? 'completed';
-  entry.close_evidence = options.closeEvidence ?? null;
-  entry.result_artifact = options.resultArtifact ?? null;
-  await writeLifecycle(repoRoot, options.storyId, options.stage, lifecycle);
-  return entry;
+}
+
+async function withDirectoryLock(lockDir, callback) {
+  const staleAfterMs = 30_000;
+  const start = Date.now();
+  while (true) {
+    try {
+      await mkdir(lockDir);
+      break;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      const lockStat = await stat(lockDir).catch((statError) => {
+        if (statError.code === 'ENOENT') return null;
+        throw statError;
+      });
+      if (lockStat && Date.now() - lockStat.mtimeMs > staleAfterMs) {
+        await rm(lockDir, { recursive: true, force: true });
+        continue;
+      }
+      if (Date.now() - start > staleAfterMs) {
+        throw new Error(`timed out waiting for lifecycle lock: ${lockDir}`);
+      }
+      await sleep(25);
+    }
+  }
+  try {
+    return await callback();
+  } finally {
+    await rm(lockDir, { recursive: true, force: true });
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function findLifecycleEntry(entries, options = {}) {
@@ -2022,12 +2275,19 @@ function summarizeLifecycle(entries) {
 function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
   const actions = [];
   for (const entry of lifecycleSummary.entries ?? []) {
-    if (entry.effective_status !== 'timed_out') continue;
     const closeSelector = entry.agent_id
       ? `--agent-id "${entry.agent_id}"`
       : `--lifecycle-id ${entry.lifecycle_id}`;
-    actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
-    actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    if (entry.effective_status === 'running') {
+      actions.push(`Wait for running ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}, then close it before recording: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason completed --close-evidence <evidence>`);
+    }
+    if (entry.effective_status === 'timed_out') {
+      actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${storyId} --stage ${stage} --role ${entry.role} ${closeSelector} --close-reason timeout`);
+      actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    }
+    if (entry.close_reason === 'manual_shutdown') {
+      actions.push(`Record replacement intent for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review start . --id ${storyId} --stage ${stage} --role ${entry.role} --agent-system ${entry.agent_system} --agent-id "<replacement-subagent-id>" --replacement-for ${entry.lifecycle_id}`);
+    }
   }
   return actions;
 }

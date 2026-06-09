@@ -872,6 +872,8 @@ function renderGateDagSvg(gateDag) {
     nodes.filter((node) => ['architecture', 'spec'].includes(node.id) || node.type === 'acceptance_criterion'),
     nodes.filter((node) => node.id === 'code'),
     nodes.filter((node) => node.id.startsWith('gate:') && node.id !== 'gate:agent_review'),
+    nodes.filter((node) => node.type === 'agent_review_dispatch_batch_gate'),
+    nodes.filter((node) => node.type === 'agent_review_dispatch_preflight_gate'),
     nodes.filter((node) => node.type === 'agent_review_prepare_gate'),
     nodes.filter((node) => node.type === 'agent_review_role_gate'),
     nodes.filter((node) => node.type === 'agent_review_record_gate'),
