@@ -8810,6 +8810,24 @@ architecture_docs:
   assert.equal(result.result.state.blocking_gate.reason, 'E2E evidence is missing');
   assert.equal(result.result.state.completion_status, 'blocked');
   assert.deepEqual(result.result.state.next_actions, ['E2E evidence is missing']);
+
+  await writeFile(gateDagPath, `${JSON.stringify({
+    nodes: [
+      {
+        id: 'review:preflight:gate:gate_evidence',
+        type: 'agent_review_dispatch_preflight_gate',
+        label: 'Review Dispatch Preflight',
+        required: true,
+        status: 'failed',
+        reason: 'stale review preflight blocks dispatch'
+      }
+    ]
+  }, null, 2)}\n`);
+  const preflightResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(preflightResult.exitCode, 0);
+  assert.equal(preflightResult.result.state.blocking_gate.id, 'review:preflight:gate:gate_evidence');
+  assert.equal(preflightResult.result.state.completion_status, 'blocked');
+  assert.deepEqual(preflightResult.result.state.next_actions, ['stale review preflight blocks dispatch']);
 });
 
 test('execute state treats route contract gates as PR blockers', async () => {
