@@ -6935,6 +6935,38 @@ test('review status ignores stale pr prepare required reviews from an older HEAD
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
 });
 
+test('review status marks pr prepare stale when newer review dispatch artifacts exist', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'review-artifact-drift.js'), 'export const value = 1;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add review artifact drift target']);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+
+  const reviewPrepare = await runCli([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'preview',
+    '--role',
+    'preview_smoke'
+  ]);
+  assert.equal(reviewPrepare.exitCode, 0);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'preview', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.pr_prepare_freshness.status, 'stale');
+  assert.equal(status.result.pr_prepare_freshness.newest_review_artifact.stage, 'preview');
+  assert.match(status.result.pr_prepare_freshness.reason, /predates newer review artifact/);
+  assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+});
+
 test('explore prepare record status and pr prepare surface read-only exploration evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -7137,6 +7169,32 @@ test('review record keeps append-only history for replaced review findings', asy
   assert.match(prBody, /### Review Artifacts/);
   assert.match(prBody, /architecture_spec:regression_risk \(pass\) artifact: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/review-result-regression_risk\.json/);
   assert.match(prBody, /history: \.vibepro\/reviews\/story-pr-prepare\/architecture_spec\/history\/review-result-regression_risk-/);
+});
+
+test('review summary lists next actions for missing prepared roles', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'agent-review-next-actions.js'), 'export const value = 1;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add agent review next action target']);
+
+  const prepare = await runCli([
+    'review',
+    'prepare',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'preview',
+    '--role',
+    'human_usability'
+  ]);
+  assert.equal(prepare.exitCode, 0);
+
+  const reviewSummary = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'preview', 'review-summary.md'), 'utf8');
+  assert.doesNotMatch(reviewSummary, /## Next Actions\n\n- none/);
+  assert.match(reviewSummary, /Run and record preview:human_usability/);
+  assert.match(reviewSummary, /vibepro review record \. --id story-pr-prepare --stage preview --role human_usability/);
 });
 
 test('review pass requires verified subagent or explicit manual review provenance', async () => {

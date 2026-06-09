@@ -385,7 +385,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
     stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
   }
   const latestPrPrepare = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
-  const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext);
+  const prPrepareFreshness = buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries);
   const views = buildReviewStatusViews({
     storyId,
     stageSummaries,
@@ -569,7 +569,7 @@ function buildFallbackRequiredCurrent(stageSummaries, reviewPolicy) {
   return requirements;
 }
 
-function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
+function buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummaries = []) {
   const currentHead = normalizeNullable(currentGitContext?.head_sha);
   if (!latestPrPrepare) {
     return {
@@ -587,7 +587,10 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
       ?? latestPrPrepare.pr_context?.git?.head_sha
   );
   const baseRef = normalizeNullable(latestPrPrepare.git?.base_ref ?? latestPrPrepare.pr_context?.base_ref);
-  const current = Boolean(artifactHead && currentHead && artifactHead === currentHead);
+  const headCurrent = Boolean(artifactHead && currentHead && artifactHead === currentHead);
+  const createdAt = normalizeNullable(latestPrPrepare.created_at);
+  const reviewArtifactDrift = findReviewArtifactDrift(stageSummaries, createdAt);
+  const current = headCurrent && !reviewArtifactDrift;
   return {
     status: current ? 'current' : 'stale',
     current,
@@ -595,10 +598,36 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext) {
     current_head_sha: currentHead,
     base_ref: baseRef,
     artifact: latestPrPrepare.artifact ?? '.vibepro/pr/<story-id>/pr-prepare.json',
+    artifact_created_at: createdAt,
+    newest_review_artifact: reviewArtifactDrift,
     reason: current
       ? 'Latest pr prepare artifact matches the current git HEAD.'
-      : 'Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun.'
+      : reviewArtifactDrift
+        ? `Latest pr prepare artifact predates newer review artifact ${reviewArtifactDrift.artifact ?? reviewArtifactDrift.stage}; rerun pr prepare so PR body and Gate DAG match current review dispatch state.`
+        : 'Latest pr prepare artifact was created for a different git HEAD; current required reviews fall back to configured required review roles until pr prepare is rerun.'
   };
+}
+
+function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt) {
+  const prTime = Date.parse(prPrepareCreatedAt ?? '');
+  if (!Number.isFinite(prTime)) return null;
+  let newest = null;
+  for (const stage of stageSummaries ?? []) {
+    const updatedTime = Date.parse(stage.updated_at ?? '');
+    if (!Number.isFinite(updatedTime) || updatedTime <= prTime) continue;
+    const artifact = stage.parallel_dispatch?.artifact ?? null;
+    if (!newest || updatedTime > newest.updated_time) {
+      newest = {
+        stage: stage.stage,
+        updated_at: stage.updated_at,
+        updated_time: updatedTime,
+        artifact
+      };
+    }
+  }
+  if (!newest) return null;
+  delete newest.updated_time;
+  return newest;
 }
 
 function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking, blockingDetail, blockingStatus }) {
@@ -1603,7 +1632,14 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
     block_count: roles.filter((role) => role.effective_status === 'block').length,
     needs_changes_count: roles.filter((role) => role.effective_status === 'needs_changes').length,
     lifecycle: lifecycleSummary,
-    next_actions: buildLifecycleNextActions({ storyId, stage, lifecycleSummary }),
+    next_actions: buildStageNextActions({
+      storyId,
+      stage,
+      roles,
+      lifecycleSummary,
+      parallelDispatchPrepared,
+      stageRoles
+    }),
     updated_at: new Date().toISOString(),
     current_git_context: currentGitContext,
     parallel_dispatch: {
@@ -1635,6 +1671,29 @@ function resolveOverallStatus(stageSummaries) {
   if (stageSummaries.some((stage) => stage.status === 'block')) return 'block';
   if (stageSummaries.length > 0 && stageSummaries.every((stage) => stage.status === 'pass')) return 'pass';
   return 'needs_review';
+}
+
+function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parallelDispatchPrepared, stageRoles }) {
+  const actions = [];
+  actions.push(...buildLifecycleNextActions({ storyId, stage, lifecycleSummary }));
+  const prepareCommand = buildReviewPrepareCommand({ storyId, stage, roles: stageRoles });
+  for (const role of roles) {
+    if (role.effective_status === 'pass') continue;
+    if (!parallelDispatchPrepared) {
+      actions.push(`Prepare ${stage} review dispatch: \`${prepareCommand}\``);
+      continue;
+    }
+    if (role.effective_status === 'missing') {
+      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'stale') {
+      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'unverified_agent') {
+      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    } else if (role.effective_status === 'needs_changes' || role.effective_status === 'block') {
+      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role })}\``);
+    }
+  }
+  return [...new Set(actions)];
 }
 
 function bindReviewResult(result, currentGitContext) {
