@@ -589,7 +589,7 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummar
   const baseRef = normalizeNullable(latestPrPrepare.git?.base_ref ?? latestPrPrepare.pr_context?.base_ref);
   const headCurrent = Boolean(artifactHead && currentHead && artifactHead === currentHead);
   const createdAt = normalizeNullable(latestPrPrepare.created_at);
-  const reviewArtifactDrift = findReviewArtifactDrift(stageSummaries, createdAt);
+  const reviewArtifactDrift = findReviewArtifactDrift(stageSummaries, createdAt, latestPrPrepare);
   const current = headCurrent && !reviewArtifactDrift;
   return {
     status: current ? 'current' : 'stale',
@@ -608,13 +608,29 @@ function buildPrPrepareFreshness(latestPrPrepare, currentGitContext, stageSummar
   };
 }
 
-function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt) {
+function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt, latestPrPrepare) {
   const prTime = Date.parse(prPrepareCreatedAt ?? '');
   if (!Number.isFinite(prTime)) return null;
+  const requiredKeys = new Set([
+    ...latestPrPrepare?.pr_context?.agent_reviews?.required_reviews ?? [],
+    ...latestPrPrepare?.pr_context?.agent_reviews?.checkpoint_required_reviews ?? []
+  ].map((item) => `${item.stage}:${item.role}`));
+  if (requiredKeys.size === 0) return null;
   let newest = null;
   for (const stage of stageSummaries ?? []) {
     const updatedTime = Date.parse(stage.updated_at ?? '');
     if (!Number.isFinite(updatedTime) || updatedTime <= prTime) continue;
+    const requiredRoles = (stage.roles ?? []).filter((role) => requiredKeys.has(`${stage.stage}:${role.role}`));
+    if (requiredRoles.length === 0) continue;
+    const hasRelevantDispatch = stage.parallel_dispatch?.prepared
+      && requiredRoles.some((role) => role.effective_status !== 'pass');
+    const hasRelevantResult = requiredRoles.some((role) => {
+      const recordedAt = Date.parse(role.recorded_at ?? '');
+      const lifecycleAt = Date.parse(role.lifecycle?.latest?.closed_at ?? role.lifecycle?.latest?.started_at ?? '');
+      return (Number.isFinite(recordedAt) && recordedAt > prTime)
+        || (Number.isFinite(lifecycleAt) && lifecycleAt > prTime);
+    });
+    if (!hasRelevantDispatch && !hasRelevantResult) continue;
     const artifact = stage.parallel_dispatch?.artifact ?? null;
     if (!newest || updatedTime > newest.updated_time) {
       newest = {

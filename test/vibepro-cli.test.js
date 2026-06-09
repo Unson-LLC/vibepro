@@ -6953,16 +6953,16 @@ test('review status marks pr prepare stale when newer review dispatch artifacts 
     '--id',
     'story-pr-prepare',
     '--stage',
-    'preview',
+    'gate',
     '--role',
-    'preview_smoke'
+    'gate_evidence'
   ]);
   assert.equal(reviewPrepare.exitCode, 0);
 
-  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'preview', '--json']);
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
   assert.equal(status.exitCode, 0);
   assert.equal(status.result.pr_prepare_freshness.status, 'stale');
-  assert.equal(status.result.pr_prepare_freshness.newest_review_artifact.stage, 'preview');
+  assert.equal(status.result.pr_prepare_freshness.newest_review_artifact.stage, 'gate');
   assert.match(status.result.pr_prepare_freshness.reason, /predates newer review artifact/);
   assert.equal(status.result.blocking_summary.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
 });
