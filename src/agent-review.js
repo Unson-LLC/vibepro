@@ -270,20 +270,24 @@ export async function recordAgentReview(repoRoot, options = {}) {
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
   await writeJson(resultPath, result);
   await writeJson(historyPath, result);
-  if (result.agent_provenance.lifecycle?.agent_closed) {
-    await closeMatchingLifecycleEntry(root, {
-      storyId,
-      stage,
+  let summary = null;
+  await updateLifecycle(root, storyId, stage, (lifecycle) => {
+    if (!result.agent_provenance.lifecycle?.agent_closed) return;
+    const entry = findLifecycleEntry(lifecycle.entries, {
       role,
-      agentSystem: result.agent_provenance.system,
       agentId: result.agent_provenance.agent_id,
-      closeReason: 'completed',
-      closeEvidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath),
-      resultArtifact: toWorkspaceRelative(root, resultPath)
+      agentSystem: result.agent_provenance.system
     });
-  }
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
+    if (!entry || entry.closed_at) return;
+    entry.status = 'closed';
+    entry.closed_at = new Date().toISOString();
+    entry.close_reason = 'completed';
+    entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
+    entry.result_artifact = toWorkspaceRelative(root, resultPath);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
+  });
   return {
     review: result,
     summary,
@@ -328,11 +332,14 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
+  const gitContext = await collectReviewGitContext(root);
+  let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     lifecycle.entries.push(entry);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
   });
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     lifecycle: entry,
     summary,
@@ -350,6 +357,8 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = getReviewStageDir(root, storyId, stage);
   const closeReason = normalizeCloseReason(options.closeReason);
   let match = null;
+  const gitContext = await collectReviewGitContext(root);
+  let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     match = findLifecycleEntry(lifecycle.entries, {
       lifecycleId: options.lifecycleId,
@@ -364,9 +373,10 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     match.closed_at = new Date().toISOString();
     match.close_reason = closeReason;
     match.close_evidence = normalizeNullable(options.closeEvidence);
+  }, async () => {
+    summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
+    await writeReviewSummaryArtifacts(root, reviewDir, summary);
   });
-  const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: await collectReviewGitContext(root), reviewPolicy });
-  await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
     lifecycle: decorateLifecycleEntry(match),
     summary,
@@ -2143,7 +2153,7 @@ async function writeLifecycle(repoRoot, storyId, stage, lifecycle) {
   });
 }
 
-async function updateLifecycle(repoRoot, storyId, stage, updater) {
+async function updateLifecycle(repoRoot, storyId, stage, updater, afterWrite = null) {
   const reviewDir = getReviewStageDir(repoRoot, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const lockDir = path.join(reviewDir, '.lifecycle.lock');
@@ -2151,6 +2161,7 @@ async function updateLifecycle(repoRoot, storyId, stage, updater) {
     const lifecycle = await readLifecycle(repoRoot, storyId, stage);
     await updater(lifecycle);
     await writeLifecycle(repoRoot, storyId, stage, lifecycle);
+    if (afterWrite) await afterWrite(lifecycle);
   });
 }
 
@@ -2186,25 +2197,6 @@ async function withDirectoryLock(lockDir, callback) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function closeMatchingLifecycleEntry(repoRoot, options = {}) {
-  if (!options.agentId) return null;
-  let entry = null;
-  await updateLifecycle(repoRoot, options.storyId, options.stage, (lifecycle) => {
-    entry = findLifecycleEntry(lifecycle.entries, {
-      role: options.role,
-      agentId: options.agentId,
-      agentSystem: options.agentSystem
-    });
-    if (!entry || entry.closed_at) return;
-    entry.status = 'closed';
-    entry.closed_at = new Date().toISOString();
-    entry.close_reason = options.closeReason ?? 'completed';
-    entry.close_evidence = options.closeEvidence ?? null;
-    entry.result_artifact = options.resultArtifact ?? null;
-  });
-  return entry;
 }
 
 function findLifecycleEntry(entries, options = {}) {

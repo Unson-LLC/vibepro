@@ -6855,6 +6855,14 @@ test('review lifecycle preserves concurrent stage starts', async () => {
   const lifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
   assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-evidence'), true);
   assert.equal(lifecycle.entries.some((entry) => entry.agent_id === 'agent-release'), true);
+  const summary = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.json'));
+  assert.equal(summary.roles.find((role) => role.role === 'gate_evidence').lifecycle.effective_status, 'running');
+  assert.equal(summary.roles.find((role) => role.role === 'release_risk').lifecycle.effective_status, 'running');
+  assert.equal(summary.next_actions.some((action) => action.includes('agent-evidence')), true);
+  assert.equal(summary.next_actions.some((action) => action.includes('agent-release')), true);
+  const summaryMarkdown = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-summary.md'), 'utf8');
+  assert.match(summaryMarkdown, /agent-evidence/);
+  assert.match(summaryMarkdown, /agent-release/);
 });
 
 test('review status orders running close commands before stale record commands', async () => {
