@@ -184,7 +184,7 @@ test(`${storyId} workflow replay blocks stale pr-create merge path`, async () =>
   const gh = await makeFakeGhMerge({
     url: 'https://github.example.test/unson/vibepro/pull/171',
     headRefName: 'feature/pr-readiness',
-    headRefOid: '0000000000000000000000000000000000000000',
+    headRefOid: headSha,
     baseRefName: 'main',
     mergeStateStatus: 'CLEAN',
     reviewDecision: '',
@@ -208,8 +208,9 @@ test(`${storyId} workflow replay blocks stale pr-create merge path`, async () =>
   });
   assert.equal(merge.exitCode, 2);
   assert.equal(merge.result.merge.status, 'blocked');
-  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'blocked');
-  assert.equal(merge.result.merge.stop_reason.includes('remote_head_mismatch'), true);
+  assert.equal(merge.result.merge.preconditions.gate_ready, false);
+  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'passed');
+  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
