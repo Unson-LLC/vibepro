@@ -8065,10 +8065,10 @@ function formatCriticalGateEvidenceInstructions(gates) {
     .join(' ');
 }
 
-function buildGateOverride(gateDag, options, context = {}) {
+export function buildGateOverride(gateDag, options, context = {}) {
   if (!gateDag || gateDag.overall_status === 'ready_for_review') return null;
   if (!options.allowNeedsVerification) return null;
-  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const unresolvedGates = collectPrReadinessBlockingItems(gateDag);
   const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const completionQuality = context.completionQuality ?? null;
   return {

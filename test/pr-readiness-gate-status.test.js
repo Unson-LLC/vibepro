@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  buildGateOverride,
   buildExecutionGateStatus,
   buildPrPrepareGateStatus
 } from '../src/pr-manager.js';
@@ -40,4 +41,29 @@ test('execution gate remains ready only when Gate DAG overall_status is ready_fo
   const executionGate = buildExecutionGateStatus(readyGateDag);
   assert.equal(executionGate.status, 'ready');
   assert.equal(executionGate.pr_create_allowed, true);
+});
+
+test('gate override records synthetic overall status blocker for waiver audit', () => {
+  const gateDag = {
+    schema_version: '0.1.0',
+    overall_status: 'needs_verification',
+    nodes: [
+      {
+        id: 'story',
+        type: 'story',
+        label: 'Story',
+        status: 'present',
+        required: true
+      }
+    ]
+  };
+
+  const override = buildGateOverride(gateDag, {
+    allowNeedsVerification: true,
+    verificationWaiver: 'audit waiver reason'
+  });
+  assert.equal(override.allowed, true);
+  assert.equal(override.unresolved_gates[0].id, 'gate:overall_status');
+  assert.equal(override.unresolved_gates[0].status, 'needs_verification');
+  assert.match(override.unresolved_gates[0].reason, /Gate DAG overall_status is not ready_for_review/);
 });
