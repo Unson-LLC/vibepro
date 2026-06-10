@@ -303,7 +303,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
   const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
   const gatesReadyForPrCreate = gateDag
-    ? Boolean(prPrepare && unresolvedGates.length === 0)
+    ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
   const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
   const waiverRequired = !prCreated && !readyForPrCreate && Boolean(prPrepare) && (
@@ -488,7 +488,7 @@ function summarizeVerificationEvidence(root, evidence) {
 
 function collectUnresolvedRequiredGates(gateDag) {
   const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
-  return nodes
+  const unresolved = nodes
     .filter((node) => [
       'story',
       'story_source_integrity_gate',
@@ -532,6 +532,17 @@ function collectUnresolvedRequiredGates(gateDag) {
     ].includes(node.type))
     .filter((node) => node.required)
     .filter((node) => isUnresolvedStatus(node.status));
+  if (gateDag && gateDag.overall_status !== 'ready_for_review') {
+    unresolved.unshift({
+      id: 'gate:overall_status',
+      type: 'artifact_consistency_gate',
+      label: 'Gate DAG overall status',
+      status: gateDag.overall_status ?? 'unknown',
+      required: true,
+      reason: `Gate DAG overall_status=${gateDag.overall_status ?? 'unknown'} is not ready_for_review`
+    });
+  }
+  return unresolved;
 }
 
 function collectRequiredExecutionBlockers(executionDag, { storyId, baseRef, managedWorktree, expectedHeadSha }) {
