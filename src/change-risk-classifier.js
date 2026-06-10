@@ -18,7 +18,10 @@ const WORKFLOW_KEYWORDS = [
   /キュー/
 ];
 
-export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkContracts = null, regressionRisk = null } = {}) {
+const MAX_LOW_RISK_SOURCE_FILES = 2;
+const MAX_LOW_RISK_SOURCE_LINES = 30;
+
+export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkContracts = null, regressionRisk = null, diffStats = null } = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   const testFiles = fileGroups.tests?.files ?? [];
   const allFiles = [
@@ -52,6 +55,18 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
   appendRegressionReasons(reasons, { criticalRegressionHits, highRegressionHits });
   const hasWorkflowSignal = WORKFLOW_KEYWORDS.some((pattern) => pattern.test(storyText) || allFiles.some((file) => pattern.test(file)));
   const lowRiskEvidenceChange = isLowRiskEvidenceChange({ fileGroups, allFiles, sourceFiles });
+  const smallSourceLowRisk = !lowRiskEvidenceChange && isSmallSourceLowRiskChange({
+    fileGroups,
+    allFiles,
+    sourceFiles,
+    riskSurfaces,
+    regressionHits,
+    diffStats
+  });
+  if (smallSourceLowRisk) {
+    reasons.push(`small source diff (<=${MAX_LOW_RISK_SOURCE_FILES} files, <=${MAX_LOW_RISK_SOURCE_LINES} changed lines) with no detected risk surfaces`);
+  }
+  const reuseEligible = lowRiskEvidenceChange || smallSourceLowRisk;
   const crossSurface = riskSurfaces.filter((surface) => surface !== 'test_coverage').length >= 3;
   const coreWorkflowHeavy = riskSurfaces.includes('core_workflow_state') && hasWorkflowSignal;
   const baseProfile = (crossSurface && hasWorkflowSignal) || coreWorkflowHeavy
@@ -66,7 +81,7 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
   const profile = criticalRegressionHits.length > 0 ? 'workflow_heavy' : baseProfile;
   const changeType = profile === 'workflow_heavy'
     ? 'cross_surface_workflow_change'
-    : lowRiskEvidenceChange
+    : reuseEligible
       ? 'low_risk_evidence_change'
     : profile === 'ui_interaction'
       ? 'ui_interaction_change'
@@ -80,7 +95,7 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
     risk_surfaces: riskSurfaces,
     reasons,
     required_gate_profile: profile,
-    evidence_reuse_policy: buildEvidenceReusePolicy({ lowRiskEvidenceChange, fileGroups }),
+    evidence_reuse_policy: buildEvidenceReusePolicy({ lowRiskEvidenceChange, smallSourceLowRisk, fileGroups, sourceFiles, diffStats }),
     regression_hotspots: regressionHits,
     regression_escalated: criticalRegressionHits.length > 0
   };
@@ -104,24 +119,62 @@ function isLowRiskEvidencePath(file) {
     || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file);
 }
 
-function buildEvidenceReusePolicy({ lowRiskEvidenceChange, fileGroups }) {
-  if (!lowRiskEvidenceChange) {
+function isSmallSourceLowRiskChange({ fileGroups, allFiles, sourceFiles, riskSurfaces, regressionHits, diffStats }) {
+  if (!diffStats || typeof diffStats !== 'object') return false;
+  if (sourceFiles.length === 0 || sourceFiles.length > MAX_LOW_RISK_SOURCE_FILES) return false;
+  if (riskSurfaces.some((surface) => surface !== 'test_coverage')) return false;
+  if (regressionHits.length > 0) return false;
+  const allowedCompanions = [
+    fileGroups.story_docs?.files ?? [],
+    fileGroups.specifications?.files ?? [],
+    fileGroups.tests?.files ?? []
+  ].flat();
+  if (sourceFiles.length + allowedCompanions.length !== allFiles.length) return false;
+  let totalChangedLines = 0;
+  for (const file of sourceFiles) {
+    const stats = diffStats[file];
+    if (!Number.isFinite(stats?.additions) || !Number.isFinite(stats?.deletions)) return false;
+    totalChangedLines += stats.additions + stats.deletions;
+  }
+  return totalChangedLines <= MAX_LOW_RISK_SOURCE_LINES;
+}
+
+function buildEvidenceReusePolicy({ lowRiskEvidenceChange, smallSourceLowRisk = false, fileGroups, sourceFiles = [], diffStats = null }) {
+  const testFiles = fileGroups.tests?.files ?? [];
+  if (lowRiskEvidenceChange) {
+    const docsFiles = [
+      ...(fileGroups.story_docs?.files ?? []),
+      ...(fileGroups.specifications?.files ?? [])
+    ];
     return {
-      allowed: false,
-      mode: 'strict_current_git_binding'
+      allowed: true,
+      mode: 'path_scoped_low_risk_reuse',
+      reason: 'low-risk Story/Spec/test evidence changes may reuse already passing current-head runtime evidence without rerunning unrelated live verification',
+      rerun_required_for: testFiles,
+      docs_only: docsFiles.length > 0 && testFiles.length === 0
     };
   }
-  const testFiles = fileGroups.tests?.files ?? [];
-  const docsFiles = [
-    ...(fileGroups.story_docs?.files ?? []),
-    ...(fileGroups.specifications?.files ?? [])
-  ];
+  if (smallSourceLowRisk) {
+    const totalChangedLines = sourceFiles.reduce((sum, file) => {
+      const stats = diffStats?.[file];
+      return sum + (stats?.additions ?? 0) + (stats?.deletions ?? 0);
+    }, 0);
+    return {
+      allowed: true,
+      mode: 'small_source_low_risk_reuse',
+      reason: 'small source diff with no detected risk surfaces or regression hotspots may reuse already passing evidence; CI re-verifies unit/typecheck/build downstream',
+      rerun_required_for: testFiles,
+      source_line_budget: {
+        max_files: MAX_LOW_RISK_SOURCE_FILES,
+        max_total_lines: MAX_LOW_RISK_SOURCE_LINES,
+        total_changed_lines: totalChangedLines
+      },
+      docs_only: false
+    };
+  }
   return {
-    allowed: true,
-    mode: 'path_scoped_low_risk_reuse',
-    reason: 'low-risk Story/Spec/test evidence changes may reuse already passing current-head runtime evidence without rerunning unrelated live verification',
-    rerun_required_for: testFiles,
-    docs_only: docsFiles.length > 0 && testFiles.length === 0
+    allowed: false,
+    mode: 'strict_current_git_binding'
   };
 }
 

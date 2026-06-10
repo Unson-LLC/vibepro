@@ -2243,6 +2243,15 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
 
   await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), 'export const value = 2;\n');
 
+  const reuseResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(reuseResult.exitCode, 0);
+  const reuseGate = reuseResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(reuseGate.status, 'passed');
+  assert.equal(reuseGate.artifacts.some((artifact) => artifact.status === 'reused_low_risk'), true);
+
+  const largeRewrite = Array.from({ length: 40 }, (_, index) => `export const value${index} = ${index};`).join('\n');
+  await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), `${largeRewrite}\n`);
+
   const staleResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(staleResult.exitCode, 0);
   const staleGate = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');

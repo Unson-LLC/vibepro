@@ -1264,6 +1264,7 @@ async function collectGitState(repoRoot, options) {
   const baseSha = await gitOptional(repoRoot, ['rev-parse', baseRef]);
   const mergeBaseSha = baseSha && headSha ? await gitOptional(repoRoot, ['merge-base', baseRef, headRef]) : '';
   const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
+  const diffLineStats = await getDiffLineStats(repoRoot, baseRef, headRef, includesDirtyInChangedFiles);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
@@ -1292,6 +1293,7 @@ async function collectGitState(repoRoot, options) {
     status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
     committed_changed_files: committedChangedFiles,
     changed_files: changedFiles,
+    diff_line_stats: diffLineStats,
     dirty_files: dirtyFiles,
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
     commit_message_health: commitMessageHealth,
@@ -1381,6 +1383,26 @@ async function getChangedFiles(repoRoot, baseRef, headRef) {
     .map((line) => line.trim())
     .filter(Boolean)
     .map(parseNameStatus);
+}
+
+async function getDiffLineStats(repoRoot, baseRef, headRef, includeDirty) {
+  // Working-tree diff against base covers committed + staged + unstaged tracked
+  // changes in one pass; untracked/binary/renamed entries stay unknown, which
+  // downstream treats as not eligible for low-risk evidence reuse.
+  const output = includeDirty
+    ? await gitOptional(repoRoot, ['diff', '--numstat', baseRef])
+    : (await gitOptional(repoRoot, ['diff', '--numstat', `${baseRef}...${headRef}`])
+      || await gitOptional(repoRoot, ['diff', '--numstat', baseRef, headRef]));
+  const stats = {};
+  for (const line of output.split('\n')) {
+    const match = line.match(/^(\d+|-)\t(\d+|-)\t(.+)$/);
+    if (!match || match[3].includes(' => ')) continue;
+    stats[match[3]] = {
+      additions: match[1] === '-' ? null : Number(match[1]),
+      deletions: match[2] === '-' ? null : Number(match[2])
+    };
+  }
+  return stats;
 }
 
 async function getCommits(repoRoot, baseRef, headRef) {
@@ -3122,7 +3144,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     fileGroups,
     storySource: primaryStory,
     networkContracts,
-    regressionRisk
+    regressionRisk,
+    diffStats: git.diff_line_stats ?? null
   });
   const prRoute = buildPrRouteClassification({
     git,

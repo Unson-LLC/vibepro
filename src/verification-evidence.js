@@ -11,6 +11,8 @@ import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js'
 const execFileAsync = promisify(execFile);
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
+const PASS_STATUSES = new Set(['pass', 'passed', 'success', 'ok']);
+const FAIL_STATUSES = new Set(['fail', 'failed', 'error']);
 const EVIDENCE_LOCK_TIMEOUT_MS = 10000;
 const EVIDENCE_LOCK_STALE_MS = 60000;
 
@@ -30,6 +32,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     storyId,
     commandName: 'verify record'
   });
+  const artifactCheck = await crossCheckArtifact(root, {
+    artifact: options.artifact,
+    status: options.status
+  });
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');
@@ -43,6 +49,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       command: options.command ?? null,
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
+      artifact_check: artifactCheck,
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
@@ -210,6 +217,105 @@ async function assertInitializedWorkspace(repoRoot) {
 function normalizeArtifact(repoRoot, artifact) {
   const resolved = path.resolve(repoRoot, artifact);
   return toWorkspaceRelative(repoRoot, resolved);
+}
+
+async function crossCheckArtifact(repoRoot, { artifact, status }) {
+  const claimedOutcome = PASS_STATUSES.has(status) ? 'pass' : FAIL_STATUSES.has(status) ? 'fail' : null;
+  if (!artifact) {
+    if (claimedOutcome !== 'pass') return null;
+    return {
+      status: 'missing',
+      format: null,
+      artifact_outcome: null,
+      reason: 'no machine-readable artifact was provided for a passing claim'
+    };
+  }
+  let raw;
+  try {
+    raw = await readFile(path.resolve(repoRoot, artifact), 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error(
+        `verify record --artifact not found: ${artifact}. ` +
+        'Provide a machine-readable test output file that exists, or omit --artifact.'
+      );
+    }
+    throw error;
+  }
+  const parsed = parseArtifactOutcome(raw);
+  if (!parsed) {
+    return {
+      status: 'unrecognized',
+      format: null,
+      artifact_outcome: null,
+      reason: 'artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check'
+    };
+  }
+  if (claimedOutcome === null) {
+    return {
+      status: 'not_applicable',
+      format: parsed.format,
+      artifact_outcome: parsed.outcome,
+      reason: `claimed status "${status}" has no pass/fail outcome to cross-check`
+    };
+  }
+  if (claimedOutcome === 'pass' && parsed.outcome === 'fail') {
+    throw new Error(
+      `verify record --status ${status} contradicts artifact ${artifact}: ` +
+      `${parsed.format} output reports failures (${parsed.detail}). ` +
+      'Fix the failures and rerun, or record the real status.'
+    );
+  }
+  if (claimedOutcome !== parsed.outcome) {
+    return {
+      status: 'contradicted',
+      format: parsed.format,
+      artifact_outcome: parsed.outcome,
+      reason: `claimed status "${status}" but artifact reports ${parsed.outcome} (${parsed.detail})`
+    };
+  }
+  return {
+    status: 'verified',
+    format: parsed.format,
+    artifact_outcome: parsed.outcome,
+    reason: `${parsed.format} artifact outcome matches the claimed status (${parsed.detail})`
+  };
+}
+
+function parseArtifactOutcome(raw) {
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+  if (typeof data.success === 'boolean' || typeof data.numFailedTests === 'number') {
+    const failed = data.success === false || (data.numFailedTests ?? 0) > 0;
+    return {
+      format: 'vitest_jest',
+      outcome: failed ? 'fail' : 'pass',
+      detail: `numFailedTests=${data.numFailedTests ?? 0}, success=${data.success ?? 'unknown'}`
+    };
+  }
+  const stats = data.stats;
+  if (stats && typeof stats === 'object' && (typeof stats.unexpected === 'number' || typeof stats.expected === 'number')) {
+    const failed = (stats.unexpected ?? 0) > 0;
+    return {
+      format: 'playwright',
+      outcome: failed ? 'fail' : 'pass',
+      detail: `unexpected=${stats.unexpected ?? 0}, expected=${stats.expected ?? 0}`
+    };
+  }
+  if (typeof data.status === 'string') {
+    if (PASS_STATUSES.has(data.status)) {
+      return { format: 'generic_status', outcome: 'pass', detail: `status=${data.status}` };
+    }
+    if (FAIL_STATUSES.has(data.status)) {
+      return { format: 'generic_status', outcome: 'fail', detail: `status=${data.status}` };
+    }
+  }
+  return null;
 }
 
 async function collectEvidenceGitContext(repoRoot) {
