@@ -573,7 +573,7 @@ export async function createPullRequest(repoRoot, options = {}) {
     );
   }
   if (gateDag && gateDag.overall_status !== 'ready_for_review' && !options.allowNeedsVerification) {
-    const unresolved = collectUnresolvedRequiredGates(gateDag);
+    const unresolved = collectPrReadinessBlockingItems(gateDag);
     throw new Error(
       `Pre-create gate check failed: gate_dag.overall_status === '${gateDag.overall_status}' ` +
       `(needs_evidence_count=${gateDag.summary?.needs_evidence_count ?? 0}). ` +
@@ -1070,12 +1070,14 @@ function buildAuthorizationScoring({ fileGroups, storySource, decisionRecords })
   };
 }
 
-function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
-  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
+  const unresolvedGates = collectPrReadinessBlockingItems(gateDag);
   const criticalGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const overallStatus = gateDag?.overall_status ?? 'unknown';
   const executionGate = buildExecutionGateStatus(gateDag);
-  const readyForPrCreate = executionGate.pr_create_allowed === true && unresolvedGates.length === 0;
+  const readyForPrCreate = overallStatus === 'ready_for_review'
+    && executionGate.pr_create_allowed === true
+    && unresolvedGates.length === 0;
   const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
   return {
     schema_version: '0.1.0',
@@ -1101,8 +1103,8 @@ function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
   };
 }
 
-function buildExecutionGateStatus(gateDag) {
-  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+export function buildExecutionGateStatus(gateDag) {
+  const unresolvedGates = collectPrReadinessBlockingItems(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const status = blockingGates.length > 0
     ? 'blocked'
@@ -1118,6 +1120,24 @@ function buildExecutionGateStatus(gateDag) {
     blocking_gates: blockingGates,
     required_actions: (blockingGates.length > 0 ? blockingGates : unresolvedGates).map(formatExecutionGateAction)
   };
+}
+
+function collectPrReadinessBlockingItems(gateDag) {
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const overallStatus = gateDag?.overall_status ?? null;
+  if (!gateDag || overallStatus === 'ready_for_review' || unresolvedGates.length > 0) return unresolvedGates;
+  return [
+    {
+      id: 'gate:overall_status',
+      type: 'gate_dag_status_gate',
+      label: 'Gate DAG Overall Status',
+      status: overallStatus,
+      reason: 'Gate DAG overall_status is not ready_for_review, but no unresolved required gate details were emitted. Regenerate PR evidence or inspect the Gate DAG status source before PR creation.',
+      required_actions: [
+        'Rerun `vibepro pr prepare` after refreshing evidence, or inspect why Gate DAG overall_status is not ready_for_review.'
+      ]
+    }
+  ];
 }
 
 function formatExecutionGateAction(gate) {
