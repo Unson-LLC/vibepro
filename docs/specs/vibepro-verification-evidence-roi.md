@@ -13,9 +13,9 @@ title: Verification Evidence ROI Spec
   - Playwright: `stats.unexpected > 0`。
   - generic: top-level `status` が pass 系/fail 系の値。
 - 申告 status が pass 系（pass/passed/success/ok）で artifact outcome が fail の場合、record はエラーで失敗し、証跡は書き込まれない。
-- 突き合わせ結果は command の `artifact_check` に記録される: `status` は `verified` / `unrecognized` / `missing` のいずれか。
+- 突き合わせ結果は command の `artifact_check` に記録される: `status` は `verified` / `unrecognized` / `missing` / `contradicted` / `not_applicable` のいずれか。
 - 申告 status が pass 系で `--artifact` が未指定の場合、`artifact_check.status = "missing"` として記録される。record はブロックしない。
-- fail 系 / needs_setup の申告は artifact との矛盾でブロックしない（ゲートを閉じる方向の申告は安全側）。
+- fail 系 / needs_setup の申告は artifact との矛盾でブロックしない（ゲートを閉じる方向の申告は安全側）。fail 系申告と pass の artifact の不一致は `contradicted`、needs_setup 申告に artifact が付いた場合は `not_applicable` として記録される。
 
 ## Widened low-risk evidence reuse
 
