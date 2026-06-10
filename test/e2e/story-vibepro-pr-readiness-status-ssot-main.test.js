@@ -274,3 +274,62 @@ test(`${storyId} workflow replay blocks stale pr-create when pr-prepare is missi
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
+
+test(`${storyId} workflow replay blocks stale pr-prepare embedded Gate DAG`, async () => {
+  // story-vibepro-pr-readiness-status-ssot scenario:4
+  // The standalone gate-dag.json is the current SSOT and must outrank stale embedded pr-prepare DAGs on merge.
+  const repo = await makeStoryRepo();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  const currentGateDag = gateDag('needs_verification');
+  await writeJson(path.join(prDir, 'gate-dag.json'), currentGateDag);
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: storyId, title: 'PR readiness statusをGate DAG overall_statusに一本化する' },
+    gate_status: buildPrPrepareGateStatus(gateDag('ready_for_review')),
+    pr_context: { gate_dag: gateDag('ready_for_review') },
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    dry_run: false,
+    story: { story_id: storyId },
+    base: 'main',
+    head: 'feature/pr-readiness',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/171',
+    gate_dag: gateDag('ready_for_review'),
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } }
+  });
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/171',
+    headRefName: 'feature/pr-readiness',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeAttempted: false
+  });
+  const merge = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    storyId,
+    '--base',
+    'main',
+    '--dry-run',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(merge.exitCode, 2);
+  assert.equal(merge.result.merge.preconditions.gate_ready, false);
+  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
+  const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
+  assert.equal(ghState.mergeAttempted, false);
+});
