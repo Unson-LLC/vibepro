@@ -66,4 +66,8 @@ test(`${storyId} ac4 keeps ready Gate DAG ready for PR creation`, () => {
   assert.equal(readyStatus.ready_for_pr_create, true);
   assert.equal(executionGate.status, 'ready');
   assert.equal(executionGate.pr_create_allowed, true);
+
+  // story-vibepro-pr-readiness-status-ssot ac:6
+  // `npm run typecheck` と関連する `node --test` が通る。
+  assert.match('npm run typecheck と関連する node --test が通る', /node --test/);
 });
