@@ -214,3 +214,63 @@ test(`${storyId} workflow replay blocks stale pr-create merge path`, async () =>
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
+
+test(`${storyId} workflow replay blocks stale pr-create when pr-prepare is missing`, async () => {
+  // story-vibepro-pr-readiness-status-ssot scenario:3
+  // Standalone current Gate DAG artifacts must still outrank stale pr-create readiness when pr-prepare.json is absent.
+  const repo = await makeStoryRepo();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'gate-dag.json'), gateDag('needs_verification'));
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    dry_run: false,
+    story: { story_id: storyId },
+    base: 'main',
+    head: 'feature/pr-readiness',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/171',
+    gate_dag: gateDag('ready_for_review'),
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } }
+  });
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.state.last_pr_prepare, null);
+  assert.notEqual(status.result.state.completion_status, 'pr_created');
+  assert.equal(status.result.state.next_actions.some((action) => action.includes('vibepro execute merge')), false);
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/171',
+    headRefName: 'feature/pr-readiness',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeAttempted: false
+  });
+  const merge = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    storyId,
+    '--base',
+    'main',
+    '--dry-run',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(merge.exitCode, 2);
+  assert.equal(merge.result.merge.status, 'blocked');
+  assert.equal(merge.result.merge.preconditions.gate_ready, false);
+  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'passed');
+  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
+  const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
+  assert.equal(ghState.mergeAttempted, false);
+});

@@ -306,7 +306,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
   const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
-  const prCreatedReadyForMerge = prCreated && (!prPrepare || readyForPrCreate);
+  const prCreatedReadyForMerge = prCreated && (gateDag ? readyForPrCreate : (!prPrepare || readyForPrCreate));
   const waiverRequired = !prCreatedReadyForMerge && !readyForPrCreate && Boolean(prPrepare) && (
     executionBlockingGate
       ? false
