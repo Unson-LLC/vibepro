@@ -125,10 +125,6 @@ export async function executeMerge(repoRoot, options = {}) {
 
   merge.commands.push(formatCommand(['git', ['fetch', 'origin', baseBranch]]));
   merge.commands.push(formatCommand(['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)]));
-  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
-  if (deleteBranch) {
-    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
-  }
 
   const fetchResult = await runCommand(root, ['git', ['fetch', 'origin', baseBranch]], options);
   merge.results.push(fetchResult);
@@ -201,6 +197,11 @@ export async function executeMerge(repoRoot, options = {}) {
     merge.stop_reason = blockingReasons.join(',');
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return { merge, artifacts };
+  }
+
+  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
+  if (deleteBranch) {
+    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
   }
 
   if (dryRun) {
