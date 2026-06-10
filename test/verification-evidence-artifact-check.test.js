@@ -1,0 +1,264 @@
+import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+
+import { recordVerificationEvidence } from '../src/verification-evidence.js';
+
+async function makeWorkspaceRepo() {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-artifact-check-'));
+  await mkdir(path.join(root, '.vibepro'), { recursive: true });
+  await writeFile(
+    path.join(root, '.vibepro', 'vibepro-manifest.json'),
+    JSON.stringify({ schema_version: '0.1.0', runs: [], latest_run_by_story: {} }, null, 2)
+  );
+  return root;
+}
+
+async function evidenceFileExists(root, storyId) {
+  try {
+    await stat(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'));
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+function latestCommand(result) {
+  return result.evidence.commands[0];
+}
+
+test('pass申告とvitest成功artifactが一致する場合_artifact_checkがverifiedで記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'unit-results.json'), JSON.stringify({
+    numTotalTests: 12,
+    numFailedTests: 0,
+    success: true
+  }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test',
+    artifact: 'unit-results.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'verified');
+  assert.equal(command.artifact_check.format, 'vitest_jest');
+  assert.equal(command.artifact_check.artifact_outcome, 'pass');
+});
+
+test('pass申告とvitest失敗artifactが矛盾する場合_エラーになり証跡は書き込まれない', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'unit-results.json'), JSON.stringify({
+    numTotalTests: 12,
+    numFailedTests: 2,
+    success: false
+  }));
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a',
+      kind: 'unit',
+      status: 'pass',
+      command: 'npm test',
+      artifact: 'unit-results.json'
+    }),
+    /contradicts artifact/
+  );
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
+test('pass申告とPlaywright unexpected失敗artifactが矛盾する場合_エラーになる', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'e2e-results.json'), JSON.stringify({
+    stats: { expected: 4, unexpected: 1, flaky: 0, skipped: 0 }
+  }));
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a',
+      kind: 'e2e',
+      status: 'pass',
+      command: 'npx playwright test',
+      artifact: 'e2e-results.json'
+    }),
+    /contradicts artifact/
+  );
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
+test('artifact指定のファイルが存在しない場合_エラーになり証跡は書き込まれない', async () => {
+  const repo = await makeWorkspaceRepo();
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a',
+      kind: 'unit',
+      status: 'pass',
+      command: 'npm test',
+      artifact: 'missing-results.json'
+    }),
+    /artifact not found/
+  );
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
+test('未知の形式のartifactの場合_unrecognizedとして記録されブロックしない', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'custom-output.json'), JSON.stringify({
+    something: 'else'
+  }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test',
+    artifact: 'custom-output.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'unrecognized');
+  assert.equal(command.artifact_check.artifact_outcome, null);
+});
+
+test('JSONでないartifactの場合_unrecognizedとして記録されブロックしない', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'test-log.txt'), 'all 12 tests passed');
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test',
+    artifact: 'test-log.txt'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'unrecognized');
+});
+
+test('pass申告でartifact未指定の場合_artifact_checkがmissingとして記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'missing');
+});
+
+test('fail申告と失敗artifactが一致する場合_verifiedとして記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'unit-results.json'), JSON.stringify({
+    numTotalTests: 12,
+    numFailedTests: 3,
+    success: false
+  }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'fail',
+    command: 'npm test',
+    artifact: 'unit-results.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'verified');
+  assert.equal(command.artifact_check.artifact_outcome, 'fail');
+});
+
+test('fail申告と成功artifactの不一致は_contradictedとして記録されブロックしない', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'unit-results.json'), JSON.stringify({
+    numTotalTests: 12,
+    numFailedTests: 0,
+    success: true
+  }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'fail',
+    command: 'npm test',
+    artifact: 'unit-results.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'contradicted');
+  assert.equal(command.artifact_check.artifact_outcome, 'pass');
+});
+
+test('generic status JSONのpass一致は_verifiedとして記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'typecheck.json'), JSON.stringify({ status: 'pass' }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'typecheck',
+    status: 'pass',
+    command: 'npm run typecheck',
+    artifact: 'typecheck.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'verified');
+  assert.equal(command.artifact_check.format, 'generic_status');
+});
+
+test('needs_setup申告にartifactがある場合_not_applicableとして記録されブロックしない', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'setup-log.json'), JSON.stringify({ status: 'pass' }));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'e2e',
+    status: 'needs_setup',
+    command: 'npx playwright test',
+    artifact: 'setup-log.json'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'not_applicable');
+});
+
+test('既存の証跡JSONとの互換_artifact_checkのない旧commandを保持したまま追記できる', async () => {
+  const repo = await makeWorkspaceRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-a');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-a',
+    warnings: [],
+    commands: [{
+      kind: 'build',
+      status: 'pass',
+      command: 'npm run build',
+      summary: 'pass',
+      artifact: null,
+      executed_at: '2026-06-01T00:00:00.000Z'
+    }]
+  }, null, 2));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test'
+  });
+
+  assert.equal(result.evidence.commands.length, 2);
+  const stored = JSON.parse(await readFile(path.join(prDir, 'verification-evidence.json'), 'utf8'));
+  const buildCommand = stored.commands.find((item) => item.kind === 'build');
+  assert.equal(buildCommand.status, 'pass');
+});
