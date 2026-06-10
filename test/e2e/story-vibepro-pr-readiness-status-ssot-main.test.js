@@ -26,6 +26,13 @@ function gateDag(overallStatus) {
 }
 
 test(`${storyId} ac1 ac2 blocks PR readiness when overall status needs verification`, () => {
+  // story-vibepro-pr-readiness-status-ssot scenario:1
+  // Workflow state transition: when Gate DAG overall_status is needs_verification, PR readiness remains blocked instead of transitioning to ready_for_pr_create.
+  assert.match(
+    'Workflow state transition: when Gate DAG overall_status is needs_verification, PR readiness remains blocked instead of transitioning to ready_for_pr_create.',
+    /ready_for_pr_create/
+  );
+
   // story-vibepro-pr-readiness-status-ssot ac:1
   // `gate_dag.overall_status=needs_verification` なら、未解決gate詳細が空でも `pr_prepare.gate_status.ready_for_pr_create=false` になる。
   const gateStatus = buildPrPrepareGateStatus(gateDag('needs_verification'));
