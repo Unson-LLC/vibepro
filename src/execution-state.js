@@ -306,7 +306,8 @@ async function buildExecutionState(repoRoot, options = {}) {
     ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
   const readyForPrCreate = gatesReadyForPrCreate && !executionBlockingGate;
-  const waiverRequired = !prCreated && !readyForPrCreate && Boolean(prPrepare) && (
+  const prCreatedReadyForMerge = prCreated && (!prPrepare || readyForPrCreate);
+  const waiverRequired = !prCreatedReadyForMerge && !readyForPrCreate && Boolean(prPrepare) && (
     executionBlockingGate
       ? false
       : gateDag
@@ -315,7 +316,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   );
   const completionStatus = merged
     ? 'merged'
-    : prCreated
+    : prCreatedReadyForMerge
     ? 'pr_created'
     : readyForPrCreate
       ? 'ready_for_pr_create'
@@ -328,7 +329,7 @@ async function buildExecutionState(repoRoot, options = {}) {
         : 'not_prepared';
   const currentPhase = merged
     ? 'complete'
-    : prCreated
+    : prCreatedReadyForMerge
     ? 'complete'
     : readyForPrCreate
       ? 'create_pr'
@@ -365,7 +366,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     blockingGate,
     waiverRequired,
     readyForPrCreate,
-    prCreated,
+    prCreated: prCreatedReadyForMerge,
     merged
   });
   return {

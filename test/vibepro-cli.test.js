@@ -7872,14 +7872,24 @@ title: PR準備
     story_id: 'story-pr-prepare',
     pr_context: { gate_dag: gateDag }
   }, null, 2)}\n`);
+  await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
+    story_id: 'story-pr-prepare',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/171',
+    dry_run: false
+  }, null, 2)}\n`);
 
   const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(status.exitCode, 0);
   assert.notEqual(status.result.state.completion_status, 'ready_for_pr_create');
   assert.equal(status.result.state.completion_status, 'waiver_required');
+  assert.notEqual(status.result.state.current_phase, 'complete');
   assert.equal(status.result.state.blocking_gate, null);
   assert.equal(status.result.state.last_pr_prepare.overall_status, 'needs_verification');
   assert.equal(status.result.state.last_pr_prepare.ready_for_pr_create, false);
+  assert.equal(
+    status.result.state.next_actions.some((action) => action.includes('vibepro execute merge')),
+    false
+  );
   assert.equal(
     status.result.state.next_actions.some((action) => action.includes('Gate DAG overall_status=needs_verification')),
     true
