@@ -7838,6 +7838,64 @@ test('execute start does not initialize or dirty an uninitialized repository', a
   assert.equal(await pathExists(path.join(repo, '.vibepro')), false);
 });
 
+test('execute state blocks ready_for_pr_create when Gate DAG overall status is not ready', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+`);
+
+  const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(started.exitCode, 0);
+
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  const gateDag = {
+    schema_version: '0.1.0',
+    overall_status: 'needs_verification',
+    nodes: [
+      {
+        id: 'story',
+        type: 'story',
+        label: 'Story',
+        status: 'present',
+        required: true
+      }
+    ]
+  };
+  await writeFile(path.join(prDir, 'gate-dag.json'), `${JSON.stringify(gateDag, null, 2)}\n`);
+  await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+    story_id: 'story-pr-prepare',
+    pr_context: { gate_dag: gateDag }
+  }, null, 2)}\n`);
+  await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
+    story_id: 'story-pr-prepare',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/171',
+    dry_run: false
+  }, null, 2)}\n`);
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.notEqual(status.result.state.completion_status, 'ready_for_pr_create');
+  assert.equal(status.result.state.completion_status, 'waiver_required');
+  assert.notEqual(status.result.state.current_phase, 'complete');
+  assert.equal(status.result.state.blocking_gate, null);
+  assert.equal(status.result.state.last_pr_prepare.overall_status, 'needs_verification');
+  assert.equal(status.result.state.last_pr_prepare.ready_for_pr_create, false);
+  assert.equal(
+    status.result.state.next_actions.some((action) => action.includes('vibepro execute merge')),
+    false
+  );
+  assert.equal(
+    status.result.state.next_actions.some((action) => action.includes('Gate DAG overall_status=needs_verification')),
+    true
+  );
+});
+
 test('execute next guides fresh managed-worktree stories through execute start before PR preparation', async () => {
   for (const mode of ['preferred', 'required']) {
     const repo = await makeGitRepoWithStory();

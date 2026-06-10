@@ -17,10 +17,11 @@ export async function executeMerge(repoRoot, options = {}) {
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
 
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
-  const [prPrepare, prCreate, executionState] = await Promise.all([
+  const [prPrepare, prCreate, executionState, gateDagArtifact] = await Promise.all([
     readJsonIfExists(path.join(prDir, 'pr-prepare.json')),
     readJsonIfExists(path.join(prDir, 'pr-create.json')),
-    readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json'))
+    readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
+    readJsonIfExists(path.join(prDir, 'gate-dag.json'))
   ]);
   const story = prCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const strategy = normalizeMergeStrategy(options.strategy);
@@ -29,7 +30,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
-  const gateDag = prCreate?.gate_dag ?? prPrepare?.pr_context?.gate_dag ?? null;
+  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? prCreate?.gate_dag ?? null;
   const baseBranch = stripRemote(options.baseRef ?? prCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? prCreate?.pr_url ?? executionState?.pr_url ?? null;
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate, prPrepare, executionState });
@@ -124,10 +125,6 @@ export async function executeMerge(repoRoot, options = {}) {
 
   merge.commands.push(formatCommand(['git', ['fetch', 'origin', baseBranch]]));
   merge.commands.push(formatCommand(['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)]));
-  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
-  if (deleteBranch) {
-    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
-  }
 
   const fetchResult = await runCommand(root, ['git', ['fetch', 'origin', baseBranch]], options);
   merge.results.push(fetchResult);
@@ -200,6 +197,11 @@ export async function executeMerge(repoRoot, options = {}) {
     merge.stop_reason = blockingReasons.join(',');
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return { merge, artifacts };
+  }
+
+  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
+  if (deleteBranch) {
+    merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
   }
 
   if (dryRun) {
