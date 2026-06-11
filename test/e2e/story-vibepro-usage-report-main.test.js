@@ -221,3 +221,105 @@ test('story-vibepro-usage-report runs usage report against real VibePro artifact
   assert.match(textOutput, /## Value Signals/);
   assert.match(textOutput, /stale_evidence: 1\/2 \(50%\)/);
 });
+
+test('story-vibepro-usage-report-traceability-gaps reports missing, stale, incomplete, and clean traceability', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-usage-report-traceability-'));
+  const storyRoot = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(storyRoot, { recursive: true });
+
+  const missingStory = 'story-traceability-missing';
+  const staleStory = 'story-traceability-stale-merge';
+  const reviewStory = 'story-traceability-review-incomplete';
+  const cleanStory = 'story-traceability-clean';
+
+  for (const [storyId, status] of [[missingStory, 'merged'], [staleStory, 'merged'], [reviewStory, 'active'], [cleanStory, 'merged']]) {
+    await writeFile(path.join(storyRoot, `${storyId}.md`), [
+      '---',
+      `story_id: ${storyId}`,
+      `status: ${status}`,
+      'created_at: 2026-06-11',
+      'updated_at: 2026-06-11',
+      '---',
+      '',
+      `# ${storyId}`
+    ].join('\n'));
+  }
+
+  await mkdir(path.join(repo, '.vibepro', 'pr', staleStory), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', staleStory, 'pr-prepare.json'), {
+    story: { story_id: staleStory },
+    created_at: '2026-06-11T00:00:00.000Z',
+    gate_status: { ready_for_pr_create: true },
+    toolchain: { source_git: { commit: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' } }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', staleStory, 'pr-merge.json'), {
+    story_id: staleStory,
+    status: 'merged',
+    merged_at: '2026-06-11T00:10:00.000Z',
+    pr: {
+      url: 'https://github.example.test/unson/vibepro/pull/2',
+      head_ref_oid: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    }
+  });
+
+  await mkdir(path.join(repo, '.vibepro', 'pr', reviewStory), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'reviews', reviewStory, 'gate'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', reviewStory, 'pr-prepare.json'), {
+    story: { story_id: reviewStory },
+    created_at: '2026-06-11T00:00:00.000Z',
+    gate_status: { ready_for_pr_create: true }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', reviewStory, 'gate', 'review-summary.json'), {
+    story_id: reviewStory,
+    stage: 'gate',
+    updated_at: '2026-06-11T00:05:00.000Z',
+    roles: [{ role: 'gate_evidence', status: 'pass' }],
+    pass_count: 1
+  });
+
+  await mkdir(path.join(repo, '.vibepro', 'pr', cleanStory), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'reviews', cleanStory, 'gate'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', cleanStory, 'pr-prepare.json'), {
+    story: { story_id: cleanStory },
+    created_at: '2026-06-11T00:00:00.000Z',
+    gate_status: { ready_for_pr_create: true },
+    toolchain: { source_git: { commit: 'cccccccccccccccccccccccccccccccccccccccc' } }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', cleanStory, 'pr-merge.json'), {
+    story_id: cleanStory,
+    status: 'merged',
+    merged_at: '2026-06-11T00:10:00.000Z',
+    pr: {
+      url: 'https://github.example.test/unson/vibepro/pull/4',
+      head_ref_oid: 'cccccccccccccccccccccccccccccccccccccccc'
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', cleanStory, 'gate', 'review-summary.json'), {
+    story_id: cleanStory,
+    stage: 'gate',
+    updated_at: '2026-06-11T00:05:00.000Z',
+    roles: [{
+      role: 'gate_evidence',
+      status: 'pass',
+      provenance_status: 'verified_agent',
+      agent_provenance: { lifecycle: { agent_closed: true } }
+    }],
+    pass_count: 1
+  });
+
+  const result = await runVibePro(['usage', 'report', repo, '--since', '2026-06-11', '--json']);
+  assert.equal(result.exitCode, 0);
+  const report = JSON.parse(result.stdout);
+  const gaps = report.value_signals.traceability_gaps;
+  assert.equal(report.value_signals.traceability_gap_count, 3);
+  assert.equal(gaps.some((gap) => gap.story_id === missingStory && gap.kind === 'traceability_missing_pr_artifact'), true);
+  assert.equal(gaps.some((gap) => gap.story_id === staleStory && gap.kind === 'traceability_stale_merge_artifact'), true);
+  assert.equal(gaps.some((gap) => gap.story_id === reviewStory && gap.kind === 'traceability_incomplete_review_evidence'), true);
+  assert.equal(gaps.some((gap) => gap.story_id === cleanStory), false);
+
+  const textResult = await runVibePro(['usage', 'report', repo, '--since', '2026-06-11']);
+  assert.equal(textResult.exitCode, 0);
+  assert.match(textResult.stdout, /## Traceability Gaps/);
+  assert.match(textResult.stdout, /traceability_missing_pr_artifact/);
+  assert.match(textResult.stdout, /vibepro review status/);
+});

@@ -16,8 +16,16 @@ export async function createUsageReport(repoRoot, options = {}) {
   const prArtifacts = await collectPrArtifacts(root, workspaceDir, since);
   const reviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
+  const storyDocs = await collectStoryDocs(root, since);
   const logs = await collectUsageLogs(root, options);
   const storyMap = new Map();
+  for (const doc of storyDocs) {
+    const story = ensureStoryUsage(storyMap, doc.story_id);
+    story.story_doc_present = true;
+    story.story_doc_path = doc.path;
+    story.story_status = doc.status ?? story.story_status;
+    story.artifacts.push(doc.path);
+  }
   for (const artifact of prArtifacts) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
     story.artifacts.push(artifact.path);
@@ -34,6 +42,11 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.pr_created ||= Boolean(artifact.data?.pr_url) || artifact.data?.status === 'created';
       story.waiver_required ||= artifact.data?.gate_override?.allowed === true;
       story.latest_pr_url = artifact.data?.pr_url ?? story.latest_pr_url;
+    }
+    if (artifact.kind === 'pr_merge') {
+      story.pr_merge_count += 1;
+      story.latest_merge_status = artifact.data?.status ?? story.latest_merge_status;
+      story.latest_merged_at = artifact.data?.merged_at ?? story.latest_merged_at;
     }
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
   }
@@ -59,6 +72,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     story.raw_pr_bypass_suspected = true;
     story.log_findings.push(finding);
   }
+  evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts });
   const stories = [...storyMap.values()].sort((a, b) => a.story_id.localeCompare(b.story_id));
   const gate_metrics = buildGateMetrics(prArtifacts);
   const agent_review = buildAgentReviewMetrics(stories);
@@ -106,8 +120,10 @@ export function renderUsageReport(report) {
   const valueRows = [
     `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
     `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
-    `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`
+    `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`,
+    `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`
   ].join('\n');
+  const traceabilityRows = renderTraceabilityGaps(report);
   const artifactHintRows = renderArtifactSourceHints(report);
   if (language === 'en') {
     return `# VibePro Usage Report
@@ -132,6 +148,10 @@ ${reviewRows}
 ## Value Signals
 
 ${valueRows}
+
+## Traceability Gaps
+
+${traceabilityRows}
 
 ## Log Signals
 
@@ -162,6 +182,10 @@ ${reviewRows}
 
 ${valueRows}
 
+## Traceability Gaps
+
+${traceabilityRows}
+
 ## ログ補助シグナル
 
 - raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
@@ -174,20 +198,27 @@ function ensureStoryUsage(storyMap, storyId) {
   if (!storyMap.has(key)) {
     storyMap.set(key, {
       story_id: key,
+      story_doc_present: false,
+      story_doc_path: null,
+      story_status: null,
       prepared: false,
       blocked: false,
       ready_for_pr_create: false,
       pr_created: false,
+      pr_merge_count: 0,
       waiver_required: false,
       raw_pr_bypass_suspected: false,
       stale_evidence: false,
       story_source_mismatch: false,
+      traceability_gaps: [],
       prepare_count: 0,
       pr_create_count: 0,
       execution_state_count: 0,
       latest_gate_status: null,
       latest_execution_status: null,
       latest_pr_url: null,
+      latest_merge_status: null,
+      latest_merged_at: null,
       artifacts: [],
       log_findings: [],
       agent_review: {
@@ -210,14 +241,30 @@ async function collectPrArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const storyId of storyDirs) {
     const storyDir = path.join(prDir, storyId);
-    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag']]) {
+    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge']]) {
       const filePath = path.join(storyDir, file);
       const data = await readJsonIfExists(filePath);
-      if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at, since)) continue;
+      if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
       artifacts.push({ kind, story_id: data.story?.story_id ?? data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
     }
   }
   return artifacts;
+}
+
+async function collectStoryDocs(root, since) {
+  const storyRoot = path.join(root, 'docs', 'management', 'stories');
+  const files = await listMarkdownFiles(storyRoot);
+  const docs = [];
+  for (const filePath of files) {
+    const text = await readTextIfExists(filePath);
+    const metadata = parseStoryDocMetadata(text, filePath);
+    if (!metadata.story_id || !isWithinSince(metadata.updated_at ?? metadata.created_at, since)) continue;
+    docs.push({
+      ...metadata,
+      path: toWorkspaceRelative(root, filePath)
+    });
+  }
+  return docs;
 }
 
 async function collectReviewArtifacts(root, workspaceDir, since) {
@@ -284,6 +331,22 @@ async function collectUsageLogs(root, options = {}) {
     raw_pr_create_mentions: rawMentions,
     vibepro_command_mentions: vibeproMentions
   };
+}
+
+async function listMarkdownFiles(dir) {
+  const files = [];
+  async function visit(current) {
+    for (const entry of await safeReaddirEntries(current)) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        await visit(full);
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        files.push(full);
+      }
+    }
+  }
+  await visit(dir);
+  return files.sort();
 }
 
 async function buildArtifactSourceHints(root, since, artifactCounts) {
@@ -418,6 +481,14 @@ ${rows}`;
 ${rows}`;
 }
 
+function renderTraceabilityGaps(report) {
+  const gaps = report.value_signals?.traceability_gaps ?? [];
+  if (gaps.length === 0) return '- none';
+  return gaps.map((gap) => (
+    `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} next="${gap.next_command}"`
+  )).join('\n');
+}
+
 function normalizeLogCommand(value) {
   return String(value ?? '')
     .trim()
@@ -453,6 +524,130 @@ function buildGateMetrics(prArtifacts) {
   return [...metrics.values()].sort((a, b) => a.gate_id.localeCompare(b.gate_id));
 }
 
+function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
+  const prByStory = groupArtifactsByStory(prArtifacts);
+  const reviewsByStory = groupArtifactsByStory(reviewArtifacts);
+  for (const story of storyMap.values()) {
+    const prItems = prByStory.get(story.story_id) ?? [];
+    const reviewItems = reviewsByStory.get(story.story_id) ?? [];
+    const hasAnyPrArtifact = prItems.length > 0;
+    const mergeArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_merge'));
+    const createArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_create'));
+    const prepareArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_prepare'));
+
+    if (story.story_doc_present && !hasAnyPrArtifact) {
+      addTraceabilityGap(story, {
+        kind: 'traceability_missing_pr_artifact',
+        artifact: story.story_doc_path,
+        detail: 'Story doc exists but .vibepro/pr/<story-id> artifacts were not found',
+        next_command: `vibepro pr prepare . --story-id ${story.story_id} --base <base-ref>`
+      });
+    }
+
+    if (isMergedOrClosedStory(story, createArtifact, mergeArtifact)) {
+      const staleMergeReason = getStaleMergeArtifactReason({ story, mergeArtifact, createArtifact, prepareArtifact });
+      if (staleMergeReason) {
+        addTraceabilityGap(story, {
+          kind: 'traceability_stale_merge_artifact',
+          artifact: mergeArtifact?.path ?? story.story_doc_path ?? null,
+          detail: staleMergeReason,
+          next_command: `vibepro execute merge . --story-id ${story.story_id} --pr <pr-number> --dry-run`
+        });
+      }
+    }
+
+    for (const review of reviewItems) {
+      const reason = getIncompleteReviewEvidenceReason(review.data);
+      if (!reason) continue;
+      addTraceabilityGap(story, {
+        kind: 'traceability_incomplete_review_evidence',
+        artifact: review.path,
+        detail: reason,
+        next_command: `vibepro review status . --id ${story.story_id} --all`
+      });
+    }
+  }
+}
+
+function groupArtifactsByStory(artifacts) {
+  const grouped = new Map();
+  for (const artifact of artifacts) {
+    const items = grouped.get(artifact.story_id) ?? [];
+    items.push(artifact);
+    grouped.set(artifact.story_id, items);
+  }
+  return grouped;
+}
+
+function latestArtifact(artifacts) {
+  return artifacts
+    .slice()
+    .sort((a, b) => artifactTime(b) - artifactTime(a))[0] ?? null;
+}
+
+function artifactTime(artifact) {
+  const value = artifact?.data?.updated_at ?? artifact?.data?.created_at ?? artifact?.data?.generated_at ?? artifact?.data?.merged_at;
+  const parsed = new Date(value ?? 0);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+}
+
+function isMergedOrClosedStory(story, createArtifact, mergeArtifact) {
+  const status = String(story.story_status ?? '').toLowerCase();
+  return ['merged', 'closed', 'done', 'completed'].includes(status)
+    || mergeArtifact?.data?.status === 'merged'
+    || createArtifact?.data?.status === 'merged'
+    || createArtifact?.data?.merged === true;
+}
+
+function getStaleMergeArtifactReason({ story, mergeArtifact, createArtifact, prepareArtifact }) {
+  if (!mergeArtifact) return 'Story appears merged/closed but pr-merge.json is missing';
+  if (mergeArtifact.data?.status !== 'merged') return `pr-merge.json status is ${mergeArtifact.data?.status ?? 'missing'}, not merged`;
+  const mergeHead = mergeArtifact.data?.pr?.head_ref_oid ?? mergeArtifact.data?.current_head_sha ?? mergeArtifact.data?.head_sha;
+  const prepareHead = prepareArtifact?.data?.toolchain?.source_git?.commit
+    ?? prepareArtifact?.data?.current_git_context?.head_sha
+    ?? prepareArtifact?.data?.gate_status?.current_git_context?.head_sha;
+  if (mergeHead && prepareHead && mergeHead !== prepareHead) {
+    return `pr-merge.json head ${shortSha(mergeHead)} does not match latest prepare head ${shortSha(prepareHead)}`;
+  }
+  const createUrl = createArtifact?.data?.pr_url ?? createArtifact?.data?.url;
+  const mergeUrl = mergeArtifact.data?.pr?.url ?? mergeArtifact.data?.pr_url ?? mergeArtifact.data?.url;
+  if (createUrl && mergeUrl && createUrl !== mergeUrl) {
+    return 'pr-merge.json PR URL does not match pr-create.json';
+  }
+  if (story.latest_pr_url && mergeUrl && story.latest_pr_url !== mergeUrl) {
+    return 'pr-merge.json PR URL does not match latest story PR URL';
+  }
+  return null;
+}
+
+function getIncompleteReviewEvidenceReason(summary) {
+  const roles = summary?.roles;
+  if (!Array.isArray(roles) || roles.length === 0) return 'review summary has no required role records';
+  const incomplete = roles.find((role) => {
+    if (!role.role) return true;
+    if (!role.status && !role.effective_status) return true;
+    if (!role.provenance_status && !role.agent_provenance) return true;
+    if (role.provenance_status && role.provenance_status !== 'verified_agent') return true;
+    if (role.agent_provenance && role.agent_provenance.lifecycle?.agent_closed !== true) return true;
+    return false;
+  });
+  if (!incomplete) return null;
+  if (!incomplete.role) return 'review role name is missing';
+  if (!incomplete.status && !incomplete.effective_status) return `review role ${incomplete.role} has no status`;
+  if (!incomplete.provenance_status && !incomplete.agent_provenance) return `review role ${incomplete.role} has no agent provenance`;
+  if (incomplete.provenance_status && incomplete.provenance_status !== 'verified_agent') return `review role ${incomplete.role} provenance is ${incomplete.provenance_status}`;
+  return `review role ${incomplete.role} agent lifecycle is not closed`;
+}
+
+function addTraceabilityGap(story, gap) {
+  if (story.traceability_gaps.some((item) => item.kind === gap.kind && item.artifact === gap.artifact && item.detail === gap.detail)) return;
+  story.traceability_gaps.push(gap);
+}
+
+function shortSha(value) {
+  return String(value ?? '').slice(0, 12);
+}
+
 function collectGateMetrics(gateDag, storyId, storyMap) {
   const story = ensureStoryUsage(storyMap, storyId);
   for (const node of gateDag?.nodes ?? []) {
@@ -471,14 +666,21 @@ function buildValueSignals(stories) {
   const waiverRequiredCount = stories.filter((story) => story.waiver_required).length;
   const staleEvidenceCount = stories.filter((story) => story.stale_evidence).length;
   const storySourceMismatchCount = stories.filter((story) => story.story_source_mismatch).length;
+  const traceabilityGaps = stories.flatMap((story) => (
+    story.traceability_gaps.map((gap) => ({ story_id: story.story_id, ...gap }))
+  ));
+  const traceabilityGapStoryCount = stories.filter((story) => story.traceability_gaps.length > 0).length;
   return {
     story_count: storyCount,
     waiver_required_story_count: waiverRequiredCount,
     stale_evidence_story_count: staleEvidenceCount,
     story_source_mismatch_story_count: storySourceMismatchCount,
+    traceability_gap_count: traceabilityGapStoryCount,
+    traceability_gaps: traceabilityGaps,
     waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
     stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),
-    story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount)
+    story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount),
+    traceability_gap_rate: calculateRate(traceabilityGapStoryCount, storyCount)
   };
 }
 
@@ -521,6 +723,15 @@ async function safeReaddir(dir) {
   }
 }
 
+async function safeReaddirEntries(dir) {
+  try {
+    return await readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
 async function readJsonIfExists(filePath) {
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
@@ -556,4 +767,20 @@ function isWithinSince(value, since) {
 function inferStoryId(text) {
   const match = text.match(/story-[a-z0-9][a-z0-9-]+/i);
   return match ? match[0] : null;
+}
+
+function parseStoryDocMetadata(text, filePath) {
+  const frontmatter = String(text ?? '').match(/^---\n([\s\S]*?)\n---/);
+  const source = frontmatter?.[1] ?? String(text ?? '').slice(0, 2000);
+  return {
+    story_id: matchYamlString(source, 'story_id') ?? inferStoryId(path.basename(filePath)),
+    status: matchYamlString(source, 'status'),
+    created_at: matchYamlString(source, 'created_at'),
+    updated_at: matchYamlString(source, 'updated_at')
+  };
+}
+
+function matchYamlString(text, key) {
+  const match = String(text ?? '').match(new RegExp(`^${key}:\\s*['"]?([^'"\\n#]+)['"]?\\s*$`, 'm'));
+  return match ? match[1].trim() : null;
 }
