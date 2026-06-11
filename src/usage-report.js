@@ -49,6 +49,9 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.latest_merged_at = artifact.data?.merged_at ?? story.latest_merged_at;
     }
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
+    if (artifact.kind === 'traceability') {
+      story.traceability_lifecycle = artifact.data?.lifecycle ?? story.traceability_lifecycle;
+    }
   }
   for (const artifact of reviewArtifacts) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
@@ -78,7 +81,8 @@ export async function createUsageReport(repoRoot, options = {}) {
   const agent_review = buildAgentReviewMetrics(stories);
   const value_signals = buildValueSignals(stories);
   const artifactCounts = {
-    pr: prArtifacts.length,
+    pr: countRealPrArtifacts(prArtifacts),
+    traceability: prArtifacts.length - countRealPrArtifacts(prArtifacts),
     review: reviewArtifacts.length,
     execution: executionArtifacts.length,
     logs: logs.files.length
@@ -121,7 +125,10 @@ export function renderUsageReport(report) {
     `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
     `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
     `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`,
-    `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`
+    `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`,
+    `- declared_unstarted: ${valueSignals.declared_unstarted_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- merged_without_vibepro_evidence: ${valueSignals.merged_without_vibepro_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
   const artifactHintRows = renderArtifactSourceHints(report);
@@ -210,6 +217,10 @@ function ensureStoryUsage(storyMap, storyId) {
       raw_pr_bypass_suspected: false,
       stale_evidence: false,
       story_source_mismatch: false,
+      traceability_lifecycle: null,
+      declared_unstarted: false,
+      merged_without_vibepro_evidence: false,
+      evidence_in_other_worktree: false,
       traceability_gaps: [],
       prepare_count: 0,
       pr_create_count: 0,
@@ -241,7 +252,7 @@ async function collectPrArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const storyId of storyDirs) {
     const storyDir = path.join(prDir, storyId);
-    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge']]) {
+    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability']]) {
       const filePath = path.join(storyDir, file);
       const data = await readJsonIfExists(filePath);
       if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
@@ -387,7 +398,7 @@ async function buildArtifactSourceHints(root, since, artifactCounts) {
       collectExecutionArtifacts(candidateRoot, workspaceDir, since)
     ]);
     const counts = {
-      pr: prArtifacts.length,
+      pr: countRealPrArtifacts(prArtifacts),
       review: reviewArtifacts.length,
       execution: executionArtifacts.length
     };
@@ -530,18 +541,29 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
   for (const story of storyMap.values()) {
     const prItems = prByStory.get(story.story_id) ?? [];
     const reviewItems = reviewsByStory.get(story.story_id) ?? [];
-    const hasAnyPrArtifact = prItems.length > 0;
+    // traceability.json is a lifecycle declaration, never PR evidence by itself
+    const hasRealPrArtifact = prItems.some((item) => item.kind !== 'traceability');
     const mergeArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_merge'));
     const createArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_create'));
     const prepareArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_prepare'));
+    const traceabilityArtifact = latestArtifact(prItems.filter((item) => item.kind === 'traceability'));
 
-    if (story.story_doc_present && !hasAnyPrArtifact) {
-      addTraceabilityGap(story, {
-        kind: 'traceability_missing_pr_artifact',
-        artifact: story.story_doc_path,
-        detail: 'Story doc exists but .vibepro/pr/<story-id> artifacts were not found',
-        next_command: `vibepro pr prepare . --story-id ${story.story_id} --base <base-ref>`
-      });
+    if (story.story_doc_present && !hasRealPrArtifact) {
+      const lifecycle = traceabilityArtifact?.data?.lifecycle ?? null;
+      if (lifecycle === 'declared_not_started') {
+        story.declared_unstarted = true;
+      } else if (lifecycle === 'merged_without_vibepro_evidence') {
+        story.merged_without_vibepro_evidence = true;
+      } else if (lifecycle === 'evidence_in_other_worktree') {
+        story.evidence_in_other_worktree = true;
+      } else {
+        addTraceabilityGap(story, {
+          kind: 'traceability_missing_pr_artifact',
+          artifact: story.story_doc_path,
+          detail: 'Story doc exists but .vibepro/pr/<story-id> artifacts were not found',
+          next_command: `vibepro pr prepare . --story-id ${story.story_id} --base <base-ref>`
+        });
+      }
     }
 
     if (isMergedOrClosedStory(story, createArtifact, mergeArtifact)) {
@@ -567,6 +589,10 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
       });
     }
   }
+}
+
+function countRealPrArtifacts(prArtifacts) {
+  return prArtifacts.filter((artifact) => artifact.kind !== 'traceability').length;
 }
 
 function groupArtifactsByStory(artifacts) {
@@ -670,12 +696,18 @@ function buildValueSignals(stories) {
     story.traceability_gaps.map((gap) => ({ story_id: story.story_id, ...gap }))
   ));
   const traceabilityGapStoryCount = stories.filter((story) => story.traceability_gaps.length > 0).length;
+  const declaredUnstartedCount = stories.filter((story) => story.declared_unstarted).length;
+  const mergedWithoutEvidenceCount = stories.filter((story) => story.merged_without_vibepro_evidence).length;
+  const evidenceInOtherWorktreeCount = stories.filter((story) => story.evidence_in_other_worktree).length;
   return {
     story_count: storyCount,
     waiver_required_story_count: waiverRequiredCount,
     stale_evidence_story_count: staleEvidenceCount,
     story_source_mismatch_story_count: storySourceMismatchCount,
     traceability_gap_count: traceabilityGapStoryCount,
+    declared_unstarted_story_count: declaredUnstartedCount,
+    merged_without_vibepro_evidence_story_count: mergedWithoutEvidenceCount,
+    evidence_in_other_worktree_story_count: evidenceInOtherWorktreeCount,
     traceability_gaps: traceabilityGaps,
     waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
     stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),

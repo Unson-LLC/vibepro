@@ -7,6 +7,7 @@ import {
   normalizeGraphEdges
 } from './graph-context.js';
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
+import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
@@ -34,6 +35,11 @@ export async function addStory(repoRoot, options = {}) {
     stories: [...stories, story]
   };
   await writeConfig(root, config);
+  await bindStoryTraceability(root, {
+    storyId: story.story_id,
+    source: 'story_add',
+    lifecycle: 'declared_not_started'
+  });
   return story;
 }
 

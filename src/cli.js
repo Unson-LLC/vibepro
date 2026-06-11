@@ -128,6 +128,7 @@ import {
   writeNarrative
 } from './report-store.js';
 import { createUsageReport, renderUsageReport } from './usage-report.js';
+import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
 import {
   addStory,
   archiveStory,
@@ -242,6 +243,8 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--language ja|en] [--json]
+  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -402,6 +405,8 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--language ja|en] [--json]
+  vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
+  vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
@@ -697,6 +702,34 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown usage command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'trace') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'backfill') {
+        const result = await backfillTraceability(repoRoot, {
+          storyId: getOption(rest, '--story-id'),
+          dryRun: hasFlag(rest, '--dry-run')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderTraceabilityBackfill(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'declare') {
+        const result = await declareTraceability(repoRoot, {
+          storyId: getOption(rest, '--story-id'),
+          lifecycle: getOption(rest, '--lifecycle'),
+          reason: getOption(rest, '--reason')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Traceability declared: ${result.story_id} lifecycle=${result.lifecycle}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown trace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
