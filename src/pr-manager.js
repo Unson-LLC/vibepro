@@ -1,5 +1,4 @@
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
@@ -47,6 +46,7 @@ import { readEnvironmentGraphIfExists, deployTargetsFromGraph } from './environm
 import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
+import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -1290,10 +1290,10 @@ async function collectGitState(repoRoot, options) {
   const diffLineStats = await getDiffLineStats(repoRoot, baseRef, headRef, includesDirtyInChangedFiles);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
-  const statusOutput = await gitStatus(repoRoot, ['status', '--porcelain', '-uall']);
-  const dirtyDiff = await collectDirtyDiff(repoRoot);
+  const fingerprints = await collectGitStatusFingerprints(repoRoot);
   const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
-  const dirtyFiles = parseStatus(statusOutput);
+  const dirtyFiles = parseStatus(fingerprints.user_status_output);
+  const rawDirtyFiles = parseStatus(fingerprints.status_output);
   const changedFiles = includesDirtyInChangedFiles
     ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
     : committedChangedFiles;
@@ -1313,11 +1313,16 @@ async function collectGitState(repoRoot, options) {
     }),
     origin_url: originUrl || null,
     dirty: dirtyFiles.length > 0,
-    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
+    raw_dirty: rawDirtyFiles.length > 0,
+    status_fingerprint_hash: fingerprints.status_fingerprint_hash,
+    user_status_fingerprint_hash: fingerprints.user_status_fingerprint_hash,
+    fingerprint_scope: fingerprints.fingerprint_scope,
     committed_changed_files: committedChangedFiles,
     changed_files: changedFiles,
     diff_line_stats: diffLineStats,
     dirty_files: dirtyFiles,
+    raw_dirty_files: rawDirtyFiles,
+    vibepro_internal_dirty_files: rawDirtyFiles.filter((file) => isVibeProInternalPath(file.path)),
     includes_dirty_in_changed_files: includesDirtyInChangedFiles,
     commit_message_health: commitMessageHealth,
     commits
@@ -1487,46 +1492,11 @@ function parseStatus(output) {
     }));
 }
 
-function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [
-    'git-status --porcelain -uall',
-    String(statusOutput ?? '').trimEnd(),
-    'git-diff --binary',
-    String(dirtyDiff ?? '').trimEnd()
-  ].join('\n');
-}
-
-function hashFingerprint(value) {
-  return createHash('sha256').update(String(value ?? '')).digest('hex');
-}
-
-function fingerprintHashForContext(gitContext) {
-  if (gitContext?.status_fingerprint_hash) return gitContext.status_fingerprint_hash;
-  return hashFingerprint(gitContext?.status_fingerprint ?? '');
-}
-
-async function collectDirtyDiff(repoRoot) {
-  const [unstaged, staged, untracked] = await Promise.all([
-    gitOptional(repoRoot, ['diff', '--binary']),
-    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
-    collectUntrackedFileFingerprint(repoRoot)
-  ]);
-  return [staged, unstaged, untracked].filter(Boolean).join('\n');
-}
-
-async function collectUntrackedFileFingerprint(repoRoot) {
-  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
-  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
-  const chunks = [];
-  for (const file of files) {
-    try {
-      const content = await readFile(path.join(repoRoot, file), 'utf8');
-      chunks.push(`untracked:${file}\n${content}`);
-    } catch {
-      chunks.push(`untracked:${file}\n<unreadable>`);
-    }
-  }
-  return chunks.join('\n');
+function isVibeProInternalPath(filePath) {
+  return filePath === '.vibepro'
+    || filePath.startsWith('.vibepro/')
+    || filePath === '.worktrees/vibepro'
+    || filePath.startsWith('.worktrees/vibepro/');
 }
 
 function groupChangedFiles(files) {
@@ -3357,7 +3327,8 @@ function bindVerificationEvidenceToGit(verificationEvidence, git) {
     binding: {
       current_head_sha: git.head_sha ?? null,
       current_dirty: git.dirty === true,
-      current_status_fingerprint_hash: fingerprintHashForContext(git),
+      current_status_fingerprint_hash: fullFingerprintHashForContext(git),
+      current_user_status_fingerprint_hash: git.user_status_fingerprint_hash ?? null,
       stale_command_count: commands.filter((command) => command.binding?.status !== 'current').length
     }
   };
@@ -3386,12 +3357,13 @@ function resolveVerificationBinding(context, git) {
       reason: `verification evidence was recorded for ${context.head_sha.slice(0, 12)}, current head is ${git.head_sha.slice(0, 12)}`
     };
   }
-  const recordedFingerprint = fingerprintHashForContext(context);
-  const currentFingerprint = fingerprintHashForContext(git);
-  if (recordedFingerprint !== currentFingerprint) {
+  const comparison = compareFingerprintContexts(context, git);
+  if (!comparison.matches) {
     return {
       status: 'stale',
-      reason: 'verification evidence was recorded with a different dirty worktree fingerprint'
+      reason: comparison.usingUserFingerprint
+        ? 'verification evidence was recorded with a different user dirty worktree fingerprint'
+        : 'verification evidence was recorded with a different dirty worktree fingerprint'
     };
   }
   return {
@@ -5319,7 +5291,10 @@ function buildManagedWorktreeGate(context) {
       actual_branch: context.managed_worktree.actual_branch,
       current_head_sha: context.managed_worktree.current_head_sha,
       dirty: context.managed_worktree.dirty,
-      dirty_fingerprint: context.managed_worktree.dirty_fingerprint
+      dirty_fingerprint: context.managed_worktree.dirty_fingerprint,
+      raw_dirty: context.managed_worktree.raw_dirty ?? null,
+      raw_dirty_fingerprint: context.managed_worktree.raw_dirty_fingerprint ?? context.managed_worktree.raw_fingerprint ?? null,
+      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null
     } : null,
     reason: context.status === 'satisfied'
       ? 'PR command is running inside the recorded managed worktree'
@@ -6529,21 +6504,33 @@ function buildPrFreshnessGate(git) {
 }
 
 function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null } = {}) {
+  const managedWorktree = managedWorktreeContext?.managed_worktree ?? managedWorktreeContext;
   const current = {
     head_sha: git?.head_sha ?? null,
-    status_fingerprint_hash: fingerprintHashForContext(git),
+    status_fingerprint_hash: fullFingerprintHashForContext(git),
+    user_status_fingerprint_hash: git?.user_status_fingerprint_hash ?? null,
+    raw_status_fingerprint_hash: git?.status_fingerprint_hash ?? null,
     dirty: git?.dirty === true,
-    managed_worktree: managedWorktreeContext ? {
-      id: managedWorktreeContext.id ?? null,
-      path: managedWorktreeContext.path ?? null,
-      branch: managedWorktreeContext.branch ?? null,
-      head_sha: managedWorktreeContext.current_head_sha ?? managedWorktreeContext.head_sha ?? null,
-      dirty_fingerprint: managedWorktreeContext.dirty_fingerprint ?? null
+    raw_dirty: git?.raw_dirty === true,
+    dirty_files: git?.dirty_files ?? [],
+    raw_dirty_files: git?.raw_dirty_files ?? [],
+    vibepro_internal_dirty_files: git?.vibepro_internal_dirty_files ?? [],
+    fingerprint_scope: git?.fingerprint_scope ?? null,
+    managed_worktree: managedWorktree ? {
+      id: managedWorktree.id ?? null,
+      path: managedWorktree.path ?? null,
+      branch: managedWorktree.branch ?? null,
+      head_sha: managedWorktree.current_head_sha ?? managedWorktree.head_sha ?? null,
+      dirty: managedWorktree.dirty ?? null,
+      dirty_fingerprint: managedWorktree.dirty_fingerprint ?? null,
+      raw_dirty: managedWorktree.raw_dirty ?? null,
+      raw_dirty_fingerprint: managedWorktree.raw_dirty_fingerprint ?? managedWorktree.raw_fingerprint ?? null,
+      fingerprint_scope: managedWorktree.fingerprint_scope ?? null
     } : null
   };
   const artifacts = [
     ...collectVerificationArtifactBindings(verificationEvidence, changeClassification),
-    ...collectReviewArtifactBindings(agentReviews)
+    ...collectReviewArtifactBindings(agentReviews, changeClassification)
   ];
   const inconsistent = artifacts.filter((artifact) => !isArtifactBindingAccepted(artifact.status));
   const status = inconsistent.length === 0 ? 'passed' : 'stale_evidence';
@@ -6587,7 +6574,8 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       command: command.command ?? null,
       artifact: command.artifact ?? verificationEvidence?.artifact ?? null,
       recorded_head_sha: command.git_context?.head_sha ?? null,
-      recorded_status_fingerprint_hash: fingerprintHashForContext(command.git_context),
+      recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
+      recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,
       status,
       reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
       reason: reusableLowRisk
@@ -6603,7 +6591,7 @@ function isArtifactBindingAccepted(status) {
   return status === 'current' || status === 'reused_low_risk';
 }
 
-function collectReviewArtifactBindings(agentReviews = null) {
+function collectReviewArtifactBindings(agentReviews = null, changeClassification = null) {
   const stages = Array.isArray(agentReviews?.stages) ? agentReviews.stages : [];
   const artifacts = [];
   for (const stage of stages) {
@@ -6612,17 +6600,25 @@ function collectReviewArtifactBindings(agentReviews = null) {
       const stale = role.effective_status === 'stale';
       const unverified = role.effective_status === 'unverified_agent';
       const current = !stale && !unverified;
+      const staleReason = role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state';
+      const reusableLowRisk = !current
+        && stale
+        && canReuseLowRiskArtifactBinding({ status: 'pass', binding: { status: 'stale', reason: staleReason } }, changeClassification);
       artifacts.push({
         artifact_type: 'agent_review_result',
         stage: stage.stage ?? null,
         role: role.role ?? null,
         artifact: role.artifact ?? null,
         recorded_head_sha: role.git_context?.head_sha ?? role.source_git_context?.head_sha ?? null,
-        recorded_status_fingerprint_hash: fingerprintHashForContext(role.git_context ?? role.source_git_context),
-        status: current ? 'current' : stale ? 'stale' : role.effective_status ?? 'not_current',
+        recorded_status_fingerprint_hash: fullFingerprintHashForContext(role.git_context ?? role.source_git_context),
+        recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
+        status: current ? 'current' : reusableLowRisk ? 'reused_low_risk' : stale ? 'stale' : role.effective_status ?? 'not_current',
+        reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
         reason: current
           ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'
-          : role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state'
+          : reusableLowRisk
+            ? `low-risk evidence change reused agent review despite dirty fingerprint change: ${staleReason}`
+            : staleReason
       });
     }
   }
@@ -7564,6 +7560,10 @@ function findVerificationEvidenceForGate(gate, verificationEvidence, options = {
 }
 
 function canReuseLowRiskEvidence(item, changeClassification = null) {
+  return canReuseLowRiskArtifactBinding(item, changeClassification);
+}
+
+function canReuseLowRiskArtifactBinding(item, changeClassification = null) {
   if (changeClassification?.change_type !== 'low_risk_evidence_change') return false;
   if (changeClassification?.evidence_reuse_policy?.allowed !== true) return false;
   if (!['pass', 'passed', 'success', 'ok'].includes(item?.status)) return false;
@@ -8636,18 +8636,6 @@ async function gitRefExists(repoRoot, ref) {
 async function gitOptional(repoRoot, args) {
   try {
     return await git(repoRoot, args);
-  } catch {
-    return '';
-  }
-}
-
-async function gitStatus(repoRoot, args) {
-  try {
-    const { stdout } = await execFileAsync('git', args, {
-      cwd: repoRoot,
-      encoding: 'utf8'
-    });
-    return stdout.trimEnd();
   } catch {
     return '';
   }

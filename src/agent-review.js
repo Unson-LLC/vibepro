@@ -1,14 +1,11 @@
-import { execFile } from 'node:child_process';
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
-
-const execFileAsync = promisify(execFile);
+import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -154,7 +151,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
 
-  const gitContext = await collectReviewGitContext(root);
+  const gitContext = await collectGitContext(root);
   const plan = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -239,7 +236,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
 
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
-  const gitContext = await collectReviewGitContext(root);
+  const gitContext = await collectGitContext(root);
   const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
   const result = {
     schema_version: '0.1.0',
@@ -333,7 +330,7 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     closed_at: null,
     result_artifact: null
   };
-  const gitContext = await collectReviewGitContext(root);
+  const gitContext = await collectGitContext(root);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     lifecycle.entries.push(entry);
@@ -358,7 +355,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = getReviewStageDir(root, storyId, stage);
   const closeReason = normalizeCloseReason(options.closeReason);
   let match = null;
-  const gitContext = await collectReviewGitContext(root);
+  const gitContext = await collectGitContext(root);
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     match = findLifecycleEntry(lifecycle.entries, {
@@ -390,7 +387,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root, 'review status');
   const reviewPolicy = await readAgentReviewPolicy(root);
-  const currentGitContext = await collectReviewGitContext(root);
+  const currentGitContext = await collectGitContext(root);
   const stages = options.stage ? [requireStage(options.stage, 'review status')] : getConfiguredStages(reviewPolicy);
   const stageSummaries = [];
   for (const stage of stages) {
@@ -726,7 +723,7 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const currentGitContext = options.git
     ? normalizeGitContext(options.git)
-    : await collectReviewGitContext(root);
+    : await collectGitContext(root);
   const reviewPolicy = await readAgentReviewPolicy(root);
   const requiredReviews = buildRequiredReviewPolicy({ ...options, reviewPolicy });
   const checkpointRequiredReviews = buildCheckpointReviewPolicy({ ...options, reviewPolicy });
@@ -1294,6 +1291,20 @@ function buildRolePromptSummary(stage, role, language = 'en') {
   return labels[role] ?? localizedText(language, { ja: `${stage}:${role} をreviewする。`, en: `Review ${stage}:${role}.` });
 }
 
+function renderGitContextHeader(gitContext = {}, language = 'ja') {
+  const userExcludes = gitContext.fingerprint_scope?.user_excludes;
+  const excludesText = Array.isArray(userExcludes) && userExcludes.length > 0
+    ? userExcludes.join(', ')
+    : '-';
+  const rawDirty = gitContext.raw_dirty ?? gitContext.dirty ?? '-';
+  return [
+    `- Current head: ${gitContext.head_sha ?? '-'}`,
+    `- User dirty: ${gitContext.dirty ?? '-'}`,
+    `- Raw dirty: ${rawDirty}`,
+    `- User fingerprint excludes: ${excludesText}`
+  ].join('\n');
+}
+
 function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = plan?.output?.language ?? 'ja' }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
@@ -1308,8 +1319,7 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
 - Story: ${storyId}
 - Stage: ${stage}
 - Role: ${role}
-- Current head: ${plan.git_context.head_sha ?? '-'}
-- Dirty: ${plan.git_context.dirty}
+${renderGitContextHeader(plan.git_context, language)}
 
 ## Review Focus
 ${buildRolePromptSummary(stage, role, language)}
@@ -1363,8 +1373,7 @@ ${investigationGuidelines}
 - Story: ${storyId}
 - Stage: ${stage}
 - Role: ${role}
-- Current head: ${plan.git_context.head_sha ?? '-'}
-- Dirty: ${plan.git_context.dirty}
+${renderGitContextHeader(plan.git_context, language)}
 
 ## レビュー観点
 ${buildRolePromptSummary(stage, role, language)}
@@ -1476,8 +1485,7 @@ timeout/replacement/manual shutdown用Lifecycle close command:
 - Stage: ${stage}
 - Mode: policy-aware parallel review dispatch
 - Required subagents: ${roles.length}
-- Current head: ${plan.git_context.head_sha ?? '-'}
-- Dirty: ${plan.git_context.dirty}
+${renderGitContextHeader(plan.git_context, language)}
 - Parallel scope: this stage only; do not combine with another review stage
 
 ## Coordinator Instructions
@@ -1510,8 +1518,7 @@ ${items}
 - Stage: ${stage}
 - Mode: policy-aware parallel review dispatch
 - Required subagents: ${roles.length}
-- Current head: ${plan.git_context.head_sha ?? '-'}
-- Dirty: ${plan.git_context.dirty}
+${renderGitContextHeader(plan.git_context, language)}
 - Parallel scope: このstageのみ。別review stageと同じbatchで混ぜない
 
 ## Coordinator指示
@@ -1677,6 +1684,8 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       judgment_delta: Array.isArray(result?.judgment_delta) ? result.judgment_delta : [],
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
+      git_context: result?.git_context ?? null,
+      source_git_context: result?.source_git_context ?? null,
       lifecycle: summarizeRoleLifecycle(lifecycleEntries, role),
       artifact: result ? toWorkspaceRelative(repoRoot, getReviewResultPath(reviewDir, role)) : null,
       history_artifacts: historyArtifacts
@@ -1828,17 +1837,21 @@ function bindReviewResult(result, currentGitContext) {
       reason: `review was recorded for ${recorded.head_sha.slice(0, 12)}, current head is ${currentGitContext.head_sha.slice(0, 12)}`
     };
   }
-  if (fingerprintHashForContext(recorded) !== fingerprintHashForContext(currentGitContext)) {
+  const comparison = compareFingerprintContexts(recorded, currentGitContext);
+  if (!comparison.matches) {
     return {
       status: 'stale',
-      reason: 'review was recorded with a different dirty worktree fingerprint'
+      reason: comparison.usingUserFingerprint
+        ? 'review was recorded with a different user dirty worktree fingerprint'
+        : 'review was recorded with a different dirty worktree fingerprint'
     };
   }
   const expectedFingerprint = buildSourceFingerprint({
     storyId: result.story_id,
     stage: result.stage,
     role: result.role,
-    gitContext: currentGitContext
+    gitContext: currentGitContext,
+    fingerprintHash: comparison.current
   });
   if (result.source_fingerprint && result.source_fingerprint !== expectedFingerprint) {
     return {
@@ -2341,100 +2354,27 @@ function normalizeCloseReason(value) {
   return ['completed', 'timeout', 'replaced', 'manual_shutdown'].includes(normalized) ? normalized : 'completed';
 }
 
-async function collectReviewGitContext(repoRoot) {
-  const [headSha, currentBranch, statusOutput] = await Promise.all([
-    gitOptional(repoRoot, ['rev-parse', 'HEAD']),
-    gitOptional(repoRoot, ['branch', '--show-current']),
-    gitStatus(repoRoot)
-  ]);
-  const dirtyDiff = await collectDirtyDiff(repoRoot);
-  return {
-    head_sha: headSha || null,
-    current_branch: currentBranch || null,
-    dirty: statusOutput.length > 0,
-    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
-    recorded_at: new Date().toISOString()
-  };
-}
-
 function normalizeGitContext(git) {
   return {
     head_sha: git.head_sha ?? null,
     current_branch: git.current_branch ?? null,
     dirty: git.dirty === true,
-    status_fingerprint_hash: fingerprintHashForContext(git),
+    raw_dirty: git.raw_dirty === true ? true : undefined,
+    status_fingerprint_hash: git.status_fingerprint_hash ?? null,
+    user_status_fingerprint_hash: git.user_status_fingerprint_hash ?? null,
+    fingerprint_scope: git.fingerprint_scope ?? null,
     recorded_at: new Date().toISOString()
   };
 }
 
-async function gitOptional(repoRoot, args) {
-  try {
-    const { stdout } = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
-    return stdout.trim();
-  } catch {
-    return '';
-  }
-}
-
-async function gitStatus(repoRoot) {
-  try {
-    const { stdout } = await execFileAsync('git', ['status', '--porcelain', '-uall'], { cwd: repoRoot, encoding: 'utf8' });
-    return stdout.trimEnd();
-  } catch {
-    return '';
-  }
-}
-
-async function collectDirtyDiff(repoRoot) {
-  const [unstaged, staged, untracked] = await Promise.all([
-    gitOptional(repoRoot, ['diff', '--binary']),
-    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
-    collectUntrackedFileFingerprint(repoRoot)
-  ]);
-  return [staged, unstaged, untracked].filter(Boolean).join('\n');
-}
-
-async function collectUntrackedFileFingerprint(repoRoot) {
-  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
-  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
-  const chunks = [];
-  for (const file of files) {
-    try {
-      const content = await readFile(path.join(repoRoot, file), 'utf8');
-      chunks.push(`untracked:${file}\n${content}`);
-    } catch {
-      chunks.push(`untracked:${file}\n<unreadable>`);
-    }
-  }
-  return chunks.join('\n');
-}
-
-function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [
-    'git-status --porcelain -uall',
-    String(statusOutput ?? '').trimEnd(),
-    'git-diff --binary',
-    String(dirtyDiff ?? '').trimEnd()
-  ].join('\n');
-}
-
-function buildSourceFingerprint({ storyId, stage, role, gitContext }) {
+function buildSourceFingerprint({ storyId, stage, role, gitContext, fingerprintHash = null }) {
   return crypto.createHash('sha256').update(JSON.stringify({
     story_id: storyId,
     stage,
     role,
     head_sha: gitContext.head_sha ?? null,
-    status_fingerprint_hash: fingerprintHashForContext(gitContext)
+    status_fingerprint_hash: fingerprintHash ?? fingerprintHashForContext(gitContext)
   })).digest('hex');
-}
-
-function fingerprintHashForContext(gitContext) {
-  if (gitContext?.status_fingerprint_hash) return gitContext.status_fingerprint_hash;
-  return hashFingerprint(gitContext?.status_fingerprint ?? '');
-}
-
-function hashFingerprint(value) {
-  return crypto.createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
 function normalizeWarnings(warnings) {
