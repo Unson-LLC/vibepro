@@ -1,10 +1,10 @@
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { collectGitContext } from './git-fingerprint.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -24,7 +24,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
   const connection = resolveConnectionOptions(options, options.env ?? process.env);
   const playwright = await detectPlaywright(root);
   const startedAt = new Date().toISOString();
-  const gitContext = await collectFlowGitContext(root);
+  const gitContext = await collectGitContext(root);
   const warnings = normalizeWarnings([options.managedWorktreeWarning]);
 
   let commandResult = null;
@@ -155,68 +155,6 @@ export async function runFlowVerification(repoRoot, options = {}) {
 
 function normalizeWarnings(warnings) {
   return warnings.filter((warning) => warning && typeof warning === 'object');
-}
-
-async function collectFlowGitContext(repoRoot) {
-  const [headSha, currentBranch, statusOutput] = await Promise.all([
-    gitOptional(repoRoot, ['rev-parse', 'HEAD']),
-    gitOptional(repoRoot, ['branch', '--show-current']),
-    gitStatus(repoRoot)
-  ]);
-  const dirtyDiff = await collectDirtyDiff(repoRoot);
-  return {
-    head_sha: headSha || null,
-    current_branch: currentBranch || null,
-    dirty: statusOutput.length > 0,
-    status_fingerprint_hash: hashFingerprint(fingerprintStatus(statusOutput, dirtyDiff)),
-    recorded_at: new Date().toISOString()
-  };
-}
-
-async function gitStatus(repoRoot) {
-  try {
-    const { stdout } = await execFileAsync('git', ['status', '--porcelain', '-uall'], { cwd: repoRoot, encoding: 'utf8' });
-    return stdout.trimEnd();
-  } catch {
-    return '';
-  }
-}
-
-async function collectDirtyDiff(repoRoot) {
-  const [unstaged, staged, untracked] = await Promise.all([
-    gitOptional(repoRoot, ['diff', '--binary']),
-    gitOptional(repoRoot, ['diff', '--cached', '--binary']),
-    collectUntrackedFileFingerprint(repoRoot)
-  ]);
-  return [staged, unstaged, untracked].filter(Boolean).join('\n');
-}
-
-async function collectUntrackedFileFingerprint(repoRoot) {
-  const output = await gitOptional(repoRoot, ['ls-files', '--others', '--exclude-standard']);
-  const files = output.split('\n').filter(Boolean).sort().slice(0, 200);
-  const chunks = [];
-  for (const file of files) {
-    try {
-      const content = await readFile(path.join(repoRoot, file), 'utf8');
-      chunks.push(`untracked:${file}\n${content}`);
-    } catch {
-      chunks.push(`untracked:${file}\n<unreadable>`);
-    }
-  }
-  return chunks.join('\n');
-}
-
-function fingerprintStatus(statusOutput, dirtyDiff = '') {
-  return [
-    'git-status --porcelain -uall',
-    String(statusOutput ?? '').trimEnd(),
-    'git-diff --binary',
-    String(dirtyDiff ?? '').trimEnd()
-  ].join('\n');
-}
-
-function hashFingerprint(value) {
-  return createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
 async function gitOptional(repoRoot, args) {

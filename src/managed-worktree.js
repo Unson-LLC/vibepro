@@ -5,6 +5,7 @@ import { promisify } from 'node:util';
 
 import { readDecisionRecordsIfExists } from './decision-records.js';
 import { MANIFEST_FILE, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { collectGitStatusFingerprints } from './git-fingerprint.js';
 
 const execFileAsync = promisify(execFile);
 const VALID_MODES = new Set(['required', 'preferred', 'disabled']);
@@ -30,7 +31,10 @@ export async function ensureManagedWorktree(repoRoot, options = {}) {
       created_from_sha: null,
       current_head_sha: null,
       dirty: null,
-      dirty_fingerprint: null
+      dirty_fingerprint: null,
+      raw_dirty: null,
+      raw_dirty_fingerprint: null,
+      fingerprint_scope: null
     };
   }
 
@@ -82,7 +86,10 @@ export async function ensureManagedWorktree(repoRoot, options = {}) {
     created_from_sha: createdFromSha || null,
     current_head_sha: currentHeadSha || null,
     dirty: dirty.dirty,
-    dirty_fingerprint: dirty.fingerprint
+    dirty_fingerprint: dirty.fingerprint,
+    raw_dirty: dirty.raw_dirty,
+    raw_dirty_fingerprint: dirty.raw_fingerprint,
+    fingerprint_scope: dirty.fingerprint_scope
   };
 }
 
@@ -127,7 +134,10 @@ export async function buildPendingManagedWorktree(repoRoot, options = {}) {
     created_from_sha: createdFromSha || null,
     current_head_sha: null,
     dirty: null,
-    dirty_fingerprint: null
+    dirty_fingerprint: null,
+    raw_dirty: null,
+    raw_dirty_fingerprint: null,
+    fingerprint_scope: null
   };
 }
 
@@ -148,6 +158,9 @@ function buildUnavailableManagedWorktree({ mode, root, worktreePath, branch, bas
     current_head_sha: null,
     dirty: null,
     dirty_fingerprint: null,
+    raw_dirty: null,
+    raw_dirty_fingerprint: null,
+    fingerprint_scope: null,
     failure_reason: reason
   };
 }
@@ -176,7 +189,10 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
     branch_match: branchMatch,
     current_head_sha: currentHeadSha || managedWorktree.current_head_sha || null,
     dirty: dirty.dirty,
-    dirty_fingerprint: dirty.fingerprint
+    dirty_fingerprint: dirty.fingerprint,
+    raw_dirty: dirty.raw_dirty,
+    raw_dirty_fingerprint: dirty.raw_fingerprint,
+    fingerprint_scope: dirty.fingerprint_scope
   };
 }
 
@@ -380,7 +396,10 @@ export function buildManagedWorktreeCommandBinding(context) {
       actual_branch: context.managed_worktree.actual_branch ?? null,
       current_head_sha: context.managed_worktree.current_head_sha ?? null,
       dirty: context.managed_worktree.dirty ?? null,
-      dirty_fingerprint: context.managed_worktree.dirty_fingerprint ?? null
+      dirty_fingerprint: context.managed_worktree.dirty_fingerprint ?? null,
+      raw_dirty: context.managed_worktree.raw_dirty ?? null,
+      raw_dirty_fingerprint: context.managed_worktree.raw_dirty_fingerprint ?? context.managed_worktree.raw_fingerprint ?? null,
+      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null
     } : null
   };
 }
@@ -714,11 +733,15 @@ async function canonicalPath(filePath) {
 }
 
 async function collectDirty(repoRoot) {
-  const status = await gitOptional(repoRoot, ['status', '--porcelain', '-uall']);
-  const lines = status ? status.split('\n').filter(Boolean) : [];
+  const fingerprints = await collectGitStatusFingerprints(repoRoot);
+  const lines = fingerprints.user_status_output ? fingerprints.user_status_output.split('\n').filter(Boolean) : [];
+  const rawLines = fingerprints.status_output ? fingerprints.status_output.split('\n').filter(Boolean) : [];
   return {
     dirty: lines.length > 0,
-    fingerprint: lines.length === 0 ? 'clean' : lines.join('\n')
+    raw_dirty: rawLines.length > 0,
+    fingerprint: lines.length === 0 ? 'clean' : lines.join('\n'),
+    raw_fingerprint: rawLines.length === 0 ? 'clean' : rawLines.join('\n'),
+    fingerprint_scope: fingerprints.fingerprint_scope
   };
 }
 

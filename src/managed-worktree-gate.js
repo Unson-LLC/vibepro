@@ -4,7 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { readDecisionRecordsIfExists } from './decision-records.js';
-import { resolveManagedWorktreeMode } from './managed-worktree.js';
+import { refreshManagedWorktree, resolveManagedWorktreeMode } from './managed-worktree.js';
 import { getWorkspaceDir } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -15,10 +15,11 @@ export async function buildManagedWorktreeGate(repoRoot, options = {}) {
   const state = storyId ? await readBoundExecutionState(root, storyId) : null;
   let managedWorktree = state?.managed_worktree ?? null;
   if (managedWorktree?.path) {
-    managedWorktree = {
-      ...managedWorktree,
-      current_head_sha: await gitOptional(managedWorktree.path, ['rev-parse', 'HEAD']) ?? managedWorktree.current_head_sha ?? null
-    };
+    managedWorktree = await refreshManagedWorktree(managedWorktree.source_repo ?? root, managedWorktree)
+      .catch(async () => ({
+        ...managedWorktree,
+        current_head_sha: await gitOptional(managedWorktree.path, ['rev-parse', 'HEAD']) ?? managedWorktree.current_head_sha ?? null
+      }));
   }
   const mode = await resolveManagedWorktreeMode(managedWorktree?.source_repo ?? root);
   const expectedPath = managedWorktree?.path ? path.resolve(managedWorktree.path) : null;

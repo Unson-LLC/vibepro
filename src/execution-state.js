@@ -246,7 +246,9 @@ function formatManagedWorktreeSummary(managedWorktree) {
       `- actual_branch: ${managedWorktree.actual_branch ?? '-'}`,
       `- current_head_sha: ${managedWorktree.current_head_sha ?? '-'}`,
       `- branch_match: ${managedWorktree.branch_match === false ? 'false' : managedWorktree.branch_match === true ? 'true' : '-'}`,
-      `- dirty: ${managedWorktree.dirty === true ? 'true' : managedWorktree.dirty === false ? 'false' : '-'}`
+      `- dirty: ${managedWorktree.dirty === true ? 'true' : managedWorktree.dirty === false ? 'false' : '-'}`,
+      `- raw_dirty: ${managedWorktree.raw_dirty === true ? 'true' : managedWorktree.raw_dirty === false ? 'false' : '-'}`,
+      `- raw_dirty_fingerprint: ${managedWorktree.raw_dirty_fingerprint ?? '-'}`
     ].join('\n')
   };
 }

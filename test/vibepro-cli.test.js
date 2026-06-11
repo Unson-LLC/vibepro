@@ -13,6 +13,7 @@ import { scanComponentStyle } from '../src/component-style-scanner.js';
 import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli } from '../src/cli.js';
+import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -2234,11 +2235,77 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
   ]);
   assert.equal(recordResult.exitCode, 0);
 
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'codex-artifact-consistency-runtime'
+  ]);
+  await runCli([
+    'review',
+    'close',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--agent-id',
+    'codex-artifact-consistency-runtime',
+    '--close-reason',
+    'completed',
+    '--close-evidence',
+    'test:artifact-consistency-runtime'
+  ]);
+  const reviewRecordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'runtime contract reviewed for artifact consistency',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-artifact-consistency-runtime',
+    '--agent-model',
+    'gpt-5',
+    '--agent-transcript',
+    'test:artifact-consistency-runtime',
+    '--agent-closed',
+    '--agent-close-evidence',
+    'test:artifact-consistency-runtime'
+  ]);
+  assert.equal(reviewRecordResult.exitCode, 0);
+
   const currentResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(currentResult.exitCode, 0);
   const currentGate = currentResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(currentGate.status, 'passed');
   assert.equal(currentGate.artifact_count >= 1, true);
+  const reviewArtifact = currentGate.artifacts.find((artifact) => artifact.artifact_type === 'agent_review_result');
+  assert.equal(reviewArtifact.recorded_head_sha, currentResult.result.preparation.git.head_sha);
+  assert.match(reviewArtifact.recorded_user_status_fingerprint_hash, /^[a-f0-9]{64}$/);
   assert.equal(currentResult.result.preparation.pr_context.gate_dag.summary.artifact_consistency_status, 'passed');
 
   await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), 'export const value = 2;\n');
@@ -2256,9 +2323,9 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
   assert.equal(staleResult.exitCode, 0);
   const staleGate = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(staleGate.status, 'stale_evidence');
-  assert.equal(staleGate.inconsistent_artifact_count, 1);
-  assert.equal(staleGate.inconsistent_artifacts[0].artifact_type, 'verification_command');
-  assert.equal(staleGate.inconsistent_artifacts[0].kind, 'unit');
+  assert.equal(staleGate.inconsistent_artifact_count >= 1, true);
+  const staleVerificationArtifact = staleGate.inconsistent_artifacts.find((artifact) => artifact.artifact_type === 'verification_command');
+  assert.equal(staleVerificationArtifact.kind, 'unit');
   assert.match(staleGate.reason, /not bound to the current git state/);
   assert.equal(
     staleResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:artifact_consistency'),
@@ -2267,6 +2334,91 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
   const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
   assert.match(actions, /Regenerate stale VibePro evidence artifacts/);
   assert.match(actions, /Rerun current-bound verification evidence/);
+});
+
+test('pr prepare keeps verification evidence current when only tracked VibePro manifest changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'internal-artifact-fingerprint.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/internal-artifact-fingerprint.js']);
+  await git(repo, ['commit', '-m', 'feat: add internal artifact fingerprint fixture']);
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track vibepro manifest fixture']);
+
+  const recordResult = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'unit suite passed for internal artifact fingerprint fixture'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_internal_update_for_test = new Date().toISOString();
+  await writeJson(manifestPath, manifest);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gitState = result.result.preparation.git;
+  assert.equal(gitState.dirty, false);
+  assert.equal(gitState.raw_dirty, true);
+  assert.equal(gitState.vibepro_internal_dirty_files.some((file) => file.path === '.vibepro/vibepro-manifest.json'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(gate.status, 'passed');
+});
+
+test('pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'legacy-internal-artifact-fingerprint.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/legacy-internal-artifact-fingerprint.js']);
+  await git(repo, ['commit', '-m', 'feat: add legacy internal artifact fixture']);
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track legacy vibepro manifest fixture']);
+
+  const recordResult = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'legacy unit suite passed for internal artifact fingerprint fixture'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const evidencePath = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json');
+  const evidence = await readJson(evidencePath);
+  delete evidence.commands[0].git_context.user_status_fingerprint_hash;
+  delete evidence.commands[0].git_context.fingerprint_scope;
+  await writeJson(evidencePath, evidence);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_internal_update_for_test = new Date().toISOString();
+  await writeJson(manifestPath, manifest);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(gate.status, 'stale_evidence');
+  assert.equal(gate.inconsistent_artifacts.some((artifact) => artifact.artifact_type === 'verification_command'), true);
 });
 
 test('check all leaves optional agent harness and public discovery checks out unless explicitly included', async () => {
@@ -3797,19 +3949,7 @@ export async function loadCompanies(query, companyId) {
 });
 
 test('verify flow writes Playwright evidence and skips mutating probes by default', async () => {
-  const repo = await makeRepo();
-  await runCli([
-    'init',
-    repo,
-    '--story-id',
-    'U-020',
-    '--title',
-    '新規登録でタスクを量産せず不足情報を質問化する',
-    '--view',
-    'user',
-    '--period',
-    '2026-05'
-  ]);
+  const repo = await makeGitRepoWithStory();
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     dependencies: { '@playwright/test': '^1.50.0' }
   }, null, 2));
@@ -3878,6 +4018,10 @@ console.log('fake playwright ok');
   const verification = await readJson(path.join(runDir, 'flow-verification.json'));
   assert.equal(verification.base_url, 'http://127.0.0.1:3000');
   assert.equal(verification.probes[0].artifacts.screenshot_paths.includes('screenshots/new-registration.png'), true);
+  assert.match(verification.git_context.head_sha, /^[a-f0-9]{40}$/);
+  assert.match(verification.git_context.status_fingerprint_hash, /^[a-f0-9]{64}$/);
+  assert.match(verification.git_context.user_status_fingerprint_hash, /^[a-f0-9]{64}$/);
+  assert.deepEqual(verification.git_context.fingerprint_scope.user_excludes, ['.vibepro/', '.worktrees/vibepro/']);
   const generatedSpec = await readFile(path.join(runDir, 'flow-verification.spec.js'), 'utf8');
   assert.match(generatedSpec, /document\.elementFromPoint\(x, y\)/);
   assert.equal(generatedSpec.includes('Physical click target for .icon-action-button is intercepted'), true);
@@ -3891,6 +4035,9 @@ console.log('fake playwright ok');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.latest_flow_verification_run, 'flow-run-1');
   assert.equal(manifest.flow_verification_runs[0].artifacts.flow_verification_json, '.vibepro/verification/flow-run-1/flow-verification.json');
+  assert.equal(manifest.flow_verification_runs[0].git_context.head_sha, verification.git_context.head_sha);
+  assert.equal(manifest.flow_verification_runs[0].git_context.user_status_fingerprint_hash, verification.git_context.user_status_fingerprint_hash);
+  assert.deepEqual(manifest.flow_verification_runs[0].git_context.fingerprint_scope.user_excludes, ['.vibepro/', '.worktrees/vibepro/']);
 });
 
 test('verify flow does not pass when no runtime probes are configured', async () => {
@@ -4310,6 +4457,100 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
   assert.match(prBody, /## Flow Verification Evidence/);
   assert.match(prBody, /status: pass/);
   assert.match(prBody, /\.vibepro\/verification\/flow-pass\/flow-verification\.json/);
+});
+
+test('pr prepare keeps flow verification current when only tracked VibePro manifest changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature', 'flow-user-fingerprint.js'), 'export const flowUserFingerprint = true;\n');
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const trackedManifest = await readJson(manifestPath);
+  trackedManifest.test_tracking_marker = 'flow-user-fingerprint';
+  await writeJson(manifestPath, trackedManifest);
+  await git(repo, ['add', 'src/feature/flow-user-fingerprint.js']);
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'feat: add flow user fingerprint fixture']);
+
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const cleanFingerprints = await collectGitStatusFingerprints(repo);
+  assert.equal(cleanFingerprints.dirty, false);
+  assert.equal(cleanFingerprints.user_dirty, false);
+
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-user-fingerprint'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'flow-user-fingerprint', 'flow-verification.json'), {
+    schema_version: '0.1.0',
+    run_id: 'flow-user-fingerprint',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-12T00:00:00.000Z',
+    status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprints.status_fingerprint_hash,
+      user_status_fingerprint_hash: cleanFingerprints.user_status_fingerprint_hash,
+      fingerprint_scope: cleanFingerprints.fingerprint_scope,
+      recorded_at: '2026-05-12T00:00:00.000Z'
+    },
+    base_url: 'http://127.0.0.1:3000',
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    },
+    probes: [{
+      id: 'new-registration-readonly',
+      status: 'pass'
+    }]
+  });
+  await writeFile(path.join(repo, '.vibepro', 'verification', 'flow-user-fingerprint', 'flow-verification.md'), '# Flow Verification\n');
+
+  const manifest = await readJson(manifestPath);
+  manifest.latest_flow_verification_run = 'flow-user-fingerprint';
+  manifest.flow_verification_runs = [{
+    run_id: 'flow-user-fingerprint',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-12T00:00:00.000Z',
+    status: 'pass',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprints.status_fingerprint_hash,
+      user_status_fingerprint_hash: cleanFingerprints.user_status_fingerprint_hash,
+      fingerprint_scope: cleanFingerprints.fingerprint_scope,
+      recorded_at: '2026-05-12T00:00:00.000Z'
+    },
+    base_url: 'http://127.0.0.1:3000',
+    artifacts: {
+      flow_verification_json: '.vibepro/verification/flow-user-fingerprint/flow-verification.json',
+      flow_verification_report: '.vibepro/verification/flow-user-fingerprint/flow-verification.md'
+    },
+    summary: {
+      total: 1,
+      pass: 1,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 0
+    }
+  }];
+  await writeJson(manifestPath, manifest);
+
+  const dirtyFingerprints = await collectGitStatusFingerprints(repo);
+  assert.equal(dirtyFingerprints.dirty, true);
+  assert.equal(dirtyFingerprints.user_dirty, false);
+  assert.equal(dirtyFingerprints.user_status_fingerprint_hash, cleanFingerprints.user_status_fingerprint_hash);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const flowVerification = result.result.preparation.pr_context.flow_verification;
+  assert.equal(flowVerification.binding.status, 'current');
+  assert.equal(flowVerification.stale, false);
+  assert.equal(flowVerification.verification.binding.status, 'current');
+  const e2eGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.status, 'passed');
+  assert.equal(e2eGate.flow_verification.run_id, 'flow-user-fingerprint');
 });
 
 test('measure records command, HTTP, startup, and Prisma log metrics', async () => {
@@ -6490,6 +6731,10 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'permission-request.md')), false);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md')), true);
   const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'parallel-dispatch.md'), 'utf8');
+  assert.match(dispatch, /User dirty:/);
+  assert.match(dispatch, /Raw dirty:/);
+  assert.match(dispatch, /User fingerprint excludes:/);
+  assert.doesNotMatch(dispatch, /^- Dirty:/m);
   assert.match(dispatch, /If your coordinator runtime supports subagents/);
   assert.doesNotMatch(dispatch, /permission-request\.md/);
   assert.match(dispatch, /manual_review as satisfying required subagent review/);
@@ -6510,6 +6755,10 @@ test('review prepare generates stage role requests', async () => {
   const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'test_plan', 'review-request-e2e_ux.md'), 'utf8');
   assert.match(request, /VibePro Agent Review Request/);
   assert.match(request, /Role: e2e_ux/);
+  assert.match(request, /User dirty:/);
+  assert.match(request, /Raw dirty:/);
+  assert.match(request, /User fingerprint excludes:/);
+  assert.doesNotMatch(request, /^- Dirty:/m);
   assert.match(request, /Mandatory Review Lenses/);
   assert.match(request, /regression_guard/);
   assert.match(request, /path_surface_coverage/);
@@ -7324,6 +7573,163 @@ test('review record updates status summary and marks stale after source change',
   assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
 });
 
+test('review status keeps current review when only tracked VibePro manifest changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track vibepro manifest fixture']);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'runtime contract reviewed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-runtime-contract-agent',
+    '--agent-thread-id',
+    'thread-runtime-contract',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_internal_update_for_test = new Date().toISOString();
+  await writeJson(manifestPath, manifest);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'pass');
+  assert.equal(role.stale, false);
+});
+
+test('review status keeps legacy full-fingerprint review stale when tracked VibePro manifest changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track legacy vibepro manifest fixture']);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'legacy runtime contract reviewed',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-legacy-runtime-contract-agent',
+    '--agent-thread-id',
+    'thread-legacy-runtime-contract',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const resultPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-runtime_contract.json');
+  const review = await readJson(resultPath);
+  delete review.git_context.user_status_fingerprint_hash;
+  delete review.git_context.fingerprint_scope;
+  await writeJson(resultPath, review);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_internal_update_for_test = new Date().toISOString();
+  await writeJson(manifestPath, manifest);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'stale');
+  assert.match(role.stale_reason, /dirty worktree fingerprint/);
+});
+
+test('review status keeps unchanged legacy source fingerprint current with tracked VibePro manifest dirt', async () => {
+  const repo = await makeGitRepoWithStory();
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track source fingerprint manifest fixture']);
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_internal_update_for_test = 'legacy-source-fingerprint';
+  await writeJson(manifestPath, manifest);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'legacy runtime contract reviewed with internal dirt',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-legacy-source-fingerprint-agent',
+    '--agent-thread-id',
+    'thread-legacy-source-fingerprint',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  const resultPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-runtime_contract.json');
+  const review = await readJson(resultPath);
+  delete review.git_context.user_status_fingerprint_hash;
+  delete review.git_context.fingerprint_scope;
+  review.source_fingerprint = createHash('sha256').update(JSON.stringify({
+    story_id: review.story_id,
+    stage: review.stage,
+    role: review.role,
+    head_sha: review.git_context.head_sha,
+    status_fingerprint_hash: review.git_context.status_fingerprint_hash
+  })).digest('hex');
+  await writeJson(resultPath, review);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'pass');
+  assert.equal(role.stale, false);
+});
+
 test('review record keeps append-only history for replaced review findings', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -7981,6 +8387,102 @@ test('execute start keeps fresh-init managed worktrees clean when generated igno
   assert.match(exclude, /\/\.vibepro\/config\.json/);
   assert.match(exclude, /\/\.vibepro\/vibepro-manifest\.json/);
   assert.match(exclude, /\/\.vibepro\/executions\//);
+});
+
+test('execute status keeps managed worktree raw diagnostics when VibePro manifest is tracked', async () => {
+  const repo = await makeGitRepoWithStory();
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const trackedManifest = await readJson(manifestPath);
+  trackedManifest.test_tracking_marker = 'managed-worktree-raw';
+  await writeJson(manifestPath, trackedManifest);
+  await git(repo, ['add', '-f', '.vibepro/vibepro-manifest.json']);
+  await git(repo, ['commit', '-m', 'test: track manifest for managed worktree diagnostics']);
+
+  const started = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'HEAD',
+    '--json'
+  ]);
+  assert.equal(started.exitCode, 0);
+  const worktreePath = started.result.state.managed_worktree.path;
+  const managedManifestPath = path.join(worktreePath, '.vibepro', 'vibepro-manifest.json');
+  const managedManifest = await readJson(managedManifestPath);
+  managedManifest.latest_internal_update_for_test = 'raw-dirty-diagnostic';
+  await writeJson(managedManifestPath, managedManifest);
+
+  const rawStatus = await git(worktreePath, ['status', '--porcelain', '-uall']);
+  assert.match(rawStatus.stdout, / \.vibepro\/vibepro-manifest\.json/);
+
+  const status = await runCli([
+    'execute',
+    'status',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'HEAD',
+    '--json'
+  ]);
+  assert.equal(status.exitCode, 0);
+  const managedWorktree = status.result.state.managed_worktree;
+  assert.equal(managedWorktree.dirty, false);
+  assert.equal(managedWorktree.dirty_fingerprint, 'clean');
+  assert.equal(managedWorktree.raw_dirty, true);
+  assert.match(managedWorktree.raw_dirty_fingerprint, /\.vibepro\/vibepro-manifest\.json/);
+  assert.deepEqual(managedWorktree.fingerprint_scope.user_excludes, ['.vibepro/', '.worktrees/vibepro/']);
+
+  const sourceManifest = await readJson(manifestPath);
+  sourceManifest.latest_internal_update_for_test = 'root-raw-dirty-diagnostic';
+  await writeJson(manifestPath, sourceManifest);
+  const rootFingerprints = await collectGitStatusFingerprints(repo);
+  assert.equal(rootFingerprints.dirty, true);
+  assert.equal(rootFingerprints.user_dirty, false);
+
+  const prepare = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'HEAD',
+    '--story-id',
+    'story-pr-prepare',
+    '--json'
+  ]);
+  assert.equal(prepare.exitCode, 0);
+  const artifactCurrent = prepare.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:artifact_consistency').current.managed_worktree;
+  assert.equal(artifactCurrent.dirty, false);
+  assert.equal(artifactCurrent.raw_dirty, true);
+  assert.match(artifactCurrent.raw_dirty_fingerprint, /\.vibepro\/vibepro-manifest\.json/);
+  const rootCurrent = prepare.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:artifact_consistency').current;
+  assert.equal(rootCurrent.raw_dirty, true);
+  assert.equal(Array.isArray(rootCurrent.raw_dirty_files), true);
+  assert.equal(Array.isArray(rootCurrent.vibepro_internal_dirty_files), true);
+  assert.deepEqual(rootCurrent.fingerprint_scope.user_excludes, ['.vibepro/', '.worktrees/vibepro/']);
+
+  const managedGate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:managed_worktree');
+  assert.equal(managedGate.managed_worktree.dirty, false);
+  assert.equal(managedGate.managed_worktree.raw_dirty, true);
+
+  const statusText = await runCliWithStdout([
+    'execute',
+    'status',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'HEAD'
+  ]);
+  assert.equal(statusText.exitCode, 0);
+  assert.match(statusText.stdout, /dirty: false/);
+  assert.match(statusText.stdout, /raw_dirty: true/);
+  assert.match(statusText.stdout, /raw_dirty_fingerprint: .*\.vibepro\/vibepro-manifest\.json/);
 });
 
 test('execute start records preferred managed worktree creation failures without blocking the checkout', async () => {
