@@ -21,6 +21,7 @@ import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
+import { buildTraceability } from './traceability.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -351,6 +352,13 @@ export async function preparePullRequest(repoRoot, options = {}) {
     });
     await writeFile(reportPath, reviewCockpitHtml, { signal });
     await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+    const traceabilityPath = path.join(prDir, 'traceability.json');
+    const existingTraceability = await readJsonIfExists(traceabilityPath);
+    await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
+      storyId: story.story_id,
+      source: 'pr_prepare',
+      lifecycle: 'in_progress'
+    }), null, 2)}\n`, { signal });
     const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
     const existingHumanReview = await readJsonIfExists(humanReviewPath);
     await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
