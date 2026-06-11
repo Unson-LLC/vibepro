@@ -56,7 +56,11 @@ test('story-vibepro-pr-route-gate-dag ac1 ac2 ac6 executes docs-only route class
   assert.equal(prepare.pr_context.pr_route.route_type, 'docs_only');
   assert.equal(prepare.pr_context.engineering_judgment.route_type, 'agent_workflow');
   assert.equal(nodeById(prepare, 'gate:engineering_judgment_route').status, 'passed');
-  assert.equal(nodeById(prepare, 'gate:common_judgment_spine').status, 'passed');
+  assert.equal(nodeById(prepare, 'gate:common_judgment_spine').status, 'needs_evidence');
+  assert.equal(
+    nodeById(prepare, 'gate:common_judgment_spine').subchecks.some((check) => check.id === 'current_reality' && check.status === 'needs_evidence'),
+    true
+  );
   assert.equal(nodeById(prepare, 'gate:judgment_agent_workflow_context_acquisition').status, 'passed');
   assert.equal(nodeById(prepare, 'gate:dag_connectivity').status, 'passed');
   assert.deepEqual(nodeById(prepare, 'gate:dag_connectivity').unreachable_nodes, []);
