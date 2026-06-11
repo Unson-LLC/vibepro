@@ -225,6 +225,23 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
   assert.deepEqual(role.judgment_delta, []);
 });
 
+test('getAgentReviewStatus surfaces empty handoff arrays for missing roles', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const status = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const role = status.stages[0].roles.find((r) => r.role === 'gate_evidence');
+  assert.ok(role, 'gate_evidence role missing from status');
+  assert.equal(role.effective_status, 'missing');
+  assert.deepEqual(role.inspection, { summary: null, evidence: null, inputs: [] });
+  assert.deepEqual(role.judgment_delta, []);
+  const summary = JSON.parse(await readFile(
+    path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'review-summary.json'),
+    'utf8'
+  ));
+  assert.deepEqual(summary.roles[0].inspection, { summary: null, evidence: null, inputs: [] });
+  assert.deepEqual(summary.roles[0].judgment_delta, []);
+});
+
 test('review record CLI persists inspection summary and evidence', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

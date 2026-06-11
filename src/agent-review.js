@@ -1673,7 +1673,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       provenance_reason: provenance?.reason ?? null,
       agent_provenance: result?.agent_provenance ?? null,
       summary: result?.summary ?? null,
-      inspection: result?.inspection ?? { summary: null, evidence: null },
+      inspection: normalizeReviewInspectionForSummary(result?.inspection),
       judgment_delta: Array.isArray(result?.judgment_delta) ? result.judgment_delta : [],
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
@@ -2014,6 +2014,14 @@ function buildInspectionBlock(options) {
     summary,
     evidence,
     inputs: normalizeTextList(options.inspectionInputs)
+  };
+}
+
+function normalizeReviewInspectionForSummary(inspection = null) {
+  return {
+    summary: inspection?.summary ?? null,
+    evidence: inspection?.evidence ?? null,
+    inputs: Array.isArray(inspection?.inputs) ? inspection.inputs : []
   };
 }
 
