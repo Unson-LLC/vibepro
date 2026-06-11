@@ -65,6 +65,7 @@ updated_at: 2026-06-12
 
 ## 非目標
 
+- `src/story-manager.js` の既存 story planning ロジックの変更。特に signature helper 検出の `hasSignatureHelper` 分岐は unchanged（本storyは addStory への traceability autobind 追加のみで、この既存分岐には触れない）
 - pr-prepare.json / pr-merge.json / review-summary.json など実証跡 artifact の自動生成
 - `traceability_incomplete_review_evidence` の自動修復（review_lifecycle_repair_loop は別story）
 - GitHub API による過去PRの完全復元
