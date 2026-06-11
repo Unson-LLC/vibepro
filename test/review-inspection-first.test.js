@@ -77,8 +77,12 @@ test('review request markdown emits Investigation Guidelines between Mandatory R
   assert.ok(content.includes(INVESTIGATION_GUIDELINES_BLOCK), 'block must be interpolated verbatim');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
   assert.match(content, /--inspection-evidence <inspection-evidence>/);
+  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);
+  assert.match(content, /inspection_inputs/);
+  assert.match(content, /judgment_delta/);
 });
 
 test('parallel dispatch record command and prompt include inspection fields', async () => {
@@ -88,8 +92,12 @@ test('parallel dispatch record command and prompt include inspection fields', as
   const content = await readFile(dispatchPath, 'utf8');
   assert.match(content, /--inspection-summary "<inspection-summary>"/);
   assert.match(content, /--inspection-evidence <inspection-evidence>/);
+  assert.match(content, /--inspection-input <ref>/);
+  assert.match(content, /--judgment-delta/);
   assert.match(content, /inspection_summary/);
   assert.match(content, /inspection_evidence/);
+  assert.match(content, /inspection_inputs/);
+  assert.match(content, /judgment_delta/);
 });
 
 test('recordAgentReview without inspection flags rejects gate_evidence pass (INV-RIF-2)', async () => {
@@ -129,6 +137,50 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
   });
   assert.equal(review.inspection.summary, summaryText);
   assert.equal(review.inspection.evidence, 'test/foo.test.js');
+  assert.deepEqual(review.inspection.inputs, []);
+  assert.deepEqual(review.judgment_delta, []);
+});
+
+test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  const { review, summary } = await recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'read review request, PR artifacts, and focused tests',
+    inspectionEvidence: 'test/review-inspection-first.test.js',
+    inspectionInputs: [
+      'src/agent-review.js',
+      ' .vibepro/reviews/story-test/gate/review-request-gate_evidence.md ',
+      'src/agent-review.js'
+    ],
+    judgmentDeltas: [
+      'generic pass concern -> acceptable because concrete inspection inputs are listed',
+      'handoff unclear -> clear because judgment delta is recorded'
+    ],
+    agentSystem: 'claude_code',
+    executionMode: 'parallel_subagent',
+    agentId: 'task-test-1',
+    agentClosed: true
+  });
+  assert.deepEqual(review.inspection.inputs, [
+    'src/agent-review.js',
+    '.vibepro/reviews/story-test/gate/review-request-gate_evidence.md'
+  ]);
+  assert.deepEqual(review.judgment_delta, [
+    'generic pass concern -> acceptable because concrete inspection inputs are listed',
+    'handoff unclear -> clear because judgment delta is recorded'
+  ]);
+  const role = summary.roles.find((item) => item.role === 'gate_evidence');
+  assert.deepEqual(role.inspection.inputs, review.inspection.inputs);
+  assert.deepEqual(role.judgment_delta, review.judgment_delta);
+  const markdown = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'review-summary.md'), 'utf8');
+  assert.match(markdown, /inputs=src\/agent-review\.js/);
+  assert.match(markdown, /judgment_delta=generic pass concern -> acceptable/);
 });
 
 test('recordAgentReview rejects whitespace-only inspection for gate_evidence pass', async () => {
@@ -169,7 +221,8 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
   const status = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
   const role = status.stages[0].roles.find((r) => r.role === 'gate_evidence');
   assert.ok(role, 'gate_evidence role missing from status');
-  assert.deepEqual(role.inspection, { summary: 'verified contract via test suite', evidence: null });
+  assert.deepEqual(role.inspection, { summary: 'verified contract via test suite', evidence: null, inputs: [] });
+  assert.deepEqual(role.judgment_delta, []);
 });
 
 test('review record CLI persists inspection summary and evidence', async () => {
@@ -194,6 +247,12 @@ test('review record CLI persists inspection summary and evidence', async () => {
     'read src/agent-review.js and ran focused review tests',
     '--inspection-evidence',
     'test/review-inspection-first.test.js',
+    '--inspection-input',
+    'src/agent-review.js',
+    '--inspection-input',
+    '.vibepro/reviews/story-test/gate/review-request-gate_evidence.md',
+    '--judgment-delta',
+    'initial uncertainty -> pass because focused inspection was recorded',
     '--agent-system',
     'claude_code',
     '--execution-mode',
@@ -208,6 +267,13 @@ test('review record CLI persists inspection summary and evidence', async () => {
   ));
   assert.deepEqual(review.inspection, {
     summary: 'read src/agent-review.js and ran focused review tests',
-    evidence: 'test/review-inspection-first.test.js'
+    evidence: 'test/review-inspection-first.test.js',
+    inputs: [
+      'src/agent-review.js',
+      '.vibepro/reviews/story-test/gate/review-request-gate_evidence.md'
+    ]
   });
+  assert.deepEqual(review.judgment_delta, [
+    'initial uncertainty -> pass because focused inspection was recorded'
+  ]);
 });

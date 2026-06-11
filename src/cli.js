@@ -271,7 +271,7 @@ Usage:
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
   vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
@@ -431,7 +431,7 @@ Usage:
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
-  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--json]
+  vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id> [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
@@ -1090,6 +1090,8 @@ export async function runCli(argv, io = {}) {
           agentCloseNote: getOption(rest, '--agent-close-note') ?? getOption(rest, '--subagent-close-note'),
           inspectionSummary: getOption(rest, '--inspection-summary'),
           inspectionEvidence: getOption(rest, '--inspection-evidence'),
+          inspectionInputs: getOptions(rest, '--inspection-input'),
+          judgmentDeltas: getOptions(rest, '--judgment-delta'),
           recordedBy: getOption(rest, '--recorded-by'),
           stdinText,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
