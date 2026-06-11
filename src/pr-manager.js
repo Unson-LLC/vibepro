@@ -1159,6 +1159,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:review_inspection_required') {
     return `Record required review inspection evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:design_diagrams') {
+    return `Add required design diagram evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:pr_scope_judgment') {
     return `Reduce or split PR scope before creation: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
@@ -2023,7 +2026,17 @@ function buildCommonSpineReasoning(gateDag) {
     .map((check) => {
       const evidence = check.evidence ?? 'evidenceなし';
       const reason = check.reason ?? '理由なし';
-      return `- ${check.id}: ${check.status} / evidence=${evidence} / ${reason}`;
+      const surface = check.surface ? ` / surface=${check.surface}` : '';
+      const required = Array.isArray(check.required_evidence_kind) && check.required_evidence_kind.length > 0
+        ? ` / required=${check.required_evidence_kind.join('|')}`
+        : '';
+      const matched = Array.isArray(check.matched_evidence) && check.matched_evidence.length > 0
+        ? ` / matched=${check.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        : '';
+      const missing = Array.isArray(check.missing_evidence) && check.missing_evidence.length > 0
+        ? ` / missing=${check.missing_evidence.join('|')}`
+        : '';
+      return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${reason}`;
     })
     .join('\n');
 }
@@ -4732,27 +4745,64 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
   const routeType = engineeringJudgment?.route_type ?? 'general_engineering';
   const documentationOnlyRoute = prRoute?.route_type === 'docs_only';
-  const highRisk = changeClassification?.profile === 'workflow_heavy'
-    || ['business_system', 'data_pipeline', 'security_trust', 'release_engineering', 'api_platform', 'infra_ops'].includes(routeType)
-    || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => riskSurfaces.has(surface));
+  const surfaceProfile = deriveJudgmentSurfaceProfile({
+    routeType,
+    prRoute,
+    fileGroups,
+    changeClassification,
+    storySource,
+    inferredSpec
+  });
+  const evidenceMatches = classifyJudgmentEvidence({
+    currentVerification,
+    surfaceProfile,
+    fileGroups,
+    storySource,
+    inferredSpec
+  });
+  const highRisk = !documentationOnlyRoute && (
+    changeClassification?.profile === 'workflow_heavy'
+    || ['business_system', 'data_pipeline', 'security_trust', 'release_engineering', 'api_platform', 'infra_ops', 'agent_workflow'].includes(routeType)
+    || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => riskSurfaces.has(surface))
+  );
   const boundarySensitive = highRisk
     || (!documentationOnlyRoute && (routeType === 'agent_workflow' || riskSurfaces.has('gate_orchestration')));
+  const currentRealityRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', surfaceProfile);
+  const failureModesRequirement = requiredEvidenceForJudgmentSubcheck('failure_modes', surfaceProfile);
+  const doneEvidenceRequirement = requiredEvidenceForJudgmentSubcheck('done_evidence', surfaceProfile);
+  const docsRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', { surface: 'docs_only' });
   return [
     {
       id: 'intent',
       status: storyHasIntent ? 'passed' : 'needs_story',
       evidence: storyHasIntent ? storySource?.path ?? storySource?.story_id ?? 'story_source' : null,
+      surface: 'story',
+      required_evidence_kind: ['story_intent'],
+      matched_evidence: storyHasIntent ? [{ kind: 'story_intent', ref: storySource?.path ?? storySource?.story_id ?? 'story_source' }] : [],
+      missing_evidence: storyHasIntent ? [] : ['story_intent'],
       reason: storyHasIntent
         ? `${acceptanceCount} acceptance criterion/criteria or Story intent text found`
         : 'Story purpose or Acceptance Criteria could not be resolved'
     },
     {
       id: 'current_reality',
-      status: changedFileCount > 0 || currentVerification.length > 0 ? 'passed' : 'needs_evidence',
-      evidence: currentVerification[0]?.command ?? `${changedFileCount} changed file(s) classified`,
-      reason: changedFileCount > 0
-        ? `${changedFileCount} changed file(s) provide current reality for the PR diff`
-        : 'No changed-file or current verification evidence was available'
+      status: surfaceProfile.surface === 'docs_only'
+        ? (evidenceMatches.docs.length > 0 || changedFileCount > 0 ? 'passed' : 'needs_evidence')
+        : evidenceMatches.current_reality.length > 0 ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality)
+        ?? `${changedFileCount} changed file(s) classified`,
+      surface: surfaceProfile.surface,
+      required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
+      matched_evidence: surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality,
+      missing_evidence: missingEvidenceKinds(
+        surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
+        surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality
+      ),
+      reason: surfaceProfile.surface === 'docs_only'
+        ? 'Docs-only changes can establish current reality through Story/Spec/doc reference traceability'
+        : evidenceMatches.current_reality.length > 0
+          ? `${surfaceProfile.surface} current reality is backed by ${evidenceMatches.current_reality[0].kind}`
+          : `${surfaceProfile.surface} changes need focused runtime/path evidence; changed-file classification alone is not enough`
     },
     {
       id: 'invariants',
@@ -4764,6 +4814,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
           : hasTests
             ? 'test files in diff'
             : null,
+      surface: surfaceProfile.surface,
+      required_evidence_kind: highRisk ? ['spec_clause', 'architecture_doc', 'test_contract'] : ['story_or_diff_scope'],
+      matched_evidence: buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }),
+      missing_evidence: (!highRisk || specClauseCount > 0 || hasExplicitSpecOrArchitecture || hasTests)
+        ? []
+        : ['spec_clause', 'architecture_doc', 'test_contract'],
       reason: highRisk
         ? 'High-risk changes need Spec, Architecture, or test evidence for invariants'
         : 'Light route does not require additional invariant evidence beyond Story and diff classification'
@@ -4774,27 +4830,184 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       evidence: hasExplicitSpecOrArchitecture
         ? 'explicit spec/architecture docs'
         : acceptedDecisions[0]?.decision_id ?? currentVerification[0]?.command ?? null,
+      surface: surfaceProfile.surface,
+      required_evidence_kind: boundarySensitive ? ['architecture_doc', 'decision_record', 'current_verification'] : ['not_applicable'],
+      matched_evidence: buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }),
+      missing_evidence: (!boundarySensitive || hasExplicitSpecOrArchitecture || acceptedDecisions.length > 0 || currentVerification.length > 0)
+        ? []
+        : ['architecture_doc', 'decision_record', 'current_verification'],
       reason: boundarySensitive
         ? 'Boundary-sensitive changes need architecture/spec, decision, or current verification evidence'
         : 'No high-risk boundary surface was detected'
     },
     {
       id: 'failure_modes',
-      status: !highRisk || currentVerification.length > 0 || hasTests ? 'passed' : 'needs_evidence',
-      evidence: currentVerification[0]?.command ?? (hasTests ? 'test files in diff' : null),
+      status: !highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests) ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(evidenceMatches.failure_modes) ?? (hasTests && surfaceProfile.surface !== 'auth_boundary' ? 'test files in diff' : null),
+      surface: surfaceProfile.surface,
+      required_evidence_kind: highRisk ? failureModesRequirement : ['not_applicable'],
+      matched_evidence: evidenceMatches.failure_modes,
+      missing_evidence: (!highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests))
+        ? []
+        : failureModesRequirement,
       reason: highRisk
-        ? 'High-risk changes need test or verification evidence that can cover failure behavior'
+        ? `${surfaceProfile.surface} changes need failure-mode evidence matching ${failureModesRequirement.join('|')}`
         : 'Light route does not require additional failure-mode evidence'
     },
     {
       id: 'done_evidence',
-      status: !highRisk || currentVerification.length > 0 || reviewPassCount > 0 ? 'passed' : 'needs_evidence',
-      evidence: currentVerification[0]?.command ?? (reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
+      status: !highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0) ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(evidenceMatches.done_evidence) ?? (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
+      surface: surfaceProfile.surface,
+      required_evidence_kind: highRisk ? doneEvidenceRequirement : ['downstream_gate'],
+      matched_evidence: evidenceMatches.done_evidence,
+      missing_evidence: (!highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
+        ? []
+        : doneEvidenceRequirement,
       reason: highRisk
-        ? 'High-risk changes need current verification or review evidence before ready state'
+        ? `${surfaceProfile.surface} changes need done evidence matching ${doneEvidenceRequirement.join('|')}`
         : 'Light route completion is covered by the downstream Unit/Integration/Agent Review gates'
     }
   ];
+}
+
+function deriveJudgmentSurfaceProfile({ routeType, prRoute, fileGroups, changeClassification, storySource, inferredSpec }) {
+  const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  const text = [
+    storySource?.title,
+    storySource?.background,
+    ...(storySource?.acceptance_criteria ?? []),
+    ...(inferredSpec?.clauses ?? []).map((clause) => clause.text ?? clause.statement ?? '')
+  ].filter(Boolean).join('\n').toLowerCase();
+  const sourceCount = fileGroups?.source?.count ?? 0;
+  const docCount = (fileGroups?.story_docs?.count ?? 0)
+    + (fileGroups?.specifications?.count ?? 0)
+    + (fileGroups?.architecture_docs?.count ?? 0)
+    + (fileGroups?.policy_docs?.count ?? 0);
+  if ((prRoute?.route_type === 'docs_only' || sourceCount === 0) && docCount > 0) {
+    return { surface: 'docs_only', reason: 'docs/spec/story-only change' };
+  }
+  if (routeType === 'security_trust'
+    || riskSurfaces.has('auth_boundary')
+    || riskSurfaces.has('auth')
+    || riskSurfaces.has('security')) {
+    return { surface: 'auth_boundary', reason: 'auth/security boundary change' };
+  }
+  if (routeType === 'agent_workflow'
+    || riskSurfaces.has('gate_orchestration')
+    || riskSurfaces.has('review_lifecycle')
+    || riskSurfaces.has('core_workflow_state')
+    || riskSurfaces.has('queue_worker')
+    || /\b(workflow|agent|gate|review|dag|replay|artifact|orchestration|queue|retry)\b/.test(text)) {
+    return { surface: 'workflow', reason: 'workflow/agent orchestration change' };
+  }
+  if (/\b(auth|permission|session|token|role|denied|forbidden|認可|認証|権限)\b/.test(text)) {
+    return { surface: 'auth_boundary', reason: 'auth/security boundary change' };
+  }
+  if (sourceCount > 0 || riskSurfaces.size > 0) {
+    return { surface: 'runtime', reason: 'runtime source change' };
+  }
+  return { surface: 'docs_only', reason: 'no runtime surface detected' };
+}
+
+function requiredEvidenceForJudgmentSubcheck(id, surfaceProfile) {
+  const surface = surfaceProfile?.surface ?? 'runtime';
+  if (surface === 'docs_only') return ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained'];
+  if (id === 'current_reality') {
+    if (surface === 'workflow') return ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'];
+    return ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path'];
+  }
+  if (id === 'failure_modes') {
+    if (surface === 'auth_boundary') return ['auth_denied', 'permission_denied', 'boundary_condition', 'negative_path'];
+    if (surface === 'workflow') return ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'];
+    return ['focused_test', 'runtime_path_evidence', 'negative_path'];
+  }
+  if (id === 'done_evidence') {
+    if (surface === 'workflow') return ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'];
+    return ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path'];
+  }
+  return ['current_evidence'];
+}
+
+function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGroups, storySource, inferredSpec }) {
+  const evidence = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
+  const docs = [];
+  if (storySource?.path || storySource?.story_id) {
+    docs.push({ kind: 'story_spec_traceability', ref: storySource.path ?? storySource.story_id });
+  }
+  if ((fileGroups?.specifications?.count ?? 0) > 0 || (fileGroups?.architecture_docs?.count ?? 0) > 0) {
+    docs.push({ kind: 'doc_reference_integrity', ref: 'spec_or_architecture_docs' });
+  }
+  if ((inferredSpec?.clauses?.length ?? 0) > 0) {
+    docs.push({ kind: 'impact_scope_explained', ref: `${inferredSpec.clauses.length} inferred spec clause(s)` });
+  }
+  const currentRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', surfaceProfile);
+  const failureRequirement = requiredEvidenceForJudgmentSubcheck('failure_modes', surfaceProfile);
+  const doneRequirement = requiredEvidenceForJudgmentSubcheck('done_evidence', surfaceProfile);
+  return {
+    docs,
+    current_reality: evidence.filter((item) => currentRequirement.includes(item.kind)),
+    failure_modes: evidence.filter((item) => failureRequirement.includes(item.kind)),
+    done_evidence: evidence.filter((item) => doneRequirement.includes(item.kind))
+  };
+}
+
+function classifyVerificationEvidenceItem(item) {
+  const text = `${item.kind ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''}`.toLowerCase();
+  const command = String(item.command ?? '').trim();
+  const generic = isGenericVerificationCommand(command);
+  const ref = command || item.summary || item.artifact || item.kind || 'verification';
+  const matches = [];
+  const add = (kind) => {
+    if (!matches.some((match) => match.kind === kind)) matches.push({ kind, ref });
+  };
+  if (!generic && ['unit', 'integration', 'e2e', 'build', 'typecheck'].includes(item.kind)) add('focused_test');
+  if (!generic && /\b(runtime|path|src\/|test\/e2e|focused|acceptance|story-)\b/.test(text)) add('runtime_path_evidence');
+  if (item.kind === 'integration' && !generic) add('integration_runtime_path');
+  if (item.kind === 'e2e' && !generic) add('e2e_runtime_path');
+  if (!generic && /\b(flow replay|flow_replay|verify flow|journey|replay)\b/.test(text)) add('flow_replay');
+  if (!generic && /\b(artifact replay|artifact_replay|gate-dag|pr-prepare|pr-create|stale artifact|stale readiness)\b/.test(text)) add('artifact_replay');
+  if (!generic && item.kind === 'e2e' && /\b(scenario|acceptance|clause|ac:|story-)\b/.test(text)) add('scenario_clause_e2e');
+  if (!generic && /\b(auth_denied|auth denied|permission denied|forbidden|unauthorized|401|403|拒否|権限)\b/.test(text)) add('auth_denied');
+  if (!generic && /\b(permission_denied|permission denied|forbidden|403|権限)\b/.test(text)) add('permission_denied');
+  if (!generic && /\b(boundary|edge case|境界|境界条件)\b/.test(text)) add('boundary_condition');
+  if (!generic && /\b(negative|denied|failure mode|fail path|拒否|失敗)\b/.test(text)) add('negative_path');
+  return matches;
+}
+
+function isGenericVerificationCommand(command) {
+  const normalized = String(command ?? '').trim().toLowerCase();
+  return normalized === 'npm test'
+    || normalized === 'npm run test'
+    || normalized === 'node --test'
+    || normalized === 'node --test test/vibepro-cli.test.js'
+    || normalized === 'npm run typecheck';
+}
+
+function missingEvidenceKinds(required, matched) {
+  const matchedKinds = new Set(matched.map((item) => item.kind));
+  return required.filter((kind) => !matchedKinds.has(kind));
+}
+
+function firstEvidenceRef(items) {
+  return items[0]?.ref ?? null;
+}
+
+function buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }) {
+  const evidence = [];
+  if (specClauseCount > 0) evidence.push({ kind: 'spec_clause', ref: `${specClauseCount} inferred spec clause(s)` });
+  if (hasExplicitSpecOrArchitecture) evidence.push({ kind: 'architecture_doc', ref: 'explicit spec/architecture docs' });
+  if (hasTests) evidence.push({ kind: 'test_contract', ref: 'test files in diff' });
+  if (evidence.length === 0 && (storySource?.path || storySource?.story_id)) evidence.push({ kind: 'story_or_diff_scope', ref: storySource.path ?? storySource.story_id });
+  return evidence;
+}
+
+function buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }) {
+  const evidence = [];
+  if (hasExplicitSpecOrArchitecture) evidence.push({ kind: 'architecture_doc', ref: 'explicit spec/architecture docs' });
+  if (acceptedDecisions[0]) evidence.push({ kind: 'decision_record', ref: acceptedDecisions[0].decision_id });
+  if (currentVerification[0]) evidence.push({ kind: 'current_verification', ref: currentVerification[0].command });
+  return evidence;
 }
 
 function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null, decisionRecords = null } = {}) {
@@ -7952,6 +8165,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
+      'design_diagrams_gate',
       'review_inspection_required_gate',
       'visual_qa_gate',
       'design_quality_gate',
@@ -8100,6 +8314,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;
   if (gate.id === 'gate:e2e' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
+  if (gate.id === 'gate:design_diagrams' && gate.status !== 'satisfied') return true;
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;

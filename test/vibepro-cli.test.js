@@ -11095,11 +11095,18 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.summary.engineering_judgment_dag, 'agent_workflow_dag');
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:engineering_judgment_route')?.status, 'passed');
   const spineGate = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
-  assert.equal(spineGate?.status, 'passed');
+  assert.equal(spineGate?.status, 'needs_evidence');
   assert.deepEqual(
     spineGate?.subchecks.map((check) => check.id),
     ['intent', 'current_reality', 'invariants', 'boundaries', 'failure_modes', 'done_evidence']
   );
+  const currentReality = spineGate.subchecks.find((check) => check.id === 'current_reality');
+  const doneEvidence = spineGate.subchecks.find((check) => check.id === 'done_evidence');
+  assert.equal(currentReality.surface, 'workflow');
+  assert.deepEqual(currentReality.required_evidence_kind, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
+  assert.deepEqual(currentReality.missing_evidence, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
+  assert.equal(doneEvidence.surface, 'workflow');
+  assert.deepEqual(doneEvidence.required_evidence_kind, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:judgment_agent_workflow_context_acquisition')?.status, 'passed');
   const connectivityGate = gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity');
   assert.equal(connectivityGate?.status, 'passed');
@@ -11115,8 +11122,133 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
   assert.match(prBody, /#### 共通spineの確認/);
-  assert.match(prBody, /- intent: passed \/ evidence=/);
-  assert.match(prBody, /- done_evidence: passed \/ evidence=/);
+  assert.match(prBody, /- intent: passed \/ surface=story \/ required=story_intent \/ evidence=/);
+  assert.match(prBody, /- done_evidence: needs_evidence \/ surface=workflow \/ required=flow_replay\|artifact_replay\|scenario_clause_e2e \/ evidence=/);
+});
+
+test('common judgment spine requires surface-specific evidence instead of generic tests', async () => {
+  const runtimeRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(runtimeRepo, 'src'), { recursive: true });
+  await writeFile(path.join(runtimeRepo, 'src', 'runtime-feature.js'), 'export function runtimeFeature() { return "runtime"; }\n');
+  await git(runtimeRepo, ['add', 'src/runtime-feature.js']);
+  await git(runtimeRepo, ['commit', '-m', 'feat: add runtime feature']);
+  assert.equal((await runCli([
+    'verify', 'record', runtimeRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'npm test',
+    '--summary', 'generic test suite passed'
+  ])).exitCode, 0);
+
+  const runtimePrepare = await runCli(['pr', 'prepare', runtimeRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(runtimePrepare.exitCode, 0);
+  const runtimeSpine = runtimePrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const runtimeReality = runtimeSpine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(runtimeReality.surface, 'runtime');
+  assert.equal(runtimeReality.status, 'needs_evidence');
+  assert.deepEqual(runtimeReality.required_evidence_kind, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
+  assert.deepEqual(runtimeReality.matched_evidence, []);
+
+  const workflowRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
+  await writeFile(path.join(workflowRepo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
+  await git(workflowRepo, ['add', 'src/agent-workflow.js']);
+  await git(workflowRepo, ['commit', '-m', 'feat: add agent workflow replay path']);
+  assert.equal((await runCli([
+    'verify', 'record', workflowRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'typecheck',
+    '--status', 'pass',
+    '--command', 'npm run typecheck',
+    '--summary', 'flow replay and artifact replay scenario clause evidence passed'
+  ])).exitCode, 0);
+
+  const workflowPrepare = await runCli(['pr', 'prepare', workflowRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(workflowPrepare.exitCode, 0);
+  const workflowSpine = workflowPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const workflowReality = workflowSpine.subchecks.find((check) => check.id === 'current_reality');
+  const workflowDone = workflowSpine.subchecks.find((check) => check.id === 'done_evidence');
+  assert.equal(workflowReality.surface, 'workflow');
+  assert.equal(workflowReality.status, 'needs_evidence');
+  assert.deepEqual(workflowReality.matched_evidence, []);
+  assert.equal(workflowDone.status, 'needs_evidence');
+  assert.deepEqual(workflowDone.matched_evidence, []);
+
+  const authRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(authRepo, 'src'), { recursive: true });
+  await writeFile(path.join(authRepo, 'src', 'auth-permission.js'), 'export function checkPermission(token) { return token === "ok"; }\n');
+  await git(authRepo, ['add', 'src/auth-permission.js']);
+  await git(authRepo, ['commit', '-m', 'feat: add auth permission token check']);
+  assert.equal((await runCli([
+    'verify', 'record', authRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/auth-permission.test.js',
+    '--summary', 'allowed auth path passes'
+  ])).exitCode, 0);
+
+  const authPrepare = await runCli(['pr', 'prepare', authRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(authPrepare.exitCode, 0);
+  const authSpine = authPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const authFailureModes = authSpine.subchecks.find((check) => check.id === 'failure_modes');
+  assert.equal(authFailureModes.surface, 'auth_boundary');
+  assert.equal(authFailureModes.status, 'needs_evidence');
+  assert.deepEqual(authFailureModes.required_evidence_kind, ['auth_denied', 'permission_denied', 'boundary_condition', 'negative_path']);
+  assert.deepEqual(authFailureModes.missing_evidence, ['auth_denied', 'permission_denied', 'boundary_condition', 'negative_path']);
+
+  const docsRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(docsRepo, 'docs'), { recursive: true });
+  await writeFile(path.join(docsRepo, 'docs', 'operator-note.md'), '# Operator Note\n\nDocuments impact scope only.\n');
+  await git(docsRepo, ['add', 'docs/operator-note.md']);
+  await git(docsRepo, ['commit', '-m', 'docs: add operator note']);
+  const docsPrepare = await runCli(['pr', 'prepare', docsRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(docsPrepare.exitCode, 0);
+  const docsSpine = docsPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const docsReality = docsSpine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(docsSpine.status, 'passed');
+  assert.equal(docsReality.surface, 'docs_only');
+  assert.deepEqual(docsReality.required_evidence_kind, ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained']);
+  assert.equal(docsReality.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
+});
+
+test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'checkout'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+---
+
+# PR準備
+
+## 受け入れ基準
+
+- [ ] checkout flowの入力画面から確認画面へ進める
+- [ ] checkout flowの確認画面から完了画面へ進める
+- [ ] checkout flowの失敗時は再試行できる
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'checkout', 'page.tsx'), 'export default function Checkout() { return <button>Pay</button>; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/app/checkout/page.tsx']);
+  await git(repo, ['commit', '-m', 'feat: add checkout flow without diagram']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const designGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:design_diagrams');
+  assert.equal(designGate.type, 'design_diagrams_gate');
+  assert.equal(designGate.required, true);
+  assert.equal(designGate.blocking, true);
+  assert.equal(designGate.status, 'needs_evidence');
+  assert.equal(
+    result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:design_diagrams'),
+    true
+  );
+  assert.equal(
+    result.result.preparation.gate_status.execution_gate.blocking_gates.some((gate) => gate.id === 'gate:design_diagrams'),
+    true
+  );
 });
 
 test('security_trust route enforces the security regression judgment gate with evidence or waiver', async () => {
