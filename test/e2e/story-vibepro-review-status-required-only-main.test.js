@@ -62,7 +62,7 @@ const reviewStatus = {
     ],
     next_commands: [
       'vibepro review prepare . --id story-vibepro-review-status-required-only --stage gate --role gate_evidence',
-      'vibepro review record . --id story-vibepro-review-status-required-only --stage gate --role gate_evidence --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed',
+      'vibepro review record . --id story-vibepro-review-status-required-only --stage gate --role gate_evidence --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed',
       'vibepro pr prepare . --story-id story-vibepro-review-status-required-only --base origin/main'
     ]
   }

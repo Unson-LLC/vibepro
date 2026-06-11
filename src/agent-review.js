@@ -251,6 +251,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     findings: parseFindings(options.findings ?? []),
     artifacts: (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact)),
     inspection: buildInspectionBlock(options),
+    judgment_delta: normalizeTextList(options.judgmentDeltas),
     managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
     warnings: normalizeWarnings([options.managedWorktreeWarning]),
     recorded_at: new Date().toISOString(),
@@ -1348,6 +1349,8 @@ ${investigationGuidelines}
   "summary": "short conclusion",
   "inspection_summary": "what you inspected before reaching the verdict",
   "inspection_evidence": "optional file path, log id, or transcript reference",
+  "inspection_inputs": ["specific files, commands, artifacts, logs, URLs, or state inspected"],
+  "judgment_delta": ["initial concern -> final conclusion and why"],
   "findings": [
     { "severity": "critical | high | medium | low", "id": "stable-id", "detail": "specific issue" }
   ]
@@ -1401,6 +1404,8 @@ ${investigationGuidelines}
   "summary": "short conclusion",
   "inspection_summary": "what you inspected before reaching the verdict",
   "inspection_evidence": "optional file path, log id, or transcript reference",
+  "inspection_inputs": ["specific files, commands, artifacts, logs, URLs, or state inspected"],
+  "judgment_delta": ["initial concern -> final conclusion and why"],
   "findings": [
     { "severity": "critical | high | medium | low", "id": "stable-id", "detail": "specific issue" }
   ]
@@ -1422,7 +1427,7 @@ Review request:
 \`${request}\`
 
 Prompt:
-Read the review request above and perform only the \`${stage}:${role}\` review, including every mandatory review lens. Return JSON with \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, and optional \`inspection_evidence\`. Do not edit files.
+Read the review request above and perform only the \`${stage}:${role}\` review, including every mandatory review lens. Return JSON with \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, optional \`inspection_evidence\`, \`inspection_inputs\`, and \`judgment_delta\`. Do not edit files.
 
 Record command after the subagent returns:
 \`${command}\`
@@ -1446,7 +1451,7 @@ Review request:
 \`${request}\`
 
 Prompt:
-上記review requestを読み、\`${stage}:${role}\` reviewだけを実行してください。すべてのmandatory review lensを含めます。fileは編集しません。返却JSONには \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, 任意の \`inspection_evidence\` を含めます。
+上記review requestを読み、\`${stage}:${role}\` reviewだけを実行してください。すべてのmandatory review lensを含めます。fileは編集しません。返却JSONには \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, 任意の \`inspection_evidence\`, \`inspection_inputs\`, \`judgment_delta\` を含めます。
 
 subagentの結果受領後に記録するcommand:
 \`${command}\`
@@ -1545,7 +1550,7 @@ function renderMandatoryReviewLenses(lenses) {
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed`;
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed`;
 }
 
 function buildReviewStartCommand({ storyId, stage, role, timeoutMs }) {
@@ -1668,7 +1673,8 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       provenance_reason: provenance?.reason ?? null,
       agent_provenance: result?.agent_provenance ?? null,
       summary: result?.summary ?? null,
-      inspection: result?.inspection ?? { summary: null, evidence: null },
+      inspection: normalizeReviewInspectionForSummary(result?.inspection),
+      judgment_delta: Array.isArray(result?.judgment_delta) ? result.judgment_delta : [],
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
       recorded_at: result?.recorded_at ?? null,
       lifecycle: summarizeRoleLifecycle(lifecycleEntries, role),
@@ -1850,7 +1856,7 @@ async function writeReviewSummaryArtifacts(repoRoot, reviewDir, summary) {
 
 function renderReviewSummaryMarkdown(summary) {
   const rows = summary.roles.map((role) => (
-    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}`
+    `- ${role.role}: ${role.effective_status}${role.summary ? ` - ${role.summary}` : ''}${role.stale_reason ? ` (${role.stale_reason})` : ''}${role.provenance_reason && role.effective_status === 'unverified_agent' ? ` (${role.provenance_reason})` : ''}${role.lifecycle?.effective_status ? ` / lifecycle=${role.lifecycle.effective_status}` : ''}${role.artifact ? ` / artifact=${role.artifact}` : ''}${formatHistoryArtifactSuffix(role.history_artifacts)}${formatReviewHandoffSuffix(role)}`
   ));
   const lifecycle = summary.lifecycle ?? {};
   const nextActions = summary.next_actions?.length
@@ -2004,7 +2010,39 @@ function buildInspectionBlock(options) {
   const evidence = typeof options.inspectionEvidence === 'string' && options.inspectionEvidence.trim().length > 0
     ? options.inspectionEvidence.trim()
     : null;
-  return { summary, evidence };
+  return {
+    summary,
+    evidence,
+    inputs: normalizeTextList(options.inspectionInputs)
+  };
+}
+
+function normalizeReviewInspectionForSummary(inspection = null) {
+  return {
+    summary: inspection?.summary ?? null,
+    evidence: inspection?.evidence ?? null,
+    inputs: Array.isArray(inspection?.inputs) ? inspection.inputs : []
+  };
+}
+
+function normalizeTextList(values = []) {
+  const list = Array.isArray(values) ? values : [values];
+  return [...new Set(list
+    .map((value) => String(value ?? '').trim())
+    .filter(Boolean))];
+}
+
+function formatReviewHandoffSuffix(role) {
+  const inputs = role.inspection?.inputs ?? [];
+  const deltas = role.judgment_delta ?? [];
+  const parts = [];
+  if (inputs.length > 0) {
+    parts.push(`inputs=${inputs.slice(0, 3).join('; ')}${inputs.length > 3 ? ` (+${inputs.length - 3} more)` : ''}`);
+  }
+  if (deltas.length > 0) {
+    parts.push(`judgment_delta=${deltas.slice(0, 2).join('; ')}${deltas.length > 2 ? ` (+${deltas.length - 2} more)` : ''}`);
+  }
+  return parts.length ? ` / ${parts.join(' / ')}` : '';
 }
 
 function parseFindings(values) {
