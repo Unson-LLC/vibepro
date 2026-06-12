@@ -6158,7 +6158,8 @@ function buildGateDag({
       ...buildAgentReviewProcessEdges({
         defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : 'gate:visual_qa',
         agentReviewDag,
-        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }),
+        fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ] : [
       ...buildWorkflowHeavyEdges({
@@ -6168,10 +6169,10 @@ function buildGateDag({
       ...buildAgentReviewProcessEdges({
         defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : designQualityGate ? 'gate:design_quality' : 'gate:e2e',
         agentReviewDag,
-        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }),
+        fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ]),
-    ...(fastLaneGate ? [{ from: 'gate:fast_lane', to: 'gate:agent_review' }] : []),
     { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
     { from: 'gate:review_inspection_required', to: 'gate:artifact_consistency' },
     { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
@@ -7108,8 +7109,18 @@ function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
   };
 }
 
-function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {} }) {
-  if (!agentReviewDag.nodes.length) return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
+function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {}, fastLaneNodeId = null }) {
+  if (!agentReviewDag.nodes.length) {
+    // Under fast lane the process dag is empty; keep the fast_lane node reachable
+    // by routing the agent-review entry through it: upstream -> fast_lane -> agent_review.
+    if (fastLaneNodeId) {
+      return [
+        { from: defaultUpstreamNodeId, to: fastLaneNodeId },
+        { from: fastLaneNodeId, to: 'gate:agent_review' }
+      ];
+    }
+    return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
+  }
   const edges = [];
   const stageOrder = agentReviewDag.stage_order?.length
     ? agentReviewDag.stage_order

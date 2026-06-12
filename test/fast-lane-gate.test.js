@@ -67,6 +67,13 @@ test('docs-only low-risk change engages fast lane and N/As agent review', async 
   assert.ok(!blockingIds.some((id) => id.startsWith('review:')), 'no review process nodes should block under fast lane');
   assert.equal(prepare.gate_status.agent_review_dispatch_required, false, 'fast lane must not require agent review dispatch');
 
+  // fast lane node must be reachable: dag connectivity stays satisfied
+  const edges = prepare.pr_context.gate_dag.edges;
+  assert.ok(edges.some((edge) => edge.to === 'gate:fast_lane'), 'gate:fast_lane must have an incoming edge');
+  assert.ok(edges.some((edge) => edge.from === 'gate:fast_lane'), 'gate:fast_lane must have an outgoing edge');
+  const dagConn = gateNode(prepare, 'gate:dag_connectivity');
+  assert.equal(dagConn.status, 'passed', 'fast lane must not break dag connectivity');
+
   // human review surface is not skipped
   const humanReview = await readJson(path.join(root, '.vibepro', 'pr', 'story-fastlane', 'human-review.json'));
   assert.ok(humanReview, 'human-review.json must still be generated under fast lane');
