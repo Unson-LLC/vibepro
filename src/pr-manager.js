@@ -4933,7 +4933,11 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
 }
 
 function classifyVerificationEvidenceItem(item) {
-  const text = `${item.kind ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''}`.toLowerCase();
+  const observationText = [
+    ...(item.observation?.targets ?? []),
+    ...(item.observation?.scenarios ?? [])
+  ].join(' ');
+  const text = `${item.kind ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''} ${observationText}`.toLowerCase();
   const command = String(item.command ?? '').trim();
   const generic = isGenericVerificationCommand(command);
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
