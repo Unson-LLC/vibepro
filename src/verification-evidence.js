@@ -29,10 +29,12 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     storyId,
     commandName: 'verify record'
   });
-  const artifactCheck = await crossCheckArtifact(root, {
+  const { check: artifactCheck, observedValues: artifactObservedValues } = await crossCheckArtifact(root, {
     artifact: options.artifact,
     status: options.status
   });
+  const observation = buildObservation(options, artifactObservedValues);
+  const observationCheck = buildObservationCheck({ status: options.status, observation });
   const prDir = path.join(getWorkspaceDir(root), 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');
@@ -40,6 +42,13 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
     const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
+    const observationWarning = observationCheck.status === 'missing'
+      ? {
+          id: 'verification_observation_missing',
+          command_name: 'verify record',
+          reason: `passing ${options.kind} claim was recorded without observation targets, scenarios, or observed values; add --target/--scenario/--observed so the evidence states what was observed, not only what was run`
+        }
+      : null;
     const command = {
       kind: options.kind,
       status: options.status,
@@ -47,10 +56,12 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       summary: options.summary ?? options.status,
       artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
       artifact_check: artifactCheck,
+      observation,
+      observation_check: observationCheck,
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
-      warnings: managedWorktreeWarning ? [managedWorktreeWarning] : []
+      warnings: [managedWorktreeWarning, observationWarning].filter(Boolean)
     };
     const commands = [
       command,
@@ -216,15 +227,110 @@ function normalizeArtifact(repoRoot, artifact) {
   return toWorkspaceRelative(repoRoot, resolved);
 }
 
+function buildObservation(options, artifactObservedValues = {}) {
+  const targets = normalizeStringList(options.targets);
+  const scenarios = normalizeStringList(options.scenarios);
+  const cliValues = parseObservedPairs(options.observed);
+  // artifact-derived values first so explicit CLI observations win on key conflicts
+  return {
+    targets,
+    scenarios,
+    values: { ...artifactObservedValues, ...cliValues }
+  };
+}
+
+function normalizeStringList(value) {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item).trim()).filter(Boolean);
+}
+
+function parseObservedPairs(observed) {
+  const values = {};
+  for (const entry of Array.isArray(observed) ? observed : []) {
+    const raw = String(entry);
+    const separator = raw.indexOf('=');
+    const key = separator > 0 ? raw.slice(0, separator).trim() : '';
+    const value = separator > 0 ? raw.slice(separator + 1).trim() : '';
+    if (!key || !value) {
+      throw new Error(`verify record --observed must be key=value, got: ${raw}`);
+    }
+    values[key] = value;
+  }
+  return values;
+}
+
+function buildObservationCheck({ status, observation }) {
+  const claimedOutcome = PASS_STATUSES.has(status) ? 'pass' : FAIL_STATUSES.has(status) ? 'fail' : null;
+  const hasTargets = observation.targets.length > 0;
+  const hasScenarios = observation.scenarios.length > 0;
+  const hasValues = Object.keys(observation.values).length > 0;
+  if (claimedOutcome === null) {
+    return {
+      status: 'not_applicable',
+      reason: `claimed status "${status}" has no pass/fail outcome to observe`
+    };
+  }
+  if (!hasTargets && !hasScenarios && !hasValues) {
+    if (claimedOutcome !== 'pass') {
+      return {
+        status: 'not_applicable',
+        reason: 'failing claim recorded without observation; observation is audited for passing claims'
+      };
+    }
+    return {
+      status: 'missing',
+      reason: 'passing claim has no observation targets, scenarios, or observed values'
+    };
+  }
+  if (hasTargets && (hasScenarios || hasValues)) {
+    return {
+      status: 'recorded',
+      reason: 'observation states the inspected targets and what was observed'
+    };
+  }
+  return {
+    status: 'partial',
+    reason: 'observation is incomplete; record targets plus scenarios or observed values'
+  };
+}
+
+function extractArtifactObservedValues(data, parsed) {
+  const values = {};
+  const record = (key, value) => {
+    if (value === undefined || value === null) return;
+    values[key] = String(value);
+  };
+  if (parsed.format === 'vitest_jest') {
+    record('numFailedTests', data.numFailedTests);
+    record('numPassedTests', data.numPassedTests);
+    record('success', data.success);
+  }
+  if (parsed.format === 'playwright') {
+    record('expected', data.stats?.expected);
+    record('unexpected', data.stats?.unexpected);
+  }
+  if (parsed.format === 'generic_status') {
+    record('status', data.status);
+    record('exit_code', data.exit_code);
+    if (data.observed && typeof data.observed === 'object' && !Array.isArray(data.observed)) {
+      for (const [key, value] of Object.entries(data.observed)) record(key, value);
+    }
+  }
+  return values;
+}
+
 async function crossCheckArtifact(repoRoot, { artifact, status }) {
   const claimedOutcome = PASS_STATUSES.has(status) ? 'pass' : FAIL_STATUSES.has(status) ? 'fail' : null;
   if (!artifact) {
-    if (claimedOutcome !== 'pass') return null;
+    if (claimedOutcome !== 'pass') return { check: null, observedValues: {} };
     return {
-      status: 'missing',
-      format: null,
-      artifact_outcome: null,
-      reason: 'no machine-readable artifact was provided for a passing claim'
+      check: {
+        status: 'missing',
+        format: null,
+        artifact_outcome: null,
+        reason: 'no machine-readable artifact was provided for a passing claim'
+      },
+      observedValues: {}
     };
   }
   let raw;
@@ -242,18 +348,25 @@ async function crossCheckArtifact(repoRoot, { artifact, status }) {
   const parsed = parseArtifactOutcome(raw);
   if (!parsed) {
     return {
-      status: 'unrecognized',
-      format: null,
-      artifact_outcome: null,
-      reason: 'artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check'
+      check: {
+        status: 'unrecognized',
+        format: null,
+        artifact_outcome: null,
+        reason: 'artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check'
+      },
+      observedValues: {}
     };
   }
+  const observedValues = extractArtifactObservedValues(parsed.data, parsed);
   if (claimedOutcome === null) {
     return {
-      status: 'not_applicable',
-      format: parsed.format,
-      artifact_outcome: parsed.outcome,
-      reason: `claimed status "${status}" has no pass/fail outcome to cross-check`
+      check: {
+        status: 'not_applicable',
+        format: parsed.format,
+        artifact_outcome: parsed.outcome,
+        reason: `claimed status "${status}" has no pass/fail outcome to cross-check`
+      },
+      observedValues
     };
   }
   if (claimedOutcome === 'pass' && parsed.outcome === 'fail') {
@@ -265,17 +378,23 @@ async function crossCheckArtifact(repoRoot, { artifact, status }) {
   }
   if (claimedOutcome !== parsed.outcome) {
     return {
-      status: 'contradicted',
-      format: parsed.format,
-      artifact_outcome: parsed.outcome,
-      reason: `claimed status "${status}" but artifact reports ${parsed.outcome} (${parsed.detail})`
+      check: {
+        status: 'contradicted',
+        format: parsed.format,
+        artifact_outcome: parsed.outcome,
+        reason: `claimed status "${status}" but artifact reports ${parsed.outcome} (${parsed.detail})`
+      },
+      observedValues
     };
   }
   return {
-    status: 'verified',
-    format: parsed.format,
-    artifact_outcome: parsed.outcome,
-    reason: `${parsed.format} artifact outcome matches the claimed status (${parsed.detail})`
+    check: {
+      status: 'verified',
+      format: parsed.format,
+      artifact_outcome: parsed.outcome,
+      reason: `${parsed.format} artifact outcome matches the claimed status (${parsed.detail})`
+    },
+    observedValues
   };
 }
 
@@ -292,7 +411,8 @@ function parseArtifactOutcome(raw) {
     return {
       format: 'vitest_jest',
       outcome: failed ? 'fail' : 'pass',
-      detail: `numFailedTests=${data.numFailedTests ?? 0}, success=${data.success ?? 'unknown'}`
+      detail: `numFailedTests=${data.numFailedTests ?? 0}, success=${data.success ?? 'unknown'}`,
+      data
     };
   }
   const stats = data.stats;
@@ -301,15 +421,16 @@ function parseArtifactOutcome(raw) {
     return {
       format: 'playwright',
       outcome: failed ? 'fail' : 'pass',
-      detail: `unexpected=${stats.unexpected ?? 0}, expected=${stats.expected ?? 0}`
+      detail: `unexpected=${stats.unexpected ?? 0}, expected=${stats.expected ?? 0}`,
+      data
     };
   }
   if (typeof data.status === 'string') {
     if (PASS_STATUSES.has(data.status)) {
-      return { format: 'generic_status', outcome: 'pass', detail: `status=${data.status}` };
+      return { format: 'generic_status', outcome: 'pass', detail: `status=${data.status}`, data };
     }
     if (FAIL_STATUSES.has(data.status)) {
-      return { format: 'generic_status', outcome: 'fail', detail: `status=${data.status}` };
+      return { format: 'generic_status', outcome: 'fail', detail: `status=${data.status}`, data };
     }
   }
   return null;
