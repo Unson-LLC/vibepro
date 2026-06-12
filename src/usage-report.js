@@ -593,7 +593,7 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
         kind: 'traceability_incomplete_review_evidence',
         artifact: review.path,
         detail: reason,
-        next_command: `vibepro review status . --id ${story.story_id} --all`
+        next_command: `vibepro review repair . --story-id ${story.story_id}`
       });
     }
   }
@@ -656,23 +656,23 @@ function getStaleMergeArtifactReason({ story, mergeArtifact, createArtifact, pre
   return null;
 }
 
+export function getIncompleteReviewRoleReason(role) {
+  if (!role?.role) return 'review role name is missing';
+  if (!role.status && !role.effective_status) return `review role ${role.role} has no status`;
+  if (!role.provenance_status && !role.agent_provenance) return `review role ${role.role} has no agent provenance`;
+  if (role.provenance_status && role.provenance_status !== 'verified_agent') return `review role ${role.role} provenance is ${role.provenance_status}`;
+  if (role.agent_provenance && role.agent_provenance.lifecycle?.agent_closed !== true) return `review role ${role.role} agent lifecycle is not closed`;
+  return null;
+}
+
 function getIncompleteReviewEvidenceReason(summary) {
   const roles = summary?.roles;
   if (!Array.isArray(roles) || roles.length === 0) return 'review summary has no required role records';
-  const incomplete = roles.find((role) => {
-    if (!role.role) return true;
-    if (!role.status && !role.effective_status) return true;
-    if (!role.provenance_status && !role.agent_provenance) return true;
-    if (role.provenance_status && role.provenance_status !== 'verified_agent') return true;
-    if (role.agent_provenance && role.agent_provenance.lifecycle?.agent_closed !== true) return true;
-    return false;
-  });
-  if (!incomplete) return null;
-  if (!incomplete.role) return 'review role name is missing';
-  if (!incomplete.status && !incomplete.effective_status) return `review role ${incomplete.role} has no status`;
-  if (!incomplete.provenance_status && !incomplete.agent_provenance) return `review role ${incomplete.role} has no agent provenance`;
-  if (incomplete.provenance_status && incomplete.provenance_status !== 'verified_agent') return `review role ${incomplete.role} provenance is ${incomplete.provenance_status}`;
-  return `review role ${incomplete.role} agent lifecycle is not closed`;
+  for (const role of roles) {
+    const reason = getIncompleteReviewRoleReason(role);
+    if (reason) return reason;
+  }
+  return null;
 }
 
 function addTraceabilityGap(story, gap) {

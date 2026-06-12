@@ -321,5 +321,5 @@ test('story-vibepro-usage-report-traceability-gaps reports missing, stale, incom
   assert.equal(textResult.exitCode, 0);
   assert.match(textResult.stdout, /## Traceability Gaps/);
   assert.match(textResult.stdout, /traceability_missing_pr_artifact/);
-  assert.match(textResult.stdout, /vibepro review status/);
+  assert.match(textResult.stdout, /vibepro review repair/);
 });
