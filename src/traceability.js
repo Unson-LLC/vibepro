@@ -11,6 +11,7 @@ export const TRACEABILITY_SCHEMA_VERSION = '0.1.0';
 export const TRACEABILITY_LIFECYCLES = [
   'declared_not_started',
   'in_progress',
+  'merged',
   'evidence_in_other_worktree',
   'merged_without_vibepro_evidence',
   'unknown'

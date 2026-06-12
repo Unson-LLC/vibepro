@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { renderPrMergeHtml } from './html-report.js';
+import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -271,6 +272,16 @@ export async function executeMerge(repoRoot, options = {}) {
   merge.status = 'merged';
   merge.stop_reason = null;
   const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+  await bindStoryTraceability(root, {
+    storyId,
+    source: 'execute_merge',
+    lifecycle: 'merged',
+    evidence: [{
+      type: 'pr_merge',
+      ref: toWorkspaceRelative(root, artifacts.pr_merge_json),
+      summary: `merged ${merge.pr?.url ?? 'PR'} at ${merge.merged_at ?? 'unknown time'} (commit ${merge.merge_commit_sha ?? 'unknown'})`
+    }]
+  });
   return { merge, artifacts };
 }
 
