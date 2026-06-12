@@ -103,6 +103,7 @@ import {
 } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
+import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import {
   getDecisionStatus,
   recordDecision,
@@ -270,6 +271,7 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
@@ -433,6 +435,7 @@ Usage:
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
@@ -1003,6 +1006,29 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.evidence, null, 2)}\n`
           : renderVerificationEvidenceSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'import-ci') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify import-ci'
+        });
+        const result = await importCiEvidence(repoRoot, {
+          storyId,
+          pr: getOption(rest, '--pr'),
+          checks: getOptions(rest, '--check'),
+          env: io.env,
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderCiImportSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown verify command: ${subcommand ?? ''}\n\n${renderHelp()}`);

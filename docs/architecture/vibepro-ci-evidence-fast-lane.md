@@ -11,7 +11,7 @@ title: CI Evidence Reuse & Risk-Tiered Fast Lane Architecture
 原則は2つ:
 
 1. **証拠の同一性**: 「同じテストスイートを、同じ HEAD で、CI が実行して成功した」は、ローカル再実行と同じ事実を証明する。重複実行は監査価値を足さないので、CI 結果を HEAD 束縛つきで evidence 化して片方を不要にする。取り込みは事実の転記であり、観測の捏造ではない — head SHA 一致・conclusion 一致・取得元 run URL の3点を必ず記録する。
-2. **リスク比例**: gate 側には既に surface / risk profile 判定（docs_only route、change risk classification、judgment surface profile）がある。一律で review subagent を要求するのをやめ、低リスク変更では Agent Review Gate を **typed N/A**（既存の bug_physics と同じ「waiver とは区別される明示的非適用」）にする。非適用は判定根拠つきで gate-dag に残り、usage report で常時カウントされるため、fast lane の濫用がそのまま監査対象になる。
+2. **リスク比例**: gate 側には既に surface / risk profile 判定（docs_only route、change risk classification、judgment surface profile）がある。一律で review subagent を要求するのをやめ、低リスク変更では Agent Review Gate を **typed N/A**（既存の bug_physics と同じ「waiver とは区別される明示的非適用」）にする。非適用は判定根拠つきで gate-dag に残り、usage report で常時カウントされるため、fast lane の濫用がそのまま監査対象になる。**ソースを変更する light 変更は fast lane の対象外**とし、review を維持する — 軽微でもソースコードの挙動変更には review 価値があるため、fast lane は docs-only と非ソース light（config / test / docs）に限定する。失格信号は changeClassification.risk_surfaces だけでなく、secret/credential safety surface・新規ネットワーク/API 呼び出し・high-risk engineering route も含め、いずれか1つでも検出されたら適用しない。
 
 実測根拠（2026-06-12、PR #177〜#179）: 監査固有コスト約3〜4割のうちフルスイート重複が約10分/story、
 review subagent が3〜6分/story。4回の review は blocking finding 0件で、実装を実際に修正させたのは

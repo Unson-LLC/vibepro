@@ -25,9 +25,9 @@ title: CI Evidence Reuse & Risk-Tiered Fast Lane Spec
 
 ## 必須挙動: fast lane
 
-- pr prepare は以下の両方を満たす場合に fast lane を適用する:
-  - PR route が docs_only、または change risk profile が light。
-  - changeClassification の risk_surfaces が空（runtime / auth / security / workflow / api / database / deploy 等を1つでも含めば不適用）。
+- pr prepare は以下を満たす場合に fast lane を適用する:
+  - low-risk 条件: PR route が docs_only、または（change risk profile が light かつ fileGroups.source.count === 0）。ソースを変更する light 変更は対象外。
+  - 失格条件がすべて無い: changeClassification.risk_surfaces が空、secret/credential safety surface 無し、新規ネットワーク/API 呼び出し（introduced_api_client_call_count === 0）、high-risk engineering route（security_trust / release_engineering / data_pipeline / business_system / api_platform / infra_ops / agent_workflow）でない。失格理由は gate:fast_lane の evaluation.disqualifiers に記録する。
 - fast lane 適用時:
   - `gate:agent_review` は typed N/A（status not_applicable、waiver とは区別、判定根拠つき）となり、review subagent の record なしで ready_for_pr_create に到達できる。
   - gate-dag に `gate:fast_lane` ノードが追加され、route / profile / surfaces の実値を判定根拠として持つ。

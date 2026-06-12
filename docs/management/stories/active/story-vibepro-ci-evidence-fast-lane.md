@@ -55,8 +55,9 @@ updated_at: 2026-06-12
 - [ ] 取り込んだ evidence は取得した check rollup JSON を artifact として保存し、observation（check 名・conclusion・run URL・head SHA）を持ち、artifact_check が verified / observation_check が recorded になる
 - [ ] check 名から kind へのマッピングはデフォルト（test* → integration）を持ち、`--check <name>=<kind>` で上書きできる。マッピングのない check は取り込まれず skipped として報告される
 - [ ] CI evidence は generic command 規律の対象であり、フルスイート相当の CI 結果は judgment spine の focused 証拠としては加点されない（unit/integration verification gate の充足にのみ使える）
-- [ ] fast lane: PR route が docs_only、または change risk profile が light かつ risk surface が空の場合、`gate:agent_review` が typed N/A（理由つき）となり、review subagent なしで ready_for_pr_create に到達できる
-- [ ] fast lane は runtime / auth / security / workflow / api 等の risk surface が1つでも検出されたら適用されない
+- [ ] fast lane: PR route が docs_only、または change risk profile が light かつソースファイル変更が0件の場合に、`gate:agent_review` が typed N/A（理由つき）となり、review subagent なしで agent review が blocking から外れる（他の構造ゲートが残れば readiness はそれに従う）
+- [ ] ソースファイルを変更する light 変更は fast lane の対象外（ソース変更は軽微でも agent review を維持する）
+- [ ] fast lane は次のいずれかが検出されたら適用されない: changeClassification の risk surface、secret/credential safety surface、新規ネットワーク/API 呼び出し、high-risk engineering route（security_trust / api_platform / agent_workflow 等）
 - [ ] fast lane の適用は gate-dag に専用ノード（fast_lane、typed N/A、判定根拠つき）として記録され、pr-prepare.json の gate_status にもフラグが出る
 - [ ] `usage report` の value_signals に `fast_lane_story_count` が追加され、fast lane で出荷された story が常時可視になる
 - [ ] human-review.json テンプレートは fast lane でも引き続き生成される（人間の最終判断面は省略しない）
