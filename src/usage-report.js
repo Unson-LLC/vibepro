@@ -33,6 +33,7 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.prepared = true;
       story.prepare_count += 1;
       story.ready_for_pr_create ||= artifact.data?.gate_status?.ready_for_pr_create === true;
+      story.fast_lane ||= artifact.data?.gate_status?.fast_lane === true;
       story.blocked ||= artifact.data?.gate_status?.ready_for_pr_create === false;
       story.waiver_required ||= artifact.data?.gate_status?.execution_gate?.waiver_required === true;
       story.latest_gate_status = artifact.data?.gate_status?.overall_status ?? story.latest_gate_status;
@@ -134,6 +135,7 @@ export function renderUsageReport(report) {
     `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`,
     `- declared_unstarted: ${valueSignals.declared_unstarted_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- verification_observation_missing: ${valueSignals.verification_observation_missing_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- merged_without_vibepro_evidence: ${valueSignals.merged_without_vibepro_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
   ].join('\n');
@@ -227,6 +229,7 @@ function ensureStoryUsage(storyMap, storyId) {
       traceability_lifecycle: null,
       declared_unstarted: false,
       verification_observation_missing: false,
+      fast_lane: false,
       merged_without_vibepro_evidence: false,
       evidence_in_other_worktree: false,
       traceability_gaps: [],
@@ -708,6 +711,7 @@ function buildValueSignals(stories) {
   const traceabilityGapStoryCount = stories.filter((story) => story.traceability_gaps.length > 0).length;
   const declaredUnstartedCount = stories.filter((story) => story.declared_unstarted).length;
   const verificationObservationMissingCount = stories.filter((story) => story.verification_observation_missing).length;
+  const fastLaneCount = stories.filter((story) => story.fast_lane).length;
   const mergedWithoutEvidenceCount = stories.filter((story) => story.merged_without_vibepro_evidence).length;
   const evidenceInOtherWorktreeCount = stories.filter((story) => story.evidence_in_other_worktree).length;
   return {
@@ -718,6 +722,7 @@ function buildValueSignals(stories) {
     traceability_gap_count: traceabilityGapStoryCount,
     declared_unstarted_story_count: declaredUnstartedCount,
     verification_observation_missing_story_count: verificationObservationMissingCount,
+    fast_lane_story_count: fastLaneCount,
     merged_without_vibepro_evidence_story_count: mergedWithoutEvidenceCount,
     evidence_in_other_worktree_story_count: evidenceInOtherWorktreeCount,
     traceability_gaps: traceabilityGaps,

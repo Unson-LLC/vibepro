@@ -1101,11 +1101,13 @@ export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     && executionGate.pr_create_allowed === true
     && unresolvedGates.length === 0;
   const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
+  const fastLaneNode = (gateDag?.nodes ?? []).find((node) => node.id === 'gate:fast_lane');
   return {
     schema_version: '0.1.0',
     overall_status: overallStatus,
     ready_for_pr_create: readyForPrCreate,
     execution_gate: executionGate,
+    fast_lane: fastLaneNode?.evaluation?.applicable === true,
     completion_quality_status: completionQuality?.status ?? null,
     unresolved_gate_count: unresolvedGates.length,
     critical_unresolved_gate_count: criticalGates.length,
@@ -5963,8 +5965,17 @@ function buildGateDag({
     verificationEvidence,
     inferredSpec
   });
-  const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups);
-  const agentReviewDag = buildAgentReviewProcessDag(agentReviews);
+  const fastLane = buildFastLaneEvaluation({
+    prRoute,
+    changeClassification,
+    fileGroups,
+    engineeringJudgment,
+    safetySecretSurfaceGate,
+    networkContracts
+  });
+  const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups, fastLane);
+  const agentReviewDag = fastLane.applicable ? { nodes: [], terminal_nodes: [], stage_order: [] } : buildAgentReviewProcessDag(agentReviews);
+  const fastLaneGate = fastLane.applicable ? buildFastLaneGate(fastLane) : null;
   const reviewInspectionRequiredGate = buildReviewInspectionRequiredGate({
     agentReviews,
     changeClassification,
@@ -6034,6 +6045,7 @@ function buildGateDag({
     ...(designQualityGate ? [designQualityGate] : []),
     ...(visualQaGate ? [visualQaGate] : []),
     ...workflowHeavyGates,
+    ...(fastLaneGate ? [fastLaneGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
     reviewInspectionRequiredGate,
@@ -6146,7 +6158,8 @@ function buildGateDag({
       ...buildAgentReviewProcessEdges({
         defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : 'gate:visual_qa',
         agentReviewDag,
-        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }),
+        fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ] : [
       ...buildWorkflowHeavyEdges({
@@ -6156,7 +6169,8 @@ function buildGateDag({
       ...buildAgentReviewProcessEdges({
         defaultUpstreamNodeId: workflowHeavyGates.length > 0 ? 'gate:release_confidence' : designQualityGate ? 'gate:design_quality' : 'gate:e2e',
         agentReviewDag,
-        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate })
+        stageUpstreams: buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }),
+        fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ]),
     { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
@@ -7095,8 +7109,18 @@ function buildAgentReviewStageUpstreams({ designQualityGate, visualQaGate }) {
   };
 }
 
-function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {} }) {
-  if (!agentReviewDag.nodes.length) return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
+function buildAgentReviewProcessEdges({ defaultUpstreamNodeId, agentReviewDag, stageUpstreams = {}, fastLaneNodeId = null }) {
+  if (!agentReviewDag.nodes.length) {
+    // Under fast lane the process dag is empty; keep the fast_lane node reachable
+    // by routing the agent-review entry through it: upstream -> fast_lane -> agent_review.
+    if (fastLaneNodeId) {
+      return [
+        { from: defaultUpstreamNodeId, to: fastLaneNodeId },
+        { from: fastLaneNodeId, to: 'gate:agent_review' }
+      ];
+    }
+    return [{ from: defaultUpstreamNodeId, to: 'gate:agent_review' }];
+  }
   const edges = [];
   const stageOrder = agentReviewDag.stage_order?.length
     ? agentReviewDag.stage_order
@@ -7217,7 +7241,80 @@ function buildNetworkContractGate(networkContracts, fileGroups, evidenceContext 
   };
 }
 
-function buildAgentReviewGate(agentReviews, fileGroups) {
+// Fast lane waives Agent Review only for low-risk changes (docs-only or light
+// profile) with no risk surface. It is a typed N/A, never a silent skip: the
+// determination is recorded as gate:fast_lane and counted in usage report.
+const FAST_LANE_HIGH_RISK_ROUTES = new Set([
+  'security_trust', 'release_engineering', 'data_pipeline', 'business_system',
+  'api_platform', 'infra_ops', 'agent_workflow'
+]);
+
+function buildFastLaneEvaluation({
+  prRoute = null,
+  changeClassification = null,
+  fileGroups = null,
+  engineeringJudgment = null,
+  safetySecretSurfaceGate = null,
+  networkContracts = null
+} = {}) {
+  const routeType = prRoute?.route_type ?? null;
+  const profile = changeClassification?.profile ?? null;
+  const riskSurfaces = Array.isArray(changeClassification?.risk_surfaces) ? changeClassification.risk_surfaces : [];
+  const sourceCount = fileGroups?.source?.count ?? 0;
+  // Source-touching changes keep agent review even when profile is light; fast lane
+  // is for docs-only routes and non-source light changes (config/test/docs).
+  const lowRisk = routeType === 'docs_only' || (profile === 'light' && sourceCount === 0);
+  // Disqualifiers are signals not always reflected in changeClassification.risk_surfaces:
+  // a secret/credential surface, an introduced network/API call, a high-risk engineering route.
+  const disqualifiers = [];
+  if (riskSurfaces.length > 0) disqualifiers.push(`risk_surfaces: ${riskSurfaces.join(', ')}`);
+  if (safetySecretSurfaceGate) disqualifiers.push('secret/credential safety surface');
+  if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0) disqualifiers.push('introduced network/API call');
+  if (FAST_LANE_HIGH_RISK_ROUTES.has(engineeringJudgment?.route_type)) disqualifiers.push(`high-risk route: ${engineeringJudgment.route_type}`);
+  const applicable = lowRisk && disqualifiers.length === 0;
+  const reason = applicable
+    ? `Fast lane engaged: route=${routeType ?? 'n/a'}, profile=${profile ?? 'n/a'}, no risk surfaces detected`
+    : disqualifiers.length > 0
+      ? `Fast lane declined: ${disqualifiers.join('; ')}`
+      : `Fast lane declined: route=${routeType ?? 'n/a'} / profile=${profile ?? 'n/a'} is not low-risk`;
+  return {
+    applicable,
+    route_type: routeType,
+    profile,
+    risk_surfaces: riskSurfaces,
+    disqualifiers,
+    source_file_count: fileGroups?.source?.count ?? 0,
+    reason
+  };
+}
+
+function buildFastLaneGate(fastLane) {
+  return {
+    id: 'gate:fast_lane',
+    type: 'fast_lane_gate',
+    label: 'Risk-Tiered Fast Lane',
+    status: 'passed',
+    required: false,
+    waives: 'gate:agent_review',
+    evaluation: fastLane,
+    reason: fastLane.reason
+  };
+}
+
+function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
+  if (fastLane?.applicable) {
+    return {
+      id: 'gate:agent_review',
+      type: 'agent_review_gate',
+      label: 'Agent Review Gate',
+      status: 'not_applicable',
+      required: false,
+      distinct_from: 'waiver',
+      fast_lane: true,
+      na_reason: fastLane.reason,
+      reason: `Typed N/A via fast lane — ${fastLane.reason}. Low-risk change does not require staged agent review; human-review.json remains for final human judgment.`
+    };
+  }
   if (!agentReviews) {
     return {
       id: 'gate:agent_review',
