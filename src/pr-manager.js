@@ -354,10 +354,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
     const traceabilityPath = path.join(prDir, 'traceability.json');
     const existingTraceability = await readJsonIfExists(traceabilityPath);
+    const traceabilityEvidence = [
+      { type: 'pr_artifact', ref: toWorkspaceRelative(root, bodyPath), summary: 'pr prepare artifact: pr-body.md' },
+      { type: 'pr_artifact', ref: toWorkspaceRelative(root, gateDagJsonPath), summary: 'pr prepare artifact: gate-dag.json' }
+    ];
+    const verificationEvidencePath = path.join(prDir, 'verification-evidence.json');
+    if (await readJsonIfExists(verificationEvidencePath)) {
+      traceabilityEvidence.push({
+        type: 'pr_artifact',
+        ref: toWorkspaceRelative(root, verificationEvidencePath),
+        summary: 'recorded verification evidence'
+      });
+    }
     await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
       storyId: story.story_id,
+      storyDocPath: prContext.story_source?.path ?? null,
       source: 'pr_prepare',
-      lifecycle: 'in_progress'
+      lifecycle: 'in_progress',
+      evidence: traceabilityEvidence
     }), null, 2)}\n`, { signal });
     const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
     const existingHumanReview = await readJsonIfExists(humanReviewPath);

@@ -71,5 +71,14 @@ test('pr prepare updates traceability lifecycle', async () => {
   assert.equal(after.lifecycle, 'in_progress');
   assert.equal(after.source, 'pr_prepare');
   assert.equal(after.created_at, before.created_at, 'created_at must be preserved');
-  assert.deepEqual(after.evidence, before.evidence, 'evidence must be preserved');
+  for (const entry of before.evidence) {
+    assert.ok(
+      after.evidence.some((item) => item.type === entry.type && item.ref === entry.ref),
+      'prior evidence must be preserved'
+    );
+  }
+  assert.ok(
+    after.evidence.some((item) => item.type === 'pr_artifact'),
+    'prepare must connect generated artifacts as evidence'
+  );
 });
