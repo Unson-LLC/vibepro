@@ -2663,12 +2663,8 @@ function formatPrDeltaStatus(status) {
 }
 
 async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prContext, suggestedBranch }) {
-  const graphContext = await buildSplitGraphContext(
-    repoRoot,
-    git.changed_files
-      .map((file) => file.path)
-      .filter((file) => !isWorkspaceArtifactPath(file))
-  );
+  const graphContext = prContext.graph_context
+    ?? await buildGraphImpactContext(repoRoot, git.changed_files);
   const lanes = buildSplitLanes({
     fileGroups,
     scope,
@@ -2695,6 +2691,15 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
     stacked_gate_plan: stackedGatePlan,
     next_actions: buildSplitNextActions({ lanes, splitRequired })
   };
+}
+
+async function buildGraphImpactContext(repoRoot, changedFiles) {
+  return buildSplitGraphContext(
+    repoRoot,
+    changedFiles
+      .map((file) => typeof file === 'string' ? file : file.path)
+      .filter((file) => file && !isWorkspaceArtifactPath(file))
+  );
 }
 
 function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphContext }) {
@@ -3180,6 +3185,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     scope,
     changeClassification
   });
+  const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
   const engineeringJudgment = buildEngineeringJudgmentClassification({
     fileGroups,
     storySource: primaryStory,
@@ -3225,6 +3231,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     requirement_consistency: requirementConsistency,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
+    graph_context: graphContext,
     bug_physics_triage: bugPhysicsTriage,
     change_classification: changeClassification,
     inferred_spec: inferredSpec,
@@ -3286,6 +3293,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     git,
     scope,
     prRoute,
+    graphContext,
     managedWorktreeContext,
     managedWorktreeGate
   });
@@ -4722,7 +4730,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   changeClassification = null,
   agentReviews = null,
   decisionRecords = null,
-  prRoute = null
+  prRoute = null,
+  graphContext = null
 } = {}) {
   const acceptanceCount = storySource?.acceptance_criteria?.length ?? 0;
   const storyHasIntent = Boolean(storySource?.title || storySource?.requirement_title || storySource?.background || acceptanceCount > 0);
@@ -4754,7 +4763,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     surfaceProfile,
     fileGroups,
     storySource,
-    inferredSpec
+    inferredSpec,
+    graphContext
   });
   const highRisk = !documentationOnlyRoute && (
     changeClassification?.profile === 'workflow_heavy'
@@ -4767,6 +4777,10 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   const failureModesRequirement = requiredEvidenceForJudgmentSubcheck('failure_modes', surfaceProfile);
   const doneEvidenceRequirement = requiredEvidenceForJudgmentSubcheck('done_evidence', surfaceProfile);
   const docsRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', { surface: 'docs_only' });
+  const currentRealityMatches = surfaceProfile.surface === 'docs_only'
+    ? evidenceMatches.docs
+    : evidenceMatches.current_reality;
+  const currentRealityRequiredMatches = currentRealityMatches.filter((item) => !item.optional);
   return [
     {
       id: 'intent',
@@ -4784,20 +4798,21 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       id: 'current_reality',
       status: surfaceProfile.surface === 'docs_only'
         ? (evidenceMatches.docs.length > 0 || changedFileCount > 0 ? 'passed' : 'needs_evidence')
-        : evidenceMatches.current_reality.length > 0 ? 'passed' : 'needs_evidence',
-      evidence: firstEvidenceRef(surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality)
+        : currentRealityRequiredMatches.length > 0 ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(currentRealityMatches)
         ?? `${changedFileCount} changed file(s) classified`,
       surface: surfaceProfile.surface,
+      optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
-      matched_evidence: surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality,
+      matched_evidence: currentRealityMatches,
       missing_evidence: missingEvidenceKinds(
         surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
-        surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : evidenceMatches.current_reality
+        surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
       ),
       reason: surfaceProfile.surface === 'docs_only'
         ? 'Docs-only changes can establish current reality through Story/Spec/doc reference traceability'
-        : evidenceMatches.current_reality.length > 0
-          ? `${surfaceProfile.surface} current reality is backed by ${evidenceMatches.current_reality[0].kind}`
+        : currentRealityRequiredMatches.length > 0
+          ? `${surfaceProfile.surface} current reality is backed by ${currentRealityRequiredMatches[0].kind}`
           : `${surfaceProfile.surface} changes need focused runtime/path evidence; changed-file classification alone is not enough`
     },
     {
@@ -4811,8 +4826,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
             ? 'test files in diff'
             : null,
       surface: surfaceProfile.surface,
+      optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: highRisk ? ['spec_clause', 'architecture_doc', 'test_contract'] : ['story_or_diff_scope'],
-      matched_evidence: buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }),
+      matched_evidence: [
+        ...buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }),
+        ...evidenceMatches.graph_impact
+      ],
       missing_evidence: (!highRisk || specClauseCount > 0 || hasExplicitSpecOrArchitecture || hasTests)
         ? []
         : ['spec_clause', 'architecture_doc', 'test_contract'],
@@ -4827,8 +4846,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
         ? 'explicit spec/architecture docs'
         : acceptedDecisions[0]?.decision_id ?? currentVerification[0]?.command ?? null,
       surface: surfaceProfile.surface,
+      optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: boundarySensitive ? ['architecture_doc', 'decision_record', 'current_verification'] : ['not_applicable'],
-      matched_evidence: buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }),
+      matched_evidence: [
+        ...buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }),
+        ...evidenceMatches.graph_impact
+      ],
       missing_evidence: (!boundarySensitive || hasExplicitSpecOrArchitecture || acceptedDecisions.length > 0 || currentVerification.length > 0)
         ? []
         : ['architecture_doc', 'decision_record', 'current_verification'],
@@ -4925,8 +4948,9 @@ function requiredEvidenceForJudgmentSubcheck(id, surfaceProfile) {
   return ['current_evidence'];
 }
 
-function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGroups, storySource, inferredSpec }) {
+function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGroups, storySource, inferredSpec, graphContext = null }) {
   const evidence = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
+  const graphImpact = classifyGraphImpactEvidence(graphContext);
   const docs = [];
   if (storySource?.path || storySource?.story_id) {
     docs.push({ kind: 'story_spec_traceability', ref: storySource.path ?? storySource.story_id });
@@ -4942,10 +4966,30 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
   const doneRequirement = requiredEvidenceForJudgmentSubcheck('done_evidence', surfaceProfile);
   return {
     docs,
-    current_reality: evidence.filter((item) => currentRequirement.includes(item.kind)),
+    current_reality: [
+      ...evidence.filter((item) => currentRequirement.includes(item.kind)),
+      ...graphImpact
+    ],
     failure_modes: evidence.filter((item) => failureRequirement.includes(item.kind)),
-    done_evidence: evidence.filter((item) => doneRequirement.includes(item.kind))
+    done_evidence: evidence.filter((item) => doneRequirement.includes(item.kind)),
+    graph_impact: graphImpact
   };
+}
+
+function classifyGraphImpactEvidence(graphContext) {
+  if (!graphContext) return [];
+  if (!graphContext.available) return [];
+  const matched = graphContext.matched_file_count ?? 0;
+  if (matched <= 0) return [];
+  const related = graphContext.related_file_count ?? 0;
+  return [{
+    kind: 'graph_impact_scope',
+    ref: `${graphContext.graph_path ?? 'graphify graph'} (${matched} changed / ${related} related)`,
+    optional: true,
+    matched_file_count: matched,
+    related_file_count: related,
+    investigation_files: (graphContext.investigation_files ?? []).slice(0, 12)
+  }];
 }
 
 function classifyVerificationEvidenceItem(item) {
@@ -5817,6 +5861,7 @@ function buildGateDag({
   git = null,
   scope = null,
   prRoute = null,
+  graphContext = null,
   managedWorktreeContext = null,
   managedWorktreeGate = null
 }) {
@@ -5877,7 +5922,8 @@ function buildGateDag({
     changeClassification,
     agentReviews,
     decisionRecords,
-    prRoute
+    prRoute,
+    graphContext
   });
   const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);
