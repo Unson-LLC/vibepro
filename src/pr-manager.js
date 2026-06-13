@@ -1959,7 +1959,11 @@ function formatEngineeringJudgmentForHuman(engineeringJudgment) {
   const confidence = typeof engineeringJudgment.confidence === 'number'
     ? `${Math.round(engineeringJudgment.confidence * 100)}%`
     : '-';
-  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}`;
+  const activeAxes = (engineeringJudgment.judgment_axes ?? [])
+    .filter((axis) => axis.status !== 'inactive')
+    .map((axis) => axis.axis);
+  const axisText = activeAxes.length > 0 ? ` / axes=${activeAxes.join(',')}` : '';
+  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}`;
 }
 
 function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, prContext = {}, git = {} }) {
@@ -1978,12 +1982,13 @@ function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, 
   const extraRouteGateCount = Math.max(0, routeGates.length - 5);
   const routeGateTail = extraRouteGateCount > 0 ? `\n- ほか${extraRouteGateCount}件はGate DAG監査ログを参照。` : '';
   const commonSpine = buildCommonSpineReasoning(gateDag);
+  const axisReasoning = buildJudgmentAxisReasoning(judgment);
   const signals = buildEngineeringSignalDigest(judgment.signals);
   const evidence = buildEngineeringEvidenceReasoningDigest(gateDag);
   const mergeBoundary = buildEngineeringMergeBoundary(gateDag);
 
   return `### Engineering Judgment の判断過程
-このPRは、単なる差分量ではなく「何を壊してはいけない変更か」で読みます。入力と差分シグナルから \`${judgment.route_type}\` として読み、\`${judgment.route_dag}\` の確認順序に落としました。
+このPRは、単なる差分量ではなく「何を壊してはいけない変更か」で読みます。入力と差分シグナルから \`${judgment.route_type}\` として読み、Senior first scanで必要な判断axisを複数active化しました。
 
 #### 判断した入力
 - 目的: ${title}
@@ -1997,6 +2002,9 @@ ${signals}
 #### 共通spineの確認
 ${commonSpine}
 
+#### Senior first scan axes
+${axisReasoning}
+
 #### 選んだDAGが要求した確認
 ${routeGateSummary}${routeGateTail}
 
@@ -2009,6 +2017,27 @@ function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
   const nodes = gateDag?.nodes ?? [];
   return nodes.filter((node) => node.id?.startsWith('gate:judgment_')
     && (!routeType || node.route_type === routeType));
+}
+
+function buildJudgmentAxisReasoning(engineeringJudgment) {
+  const activeAxes = (engineeringJudgment?.judgment_axes ?? [])
+    .filter((axis) => axis.status !== 'inactive');
+  if (activeAxes.length === 0) {
+    return '- active axisなし。general engineeringとして既存Gateを確認します。';
+  }
+  return activeAxes
+    .map((axis) => {
+      const required = axis.required_evidence?.join('|') ?? '-';
+      const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
+      const matched = axis.matched_evidence?.length > 0
+        ? ` / matched=${axis.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        : '';
+      const optional = axis.optional_evidence?.length > 0
+        ? ` / optional=${axis.optional_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        : '';
+      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}`;
+    })
+    .join('\n');
 }
 
 function buildCommonSpineReasoning(gateDag) {
@@ -2091,7 +2120,9 @@ function buildEngineeringEvidenceReasoningDigest(gateDag) {
   const enforcedJudgmentNodes = nodes.filter((node) => node.required === true
     && node.id?.startsWith('gate:judgment_')
     && !['route_specific_judgment_gate'].includes(node.type));
+  const axisNodes = nodes.filter((node) => node.type === 'judgment_axis_gate');
   const rows = [...evidenceNodes, ...enforcedJudgmentNodes]
+    .concat(axisNodes)
     .filter((node, index, list) => list.findIndex((item) => item.id === node.id) === index)
     .map((node) => {
       if (node.id === 'gate:common_judgment_spine' && Array.isArray(node.subchecks)) {
@@ -3186,14 +3217,20 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     changeClassification
   });
   const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
+  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const architectureSources = await readTextSources(repoRoot, fileGroups.architecture_docs.files);
   const engineeringJudgment = buildEngineeringJudgmentClassification({
     fileGroups,
     storySource: primaryStory,
     changeClassification,
     prRoute,
-    networkContracts
+    networkContracts,
+    scope,
+    graphContext,
+    verificationEvidence: boundVerificationEvidence,
+    decisionRecords,
+    inferredSpec
   });
-  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
     storyId: story.story_id,
     commandName: 'pr prepare',
@@ -3228,6 +3265,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     story_source: primaryStory,
     story_source_integrity: storySourceIntegrity,
     architecture_decision: architectureDecision,
+    architecture_sources: architectureSources,
     requirement_consistency: requirementConsistency,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
@@ -3287,6 +3325,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    architectureSources,
     bugPhysicsTriage,
     architectureBlueprint,
     environmentGraph,
@@ -3925,6 +3964,21 @@ async function readStoryDocs(repoRoot, files) {
   return docs;
 }
 
+async function readTextSources(repoRoot, files = []) {
+  const sources = [];
+  for (const file of files) {
+    try {
+      sources.push({
+        path: file,
+        content: await readFile(path.join(repoRoot, file), 'utf8')
+      });
+    } catch {
+      sources.push({ path: file, content: '' });
+    }
+  }
+  return sources;
+}
+
 function parseStoryDoc(file, content) {
   const frontmatter = parseFrontmatter(content);
   const title = frontmatter.title ?? findMarkdownTitle(content);
@@ -4184,6 +4238,60 @@ function resolveArchitectureDecision(storyDoc, fileGroups) {
     return `ADR不要: ${storyDoc.architecture_reason}`;
   }
   return 'ADR差分なし。既存アーキテクチャ内の変更として扱う';
+}
+
+function buildArchitectureAxisQuality({ engineeringJudgment = null, architectureDecision = '', architectureSources = [], decisionRecords = null } = {}) {
+  const activeAxes = (engineeringJudgment?.judgment_axes ?? []).filter((axis) => axis.status !== 'inactive');
+  const architectureText = [
+    architectureDecision,
+    ...architectureSources.map((source) => source.content ?? '')
+  ].join('\n').toLowerCase();
+  const sourceRefs = architectureSources.map((source) => source.path);
+  const acceptedFollowups = (decisionRecords?.decisions ?? [])
+    .filter((decision) => decision.status === 'accepted')
+    .filter((decision) => /follow|waiver|architecture|rollback|compat|boundary|scope/i.test(`${decision.type ?? ''} ${decision.source ?? ''} ${decision.summary ?? ''} ${decision.reason ?? ''}`));
+  const fieldMatchers = {
+    alternatives_considered: /\b(alternative|alternatives|option|trade[- ]?off|rejected|considered)\b|代替|比較|選択肢/,
+    compatibility_impact: /\b(compat|compatibility|api|cli|schema|contract|default|migration|version skew|backward)\b|互換|契約|移行/,
+    rollback_plan: /\b(rollback|roll back|revert|downgrade|feature gate|rollout|disabled behavior)\b|ロールバック|戻す/,
+    boundary: /\b(boundary|trust|blast radius|scope|owner|graphify|impact|side effect)\b|境界|影響範囲|責務/,
+    accepted_followups: /\b(follow[- ]?ups?|accepted followups?|waiver|defer|tracked|non[- ]?blocking)\b|後続|保留|許容/
+  };
+  const evaluations = activeAxes.map((axis) => {
+    const requiredFields = requiredArchitectureFieldsForAxis(axis.axis);
+    const missingFields = requiredFields.filter((field) => {
+      if (field === 'accepted_followups' && acceptedFollowups.length > 0) return false;
+      return !fieldMatchers[field]?.test(architectureText);
+    });
+    return {
+      axis: axis.axis,
+      status: missingFields.length === 0 ? 'covered' : 'needs_review',
+      required_fields: requiredFields,
+      missing_fields: missingFields,
+      sources: sourceRefs,
+      reason: missingFields.length === 0
+        ? `${axis.axis} architecture quality fields are represented in architecture decision sources`
+        : `${axis.axis} architecture decision is missing: ${missingFields.join(', ')}`
+    };
+  });
+  const missingFieldCount = evaluations.reduce((count, item) => count + item.missing_fields.length, 0);
+  return {
+    status: missingFieldCount === 0 ? 'covered' : 'needs_review',
+    active_axis_count: activeAxes.length,
+    missing_field_count: missingFieldCount,
+    evaluations,
+    reason: missingFieldCount === 0
+      ? 'Active judgment axes have architecture decision quality coverage'
+      : 'Active judgment axes have missing architecture decision quality fields'
+  };
+}
+
+function requiredArchitectureFieldsForAxis(axis) {
+  if (axis === 'scope_reviewability') return ['boundary', 'accepted_followups'];
+  if (axis === 'release_ops') return ['compatibility_impact', 'rollback_plan', 'accepted_followups'];
+  if (axis === 'security_boundary') return ['boundary', 'alternatives_considered', 'accepted_followups'];
+  if (axis === 'ux_surface') return ['compatibility_impact', 'boundary', 'accepted_followups'];
+  return ['alternatives_considered', 'compatibility_impact', 'rollback_plan', 'boundary', 'accepted_followups'];
 }
 
 function buildChangeSummary(fileGroups) {
@@ -4612,7 +4720,12 @@ function buildEngineeringJudgmentClassification({
   storySource = {},
   changeClassification = null,
   prRoute = null,
-  networkContracts = null
+  networkContracts = null,
+  scope = null,
+  graphContext = null,
+  verificationEvidence = null,
+  decisionRecords = null,
+  inferredSpec = null
 } = {}) {
   const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
   const text = [
@@ -4638,12 +4751,14 @@ function buildEngineeringJudgmentClassification({
     route.signals.push(...signals);
   };
 
-  if (/\b(release|deploy|publish|appcast|notariz|rollout|rollback)\b|リリース|デプロイ/.test(text)
-    || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type)) {
-    setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
-  } else if (/\b(agent|subagent|review|gate|dag|skill|mcp|codex|claude)\b|エージェント/.test(text)
+  const releaseSignal = /\b(release|deploy|publish|appcast|notariz|rollout|rollback)\b|リリース|デプロイ/.test(text)
+    || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type);
+  const agentWorkflowSignal = /\b(agent|subagent|review|gate|dag|skill|mcp|codex|claude|graphify)\b|エージェント/.test(text)
     || changeClassification?.risk_surfaces?.includes('gate_orchestration')
-    || changeClassification?.risk_surfaces?.includes('review_lifecycle')) {
+    || changeClassification?.risk_surfaces?.includes('review_lifecycle');
+  if (['release_merge', 'mirror_sync'].includes(prRoute?.route_type) || (releaseSignal && !agentWorkflowSignal)) {
+    setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
+  } else if (agentWorkflowSignal) {
     setRoute('agent_workflow', 'AI Agent Workflow', 0.82, 'agent_workflow_dag', ['surface:agent_or_gate_workflow']);
   } else if (/\b(auth|permission|security|secret|token|oauth|saml|rbac|acl|middleware)\b|権限|認証|監査/.test(text)
     || changeClassification?.risk_surfaces?.includes('auth_boundary')) {
@@ -4666,9 +4781,26 @@ function buildEngineeringJudgmentClassification({
   }
 
   if (changeClassification?.profile) route.signals.push(`risk_profile:${changeClassification.profile}`);
+  const judgmentAxes = buildSeniorJudgmentAxes({
+    route,
+    fileGroups,
+    storySource,
+    changeClassification,
+    prRoute,
+    networkContracts,
+    scope,
+    graphContext,
+    verificationEvidence,
+    decisionRecords,
+    inferredSpec
+  });
+  const activeAxes = judgmentAxes.filter((axis) => axis.status !== 'inactive');
   return {
     schema_version: '0.1.0',
     ...route,
+    judgment_axes: judgmentAxes,
+    active_axis_count: activeAxes.length,
+    active_axes: activeAxes.map((axis) => axis.axis),
     common_spine: [
       'intent',
       'current_reality',
@@ -4686,6 +4818,247 @@ function buildEngineeringJudgmentClassification({
   };
 }
 
+function buildSeniorJudgmentAxes({
+  route,
+  fileGroups = {},
+  storySource = {},
+  changeClassification = null,
+  prRoute = null,
+  networkContracts = null,
+  scope = null,
+  graphContext = null,
+  verificationEvidence = null,
+  decisionRecords = null,
+  inferredSpec = null
+} = {}) {
+  const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
+  const text = [
+    storySource?.title,
+    storySource?.requirement_title,
+    storySource?.background,
+    storySource?.policy,
+    ...(storySource?.acceptance_criteria ?? []),
+    ...(inferredSpec?.clauses ?? []).map((clause) => clause.text ?? clause.statement ?? ''),
+    ...files
+  ].filter(Boolean).join('\n').toLowerCase();
+  const riskSurfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  const signalsByAxis = new Map(JUDGMENT_AXIS_DEFINITIONS.map((axis) => [axis.axis, []]));
+  const addSignal = (axis, signal) => signalsByAxis.get(axis)?.push(signal);
+  const fileText = files.join('\n').toLowerCase();
+  const sourceCount = fileGroups.source?.count ?? 0;
+  const testCount = fileGroups.tests?.count ?? 0;
+  const architectureDocCount = fileGroups.architecture_docs?.count ?? 0;
+  const specDocCount = fileGroups.specifications?.count ?? 0;
+  const contractDocCount = (fileGroups.story_docs?.count ?? 0) + architectureDocCount + specDocCount + (fileGroups.policy_docs?.count ?? 0);
+  const changedFileCount = scope?.changed_file_count ?? files.length;
+
+  if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0) addSignal('public_contract', 'network_contract:introduced_api_client_call');
+  if (['runtime_change', 'design_or_ui_change', 'docs_only', 'config_or_agent_policy', 'test_only'].includes(prRoute?.route_type)) addSignal('public_contract', `pr_route:${prRoute.route_type}`);
+  if (contractDocCount > 0) addSignal('public_contract', 'file_group:contract_docs');
+  if (/\b(api|cli|config|schema|output|format|contract|compat|default|docs?|readme|pr body|public)\b|互換|契約|仕様|出力/.test(text)) addSignal('public_contract', 'text:public_contract');
+
+  if (['release_merge', 'mirror_sync'].includes(prRoute?.route_type)) addSignal('rollback_sensitive', `pr_route:${prRoute.route_type}`);
+  if (/\b(feature[-_ ]?gate|feature[-_ ]?flag|rollout|rollback|downgrade|migration|schema|release|deploy)\b/.test(fileText)
+    || riskSurfaces.has('database_state')
+    || riskSurfaces.has('deploy')) addSignal('rollback_sensitive', 'changed_surface:rollback_or_rollout');
+
+  if (route?.route_type === 'security_trust' || riskSurfaces.has('auth_boundary') || riskSurfaces.has('security') || riskSurfaces.has('auth')) addSignal('security_boundary', 'surface:security_or_auth');
+  if (/\b(auth|permission|security|secret|token|sandbox|namespace|rbac|acl|middleware)\b/.test(fileText)) addSignal('security_boundary', 'changed_path:security_boundary');
+
+  if (route?.route_type === 'data_pipeline' || riskSurfaces.has('database_state') || riskSurfaces.has('persistence')) addSignal('data_state', 'surface:data_state');
+  if (/\b(database|db|migration|schema|cache|idempot|replay|query|orm|backfill|model|repository)\b/.test(fileText)) addSignal('data_state', 'changed_path:data_state');
+
+  if (route?.route_type === 'agent_workflow' || riskSurfaces.has('gate_orchestration') || riskSurfaces.has('review_lifecycle') || riskSurfaces.has('core_workflow_state') || riskSurfaces.has('queue_worker')) addSignal('execution_topology', 'surface:workflow_or_agent');
+  if (/\b(process|thread|worker|queue|agent|subagent|retry|deadlock|artifact lifecycle|orchestration|workflow|gate|dag|graphify)\b|エージェント|ワーカー|再試行|証跡/.test(text)) addSignal('execution_topology', 'text:execution_topology');
+
+  if (prRoute?.route_type === 'design_or_ui_change' || hasUiExperienceSourceChange(fileGroups)) addSignal('ux_surface', 'surface:ui_source');
+  if (/\b(ui|ux|layout|screen|screenshot|a11y|accessibility|navigation|breakpoint|page|component)\b/.test(fileText)) addSignal('ux_surface', 'changed_path:ux_surface');
+
+  if (/\b(performance|latency|memory|benchmark|optimization|compiler|perf)\b/.test(fileText)
+    || /\b(performance|latency|memory|benchmark|optimization)\b/.test(storySource?.title?.toLowerCase?.() ?? '')) addSignal('performance_semantic', 'changed_surface:performance_semantic');
+
+  if (scope?.status && scope.status !== 'reviewable') addSignal('scope_reviewability', `scope:${scope.status}`);
+  if (changedFileCount > Math.max(12, Math.ceil((scope?.reviewable_file_limit ?? DEFAULT_MAX_REVIEWABLE_FILES) / 2))) addSignal('scope_reviewability', `changed_files:${changedFileCount}`);
+  if ((fileGroups.repo_control?.count ?? 0) > 0 && sourceCount + contractDocCount + testCount > 0) addSignal('scope_reviewability', 'mixed_surface:repo_control_with_product_change');
+  if (graphContext?.available && (graphContext.related_file_count ?? 0) > 0) addSignal('scope_reviewability', 'graphify:related_files');
+
+  if (route?.route_type === 'release_engineering' || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type)) addSignal('release_ops', 'route:release_engineering');
+  if (/\b(release|deploy|rollout|rollback|observability|operator|runbook|alert|ci|workflow)\b/.test(fileText)) addSignal('release_ops', 'changed_path:release_ops');
+
+  return JUDGMENT_AXIS_DEFINITIONS.map((definition) => {
+    const activationSignals = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
+    const active = activationSignals.length > 0;
+    const evidence = classifySeniorAxisEvidence({
+      axis: definition.axis,
+      fileGroups,
+      verificationEvidence,
+      decisionRecords,
+      graphContext,
+      scope
+    });
+    const status = active
+      ? resolveSeniorAxisStatus(definition, evidence)
+      : 'inactive';
+    return {
+      axis: definition.axis,
+      status,
+      reason: active
+        ? activationSignals.join('; ')
+        : `No ${definition.axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+      confidence: active ? calculateAxisConfidence(definition.confidence, activationSignals, graphContext) : 0,
+      decision_question: definition.decision_question,
+      required_evidence: definition.required_evidence,
+      blocking_criteria: definition.blocking_criteria,
+      acceptable_followup: definition.acceptable_followup,
+      signals: activationSignals,
+      matched_evidence: evidence.matched,
+      optional_evidence: evidence.optional,
+      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : []
+    };
+  });
+}
+
+const JUDGMENT_AXIS_DEFINITIONS = [
+  {
+    axis: 'public_contract',
+    confidence: 0.72,
+    decision_question: 'この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。',
+    required_evidence: ['story_spec_traceability', 'contract_doc', 'compat_or_output_test', 'current_verification'],
+    blocking_criteria: ['public contract change lacks traceability or compatibility evidence', 'output/API/CLI behavior changed without reviewable old/new expectation'],
+    acceptable_followup: 'Current behavior is backward-compatible and the remaining doc or cleanup item is bounded with an artifact or issue reference.'
+  },
+  {
+    axis: 'rollback_sensitive',
+    confidence: 0.78,
+    decision_question: 'rollout、rollback、version skew、stored object、feature gateのどこで戻せなくなるか。',
+    required_evidence: ['rollback_plan', 'feature_gate_disabled_behavior', 'upgrade_downgrade_test', 'decision_record', 'current_verification'],
+    blocking_criteria: ['current release safety depends on an untested rollback path', 'stored or migrated state cannot be safely downgraded or replayed'],
+    acceptable_followup: 'The shipped state is safe without the deferred work, and rollback or operator action is explicitly bounded.'
+  },
+  {
+    axis: 'security_boundary',
+    confidence: 0.82,
+    decision_question: 'auth、permission、secret、sandbox、path access、trust boundaryを迂回できないか。',
+    required_evidence: ['threat_model', 'negative_path_test', 'boundary_condition', 'security_review', 'current_verification'],
+    blocking_criteria: ['trust boundary changed without negative-path evidence', 'secret/path/auth behavior depends on unchecked assumptions'],
+    acceptable_followup: 'Only non-security cleanup remains; current trust boundary has negative-path or reviewer evidence.'
+  },
+  {
+    axis: 'data_state',
+    confidence: 0.78,
+    decision_question: '永続状態、migration、query/cache、idempotency、replayで既存データを壊さないか。',
+    required_evidence: ['migration_plan', 'rollback_plan', 'idempotency_test', 'query_semantics_test', 'current_verification'],
+    blocking_criteria: ['persisted state changes without migration/rollback plan', 'retry or replay can corrupt state'],
+    acceptable_followup: 'No current persisted state risk remains, and future cleanup is bounded to non-destructive data work.'
+  },
+  {
+    axis: 'execution_topology',
+    confidence: 0.8,
+    decision_question: 'process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。',
+    required_evidence: ['topology_diagram', 'flow_replay', 'artifact_replay', 'agent_review', 'current_verification'],
+    blocking_criteria: ['orchestration or artifact lifecycle changed without replay/review evidence', 'tool or agent side effects are not bounded'],
+    acceptable_followup: 'Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.'
+  },
+  {
+    axis: 'ux_surface',
+    confidence: 0.72,
+    decision_question: 'ユーザーが見る導線、状態、アクセシビリティ、default-on/opt-outを壊さないか。',
+    required_evidence: ['screenshot', 'visual_qa', 'accessibility_evidence', 'flow_replay', 'current_verification'],
+    blocking_criteria: ['user-visible behavior changed without visual or flow evidence', 'empty/error/loading/focus states are unreviewed'],
+    acceptable_followup: 'The visible path remains usable; deferred polish has screenshot or issue linkage.'
+  },
+  {
+    axis: 'performance_semantic',
+    confidence: 0.7,
+    decision_question: 'performance改善やruntime/compiler意味変更が、速度だけでなく正しさも維持しているか。',
+    required_evidence: ['benchmark_delta', 'perf_regression_guard', 'semantic_invariant_test', 'current_verification'],
+    blocking_criteria: ['optimization changes semantics without invariant evidence', 'claimed performance improvement lacks comparable measurement'],
+    acceptable_followup: 'Correctness is proven now; additional measurement is bounded and non-blocking.'
+  },
+  {
+    axis: 'scope_reviewability',
+    confidence: 0.74,
+    decision_question: 'このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。',
+    required_evidence: ['scope_reviewed', 'split_plan', 'review_owner_map', 'graph_impact_scope', 'decision_record'],
+    blocking_criteria: ['multiple unrelated decisions are bundled without split rationale', 'ownership or blast radius is unclear'],
+    acceptable_followup: 'Current PR is coherent; separate cleanup is tracked without hiding required review ownership.'
+  },
+  {
+    axis: 'release_ops',
+    confidence: 0.76,
+    decision_question: 'release note、operator action、observability、support/rollback導線が必要か。',
+    required_evidence: ['release_note', 'rollout_plan', 'rollback_instruction', 'observability_evidence', 'current_verification'],
+    blocking_criteria: ['operator/user action is required but not documented', 'release or rollback path lacks owner-visible evidence'],
+    acceptable_followup: 'No current operator action is required, or action-required work is linked and safe to defer.'
+  }
+];
+
+function classifySeniorAxisEvidence({
+  axis,
+  fileGroups = {},
+  verificationEvidence = null,
+  decisionRecords = null,
+  graphContext = null,
+  scope = null
+} = {}) {
+  const currentVerification = (verificationEvidence?.commands ?? [])
+    .filter((command) => command.binding?.status === 'current');
+  const verificationMatches = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
+  const matched = [];
+  const optional = classifyGraphImpactEvidence(graphContext);
+  const add = (kind, ref) => {
+    if (!matched.some((item) => item.kind === kind && item.ref === ref)) matched.push({ kind, ref });
+  };
+
+  if ((fileGroups.story_docs?.count ?? 0) > 0 || (fileGroups.specifications?.count ?? 0) > 0) {
+    add('story_spec_traceability', 'story/spec docs in diff');
+  }
+  if ((fileGroups.architecture_docs?.count ?? 0) > 0 || (fileGroups.policy_docs?.count ?? 0) > 0) {
+    add('contract_doc', 'architecture/policy docs in diff');
+    add('topology_diagram', 'architecture docs in diff');
+  }
+  if ((fileGroups.tests?.count ?? 0) > 0) {
+    add('compat_or_output_test', 'test files in diff');
+    add('semantic_invariant_test', 'test files in diff');
+  }
+  for (const item of verificationMatches) {
+    add(item.kind, item.ref);
+    add('current_verification', item.ref);
+    if (item.kind === 'negative_path') add('negative_path_test', item.ref);
+    if (item.kind === 'boundary_condition') add('boundary_condition', item.ref);
+    if (item.kind === 'flow_replay') add('flow_replay', item.ref);
+    if (item.kind === 'artifact_replay') add('artifact_replay', item.ref);
+  }
+  if (currentVerification.length > 0) add('current_verification', currentVerification[0].command ?? 'current verification');
+  if (scope?.status === 'reviewable') add('scope_reviewed', 'scope.status=reviewable');
+  if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status);
+  if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
+
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
+  if (acceptedDecision) {
+    add('decision_record', acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`);
+    if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
+    if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
+  }
+  return { matched, optional };
+}
+
+function resolveSeniorAxisStatus(definition, evidence) {
+  const matchedKinds = new Set(evidence.matched.map((item) => item.kind));
+  if (matchedKinds.has('decision_record') && !definition.required_evidence.some((kind) => matchedKinds.has(kind))) {
+    return 'active_accepted_followup';
+  }
+  return definition.required_evidence.some((kind) => matchedKinds.has(kind))
+    ? 'active_passed'
+    : 'active_needs_evidence';
+}
+
+function calculateAxisConfidence(base, signals, graphContext) {
+  const graphBoost = graphContext?.available && (graphContext.matched_file_count ?? 0) > 0 ? 0.04 : 0;
+  const signalBoost = Math.min(0.12, Math.max(0, signals.length - 1) * 0.04);
+  return Math.min(0.95, Number((base + signalBoost + graphBoost).toFixed(2)));
+}
+
 function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
   return {
     id: 'gate:engineering_judgment_route',
@@ -4701,6 +5074,54 @@ function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
       ? `Engineering judgment route selected: ${engineeringJudgment.route_type}; DAG=${engineeringJudgment.route_dag}`
       : 'Engineering judgment route could not be classified'
   };
+}
+
+function buildJudgmentAxisGates(engineeringJudgment) {
+  const axes = (engineeringJudgment?.judgment_axes ?? [])
+    .filter((axis) => axis.status !== 'inactive');
+  return axes.map((axis) => ({
+    id: `gate:judgment_axis_${axis.axis}`,
+    type: 'judgment_axis_gate',
+    label: `Judgment Axis: ${axis.axis}`,
+    status: mapJudgmentAxisStatusToGateStatus(axis.status),
+    axis_status: axis.status,
+    required: true,
+    axis: axis.axis,
+    confidence: axis.confidence,
+    decision_question: axis.decision_question,
+    required_evidence: axis.required_evidence,
+    blocking_criteria: axis.blocking_criteria,
+    acceptable_followup: axis.acceptable_followup,
+    signals: axis.signals ?? [],
+    matched_evidence: axis.matched_evidence ?? [],
+    optional_evidence: axis.optional_evidence ?? [],
+    missing_evidence: axis.missing_evidence ?? [],
+    reason: buildJudgmentAxisGateReason(axis)
+  }));
+}
+
+function mapJudgmentAxisStatusToGateStatus(status) {
+  if (status === 'active_passed' || status === 'active_accepted_followup') return 'passed';
+  if (status === 'active_blocked') return 'block';
+  if (status === 'active_needs_evidence') return 'needs_evidence';
+  return 'not_required';
+}
+
+function buildJudgmentAxisGateReason(axis) {
+  const prefix = `${axis.axis}: ${axis.decision_question}`;
+  if (axis.status === 'active_passed') {
+    return `${prefix} Evidence matched: ${(axis.matched_evidence ?? []).map((item) => item.kind).join(', ') || 'none'}.`;
+  }
+  if (axis.status === 'active_accepted_followup') {
+    return `${prefix} Current safety is acceptable with a bounded follow-up: ${axis.acceptable_followup}`;
+  }
+  if (axis.status === 'active_needs_evidence') {
+    return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
+  }
+  if (axis.status === 'active_blocked') {
+    return `${prefix} Blocking criteria matched: ${(axis.blocking_criteria ?? []).join('; ')}`;
+  }
+  return `${axis.axis}: inactive`;
 }
 
 function buildCommonJudgmentSpineGate(engineeringJudgment, evidenceContext = {}) {
@@ -5855,6 +6276,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  architectureSources = [],
   bugPhysicsTriage = null,
   architectureBlueprint = null,
   environmentGraph = null,
@@ -5899,13 +6321,20 @@ function buildGateDag({
       : 'Story source could not be resolved; implementation cannot be treated as human-confirmed scope'
   };
   const storySourceIntegrityGate = buildStorySourceIntegrityGate(storySourceIntegrity);
+  const architectureAxisQuality = buildArchitectureAxisQuality({
+    engineeringJudgment,
+    architectureDecision,
+    architectureSources,
+    decisionRecords
+  });
   const architectureGate = {
     id: 'architecture',
     type: 'architecture_gate',
     label: 'Architecture Gate',
     status: architectureDecision.startsWith('ADRあり') || architectureDecision.startsWith('ADR不要') ? 'satisfied' : 'needs_review',
     required: true,
-    reason: architectureDecision
+    reason: architectureDecision,
+    axis_quality: architectureAxisQuality
   };
   const specGate = {
     ...buildSpecGateNode({ repoRoot, fileGroups, inferredSpec, specDrift, storySource }),
@@ -5914,6 +6343,7 @@ function buildGateDag({
   const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
+  const judgmentAxisGates = buildJudgmentAxisGates(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment, {
     storySource,
     fileGroups,
@@ -6055,6 +6485,7 @@ function buildGateDag({
     storySourceIntegrityGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    ...judgmentAxisGates,
     prScopeJudgmentGate,
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
@@ -6117,7 +6548,12 @@ function buildGateDag({
     { from: 'story', to: 'gate:story_source_integrity' },
     { from: 'gate:story_source_integrity', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
-    { from: 'gate:common_judgment_spine', to: 'gate:pr_scope_judgment' },
+    ...(judgmentAxisGates.length > 0
+      ? judgmentAxisGates.flatMap((gate) => [
+        { from: 'gate:common_judgment_spine', to: gate.id },
+        { from: gate.id, to: 'gate:pr_scope_judgment' }
+      ])
+      : [{ from: 'gate:common_judgment_spine', to: 'gate:pr_scope_judgment' }]),
     { from: 'gate:pr_scope_judgment', to: 'gate:bug_physics_triage' },
     ...(routeSpecificJudgmentGates.length > 0
       ? routeSpecificJudgmentGates.flatMap((gate) => [
@@ -6232,6 +6668,7 @@ function buildGateDag({
     storySourceIntegrityGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
+    ...judgmentAxisGates,
     prScopeJudgmentGate,
     bugPhysicsTriageGate,
     ...bugPhysicsProfileGates,
@@ -6276,6 +6713,10 @@ function buildGateDag({
       needs_evidence_count: needsEvidence.length,
       engineering_judgment_route: engineeringJudgment?.route_type ?? null,
       engineering_judgment_dag: engineeringJudgment?.route_dag ?? null,
+      active_judgment_axes: (engineeringJudgment?.judgment_axes ?? [])
+        .filter((axis) => axis.status !== 'inactive')
+        .map((axis) => axis.axis),
+      judgment_axis_count: judgmentAxisGates.length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
       bug_physics_classes: bugPhysicsTriage?.classes ?? [],
       bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,
@@ -6284,6 +6725,7 @@ function buildGateDag({
       story_status: storyGate.status,
       story_source_integrity_status: storySourceIntegrityGate.status,
       architecture_status: architectureGate.status,
+      architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       requirement_status: requirementGate.status,
@@ -8319,6 +8761,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'vibepro_artifact_policy_gate',
       'split_resolution_gate',
       'managed_worktree_gate',
+      'judgment_axis_gate',
       'security_regression_gate',
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
