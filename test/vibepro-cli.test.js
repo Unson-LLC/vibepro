@@ -11931,10 +11931,12 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   const judgment = prepare.pr_context.engineering_judgment;
   const activeAxes = judgment.judgment_axes.filter((axis) => axis.status !== 'inactive');
   assert.equal(Array.isArray(judgment.judgment_axes), true);
-  assert.equal(activeAxes.length >= 3, true);
-  assert.equal(activeAxes.some((axis) => axis.axis === 'public_contract'), true);
-  assert.equal(activeAxes.some((axis) => axis.axis === 'execution_topology'), true);
-  assert.equal(activeAxes.some((axis) => axis.axis === 'scope_reviewability'), true);
+  assert.deepEqual(activeAxes.map((axis) => axis.axis).sort(), [
+    'execution_topology',
+    'public_contract',
+    'scope_reviewability'
+  ]);
+  assert.equal(activeAxes.some((axis) => ['rollback_sensitive', 'security_boundary', 'data_state', 'ux_surface', 'performance_semantic', 'release_ops'].includes(axis.axis)), false);
   const publicContract = activeAxes.find((axis) => axis.axis === 'public_contract');
   assert.equal(publicContract.status, 'active_passed');
   assert.equal(typeof publicContract.reason, 'string');
@@ -11965,6 +11967,58 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.match(prBody, /#### Senior first scan axes/);
   assert.match(prBody, /public_contract: active_passed/);
   assert.match(prBody, /graph_impact_scope/);
+
+  const noGraphRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(noGraphRepo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(noGraphRepo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(noGraphRepo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(noGraphRepo, 'src'), { recursive: true });
+  await mkdir(path.join(noGraphRepo, 'test'), { recursive: true });
+  await writeFile(path.join(noGraphRepo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Senior Judgment Multi-Axis DAG without Graphify
+architecture_docs:
+  - docs/architecture/senior-judgment-axis.md
+spec_docs:
+  - docs/specs/senior-judgment-axis.md
+---
+
+# Senior Judgment Multi-Axis DAG without Graphify
+
+## 背景
+
+PR body output and Gate DAG agent workflow topology must be reviewable even when local Graphify artifacts are absent.
+
+## 受け入れ基準
+
+- [ ] Graphify absence does not block Senior first scan or Gate DAG generation
+`);
+  await writeFile(path.join(noGraphRepo, 'docs', 'architecture', 'senior-judgment-axis.md'), `# Senior Judgment Axis Architecture
+
+Alternatives considered: keep route_type only, or add multi-axis judgment gates.
+Compatibility impact: PR body and JSON keep existing fields while adding judgment_axes.
+Rollback plan: consumers can ignore judgment_axes and continue using route_type.
+Boundary: Graphify is optional and missing Graphify cannot prove or disprove correctness.
+Accepted followups: route-specific enforcement can deepen after the multi-axis artifact is stable.
+`);
+  await writeFile(path.join(noGraphRepo, 'docs', 'specs', 'senior-judgment-axis.md'), '# Spec\n\nGraphify missing must not block Gate DAG generation.\n');
+  await writeFile(path.join(noGraphRepo, 'src', 'judgment-dag.js'), 'export function buildGateDag(){ return "agent workflow pr body output"; }\n');
+  await writeFile(path.join(noGraphRepo, 'test', 'judgment-dag.test.js'), 'import assert from "node:assert/strict";\nassert.match("PR body output remains compatible", /compatible/);\n');
+  await git(noGraphRepo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'docs/architecture/senior-judgment-axis.md', 'docs/specs/senior-judgment-axis.md', 'src/judgment-dag.js', 'test/judgment-dag.test.js']);
+  await git(noGraphRepo, ['commit', '-m', 'feat: add senior judgment axis no graph fixture']);
+
+  const noGraphResult = await runCli(['pr', 'prepare', noGraphRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(noGraphResult.exitCode, 0);
+  const noGraphPrepare = noGraphResult.result.preparation;
+  assert.equal(noGraphPrepare.pr_context.graph_context.available, false);
+  assert.match(noGraphPrepare.pr_context.graph_context.reason, /graphify\/graph\.json/);
+  const noGraphActiveAxes = noGraphPrepare.pr_context.engineering_judgment.judgment_axes
+    .filter((axis) => axis.status !== 'inactive')
+    .map((axis) => axis.axis)
+    .sort();
+  assert.deepEqual(noGraphActiveAxes, ['execution_topology', 'public_contract']);
+  assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:judgment_axis_scope_reviewability'), false);
+  assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
 });
 
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
