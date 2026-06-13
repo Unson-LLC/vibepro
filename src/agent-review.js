@@ -34,6 +34,8 @@ const VERIFIED_REVIEW_PROVENANCE_STATUSES = new Set(['verified_agent']);
 const REVIEW_PROVENANCE_SYSTEMS = new Set(['codex', 'claude_code', 'human', 'other', 'unknown']);
 const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
 const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
+const MODEL_REASONING_EFFORTS = new Set(['low', 'medium', 'high']);
+const MODEL_COST_TIERS = new Set(['low', 'medium', 'high']);
 const DEFAULT_REVIEW_TIMEOUT_MS = 10 * 60 * 1000;
 const LIFECYCLE_STATUSES = new Set(['running', 'closed', 'replaced']);
 export const EVIDENCE_HANDLING_BLOCK = [
@@ -188,11 +190,15 @@ export async function prepareAgentReview(repoRoot, options = {}) {
         buildReviewRecordCommand({ storyId, stage, role })
       ]))
     },
-    requests: roles.map((role) => ({
-      role,
-      artifact: toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role)),
-      prompt_summary: buildRolePromptSummary(stage, role, language)
-    }))
+    requests: roles.map((role) => {
+      const rolePolicy = getRolePolicy(reviewPolicy, role);
+      return {
+        role,
+        artifact: toWorkspaceRelative(root, getReviewRequestPath(reviewDir, role)),
+        prompt_summary: buildRolePromptSummary(stage, role, language),
+        model_policy: rolePolicy.model_policy ?? null
+      };
+    })
   };
 
   await writeJson(path.join(reviewDir, 'review-plan.json'), plan);
@@ -319,6 +325,9 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     agent_system: normalizeReviewSystem(options.agentSystem ?? options.reviewerSystem),
     agent_id: normalizeNullable(options.agentId),
     agent_model: normalizeNullable(options.agentModel),
+    agent_reasoning_effort: normalizeReasoningEffort(options.agentReasoningEffort),
+    agent_cost_tier: normalizeCostTier(options.agentCostTier),
+    intended_model_policy: rolePolicy.model_policy ?? null,
     thread_id: normalizeNullable(options.agentThreadId),
     session_id: normalizeNullable(options.agentSessionId),
     tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId),
@@ -1084,12 +1093,14 @@ function normalizeAgentReviewPolicy(raw = {}) {
       mode: normalizeRoleMode(policy.mode),
       timeout_ms: policy.timeout_ms,
       when_changed: normalizeStringList(policy.when_changed),
-      allowed_systems: normalizeStringList(policy.allowed_systems)
+      allowed_systems: normalizeStringList(policy.allowed_systems),
+      model_policy: normalizeModelPolicy(policy.model_policy)
     } : { mode: normalizeRoleMode(policy) };
   }
   return {
     defaults: {
-      timeout_ms: raw?.defaults?.timeout_ms
+      timeout_ms: raw?.defaults?.timeout_ms,
+      model_policy: normalizeModelPolicy(raw?.defaults?.model_policy)
     },
     stages,
     roles
@@ -1113,7 +1124,8 @@ function summarizeReviewPolicyForStage(policy, stage, roles = null) {
     stage,
     roles: stageRoles,
     defaults: {
-      timeout_ms: normalizeTimeoutMs(policy?.defaults?.timeout_ms)
+      timeout_ms: normalizeTimeoutMs(policy?.defaults?.timeout_ms),
+      model_policy: policy?.defaults?.model_policy ?? null
     },
     role_policies: Object.fromEntries(stageRoles.map((role) => [role, getRolePolicy(policy, role)]))
   };
@@ -1129,10 +1141,12 @@ function getStageRoles(policy, stage) {
 }
 
 function getRolePolicy(policy, role) {
-  return {
+  const rolePolicy = {
     mode: 'required',
     ...(policy?.roles?.[role] ?? {})
   };
+  const modelPolicy = mergeModelPolicy(policy?.defaults?.model_policy, rolePolicy.model_policy);
+  return modelPolicy ? { ...rolePolicy, model_policy: modelPolicy } : rolePolicy;
 }
 
 function isRequiredRoleActive(policy, role, fileGroups) {
@@ -1161,6 +1175,36 @@ function matchPathPattern(filePath, pattern) {
 function normalizeRoleMode(value) {
   const normalized = String(value ?? 'required').trim().toLowerCase().replace(/-/g, '_');
   return ['required', 'optional', 'disabled'].includes(normalized) ? normalized : 'required';
+}
+
+function normalizeModelPolicy(raw = {}) {
+  if (!isPlainObject(raw)) return null;
+  const model = normalizeNullable(raw.model);
+  const reasoningEffort = normalizeReasoningEffort(raw.reasoning_effort ?? raw.reasoningEffort);
+  const costTier = normalizeCostTier(raw.cost_tier ?? raw.costTier);
+  const policy = {};
+  if (model) policy.model = model;
+  if (reasoningEffort) policy.reasoning_effort = reasoningEffort;
+  if (costTier) policy.cost_tier = costTier;
+  return Object.keys(policy).length > 0 ? policy : null;
+}
+
+function mergeModelPolicy(defaultPolicy, rolePolicy) {
+  const merged = {
+    ...(defaultPolicy ?? {}),
+    ...(rolePolicy ?? {})
+  };
+  return Object.keys(merged).length > 0 ? merged : null;
+}
+
+function normalizeReasoningEffort(value) {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/-/g, '_');
+  return MODEL_REASONING_EFFORTS.has(normalized) ? normalized : null;
+}
+
+function normalizeCostTier(value) {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/-/g, '_');
+  return MODEL_COST_TIERS.has(normalized) ? normalized : null;
 }
 
 function normalizeStringList(value) {
@@ -1305,10 +1349,42 @@ function renderGitContextHeader(gitContext = {}, language = 'ja') {
   ].join('\n');
 }
 
+function renderModelPolicySection(modelPolicy) {
+  const block = renderModelPolicyInlineBlock(modelPolicy);
+  return block ? `\n## Model Policy\n${block}` : '';
+}
+
+function renderModelPolicyInlineBlock(modelPolicy) {
+  if (!modelPolicy) return '';
+  return [
+    '',
+    'Model policy:',
+    `- model: ${modelPolicy.model ?? '-'}`,
+    `- reasoning_effort: ${modelPolicy.reasoning_effort ?? '-'}`,
+    `- cost_tier: ${modelPolicy.cost_tier ?? '-'}`
+  ].join('\n');
+}
+
+function formatModelPolicyCommandArgs(modelPolicy) {
+  if (!modelPolicy) return '';
+  const args = [];
+  if (modelPolicy.model) args.push(`--agent-model "${modelPolicy.model}"`);
+  if (modelPolicy.reasoning_effort) args.push(`--agent-reasoning-effort "${modelPolicy.reasoning_effort}"`);
+  if (modelPolicy.cost_tier) args.push(`--agent-cost-tier "${modelPolicy.cost_tier}"`);
+  return args.length > 0 ? ` ${args.join(' ')}` : '';
+}
+
 function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = plan?.output?.language ?? 'ja' }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
-  const startCommand = buildReviewStartCommand({ storyId, stage, role, timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms });
+  const modelPolicySection = renderModelPolicySection(rolePolicy.model_policy);
+  const startCommand = buildReviewStartCommand({
+    storyId,
+    stage,
+    role,
+    timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms,
+    modelPolicy: rolePolicy.model_policy
+  });
   const closeCommand = buildReviewCloseCommand({ storyId, stage, role });
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   const evidenceHandling = localizedEvidenceHandlingBlock(language);
@@ -1323,6 +1399,7 @@ ${renderGitContextHeader(plan.git_context, language)}
 
 ## Review Focus
 ${buildRolePromptSummary(stage, role, language)}
+${modelPolicySection}
 
 ## Mandatory Review Lenses
 ${mandatoryLenses}
@@ -1377,6 +1454,7 @@ ${renderGitContextHeader(plan.git_context, language)}
 
 ## レビュー観点
 ${buildRolePromptSummary(stage, role, language)}
+${modelPolicySection}
 
 ## 必須レビューlens
 ${mandatoryLenses}
@@ -1429,6 +1507,14 @@ function renderParallelDispatchMarkdown({ storyId, stage, roles, plan, language 
     const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
     const command = buildReviewRecordCommand({ storyId, stage, role });
     const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
+    const modelPolicyBlock = renderModelPolicyInlineBlock(rolePolicy.model_policy);
+    const startCommand = buildReviewStartCommand({
+      storyId,
+      stage,
+      role,
+      timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms,
+      modelPolicy: rolePolicy.model_policy
+    });
     if (language === 'en') {
       return `## Subagent ${index + 1}: ${stage}:${role}
 
@@ -1437,12 +1523,13 @@ Review request:
 
 Prompt:
 Read the review request above and perform only the \`${stage}:${role}\` review, including every mandatory review lens. Return JSON with \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, optional \`inspection_evidence\`, \`inspection_inputs\`, and \`judgment_delta\`. Do not edit files.
+${modelPolicyBlock}
 
 Record command after the subagent returns:
 \`${command}\`
 
 Lifecycle start command:
-\`${buildReviewStartCommand({ storyId, stage, role, timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms })}\`
+\`${startCommand}\`
 
 Lifecycle close command for timeout/replacement/manual shutdown:
 \`${buildReviewCloseCommand({ storyId, stage, role })}\`
@@ -1461,12 +1548,13 @@ Review request:
 
 Prompt:
 上記review requestを読み、\`${stage}:${role}\` reviewだけを実行してください。すべてのmandatory review lensを含めます。fileは編集しません。返却JSONには \`status\`, \`summary\`, \`findings\`, \`inspection_summary\`, 任意の \`inspection_evidence\`, \`inspection_inputs\`, \`judgment_delta\` を含めます。
+${modelPolicyBlock}
 
 subagentの結果受領後に記録するcommand:
 \`${command}\`
 
 Lifecycle start command:
-\`${buildReviewStartCommand({ storyId, stage, role, timeoutMs: rolePolicy.timeout_ms ?? plan.review_policy?.defaults?.timeout_ms })}\`
+\`${startCommand}\`
 
 timeout/replacement/manual shutdown用Lifecycle close command:
 \`${buildReviewCloseCommand({ storyId, stage, role })}\`
@@ -1557,11 +1645,12 @@ function renderMandatoryReviewLenses(lenses) {
 }
 
 function buildReviewRecordCommand({ storyId, stage, role }) {
-  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-transcript <artifact> --agent-closed`;
+  return `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence <inspection-evidence> --inspection-input <ref> --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript <artifact> --agent-closed`;
 }
 
-function buildReviewStartCommand({ storyId, stage, role, timeoutMs }) {
-  return `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms ${normalizeTimeoutMs(timeoutMs)}`;
+function buildReviewStartCommand({ storyId, stage, role, timeoutMs, modelPolicy = null }) {
+  const modelArgs = formatModelPolicyCommandArgs(modelPolicy);
+  return `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>"${modelArgs} --timeout-ms ${normalizeTimeoutMs(timeoutMs)}`;
 }
 
 function buildReviewCloseCommand({ storyId, stage, role }) {
@@ -1916,6 +2005,8 @@ function buildAgentProvenance(repoRoot, options = {}) {
     agent_id: normalizeNullable(options.agentId),
     agent_role: normalizeNullable(options.agentRole),
     model: normalizeNullable(options.agentModel),
+    reasoning_effort: normalizeReasoningEffort(options.agentReasoningEffort),
+    cost_tier: normalizeCostTier(options.agentCostTier),
     thread_id: normalizeNullable(options.agentThreadId),
     session_id: normalizeNullable(options.agentSessionId),
     tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId),
