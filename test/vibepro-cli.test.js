@@ -11766,6 +11766,7 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(runtimeReality.status, 'needs_evidence');
   assert.deepEqual(runtimeReality.required_evidence_kind, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
   assert.deepEqual(runtimeReality.matched_evidence, []);
+  assert.deepEqual(runtimeReality.optional_evidence_kind, ['graph_impact_scope']);
 
   const workflowRepo = await makeGitRepoWithStory();
   await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
@@ -11828,6 +11829,47 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(docsReality.surface, 'docs_only');
   assert.deepEqual(docsReality.required_evidence_kind, ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained']);
   assert.equal(docsReality.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
+});
+
+test('common judgment spine uses optional Graphify impact evidence when available', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await git(repo, ['switch', 'main']);
+  await writeFile(path.join(repo, 'src', 'shared-runtime.js'), 'export function sharedRuntime() { return "shared"; }\n');
+  await git(repo, ['add', 'src/shared-runtime.js']);
+  await git(repo, ['commit', '-m', 'chore: add shared runtime']);
+  await git(repo, ['switch', 'feature/test-story']);
+  await git(repo, ['merge', '--ff-only', 'main']);
+  await writeFile(path.join(repo, 'src', 'runtime-feature.js'), 'export function runtimeFeature() { return "runtime"; }\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [
+      { id: 'runtime-feature', source_file: 'src/runtime-feature.js' },
+      { id: 'shared-runtime', source_file: 'src/shared-runtime.js' }
+    ],
+    links: [
+      { source: 'runtime-feature', target: 'shared-runtime', relation: 'imports' }
+    ]
+  }, null, 2));
+  await git(repo, ['add', 'src/runtime-feature.js']);
+  await git(repo, ['commit', '-m', 'feat: add runtime feature']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.pr_context.graph_context.available, true);
+  assert.equal(prepare.pr_context.graph_context.matched_file_count, 1);
+  assert.equal(prepare.pr_context.graph_context.related_file_count, 1);
+  const spineGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const currentReality = spineGate.subchecks.find((check) => check.id === 'current_reality');
+  const graphEvidence = currentReality.matched_evidence.find((item) => item.kind === 'graph_impact_scope');
+  assert.equal(currentReality.status, 'needs_evidence');
+  assert.deepEqual(currentReality.missing_evidence, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
+  assert.equal(graphEvidence.optional, true);
+  assert.equal(graphEvidence.matched_file_count, 1);
+  assert.equal(graphEvidence.related_file_count, 1);
+  assert.deepEqual(graphEvidence.investigation_files, ['src/shared-runtime.js']);
 });
 
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
