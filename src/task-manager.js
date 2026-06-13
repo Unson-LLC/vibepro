@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { listCheckpointStages } from './checkpoint-manager.js';
 import { getStoryStatus } from './story-manager.js';
 import { readStoryTasks, renderStoryTasks } from './story-task-generator.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -164,6 +165,7 @@ export async function createTaskExecution(repoRoot, options = {}) {
   const suffix = group?.id ? `${task.id}-${group.id}` : task.id;
   const prPrepareCommand = buildPrPrepareCommand({ story, task, group, baseRef: options.baseRef });
   const prCreateCommand = buildPrCreateCommand({ story, task, group, baseRef: options.baseRef, dryRun: options.dryRunPrCreate });
+  const checkpointPlan = buildProgressiveGatePlan({ story, task, group, baseRef: options.baseRef });
   const execution = {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -178,6 +180,7 @@ export async function createTaskExecution(repoRoot, options = {}) {
       implementation_agent_may_mutate_repository: true,
       note: 'VibeProは実装の入口と証跡を管理する。対象コードの修正は人間またはAIエージェントが行う。'
     },
+    checkpoint_plan: checkpointPlan,
     references: {
       handoff_json: handoffResult.artifacts.json,
       handoff_markdown: handoffResult.artifacts.markdown,
@@ -198,6 +201,26 @@ export async function createTaskExecution(repoRoot, options = {}) {
         ]
       },
       {
+        id: 'story_checkpoint',
+        title: 'Story / Architecture / Spec checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.story
+      },
+      {
+        id: 'implementation_start_checkpoint',
+        title: '実装開始前checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.implementation_start,
+        review_prepare_commands: findCheckpointStage(checkpointPlan, 'implementation-start')?.review_prepare_commands ?? []
+      },
+      {
+        id: 'test_plan_checkpoint',
+        title: 'Test Plan checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.test_plan,
+        review_prepare_commands: findCheckpointStage(checkpointPlan, 'test-plan')?.review_prepare_commands ?? []
+      },
+      {
         id: 'implement',
         title: '対象範囲を実装する',
         required: true,
@@ -212,10 +235,31 @@ export async function createTaskExecution(repoRoot, options = {}) {
         commands: handoffResult.handoff.verification_commands
       },
       {
+        id: 'implementation_complete_checkpoint',
+        title: '実装完了checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.implementation_complete,
+        review_prepare_commands: findCheckpointStage(checkpointPlan, 'implementation-complete')?.review_prepare_commands ?? []
+      },
+      {
+        id: 'verification_checkpoint',
+        title: '検証checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.verification,
+        review_prepare_commands: findCheckpointStage(checkpointPlan, 'verification')?.review_prepare_commands ?? []
+      },
+      {
         id: 'prepare_pr',
         title: 'PR準備物を生成する',
         required: true,
-        command: prPrepareCommand
+        command: prPrepareCommand,
+        role: 'final_consistency_gate'
+      },
+      {
+        id: 'pr_checkpoint',
+        title: 'PR作成前checkpointを通す',
+        required: true,
+        command: checkpointPlan.commands.pr
       },
       {
         id: 'create_pr',
@@ -227,7 +271,9 @@ export async function createTaskExecution(repoRoot, options = {}) {
     commands: {
       pr_prepare: prPrepareCommand,
       pr_create: prCreateCommand,
-      verify_diagnosis: `npx vibepro diagnose . --run-id verify-${suffix}`
+      verify_diagnosis: `npx vibepro diagnose . --run-id verify-${suffix}`,
+      checkpoints: checkpointPlan.commands,
+      review_prepare: checkpointPlan.review_prepare_commands
     },
     completion_report_template: [
       '変更したファイル',
@@ -554,6 +600,7 @@ export function renderTaskExecution(execution, language = 'ja') {
   const warnings = execution.warnings?.length
     ? execution.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
     : '- none';
+  const checkpointPlan = renderProgressiveGatePlan(execution.checkpoint_plan);
   return `# 実行セッション
 
 ## 前提
@@ -578,6 +625,10 @@ ${warnings}
 
 ${execution.phases.map((phase, index) => `${index + 1}. ${phase.title}${phase.required ? ' (required)' : ' (optional)'}`).join('\n')}
 
+## Progressive Gate Plan
+
+${checkpointPlan}
+
 ## 実装対象
 
 ${formatList(execution.phases.find((phase) => phase.id === 'implement')?.target_files)}
@@ -595,6 +646,22 @@ ${execution.phases.find((phase) => phase.id === 'verify')?.commands.map((item) =
 
 ${formatList(execution.completion_report_template)}
 `;
+}
+
+function renderProgressiveGatePlan(checkpointPlan) {
+  if (!checkpointPlan) return '- なし';
+  const stageRows = checkpointPlan.stages.map((stage) => [
+    `- ${stage.stage}: ${stage.label}`,
+    `  - timing: ${stage.timing}`,
+    `  - checkpoint: \`${stage.command}\``,
+    stage.review_prepare_commands.length > 0
+      ? `  - review prepare: ${stage.review_prepare_commands.map((command) => `\`${command}\``).join(' / ')}`
+      : '  - review prepare: -'
+  ].join('\n')).join('\n');
+  return [
+    `- principle: ${checkpointPlan.principle}`,
+    stageRows
+  ].join('\n');
 }
 
 async function loadTaskContext(repoRoot, storyId = null) {
@@ -844,6 +911,88 @@ function buildTaskHandoff({ briefing, plan, briefingArtifacts, planArtifacts }) 
       'handoffは実装前の依頼パッケージであり、対象コードの変更結果ではない'
     ]
   };
+}
+
+function buildProgressiveGatePlan({ story, task, group, baseRef }) {
+  const stages = listCheckpointStages().map((checkpoint) => {
+    const command = buildCheckpointCommand({
+      checkpointStage: checkpoint.stage,
+      story,
+      task,
+      group,
+      baseRef
+    });
+    const reviewPrepareCommands = checkpoint.review_stages.map((reviewStage) => buildReviewPrepareCommand({
+      story,
+      reviewStage
+    }));
+    return {
+      stage: checkpoint.stage,
+      label: checkpoint.label,
+      timing: resolveCheckpointTiming(checkpoint.stage),
+      required: true,
+      command,
+      review_stages: checkpoint.review_stages,
+      review_prepare_commands: reviewPrepareCommands,
+      gate_ids: checkpoint.gate_ids,
+      purpose: checkpoint.stage === 'pr'
+        ? 'PR作成直前の最終整合性確認。ここで初めてdevelopment-phase reviewを発見する前提にしない。'
+        : 'このフェーズで次へ進めるかを確認し、必要なAgent Reviewはこの時点でdispatchする。'
+    };
+  });
+  return {
+    schema_version: '0.1.0',
+    model: 'progressive_gate_plan',
+    story_id: story.story_id,
+    task_id: task.id,
+    group_id: group?.id ?? null,
+    principle: 'pr prepare/pr checkpointは最終整合性確認であり、Story/Spec/実装/検証のGate発見とAgent Review dispatchは各checkpointで前倒しする。',
+    stages,
+    commands: Object.fromEntries(stages.map((stage) => [checkpointCommandKey(stage.stage), stage.command])),
+    review_prepare_commands: Object.fromEntries(
+      stages
+        .filter((stage) => stage.review_prepare_commands.length > 0)
+        .map((stage) => [checkpointCommandKey(stage.stage), stage.review_prepare_commands])
+    )
+  };
+}
+
+function findCheckpointStage(checkpointPlan, stageId) {
+  return checkpointPlan.stages.find((stage) => stage.stage === stageId);
+}
+
+function resolveCheckpointTiming(stage) {
+  if (stage === 'story') return 'before_implementation';
+  if (stage === 'implementation-start') return 'before_code_changes';
+  if (stage === 'test-plan') return 'before_or_early_implementation';
+  if (stage === 'implementation-complete') return 'after_code_changes_before_pr_handoff';
+  if (stage === 'verification') return 'after_verification_before_pr_prepare';
+  if (stage === 'pr') return 'after_pr_prepare_before_pr_create';
+  return 'during_execution';
+}
+
+function checkpointCommandKey(stage) {
+  return stage.replaceAll('-', '_');
+}
+
+function buildCheckpointCommand({ checkpointStage, story, task, group, baseRef }) {
+  return [
+    'npx vibepro checkpoint',
+    checkpointStage,
+    '.',
+    `--story-id ${shellQuote(story.story_id)}`,
+    `--task ${shellQuote(task.id)}`,
+    group?.id ? `--group ${shellQuote(group.id)}` : null,
+    baseRef ? `--base ${shellQuote(baseRef)}` : null
+  ].filter(Boolean).join(' ');
+}
+
+function buildReviewPrepareCommand({ story, reviewStage }) {
+  return [
+    'npx vibepro review prepare .',
+    `--id ${shellQuote(story.story_id)}`,
+    `--stage ${shellQuote(reviewStage)}`
+  ].join(' ');
 }
 
 function buildImplementationInstructions({ briefing, plan, planArtifacts }) {

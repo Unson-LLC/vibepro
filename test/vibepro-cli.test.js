@@ -13226,11 +13226,35 @@ export function middleware() {}
   assert.equal(executionResult.result.execution.execution.implementation_agent_may_mutate_repository, true);
   assert.equal(executionResult.result.execution.commands.pr_prepare, 'npx vibepro pr prepare . --story-id story-vibepro-diagnosis-commercialization-roadmap --task VP-TASK-API-001 --group queue --base origin/develop');
   assert.equal(executionResult.result.execution.commands.pr_create, 'npx vibepro pr create . --story-id story-vibepro-diagnosis-commercialization-roadmap --task VP-TASK-API-001 --group queue --base origin/develop');
+  assert.equal(executionResult.result.execution.checkpoint_plan.model, 'progressive_gate_plan');
+  assert.equal(executionResult.result.execution.checkpoint_plan.stages.some((stage) => stage.stage === 'implementation-start'), true);
+  assert.equal(
+    executionResult.result.execution.commands.checkpoints.implementation_start,
+    'npx vibepro checkpoint implementation-start . --story-id story-vibepro-diagnosis-commercialization-roadmap --task VP-TASK-API-001 --group queue --base origin/develop'
+  );
+  assert.equal(
+    executionResult.result.execution.commands.review_prepare.implementation_start.includes('npx vibepro review prepare . --id story-vibepro-diagnosis-commercialization-roadmap --stage planning_spec'),
+    true
+  );
+  assert.equal(
+    executionResult.result.execution.commands.review_prepare.implementation_complete.includes('npx vibepro review prepare . --id story-vibepro-diagnosis-commercialization-roadmap --stage implementation'),
+    true
+  );
   assert.equal(executionResult.result.execution.phases.some((phase) => phase.id === 'prepare_pr'), true);
+  const phaseIds = executionResult.result.execution.phases.map((phase) => phase.id);
+  assert.equal(phaseIds.indexOf('implementation_start_checkpoint') < phaseIds.indexOf('implement'), true);
+  assert.equal(phaseIds.indexOf('test_plan_checkpoint') < phaseIds.indexOf('implement'), true);
+  assert.equal(phaseIds.indexOf('implementation_complete_checkpoint') > phaseIds.indexOf('verify'), true);
+  assert.equal(phaseIds.indexOf('verification_checkpoint') < phaseIds.indexOf('prepare_pr'), true);
+  assert.equal(phaseIds.indexOf('pr_checkpoint') > phaseIds.indexOf('prepare_pr'), true);
   const executionJson = await readJson(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'execution.json'));
   assert.equal(executionJson.references.handoff_json, '.vibepro/stories/story-vibepro-diagnosis-commercialization-roadmap/tasks/VP-TASK-API-001/groups/queue/handoff.json');
+  assert.equal(executionJson.checkpoint_plan.principle.includes('最終整合性確認'), true);
   const executionMarkdown = await readFile(path.join(repo, '.vibepro', 'stories', 'story-vibepro-diagnosis-commercialization-roadmap', 'tasks', 'VP-TASK-API-001', 'groups', 'queue', 'execution.md'), 'utf8');
   assert.match(executionMarkdown, /# 実行セッション/);
+  assert.match(executionMarkdown, /## Progressive Gate Plan/);
+  assert.match(executionMarkdown, /npx vibepro checkpoint implementation-start/);
+  assert.match(executionMarkdown, /npx vibepro review prepare \. --id story-vibepro-diagnosis-commercialization-roadmap --stage planning_spec/);
   assert.match(executionMarkdown, /PR接続/);
 });
 
