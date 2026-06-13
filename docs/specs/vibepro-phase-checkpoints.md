@@ -47,3 +47,13 @@ Unresolved gate statuses include:
 - `not_generated`
 
 Agent Review stages block unless the stage status is `pass`.
+
+## Task Execution Projection
+
+`vibepro task execute` MUST project the checkpoint order into `execution.json` and `execution.md` before implementation starts.
+
+- `execution.checkpoint_plan.model` MUST be `progressive_gate_plan`.
+- `execution.checkpoint_plan.stages[]` MUST include `story`, `implementation-start`, `test-plan`, `implementation-complete`, `verification`, and `pr`.
+- Each stage MUST include the concrete `vibepro checkpoint <stage> . --story-id <id>` command for the selected Story/Task/Group.
+- Stages that require Agent Review MUST include `review_prepare_commands[]` for their review stages.
+- `prepare_pr` remains the final consistency gate and MUST NOT be the first place development-phase Agent Review work is discovered.

@@ -29,3 +29,4 @@ VibeProは、各開発フェーズの入口/出口で「次へ進んでよいか
 - `verification` checkpoint は verification gate と gate Agent Review 未完了を block する。
 - `pr` checkpoint は PR作成前の全 required Gate DAG 未解決を block する。
 - checkpoint の失敗は exit code 2 で返し、自動化が止められる。
+- `task execute` は実装入口の `execution.json` / `execution.md` に progressive checkpoint plan を出し、development-phase Agent Review をPR直前ではなく各checkpointでdispatchできるようにする。

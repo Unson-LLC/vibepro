@@ -1148,19 +1148,23 @@ API route保護判定:
 - `group`
 - `execution.vibepro_mutates_repository`: 常に `false`
 - `execution.implementation_agent_may_mutate_repository`: 常に `true`
+- `checkpoint_plan.model`: `progressive_gate_plan`
+- `checkpoint_plan.stages[]`: `story`、`implementation-start`、`test-plan`、`implementation-complete`、`verification`、`pr` のcheckpoint commandと、必要な `review_prepare_commands[]`
 - `references.handoff_json`
 - `references.handoff_markdown`
 - `references.plan_json`
 - `references.plan_markdown`
 - `references.briefing_json`
 - `references.briefing_markdown`
-- `phases[]`: `read_context`、`implement`、`verify`、`prepare_pr`、`create_pr`
+- `phases[]`: `read_context`、`story_checkpoint`、`implementation_start_checkpoint`、`test_plan_checkpoint`、`implement`、`verify`、`implementation_complete_checkpoint`、`verification_checkpoint`、`prepare_pr`、`pr_checkpoint`、`create_pr`
 - `commands.pr_prepare`
 - `commands.pr_create`
+- `commands.checkpoints`
+- `commands.review_prepare`
 - `commands.verify_diagnosis`
 - `completion_report_template[]`
 
-`task execute` は対象コードを変更しない。実装作業は `execution.md` を受け取った人間またはAIエージェントが行い、完了後に `commands.pr_prepare` と `commands.pr_create` でPR準備とPR作成へ接続する。
+`task execute` は対象コードを変更しない。実装作業は `execution.md` を受け取った人間またはAIエージェントが行う。`commands.checkpoints` と `commands.review_prepare` はStory/Spec/実装/検証の各段階でGateとAgent Reviewを前倒しし、完了後に `commands.pr_prepare` と `commands.pr_create` で最終整合性確認とPR作成へ接続する。
 
 ## ゲート
 
@@ -1225,7 +1229,7 @@ API route保護判定:
 - `task handoff` は `references.briefing_json` と `references.plan_json` を記録し、`execution.vibepro_mutates_repository=false` と `execution.recipient_may_mutate_repository=true` を記録する。
 - `task handoff` は対象route、現在の保護判定、期待する修正後シグナル、実行環境前提を記録する。
 - `task execute --task <task-id> --group <group-id>` で `.vibepro/stories/<story-id>/tasks/<task-id>/groups/<group-id>/execution.json` と `execution.md` が生成される。
-- `task execute` はHandoff、実装、検証、`pr prepare`、`pr create` のフェーズとコマンドを記録する。
+- `task execute` はHandoff、phase checkpoint、実装、検証、`pr prepare`、PR checkpoint、`pr create` のフェーズとコマンドを記録する。
 - `diagnose` で `evidence.static_site` に共通スキャン結果と静的サイト固有チェック結果が記録される。
 - `diagnose` でWebアプリを検出した場合、`index.html` 不在と非静的ファイル混在を静的サイトの検出事項として扱わない。
 - `diagnose` で `evidence.story_id` と `runs[].story_id` が選択中Storyに紐づく。
