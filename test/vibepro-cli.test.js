@@ -7226,6 +7226,121 @@ test('review policy config customizes stage roles and role timeout', async () =>
   assert.equal(record.result.review.role, 'custom_security');
 });
 
+test('review policy config publishes role model policy and records actual model provenance', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    defaults: {
+      model_policy: {
+        model: 'gpt-5.4',
+        reasoning_effort: 'medium',
+        cost_tier: 'medium'
+      }
+    },
+    roles: {
+      gate_evidence: {
+        model_policy: {
+          reasoning_effort: 'high',
+          cost_tier: 'high'
+        }
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const prepared = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+
+  assert.equal(prepared.exitCode, 0);
+  assert.deepEqual(prepared.result.plan.review_policy.defaults.model_policy, {
+    model: 'gpt-5.4',
+    reasoning_effort: 'medium',
+    cost_tier: 'medium'
+  });
+  assert.deepEqual(prepared.result.plan.review_policy.role_policies.gate_evidence.model_policy, {
+    model: 'gpt-5.4',
+    reasoning_effort: 'high',
+    cost_tier: 'high'
+  });
+  assert.deepEqual(prepared.result.plan.requests.find((request) => request.role === 'gate_evidence').model_policy, {
+    model: 'gpt-5.4',
+    reasoning_effort: 'high',
+    cost_tier: 'high'
+  });
+  const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'parallel-dispatch.md'), 'utf8');
+  assert.match(dispatch, /Model policy:/);
+  assert.match(dispatch, /model: gpt-5\.4/);
+  assert.match(dispatch, /reasoning_effort: high/);
+  assert.match(dispatch, /cost_tier: high/);
+  assert.match(dispatch, /--agent-reasoning-effort "<reasoning-effort>"/);
+  const request = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'review-request-gate_evidence.md'), 'utf8');
+  assert.match(request, /## Model Policy/);
+  assert.match(request, /reasoning_effort: high/);
+
+  const started = await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-gate-evidence',
+    '--agent-model',
+    'gpt-5.4',
+    '--agent-reasoning-effort',
+    'high',
+    '--agent-cost-tier',
+    'high',
+    '--json'
+  ]);
+  assert.equal(started.exitCode, 0);
+  assert.equal(started.result.lifecycle.agent_model, 'gpt-5.4');
+  assert.equal(started.result.lifecycle.agent_reasoning_effort, 'high');
+  assert.equal(started.result.lifecycle.agent_cost_tier, 'high');
+
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--status',
+    'pass',
+    '--summary',
+    'gate evidence passed',
+    '--inspection-summary',
+    'read generated request and model policy guidance',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'agent-gate-evidence',
+    '--agent-model',
+    'gpt-5.4',
+    '--agent-reasoning-effort',
+    'high',
+    '--agent-cost-tier',
+    'high',
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+  assert.equal(record.result.review.agent_provenance.model, 'gpt-5.4');
+  assert.equal(record.result.review.agent_provenance.reasoning_effort, 'high');
+  assert.equal(record.result.review.agent_provenance.cost_tier, 'high');
+});
+
 test('agent review PR policy honors role mode and changed-file activation', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
