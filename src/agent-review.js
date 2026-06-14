@@ -312,6 +312,19 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewPolicy = await readAgentReviewPolicy(root);
   const role = requireRole(reviewPolicy, stage, options.role, 'review start');
   const rolePolicy = getRolePolicy(reviewPolicy, role);
+  const agentModel = normalizeNullable(options.agentModel);
+  const agentReasoningEffort = normalizeReasoningEffort(options.agentReasoningEffort);
+  const agentCostTier = normalizeCostTier(options.agentCostTier);
+  const modelPolicyPreflight = buildModelPolicyPreflight(rolePolicy.model_policy, {
+    agent_model: agentModel,
+    agent_reasoning_effort: agentReasoningEffort,
+    agent_cost_tier: agentCostTier
+  }, {
+    allowOverride: options.allowModelPolicyOverride,
+    overrideReason: options.modelPolicyOverrideReason ?? options.overrideReason ?? options.reason,
+    stage,
+    role
+  });
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const now = new Date().toISOString();
@@ -324,10 +337,11 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     status: 'running',
     agent_system: normalizeReviewSystem(options.agentSystem ?? options.reviewerSystem),
     agent_id: normalizeNullable(options.agentId),
-    agent_model: normalizeNullable(options.agentModel),
-    agent_reasoning_effort: normalizeReasoningEffort(options.agentReasoningEffort),
-    agent_cost_tier: normalizeCostTier(options.agentCostTier),
+    agent_model: agentModel,
+    agent_reasoning_effort: agentReasoningEffort,
+    agent_cost_tier: agentCostTier,
     intended_model_policy: rolePolicy.model_policy ?? null,
+    model_policy_preflight: modelPolicyPreflight,
     thread_id: normalizeNullable(options.agentThreadId),
     session_id: normalizeNullable(options.agentSessionId),
     tool_call_id: normalizeNullable(options.agentCallId ?? options.agentToolCallId),
@@ -940,6 +954,7 @@ export function renderAgentReviewLifecycleStartSummary(result) {
 - role: ${result.lifecycle.role}
 - status: ${result.lifecycle.status}
 - agent: ${result.lifecycle.agent_system}/${result.lifecycle.agent_id ?? '-'}
+- model_policy_preflight: ${result.lifecycle.model_policy_preflight?.status ?? '-'}
 - timeout_ms: ${result.lifecycle.timeout_ms}
 - artifact: ${result.artifact}
 `;
@@ -1195,6 +1210,60 @@ function mergeModelPolicy(defaultPolicy, rolePolicy) {
     ...(rolePolicy ?? {})
   };
   return Object.keys(merged).length > 0 ? merged : null;
+}
+
+function buildModelPolicyPreflight(modelPolicy, actual, options = {}) {
+  if (!modelPolicy) return null;
+  const mismatches = compareModelPolicy(modelPolicy, actual);
+  if (mismatches.length === 0) {
+    return {
+      status: 'pass',
+      intended_model_policy: modelPolicy,
+      actual_model_policy: actual,
+      mismatches: [],
+      override_reason: null
+    };
+  }
+  const overrideReason = normalizeNullable(options.overrideReason);
+  if (!options.allowOverride) {
+    throw new Error(formatModelPolicyPreflightError({ ...options, mismatches }));
+  }
+  if (!overrideReason) {
+    throw new Error('model policy override requires --model-policy-override-reason <text>');
+  }
+  return {
+    status: 'overridden',
+    intended_model_policy: modelPolicy,
+    actual_model_policy: actual,
+    mismatches,
+    override_reason: overrideReason
+  };
+}
+
+function compareModelPolicy(modelPolicy, actual) {
+  return [
+    ['model', 'agent_model'],
+    ['reasoning_effort', 'agent_reasoning_effort'],
+    ['cost_tier', 'agent_cost_tier']
+  ].flatMap(([policyField, actualField]) => {
+    if (!modelPolicy?.[policyField]) return [];
+    const expected = modelPolicy[policyField];
+    const got = actual?.[actualField] ?? null;
+    return expected === got
+      ? []
+      : [{
+          field: actualField,
+          expected,
+          actual: got,
+          detail: `${actualField} expected ${expected} but got ${got ?? '-'}`
+        }];
+  });
+}
+
+function formatModelPolicyPreflightError({ stage, role, mismatches = [] }) {
+  const location = stage && role ? ` for ${stage}:${role}` : '';
+  const details = mismatches.map((mismatch) => mismatch.detail).join('; ');
+  return `model policy preflight failed${location}: ${details}. Use --allow-model-policy-override with --model-policy-override-reason <text> only for an intentional exception.`;
 }
 
 function normalizeReasoningEffort(value) {

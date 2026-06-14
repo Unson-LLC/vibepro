@@ -7341,6 +7341,120 @@ test('review policy config publishes role model policy and records actual model 
   assert.equal(record.result.review.agent_provenance.cost_tier, 'high');
 });
 
+test('review start rejects model policy mismatch before lifecycle start unless override is justified', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    defaults: {
+      model_policy: {
+        model: 'gpt-5.4-mini',
+        reasoning_effort: 'low',
+        cost_tier: 'low'
+      }
+    },
+    roles: {
+      release_risk: {
+        model_policy: {
+          reasoning_effort: 'medium',
+          cost_tier: 'medium'
+        }
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+
+  const rejected = await runCliWithStdout([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-high-cost',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-reasoning-effort',
+    'high',
+    '--agent-cost-tier',
+    'high',
+    '--json'
+  ]);
+
+  assert.notEqual(rejected.exitCode, 0);
+  assert.match(rejected.stderr, /model policy preflight failed/);
+  assert.match(rejected.stderr, /agent_model expected gpt-5\.4-mini but got gpt-5\.5/);
+  assert.match(rejected.stderr, /agent_cost_tier expected low but got high/);
+
+  const lifecyclePath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json');
+  assert.equal(await pathExists(lifecyclePath), false, 'rejected preflight must not create a running lifecycle');
+
+  const overrideWithoutReason = await runCliWithStdout([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-high-cost',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-reasoning-effort',
+    'high',
+    '--agent-cost-tier',
+    'high',
+    '--allow-model-policy-override',
+    '--json'
+  ]);
+
+  assert.notEqual(overrideWithoutReason.exitCode, 0);
+  assert.match(overrideWithoutReason.stderr, /model policy override requires --model-policy-override-reason <text>/);
+  assert.equal(await pathExists(lifecyclePath), false, 'reasonless override must not create a running lifecycle');
+
+  const overridden = await runCli([
+    'review',
+    'start',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'gate',
+    '--role',
+    'gate_evidence',
+    '--agent-system',
+    'codex',
+    '--agent-id',
+    'agent-high-cost',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-reasoning-effort',
+    'high',
+    '--agent-cost-tier',
+    'high',
+    '--allow-model-policy-override',
+    '--model-policy-override-reason',
+    'release manager requested high-confidence rerun',
+    '--json'
+  ]);
+
+  assert.equal(overridden.exitCode, 0);
+  assert.equal(overridden.result.lifecycle.model_policy_preflight.status, 'overridden');
+  assert.equal(overridden.result.lifecycle.model_policy_preflight.override_reason, 'release manager requested high-confidence rerun');
+  assert.equal(overridden.result.lifecycle.model_policy_preflight.mismatches.length, 3);
+});
+
 test('agent review PR policy honors role mode and changed-file activation', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
