@@ -16,7 +16,7 @@ The config surface is:
   "agent_reviews": {
     "defaults": {
       "model_policy": {
-        "model": "gpt-5.4",
+        "model": "gpt-5.5",
         "reasoning_effort": "medium",
         "cost_tier": "medium"
       }
@@ -24,7 +24,7 @@ The config surface is:
     "roles": {
       "gate_evidence": {
         "model_policy": {
-          "model": "gpt-5.4",
+          "model": "gpt-5.5",
           "reasoning_effort": "high",
           "cost_tier": "high"
         }
