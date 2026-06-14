@@ -7233,7 +7233,7 @@ test('review policy config publishes role model policy and records actual model 
   config.agent_reviews = {
     defaults: {
       model_policy: {
-        model: 'gpt-5.4',
+        model: 'gpt-5.5',
         reasoning_effort: 'medium',
         cost_tier: 'medium'
       }
@@ -7253,23 +7253,23 @@ test('review policy config publishes role model policy and records actual model 
 
   assert.equal(prepared.exitCode, 0);
   assert.deepEqual(prepared.result.plan.review_policy.defaults.model_policy, {
-    model: 'gpt-5.4',
+    model: 'gpt-5.5',
     reasoning_effort: 'medium',
     cost_tier: 'medium'
   });
   assert.deepEqual(prepared.result.plan.review_policy.role_policies.gate_evidence.model_policy, {
-    model: 'gpt-5.4',
+    model: 'gpt-5.5',
     reasoning_effort: 'high',
     cost_tier: 'high'
   });
   assert.deepEqual(prepared.result.plan.requests.find((request) => request.role === 'gate_evidence').model_policy, {
-    model: 'gpt-5.4',
+    model: 'gpt-5.5',
     reasoning_effort: 'high',
     cost_tier: 'high'
   });
   const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'parallel-dispatch.md'), 'utf8');
   assert.match(dispatch, /Model policy:/);
-  assert.match(dispatch, /model: gpt-5\.4/);
+  assert.match(dispatch, /model: gpt-5\.5/);
   assert.match(dispatch, /reasoning_effort: high/);
   assert.match(dispatch, /cost_tier: high/);
   assert.match(dispatch, /--agent-reasoning-effort "<reasoning-effort>"/);
@@ -7292,7 +7292,7 @@ test('review policy config publishes role model policy and records actual model 
     '--agent-id',
     'agent-gate-evidence',
     '--agent-model',
-    'gpt-5.4',
+    'gpt-5.5',
     '--agent-reasoning-effort',
     'high',
     '--agent-cost-tier',
@@ -7300,7 +7300,7 @@ test('review policy config publishes role model policy and records actual model 
     '--json'
   ]);
   assert.equal(started.exitCode, 0);
-  assert.equal(started.result.lifecycle.agent_model, 'gpt-5.4');
+  assert.equal(started.result.lifecycle.agent_model, 'gpt-5.5');
   assert.equal(started.result.lifecycle.agent_reasoning_effort, 'high');
   assert.equal(started.result.lifecycle.agent_cost_tier, 'high');
 
@@ -7327,7 +7327,7 @@ test('review policy config publishes role model policy and records actual model 
     '--agent-id',
     'agent-gate-evidence',
     '--agent-model',
-    'gpt-5.4',
+    'gpt-5.5',
     '--agent-reasoning-effort',
     'high',
     '--agent-cost-tier',
@@ -7336,7 +7336,7 @@ test('review policy config publishes role model policy and records actual model 
     '--json'
   ]);
   assert.equal(record.exitCode, 0);
-  assert.equal(record.result.review.agent_provenance.model, 'gpt-5.4');
+  assert.equal(record.result.review.agent_provenance.model, 'gpt-5.5');
   assert.equal(record.result.review.agent_provenance.reasoning_effort, 'high');
   assert.equal(record.result.review.agent_provenance.cost_tier, 'high');
 });
@@ -7348,7 +7348,7 @@ test('review start rejects model policy mismatch before lifecycle start unless o
   config.agent_reviews = {
     defaults: {
       model_policy: {
-        model: 'gpt-5.4-mini',
+        model: 'gpt-5.5',
         reasoning_effort: 'low',
         cost_tier: 'low'
       }
@@ -7389,7 +7389,8 @@ test('review start rejects model policy mismatch before lifecycle start unless o
 
   assert.notEqual(rejected.exitCode, 0);
   assert.match(rejected.stderr, /model policy preflight failed/);
-  assert.match(rejected.stderr, /agent_model expected gpt-5\.4-mini but got gpt-5\.5/);
+  assert.doesNotMatch(rejected.stderr, /gpt-5\.4/);
+  assert.match(rejected.stderr, /agent_reasoning_effort expected low but got high/);
   assert.match(rejected.stderr, /agent_cost_tier expected low but got high/);
 
   const lifecyclePath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json');
@@ -7452,7 +7453,7 @@ test('review start rejects model policy mismatch before lifecycle start unless o
   assert.equal(overridden.exitCode, 0);
   assert.equal(overridden.result.lifecycle.model_policy_preflight.status, 'overridden');
   assert.equal(overridden.result.lifecycle.model_policy_preflight.override_reason, 'release manager requested high-confidence rerun');
-  assert.equal(overridden.result.lifecycle.model_policy_preflight.mismatches.length, 3);
+  assert.equal(overridden.result.lifecycle.model_policy_preflight.mismatches.length, 2);
 });
 
 test('agent review PR policy honors role mode and changed-file activation', async () => {
