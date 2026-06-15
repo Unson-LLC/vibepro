@@ -15,4 +15,6 @@ test('story-vibepro-fake-value-hardening acceptance and scenario coverage', () =
   assert.match('story-vibepro-fake-value-hardening ac:6 既存review artifactの読み取り互換性は壊さず、新規pass記録の最低要件だけを厳格化する', /互換性|最低要件/);
 
   assert.match('story-vibepro-fake-value-hardening S-001 Given an active public_contract axis with missing current_verification evidence, when an accepted decision has an artifact-backed follow-up, pr prepare emits gate:judgment_axis_public_contract with status accepted_followup.', /gate:judgment_axis_public_contract.*accepted_followup/);
+
+  assert.match('story-vibepro-fake-value-hardening S-002 Given a workflow gate state for an active public_contract axis is active_needs_evidence, when an accepted decision includes both a safety reason and artifact-backed follow-up, then the Gate DAG state transition becomes accepted_followup instead of passed.', /workflow gate state.*transition.*accepted_followup/);
 });

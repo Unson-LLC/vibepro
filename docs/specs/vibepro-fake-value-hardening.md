@@ -17,6 +17,10 @@ title: VibePro Fake-Value Hardening Spec
 - `FVH-REVIEW-003`: A `gate:gate_evidence` pass MUST require `inspection.summary`, at least one `inspection.inputs[]` entry, and at least one `judgment_delta[]` entry.
 - `FVH-REVIEW-004`: Existing review artifacts with empty `inspection.inputs[]` or `judgment_delta[]` MUST remain readable; this Story tightens only new pass recording.
 
+## Scenarios
+
+- `FVH-SCENARIO-001`: Given a workflow gate state for an active public_contract axis is `active_needs_evidence`, when an accepted decision includes both a safety reason and artifact-backed follow-up, then the Gate DAG state transition becomes `accepted_followup` instead of `passed`.
+
 ## Diagram
 
 ```mermaid
