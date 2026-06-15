@@ -373,9 +373,11 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--status',
     'pass',
     '--command',
-    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
+    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js --grep flow_replay scenario_clause_e2e gate-dag review artifact',
     '--summary',
-    'scenario-only evidence claims evidence_lifecycle_regression and workflow_state_regression but lacks an inspected target',
+    'scenario-only evidence claims evidence_lifecycle_regression, workflow_state_regression, flow_replay, scenario_clause_e2e, gate-dag review artifact coverage but lacks an inspected target',
+    '--artifact',
+    `.vibepro/pr/${STORY_ID}/gate-dag.json`,
     '--scenario',
     'evidence_lifecycle_regression',
     '--scenario',
@@ -391,12 +393,22 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(partialFailureGate.status, 'missing_coverage');
   assert.equal(partialFailureGate.missing_modes.includes('evidence_lifecycle_regression'), true);
   const partialSpineGate = nodeById(stillUnresolved.result.preparation, 'gate:common_judgment_spine');
+  assert.equal(partialSpineGate.status, 'needs_evidence');
+  assert.equal(
+    partialSpineGate.subchecks.find((check) => check.id === 'current_reality').status,
+    'needs_evidence'
+  );
   assert.equal(
     partialSpineGate.subchecks.find((check) => check.id === 'failure_modes').status,
     'needs_evidence'
   );
+  assert.equal(
+    partialSpineGate.subchecks.find((check) => check.id === 'done_evidence').status,
+    'needs_evidence'
+  );
   const partialPathSurfaceGate = nodeById(stillUnresolved.result.preparation, 'gate:path_surface_matrix');
   assert.notEqual(partialPathSurfaceGate.status, 'passed');
+  assert.equal(partialPathSurfaceGate.missing_surfaces.includes('review_surface'), true);
 
   const verification = await runCli([
     'verify',
@@ -405,7 +417,7 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--id',
     STORY_ID,
     '--kind',
-    'integration',
+    'e2e',
     '--status',
     'pass',
     '--command',
@@ -414,10 +426,20 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     'current executable evidence for story failure-mode gates',
     '--target',
     'src/fake-value-workflow.js',
+    '--target',
+    `.vibepro/pr/${STORY_ID}/gate-dag.json`,
+    '--target',
+    `.vibepro/pr/${STORY_ID}/review-cockpit.html`,
     '--scenario',
     'evidence_lifecycle_regression',
     '--scenario',
     'workflow_state_regression',
+    '--scenario',
+    'flow_replay',
+    '--scenario',
+    'artifact_replay',
+    '--scenario',
+    'scenario_clause_e2e',
     '--json'
   ]);
   assert.equal(verification.exitCode, 0);
@@ -428,6 +450,17 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(resolvedFailureGate.candidate_count >= 1, true);
   assert.equal(resolvedFailureGate.status, 'passed');
   assert.equal(resolvedFailureGate.modes.every((mode) => mode.status === 'covered' || mode.status === 'not_required'), true);
+  const resolvedSpineGate = nodeById(resolved.result.preparation, 'gate:common_judgment_spine');
+  assert.equal(resolvedSpineGate.status, 'passed');
+  assert.equal(
+    resolvedSpineGate.subchecks
+      .filter((check) => ['current_reality', 'failure_modes', 'done_evidence'].includes(check.id))
+      .every((check) => check.status === 'passed'),
+    true
+  );
+  const resolvedPathSurfaceGate = nodeById(resolved.result.preparation, 'gate:path_surface_matrix');
+  assert.equal(resolvedPathSurfaceGate.status, 'passed');
+  assert.equal(resolvedPathSurfaceGate.missing_surface_count, 0);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', STORY_ID, 'gate-dag.json')), true);
   assert.equal(createHash('sha256').update(JSON.stringify(resolvedFailureGate.modes)).digest('hex').length, 64);
 });
