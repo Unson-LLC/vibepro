@@ -123,7 +123,7 @@ function evaluateRoleRepair(role) {
 function buildRepairCommands({ storyId, stage, role, action }) {
   const roleName = getRoleName(role);
   const latestLifecycle = getLatestLifecycle(role);
-  const closeSelector = getCloseSelector(role);
+  const closeSelector = getCloseSelector(role, action);
   const replacementFor = latestLifecycle?.lifecycle_id ?? '<previous-lifecycle-id>';
   const replacementSystem = latestLifecycle?.agent_system ?? '<codex|claude_code>';
   const startCommand = [
@@ -180,9 +180,12 @@ function getLatestLifecycle(role) {
   return typeof role === 'string' ? null : (role?.lifecycle?.latest ?? null);
 }
 
-function getCloseSelector(role) {
+function getCloseSelector(role, action) {
   if (typeof role === 'string') return '--agent-id "<previous-subagent-id>"';
   const latestLifecycle = getLatestLifecycle(role);
+  if (action === 'close_and_rerecord' && role?.agent_provenance?.agent_id) {
+    return `--agent-id "${role.agent_provenance.agent_id}"`;
+  }
   if (latestLifecycle?.agent_id) return `--agent-id "${latestLifecycle.agent_id}"`;
   if (latestLifecycle?.lifecycle_id) return `--lifecycle-id ${latestLifecycle.lifecycle_id}`;
   if (role?.agent_provenance?.agent_id) return `--agent-id "${role.agent_provenance.agent_id}"`;

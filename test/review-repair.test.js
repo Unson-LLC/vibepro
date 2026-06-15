@@ -86,6 +86,16 @@ async function setupRepairRepo() {
       status: 'pass',
       effective_status: 'unverified_agent',
       provenance_status: 'agent_not_closed',
+      lifecycle: {
+        effective_status: 'running',
+        latest: {
+          lifecycle_id: 'lifecycle-architecture-fit-newer',
+          status: 'running',
+          effective_status: 'running',
+          agent_system: 'codex',
+          agent_id: 'newer-running-agent'
+        }
+      },
       agent_provenance: {
         system: 'claude_code',
         execution_mode: 'parallel_subagent',
@@ -141,6 +151,7 @@ test('pass without provenance and unclosed lifecycle are repair candidates', asy
   assert.equal(openLifecycle.action, 'close_and_rerecord');
   assert.equal(openLifecycle.effective_status, 'unverified_agent');
   assert.match(openLifecycle.next_commands.join('\n'), /review close .*--agent-id "agent-architecture-fit".*--close-reason manual_shutdown.*--close-evidence <close-evidence>/);
+  assert.doesNotMatch(openLifecycle.next_commands.join('\n'), /newer-running-agent/);
 });
 
 test('healthy verified closed roles are not candidates', async () => {
