@@ -7289,6 +7289,27 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
   if (/\b(db|database|persist|保存|永続)\b/.test(text) || surfaces.has('database') || surfaces.has('persistence')) {
     add('persistence_failure', 'Persistence paths can fail or store partial state', ['database', 'persist', 'storage', 'db']);
   }
+  if (surfaces.has('gate_orchestration')
+    || surfaces.has('review_lifecycle')
+    || /\b(evidence|artifact|gate|dag|review|provenance|handoff|waiver|followup|follow-up|fake green|fake-value)\b/.test(text)
+    || /\b(agent-review|pr-manager|html-report|gate|dag|review)\b/.test(files)) {
+    add(
+      'evidence_lifecycle_regression',
+      'Gate/review/evidence lifecycle changes can produce misleading green artifacts or unreconstructable handoffs',
+      ['accepted_followup', 'needs_evidence', 'active_needs_evidence', 'provenance', 'inspection', 'gate-dag', 'pr-prepare', 'artifact replay']
+    );
+  }
+  if (changeClassification?.profile === 'workflow_heavy'
+    || surfaces.has('gate_orchestration')
+    || surfaces.has('review_lifecycle')
+    || /\b(workflow|state transition|lifecycle|dispatch|preflight|stale|pending)\b/.test(text)
+    || /\b(workflow|lifecycle|dispatch|preflight)\b/.test(files)) {
+    add(
+      'workflow_state_regression',
+      'Workflow/state transitions can leave stale, pending, or over-green gate states',
+      ['flow_replay', 'artifact_replay', 'scenario_clause_e2e', 'workflow', 'state transition', 'stale']
+    );
+  }
   return candidates;
 }
 
