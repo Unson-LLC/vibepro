@@ -225,6 +225,29 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
   assert.deepEqual(role.judgment_delta, []);
 });
 
+test('recordAgentReview synthesizes a closed lifecycle entry from closed provenance when no start record exists', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const { summary } = await recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'read review request and source files',
+    agentSystem: 'codex',
+    executionMode: 'parallel_subagent',
+    agentId: 'synthetic-agent-1',
+    agentClosed: true,
+    agentTranscript: '.vibepro/reviews/story-test/gate/transcript-synthetic.json'
+  });
+  const role = summary.roles.find((item) => item.role === 'gate_evidence');
+  assert.equal(summary.lifecycle.closed_count, 1);
+  assert.equal(role.lifecycle.effective_status, 'closed');
+  assert.equal(role.lifecycle.latest.synthesized_from_result, true);
+  assert.equal(role.lifecycle.latest.agent_id, 'synthetic-agent-1');
+});
+
 test('getAgentReviewStatus surfaces empty handoff arrays for missing roles', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

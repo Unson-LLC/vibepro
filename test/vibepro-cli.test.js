@@ -8442,15 +8442,14 @@ title: PR準備 Spec
   const passed = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(passed.exitCode, 0);
   const ready = await readJson(statePath);
-  assert.equal(ready.completion_status, 'ready_for_pr_create');
-  assert.equal(ready.current_phase, 'create_pr');
-  assert.equal(ready.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
-  assert.equal(ready.next_actions[0].endsWith('vibepro pr create . --story-id story-pr-prepare --base main'), true);
+  assert.equal(ready.completion_status, 'waiver_required');
+  assert.equal(ready.current_phase, 'verification');
+  assert.equal(Array.isArray(ready.next_actions) && ready.next_actions.length > 0, true);
 
   const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(next.exitCode, 0);
-  assert.equal(next.result.next.current_phase, 'create_pr');
-  assert.equal(next.result.next.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+  assert.equal(next.result.next.current_phase, 'verification');
+  assert.equal(Array.isArray(next.result.next.next_actions) && next.result.next.next_actions.length > 0, true);
 
   const statusText = await runCliWithStdout(['execute', 'status', repo, '--story-id', 'story-pr-prepare']);
   assert.equal(statusText.exitCode, 0);
@@ -8932,6 +8931,103 @@ test('execute status treats a normally advanced managed worktree as the current 
     next.result.next.next_actions.some((action) => action.includes(`cd ${worktreePath} && vibepro pr prepare`)),
     true
   );
+});
+
+test('execute status keeps merged execution state and review completion aligned with artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  const reviewDir = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate');
+  await mkdir(prDir, { recursive: true });
+  await mkdir(reviewDir, { recursive: true });
+
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR Prepare Test' },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] }
+    },
+    pr_context: {
+      gate_dag: {
+        schema_version: '0.1.0',
+        overall_status: 'ready_for_review',
+        summary: { needs_evidence_count: 0 },
+        nodes: []
+      }
+    },
+    git: { head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    status: 'merged',
+    merged_at: '2026-06-15T00:00:00.000Z',
+    merge_commit_sha: headSha,
+    pr: { url: 'https://github.example.test/unson/vibepro/pull/999' }
+  });
+  await writeJson(path.join(reviewDir, 'review-result-gate_evidence.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'gate evidence passes at current head',
+    findings: [],
+    artifacts: [],
+    inspection: { summary: 'read gate artifacts', evidence: null, inputs: [] },
+    judgment_delta: [],
+    recorded_at: '2026-06-15T00:00:00.000Z',
+    git_context: {
+      head_sha: headSha,
+      current_branch: 'feature/test-story',
+      dirty: false,
+      raw_dirty: false,
+      status_fingerprint_hash: 'clean',
+      user_status_fingerprint_hash: 'clean'
+    },
+    agent_provenance: {
+      schema_version: '0.1.0',
+      system: 'codex',
+      execution_mode: 'parallel_subagent',
+      agent_id: 'gate-evidence-1',
+      model: 'gpt-5.5',
+      reasoning_effort: 'low',
+      cost_tier: 'medium',
+      transcript_artifact: '.vibepro/reviews/story-pr-prepare/gate/transcript-gate-evidence-1.json',
+      request_artifact: '.vibepro/reviews/story-pr-prepare/gate/review-request-gate_evidence.md',
+      lifecycle: { agent_closed: true, close_evidence: '.vibepro/reviews/story-pr-prepare/gate/transcript-gate-evidence-1.json' },
+      evidence_strength: 'strong'
+    }
+  });
+  await writeJson(path.join(reviewDir, 'lifecycle.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    stage: 'gate',
+    entries: [
+      {
+        lifecycle_id: 'gate-evidence-1',
+        story_id: 'story-pr-prepare',
+        stage: 'gate',
+        role: 'gate_evidence',
+        status: 'closed',
+        agent_system: 'codex',
+        agent_id: 'gate-evidence-1',
+        started_at: '2026-06-15T00:00:00.000Z',
+        closed_at: '2026-06-15T00:01:00.000Z',
+        timeout_ms: 600000,
+        close_reason: 'completed',
+        close_evidence: '.vibepro/reviews/story-pr-prepare/gate/transcript-gate-evidence-1.json'
+      }
+    ]
+  });
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.state.completion_status, 'merged');
+  assert.equal(status.result.state.pr_url, 'https://github.example.test/unson/vibepro/pull/999');
+  assert.equal(status.result.state.completed_phases.includes('agent_review'), true);
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'passed');
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'pr_created')?.status, 'passed');
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
 });
 
 test('execute start keeps legacy and disabled worktree modes compatible', async () => {
@@ -12053,7 +12149,8 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   ]);
   assert.equal(activeAxes.some((axis) => ['rollback_sensitive', 'security_boundary', 'data_state', 'ux_surface', 'performance_semantic', 'release_ops'].includes(axis.axis)), false);
   const publicContract = activeAxes.find((axis) => axis.axis === 'public_contract');
-  assert.equal(publicContract.status, 'active_passed');
+  assert.equal(publicContract.status, 'active_needs_evidence');
+  assert.equal(publicContract.missing_evidence.includes('current_verification'), true);
   assert.equal(typeof publicContract.reason, 'string');
   assert.equal(typeof publicContract.confidence, 'number');
   assert.match(publicContract.decision_question, /CLI|API|設定|出力形式|PR本文契約/);
@@ -12061,6 +12158,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(publicContract.blocking_criteria.length > 0, true);
   assert.equal(typeof publicContract.acceptable_followup, 'string');
   const scopeAxis = activeAxes.find((axis) => axis.axis === 'scope_reviewability');
+  assert.equal(scopeAxis.status, 'active_needs_evidence');
   assert.equal(scopeAxis.matched_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
   assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
 
@@ -12069,8 +12167,8 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(gateDag.summary.active_judgment_axes.includes('public_contract'), true);
   const axisGate = gateDag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
   assert.equal(axisGate?.type, 'judgment_axis_gate');
-  assert.equal(axisGate?.status, 'passed');
-  assert.equal(axisGate?.axis_status, 'active_passed');
+  assert.equal(axisGate?.status, 'needs_evidence');
+  assert.equal(axisGate?.axis_status, 'active_needs_evidence');
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_axis_public_contract'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_axis_public_contract' && edge.to === 'gate:pr_scope_judgment'), true);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
@@ -12080,7 +12178,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /#### Senior first scan axes/);
-  assert.match(prBody, /public_contract: active_passed/);
+  assert.match(prBody, /public_contract: active_needs_evidence/);
   assert.match(prBody, /graph_impact_scope/);
 
   const noGraphRepo = await makeGitRepoWithStory();
@@ -12134,6 +12232,61 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.deepEqual(noGraphActiveAxes, ['execution_topology', 'public_contract']);
   assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:judgment_axis_scope_reviewability'), false);
   assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+});
+
+test('judgment axis uses accepted followup instead of passed when evidence is still missing', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Accepted Followup Axis
+architecture_docs:
+  - docs/architecture/followup-axis.md
+spec_docs:
+  - docs/specs/followup-axis.md
+---
+
+# Story
+
+- [ ] public contract evidence may defer current verification only with an accepted decision
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'followup-axis.md'), '# Architecture\n\nCompatibility impact: PR body output changes.\nBoundary: reviewable.\n');
+  await writeFile(path.join(repo, 'docs', 'specs', 'followup-axis.md'), '# Spec\n\njudgment_axes[] remains visible.\n');
+  await writeFile(path.join(repo, 'src', 'followup-axis.js'), 'export const followupAxis = "pr body output";\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'docs/architecture/followup-axis.md', 'docs/specs/followup-axis.md', 'src/followup-axis.js']);
+  await git(repo, ['commit', '-m', 'feat: add followup axis fixture']);
+
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'current public contract behavior is safe; defer remaining verification',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'bounded follow-up tracked',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_accepted_followup');
+  assert.equal(axis.missing_evidence.includes('current_verification'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.axis_status, 'active_accepted_followup');
 });
 
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
