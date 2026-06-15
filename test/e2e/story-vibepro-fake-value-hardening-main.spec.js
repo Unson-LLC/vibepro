@@ -375,7 +375,7 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--command',
     'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
     '--summary',
-    'scenario-only evidence lacks an inspected target',
+    'scenario-only evidence claims evidence_lifecycle_regression and workflow_state_regression but lacks an inspected target',
     '--scenario',
     'evidence_lifecycle_regression',
     '--scenario',

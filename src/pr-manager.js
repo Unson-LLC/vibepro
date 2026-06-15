@@ -7355,17 +7355,12 @@ function failureModeCoveredByEvidence(mode, evidenceText) {
 }
 
 function buildVerificationCommandSearchText(command) {
-  const observation = command?.observation_check?.status === 'recorded'
-    ? command?.observation ?? {}
-    : {};
+  if (command?.observation_check?.status !== 'recorded') return '';
+  const observation = command?.observation ?? {};
   const observedValues = observation.values && typeof observation.values === 'object'
     ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
     : [];
   return [
-    command?.kind,
-    command?.command,
-    command?.summary,
-    command?.artifact,
     ...(observation.targets ?? []),
     ...(observation.scenarios ?? []),
     ...observedValues
