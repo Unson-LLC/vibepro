@@ -29,6 +29,7 @@ VibePro does not become a subagent runner. It produces a machine-readable execut
 
 - Execution state never overrides Gate DAG.
 - `ready_for_pr_create` requires existing PR Gate logic to pass.
-- `pr_created` requires a non-dry-run PR create result with a PR URL.
+- `pr_created` requires a non-dry-run PR create result with a PR URL and current HEAD binding.
+- `merged` requires a current HEAD-bound `pr-merge.json`; stale merge artifacts are historical evidence only.
 - Corrupt execution state is quarantined rather than silently overwritten.
 - Existing commands continue to work without requiring `execute start` first.

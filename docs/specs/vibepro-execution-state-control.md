@@ -27,6 +27,7 @@ title: VibePro Execution State Control Spec
 - A Story with verification evidence but unresolved Gate DAG remains `blocked`.
 - A Story with `gate_status.ready_for_pr_create=true` becomes `ready_for_pr_create`.
 - A non-dry-run `pr create` with a PR URL becomes `pr_created`.
+- `pr-create.json` / `pr-merge.json` can advance `pr_created` / `merged` only when the lifecycle artifact is bound to the current git HEAD. Stale lifecycle artifacts remain historical evidence and must not drive execution state forward.
 
 ## State Shape
 
@@ -51,4 +52,5 @@ The state file includes:
 
 - Existing PR/review/verification artifacts remain the source of truth.
 - Execution state is a resumable control view, not a replacement for Gate DAG or evidence artifacts.
+- Execution state must ignore stale PR lifecycle artifacts when deriving completion status, next actions, `pr_url`, and execution DAG nodes.
 - Human manual review does not satisfy required Agent Review Gate unless existing Gate logic already accepts it.

@@ -282,14 +282,16 @@ async function buildExecutionState(repoRoot, options = {}) {
     readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'gate-dag.json')),
     getAgentReviewStatus(root, { storyId }).catch(() => null)
   ]);
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
+  const currentPrMerge = isCurrentPrLifecycleArtifact(prMerge, currentHeadSha) ? prMerge : null;
   const gateStatus = prPrepare?.gate_status ?? null;
-  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? prCreate?.gate_dag ?? null;
+  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
   const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
   const blockingGates = unresolvedGates.filter(isCriticalUnresolvedGate);
   const managedWorktree = options.managedWorktree
     ? await refreshManagedWorktree(root, options.managedWorktree).catch(() => options.managedWorktree)
     : null;
-  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const expectedHeadSha = await resolveExecutionExpectedHead(root, managedWorktree, currentHeadSha);
   const executionBlockers = collectRequiredExecutionBlockers(
     buildExecutionDag({
@@ -302,8 +304,8 @@ async function buildExecutionState(repoRoot, options = {}) {
   );
   const executionBlockingGate = executionBlockers[0] ?? null;
   const blockingGate = executionBlockingGate ?? pickBlockingGate(blockingGates);
-  const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
-  const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
+  const prCreated = Boolean(currentPrCreate?.pr_url && currentPrCreate?.dry_run !== true);
+  const merged = currentPrMerge?.status === 'merged' || Boolean(currentPrMerge?.merged_at || currentPrMerge?.merge_commit_sha);
   const agentReviewSatisfied = isGateAgentReviewSatisfied(agentReview);
   const gatesReadyForPrCreate = gateDag
     ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
@@ -352,7 +354,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     readyForPrCreate,
     prCreated,
     merged,
-    prMerge
+    prMerge: currentPrMerge
   });
   const requiredCommands = buildManagedWorktreeCommands({
     pr_prepare: buildPrPrepareCommand({ storyId, baseRef: options.baseRef }),
@@ -385,11 +387,11 @@ async function buildExecutionState(repoRoot, options = {}) {
     next_actions: nextActions,
     required_commands: requiredCommands,
     managed_worktree: managedWorktree,
-    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha, prMerge }),
+    execution_dag: buildExecutionDag({ managedWorktree, completedPhases, completionStatus, expectedHeadSha, prMerge: currentPrMerge }),
     last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
-    pr_url: prCreate?.pr_url ?? prMerge?.pr?.url ?? null
+    pr_url: currentPrCreate?.pr_url ?? currentPrMerge?.pr?.url ?? null
   };
 }
 
@@ -416,6 +418,19 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReviewSat
   if (prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged') phases.push('merge_ready');
   if (merged) phases.push('merge');
   return phases;
+}
+
+function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
+  if (!artifact || !currentHeadSha) return false;
+  const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
+    ?? artifact.current_head_sha
+    ?? artifact.toolchain?.source_git?.commit
+    ?? artifact.git_context?.head_sha
+    ?? null;
+  if (artifact.artifact_freshness) {
+    return artifact.artifact_freshness.status === 'current' && artifactHeadSha === currentHeadSha;
+  }
+  return artifactHeadSha === currentHeadSha;
 }
 
 function isGateAgentReviewSatisfied(agentReview) {

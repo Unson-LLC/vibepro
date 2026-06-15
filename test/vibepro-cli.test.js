@@ -9229,6 +9229,13 @@ test('execute status keeps merged execution state and review completion aligned 
   });
   await writeJson(path.join(prDir, 'pr-merge.json'), {
     status: 'merged',
+    artifact_freshness: {
+      kind: 'pr_merge',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    current_head_sha: headSha,
     merged_at: '2026-06-15T00:00:00.000Z',
     merge_commit_sha: headSha,
     pr: { url: 'https://github.example.test/unson/vibepro/pull/999' }
@@ -9297,6 +9304,72 @@ test('execute status keeps merged execution state and review completion aligned 
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'passed');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'pr_created')?.status, 'passed');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
+});
+
+test('execute status does not advance from stale pr lifecycle artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await writeFile(path.join(repo, 'src-stale-lifecycle.js'), 'export const staleLifecycle = true;\n');
+  await git(repo, ['add', 'src-stale-lifecycle.js']);
+  await git(repo, ['commit', '-m', 'feat: advance past lifecycle artifacts']);
+  const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR Prepare Test' },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] }
+    },
+    pr_context: {
+      gate_dag: {
+        schema_version: '0.1.0',
+        overall_status: 'ready_for_review',
+        summary: { needs_evidence_count: 0 },
+        nodes: []
+      }
+    },
+    git: { head_sha: currentHead }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    mode: 'pr_create',
+    dry_run: false,
+    pr_url: 'https://github.example.test/unson/vibepro/pull/999',
+    current_head_sha: oldHead,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'stale',
+      artifact_head_sha: oldHead,
+      current_head_sha: currentHead
+    }
+  });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    mode: 'execute_merge',
+    status: 'merged',
+    merged_at: '2026-06-15T00:00:00.000Z',
+    merge_commit_sha: oldHead,
+    current_head_sha: oldHead,
+    pr: { url: 'https://github.example.test/unson/vibepro/pull/999' },
+    artifact_freshness: {
+      kind: 'pr_merge',
+      status: 'stale',
+      artifact_head_sha: oldHead,
+      current_head_sha: currentHead
+    }
+  });
+
+  const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(status.exitCode, 0);
+  assert.equal(status.result.state.completion_status, 'ready_for_pr_create');
+  assert.equal(status.result.state.pr_url, null);
+  assert.equal(status.result.state.next_actions.some((action) => action.includes('vibepro execute merge')), false);
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'pr_created')?.status, 'pending');
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'not_applicable');
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'not_applicable');
 });
 
 test('execute start keeps legacy and disabled worktree modes compatible', async () => {
