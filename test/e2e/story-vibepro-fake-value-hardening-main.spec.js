@@ -142,6 +142,26 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   assert.equal(acceptedGate.axis_status, 'active_accepted_followup');
   assert.notEqual(acceptedGate.status, 'passed');
   assert.equal(followupPrepare.pr_context.gate_dag.summary.judgment_axis_accepted_followup_count >= 1, true);
+  assert.equal(
+    acceptedGate.status !== 'passed' && ['accepted_followup', 'needs_evidence'].includes(acceptedGate.status),
+    true,
+    'story-vibepro-fake-value-hardening ac:1 active axisにmissing evidenceが残る場合、Gate DAG node statusはpassedではなくaccepted_followupまたはneeds_evidenceになる'
+  );
+  assert.equal(
+    followupPrepare.gate_status.execution_gate.blocking_gates.some((gate) => gate.id === 'gate:judgment_axis_public_contract'),
+    false,
+    'story-vibepro-fake-value-hardening ac:2 accepted_followupはPR readinessを止めないが、Gate DAG/PR artifact上で通常のpassedと区別できる'
+  );
+  assert.equal(
+    acceptedGate.status === 'accepted_followup' && acceptedGate.status !== 'passed',
+    true,
+    'story-vibepro-fake-value-hardening S-001 Given an active public_contract axis with missing current_verification evidence, when an accepted decision has an artifact-backed follow-up, pr prepare emits gate:judgment_axis_public_contract with status accepted_followup.'
+  );
+  assert.equal(
+    acceptedGate.axis_status === 'active_accepted_followup' && acceptedGate.status === 'accepted_followup',
+    true,
+    'story-vibepro-fake-value-hardening S-002 Given a workflow gate state for an active public_contract axis is active_needs_evidence, when an accepted decision includes both a safety reason and artifact-backed follow-up, then the Gate DAG state transition becomes accepted_followup instead of passed.'
+  );
 
   const prBody = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
   const gateDagHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
@@ -180,6 +200,11 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   assert.equal(missingAxis.status, 'active_needs_evidence');
   assert.equal(missingAxis.ignored_accepted_decision.missing_fields.includes('artifact'), true);
   assert.equal(nodeById(missingPrepare, 'gate:judgment_axis_public_contract').status, 'needs_evidence');
+  assert.equal(
+    missingAxis.status === 'active_needs_evidence' && missingAxis.ignored_accepted_decision.missing_fields.includes('artifact'),
+    true,
+    'story-vibepro-fake-value-hardening ac:3 axis waiver decisionにartifact linkまたはcurrent-safety artifactがない場合、missing evidenceはactive_needs_evidenceのまま残る'
+  );
 });
 
 test('story-vibepro-fake-value-hardening exercises review provenance and gate evidence handoff gates', async () => {
@@ -215,6 +240,11 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
   const agentIdOnlyRole = statusWithAgentIdOnly.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
   assert.equal(agentIdOnlyRole.effective_status, 'unverified_agent');
   assert.equal(agentIdOnlyRole.provenance_status, 'weak_agent_provenance');
+  assert.equal(
+    agentIdOnlyRole.effective_status === 'unverified_agent' && agentIdOnlyRole.provenance_status === 'weak_agent_provenance',
+    true,
+    'story-vibepro-fake-value-hardening ac:4 Codex/Claude Code subagent reviewはagent_idだけではverifiedにならず、thread/session/call idまたはtranscript artifactが必要になる'
+  );
 
   const resultPath = path.join(repo, '.vibepro', 'reviews', STORY_ID, 'implementation', 'review-result-runtime_contract.json');
   const legacyStrongReview = await readJson(resultPath);
@@ -224,6 +254,11 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
   const legacyStrongRole = statusWithLegacyStrong.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
   assert.equal(legacyStrongRole.effective_status, 'unverified_agent');
   assert.equal(legacyStrongRole.provenance_status, 'weak_agent_provenance');
+  assert.equal(
+    legacyStrongRole.effective_status === 'unverified_agent' && legacyStrongRole.provenance_status === 'weak_agent_provenance',
+    true,
+    'story-vibepro-fake-value-hardening ac:6 既存review artifactの読み取り互換性は壊さず、新規pass記録の最低要件だけを厳格化する'
+  );
 
   await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence']);
   const rejectedGatePass = await runCliWithOutput([
@@ -255,7 +290,8 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
   assert.notEqual(rejectedGatePass.exitCode, 0);
   assert.match(
     `${rejectedGatePass.stderr}\n${rejectedGatePass.stdout}`,
-    /inspection inputs|judgment delta|gate_evidence/
+    /inspection inputs|judgment delta|gate_evidence/,
+    'story-vibepro-fake-value-hardening ac:5 required gate evidence reviewのpassは、inspection summary、inspection inputs、judgment deltaがない場合に記録時点で拒否される'
   );
 
   const validGatePass = await runCli([
@@ -315,7 +351,7 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--status',
     'pass',
     '--command',
-    'node --test test/e2e/story-vibepro-fake-value-hardening-main.test.js',
+    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
     '--summary',
     'artifact replay of pr-prepare and gate-dag covers accepted_followup, needs_evidence, active_needs_evidence, provenance, inspection evidence, stale workflow state transition, and artifact replay failure modes',
     '--target',
