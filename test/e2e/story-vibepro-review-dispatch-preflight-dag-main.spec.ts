@@ -101,6 +101,23 @@ async function preparePrArtifacts(repo: string) {
 
 async function recordGateEvidence(repo: string, status = 'pass', agentSystem = 'codex', executionMode = 'parallel_subagent') {
   await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence']);
+  const agentId = `agent-${status}-${executionMode}`;
+  const transcriptPath = path.join(
+    repo,
+    '.vibepro',
+    'reviews',
+    STORY_ID,
+    'gate',
+    'transcripts',
+    `${agentId}.json`
+  );
+  if (executionMode === 'parallel_subagent') {
+    await mkdir(path.dirname(transcriptPath), { recursive: true });
+    await writeFile(
+      transcriptPath,
+      `${JSON.stringify({ agent_id: agentId, status, summary: `${status} review fixture` }, null, 2)}\n`
+    );
+  }
   const args = [
     'review',
     'record',
@@ -117,16 +134,28 @@ async function recordGateEvidence(repo: string, status = 'pass', agentSystem = '
     `${status} review fixture`,
     '--inspection-summary',
     `${status} review fixture inspection`,
+    '--inspection-evidence',
+    `${status} review fixture evidence`,
+    '--inspection-input',
+    'test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts',
+    '--judgment-delta',
+    `missing dispatch preflight fixture -> ${status} because fixture evidence was recorded`,
     '--agent-system',
     agentSystem,
     '--execution-mode',
     executionMode,
     '--agent-id',
-    `agent-${status}-${executionMode}`,
+    agentId,
     '--json'
   ];
   if (executionMode === 'parallel_subagent') {
-    args.push('--agent-closed');
+    args.push(
+      '--agent-thread-id',
+      agentId,
+      '--agent-transcript',
+      transcriptPath,
+      '--agent-closed'
+    );
   } else {
     args.push('--recorded-by', 'reviewer@example.com');
   }
