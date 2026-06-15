@@ -12,7 +12,7 @@ import {
   isStoryDocPath,
   renderRequirementGateSummary
 } from './requirement-consistency.js';
-import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
+import { renderGateDagHtml, renderPrCreateHtml, renderPrMergeHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { classifyChangeRisk } from './change-risk-classifier.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
@@ -331,6 +331,17 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
+  const lifecycleArtifacts = workspace.initialized
+    ? await progress.stage('inspect_pr_lifecycle_artifacts', () => inspectPrLifecycleArtifacts(root, story.story_id, {
+      currentHeadSha: reviewGit.head_sha,
+      checkedAt: preparation.created_at
+    }))
+    : buildMissingLifecycleArtifactSummary({
+      storyId: story.story_id,
+      currentHeadSha: reviewGit.head_sha,
+      checkedAt: preparation.created_at
+    });
+  preparation.lifecycle_artifacts = lifecycleArtifacts;
   await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
     await writeFile(bodyPath, prBody, { signal });
     await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
@@ -392,6 +403,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       decisionRecordsPath: toWorkspaceRelative(root, decisionRecordsPath),
       existingReview: existingHumanReview
     }), null, 2)}\n`, { signal });
+    if (workspace.initialized) {
+      await annotatePrLifecycleArtifacts(root, story.story_id, lifecycleArtifacts, { signal });
+    }
   });
   preparation.diagnostics.pr_prepare_stages = progress.snapshot();
 
@@ -672,6 +686,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     execution_gate: executionGate,
     gate_override: gateOverride,
     toolchain: preparation.toolchain ?? null,
+    current_head_sha: preparation.git.head_sha ?? null,
+    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', preparation.git.head_sha ?? null, createdAt),
     base: baseBranch,
     head: headBranch,
     title,
@@ -844,7 +860,7 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
         prepare_command: gate.command,
         start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
         close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-        record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+        record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
         artifact: gate.artifact ?? null,
         reason: gate.reason ?? 'required Agent Review prepare is missing'
       };
@@ -859,11 +875,34 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
       prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
       start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
       close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+      record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
       artifact: `.vibepro/reviews/${storyId}/${stage}/parallel-dispatch.md`,
       reason: 'required Agent Review role is missing or stale'
     };
   });
+}
+
+function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
+  return [
+    'vibepro review record .',
+    '--id',
+    shellQuote(storyId),
+    '--stage',
+    shellQuote(stage),
+    '--role',
+    shellQuote(roleArg),
+    '--status pass',
+    '--summary "<summary>"',
+    '--inspection-summary "<inspection-summary>"',
+    '--inspection-evidence <inspection-evidence>',
+    '--inspection-input <inspection-input>',
+    '--judgment-delta "<initial judgment -> final judgment because evidence>"',
+    '--agent-system codex',
+    '--execution-mode parallel_subagent',
+    '--agent-id <agent-id>',
+    '--agent-thread-id <agent-thread-id>',
+    '--agent-closed'
+  ].join(' ');
 }
 
 function buildReviewPrepareCommand(storyId, stage, roles = []) {
@@ -2030,10 +2069,10 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const required = axis.required_evidence?.join('|') ?? '-';
       const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
       const matched = axis.matched_evidence?.length > 0
-        ? ` / matched=${axis.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       const optional = axis.optional_evidence?.length > 0
-        ? ` / optional=${axis.optional_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / optional=${axis.optional_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}`;
     })
@@ -2054,7 +2093,7 @@ function buildCommonSpineReasoning(gateDag) {
         ? ` / required=${check.required_evidence_kind.join('|')}`
         : '';
       const matched = Array.isArray(check.matched_evidence) && check.matched_evidence.length > 0
-        ? ` / matched=${check.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / matched=${check.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       const missing = Array.isArray(check.missing_evidence) && check.missing_evidence.length > 0
         ? ` / missing=${check.missing_evidence.join('|')}`
@@ -2062,6 +2101,11 @@ function buildCommonSpineReasoning(gateDag) {
       return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${reason}`;
     })
     .join('\n');
+}
+
+function formatEvidenceReferenceForHuman(item) {
+  const base = `${item.kind}:${item.ref}`;
+  return item.artifact ? `${base} (artifact=${item.artifact})` : base;
 }
 
 function formatEngineeringJudgmentGateForHuman(gate) {
@@ -2404,7 +2448,9 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const status = gate?.status
       ? ` / gate: ${gate.status}${passed && !commandMatchesEvidence ? ` via \`${gate.command}\`` : ''}`
       : '';
-    const evidence = gate?.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
+    const evidenceArtifact = recordedEvidence?.artifact
+      ?? (gate?.command && gate.command === item.command ? gate.evidence?.artifact : null);
+    const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
     return `- [${checked}] \`${item.command}\` - ${item.reason}${status}${evidence}`;
   });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])
@@ -3219,18 +3265,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const architectureSources = await readTextSources(repoRoot, fileGroups.architecture_docs.files);
-  const engineeringJudgment = buildEngineeringJudgmentClassification({
-    fileGroups,
-    storySource: primaryStory,
-    changeClassification,
-    prRoute,
-    networkContracts,
-    scope,
-    graphContext,
-    verificationEvidence: boundVerificationEvidence,
-    decisionRecords,
-    inferredSpec
-  });
   const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
     storyId: story.story_id,
     commandName: 'pr prepare',
@@ -3255,6 +3289,19 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performanceEvidence,
     changeClassification,
     git
+  });
+  const engineeringJudgment = buildEngineeringJudgmentClassification({
+    fileGroups,
+    storySource: primaryStory,
+    changeClassification,
+    prRoute,
+    networkContracts,
+    scope,
+    graphContext,
+    verificationEvidence: boundVerificationEvidence,
+    decisionRecords,
+    inferredSpec,
+    agentReviews
   });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
@@ -3372,6 +3419,173 @@ async function readJsonIfExists(filePath) {
     throw error;
   }
 }
+
+function buildMissingLifecycleArtifactSummary({ storyId, currentHeadSha, checkedAt }) {
+  return {
+    schema_version: '0.1.0',
+    model: 'vibepro-pr-lifecycle-artifact-freshness-v1',
+    story_id: storyId,
+    status: 'not_started',
+    current_head_sha: currentHeadSha ?? null,
+    checked_at: checkedAt,
+    artifacts: [
+      buildMissingLifecycleArtifact('pr_create'),
+      buildMissingLifecycleArtifact('pr_merge')
+    ]
+  };
+}
+
+function buildMissingLifecycleArtifact(kind) {
+  const fileName = kind === 'pr_merge' ? 'pr-merge.json' : 'pr-create.json';
+  return {
+    kind,
+    status: 'not_created',
+    exists: false,
+    artifact: null,
+    report: null,
+    artifact_head_sha: null,
+    current_head_sha: null,
+    reason: `${fileName} has not been created yet`
+  };
+}
+
+async function inspectPrLifecycleArtifacts(repoRoot, storyId, { currentHeadSha, checkedAt }) {
+  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
+  const artifacts = [];
+  for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
+    const jsonPath = path.join(prDir, spec.fileName);
+    const reportPath = path.join(prDir, spec.reportName);
+    const artifact = await readJsonIfExists(jsonPath);
+    if (!artifact) {
+      artifacts.push({
+        ...buildMissingLifecycleArtifact(spec.kind),
+        artifact: toWorkspaceRelative(repoRoot, jsonPath),
+        report: toWorkspaceRelative(repoRoot, reportPath),
+        current_head_sha: currentHeadSha ?? null,
+        checked_at: checkedAt
+      });
+      continue;
+    }
+    const artifactHeadSha = extractPrLifecycleArtifactHead(artifact);
+    artifacts.push({
+      kind: spec.kind,
+      status: resolvePrLifecycleArtifactFreshnessStatus({ artifactHeadSha, currentHeadSha }),
+      exists: true,
+      artifact: toWorkspaceRelative(repoRoot, jsonPath),
+      report: toWorkspaceRelative(repoRoot, reportPath),
+      artifact_head_sha: artifactHeadSha,
+      current_head_sha: currentHeadSha ?? null,
+      checked_at: checkedAt,
+      reason: buildPrLifecycleArtifactFreshnessReason(spec.kind, { artifactHeadSha, currentHeadSha })
+    });
+  }
+  return {
+    schema_version: '0.1.0',
+    model: 'vibepro-pr-lifecycle-artifact-freshness-v1',
+    story_id: storyId,
+    status: summarizePrLifecycleArtifactFreshness(artifacts),
+    current_head_sha: currentHeadSha ?? null,
+    checked_at: checkedAt,
+    artifacts
+  };
+}
+
+async function annotatePrLifecycleArtifacts(repoRoot, storyId, lifecycleArtifacts, options = {}) {
+  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
+  for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
+    const freshness = lifecycleArtifacts?.artifacts?.find((item) => item.kind === spec.kind);
+    if (!freshness?.exists) continue;
+    const jsonPath = path.join(prDir, spec.fileName);
+    const artifact = await readJsonIfExists(jsonPath);
+    if (!artifact) continue;
+    const annotated = annotatePrLifecycleArtifact(artifact, freshness);
+    const reportHtml = spec.kind === 'pr_merge'
+      ? renderPrMergeHtml(annotated, { language: annotated.output?.language ?? 'ja' })
+      : renderPrCreateHtml(annotated, { language: annotated.output?.language ?? 'ja' });
+    await writeFile(jsonPath, `${JSON.stringify(annotated, null, 2)}\n`, { signal: options.signal });
+    await writeFile(path.join(prDir, spec.reportName), reportHtml, { signal: options.signal });
+  }
+}
+
+function annotatePrLifecycleArtifact(artifact, freshness) {
+  return {
+    ...artifact,
+    artifact_freshness: freshness,
+    warnings: buildPrLifecycleArtifactWarnings(artifact.warnings, freshness)
+  };
+}
+
+function buildPrLifecycleArtifactWarnings(warnings = [], freshness) {
+  const preserved = (Array.isArray(warnings) ? warnings : [])
+    .filter((warning) => !String(warning).startsWith(PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX));
+  if (!freshness || freshness.status === 'current') return preserved;
+  return [
+    ...preserved,
+    `${PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX} ${freshness.reason}. Open the latest pr-prepare artifact before trusting this lifecycle artifact.`
+  ];
+}
+
+function summarizePrLifecycleArtifactFreshness(artifacts) {
+  const existing = artifacts.filter((item) => item.exists);
+  if (existing.length === 0) return 'not_started';
+  if (existing.some((item) => item.status === 'stale' || item.status === 'unbound')) return 'stale';
+  if (existing.every((item) => item.status === 'current')) return 'current';
+  return 'partial';
+}
+
+function resolvePrLifecycleArtifactFreshnessStatus({ artifactHeadSha, currentHeadSha }) {
+  if (!artifactHeadSha) return 'unbound';
+  if (!currentHeadSha) return 'unknown';
+  return artifactHeadSha === currentHeadSha ? 'current' : 'stale';
+}
+
+function buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha, currentHeadSha }) {
+  const label = kind === 'pr_merge' ? 'pr-merge' : 'pr-create';
+  if (!artifactHeadSha) return `${label} artifact is not bound to a git HEAD`;
+  if (!currentHeadSha) return `${label} artifact freshness could not be checked because current HEAD is unknown`;
+  if (artifactHeadSha === currentHeadSha) return `${label} artifact is bound to the current HEAD ${shortSha(currentHeadSha)}`;
+  return `${label} artifact was recorded for ${shortSha(artifactHeadSha)}, current HEAD is ${shortSha(currentHeadSha)}`;
+}
+
+function extractPrLifecycleArtifactHead(artifact) {
+  return [
+    artifact?.current_head_sha,
+    artifact?.head_sha,
+    artifact?.git?.head_sha,
+    artifact?.toolchain?.source_git?.commit,
+    artifact?.toolchain?.git?.commit,
+    artifact?.gate_dag?.git_context?.head_sha,
+    artifact?.gate_dag?.head_sha,
+    artifact?.artifact_freshness?.artifact_head_sha,
+    artifact?.pr?.head_ref_oid
+  ].find((value) => typeof value === 'string' && /^[0-9a-f]{7,40}$/i.test(value)) ?? null;
+}
+
+function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {
+  return {
+    kind,
+    status: headSha ? 'current' : 'unknown',
+    exists: true,
+    artifact: null,
+    report: null,
+    artifact_head_sha: headSha ?? null,
+    current_head_sha: headSha ?? null,
+    checked_at: checkedAt,
+    reason: headSha
+      ? buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha: headSha, currentHeadSha: headSha })
+      : buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha: null, currentHeadSha: null })
+  };
+}
+
+function shortSha(value) {
+  return typeof value === 'string' ? value.slice(0, 12) : '-';
+}
+
+const PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX = 'VibePro lifecycle artifact freshness:';
+const PR_LIFECYCLE_ARTIFACT_SPECS = [
+  { kind: 'pr_create', fileName: 'pr-create.json', reportName: 'pr-create.html' },
+  { kind: 'pr_merge', fileName: 'pr-merge.json', reportName: 'pr-merge.html' }
+];
 
 async function readVerificationEvidenceIfExists(repoRoot, storyId) {
   const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
@@ -4725,7 +4939,8 @@ function buildEngineeringJudgmentClassification({
   graphContext = null,
   verificationEvidence = null,
   decisionRecords = null,
-  inferredSpec = null
+  inferredSpec = null,
+  agentReviews = null
 } = {}) {
   const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
   const text = [
@@ -4792,7 +5007,8 @@ function buildEngineeringJudgmentClassification({
     graphContext,
     verificationEvidence,
     decisionRecords,
-    inferredSpec
+    inferredSpec,
+    agentReviews
   });
   const activeAxes = judgmentAxes.filter((axis) => axis.status !== 'inactive');
   return {
@@ -4829,7 +5045,8 @@ function buildSeniorJudgmentAxes({
   graphContext = null,
   verificationEvidence = null,
   decisionRecords = null,
-  inferredSpec = null
+  inferredSpec = null,
+  agentReviews = null
 } = {}) {
   const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
   const text = [
@@ -4894,7 +5111,8 @@ function buildSeniorJudgmentAxes({
       verificationEvidence,
       decisionRecords,
       graphContext,
-      scope
+      scope,
+      agentReviews
     });
     const status = active
       ? resolveSeniorAxisStatus(definition, evidence)
@@ -4913,7 +5131,8 @@ function buildSeniorJudgmentAxes({
       signals: activationSignals,
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
-      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : []
+      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : [],
+      ignored_accepted_decision: evidence.ignored_accepted_decision
     };
   });
 }
@@ -4999,15 +5218,18 @@ function classifySeniorAxisEvidence({
   verificationEvidence = null,
   decisionRecords = null,
   graphContext = null,
-  scope = null
+  scope = null,
+  agentReviews = null
 } = {}) {
   const currentVerification = (verificationEvidence?.commands ?? [])
     .filter((command) => command.binding?.status === 'current');
   const verificationMatches = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
   const matched = [];
   const optional = classifyGraphImpactEvidence(graphContext);
-  const add = (kind, ref) => {
-    if (!matched.some((item) => item.kind === kind && item.ref === ref)) matched.push({ kind, ref });
+  const add = (kind, ref, extra = {}) => {
+    if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
+      matched.push({ kind, ref, ...extra });
+    }
   };
 
   if ((fileGroups.story_docs?.count ?? 0) > 0 || (fileGroups.specifications?.count ?? 0) > 0) {
@@ -5033,14 +5255,32 @@ function classifySeniorAxisEvidence({
   if (scope?.status === 'reviewable') add('scope_reviewed', 'scope.status=reviewable');
   if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status);
   if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
+  if (axis === 'execution_topology' && hasAgentEvidenceLifecycle({ agentReviews, decisionRecords })) {
+    add('agent_review', 'agent review summaries passed for required roles');
+  }
+  if (axis === 'scope_reviewability' && hasAgentReviewOwnerMapEvidence(agentReviews)) {
+    add('review_owner_map', 'agent review stage/role ownership map');
+  }
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
-  if (acceptedDecision) {
-    add('decision_record', acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`);
+  const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
+  if (acceptedFollowupDecision) {
+    add(
+      'decision_record',
+      acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`,
+      acceptedDecision.artifact ? { artifact: acceptedDecision.artifact } : {}
+    );
     if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
     if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
   }
-  return { matched, optional, accepted_decision: acceptedDecision ?? null };
+  return {
+    matched,
+    optional,
+    accepted_decision: acceptedFollowupDecision,
+    ignored_accepted_decision: acceptedDecision && !acceptedFollowupDecision
+      ? summarizeIgnoredAxisFollowupDecision(acceptedDecision)
+      : null
+  };
 }
 
 function resolveSeniorAxisStatus(definition, evidence) {
@@ -5103,7 +5343,8 @@ function buildJudgmentAxisGates(engineeringJudgment) {
 }
 
 function mapJudgmentAxisStatusToGateStatus(status) {
-  if (status === 'active_passed' || status === 'active_accepted_followup') return 'passed';
+  if (status === 'active_passed') return 'passed';
+  if (status === 'active_accepted_followup') return 'accepted_followup';
   if (status === 'active_blocked') return 'block';
   if (status === 'active_needs_evidence') return 'needs_evidence';
   return 'not_required';
@@ -5115,7 +5356,7 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Evidence matched: ${(axis.matched_evidence ?? []).map((item) => item.kind).join(', ') || 'none'}.`;
   }
   if (axis.status === 'active_accepted_followup') {
-    return `${prefix} Current safety is acceptable with a bounded follow-up: ${axis.acceptable_followup}`;
+    return `${prefix} Missing evidence accepted as a bounded follow-up: ${(axis.missing_evidence ?? []).join(', ') || 'none'}. ${axis.acceptable_followup}`;
   }
   if (axis.status === 'active_needs_evidence') {
     return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
@@ -5124,6 +5365,24 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Blocking criteria matched: ${(axis.blocking_criteria ?? []).join('; ')}`;
   }
   return `${axis.axis}: inactive`;
+}
+
+function isAcceptedAxisFollowupDecision(decision) {
+  if (!decision || decision.status !== 'accepted') return false;
+  return Boolean(String(decision.reason ?? '').trim() && String(decision.artifact ?? '').trim());
+}
+
+function summarizeIgnoredAxisFollowupDecision(decision) {
+  return {
+    decision_id: decision.decision_id ?? null,
+    source: decision.source ?? null,
+    status: decision.status ?? null,
+    missing_fields: [
+      String(decision.reason ?? '').trim() ? null : 'reason',
+      String(decision.artifact ?? '').trim() ? null : 'artifact'
+    ].filter(Boolean),
+    reason: 'accepted axis follow-up decisions require both reason and artifact before they can cover missing evidence'
+  };
 }
 
 function buildCommonJudgmentSpineGate(engineeringJudgment, evidenceContext = {}) {
@@ -5204,6 +5463,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     ? evidenceMatches.docs
     : evidenceMatches.current_reality;
   const currentRealityRequiredMatches = currentRealityMatches.filter((item) => !item.optional);
+  const currentRealityMissing = missingEvidenceKinds(
+    surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
+    surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
+  );
+  const failureModesMissing = missingEvidenceKinds(failureModesRequirement, evidenceMatches.failure_modes);
+  const doneEvidenceMissing = missingEvidenceKinds(doneEvidenceRequirement, evidenceMatches.done_evidence);
   return [
     {
       id: 'intent',
@@ -5221,20 +5486,17 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       id: 'current_reality',
       status: surfaceProfile.surface === 'docs_only'
         ? (evidenceMatches.docs.length > 0 || changedFileCount > 0 ? 'passed' : 'needs_evidence')
-        : currentRealityRequiredMatches.length > 0 ? 'passed' : 'needs_evidence',
+        : currentRealityMissing.length === 0 ? 'passed' : 'needs_evidence',
       evidence: firstEvidenceRef(currentRealityMatches)
         ?? `${changedFileCount} changed file(s) classified`,
       surface: surfaceProfile.surface,
       optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
       matched_evidence: currentRealityMatches,
-      missing_evidence: missingEvidenceKinds(
-        surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
-        surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
-      ),
+      missing_evidence: currentRealityMissing,
       reason: surfaceProfile.surface === 'docs_only'
         ? 'Docs-only changes can establish current reality through Story/Spec/doc reference traceability'
-        : currentRealityRequiredMatches.length > 0
+        : currentRealityMissing.length === 0
           ? `${surfaceProfile.surface} current reality is backed by ${currentRealityRequiredMatches[0].kind}`
           : `${surfaceProfile.surface} changes need focused runtime/path evidence; changed-file classification alone is not enough`
     },
@@ -5284,28 +5546,28 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     },
     {
       id: 'failure_modes',
-      status: !highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests) ? 'passed' : 'needs_evidence',
-      evidence: firstEvidenceRef(evidenceMatches.failure_modes) ?? (hasTests && surfaceProfile.surface !== 'auth_boundary' ? 'test files in diff' : null),
+      status: !highRisk || failureModesMissing.length === 0 ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(evidenceMatches.failure_modes),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? failureModesRequirement : ['not_applicable'],
       matched_evidence: evidenceMatches.failure_modes,
-      missing_evidence: (!highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests))
+      missing_evidence: (!highRisk || failureModesMissing.length === 0)
         ? []
-        : failureModesRequirement,
+        : failureModesMissing,
       reason: highRisk
         ? `${surfaceProfile.surface} changes need failure-mode evidence matching ${failureModesRequirement.join('|')}`
         : 'Light route does not require additional failure-mode evidence'
     },
     {
       id: 'done_evidence',
-      status: !highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0) ? 'passed' : 'needs_evidence',
+      status: !highRisk || doneEvidenceMissing.length === 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0) ? 'passed' : 'needs_evidence',
       evidence: firstEvidenceRef(evidenceMatches.done_evidence) ?? (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? doneEvidenceRequirement : ['downstream_gate'],
       matched_evidence: evidenceMatches.done_evidence,
-      missing_evidence: (!highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
+      missing_evidence: (!highRisk || doneEvidenceMissing.length === 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
         ? []
-        : doneEvidenceRequirement,
+        : doneEvidenceMissing,
       reason: highRisk
         ? `${surfaceProfile.surface} changes need done evidence matching ${doneEvidenceRequirement.join('|')}`
         : 'Light route completion is covered by the downstream Unit/Integration/Agent Review gates'
@@ -5416,11 +5678,7 @@ function classifyGraphImpactEvidence(graphContext) {
 }
 
 function classifyVerificationEvidenceItem(item) {
-  const observationText = [
-    ...(item.observation?.targets ?? []),
-    ...(item.observation?.scenarios ?? [])
-  ].join(' ');
-  const text = `${item.kind ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''} ${observationText}`.toLowerCase();
+  const text = buildVerificationCommandSearchText(item).toLowerCase();
   const command = String(item.command ?? '').trim();
   const generic = isGenericVerificationCommand(command);
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
@@ -5428,6 +5686,7 @@ function classifyVerificationEvidenceItem(item) {
   const add = (kind) => {
     if (!matches.some((match) => match.kind === kind)) matches.push({ kind, ref });
   };
+  if (!text) return matches;
   if (!generic && ['unit', 'integration', 'e2e', 'build', 'typecheck'].includes(item.kind)) add('focused_test');
   if (!generic && /\b(runtime|path|src\/|test\/e2e|focused|acceptance|story-)\b/.test(text)) add('runtime_path_evidence');
   if (item.kind === 'integration' && !generic) add('integration_runtime_path');
@@ -6010,13 +6269,35 @@ function buildDeployVerificationGate({ environmentGraph = null, changeClassifica
 function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null } = {}) {
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
   if (!agentReviews) return false;
-  if (agentReviews.status === 'pass') return true;
   const s = agentReviews.summary ?? {};
-  return (s.required_review_count ?? 0) > 0
+  if ((s.lifecycle_running_count ?? 0) > 0 || (s.lifecycle_timed_out_count ?? 0) > 0) {
+    return false;
+  }
+  if (agentReviews.status === 'pass') return true;
+  if ((s.required_review_count ?? 0) > 0
     && (s.unmet_required_review_count ?? 0) === 0
+    && (s.unmet_checkpoint_review_count ?? 0) === 0
     && (s.stale_result_count ?? 0) === 0
-    && (s.lifecycle_timed_out_count ?? 0) === 0
-    && (s.block_result_count ?? 0) === 0;
+    && (s.unverified_agent_result_count ?? 0) === 0
+    && (s.block_result_count ?? 0) === 0) {
+    return true;
+  }
+  const roles = (agentReviews.stages ?? []).flatMap((stage) => stage.roles ?? []);
+  const passed = roles.filter((role) => role.effective_status === 'pass');
+  const invalid = roles.filter((role) => ['missing', 'stale', 'unverified_agent', 'block', 'needs_changes'].includes(role.effective_status));
+  return passed.length > 0 && invalid.length === 0;
+}
+
+function hasAgentReviewOwnerMapEvidence(agentReviews = null) {
+  const roles = (agentReviews?.stages ?? []).flatMap((stage) => (
+    (stage.roles ?? []).map((role) => ({
+      stage: stage.stage,
+      role: role.role,
+      effective_status: role.effective_status
+    }))
+  ));
+  if (roles.length === 0) return false;
+  return roles.every((role) => role.stage && role.role && role.effective_status === 'pass');
 }
 
 const BUG_PHYSICS_CLASSES = ['timing', 'state-invariant', 'deterministic-byte', 'observability', 'deployment'];
@@ -6719,6 +7000,7 @@ function buildGateDag({
         .filter((axis) => axis.status !== 'inactive')
         .map((axis) => axis.axis),
       judgment_axis_count: judgmentAxisGates.length,
+      judgment_axis_accepted_followup_count: judgmentAxisGates.filter((gate) => gate.status === 'accepted_followup').length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
       bug_physics_classes: bugPhysicsTriage?.classes ?? [],
       bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,
@@ -7161,14 +7443,14 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
   const currentEvidence = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const evidenceText = currentEvidence
-    .map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`)
+    .map((command) => buildVerificationCommandSearchText(command))
     .join('\n')
     .toLowerCase();
   const coveredModes = modes.map((mode) => ({
     ...mode,
     status: failureModeCoveredByEvidence(mode, evidenceText) ? 'covered' : highRisk ? 'missing_coverage' : 'not_required',
     evidence: failureModeCoveredByEvidence(mode, evidenceText)
-      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`.toLowerCase()))?.command ?? 'verification_evidence'
+      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, buildVerificationCommandSearchText(command).toLowerCase()))?.command ?? 'verification_evidence'
       : null
   }));
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
@@ -7237,31 +7519,67 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
   if (/\b(db|database|persist|保存|永続)\b/.test(text) || surfaces.has('database') || surfaces.has('persistence')) {
     add('persistence_failure', 'Persistence paths can fail or store partial state', ['database', 'persist', 'storage', 'db']);
   }
+  if (surfaces.has('gate_orchestration')
+    || surfaces.has('review_lifecycle')
+    || /\b(evidence|artifact|gate|dag|review|provenance|handoff|waiver|followup|follow-up|fake green|fake-value)\b/.test(text)
+    || /\b(agent-review|pr-manager|html-report|gate|dag|review)\b/.test(files)) {
+    add(
+      'evidence_lifecycle_regression',
+      'Gate/review/evidence lifecycle changes can produce misleading green artifacts or unreconstructable handoffs',
+      ['accepted_followup', 'needs_evidence', 'active_needs_evidence', 'provenance', 'inspection', 'gate-dag', 'pr-prepare', 'artifact replay']
+    );
+  }
+  if (changeClassification?.profile === 'workflow_heavy'
+    || surfaces.has('gate_orchestration')
+    || surfaces.has('review_lifecycle')
+    || /\b(workflow|state transition|lifecycle|dispatch|preflight|stale|pending)\b/.test(text)
+    || /\b(workflow|lifecycle|dispatch|preflight)\b/.test(files)) {
+    add(
+      'workflow_state_regression',
+      'Workflow/state transitions can leave stale, pending, or over-green gate states',
+      ['flow_replay', 'artifact_replay', 'scenario_clause_e2e', 'workflow', 'state transition', 'stale']
+    );
+  }
   return candidates;
 }
 
 function failureModeCoveredByEvidence(mode, evidenceText) {
   if (!evidenceText) return false;
-  return mode.keywords.some((keyword) => evidenceText.includes(keyword));
+  return [mode.id, ...(mode.keywords ?? [])]
+    .filter(Boolean)
+    .some((keyword) => evidenceText.includes(String(keyword).toLowerCase()));
+}
+
+function buildVerificationCommandSearchText(command) {
+  if (command?.observation_check?.status !== 'recorded') return '';
+  const observation = command?.observation ?? {};
+  const observedValues = observation.values && typeof observation.values === 'object'
+    ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
+    : [];
+  return [
+    ...(observation.targets ?? []),
+    ...(observation.scenarios ?? []),
+    ...observedValues
+  ].filter(Boolean).join('\n');
 }
 
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
-  const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
-  const evidenceText = [
-    ...currentVerification.map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`),
-    flowCurrent ? JSON.stringify(flowVerification?.verification ?? flowVerification) : ''
-  ].join('\n').toLowerCase();
+  const flowEvidenceText = buildFlowVerificationSurfaceSearchText(flowVerification);
   const highRisk = changeClassification?.profile === 'workflow_heavy';
   const rows = surfaces.map((surface) => {
-    const evidence = pathSurfaceCoveredByEvidence(surface, evidenceText);
+    const verificationEvidenceItem = currentVerification.find((command) => pathSurfaceCoveredByEvidence(surface, buildVerificationCommandSearchText(command).toLowerCase()));
+    const flowEvidence = !verificationEvidenceItem && pathSurfaceCoveredByEvidence(surface, flowEvidenceText);
+    const evidence = Boolean(verificationEvidenceItem || flowEvidence);
     const required = highRisk || surface.required;
     return {
       ...surface,
       required,
       status: evidence ? 'covered' : required ? 'missing_surface_evidence' : 'not_required',
-      evidence: evidence ? currentVerification[0]?.command ?? 'flow_verification' : null
+      evidence: evidence
+        ? verificationEvidenceItem?.command ?? 'flow_verification'
+        : null
     };
   });
   const missing = rows.filter((row) => row.status === 'missing_surface_evidence');
@@ -7360,6 +7678,32 @@ function pathSurfaceCoveredByEvidence(surface, evidenceText) {
     persistence: ['database', 'db', 'schema', 'persist', 'storage']
   }[surface.surface] ?? [surface.surface];
   return terms.some((term) => evidenceText.includes(term));
+}
+
+function buildFlowVerificationSurfaceSearchText(flowVerification) {
+  const flowEvidence = resolveWorkflowFlowEvidence({ flowVerification });
+  if (!flowEvidence.passed) return '';
+  const verification = flowVerification?.verification ?? flowVerification;
+  const probes = Array.isArray(verification?.probes)
+    ? verification.probes
+    : Array.isArray(flowVerification?.probes)
+      ? flowVerification.probes
+      : [];
+  return probes
+    .filter((probe) => ['pass', 'passed', 'success', 'ok'].includes(probe?.status))
+    .flatMap((probe) => [
+      probe.id,
+      probe.name,
+      probe.title,
+      probe.path,
+      probe.route,
+      probe.url,
+      ...(probe.artifacts?.screenshot_paths ?? []),
+      ...(probe.artifacts?.trace_paths ?? [])
+    ])
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
 }
 
 function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {

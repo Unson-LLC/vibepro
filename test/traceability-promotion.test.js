@@ -161,6 +161,14 @@ async function setupMergeRepo() {
     base: 'main',
     head: 'feature/promo',
     pr_url: 'https://github.example.test/unson/vibepro/pull/200',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { commit: headSha } },
     results: []
   });
   await writeJson(traceabilityPath(root, 'story-test-promo'), {
@@ -224,7 +232,7 @@ test('execute merge dry-run does not touch traceability', async () => {
     { env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` } }
   );
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.merge.status, 'ready_to_merge');
+  assert.equal(result.result.merge.status, 'dry_run_planned');
   const after = await readFile(traceabilityPath(root, 'story-test-promo'), 'utf8');
   assert.equal(after, before, 'dry-run must not modify traceability.json');
 });

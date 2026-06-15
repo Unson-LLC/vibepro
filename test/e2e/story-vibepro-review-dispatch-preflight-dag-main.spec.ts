@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 import { runCli } from '../../src/cli.js';
@@ -13,7 +14,15 @@ const STORY_ID = 'story-vibepro-review-dispatch-preflight-dag';
 const execFileAsync = promisify(execFile);
 
 async function git(repo: string, args: string[]) {
-  return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+  for (let attempt = 1; attempt <= 10; attempt += 1) {
+    try {
+      return await execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EAGAIN' || attempt === 10) throw error;
+      await delay(250 * attempt);
+    }
+  }
+  throw new Error('unreachable git retry state');
 }
 
 async function readJson(filePath: string) {
@@ -101,6 +110,23 @@ async function preparePrArtifacts(repo: string) {
 
 async function recordGateEvidence(repo: string, status = 'pass', agentSystem = 'codex', executionMode = 'parallel_subagent') {
   await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence']);
+  const agentId = `agent-${status}-${executionMode}`;
+  const transcriptPath = path.join(
+    repo,
+    '.vibepro',
+    'reviews',
+    STORY_ID,
+    'gate',
+    'transcripts',
+    `${agentId}.json`
+  );
+  if (executionMode === 'parallel_subagent') {
+    await mkdir(path.dirname(transcriptPath), { recursive: true });
+    await writeFile(
+      transcriptPath,
+      `${JSON.stringify({ agent_id: agentId, status, summary: `${status} review fixture` }, null, 2)}\n`
+    );
+  }
   const args = [
     'review',
     'record',
@@ -117,16 +143,28 @@ async function recordGateEvidence(repo: string, status = 'pass', agentSystem = '
     `${status} review fixture`,
     '--inspection-summary',
     `${status} review fixture inspection`,
+    '--inspection-evidence',
+    `${status} review fixture evidence`,
+    '--inspection-input',
+    'test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts',
+    '--judgment-delta',
+    `missing dispatch preflight fixture -> ${status} because fixture evidence was recorded`,
     '--agent-system',
     agentSystem,
     '--execution-mode',
     executionMode,
     '--agent-id',
-    `agent-${status}-${executionMode}`,
+    agentId,
     '--json'
   ];
   if (executionMode === 'parallel_subagent') {
-    args.push('--agent-closed');
+    args.push(
+      '--agent-thread-id',
+      agentId,
+      '--agent-transcript',
+      transcriptPath,
+      '--agent-closed'
+    );
   } else {
     args.push('--recorded-by', 'reviewer@example.com');
   }

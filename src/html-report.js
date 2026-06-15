@@ -46,6 +46,11 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   ]);
   const requirementSection = renderRequirementPanel(requirement, language);
   const networkSection = renderNetworkContractPanel(preparation.pr_context.network_contracts, language);
+  const engineeringJudgmentSection = renderEngineeringJudgmentPanel(
+    preparation.pr_context.engineering_judgment,
+    gateDag,
+    language
+  );
   const fileGroups = renderFileGroups(preparation.file_groups, language);
   const graphSummary = renderGraphSummary(splitPlan.graph_context, language);
   const artifacts = renderKeyValueTable([
@@ -54,6 +59,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
     ['Split Plan HTML', splitPlanPath]
   ]);
   const nextCommands = renderCommandList(preparation.next_commands);
+  const lifecycleArtifacts = renderPrLifecycleArtifactsPanel(preparation.lifecycle_artifacts, language);
 
   return renderDocument({
     title: 'VibePro PR Prepare',
@@ -76,8 +82,10 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${engineeringJudgmentSection}
       ${renderExecutionGatePanel(executionGate, language)}
       ${renderAgentReviewPanel(agentReviews, language)}
+      ${lifecycleArtifacts}
       ${requirementSection}
       ${networkSection}
       <section>
@@ -200,11 +208,12 @@ export function renderPrCreateHtml(execution, options = {}) {
   const results = execution.results.length === 0
     ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
     : execution.results;
+  const language = options.language ?? execution.output?.language ?? 'ja';
   return renderDocument({
     title: 'VibePro PR Create',
     reportType: 'pr-create',
     generatedAt: execution.created_at,
-    language: options.language ?? execution.output?.language ?? 'ja',
+    language,
     body: `
       <section class="hero" data-dry-run="${escapeAttr(String(execution.dry_run))}">
         <div>
@@ -220,6 +229,7 @@ export function renderPrCreateHtml(execution, options = {}) {
         ${metricCard('Gate Override', execution.gate_override?.allowed ? 'allowed' : 'none', execution.gate_override?.reason ?? '-')}
         ${metricCard('Commands', execution.commands.length, 'planned')}
       </section>
+      ${renderPrLifecycleFreshnessPanel(execution.artifact_freshness, language)}
       ${renderGateOverridePanel(execution.gate_override)}
       <section>
         <h2>Command Timeline</h2>
@@ -246,11 +256,12 @@ export function renderPrMergeHtml(merge, options = {}) {
   const results = merge.results.length === 0
     ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
     : merge.results;
+  const language = options.language ?? merge.output?.language ?? 'ja';
   return renderDocument({
     title: 'VibePro Execute Merge',
     reportType: 'pr-merge',
     generatedAt: merge.created_at,
-    language: options.language ?? merge.output?.language ?? 'ja',
+    language,
     body: `
       <section class="hero" data-dry-run="${escapeAttr(String(merge.dry_run))}">
         <div>
@@ -266,6 +277,7 @@ export function renderPrMergeHtml(merge, options = {}) {
         ${metricCard('Merge commit', merge.merge_commit_sha ?? '-', merge.merged_at ?? 'not merged')}
         ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
       </section>
+      ${renderPrLifecycleFreshnessPanel(merge.artifact_freshness, language)}
       <section class="grid-2">
         <div>
           <h2>Preconditions</h2>
@@ -303,6 +315,62 @@ export function renderPrMergeHtml(merge, options = {}) {
       </section>
     `
   });
+}
+
+function renderPrLifecycleArtifactsPanel(lifecycleArtifacts, language) {
+  if (!lifecycleArtifacts) return '';
+  const artifacts = Array.isArray(lifecycleArtifacts.artifacts) ? lifecycleArtifacts.artifacts : [];
+  const title = localizedText(language, { ja: 'PR lifecycle artifact の鮮度', en: 'PR Lifecycle Artifact Freshness' });
+  const rows = artifacts.map((artifact) => [
+    artifact.kind ?? '-',
+    artifact.status ?? '-',
+    artifact.artifact ?? '-',
+    shortenSha(artifact.artifact_head_sha),
+    shortenSha(artifact.current_head_sha ?? lifecycleArtifacts.current_head_sha),
+    artifact.reason ?? '-'
+  ]);
+  return `
+    <section>
+      <h2>${escapeHtml(title)}</h2>
+      <p class="muted">${escapeHtml(localizedText(language, {
+        ja: `全体: ${lifecycleArtifacts.status ?? 'unknown'}。古い pr-create / pr-merge を最新の証跡として扱わないための HEAD 照合です。`,
+        en: `Overall: ${lifecycleArtifacts.status ?? 'unknown'}. HEAD binding prevents stale pr-create / pr-merge artifacts from looking current.`
+      }))}</p>
+      ${renderTable([
+        'Kind',
+        'Status',
+        'Artifact',
+        'Artifact HEAD',
+        'Current HEAD',
+        'Reason'
+      ], rows.length > 0 ? rows : [['-', 'missing', '-', '-', '-', 'No lifecycle artifacts found']])}
+    </section>
+  `;
+}
+
+function renderPrLifecycleFreshnessPanel(freshness, language) {
+  if (!freshness) return '';
+  return `
+    <section>
+      <h2>${escapeHtml(localizedText(language, { ja: 'Artifact Freshness', en: 'Artifact Freshness' }))}</h2>
+      <div class="cards">
+        <article class="card ${escapeAttr(toneForStatus(freshness.status))}">
+          <h3>${escapeHtml(freshness.kind ?? 'lifecycle_artifact')}</h3>
+          <p class="muted">${escapeHtml(freshness.status ?? 'unknown')}</p>
+          <p>${escapeHtml(freshness.reason ?? '-')}</p>
+        </article>
+      </div>
+      ${renderKeyValueTable([
+        ['Artifact HEAD', shortenSha(freshness.artifact_head_sha)],
+        ['Current HEAD', shortenSha(freshness.current_head_sha)],
+        ['Checked At', freshness.checked_at ?? '-']
+      ])}
+    </section>
+  `;
+}
+
+function shortenSha(value) {
+  return typeof value === 'string' && value.length > 12 ? value.slice(0, 12) : (value ?? '-');
 }
 
 function renderPrPrepareGuide({ preparation, bodyPath, gateDagPath, splitPlanPath, language }) {
@@ -527,6 +595,65 @@ function renderCards(title, cards) {
       </div>
     </section>
   `;
+}
+
+function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language = 'ja') {
+  if (!engineeringJudgment) {
+    return renderCards('Engineering Judgment', [{
+      title: localizedText(language, { ja: '未分類', en: 'Not classified' }),
+      detail: localizedText(language, {
+        ja: 'Engineering Judgmentは未生成です。Gate DAGとPR本文を再生成してください。',
+        en: 'Engineering Judgment was not generated. Regenerate Gate DAG and PR body.'
+      }),
+      tone: 'warn'
+    }]);
+  }
+  const axes = (engineeringJudgment.judgment_axes ?? []).filter((axis) => axis.status !== 'inactive');
+  const acceptedFollowups = axes.filter((axis) => axis.status === 'active_accepted_followup');
+  const axisCards = axes.slice(0, 8).map((axis) => {
+    const gate = gateDag?.nodes?.find((node) => node.id === `gate:judgment_axis_${axis.axis}`);
+    const required = axis.required_evidence?.join(', ') || '-';
+    const missing = axis.missing_evidence?.length > 0 ? ` missing=${axis.missing_evidence.join(', ')}` : '';
+    const matched = axis.matched_evidence?.length > 0
+      ? ` matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
+      : '';
+    return {
+      title: `${axis.axis}: ${axis.status}`,
+      detail: `${axis.decision_question ?? localizedText(language, { ja: '判断質問なし', en: 'No decision question' })} / required=${required}${matched}${missing}`,
+      meta: `gate=${gate?.status ?? '-'}; confidence=${Math.round((axis.confidence ?? 0) * 100)}%`,
+      tone: toneForStatus(axis.status)
+    };
+  });
+  return `
+    <section>
+      <h2>Engineering Judgment</h2>
+      <div class="metrics">
+        ${metricCard('Route', engineeringJudgment.route_type ?? '-', engineeringJudgment.route_dag ?? '-')}
+        ${metricCard(localizedText(language, { ja: 'Active Axes', en: 'Active Axes' }), axes.length, 'senior first scan')}
+        ${metricCard('accepted_followup', acceptedFollowups.length, localizedText(language, { ja: 'passedではない後続許容', en: 'accepted but not passed' }))}
+        ${metricCard('Confidence', typeof engineeringJudgment.confidence === 'number' ? `${Math.round(engineeringJudgment.confidence * 100)}%` : '-', 'classifier')}
+      </div>
+      <div class="cards">${(axisCards.length > 0 ? axisCards : [{
+        title: localizedText(language, { ja: 'Active axisなし', en: 'No active axis' }),
+        detail: localizedText(language, {
+          ja: 'general engineeringとして既存Gateを確認します。',
+          en: 'Existing gates are used as the general engineering contract.'
+        }),
+        tone: 'neutral'
+      }]).map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('')}</div>
+    </section>
+  `;
+}
+
+function formatEvidenceReferenceForHuman(item) {
+  const base = `${item.kind}:${item.ref}`;
+  return item.artifact ? `${base} (artifact=${item.artifact})` : base;
 }
 
 function renderRequirementPanel(requirement, language = 'ja') {
@@ -1002,8 +1129,8 @@ function statusClass(status) {
 
 function toneForStatus(status) {
   if (['pass', 'passed', 'present', 'satisfied', 'ready_for_review', 'single_pr_ok', 'primary_pr', 'same_pr_allowed', 'executed'].includes(status)) return 'good';
-  if (['needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
-  if (['missing', 'contradicted', 'failed', 'blocked'].includes(status)) return 'danger';
+  if (['active_accepted_followup', 'accepted_followup', 'needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
+  if (['missing', 'contradicted', 'failed', 'blocked', 'stale', 'stale_evidence', 'unbound'].includes(status)) return 'danger';
   if (['candidate', 'available'].includes(status)) return 'info';
   return 'neutral';
 }

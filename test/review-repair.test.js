@@ -67,13 +67,41 @@ async function setupRepairRepo() {
       provenance_status: 'verified_agent',
       agent_provenance: { agent_system: 'codex', lifecycle: { agent_closed: true } }
     }),
-    role('release_risk', { status: 'running', effective_status: 'timed_out' }),
+    role('release_risk', {
+      status: 'missing',
+      effective_status: 'missing',
+      lifecycle: {
+        effective_status: 'timed_out',
+        latest: {
+          lifecycle_id: 'lifecycle-release-risk',
+          status: 'running',
+          effective_status: 'timed_out',
+          agent_system: 'codex',
+          agent_id: 'agent-release-risk'
+        }
+      }
+    }),
     role('security_boundary', { status: 'pass', effective_status: 'pass' }),
     role('architecture_fit', {
       status: 'pass',
-      effective_status: 'pass',
-      provenance_status: 'verified_agent',
-      agent_provenance: { agent_system: 'claude_code', lifecycle: { agent_closed: false } }
+      effective_status: 'unverified_agent',
+      provenance_status: 'agent_not_closed',
+      lifecycle: {
+        effective_status: 'running',
+        latest: {
+          lifecycle_id: 'lifecycle-architecture-fit-newer',
+          status: 'running',
+          effective_status: 'running',
+          agent_system: 'codex',
+          agent_id: 'newer-running-agent'
+        }
+      },
+      agent_provenance: {
+        system: 'claude_code',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'agent-architecture-fit',
+        lifecycle: { agent_closed: false }
+      }
     }),
     healthyRole('code_quality')
   ]);
@@ -96,20 +124,34 @@ test('missing role becomes a run_review candidate with full command chain', asyn
   assert.match(joined, /review prepare .*--stage gate --role gate_evidence/);
   assert.match(joined, /review start /);
   assert.match(joined, /review record .*--agent-closed/);
+  assert.match(joined, /review record .*--inspection-input <inspection-input>/);
+  assert.match(joined, /review record .*--judgment-delta/);
+  assert.match(joined, /review record .*--agent-thread-id "<subagent-thread-id>"/);
+  assert.match(joined, /review record .*--agent-transcript <artifact>/);
+  assert.match(joined, /review record .*--agent-close-evidence <close-evidence>/);
 });
 
 test('stale role becomes rerun_stale_review and timed_out becomes replace_timed_out_review', async () => {
   const root = await setupRepairRepo();
   const { result } = await runCli(['review', 'repair', root, '--json']);
   assert.equal(findCandidate(result, 'story-repair-broken', 'pr_split_scope').action, 'rerun_stale_review');
-  assert.equal(findCandidate(result, 'story-repair-broken', 'release_risk').action, 'replace_timed_out_review');
+  const timedOut = findCandidate(result, 'story-repair-broken', 'release_risk');
+  assert.equal(timedOut.action, 'replace_timed_out_review');
+  assert.equal(timedOut.effective_status, 'missing');
+  assert.match(timedOut.reason, /lifecycle timed out/);
+  assert.match(timedOut.next_commands.join('\n'), /review close .*--agent-id "agent-release-risk".*--close-reason timeout.*--close-evidence <close-evidence>/);
+  assert.match(timedOut.next_commands.join('\n'), /review start .*--agent-system codex.*--replacement-for lifecycle-release-risk/);
 });
 
 test('pass without provenance and unclosed lifecycle are repair candidates', async () => {
   const root = await setupRepairRepo();
   const { result } = await runCli(['review', 'repair', root, '--json']);
   assert.equal(findCandidate(result, 'story-repair-broken', 'security_boundary').action, 'rerecord_with_provenance');
-  assert.equal(findCandidate(result, 'story-repair-broken', 'architecture_fit').action, 'close_and_rerecord');
+  const openLifecycle = findCandidate(result, 'story-repair-broken', 'architecture_fit');
+  assert.equal(openLifecycle.action, 'close_and_rerecord');
+  assert.equal(openLifecycle.effective_status, 'unverified_agent');
+  assert.match(openLifecycle.next_commands.join('\n'), /review close .*--agent-id "agent-architecture-fit".*--close-reason manual_shutdown.*--close-evidence <close-evidence>/);
+  assert.doesNotMatch(openLifecycle.next_commands.join('\n'), /newer-running-agent/);
 });
 
 test('healthy verified closed roles are not candidates', async () => {

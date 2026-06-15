@@ -12,7 +12,7 @@ title: VibePro Execute Merge Command Spec
 ## 必須挙動
 
 - `execute merge` は明示コマンドでのみ動作し、`pr create` や `pr ship` から暗黙実行してはいけない。
-- Storyごとの `pr-create.json` から PR URL を解決する。`--pr` が与えられた場合はそれを優先する。
+- Storyごとの current HEAD-bound `pr-create.json` から PR URL を解決する。`--pr` が与えられた場合はそれを優先する。stale `pr-create.json` の PR URL は merge selector に使わない。
 - PR URL も PR selector も解決できない場合、`status=blocked` として artifact を書き、終了コードは非0にする。
 - merge前に次を確認する。
   - 最新 `pr-prepare` / `pr-create` artifact 上で Gate DAG が `ready_for_review`
@@ -24,7 +24,7 @@ title: VibePro Execute Merge Command Spec
   - `statusCheckRollup` が全件 `COMPLETED` かつ failure conclusion を含まない
   - `reviewDecision` が `CHANGES_REQUESTED` または `REVIEW_REQUIRED` ではない
 - いずれかが未達なら `gh pr merge` を実行せず、`status=blocked` を返す。
-- `--dry-run` では external command を実行せず、予定コマンドと precondition summary のみ artifact に残す。
+- `--dry-run` では external command を実行せず、予定コマンドと precondition summary のみ artifact に残す。外部確認が必要な `base_freshness` / `remote_head_match` / `checks_ready` / `review_policy` / `open_pull_request` は `not_run` とし、local gate と worktree が通っている場合も `status=dry_run_planned` に留める。
 - `--strategy` は `merge|squash|rebase` のみ受け付ける。既定は `merge`。
 - `--delete-branch` は opt-in とし、branch deletion failure は merge 成功と分離して `results[]` に残す。
 
@@ -60,6 +60,7 @@ title: VibePro Execute Merge Command Spec
 - merge artifact が存在し、`status=ready_to_merge` の場合、Execution DAG の `merge_ready` は `passed`。
 - merge artifact が存在し、`status=merged` の場合、Execution DAG の `merge_ready` と `merged_or_closed` は `passed`。
 - merge artifact が存在し、`status=blocked` の場合、`merge_ready` は `blocked`。
+- merge artifact が存在し、`status=dry_run_planned` の場合、`merge_ready` は `pending` のままにする。
 - merge artifact が存在しないが `pr_created` の場合、`merge_ready` は `pending`。
 
 ## Managed Worktree

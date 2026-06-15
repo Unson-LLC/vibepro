@@ -71,7 +71,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       schema_version: '0.1.0',
       story_id: storyId,
       updated_at: new Date().toISOString(),
-      warnings: mergeWarnings(existing.warnings, command.warnings),
+      warnings: mergeWarnings([], commands.flatMap((item) => item.warnings ?? [])),
       commands
     };
     await writeJsonAtomic(evidencePath, nextEvidence);
