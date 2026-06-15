@@ -84,9 +84,14 @@ async function setupRepairRepo() {
     role('security_boundary', { status: 'pass', effective_status: 'pass' }),
     role('architecture_fit', {
       status: 'pass',
-      effective_status: 'pass',
-      provenance_status: 'verified_agent',
-      agent_provenance: { agent_system: 'claude_code', lifecycle: { agent_closed: false } }
+      effective_status: 'unverified_agent',
+      provenance_status: 'agent_not_closed',
+      agent_provenance: {
+        system: 'claude_code',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'agent-architecture-fit',
+        lifecycle: { agent_closed: false }
+      }
     }),
     healthyRole('code_quality')
   ]);
@@ -132,7 +137,10 @@ test('pass without provenance and unclosed lifecycle are repair candidates', asy
   const root = await setupRepairRepo();
   const { result } = await runCli(['review', 'repair', root, '--json']);
   assert.equal(findCandidate(result, 'story-repair-broken', 'security_boundary').action, 'rerecord_with_provenance');
-  assert.equal(findCandidate(result, 'story-repair-broken', 'architecture_fit').action, 'close_and_rerecord');
+  const openLifecycle = findCandidate(result, 'story-repair-broken', 'architecture_fit');
+  assert.equal(openLifecycle.action, 'close_and_rerecord');
+  assert.equal(openLifecycle.effective_status, 'unverified_agent');
+  assert.match(openLifecycle.next_commands.join('\n'), /review close .*--agent-id "agent-architecture-fit".*--close-reason manual_shutdown.*--close-evidence <close-evidence>/);
 });
 
 test('healthy verified closed roles are not candidates', async () => {

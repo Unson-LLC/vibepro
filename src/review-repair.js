@@ -87,6 +87,12 @@ function evaluateRoleRepair(role) {
   if (hasTimedOutLifecycle(role)) {
     return { action: 'replace_timed_out_review', reason: `review role ${roleName} lifecycle timed out without a recorded result` };
   }
+  if (hasOpenAgentLifecycle(role)) {
+    return {
+      action: 'close_and_rerecord',
+      reason: getIncompleteReviewRoleReason(role) ?? `review role ${roleName} agent lifecycle is not closed`
+    };
+  }
   if (effective === 'missing') {
     return { action: 'run_review', reason: `review role ${roleName} has not been run` };
   }
@@ -160,6 +166,10 @@ function buildRepairCommands({ storyId, stage, role, action }) {
 function hasTimedOutLifecycle(role) {
   const lifecycle = role?.lifecycle;
   return lifecycle?.effective_status === 'timed_out' || lifecycle?.latest?.effective_status === 'timed_out';
+}
+
+function hasOpenAgentLifecycle(role) {
+  return Boolean(role?.agent_provenance && role.agent_provenance.lifecycle?.agent_closed !== true);
 }
 
 function getRoleName(role) {
