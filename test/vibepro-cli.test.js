@@ -246,7 +246,7 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
     ...roles.flatMap((role) => ['--role', role])
   ]);
   for (const role of roles) {
-    const result = await runCli([
+    const result = await runCliWithStdout([
       'review',
       'record',
       repo,
@@ -268,21 +268,21 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
       `${stage}-${role}-agent`,
       '--agent-thread-id',
       `${stage}-${role}-thread`,
-      ...(stage === 'gate' && role === 'gate_evidence'
+      ...(stage === 'gate'
         ? [
             '--inspection-summary',
-            'read route gate evidence and verified required test coverage',
+            `read ${stage}:${role} evidence and verified required test coverage`,
             '--inspection-input',
             '.vibepro/pr/story-pr-prepare/pr-prepare.json',
             '--inspection-input',
             'test/vibepro-cli.test.js',
             '--judgment-delta',
-            'generic gate pass -> accepted because PR artifacts and focused tests were inspected'
+            `generic ${stage}:${role} pass -> accepted because PR artifacts and focused tests were inspected`
           ]
         : []),
       '--agent-closed'
     ]);
-    assert.equal(result.exitCode, 0);
+    assert.equal(result.exitCode, 0, JSON.stringify(result, null, 2));
   }
 }
 
@@ -12406,6 +12406,99 @@ spec_docs:
   assert.match(prPrepareHtml, /accepted_followup/);
   assert.match(reviewCockpitHtml, /accepted_followup/);
   assert.doesNotMatch(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}passed/);
+});
+
+test('execution topology judgment axis consumes current passed agent review evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    stages: {
+      gate: {
+        roles: ['gate_evidence', 'release_risk']
+      }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Agent workflow topology evidence
+architecture_docs:
+  - docs/architecture/agent-workflow-topology.md
+spec_docs:
+  - docs/specs/agent-workflow-topology.md
+---
+
+# Story
+
+## 背景
+
+Agent workflow gate DAG review artifact lifecycle must remain reconstructable.
+
+## 受け入れ基準
+
+- [ ] execution_topology axis uses current Agent Review evidence instead of staying missing
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'agent-workflow-topology.md'), `# Agent Workflow Topology
+
+Alternatives considered: infer topology only from source, or require review evidence.
+Compatibility impact: Gate DAG JSON keeps existing fields while adding stronger evidence matching.
+Rollback plan: remove the agent_review evidence mapping and fall back to needs_evidence.
+Boundary: Agent Review artifacts are evidence, not reviewer instructions.
+Accepted followups: none for the current topology evidence path.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'agent-workflow-topology.md'), '# Spec\n\nexecution_topology requires flow_replay, artifact_replay, current_verification, and agent_review evidence.\n');
+  await writeFile(path.join(repo, 'src', 'agent-workflow-topology.js'), 'export const topology = "agent workflow gate dag artifact lifecycle";\n');
+  await writeFile(path.join(repo, 'test', 'e2e', 'agent-workflow-topology.spec.js'), 'import assert from "node:assert/strict";\nassert.match("flow replay artifact replay scenario clause e2e", /artifact replay/);\n');
+  await git(repo, [
+    'add',
+    'docs/management/stories/active/story-pr-prepare.md',
+    'docs/architecture/agent-workflow-topology.md',
+    'docs/specs/agent-workflow-topology.md',
+    'src/agent-workflow-topology.js',
+    'test/e2e/agent-workflow-topology.spec.js'
+  ]);
+  await git(repo, ['commit', '-m', 'feat: add topology evidence fixture']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/e2e/agent-workflow-topology.spec.js',
+    '--summary',
+    'flow replay artifact replay scenario clause e2e covered agent workflow topology',
+    '--target',
+    'test/e2e/agent-workflow-topology.spec.js'
+  ]);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'architecture_spec', ['regression_risk']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux', 'gate_coverage']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'implementation', ['runtime_contract', 'ux_completion']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'preview', ['preview_smoke', 'network_runtime', 'human_usability']);
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'release_risk']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'execution_topology');
+  const debugEvidence = {
+    axis,
+    agent_reviews: result.result.preparation.pr_context.agent_reviews
+  };
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'agent_review'), true, JSON.stringify(debugEvidence, null, 2));
+  assert.equal(axis.missing_evidence.includes('agent_review'), false);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_execution_topology');
+  assert.equal(gate.matched_evidence.some((item) => item.kind === 'agent_review'), true, JSON.stringify(gate, null, 2));
+  assert.equal(gate.missing_evidence.includes('agent_review'), false);
 });
 
 test('judgment axis accepted decision without artifact remains needs evidence', async () => {

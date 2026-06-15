@@ -3242,18 +3242,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const architectureSources = await readTextSources(repoRoot, fileGroups.architecture_docs.files);
-  const engineeringJudgment = buildEngineeringJudgmentClassification({
-    fileGroups,
-    storySource: primaryStory,
-    changeClassification,
-    prRoute,
-    networkContracts,
-    scope,
-    graphContext,
-    verificationEvidence: boundVerificationEvidence,
-    decisionRecords,
-    inferredSpec
-  });
   const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
     storyId: story.story_id,
     commandName: 'pr prepare',
@@ -3278,6 +3266,19 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performanceEvidence,
     changeClassification,
     git
+  });
+  const engineeringJudgment = buildEngineeringJudgmentClassification({
+    fileGroups,
+    storySource: primaryStory,
+    changeClassification,
+    prRoute,
+    networkContracts,
+    scope,
+    graphContext,
+    verificationEvidence: boundVerificationEvidence,
+    decisionRecords,
+    inferredSpec,
+    agentReviews
   });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
@@ -4748,7 +4749,8 @@ function buildEngineeringJudgmentClassification({
   graphContext = null,
   verificationEvidence = null,
   decisionRecords = null,
-  inferredSpec = null
+  inferredSpec = null,
+  agentReviews = null
 } = {}) {
   const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
   const text = [
@@ -4815,7 +4817,8 @@ function buildEngineeringJudgmentClassification({
     graphContext,
     verificationEvidence,
     decisionRecords,
-    inferredSpec
+    inferredSpec,
+    agentReviews
   });
   const activeAxes = judgmentAxes.filter((axis) => axis.status !== 'inactive');
   return {
@@ -4852,7 +4855,8 @@ function buildSeniorJudgmentAxes({
   graphContext = null,
   verificationEvidence = null,
   decisionRecords = null,
-  inferredSpec = null
+  inferredSpec = null,
+  agentReviews = null
 } = {}) {
   const files = Object.values(fileGroups).flatMap((group) => group?.files ?? []);
   const text = [
@@ -4917,7 +4921,8 @@ function buildSeniorJudgmentAxes({
       verificationEvidence,
       decisionRecords,
       graphContext,
-      scope
+      scope,
+      agentReviews
     });
     const status = active
       ? resolveSeniorAxisStatus(definition, evidence)
@@ -5023,7 +5028,8 @@ function classifySeniorAxisEvidence({
   verificationEvidence = null,
   decisionRecords = null,
   graphContext = null,
-  scope = null
+  scope = null,
+  agentReviews = null
 } = {}) {
   const currentVerification = (verificationEvidence?.commands ?? [])
     .filter((command) => command.binding?.status === 'current');
@@ -5057,6 +5063,12 @@ function classifySeniorAxisEvidence({
   if (scope?.status === 'reviewable') add('scope_reviewed', 'scope.status=reviewable');
   if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status);
   if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
+  if (axis === 'execution_topology' && hasAgentEvidenceLifecycle({ agentReviews, decisionRecords })) {
+    add('agent_review', 'agent review summaries passed for required roles');
+  }
+  if (axis === 'scope_reviewability' && hasAgentReviewOwnerMapEvidence(agentReviews)) {
+    add('review_owner_map', 'agent review stage/role ownership map');
+  }
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
   const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
@@ -6063,11 +6075,31 @@ function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null
   if (!agentReviews) return false;
   if (agentReviews.status === 'pass') return true;
   const s = agentReviews.summary ?? {};
-  return (s.required_review_count ?? 0) > 0
+  if ((s.required_review_count ?? 0) > 0
     && (s.unmet_required_review_count ?? 0) === 0
+    && (s.unmet_checkpoint_review_count ?? 0) === 0
     && (s.stale_result_count ?? 0) === 0
+    && (s.unverified_agent_result_count ?? 0) === 0
     && (s.lifecycle_timed_out_count ?? 0) === 0
-    && (s.block_result_count ?? 0) === 0;
+    && (s.block_result_count ?? 0) === 0) {
+    return true;
+  }
+  const roles = (agentReviews.stages ?? []).flatMap((stage) => stage.roles ?? []);
+  const passed = roles.filter((role) => role.effective_status === 'pass');
+  const invalid = roles.filter((role) => ['missing', 'stale', 'unverified_agent', 'block', 'needs_changes'].includes(role.effective_status));
+  return passed.length > 0 && invalid.length === 0;
+}
+
+function hasAgentReviewOwnerMapEvidence(agentReviews = null) {
+  const roles = (agentReviews?.stages ?? []).flatMap((stage) => (
+    (stage.roles ?? []).map((role) => ({
+      stage: stage.stage,
+      role: role.role,
+      effective_status: role.effective_status
+    }))
+  ));
+  if (roles.length === 0) return false;
+  return roles.every((role) => role.stage && role.role && role.effective_status === 'pass');
 }
 
 const BUG_PHYSICS_CLASSES = ['timing', 'state-invariant', 'deterministic-byte', 'observability', 'deployment'];
