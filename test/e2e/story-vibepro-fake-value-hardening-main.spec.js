@@ -362,6 +362,35 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(unresolvedFailureGate.status, 'missing_coverage');
   assert.equal(unresolvedFailureGate.missing_modes.includes('evidence_lifecycle_regression'), true);
 
+  const partialVerification = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    STORY_ID,
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
+    '--summary',
+    'scenario-only evidence lacks an inspected target',
+    '--scenario',
+    'evidence_lifecycle_regression',
+    '--scenario',
+    'workflow_state_regression',
+    '--json'
+  ]);
+  assert.equal(partialVerification.exitCode, 0);
+  assert.equal(partialVerification.result.evidence.commands.at(-1).observation_check.status, 'partial');
+
+  const stillUnresolved = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(stillUnresolved.exitCode, 0);
+  const partialFailureGate = nodeById(stillUnresolved.result.preparation, 'gate:failure_mode_coverage');
+  assert.equal(partialFailureGate.status, 'missing_coverage');
+  assert.equal(partialFailureGate.missing_modes.includes('evidence_lifecycle_regression'), true);
+
   const verification = await runCli([
     'verify',
     'record',

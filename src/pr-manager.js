@@ -7355,7 +7355,9 @@ function failureModeCoveredByEvidence(mode, evidenceText) {
 }
 
 function buildVerificationCommandSearchText(command) {
-  const observation = command?.observation ?? {};
+  const observation = command?.observation_check?.status === 'recorded'
+    ? command?.observation ?? {}
+    : {};
   const observedValues = observation.values && typeof observation.values === 'object'
     ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
     : [];
