@@ -46,6 +46,11 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   ]);
   const requirementSection = renderRequirementPanel(requirement, language);
   const networkSection = renderNetworkContractPanel(preparation.pr_context.network_contracts, language);
+  const engineeringJudgmentSection = renderEngineeringJudgmentPanel(
+    preparation.pr_context.engineering_judgment,
+    gateDag,
+    language
+  );
   const fileGroups = renderFileGroups(preparation.file_groups, language);
   const graphSummary = renderGraphSummary(splitPlan.graph_context, language);
   const artifacts = renderKeyValueTable([
@@ -76,6 +81,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${engineeringJudgmentSection}
       ${renderExecutionGatePanel(executionGate, language)}
       ${renderAgentReviewPanel(agentReviews, language)}
       ${requirementSection}
@@ -525,6 +531,60 @@ function renderCards(title, cards) {
           </article>
         `).join('')}
       </div>
+    </section>
+  `;
+}
+
+function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language = 'ja') {
+  if (!engineeringJudgment) {
+    return renderCards('Engineering Judgment', [{
+      title: localizedText(language, { ja: '未分類', en: 'Not classified' }),
+      detail: localizedText(language, {
+        ja: 'Engineering Judgmentは未生成です。Gate DAGとPR本文を再生成してください。',
+        en: 'Engineering Judgment was not generated. Regenerate Gate DAG and PR body.'
+      }),
+      tone: 'warn'
+    }]);
+  }
+  const axes = (engineeringJudgment.judgment_axes ?? []).filter((axis) => axis.status !== 'inactive');
+  const acceptedFollowups = axes.filter((axis) => axis.status === 'active_accepted_followup');
+  const axisCards = axes.slice(0, 8).map((axis) => {
+    const gate = gateDag?.nodes?.find((node) => node.id === `gate:judgment_axis_${axis.axis}`);
+    const required = axis.required_evidence?.join(', ') || '-';
+    const missing = axis.missing_evidence?.length > 0 ? ` missing=${axis.missing_evidence.join(', ')}` : '';
+    const matched = axis.matched_evidence?.length > 0
+      ? ` matched=${axis.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+      : '';
+    return {
+      title: `${axis.axis}: ${axis.status}`,
+      detail: `${axis.decision_question ?? localizedText(language, { ja: '判断質問なし', en: 'No decision question' })} / required=${required}${matched}${missing}`,
+      meta: `gate=${gate?.status ?? '-'}; confidence=${Math.round((axis.confidence ?? 0) * 100)}%`,
+      tone: toneForStatus(axis.status)
+    };
+  });
+  return `
+    <section>
+      <h2>Engineering Judgment</h2>
+      <div class="metrics">
+        ${metricCard('Route', engineeringJudgment.route_type ?? '-', engineeringJudgment.route_dag ?? '-')}
+        ${metricCard(localizedText(language, { ja: 'Active Axes', en: 'Active Axes' }), axes.length, 'senior first scan')}
+        ${metricCard('accepted_followup', acceptedFollowups.length, localizedText(language, { ja: 'passedではない後続許容', en: 'accepted but not passed' }))}
+        ${metricCard('Confidence', typeof engineeringJudgment.confidence === 'number' ? `${Math.round(engineeringJudgment.confidence * 100)}%` : '-', 'classifier')}
+      </div>
+      <div class="cards">${(axisCards.length > 0 ? axisCards : [{
+        title: localizedText(language, { ja: 'Active axisなし', en: 'No active axis' }),
+        detail: localizedText(language, {
+          ja: 'general engineeringとして既存Gateを確認します。',
+          en: 'Existing gates are used as the general engineering contract.'
+        }),
+        tone: 'neutral'
+      }]).map((card) => `
+        <article class="card ${escapeAttr(card.tone)}">
+          <h3>${escapeHtml(card.title)}</h3>
+          ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
+          <p>${escapeHtml(card.detail)}</p>
+        </article>
+      `).join('')}</div>
     </section>
   `;
 }
@@ -1002,7 +1062,7 @@ function statusClass(status) {
 
 function toneForStatus(status) {
   if (['pass', 'passed', 'present', 'satisfied', 'ready_for_review', 'single_pr_ok', 'primary_pr', 'same_pr_allowed', 'executed'].includes(status)) return 'good';
-  if (['accepted_followup', 'needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
+  if (['active_accepted_followup', 'accepted_followup', 'needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
   if (['missing', 'contradicted', 'failed', 'blocked'].includes(status)) return 'danger';
   if (['candidate', 'available'].includes(status)) return 'info';
   return 'neutral';

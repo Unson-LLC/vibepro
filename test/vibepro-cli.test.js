@@ -6416,6 +6416,11 @@ test('pr ship dry-run reruns prepare and stops with Agent Review commands instea
   assert.equal(ship.required_agent_review.some((action) => action.prepare_command.includes('vibepro review prepare')), true);
   assert.equal(ship.required_agent_review.some((action) => action.start_command_template.includes('vibepro review start')), true);
   assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('vibepro review record')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-summary')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-input')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--judgment-delta')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-thread-id')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-closed')), true);
   const prepare = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
 });
@@ -6495,6 +6500,11 @@ test('pr ship dry-run restores Agent Review commands from stale role gates', asy
   const ship = JSON.parse(stdoutOutput);
   assert.equal(ship.status, 'blocked');
   assert.equal(ship.required_agent_review.some((action) => action.stage === 'gate' && action.roles.includes('gate_evidence')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-summary')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--inspection-input')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--judgment-delta')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-thread-id')), true);
+  assert.equal(ship.required_agent_review.some((action) => action.record_command_template.includes('--agent-closed')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review prepare')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review start')), true);
   assert.equal(ship.next_commands.some((command) => command.includes('vibepro review record')), true);
@@ -8197,6 +8207,38 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithAnonymousManualReview.effective_status, 'unverified_agent');
   assert.equal(roleWithAnonymousManualReview.provenance_status, 'missing_manual_reviewer');
   assert.match(roleWithAnonymousManualReview.provenance_reason, /--recorded-by reviewer provenance/);
+
+  const agentIdOnlyRecord = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'Codex subagent id only',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-agent-id-only',
+    '--agent-closed'
+  ]);
+  assert.equal(agentIdOnlyRecord.exitCode, 0);
+  assert.equal(agentIdOnlyRecord.result.review.agent_provenance.system, 'codex');
+  assert.equal(agentIdOnlyRecord.result.review.agent_provenance.evidence_strength, 'declared');
+
+  const statusWithAgentIdOnly = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithAgentIdOnly = statusWithAgentIdOnly.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithAgentIdOnly.effective_status, 'unverified_agent');
+  assert.equal(roleWithAgentIdOnly.provenance_status, 'weak_agent_provenance');
+  assert.match(roleWithAgentIdOnly.provenance_reason, /thread\/session\/call id or transcript artifact/);
 
   const humanRecord = await runCli([
     'review',
@@ -12338,6 +12380,17 @@ spec_docs:
   assert.equal(gate.axis_status, 'active_accepted_followup');
   assert.equal(gate.missing_evidence.includes('current_verification'), true);
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.judgment_axis_accepted_followup_count >= 1, true);
+
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
+  const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
+  assert.match(prBody, /active_accepted_followup/);
+  assert.match(gateDagHtml, /accepted_followup/);
+  assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}accepted_followup/);
+  assert.match(prPrepareHtml, /accepted_followup/);
+  assert.match(reviewCockpitHtml, /accepted_followup/);
+  assert.doesNotMatch(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}passed/);
 });
 
 test('judgment axis accepted decision without artifact remains needs evidence', async () => {

@@ -844,7 +844,7 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
         prepare_command: gate.command,
         start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
         close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-        record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+        record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
         artifact: gate.artifact ?? null,
         reason: gate.reason ?? 'required Agent Review prepare is missing'
       };
@@ -859,11 +859,34 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
       prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
       start_command_template: `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id <agent-id>`,
       close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
-      record_command_template: `vibepro review record . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-closed`,
+      record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
       artifact: `.vibepro/reviews/${storyId}/${stage}/parallel-dispatch.md`,
       reason: 'required Agent Review role is missing or stale'
     };
   });
+}
+
+function buildReviewRecordCommandTemplate(storyId, stage, roleArg) {
+  return [
+    'vibepro review record .',
+    '--id',
+    shellQuote(storyId),
+    '--stage',
+    shellQuote(stage),
+    '--role',
+    shellQuote(roleArg),
+    '--status pass',
+    '--summary "<summary>"',
+    '--inspection-summary "<inspection-summary>"',
+    '--inspection-evidence <inspection-evidence>',
+    '--inspection-input <inspection-input>',
+    '--judgment-delta "<initial judgment -> final judgment because evidence>"',
+    '--agent-system codex',
+    '--execution-mode parallel_subagent',
+    '--agent-id <agent-id>',
+    '--agent-thread-id <agent-thread-id>',
+    '--agent-closed'
+  ].join(' ');
 }
 
 function buildReviewPrepareCommand(storyId, stage, roles = []) {
