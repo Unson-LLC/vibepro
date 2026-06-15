@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 import { runCli } from '../../src/cli.js';
@@ -13,7 +14,15 @@ const STORY_ID = 'story-vibepro-review-dispatch-preflight-dag';
 const execFileAsync = promisify(execFile);
 
 async function git(repo: string, args: string[]) {
-  return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+  for (let attempt = 1; attempt <= 10; attempt += 1) {
+    try {
+      return await execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EAGAIN' || attempt === 10) throw error;
+      await delay(250 * attempt);
+    }
+  }
+  throw new Error('unreachable git retry state');
 }
 
 async function readJson(filePath: string) {
