@@ -199,12 +199,25 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   const missingAxis = missingPrepare.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
   assert.equal(missingAxis.status, 'active_needs_evidence');
   assert.equal(missingAxis.ignored_accepted_decision.missing_fields.includes('artifact'), true);
-  assert.equal(nodeById(missingPrepare, 'gate:judgment_axis_public_contract').status, 'needs_evidence');
+  const missingGate = nodeById(missingPrepare, 'gate:judgment_axis_public_contract');
+  assert.equal(missingGate.status, 'needs_evidence');
   assert.equal(
     missingAxis.status === 'active_needs_evidence' && missingAxis.ignored_accepted_decision.missing_fields.includes('artifact'),
     true,
     'story-vibepro-fake-value-hardening ac:3 axis waiver decisionにartifact linkまたはcurrent-safety artifactがない場合、missing evidenceはactive_needs_evidenceのまま残る'
   );
+
+  const missingPrBody = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  const missingGateDagHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
+  const missingPrPrepareHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
+  const missingReviewCockpitHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
+  assert.match(missingPrBody, /public_contract: active_needs_evidence[\s\S]{0,700}missing=[^\n]*current_verification/);
+  assert.match(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}needs_evidence/);
+  assert.doesNotMatch(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}passed/);
+  assert.match(missingPrPrepareHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=needs_evidence/);
+  assert.doesNotMatch(missingPrPrepareHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=passed/);
+  assert.match(missingReviewCockpitHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=needs_evidence/);
+  assert.doesNotMatch(missingReviewCockpitHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=passed/);
 });
 
 test('story-vibepro-fake-value-hardening exercises review provenance and gate evidence handoff gates', async () => {
