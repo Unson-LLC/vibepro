@@ -49,6 +49,7 @@ export async function executeMerge(repoRoot, options = {}) {
     base: baseBranch,
     current_branch: currentBranch,
     current_head_sha: currentHeadSha,
+    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_merge', currentHeadSha, createdAt),
     repository_slug: repositorySlug,
     pr: {
       selector: prSelector,
@@ -441,6 +442,22 @@ async function readJsonIfExists(filePath) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {
+  return {
+    kind,
+    status: headSha ? 'current' : 'unknown',
+    exists: true,
+    artifact: null,
+    report: null,
+    artifact_head_sha: headSha ?? null,
+    current_head_sha: headSha ?? null,
+    checked_at: checkedAt,
+    reason: headSha
+      ? `pr-merge artifact is bound to the current HEAD ${headSha.slice(0, 12)}`
+      : 'pr-merge artifact freshness could not be checked because current HEAD is unknown'
+  };
 }
 
 async function writePrMergeArtifacts(repoRoot, storyId, merge) {

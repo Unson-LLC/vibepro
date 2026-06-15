@@ -12,7 +12,7 @@ import {
   isStoryDocPath,
   renderRequirementGateSummary
 } from './requirement-consistency.js';
-import { renderGateDagHtml, renderPrCreateHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
+import { renderGateDagHtml, renderPrCreateHtml, renderPrMergeHtml, renderPrPrepareHtml, renderSplitPlanHtml } from './html-report.js';
 import { classifyChangeRisk } from './change-risk-classifier.js';
 import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
@@ -331,6 +331,17 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
+  const lifecycleArtifacts = workspace.initialized
+    ? await progress.stage('inspect_pr_lifecycle_artifacts', () => inspectPrLifecycleArtifacts(root, story.story_id, {
+      currentHeadSha: reviewGit.head_sha,
+      checkedAt: preparation.created_at
+    }))
+    : buildMissingLifecycleArtifactSummary({
+      storyId: story.story_id,
+      currentHeadSha: reviewGit.head_sha,
+      checkedAt: preparation.created_at
+    });
+  preparation.lifecycle_artifacts = lifecycleArtifacts;
   await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
     await writeFile(bodyPath, prBody, { signal });
     await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
@@ -392,6 +403,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
       decisionRecordsPath: toWorkspaceRelative(root, decisionRecordsPath),
       existingReview: existingHumanReview
     }), null, 2)}\n`, { signal });
+    if (workspace.initialized) {
+      await annotatePrLifecycleArtifacts(root, story.story_id, lifecycleArtifacts, { signal });
+    }
   });
   preparation.diagnostics.pr_prepare_stages = progress.snapshot();
 
@@ -672,6 +686,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     execution_gate: executionGate,
     gate_override: gateOverride,
     toolchain: preparation.toolchain ?? null,
+    current_head_sha: preparation.git.head_sha ?? null,
+    artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_create', preparation.git.head_sha ?? null, createdAt),
     base: baseBranch,
     head: headBranch,
     title,
@@ -3396,6 +3412,173 @@ async function readJsonIfExists(filePath) {
     throw error;
   }
 }
+
+function buildMissingLifecycleArtifactSummary({ storyId, currentHeadSha, checkedAt }) {
+  return {
+    schema_version: '0.1.0',
+    model: 'vibepro-pr-lifecycle-artifact-freshness-v1',
+    story_id: storyId,
+    status: 'not_started',
+    current_head_sha: currentHeadSha ?? null,
+    checked_at: checkedAt,
+    artifacts: [
+      buildMissingLifecycleArtifact('pr_create'),
+      buildMissingLifecycleArtifact('pr_merge')
+    ]
+  };
+}
+
+function buildMissingLifecycleArtifact(kind) {
+  const fileName = kind === 'pr_merge' ? 'pr-merge.json' : 'pr-create.json';
+  return {
+    kind,
+    status: 'not_created',
+    exists: false,
+    artifact: null,
+    report: null,
+    artifact_head_sha: null,
+    current_head_sha: null,
+    reason: `${fileName} has not been created yet`
+  };
+}
+
+async function inspectPrLifecycleArtifacts(repoRoot, storyId, { currentHeadSha, checkedAt }) {
+  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
+  const artifacts = [];
+  for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
+    const jsonPath = path.join(prDir, spec.fileName);
+    const reportPath = path.join(prDir, spec.reportName);
+    const artifact = await readJsonIfExists(jsonPath);
+    if (!artifact) {
+      artifacts.push({
+        ...buildMissingLifecycleArtifact(spec.kind),
+        artifact: toWorkspaceRelative(repoRoot, jsonPath),
+        report: toWorkspaceRelative(repoRoot, reportPath),
+        current_head_sha: currentHeadSha ?? null,
+        checked_at: checkedAt
+      });
+      continue;
+    }
+    const artifactHeadSha = extractPrLifecycleArtifactHead(artifact);
+    artifacts.push({
+      kind: spec.kind,
+      status: resolvePrLifecycleArtifactFreshnessStatus({ artifactHeadSha, currentHeadSha }),
+      exists: true,
+      artifact: toWorkspaceRelative(repoRoot, jsonPath),
+      report: toWorkspaceRelative(repoRoot, reportPath),
+      artifact_head_sha: artifactHeadSha,
+      current_head_sha: currentHeadSha ?? null,
+      checked_at: checkedAt,
+      reason: buildPrLifecycleArtifactFreshnessReason(spec.kind, { artifactHeadSha, currentHeadSha })
+    });
+  }
+  return {
+    schema_version: '0.1.0',
+    model: 'vibepro-pr-lifecycle-artifact-freshness-v1',
+    story_id: storyId,
+    status: summarizePrLifecycleArtifactFreshness(artifacts),
+    current_head_sha: currentHeadSha ?? null,
+    checked_at: checkedAt,
+    artifacts
+  };
+}
+
+async function annotatePrLifecycleArtifacts(repoRoot, storyId, lifecycleArtifacts, options = {}) {
+  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
+  for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
+    const freshness = lifecycleArtifacts?.artifacts?.find((item) => item.kind === spec.kind);
+    if (!freshness?.exists) continue;
+    const jsonPath = path.join(prDir, spec.fileName);
+    const artifact = await readJsonIfExists(jsonPath);
+    if (!artifact) continue;
+    const annotated = annotatePrLifecycleArtifact(artifact, freshness);
+    const reportHtml = spec.kind === 'pr_merge'
+      ? renderPrMergeHtml(annotated, { language: annotated.output?.language ?? 'ja' })
+      : renderPrCreateHtml(annotated, { language: annotated.output?.language ?? 'ja' });
+    await writeFile(jsonPath, `${JSON.stringify(annotated, null, 2)}\n`, { signal: options.signal });
+    await writeFile(path.join(prDir, spec.reportName), reportHtml, { signal: options.signal });
+  }
+}
+
+function annotatePrLifecycleArtifact(artifact, freshness) {
+  return {
+    ...artifact,
+    artifact_freshness: freshness,
+    warnings: buildPrLifecycleArtifactWarnings(artifact.warnings, freshness)
+  };
+}
+
+function buildPrLifecycleArtifactWarnings(warnings = [], freshness) {
+  const preserved = (Array.isArray(warnings) ? warnings : [])
+    .filter((warning) => !String(warning).startsWith(PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX));
+  if (!freshness || freshness.status === 'current') return preserved;
+  return [
+    ...preserved,
+    `${PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX} ${freshness.reason}. Open the latest pr-prepare artifact before trusting this lifecycle artifact.`
+  ];
+}
+
+function summarizePrLifecycleArtifactFreshness(artifacts) {
+  const existing = artifacts.filter((item) => item.exists);
+  if (existing.length === 0) return 'not_started';
+  if (existing.some((item) => item.status === 'stale' || item.status === 'unbound')) return 'stale';
+  if (existing.every((item) => item.status === 'current')) return 'current';
+  return 'partial';
+}
+
+function resolvePrLifecycleArtifactFreshnessStatus({ artifactHeadSha, currentHeadSha }) {
+  if (!artifactHeadSha) return 'unbound';
+  if (!currentHeadSha) return 'unknown';
+  return artifactHeadSha === currentHeadSha ? 'current' : 'stale';
+}
+
+function buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha, currentHeadSha }) {
+  const label = kind === 'pr_merge' ? 'pr-merge' : 'pr-create';
+  if (!artifactHeadSha) return `${label} artifact is not bound to a git HEAD`;
+  if (!currentHeadSha) return `${label} artifact freshness could not be checked because current HEAD is unknown`;
+  if (artifactHeadSha === currentHeadSha) return `${label} artifact is bound to the current HEAD ${shortSha(currentHeadSha)}`;
+  return `${label} artifact was recorded for ${shortSha(artifactHeadSha)}, current HEAD is ${shortSha(currentHeadSha)}`;
+}
+
+function extractPrLifecycleArtifactHead(artifact) {
+  return [
+    artifact?.current_head_sha,
+    artifact?.head_sha,
+    artifact?.git?.head_sha,
+    artifact?.toolchain?.source_git?.commit,
+    artifact?.toolchain?.git?.commit,
+    artifact?.gate_dag?.git_context?.head_sha,
+    artifact?.gate_dag?.head_sha,
+    artifact?.artifact_freshness?.artifact_head_sha,
+    artifact?.pr?.head_ref_oid
+  ].find((value) => typeof value === 'string' && /^[0-9a-f]{7,40}$/i.test(value)) ?? null;
+}
+
+function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {
+  return {
+    kind,
+    status: headSha ? 'current' : 'unknown',
+    exists: true,
+    artifact: null,
+    report: null,
+    artifact_head_sha: headSha ?? null,
+    current_head_sha: headSha ?? null,
+    checked_at: checkedAt,
+    reason: headSha
+      ? buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha: headSha, currentHeadSha: headSha })
+      : buildPrLifecycleArtifactFreshnessReason(kind, { artifactHeadSha: null, currentHeadSha: null })
+  };
+}
+
+function shortSha(value) {
+  return typeof value === 'string' ? value.slice(0, 12) : '-';
+}
+
+const PR_LIFECYCLE_FRESHNESS_WARNING_PREFIX = 'VibePro lifecycle artifact freshness:';
+const PR_LIFECYCLE_ARTIFACT_SPECS = [
+  { kind: 'pr_create', fileName: 'pr-create.json', reportName: 'pr-create.html' },
+  { kind: 'pr_merge', fileName: 'pr-merge.json', reportName: 'pr-merge.html' }
+];
 
 async function readVerificationEvidenceIfExists(repoRoot, storyId) {
   const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');

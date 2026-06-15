@@ -2396,6 +2396,132 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
   assert.match(actions, /Rerun current-bound verification evidence/);
 });
 
+test('pr prepare annotates stale PR lifecycle artifacts with current HEAD mismatch', async () => {
+  const repo = await makeGitRepoWithStory();
+  const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-05-10T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: true,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    task_context: null,
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', summary: { needs_evidence_count: 0 }, nodes: [] },
+    execution_gate: { status: 'passed', pr_create_allowed: true },
+    gate_override: null,
+    toolchain: {
+      source_git: {
+        commit: oldHead,
+        branch: 'feature/test-story'
+      }
+    },
+    base: 'main',
+    head: 'feature/test-story',
+    title: 'Old green PR create',
+    body_file: '.vibepro/pr/story-pr-prepare/pr-body.md',
+    prepare_artifacts: {},
+    warnings: [],
+    commands: ['gh pr create --base main --head feature/test-story'],
+    results: []
+  });
+  await writeFile(path.join(prDir, 'pr-create.html'), '<html><body>old green create</body></html>\n');
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-05-10T00:00:00.000Z',
+    mode: 'execute_merge',
+    dry_run: true,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    strategy: 'squash',
+    delete_branch: false,
+    base: 'main',
+    current_branch: 'feature/test-story',
+    current_head_sha: oldHead,
+    repository_slug: 'Unson-LLC/vibepro',
+    pr: {
+      selector: '123',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      state: 'OPEN',
+      is_draft: false,
+      merge_state_status: 'CLEAN',
+      review_decision: '',
+      head_ref_name: 'feature/test-story',
+      head_ref_oid: oldHead,
+      base_ref_name: 'main',
+      checks: []
+    },
+    gate_dag: { overall_status: 'ready_for_review', summary: { needs_evidence_count: 0 }, nodes: [] },
+    preconditions: {
+      gate_ready: true,
+      clean_worktree: true,
+      base_freshness: { status: 'passed' },
+      remote_head_match: { status: 'passed' },
+      checks_ready: { status: 'passed' },
+      review_policy: { status: 'passed' },
+      open_pull_request: { status: 'passed' }
+    },
+    warnings: [],
+    commands: [],
+    results: [],
+    branch_cleanup: {
+      requested: false,
+      remote: { attempted: false, deleted: false, command: null },
+      local: { attempted: false, deleted: false, command: null }
+    },
+    status: 'ready_to_merge',
+    stop_reason: 'ready_to_merge_dry_run',
+    merge_commit_sha: null,
+    merged_at: null
+  });
+  await writeFile(path.join(prDir, 'pr-merge.html'), '<html><body>old green merge</body></html>\n');
+
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'lifecycle-freshness.js'), 'export const lifecycleFreshness = true;\n');
+  await git(repo, ['add', 'src/lifecycle-freshness.js']);
+  await git(repo, ['commit', '-m', 'feat: advance lifecycle artifact head']);
+  const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.lifecycle_artifacts.status, 'stale');
+  assert.equal(result.result.preparation.lifecycle_artifacts.current_head_sha, currentHead);
+  assert.equal(
+    result.result.preparation.lifecycle_artifacts.artifacts.every((artifact) => artifact.status === 'stale'),
+    true
+  );
+
+  const prCreate = await readJson(path.join(prDir, 'pr-create.json'));
+  assert.equal(prCreate.artifact_freshness.status, 'stale');
+  assert.equal(prCreate.artifact_freshness.artifact_head_sha, oldHead);
+  assert.equal(prCreate.artifact_freshness.current_head_sha, currentHead);
+  assert.match(prCreate.warnings.join('\n'), /VibePro lifecycle artifact freshness: pr-create artifact was recorded/);
+  const prCreateHtml = await readFile(path.join(prDir, 'pr-create.html'), 'utf8');
+  assert.match(prCreateHtml, /Artifact Freshness/);
+  assert.match(prCreateHtml, /pr-create artifact was recorded/);
+  assert.match(prCreateHtml, new RegExp(currentHead.slice(0, 12)));
+
+  const prMerge = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMerge.artifact_freshness.status, 'stale');
+  assert.equal(prMerge.artifact_freshness.artifact_head_sha, oldHead);
+  assert.equal(prMerge.artifact_freshness.current_head_sha, currentHead);
+  assert.match(prMerge.warnings.join('\n'), /VibePro lifecycle artifact freshness: pr-merge artifact was recorded/);
+  const prMergeHtml = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
+  assert.match(prMergeHtml, /Artifact Freshness/);
+  assert.match(prMergeHtml, /pr-merge artifact was recorded/);
+  assert.match(prMergeHtml, new RegExp(currentHead.slice(0, 12)));
+
+  const prPrepareHtml = await readFile(path.join(prDir, 'review-cockpit.html'), 'utf8');
+  assert.match(prPrepareHtml, /PR lifecycle artifact/);
+  assert.match(prPrepareHtml, /pr-create\.json/);
+  assert.match(prPrepareHtml, /pr-merge\.json/);
+});
+
 test('pr prepare keeps verification evidence current when only tracked VibePro manifest changes', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -6340,9 +6466,13 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
   assert.equal(prCreate.gate_override.waiver_policy, 'cli_reason');
   assert.equal(prCreate.gate_override.critical_unresolved_gates.length, 0);
   assert.equal(prCreate.toolchain.package.name, 'vibepro');
+  assert.equal(prCreate.current_head_sha, createResult.result.preparation.git.head_sha);
+  assert.equal(prCreate.artifact_freshness.status, 'current');
+  assert.equal(prCreate.artifact_freshness.artifact_head_sha, createResult.result.preparation.git.head_sha);
   const prCreateHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.html'), 'utf8');
   assert.match(prCreateHtml, /data-vibepro-report="pr-create"/);
   assert.match(prCreateHtml, /VibePro PR Create/);
+  assert.match(prCreateHtml, /Artifact Freshness/);
   assert.match(prCreateHtml, /Gate Override/);
   assert.match(prCreateHtml, /Critical Unresolved Gates/);
   assert.match(prCreateHtml, /Completion Quality Waiver Evidence/);
