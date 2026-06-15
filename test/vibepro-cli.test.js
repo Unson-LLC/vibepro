@@ -6404,7 +6404,25 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
     '--command',
     'npx playwright test tests/e2e/story-pr-prepare-pr-artifacts.spec.ts',
     '--summary',
-    'Story acceptance E2E coverage passed'
+    'Story acceptance E2E coverage passed with flow_replay, artifact_replay, and scenario_clause_e2e coverage for PR artifact generation',
+    '--target',
+    'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts',
+    '--target',
+    '.vibepro/pr/story-pr-prepare/pr-body.md',
+    '--target',
+    '.vibepro/pr/story-pr-prepare/gate-dag.json',
+    '--scenario',
+    'flow_replay: PR prepare regenerates the PR artifact pipeline before create',
+    '--scenario',
+    'artifact_replay: PR body and Gate DAG artifacts are replayed from current evidence',
+    '--scenario',
+    'scenario_clause_e2e: Story acceptance clauses are represented in the E2E fixture',
+    '--observed',
+    'flow_replay=true',
+    '--observed',
+    'artifact_replay=true',
+    '--observed',
+    'scenario_clause_e2e=true'
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
