@@ -121,6 +121,11 @@ export async function executeMerge(repoRoot, options = {}) {
 
   if (!prSelector) {
     merge.stop_reason = 'pr_selector_missing';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
     merge.warnings.push('PR selector could not be resolved from --pr or a current pr-create artifact.');
     if (prCreate?.pr_url && !currentPrCreate) {
       merge.warnings.push('Ignored stale pr-create artifact PR URL because it is not bound to the current HEAD; pass --pr explicitly after confirming the target PR.');

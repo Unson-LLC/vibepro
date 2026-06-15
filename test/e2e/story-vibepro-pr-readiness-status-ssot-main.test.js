@@ -208,10 +208,11 @@ test(`${storyId} workflow replay blocks stale pr-create merge path`, async () =>
   });
   assert.equal(merge.exitCode, 2);
   assert.equal(merge.result.merge.status, 'blocked');
-  assert.equal(merge.result.merge.preconditions.gate_ready, false);
-  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'passed');
-  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
-  assert.equal(merge.result.merge.commands.some((command) => command.includes('gh pr merge')), false);
+  assert.equal(merge.result.merge.preconditions.pr_selector_resolved, false);
+  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'not_run');
+  assert.equal(merge.result.merge.stop_reason, 'pr_selector_missing');
+  assert.equal(merge.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(merge.result.merge.commands.length, 0);
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
@@ -269,10 +270,11 @@ test(`${storyId} workflow replay blocks stale pr-create when pr-prepare is missi
   });
   assert.equal(merge.exitCode, 2);
   assert.equal(merge.result.merge.status, 'blocked');
-  assert.equal(merge.result.merge.preconditions.gate_ready, false);
-  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'passed');
-  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
-  assert.equal(merge.result.merge.commands.some((command) => command.includes('gh pr merge')), false);
+  assert.equal(merge.result.merge.preconditions.pr_selector_resolved, false);
+  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'not_run');
+  assert.equal(merge.result.merge.stop_reason, 'pr_selector_missing');
+  assert.equal(merge.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(merge.result.merge.commands.length, 0);
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
@@ -330,9 +332,11 @@ test(`${storyId} workflow replay blocks stale pr-prepare embedded Gate DAG`, asy
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
   });
   assert.equal(merge.exitCode, 2);
-  assert.equal(merge.result.merge.preconditions.gate_ready, false);
-  assert.equal(merge.result.merge.stop_reason.includes('gate_not_ready'), true);
-  assert.equal(merge.result.merge.commands.some((command) => command.includes('gh pr merge')), false);
+  assert.equal(merge.result.merge.preconditions.pr_selector_resolved, false);
+  assert.equal(merge.result.merge.preconditions.remote_head_match.status, 'not_run');
+  assert.equal(merge.result.merge.stop_reason, 'pr_selector_missing');
+  assert.equal(merge.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(merge.result.merge.commands.length, 0);
   const ghState = JSON.parse(await readFile(gh.statePath, 'utf8'));
   assert.equal(ghState.mergeAttempted, false);
 });
