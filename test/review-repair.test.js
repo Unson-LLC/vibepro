@@ -67,7 +67,20 @@ async function setupRepairRepo() {
       provenance_status: 'verified_agent',
       agent_provenance: { agent_system: 'codex', lifecycle: { agent_closed: true } }
     }),
-    role('release_risk', { status: 'running', effective_status: 'timed_out' }),
+    role('release_risk', {
+      status: 'missing',
+      effective_status: 'missing',
+      lifecycle: {
+        effective_status: 'timed_out',
+        latest: {
+          lifecycle_id: 'lifecycle-release-risk',
+          status: 'running',
+          effective_status: 'timed_out',
+          agent_system: 'codex',
+          agent_id: 'agent-release-risk'
+        }
+      }
+    }),
     role('security_boundary', { status: 'pass', effective_status: 'pass' }),
     role('architecture_fit', {
       status: 'pass',
@@ -109,7 +122,10 @@ test('stale role becomes rerun_stale_review and timed_out becomes replace_timed_
   assert.equal(findCandidate(result, 'story-repair-broken', 'pr_split_scope').action, 'rerun_stale_review');
   const timedOut = findCandidate(result, 'story-repair-broken', 'release_risk');
   assert.equal(timedOut.action, 'replace_timed_out_review');
-  assert.match(timedOut.next_commands.join('\n'), /review close .*--close-evidence <close-evidence>/);
+  assert.equal(timedOut.effective_status, 'missing');
+  assert.match(timedOut.reason, /lifecycle timed out/);
+  assert.match(timedOut.next_commands.join('\n'), /review close .*--agent-id "agent-release-risk".*--close-reason timeout.*--close-evidence <close-evidence>/);
+  assert.match(timedOut.next_commands.join('\n'), /review start .*--agent-system codex.*--replacement-for lifecycle-release-risk/);
 });
 
 test('pass without provenance and unclosed lifecycle are repair candidates', async () => {

@@ -37,7 +37,7 @@ export async function buildReviewRepairPlan(repoRoot, options = {}) {
           effective_status: role.effective_status ?? role.status ?? null,
           reason: evaluation.reason,
           action: evaluation.action,
-          next_commands: buildRepairCommands({ storyId, stage, role: role.role, action: evaluation.action })
+          next_commands: buildRepairCommands({ storyId, stage, role, action: evaluation.action })
         });
       }
       if (stageCandidates.length === 0) continue;
@@ -84,6 +84,9 @@ export function renderReviewRepair(result) {
 function evaluateRoleRepair(role) {
   const roleName = role?.role ?? 'unknown';
   const effective = role?.effective_status ?? role?.status ?? 'missing';
+  if (hasTimedOutLifecycle(role)) {
+    return { action: 'replace_timed_out_review', reason: `review role ${roleName} lifecycle timed out without a recorded result` };
+  }
   if (effective === 'missing') {
     return { action: 'run_review', reason: `review role ${roleName} has not been run` };
   }
@@ -112,18 +115,30 @@ function evaluateRoleRepair(role) {
 }
 
 function buildRepairCommands({ storyId, stage, role, action }) {
+  const roleName = getRoleName(role);
+  const latestLifecycle = getLatestLifecycle(role);
+  const closeSelector = getCloseSelector(role);
+  const replacementFor = latestLifecycle?.lifecycle_id ?? '<previous-lifecycle-id>';
+  const replacementSystem = latestLifecycle?.agent_system ?? '<codex|claude_code>';
+  const startCommand = [
+    `vibepro review start . --id ${storyId} --stage ${stage} --role ${roleName}`,
+    `--agent-system ${action === 'replace_timed_out_review' ? replacementSystem : '<codex|claude_code>'}`,
+    '--agent-id "<subagent-id>"',
+    '--timeout-ms 600000',
+    action === 'replace_timed_out_review' ? `--replacement-for ${replacementFor}` : null
+  ].filter(Boolean).join(' ');
   const commands = [];
   if (action === 'replace_timed_out_review' || action === 'close_and_rerecord') {
     commands.push(
-      `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<previous-subagent-id>" --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'} --close-evidence <close-evidence>`
+      `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} ${closeSelector} --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'} --close-evidence <close-evidence>`
     );
   }
   commands.push(
-    `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`,
-    `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`,
-    `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<subagent-id>" --close-reason completed --close-evidence <close-evidence>`,
+    `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${roleName}`,
+    startCommand,
+    `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} --agent-id "<subagent-id>" --close-reason completed --close-evidence <close-evidence>`,
     [
-      `vibepro review record . --id ${storyId} --stage ${stage} --role ${role}`,
+      `vibepro review record . --id ${storyId} --stage ${stage} --role ${roleName}`,
       '--status <pass|needs_changes|block>',
       '--summary "<summary>"',
       '--inspection-summary "<inspection-summary>"',
@@ -140,6 +155,28 @@ function buildRepairCommands({ storyId, stage, role, action }) {
     ].join(' ')
   );
   return commands;
+}
+
+function hasTimedOutLifecycle(role) {
+  const lifecycle = role?.lifecycle;
+  return lifecycle?.effective_status === 'timed_out' || lifecycle?.latest?.effective_status === 'timed_out';
+}
+
+function getRoleName(role) {
+  return typeof role === 'string' ? role : (role?.role ?? '<role>');
+}
+
+function getLatestLifecycle(role) {
+  return typeof role === 'string' ? null : (role?.lifecycle?.latest ?? null);
+}
+
+function getCloseSelector(role) {
+  if (typeof role === 'string') return '--agent-id "<previous-subagent-id>"';
+  const latestLifecycle = getLatestLifecycle(role);
+  if (latestLifecycle?.agent_id) return `--agent-id "${latestLifecycle.agent_id}"`;
+  if (latestLifecycle?.lifecycle_id) return `--lifecycle-id ${latestLifecycle.lifecycle_id}`;
+  if (role?.agent_provenance?.agent_id) return `--agent-id "${role.agent_provenance.agent_id}"`;
+  return '--agent-id "<previous-subagent-id>"';
 }
 
 async function safeReaddir(dir) {
