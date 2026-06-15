@@ -113,6 +113,29 @@ test('observation_check is missing for a passing claim without any observation',
   assert.ok(evidence.warnings.some((warning) => warning.id === 'verification_observation_missing'));
 });
 
+test('verify record clears stale observation warnings when the same kind is rerecorded with observations', async () => {
+  const root = await setupRepo();
+  await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'build', '--status', 'pass',
+    '--command', 'node build.js'
+  ]);
+  let evidence = await readJson(evidencePath(root));
+  assert.ok(evidence.warnings.some((warning) => warning.id === 'verification_observation_missing'));
+
+  await runCli([
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'build', '--status', 'pass',
+    '--command', 'node build.js',
+    '--target', 'src/build.js',
+    '--scenario', 'build completes',
+    '--observed', 'exit_code=0'
+  ]);
+
+  evidence = await readJson(evidencePath(root));
+  const command = evidence.commands.find((item) => item.kind === 'build');
+  assert.equal(command.observation_check.status, 'recorded');
+  assert.equal(evidence.warnings.some((warning) => warning.id === 'verification_observation_missing'), false);
+});
+
 test('observation_check is partial when only values are present', async () => {
   const root = await setupRepo();
   await runCli([
