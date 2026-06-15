@@ -8033,6 +8033,8 @@ test('review record keeps append-only history for replaced review findings', asy
     'parallel_subagent',
     '--agent-id',
     'codex-history-reviewer-1',
+    '--agent-thread-id',
+    'thread-codex-history-reviewer-1',
     '--agent-closed'
   ]);
   assert.equal(needsChanges.exitCode, 0);
@@ -8062,6 +8064,8 @@ test('review record keeps append-only history for replaced review findings', asy
     'parallel_subagent',
     '--agent-id',
     'codex-history-reviewer-2',
+    '--agent-thread-id',
+    'thread-codex-history-reviewer-2',
     '--agent-closed'
   ]);
   assert.equal(pass.exitCode, 0);
@@ -8239,6 +8243,17 @@ test('review pass requires verified subagent or explicit manual review provenanc
   assert.equal(roleWithAgentIdOnly.effective_status, 'unverified_agent');
   assert.equal(roleWithAgentIdOnly.provenance_status, 'weak_agent_provenance');
   assert.match(roleWithAgentIdOnly.provenance_reason, /thread\/session\/call id or transcript artifact/);
+
+  const legacyStrongPath = path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-result-runtime_contract.json');
+  const legacyStrongReview = await readJson(legacyStrongPath);
+  legacyStrongReview.agent_provenance.evidence_strength = 'strong';
+  await writeJson(legacyStrongPath, legacyStrongReview);
+
+  const statusWithLegacyStrongAgentIdOnly = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  const roleWithLegacyStrongAgentIdOnly = statusWithLegacyStrongAgentIdOnly.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(roleWithLegacyStrongAgentIdOnly.effective_status, 'unverified_agent');
+  assert.equal(roleWithLegacyStrongAgentIdOnly.provenance_status, 'weak_agent_provenance');
+  assert.match(roleWithLegacyStrongAgentIdOnly.provenance_reason, /thread\/session\/call id or transcript artifact/);
 
   const humanRecord = await runCli([
     'review',

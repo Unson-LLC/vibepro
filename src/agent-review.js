@@ -2202,7 +2202,8 @@ function validateAgentProvenance(result) {
       reason: `review execution mode is ${provenance.execution_mode}, not parallel_subagent`
     };
   }
-  if (provenance.evidence_strength !== 'strong') {
+  const evidenceStrength = classifyAgentProvenance(provenance);
+  if (evidenceStrength !== 'strong') {
     return {
       status: 'weak_agent_provenance',
       reason: 'review provenance lacks subagent thread/session/call id or transcript artifact'
