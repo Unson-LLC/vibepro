@@ -5479,11 +5479,7 @@ function classifyGraphImpactEvidence(graphContext) {
 }
 
 function classifyVerificationEvidenceItem(item) {
-  const observationText = [
-    ...(item.observation?.targets ?? []),
-    ...(item.observation?.scenarios ?? [])
-  ].join(' ');
-  const text = `${item.kind ?? ''} ${item.command ?? ''} ${item.summary ?? ''} ${item.artifact ?? ''} ${observationText}`.toLowerCase();
+  const text = buildVerificationCommandSearchText(item).toLowerCase();
   const command = String(item.command ?? '').trim();
   const generic = isGenericVerificationCommand(command);
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
@@ -5491,6 +5487,7 @@ function classifyVerificationEvidenceItem(item) {
   const add = (kind) => {
     if (!matches.some((match) => match.kind === kind)) matches.push({ kind, ref });
   };
+  if (!text) return matches;
   if (!generic && ['unit', 'integration', 'e2e', 'build', 'typecheck'].includes(item.kind)) add('focused_test');
   if (!generic && /\b(runtime|path|src\/|test\/e2e|focused|acceptance|story-)\b/.test(text)) add('runtime_path_evidence');
   if (item.kind === 'integration' && !generic) add('integration_runtime_path');
@@ -7372,7 +7369,7 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
   const evidenceText = [
-    ...currentVerification.map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`),
+    ...currentVerification.map((command) => buildVerificationCommandSearchText(command)),
     flowCurrent ? JSON.stringify(flowVerification?.verification ?? flowVerification) : ''
   ].join('\n').toLowerCase();
   const highRisk = changeClassification?.profile === 'workflow_heavy';
@@ -7383,7 +7380,9 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
       ...surface,
       required,
       status: evidence ? 'covered' : required ? 'missing_surface_evidence' : 'not_required',
-      evidence: evidence ? currentVerification[0]?.command ?? 'flow_verification' : null
+      evidence: evidence
+        ? currentVerification.find((command) => pathSurfaceCoveredByEvidence(surface, buildVerificationCommandSearchText(command).toLowerCase()))?.command ?? 'flow_verification'
+        : null
     };
   });
   const missing = rows.filter((row) => row.status === 'missing_surface_evidence');

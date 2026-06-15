@@ -390,6 +390,13 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   const partialFailureGate = nodeById(stillUnresolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(partialFailureGate.status, 'missing_coverage');
   assert.equal(partialFailureGate.missing_modes.includes('evidence_lifecycle_regression'), true);
+  const partialSpineGate = nodeById(stillUnresolved.result.preparation, 'gate:common_judgment_spine');
+  assert.equal(
+    partialSpineGate.subchecks.find((check) => check.id === 'failure_modes').status,
+    'needs_evidence'
+  );
+  const partialPathSurfaceGate = nodeById(stillUnresolved.result.preparation, 'gate:path_surface_matrix');
+  assert.notEqual(partialPathSurfaceGate.status, 'passed');
 
   const verification = await runCli([
     'verify',
