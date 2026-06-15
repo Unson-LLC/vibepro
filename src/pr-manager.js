@@ -5040,17 +5040,19 @@ function classifySeniorAxisEvidence({
     if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
     if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
   }
-  return { matched, optional };
+  return { matched, optional, accepted_decision: acceptedDecision ?? null };
 }
 
 function resolveSeniorAxisStatus(definition, evidence) {
   const matchedKinds = new Set(evidence.matched.map((item) => item.kind));
-  if (matchedKinds.has('decision_record') && !definition.required_evidence.some((kind) => matchedKinds.has(kind))) {
+  const missingEvidence = missingEvidenceKinds(definition.required_evidence, evidence.matched);
+  if (missingEvidence.length === 0) {
+    return 'active_passed';
+  }
+  if (evidence.accepted_decision && matchedKinds.has('decision_record')) {
     return 'active_accepted_followup';
   }
-  return definition.required_evidence.some((kind) => matchedKinds.has(kind))
-    ? 'active_passed'
-    : 'active_needs_evidence';
+  return 'active_needs_evidence';
 }
 
 function calculateAxisConfidence(base, signals, graphContext) {

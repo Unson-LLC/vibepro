@@ -277,14 +277,19 @@ export async function recordAgentReview(repoRoot, options = {}) {
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     if (!result.agent_provenance.lifecycle?.agent_closed) return;
-    const entry = findLifecycleEntry(lifecycle.entries, {
+    let entry = findLifecycleEntry(lifecycle.entries, {
       role,
       agentId: result.agent_provenance.agent_id,
       agentSystem: result.agent_provenance.system
     });
-    if (!entry || entry.closed_at) return;
+    if (!entry) {
+      entry = buildSyntheticLifecycleEntryFromReviewResult(result, root, resultPath);
+      lifecycle.entries.push(entry);
+      return;
+    }
+    if (entry.closed_at) return;
     entry.status = 'closed';
-    entry.closed_at = new Date().toISOString();
+    entry.closed_at = result.recorded_at ?? new Date().toISOString();
     entry.close_reason = 'completed';
     entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
     entry.result_artifact = toWorkspaceRelative(root, resultPath);
@@ -2091,6 +2096,36 @@ function buildAgentProvenance(repoRoot, options = {}) {
   };
   provenance.evidence_strength = classifyAgentProvenance(provenance);
   return provenance;
+}
+
+function buildSyntheticLifecycleEntryFromReviewResult(result, repoRoot, resultPath) {
+  return {
+    schema_version: '0.1.0',
+    lifecycle_id: `synthetic-${result.stage}-${result.role}-${Date.parse(result.recorded_at ?? new Date().toISOString())}`,
+    story_id: result.story_id,
+    stage: result.stage,
+    role: result.role,
+    status: 'closed',
+    agent_system: result.agent_provenance.system,
+    agent_id: result.agent_provenance.agent_id,
+    agent_model: result.agent_provenance.model,
+    agent_reasoning_effort: result.agent_provenance.reasoning_effort,
+    agent_cost_tier: result.agent_provenance.cost_tier,
+    intended_model_policy: null,
+    model_policy_preflight: null,
+    thread_id: result.agent_provenance.thread_id,
+    session_id: result.agent_provenance.session_id,
+    tool_call_id: result.agent_provenance.tool_call_id,
+    started_at: result.recorded_at ?? new Date().toISOString(),
+    timeout_ms: null,
+    replacement_for: null,
+    close_reason: 'completed',
+    close_evidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(repoRoot, resultPath),
+    closed_at: result.recorded_at ?? new Date().toISOString(),
+    result_artifact: toWorkspaceRelative(repoRoot, resultPath),
+    synthesized_from_result: true,
+    synthesized_from_provenance: true
+  };
 }
 
 function normalizeReviewSystem(value) {

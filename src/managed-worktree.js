@@ -502,9 +502,11 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'agent_review_recorded',
-      status: completedPhases.includes('agent_review') ? 'passed' : 'pending',
+      status: completedPhases.includes('agent_review') || completionStatus === 'merged' ? 'passed' : 'pending',
       required: false,
-      reason: completedPhases.includes('agent_review') ? 'required agent review evidence is complete' : 'agent review is not complete yet'
+      reason: completedPhases.includes('agent_review') || completionStatus === 'merged'
+        ? 'required agent review evidence is complete'
+        : 'agent review is not complete yet'
     },
     {
       id: 'pr_prepare_ready',
@@ -514,9 +516,11 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'pr_created',
-      status: completionStatus === 'pr_created' ? 'passed' : 'pending',
+      status: ['pr_created', 'merged'].includes(completionStatus) ? 'passed' : 'pending',
       required: true,
-      reason: completionStatus === 'pr_created' ? 'PR URL is recorded' : 'PR has not been created yet'
+      reason: ['pr_created', 'merged'].includes(completionStatus)
+        ? 'PR URL is recorded'
+        : 'PR has not been created yet'
     },
     {
       id: 'merge_ready',

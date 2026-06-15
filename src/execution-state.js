@@ -304,6 +304,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   const blockingGate = executionBlockingGate ?? pickBlockingGate(blockingGates);
   const prCreated = Boolean(prCreate?.pr_url && prCreate?.dry_run !== true);
   const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
+  const agentReviewSatisfied = isGateAgentReviewSatisfied(agentReview);
   const gatesReadyForPrCreate = gateDag
     ? Boolean(prPrepare && gateDag.overall_status === 'ready_for_review' && unresolvedGates.length === 0)
     : gateStatus?.ready_for_pr_create === true && gateStatus?.execution_gate?.status !== 'waiver_required';
@@ -347,7 +348,7 @@ async function buildExecutionState(repoRoot, options = {}) {
   const completedPhases = deriveCompletedPhases({
     prPrepare,
     verificationEvidence,
-    agentReview,
+    agentReviewSatisfied,
     readyForPrCreate,
     prCreated,
     merged,
@@ -388,7 +389,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     last_pr_prepare: prPrepare ? summarizePrPrepare(root, prPrepare) : null,
     last_review_status: agentReview ? summarizeAgentReview(agentReview) : null,
     last_verification_evidence: verificationEvidence ? summarizeVerificationEvidence(root, verificationEvidence) : null,
-    pr_url: prCreate?.pr_url ?? null
+    pr_url: prCreate?.pr_url ?? prMerge?.pr?.url ?? null
   };
 }
 
@@ -403,11 +404,11 @@ async function resolveExecutionExpectedHead(root, managedWorktree, currentHeadSh
   return currentHeadSha;
 }
 
-function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, readyForPrCreate, prCreated, merged, prMerge }) {
+function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReviewSatisfied, readyForPrCreate, prCreated, merged, prMerge }) {
   const phases = [];
   if (prPrepare) phases.push('prepare_pr');
   if ((verificationEvidence?.commands ?? []).length > 0) phases.push('verify');
-  if (agentReview?.summary?.required_review_count > 0 && agentReview.summary.unmet_required_review_count === 0) {
+  if (agentReviewSatisfied || merged) {
     phases.push('agent_review');
   }
   if (readyForPrCreate) phases.push('ready_for_pr_create');
@@ -415,6 +416,16 @@ function deriveCompletedPhases({ prPrepare, verificationEvidence, agentReview, r
   if (prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged') phases.push('merge_ready');
   if (merged) phases.push('merge');
   return phases;
+}
+
+function isGateAgentReviewSatisfied(agentReview) {
+  const gateStage = (agentReview?.stages ?? []).find((stage) => stage.stage === 'gate');
+  if (!gateStage) return false;
+  return gateStage.status === 'pass'
+    && (gateStage.missing_count ?? 0) === 0
+    && (gateStage.stale_count ?? 0) === 0
+    && (gateStage.block_count ?? 0) === 0
+    && (gateStage.unverified_agent_count ?? 0) === 0;
 }
 
 function deriveNextActions({ storyId, baseRef, managedWorktree, expectedHeadSha, prPrepare, gateStatus, unresolvedGates = [], blockingGate, waiverRequired, readyForPrCreate, prCreated, merged }) {
