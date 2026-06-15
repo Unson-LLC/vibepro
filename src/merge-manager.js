@@ -24,17 +24,18 @@ export async function executeMerge(repoRoot, options = {}) {
     readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
     readJsonIfExists(path.join(prDir, 'gate-dag.json'))
   ]);
-  const story = prCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const strategy = normalizeMergeStrategy(options.strategy);
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
+  const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
   const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
-  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? prCreate?.gate_dag ?? null;
-  const baseBranch = stripRemote(options.baseRef ?? prCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
-  const prSelector = options.pr ?? prCreate?.pr_url ?? executionState?.pr_url ?? null;
-  const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate, prPrepare, executionState });
+  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
+  const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
+  const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
+  const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });
   const createdAt = new Date().toISOString();
   const merge = {
     schema_version: '0.1.0',
@@ -43,7 +44,7 @@ export async function executeMerge(repoRoot, options = {}) {
     dry_run: dryRun,
     workspace_initialized: true,
     story,
-    output: prCreate?.output ?? prPrepare?.output ?? { language: 'ja' },
+    output: currentPrCreate?.output ?? prPrepare?.output ?? { language: 'ja' },
     strategy,
     delete_branch: deleteBranch,
     base: baseBranch,
@@ -120,9 +121,15 @@ export async function executeMerge(repoRoot, options = {}) {
 
   if (!prSelector) {
     merge.stop_reason = 'pr_selector_missing';
-    merge.warnings.push('PR selector could not be resolved from --pr, pr-create artifact, or execution state.');
+    merge.warnings.push('PR selector could not be resolved from --pr or a current pr-create artifact.');
+    if (prCreate?.pr_url && !currentPrCreate) {
+      merge.warnings.push('Ignored stale pr-create artifact PR URL because it is not bound to the current HEAD; pass --pr explicitly after confirming the target PR.');
+    }
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
     return { merge, artifacts };
+  }
+  if (!options.pr && prCreate?.pr_url && !currentPrCreate) {
+    merge.warnings.push('Ignored stale pr-create artifact PR URL because it is not bound to the current HEAD; pass --pr explicitly after confirming the target PR.');
   }
 
   const fetchCommand = ['git', ['fetch', 'origin', baseBranch]];
@@ -464,6 +471,19 @@ async function readJsonIfExists(filePath) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
+  if (!artifact || !currentHeadSha) return false;
+  const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
+    ?? artifact.current_head_sha
+    ?? artifact.toolchain?.source_git?.commit
+    ?? artifact.git_context?.head_sha
+    ?? null;
+  if (artifact.artifact_freshness) {
+    return artifact.artifact_freshness.status === 'current' && artifactHeadSha === currentHeadSha;
+  }
+  return artifactHeadSha === currentHeadSha;
 }
 
 function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {

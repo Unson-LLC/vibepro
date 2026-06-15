@@ -12,7 +12,7 @@ title: VibePro Execute Merge Command Spec
 ## 必須挙動
 
 - `execute merge` は明示コマンドでのみ動作し、`pr create` や `pr ship` から暗黙実行してはいけない。
-- Storyごとの `pr-create.json` から PR URL を解決する。`--pr` が与えられた場合はそれを優先する。
+- Storyごとの current HEAD-bound `pr-create.json` から PR URL を解決する。`--pr` が与えられた場合はそれを優先する。stale `pr-create.json` の PR URL は merge selector に使わない。
 - PR URL も PR selector も解決できない場合、`status=blocked` として artifact を書き、終了コードは非0にする。
 - merge前に次を確認する。
   - 最新 `pr-prepare` / `pr-create` artifact 上で Gate DAG が `ready_for_review`

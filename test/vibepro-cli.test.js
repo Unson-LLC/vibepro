@@ -9853,6 +9853,7 @@ test('required managed worktree backfills VibePro control files when reusing an 
 
 test('execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
@@ -9874,7 +9875,14 @@ test('execute merge dry-run plans external checks without executing them', async
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
-    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } },
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git', commit: headSha } },
     results: []
   });
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-dry-run-bin-'));
@@ -9928,6 +9936,72 @@ process.exit(99);
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
 });
 
+test('execute merge dry-run ignores stale pr-create selectors', async () => {
+  const repo = await makeGitRepoWithStory();
+  const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await writeFile(path.join(repo, 'src-stale-merge-selector.js'), 'export const staleMergeSelector = true;\n');
+  await git(repo, ['add', 'src-stale-merge-selector.js']);
+  await git(repo, ['commit', '-m', 'feat: advance past stale pr create']);
+  const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main', head_sha: currentHead }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    current_head_sha: oldHead,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'stale',
+      artifact_head_sha: oldHead,
+      current_head_sha: currentHead
+    },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git', commit: oldHead } },
+    results: []
+  });
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-stale-pr-create-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--dry-run',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.equal(result.result.merge.status, 'blocked');
+  assert.equal(result.result.merge.stop_reason, 'pr_selector_missing');
+  assert.equal(result.result.merge.commands.length, 0);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+});
+
 test('execute merge completes merge artifacts and execution state after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
@@ -9961,6 +10035,14 @@ test('execute merge completes merge artifacts and execution state after a succes
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/124',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { commit: headSha } },
     results: []
   });
   await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
@@ -10041,7 +10123,14 @@ test('execute merge deletes the remote branch and records local cleanup skip whe
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/125',
-    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } },
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git', commit: headSha } },
     results: []
   });
 
@@ -11238,6 +11327,8 @@ test('pr body verification checklist checks exact current evidence even when the
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'pr-body-typecheck.js'), 'export const prBodyTypecheck = true;\n');
+  const integrationArtifact = path.join(repo, 'risk-adaptive-artifact.json');
+  await writeJson(integrationArtifact, { status: 'pass', tests: 1 });
   await git(repo, ['add', 'src/pr-body-typecheck.js']);
   await git(repo, ['commit', '-m', 'feat: add pr body typecheck fixture']);
 
@@ -11245,10 +11336,11 @@ test('pr body verification checklist checks exact current evidence even when the
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
     '--kind', 'integration',
-    '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
-    '--summary', 'risk-adaptive gate regression passed'
-  ])).exitCode, 0);
+	    '--status', 'pass',
+	    '--command', 'node --test test/risk-adaptive-gate.test.js',
+	    '--summary', 'risk-adaptive gate regression passed',
+	    '--artifact', integrationArtifact
+	  ])).exitCode, 0);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
@@ -11263,6 +11355,7 @@ test('pr body verification checklist checks exact current evidence even when the
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- \[x\] `npm run typecheck`/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run typecheck`.*gate: passed via `node --test test\/risk-adaptive-gate\.test\.js`/);
+  assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
 });
 
 test('pr prepare rejects stale verification evidence recorded before a dirty UI change', async () => {

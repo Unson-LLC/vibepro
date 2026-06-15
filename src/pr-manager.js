@@ -2443,7 +2443,9 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const status = gate?.status
       ? ` / gate: ${gate.status}${passed && !commandMatchesEvidence ? ` via \`${gate.command}\`` : ''}`
       : '';
-    const evidence = gate?.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
+    const evidenceArtifact = recordedEvidence?.artifact
+      ?? (gate?.command && gate.command === item.command ? gate.evidence?.artifact : null);
+    const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
     return `- [${checked}] \`${item.command}\` - ${item.reason}${status}${evidence}`;
   });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])

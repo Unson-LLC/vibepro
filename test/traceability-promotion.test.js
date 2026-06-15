@@ -161,6 +161,14 @@ async function setupMergeRepo() {
     base: 'main',
     head: 'feature/promo',
     pr_url: 'https://github.example.test/unson/vibepro/pull/200',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { commit: headSha } },
     results: []
   });
   await writeJson(traceabilityPath(root, 'story-test-promo'), {
