@@ -125,10 +125,43 @@ export async function executeMerge(repoRoot, options = {}) {
     return { merge, artifacts };
   }
 
-  merge.commands.push(formatCommand(['git', ['fetch', 'origin', baseBranch]]));
-  merge.commands.push(formatCommand(['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)]));
+  const fetchCommand = ['git', ['fetch', 'origin', baseBranch]];
+  const prViewCommand = ['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)];
+  const prMergeCommand = ['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)];
+  merge.commands.push(formatCommand(fetchCommand));
+  merge.commands.push(formatCommand(prViewCommand));
 
-  const fetchResult = await runCommand(root, ['git', ['fetch', 'origin', baseBranch]], options);
+  if (nonWorkspaceDirtyFiles.length > 0) {
+    merge.warnings.push(`Non-workspace dirty files: ${nonWorkspaceDirtyFiles.join(', ')}`);
+  }
+
+  if (dryRun) {
+    merge.commands.push(formatCommand(prMergeCommand));
+    if (deleteBranch) {
+      merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || '<pr-head-branch>']]));
+    }
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
+    merge.warnings.push('Dry-run skipped external commands; git fetch, gh pr view, and gh pr merge were not executed.');
+
+    const localBlockingReasons = [];
+    if (merge.preconditions.gate_ready !== true) localBlockingReasons.push('gate_not_ready');
+    if (!merge.preconditions.clean_worktree) localBlockingReasons.push('dirty_worktree');
+    if (localBlockingReasons.length > 0) {
+      merge.status = 'blocked';
+      merge.stop_reason = localBlockingReasons.join(',');
+    } else {
+      merge.status = 'dry_run_planned';
+      merge.stop_reason = 'external_checks_skipped_dry_run';
+    }
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return { merge, artifacts };
+  }
+
+  const fetchResult = await runCommand(root, fetchCommand, options);
   merge.results.push(fetchResult);
   if (fetchResult.exit_code !== 0) {
     merge.stop_reason = 'base_fetch_failed';
@@ -142,7 +175,7 @@ export async function executeMerge(repoRoot, options = {}) {
   merge.preconditions.base_freshness.status = containsBase ? 'passed' : 'blocked';
   merge.preconditions.base_freshness.merge_base_contains_base = containsBase;
 
-  const prViewResult = await runCommand(root, ['gh', buildPrViewArgs(prSelector, repositorySlug, PR_VIEW_FIELDS)], options);
+  const prViewResult = await runCommand(root, prViewCommand, options);
   merge.results.push(prViewResult);
   if (prViewResult.exit_code !== 0) {
     merge.stop_reason = 'pr_view_failed';
@@ -190,10 +223,6 @@ export async function executeMerge(repoRoot, options = {}) {
   if (merge.preconditions.checks_ready.status !== 'passed') blockingReasons.push('checks_not_ready');
   if (merge.preconditions.review_policy.status !== 'passed') blockingReasons.push('review_policy_not_satisfied');
   if (merge.preconditions.open_pull_request.status !== 'passed') blockingReasons.push('pr_not_mergeable');
-  if (nonWorkspaceDirtyFiles.length > 0) {
-    merge.warnings.push(`Non-workspace dirty files: ${nonWorkspaceDirtyFiles.join(', ')}`);
-  }
-
   if (blockingReasons.length > 0) {
     merge.status = 'blocked';
     merge.stop_reason = blockingReasons.join(',');
@@ -201,21 +230,14 @@ export async function executeMerge(repoRoot, options = {}) {
     return { merge, artifacts };
   }
 
-  merge.commands.push(formatCommand(['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)]));
+  merge.commands.push(formatCommand(prMergeCommand));
   if (deleteBranch) {
     merge.commands.push(formatCommand(['git', ['push', 'origin', '--delete', currentBranch || 'HEAD']]));
   }
 
-  if (dryRun) {
-    merge.status = 'ready_to_merge';
-    merge.stop_reason = 'ready_to_merge_dry_run';
-    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
-  }
-
   const mergeResult = await runCommand(
     root,
-    ['gh', buildMergeArgs(prSelector, strategy, repositorySlug, currentHeadSha)],
+    prMergeCommand,
     options,
     { cwd: os.tmpdir() }
   );

@@ -9778,18 +9778,8 @@ test('required managed worktree backfills VibePro control files when reusing an 
   );
 });
 
-test('execute merge dry-run resolves PR metadata and records merge readiness artifacts', async () => {
+test('execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
-  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
-  await git(remote, ['init', '--bare']);
-  try {
-    await git(repo, ['remote', 'set-url', 'origin', remote]);
-  } catch {
-    await git(repo, ['remote', 'add', 'origin', remote]);
-  }
-  await git(repo, ['push', '-u', 'origin', 'main']);
-  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
-  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
@@ -9814,21 +9804,15 @@ test('execute merge dry-run resolves PR metadata and records merge readiness art
     toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git' } },
     results: []
   });
-  await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
-  const gh = await makeFakeGhMerge({
-    url: 'https://github.example.test/unson/vibepro/pull/123',
-    headRefName: 'feature/test-story',
-    headRefOid: headSha,
-    baseRefName: 'main',
-    mergeStateStatus: 'CLEAN',
-    reviewDecision: '',
-    statusCheckRollup: [
-      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' },
-      { name: 'analyze', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CodeQL' }
-    ],
-    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
-    mergedAt: '2026-06-07T00:32:55Z'
-  });
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-dry-run-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.stderr.write('gh must not be executed during execute merge --dry-run');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
 
   const result = await runCli([
     'execute',
@@ -9841,21 +9825,30 @@ test('execute merge dry-run resolves PR metadata and records merge readiness art
     '--dry-run',
     '--json'
   ], {
-    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
   });
 
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.merge.status, 'ready_to_merge');
-  assert.equal(result.result.merge.preconditions.base_freshness.status, 'passed');
-  assert.equal(result.result.merge.preconditions.remote_head_match.status, 'passed');
-  assert.equal(result.result.merge.preconditions.checks_ready.status, 'passed');
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.equal(result.result.merge.status, 'dry_run_planned');
+  assert.equal(result.result.merge.stop_reason, 'external_checks_skipped_dry_run');
+  assert.equal(result.result.merge.results.length, 0);
+  assert.equal(result.result.merge.preconditions.base_freshness.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.remote_head_match.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.checks_ready.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.review_policy.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.open_pull_request.status, 'not_run');
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
+  assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr view')), true);
+  assert.equal(result.result.merge.commands.some((command) => command.includes('git fetch origin main')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('--repo unson/vibepro')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('--match-head-commit')), true);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Dry-run skipped external commands')), true);
 
   const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
-  assert.equal(artifact.status, 'ready_to_merge');
+  assert.equal(artifact.status, 'dry_run_planned');
   assert.equal(artifact.dry_run, true);
+  assert.equal(artifact.results.length, 0);
   const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
   assert.match(html, /data-vibepro-report="pr-merge"/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));

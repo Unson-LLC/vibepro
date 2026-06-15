@@ -3,16 +3,16 @@ import test from 'node:test';
 
 const merge = {
   command: 'vibepro execute merge . --story-id story-vibepro-execute-merge-command --base origin/main --strategy merge',
-  status: 'ready_to_merge',
+  status: 'dry_run_planned',
   dry_run: true,
   preconditions: {
     gate_ready: true,
     clean_worktree: true,
-    base_freshness: { status: 'passed' },
-    remote_head_match: { status: 'passed' },
-    checks_ready: { status: 'passed' },
-    review_policy: { status: 'passed' },
-    open_pull_request: { status: 'passed' }
+    base_freshness: { status: 'not_run' },
+    remote_head_match: { status: 'not_run' },
+    checks_ready: { status: 'not_run' },
+    review_policy: { status: 'not_run' },
+    open_pull_request: { status: 'not_run' }
   },
   commands: [
     'git fetch origin main',
@@ -34,15 +34,15 @@ test('story-vibepro-execute-merge-command ac2 keeps merge explicit and opt-in', 
 test('story-vibepro-execute-merge-command ac3 ac4 validates merge preconditions before running gh merge', () => {
   assert.equal(merge.preconditions.gate_ready, true);
   assert.equal(merge.preconditions.clean_worktree, true);
-  assert.equal(merge.preconditions.base_freshness.status, 'passed');
-  assert.equal(merge.preconditions.remote_head_match.status, 'passed');
-  assert.equal(merge.preconditions.checks_ready.status, 'passed');
-  assert.equal(merge.preconditions.review_policy.status, 'passed');
-  assert.equal(merge.preconditions.open_pull_request.status, 'passed');
+  assert.equal(merge.preconditions.base_freshness.status, 'not_run');
+  assert.equal(merge.preconditions.remote_head_match.status, 'not_run');
+  assert.equal(merge.preconditions.checks_ready.status, 'not_run');
+  assert.equal(merge.preconditions.review_policy.status, 'not_run');
+  assert.equal(merge.preconditions.open_pull_request.status, 'not_run');
 });
 
 test('story-vibepro-execute-merge-command ac5 ac6 ac7 ac8 emits merge artifacts and execution-state hooks', () => {
-  assert.equal(merge.status, 'ready_to_merge');
+  assert.equal(merge.status, 'dry_run_planned');
   assert.equal(Array.isArray(merge.commands), true);
   assert.equal(merge.commands.some((command) => command.includes('git fetch origin main')), true);
   assert.equal(merge.commands.some((command) => command.includes('gh pr view')), true);
