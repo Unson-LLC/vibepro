@@ -10856,6 +10856,11 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   assert.match(agentReviews.unmet_checkpoint_reviews[0].detail, /checkpoint-runtime-stuck-after-pass/);
   const agentGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:agent_review');
   assert.equal(agentGate.status, 'needs_review');
+  const topologyAxis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((axis) => axis.axis === 'execution_topology');
+  assert.equal(topologyAxis.matched_evidence.some((item) => item.kind === 'agent_review'), false, JSON.stringify(topologyAxis, null, 2));
+  assert.equal(topologyAxis.missing_evidence.includes('agent_review'), true);
+  const topologyGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_execution_topology');
+  assert.notEqual(topologyGate.status, 'passed', JSON.stringify(topologyGate, null, 2));
 });
 
 test('pr prepare advances current review stage after required roles pass despite default missing roles', async () => {

@@ -6073,14 +6073,16 @@ function buildDeployVerificationGate({ environmentGraph = null, changeClassifica
 function hasAgentEvidenceLifecycle({ agentReviews = null, decisionRecords = null } = {}) {
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:judgment_agent_workflow_evidence_lifecycle')) return true;
   if (!agentReviews) return false;
-  if (agentReviews.status === 'pass') return true;
   const s = agentReviews.summary ?? {};
+  if ((s.lifecycle_running_count ?? 0) > 0 || (s.lifecycle_timed_out_count ?? 0) > 0) {
+    return false;
+  }
+  if (agentReviews.status === 'pass') return true;
   if ((s.required_review_count ?? 0) > 0
     && (s.unmet_required_review_count ?? 0) === 0
     && (s.unmet_checkpoint_review_count ?? 0) === 0
     && (s.stale_result_count ?? 0) === 0
     && (s.unverified_agent_result_count ?? 0) === 0
-    && (s.lifecycle_timed_out_count ?? 0) === 0
     && (s.block_result_count ?? 0) === 0) {
     return true;
   }
