@@ -96,13 +96,20 @@ test('missing role becomes a run_review candidate with full command chain', asyn
   assert.match(joined, /review prepare .*--stage gate --role gate_evidence/);
   assert.match(joined, /review start /);
   assert.match(joined, /review record .*--agent-closed/);
+  assert.match(joined, /review record .*--inspection-input <inspection-input>/);
+  assert.match(joined, /review record .*--judgment-delta/);
+  assert.match(joined, /review record .*--agent-thread-id "<subagent-thread-id>"/);
+  assert.match(joined, /review record .*--agent-transcript <artifact>/);
+  assert.match(joined, /review record .*--agent-close-evidence <close-evidence>/);
 });
 
 test('stale role becomes rerun_stale_review and timed_out becomes replace_timed_out_review', async () => {
   const root = await setupRepairRepo();
   const { result } = await runCli(['review', 'repair', root, '--json']);
   assert.equal(findCandidate(result, 'story-repair-broken', 'pr_split_scope').action, 'rerun_stale_review');
-  assert.equal(findCandidate(result, 'story-repair-broken', 'release_risk').action, 'replace_timed_out_review');
+  const timedOut = findCandidate(result, 'story-repair-broken', 'release_risk');
+  assert.equal(timedOut.action, 'replace_timed_out_review');
+  assert.match(timedOut.next_commands.join('\n'), /review close .*--close-evidence <close-evidence>/);
 });
 
 test('pass without provenance and unclosed lifecycle are repair candidates', async () => {

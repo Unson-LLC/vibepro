@@ -115,14 +115,29 @@ function buildRepairCommands({ storyId, stage, role, action }) {
   const commands = [];
   if (action === 'replace_timed_out_review' || action === 'close_and_rerecord') {
     commands.push(
-      `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<previous-subagent-id>" --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'}`
+      `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<previous-subagent-id>" --close-reason ${action === 'replace_timed_out_review' ? 'timeout' : 'manual_shutdown'} --close-evidence <close-evidence>`
     );
   }
   commands.push(
     `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`,
     `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`,
-    `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<subagent-id>" --close-reason completed`,
-    `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --inspection-summary "<inspection>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-closed`
+    `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<subagent-id>" --close-reason completed --close-evidence <close-evidence>`,
+    [
+      `vibepro review record . --id ${storyId} --stage ${stage} --role ${role}`,
+      '--status <pass|needs_changes|block>',
+      '--summary "<summary>"',
+      '--inspection-summary "<inspection-summary>"',
+      '--inspection-evidence <inspection-evidence>',
+      '--inspection-input <inspection-input>',
+      '--judgment-delta "<initial judgment -> final judgment because evidence>"',
+      '--agent-system <codex|claude_code>',
+      '--execution-mode parallel_subagent',
+      '--agent-id "<subagent-id>"',
+      '--agent-thread-id "<subagent-thread-id>"',
+      '--agent-transcript <artifact>',
+      '--agent-closed',
+      '--agent-close-evidence <close-evidence>'
+    ].join(' ')
   );
   return commands;
 }
