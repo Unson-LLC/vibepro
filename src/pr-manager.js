@@ -7247,14 +7247,14 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
   const currentEvidence = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
   const evidenceText = currentEvidence
-    .map((command) => `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`)
+    .map((command) => buildVerificationCommandSearchText(command))
     .join('\n')
     .toLowerCase();
   const coveredModes = modes.map((mode) => ({
     ...mode,
     status: failureModeCoveredByEvidence(mode, evidenceText) ? 'covered' : highRisk ? 'missing_coverage' : 'not_required',
     evidence: failureModeCoveredByEvidence(mode, evidenceText)
-      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, `${command.kind ?? ''}\n${command.command ?? ''}\n${command.summary ?? ''}\n${command.artifact ?? ''}`.toLowerCase()))?.command ?? 'verification_evidence'
+      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, buildVerificationCommandSearchText(command).toLowerCase()))?.command ?? 'verification_evidence'
       : null
   }));
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
@@ -7349,7 +7349,25 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 
 function failureModeCoveredByEvidence(mode, evidenceText) {
   if (!evidenceText) return false;
-  return mode.keywords.some((keyword) => evidenceText.includes(keyword));
+  return [mode.id, ...(mode.keywords ?? [])]
+    .filter(Boolean)
+    .some((keyword) => evidenceText.includes(String(keyword).toLowerCase()));
+}
+
+function buildVerificationCommandSearchText(command) {
+  const observation = command?.observation ?? {};
+  const observedValues = observation.values && typeof observation.values === 'object'
+    ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
+    : [];
+  return [
+    command?.kind,
+    command?.command,
+    command?.summary,
+    command?.artifact,
+    ...(observation.targets ?? []),
+    ...(observation.scenarios ?? []),
+    ...observedValues
+  ].filter(Boolean).join('\n');
 }
 
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {

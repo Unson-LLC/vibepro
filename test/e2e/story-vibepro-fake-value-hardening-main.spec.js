@@ -375,11 +375,13 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--command',
     'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
     '--summary',
-    'artifact replay of pr-prepare and gate-dag covers accepted_followup, needs_evidence, active_needs_evidence, provenance, inspection evidence, stale workflow state transition, and artifact replay failure modes',
+    'current executable evidence for story failure-mode gates',
     '--target',
     'src/fake-value-workflow.js',
     '--scenario',
-    'pr prepare artifact replay proves fake green failure modes are visible',
+    'evidence_lifecycle_regression',
+    '--scenario',
+    'workflow_state_regression',
     '--json'
   ]);
   assert.equal(verification.exitCode, 0);
