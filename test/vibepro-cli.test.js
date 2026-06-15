@@ -6424,6 +6424,29 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
     '--observed',
     'scenario_clause_e2e=true'
   ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/integration/story-pr-prepare-runtime-path.test.js',
+    '--summary',
+    'Integration runtime path evidence passed for PR artifact creation',
+    '--target',
+    'src/feature/pr-prepare.js',
+    '--target',
+    'test/integration/story-pr-prepare-runtime-path.test.js',
+    '--scenario',
+    'runtime_path_evidence: PR prepare artifact creation exercised through integration path',
+    '--observed',
+    'integration_runtime_path=true'
+  ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
   await runCli([

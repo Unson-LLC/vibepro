@@ -218,13 +218,15 @@ test('observation text contributes to judgment evidence classification', async (
   await writeFile(path.join(root, 'src-change.js'), 'export const x = 1;\n');
   await git(root, ['add', 'src-change.js']);
   await git(root, ['commit', '-m', 'feat: change']);
-  // bland summary and command, but observation scenario describes artifact replay
+  // bland summary and command, but observation scenarios describe all workflow evidence kinds
   await runCli([
-    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'integration', '--status', 'pass',
+    'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'e2e', '--status', 'pass',
     '--command', 'node run-check.js',
     '--summary', 'verification done',
     '--target', 'src-change.js',
-    '--scenario', 'artifact replay of generated gate-dag and pr-prepare outputs'
+    '--scenario', 'flow_replay: gate review workflow was replayed',
+    '--scenario', 'artifact_replay: generated gate-dag and pr-prepare outputs were replayed',
+    '--scenario', 'scenario_clause_e2e: acceptance clause for gate artifact workflow was exercised'
   ]);
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-obs', '--base', 'main', '--json']);
   const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-obs', 'gate-dag.json'));
@@ -232,6 +234,10 @@ test('observation text contributes to judgment evidence classification', async (
   assert.ok(spine, 'spine gate must exist');
   const currentReality = spine.subchecks.find((check) => check.id === 'current_reality');
   const doneEvidence = spine.subchecks.find((check) => check.id === 'done_evidence');
-  assert.equal(currentReality.status, 'passed', 'observation scenario text must satisfy artifact_replay evidence for current_reality');
-  assert.equal(doneEvidence.status, 'passed', 'observation scenario text must satisfy artifact_replay evidence for done_evidence');
+  const currentRealityKinds = currentReality.matched_evidence.map((item) => item.kind).sort();
+  const doneEvidenceKinds = doneEvidence.matched_evidence.map((item) => item.kind).sort();
+  assert.deepEqual(currentRealityKinds, ['artifact_replay', 'flow_replay', 'scenario_clause_e2e']);
+  assert.deepEqual(doneEvidenceKinds, ['artifact_replay', 'flow_replay', 'scenario_clause_e2e']);
+  assert.equal(currentReality.status, 'passed', 'workflow evidence passes only after all required observation kinds are present');
+  assert.equal(doneEvidence.status, 'passed', 'workflow done evidence passes only after all required observation kinds are present');
 });
