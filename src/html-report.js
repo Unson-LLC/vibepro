@@ -615,7 +615,7 @@ function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language =
     const required = axis.required_evidence?.join(', ') || '-';
     const missing = axis.missing_evidence?.length > 0 ? ` missing=${axis.missing_evidence.join(', ')}` : '';
     const matched = axis.matched_evidence?.length > 0
-      ? ` matched=${axis.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+      ? ` matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
       : '';
     return {
       title: `${axis.axis}: ${axis.status}`,
@@ -649,6 +649,11 @@ function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language =
       `).join('')}</div>
     </section>
   `;
+}
+
+function formatEvidenceReferenceForHuman(item) {
+  const base = `${item.kind}:${item.ref}`;
+  return item.artifact ? `${base} (artifact=${item.artifact})` : base;
 }
 
 function renderRequirementPanel(requirement, language = 'ja') {

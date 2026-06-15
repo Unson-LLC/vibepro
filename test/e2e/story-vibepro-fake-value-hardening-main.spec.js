@@ -179,7 +179,7 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   const prPrepareHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
   assert.match(prBody, /active_accepted_followup/);
-  assert.match(prBody, /docs\/architecture\/fake-value-hardening\.md/);
+  assert.match(prBody, /public_contract:[^\n]*active_accepted_followup[^\n]*decision_record:[^\n]*artifact=docs\/architecture\/fake-value-hardening\.md/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}accepted_followup/);
   assert.doesNotMatch(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}passed/);
   assert.match(prPrepareHtml, /accepted_followup/);

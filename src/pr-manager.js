@@ -2069,10 +2069,10 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const required = axis.required_evidence?.join('|') ?? '-';
       const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
       const matched = axis.matched_evidence?.length > 0
-        ? ` / matched=${axis.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       const optional = axis.optional_evidence?.length > 0
-        ? ` / optional=${axis.optional_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / optional=${axis.optional_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}`;
     })
@@ -2093,7 +2093,7 @@ function buildCommonSpineReasoning(gateDag) {
         ? ` / required=${check.required_evidence_kind.join('|')}`
         : '';
       const matched = Array.isArray(check.matched_evidence) && check.matched_evidence.length > 0
-        ? ` / matched=${check.matched_evidence.map((item) => `${item.kind}:${item.ref}`).join(', ')}`
+        ? ` / matched=${check.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
       const missing = Array.isArray(check.missing_evidence) && check.missing_evidence.length > 0
         ? ` / missing=${check.missing_evidence.join('|')}`
@@ -2101,6 +2101,11 @@ function buildCommonSpineReasoning(gateDag) {
       return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${reason}`;
     })
     .join('\n');
+}
+
+function formatEvidenceReferenceForHuman(item) {
+  const base = `${item.kind}:${item.ref}`;
+  return item.artifact ? `${base} (artifact=${item.artifact})` : base;
 }
 
 function formatEngineeringJudgmentGateForHuman(gate) {
@@ -5221,8 +5226,10 @@ function classifySeniorAxisEvidence({
   const verificationMatches = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
   const matched = [];
   const optional = classifyGraphImpactEvidence(graphContext);
-  const add = (kind, ref) => {
-    if (!matched.some((item) => item.kind === kind && item.ref === ref)) matched.push({ kind, ref });
+  const add = (kind, ref, extra = {}) => {
+    if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
+      matched.push({ kind, ref, ...extra });
+    }
   };
 
   if ((fileGroups.story_docs?.count ?? 0) > 0 || (fileGroups.specifications?.count ?? 0) > 0) {
@@ -5258,7 +5265,11 @@ function classifySeniorAxisEvidence({
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
   const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
   if (acceptedFollowupDecision) {
-    add('decision_record', acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`);
+    add(
+      'decision_record',
+      acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`,
+      acceptedDecision.artifact ? { artifact: acceptedDecision.artifact } : {}
+    );
     if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
     if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
   }
