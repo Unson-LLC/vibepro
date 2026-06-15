@@ -2147,12 +2147,61 @@ title: PR準備
   await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return \"gate review surface\"; }\n');
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'feat: update gate review surface']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const cleanFingerprintHash = createHash('sha256').update('git-status --porcelain -uall\n\ngit-diff --binary\n').digest('hex');
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'flow-needs-setup'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'flow-needs-setup', 'flow-verification.json'), {
+    schema_version: '0.1.0',
+    run_id: 'flow-needs-setup',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-12T00:00:00.000Z',
+    status: 'needs_setup',
+    reason: 'review artifact gate report is mentioned, but no runtime probe passed',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprintHash,
+      recorded_at: '2026-05-12T00:00:00.000Z'
+    },
+    base_url: 'http://127.0.0.1:3000',
+    summary: {
+      total: 1,
+      pass: 0,
+      fail: 0,
+      skipped: 0,
+      needs_setup: 1
+    },
+    probes: [{
+      id: 'review-artifact-probe',
+      status: 'needs_setup'
+    }]
+  });
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = await readJson(manifestPath);
+  manifest.latest_flow_verification_run = 'flow-needs-setup';
+  manifest.flow_verification_runs = [{
+    run_id: 'flow-needs-setup',
+    story_id: 'story-pr-prepare',
+    created_at: '2026-05-12T00:00:00.000Z',
+    status: 'needs_setup',
+    git_context: {
+      head_sha: headSha,
+      dirty: false,
+      status_fingerprint_hash: cleanFingerprintHash,
+      recorded_at: '2026-05-12T00:00:00.000Z'
+    },
+    artifacts: {
+      flow_verification_json: '.vibepro/verification/flow-needs-setup/flow-verification.json'
+    }
+  }];
+  await writeJson(manifestPath, manifest);
 
   const before = await runCli(['pr', 'prepare', repo, '--base', 'main', '--json']);
 
   assert.equal(before.exitCode, 0);
   const beforeGate = before.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
   assert.equal(beforeGate.status, 'partial_surface');
+  assert.equal(beforeGate.missing_surfaces.includes('review_surface'), true);
   await runCli([
     'decision',
     'record',
@@ -12091,8 +12140,10 @@ test('common judgment spine requires surface-specific evidence instead of generi
 
   const workflowRepo = await makeGitRepoWithStory();
   await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
+  await mkdir(path.join(workflowRepo, 'test'), { recursive: true });
   await writeFile(path.join(workflowRepo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
-  await git(workflowRepo, ['add', 'src/agent-workflow.js']);
+  await writeFile(path.join(workflowRepo, 'test', 'agent-workflow.test.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
+  await git(workflowRepo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js']);
   await git(workflowRepo, ['commit', '-m', 'feat: add agent workflow replay path']);
   assert.equal((await runCli([
     'verify', 'record', workflowRepo,
@@ -12107,10 +12158,13 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(workflowPrepare.exitCode, 0);
   const workflowSpine = workflowPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   const workflowReality = workflowSpine.subchecks.find((check) => check.id === 'current_reality');
+  const workflowFailureModes = workflowSpine.subchecks.find((check) => check.id === 'failure_modes');
   const workflowDone = workflowSpine.subchecks.find((check) => check.id === 'done_evidence');
   assert.equal(workflowReality.surface, 'workflow');
   assert.equal(workflowReality.status, 'needs_evidence');
   assert.deepEqual(workflowReality.matched_evidence, []);
+  assert.equal(workflowFailureModes.status, 'needs_evidence');
+  assert.deepEqual(workflowFailureModes.matched_evidence, []);
   assert.equal(workflowDone.status, 'needs_evidence');
   assert.deepEqual(workflowDone.matched_evidence, []);
 

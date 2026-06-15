@@ -5347,12 +5347,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     },
     {
       id: 'failure_modes',
-      status: !highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests) ? 'passed' : 'needs_evidence',
-      evidence: firstEvidenceRef(evidenceMatches.failure_modes) ?? (hasTests && surfaceProfile.surface !== 'auth_boundary' ? 'test files in diff' : null),
+      status: !highRisk || evidenceMatches.failure_modes.length > 0 ? 'passed' : 'needs_evidence',
+      evidence: firstEvidenceRef(evidenceMatches.failure_modes),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? failureModesRequirement : ['not_applicable'],
       matched_evidence: evidenceMatches.failure_modes,
-      missing_evidence: (!highRisk || evidenceMatches.failure_modes.length > 0 || (surfaceProfile.surface !== 'auth_boundary' && hasTests))
+      missing_evidence: (!highRisk || evidenceMatches.failure_modes.length > 0)
         ? []
         : failureModesRequirement,
       reason: highRisk
@@ -7367,21 +7367,19 @@ function buildVerificationCommandSearchText(command) {
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
-  const flowCurrent = (flowVerification?.verification?.binding?.status ?? flowVerification?.binding?.status) === 'current';
-  const evidenceText = [
-    ...currentVerification.map((command) => buildVerificationCommandSearchText(command)),
-    flowCurrent ? JSON.stringify(flowVerification?.verification ?? flowVerification) : ''
-  ].join('\n').toLowerCase();
+  const flowEvidenceText = buildFlowVerificationSurfaceSearchText(flowVerification);
   const highRisk = changeClassification?.profile === 'workflow_heavy';
   const rows = surfaces.map((surface) => {
-    const evidence = pathSurfaceCoveredByEvidence(surface, evidenceText);
+    const verificationEvidenceItem = currentVerification.find((command) => pathSurfaceCoveredByEvidence(surface, buildVerificationCommandSearchText(command).toLowerCase()));
+    const flowEvidence = !verificationEvidenceItem && pathSurfaceCoveredByEvidence(surface, flowEvidenceText);
+    const evidence = Boolean(verificationEvidenceItem || flowEvidence);
     const required = highRisk || surface.required;
     return {
       ...surface,
       required,
       status: evidence ? 'covered' : required ? 'missing_surface_evidence' : 'not_required',
       evidence: evidence
-        ? currentVerification.find((command) => pathSurfaceCoveredByEvidence(surface, buildVerificationCommandSearchText(command).toLowerCase()))?.command ?? 'flow_verification'
+        ? verificationEvidenceItem?.command ?? 'flow_verification'
         : null
     };
   });
@@ -7481,6 +7479,32 @@ function pathSurfaceCoveredByEvidence(surface, evidenceText) {
     persistence: ['database', 'db', 'schema', 'persist', 'storage']
   }[surface.surface] ?? [surface.surface];
   return terms.some((term) => evidenceText.includes(term));
+}
+
+function buildFlowVerificationSurfaceSearchText(flowVerification) {
+  const flowEvidence = resolveWorkflowFlowEvidence({ flowVerification });
+  if (!flowEvidence.passed) return '';
+  const verification = flowVerification?.verification ?? flowVerification;
+  const probes = Array.isArray(verification?.probes)
+    ? verification.probes
+    : Array.isArray(flowVerification?.probes)
+      ? flowVerification.probes
+      : [];
+  return probes
+    .filter((probe) => ['pass', 'passed', 'success', 'ok'].includes(probe?.status))
+    .flatMap((probe) => [
+      probe.id,
+      probe.name,
+      probe.title,
+      probe.path,
+      probe.route,
+      probe.url,
+      ...(probe.artifacts?.screenshot_paths ?? []),
+      ...(probe.artifacts?.trace_paths ?? [])
+    ])
+    .filter(Boolean)
+    .join('\n')
+    .toLowerCase();
 }
 
 function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {

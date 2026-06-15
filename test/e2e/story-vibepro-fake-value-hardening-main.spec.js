@@ -67,6 +67,7 @@ async function makeStoryRepo() {
   await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---
 story_id: ${STORY_ID}
 title: VibePro fake-value hardening
@@ -107,7 +108,8 @@ Failure mode: fake green artifact, missing evidence hidden as passed, weak prove
 - FVH-SCENARIO-002: Given an existing review artifact stores evidence_strength=strong, when it lacks thread/session/call/transcript, then review status treats it as unverified_agent.
 `);
   await writeFile(path.join(repo, 'src', 'fake-value-workflow.js'), 'export const fakeValueWorkflow = "agent workflow gate-dag pr-prepare review provenance accepted_followup";\n');
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture/fake-value-hardening.md', 'docs/specs/fake-value-hardening.md', 'src/fake-value-workflow.js']);
+  await writeFile(path.join(repo, 'test', 'fake-value-workflow.test.js'), 'export const fakeValueRegression = "flow_replay scenario_clause_e2e gate-dag review artifact";\n');
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture/fake-value-hardening.md', 'docs/specs/fake-value-hardening.md', 'src/fake-value-workflow.js', 'test/fake-value-workflow.test.js']);
   await git(repo, ['commit', '-m', 'feat: add fake-value workflow fixture']);
   return repo;
 }
