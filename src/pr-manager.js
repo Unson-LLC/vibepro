@@ -4913,7 +4913,8 @@ function buildSeniorJudgmentAxes({
       signals: activationSignals,
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
-      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : []
+      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : [],
+      ignored_accepted_decision: evidence.ignored_accepted_decision
     };
   });
 }
@@ -5035,12 +5036,20 @@ function classifySeniorAxisEvidence({
   if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
-  if (acceptedDecision) {
+  const acceptedFollowupDecision = isAcceptedAxisFollowupDecision(acceptedDecision) ? acceptedDecision : null;
+  if (acceptedFollowupDecision) {
     add('decision_record', acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`);
     if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
     if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
   }
-  return { matched, optional, accepted_decision: acceptedDecision ?? null };
+  return {
+    matched,
+    optional,
+    accepted_decision: acceptedFollowupDecision,
+    ignored_accepted_decision: acceptedDecision && !acceptedFollowupDecision
+      ? summarizeIgnoredAxisFollowupDecision(acceptedDecision)
+      : null
+  };
 }
 
 function resolveSeniorAxisStatus(definition, evidence) {
@@ -5103,7 +5112,8 @@ function buildJudgmentAxisGates(engineeringJudgment) {
 }
 
 function mapJudgmentAxisStatusToGateStatus(status) {
-  if (status === 'active_passed' || status === 'active_accepted_followup') return 'passed';
+  if (status === 'active_passed') return 'passed';
+  if (status === 'active_accepted_followup') return 'accepted_followup';
   if (status === 'active_blocked') return 'block';
   if (status === 'active_needs_evidence') return 'needs_evidence';
   return 'not_required';
@@ -5115,7 +5125,7 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Evidence matched: ${(axis.matched_evidence ?? []).map((item) => item.kind).join(', ') || 'none'}.`;
   }
   if (axis.status === 'active_accepted_followup') {
-    return `${prefix} Current safety is acceptable with a bounded follow-up: ${axis.acceptable_followup}`;
+    return `${prefix} Missing evidence accepted as a bounded follow-up: ${(axis.missing_evidence ?? []).join(', ') || 'none'}. ${axis.acceptable_followup}`;
   }
   if (axis.status === 'active_needs_evidence') {
     return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
@@ -5124,6 +5134,24 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Blocking criteria matched: ${(axis.blocking_criteria ?? []).join('; ')}`;
   }
   return `${axis.axis}: inactive`;
+}
+
+function isAcceptedAxisFollowupDecision(decision) {
+  if (!decision || decision.status !== 'accepted') return false;
+  return Boolean(String(decision.reason ?? '').trim() && String(decision.artifact ?? '').trim());
+}
+
+function summarizeIgnoredAxisFollowupDecision(decision) {
+  return {
+    decision_id: decision.decision_id ?? null,
+    source: decision.source ?? null,
+    status: decision.status ?? null,
+    missing_fields: [
+      String(decision.reason ?? '').trim() ? null : 'reason',
+      String(decision.artifact ?? '').trim() ? null : 'artifact'
+    ].filter(Boolean),
+    reason: 'accepted axis follow-up decisions require both reason and artifact before they can cover missing evidence'
+  };
 }
 
 function buildCommonJudgmentSpineGate(engineeringJudgment, evidenceContext = {}) {
@@ -6719,6 +6747,7 @@ function buildGateDag({
         .filter((axis) => axis.status !== 'inactive')
         .map((axis) => axis.axis),
       judgment_axis_count: judgmentAxisGates.length,
+      judgment_axis_accepted_followup_count: judgmentAxisGates.filter((gate) => gate.status === 'accepted_followup').length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
       bug_physics_classes: bugPhysicsTriage?.classes ?? [],
       bug_physics_profile_count: bugPhysicsTriage?.gate_profile?.required?.length ?? 0,

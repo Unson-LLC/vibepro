@@ -130,6 +130,8 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
     summary: 'ok',
     inspectionSummary: summaryText,
     inspectionEvidence: 'test/foo.test.js',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js'],
+    judgmentDeltas: ['generic gate pass -> accepted after source and focused test inspection'],
     agentSystem: 'claude_code',
     executionMode: 'parallel_subagent',
     agentId: 'task-test-1',
@@ -137,8 +139,8 @@ test('recordAgentReview persists inspection.summary verbatim (INV-RIF-3)', async
   });
   assert.equal(review.inspection.summary, summaryText);
   assert.equal(review.inspection.evidence, 'test/foo.test.js');
-  assert.deepEqual(review.inspection.inputs, []);
-  assert.deepEqual(review.judgment_delta, []);
+  assert.deepEqual(review.inspection.inputs, ['src/foo.js', 'test/foo.test.js']);
+  assert.deepEqual(review.judgment_delta, ['generic gate pass -> accepted after source and focused test inspection']);
 });
 
 test('recordAgentReview persists inspection inputs and judgment delta for handoff', async () => {
@@ -202,6 +204,38 @@ test('recordAgentReview rejects whitespace-only inspection for gate_evidence pas
   }), /requires --inspection-summary/);
 });
 
+test('recordAgentReview rejects gate_evidence pass without handoff inputs and judgment delta', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  await startCloseable(root);
+  await assert.rejects(recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'read gate evidence',
+    agentSystem: 'claude_code',
+    executionMode: 'parallel_subagent',
+    agentId: 'task-test-1',
+    agentClosed: true
+  }), /requires --inspection-input/);
+
+  await assert.rejects(recordAgentReview(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'ok',
+    inspectionSummary: 'read gate evidence',
+    inspectionInputs: ['src/agent-review.js'],
+    agentSystem: 'claude_code',
+    executionMode: 'parallel_subagent',
+    agentId: 'task-test-1',
+    agentClosed: true
+  }), /requires --judgment-delta/);
+});
+
 test('getAgentReviewStatus surfaces the inspection block per role', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
@@ -213,6 +247,8 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
     status: 'pass',
     summary: 'ok',
     inspectionSummary: 'verified contract via test suite',
+    inspectionInputs: ['src/agent-review.js', 'test/review-inspection-first.test.js'],
+    judgmentDeltas: ['missing handoff detail -> pass because concrete inputs and delta are recorded'],
     agentSystem: 'claude_code',
     executionMode: 'parallel_subagent',
     agentId: 'task-test-1',
@@ -221,8 +257,12 @@ test('getAgentReviewStatus surfaces the inspection block per role', async () => 
   const status = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
   const role = status.stages[0].roles.find((r) => r.role === 'gate_evidence');
   assert.ok(role, 'gate_evidence role missing from status');
-  assert.deepEqual(role.inspection, { summary: 'verified contract via test suite', evidence: null, inputs: [] });
-  assert.deepEqual(role.judgment_delta, []);
+  assert.deepEqual(role.inspection, {
+    summary: 'verified contract via test suite',
+    evidence: null,
+    inputs: ['src/agent-review.js', 'test/review-inspection-first.test.js']
+  });
+  assert.deepEqual(role.judgment_delta, ['missing handoff detail -> pass because concrete inputs and delta are recorded']);
 });
 
 test('recordAgentReview synthesizes a closed lifecycle entry from closed provenance when no start record exists', async () => {
@@ -235,6 +275,8 @@ test('recordAgentReview synthesizes a closed lifecycle entry from closed provena
     status: 'pass',
     summary: 'ok',
     inspectionSummary: 'read review request and source files',
+    inspectionInputs: ['.vibepro/reviews/story-test/gate/review-request-gate_evidence.md', 'src/agent-review.js'],
+    judgmentDeltas: ['no lifecycle start -> synthesized closure accepted because transcript artifact is present'],
     agentSystem: 'codex',
     executionMode: 'parallel_subagent',
     agentId: 'synthetic-agent-1',

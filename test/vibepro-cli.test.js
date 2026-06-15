@@ -266,8 +266,19 @@ async function recordAgentReviewStage(repo, storyId, stage, roles) {
       'parallel_subagent',
       '--agent-id',
       `${stage}-${role}-agent`,
+      '--agent-thread-id',
+      `${stage}-${role}-thread`,
       ...(stage === 'gate' && role === 'gate_evidence'
-        ? ['--inspection-summary', 'read route gate evidence and verified required test coverage']
+        ? [
+            '--inspection-summary',
+            'read route gate evidence and verified required test coverage',
+            '--inspection-input',
+            '.vibepro/pr/story-pr-prepare/pr-prepare.json',
+            '--inspection-input',
+            'test/vibepro-cli.test.js',
+            '--judgment-delta',
+            'generic gate pass -> accepted because PR artifacts and focused tests were inspected'
+          ]
         : []),
       '--agent-closed'
     ]);
@@ -6445,12 +6456,18 @@ test('pr ship dry-run restores Agent Review commands from stale role gates', asy
     'reviewed current PR artifacts',
     '--inspection-evidence',
     '.vibepro/pr/story-pr-prepare/pr-prepare.json',
+    '--inspection-input',
+    '.vibepro/pr/story-pr-prepare/pr-prepare.json',
+    '--judgment-delta',
+    'current artifact review -> pass before source change',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
     'agent-stale-review',
+    '--agent-thread-id',
+    'thread-stale-review',
     '--agent-closed'
   ]);
   await writeFile(path.join(repo, 'src', 'ship-stale-review.js'), 'export const version = 2;\n');
@@ -6972,12 +6989,18 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
     'replacement passed',
     '--inspection-summary',
     'read lifecycle replacement evidence and verified shutdown record',
+    '--inspection-input',
+    '.vibepro/reviews/story-pr-prepare/gate/lifecycle.json',
+    '--judgment-delta',
+    'timed-out lifecycle -> pass after replacement closure evidence',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
     'agent-replacement',
+    '--agent-thread-id',
+    'thread-agent-replacement',
     '--agent-closed',
     '--agent-close-evidence',
     'shutdown',
@@ -7320,12 +7343,18 @@ test('review policy config publishes role model policy and records actual model 
     'gate evidence passed',
     '--inspection-summary',
     'read generated request and model policy guidance',
+    '--inspection-input',
+    '.vibepro/reviews/story-pr-prepare/gate/review-request-gate_evidence.md',
+    '--judgment-delta',
+    'model policy concern -> pass because actual provenance matches configured policy',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
     'agent-gate-evidence',
+    '--agent-thread-id',
+    'thread-agent-gate-evidence',
     '--agent-model',
     'gpt-5.5',
     '--agent-reasoning-effort',
@@ -8128,7 +8157,11 @@ test('review pass requires verified subagent or explicit manual review provenanc
     '--summary',
     'manual gate pass without subagent proof',
     '--inspection-summary',
-    'read gate evidence but intentionally omitted subagent provenance'
+    'read gate evidence but intentionally omitted subagent provenance',
+    '--inspection-input',
+    '.vibepro/reviews/story-pr-prepare/gate/review-request-gate_evidence.md',
+    '--judgment-delta',
+    'inspection exists -> still unverified because subagent provenance is omitted'
   ]);
   assert.equal(gateManualRecord.exitCode, 0);
   const prWithoutProvenance = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
@@ -9365,12 +9398,18 @@ test('required managed worktree copies VibePro control files and allows record c
     'gate evidence passed',
     '--inspection-summary',
     'managed worktree record path inspected',
+    '--inspection-input',
+    '.vibepro/executions/story-pr-prepare/state.json',
+    '--judgment-delta',
+    'managed worktree locality concern -> pass from managed path',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
     'agent-managed',
+    '--agent-thread-id',
+    'thread-agent-managed',
     '--agent-closed',
     '--json'
   ]);
@@ -9785,6 +9824,10 @@ test('preferred managed worktree warning is recorded on non-PR evidence surfaces
     'gate evidence passed',
     '--inspection-summary',
     'managed worktree preferred warning surface was inspected',
+    '--inspection-input',
+    '.vibepro/executions/story-pr-prepare/state.json',
+    '--judgment-delta',
+    'preferred worktree warning -> pass record keeps warning metadata',
     '--json'
   ]);
   assert.equal(reviewRecord.exitCode, 0);
@@ -10565,6 +10608,10 @@ architecture_docs:
     'manual pass is audit context only',
     '--inspection-summary',
     'manual review intentionally lacks parallel subagent provenance',
+    '--inspection-input',
+    '.vibepro/reviews/story-pr-prepare/gate/review-request-gate_evidence.md',
+    '--judgment-delta',
+    'manual audit context -> still unverified for required agent gate',
     '--agent-system',
     'human',
     '--execution-mode',
@@ -12273,6 +12320,8 @@ spec_docs:
     'gate:judgment_axis_public_contract',
     '--reason',
     'bounded follow-up tracked',
+    '--artifact',
+    'docs/architecture/followup-axis.md',
     '--status',
     'accepted',
     '--json'
@@ -12285,8 +12334,65 @@ spec_docs:
   assert.equal(axis.status, 'active_accepted_followup');
   assert.equal(axis.missing_evidence.includes('current_verification'), true);
   const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
-  assert.equal(gate.status, 'passed');
+  assert.equal(gate.status, 'accepted_followup');
   assert.equal(gate.axis_status, 'active_accepted_followup');
+  assert.equal(gate.missing_evidence.includes('current_verification'), true);
+  assert.equal(result.result.preparation.pr_context.gate_dag.summary.judgment_axis_accepted_followup_count >= 1, true);
+});
+
+test('judgment axis accepted decision without artifact remains needs evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Accepted Followup Axis without artifact
+architecture_docs:
+  - docs/architecture/followup-axis.md
+spec_docs:
+  - docs/specs/followup-axis.md
+---
+
+# Story
+
+- [ ] public contract evidence may defer current verification only with an artifact-backed accepted decision
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'followup-axis.md'), '# Architecture\n\nCompatibility impact: PR body output changes.\nBoundary: reviewable.\n');
+  await writeFile(path.join(repo, 'docs', 'specs', 'followup-axis.md'), '# Spec\n\njudgment_axes[] remains visible.\n');
+  await writeFile(path.join(repo, 'src', 'followup-axis.js'), 'export const followupAxis = "pr body output";\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'docs/architecture/followup-axis.md', 'docs/specs/followup-axis.md', 'src/followup-axis.js']);
+  await git(repo, ['commit', '-m', 'feat: add followup axis fixture']);
+
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'current public contract behavior is safe; defer remaining verification',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'bounded follow-up tracked',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_needs_evidence');
+  assert.equal(axis.missing_evidence.includes('current_verification'), true);
+  assert.equal(axis.ignored_accepted_decision.missing_fields.includes('artifact'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'needs_evidence');
 });
 
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
@@ -12415,12 +12521,18 @@ test('high-risk review pass requires inspection evidence in PR gate', async () =
     'security review passed after reading auth fixture',
     '--inspection-summary',
     'read src/auth.js and checked the security route fixture',
+    '--inspection-input',
+    'src/auth.js',
+    '--judgment-delta',
+    'security concern -> pass record lacks inspection evidence artifact for gate test',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
     'security-review-without-inspection-evidence',
+    '--agent-thread-id',
+    'thread-security-review-without-inspection-evidence',
     '--agent-closed'
   ]);
   assert.equal(record.exitCode, 0);

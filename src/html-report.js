@@ -1002,7 +1002,7 @@ function statusClass(status) {
 
 function toneForStatus(status) {
   if (['pass', 'passed', 'present', 'satisfied', 'ready_for_review', 'single_pr_ok', 'primary_pr', 'same_pr_allowed', 'executed'].includes(status)) return 'good';
-  if (['needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
+  if (['accepted_followup', 'needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
   if (['missing', 'contradicted', 'failed', 'blocked'].includes(status)) return 'danger';
   if (['candidate', 'available'].includes(status)) return 'info';
   return 'neutral';

@@ -270,6 +270,16 @@ export async function recordAgentReview(repoRoot, options = {}) {
       `review record ${stage}:${role} pass requires --inspection-summary <text> so gate evidence is auditable.`
     );
   }
+  if (requiresInspectionForPass(result) && result.inspection.inputs.length === 0) {
+    throw new Error(
+      `review record ${stage}:${role} pass requires --inspection-input <ref> so handoff readers can reconstruct the inspected inputs.`
+    );
+  }
+  if (requiresInspectionForPass(result) && result.judgment_delta.length === 0) {
+    throw new Error(
+      `review record ${stage}:${role} pass requires --judgment-delta <text> so handoff readers can see how the review conclusion was reached.`
+    );
+  }
   const resultPath = getReviewResultPath(reviewDir, role);
   const historyPath = getReviewResultHistoryPath(reviewDir, role, result.recorded_at);
   await writeJson(resultPath, result);
@@ -2153,8 +2163,7 @@ function classifyAgentProvenance(provenance) {
 
 function hasAgentCorrelationEvidence(provenance) {
   return Boolean(
-    provenance.agent_id
-    || provenance.thread_id
+    provenance.thread_id
     || provenance.session_id
     || provenance.tool_call_id
     || provenance.transcript_artifact
@@ -2196,7 +2205,7 @@ function validateAgentProvenance(result) {
   if (provenance.evidence_strength !== 'strong') {
     return {
       status: 'weak_agent_provenance',
-      reason: 'review provenance lacks subagent id, thread/session/call id, or transcript artifact'
+      reason: 'review provenance lacks subagent thread/session/call id or transcript artifact'
     };
   }
   if (!provenance.lifecycle?.agent_closed) {
