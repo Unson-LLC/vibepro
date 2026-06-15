@@ -12474,6 +12474,34 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.deepEqual(workflowFailureModes.matched_evidence, []);
   assert.equal(workflowDone.status, 'needs_evidence');
   assert.deepEqual(workflowDone.matched_evidence, []);
+  assert.equal((await runCli([
+    'verify', 'record', workflowRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/agent-workflow.test.js',
+    '--summary', 'flow_replay and artifact_replay passed for the agent workflow path',
+    '--target', 'src/agent-workflow.js',
+    '--target', 'test/agent-workflow.test.js',
+    '--scenario', 'flow_replay: agent workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifacts replayed',
+    '--observed', 'flow_replay=true',
+    '--observed', 'artifact_replay=true'
+  ])).exitCode, 0);
+
+  const partialWorkflowPrepare = await runCli(['pr', 'prepare', workflowRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(partialWorkflowPrepare.exitCode, 0);
+  const partialWorkflowSpine = partialWorkflowPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const partialWorkflowReality = partialWorkflowSpine.subchecks.find((check) => check.id === 'current_reality');
+  const partialWorkflowFailureModes = partialWorkflowSpine.subchecks.find((check) => check.id === 'failure_modes');
+  const partialWorkflowDone = partialWorkflowSpine.subchecks.find((check) => check.id === 'done_evidence');
+  assert.equal(partialWorkflowSpine.status, 'needs_evidence');
+  assert.equal(partialWorkflowReality.status, 'needs_evidence');
+  assert.deepEqual(partialWorkflowReality.missing_evidence, ['scenario_clause_e2e']);
+  assert.equal(partialWorkflowFailureModes.status, 'needs_evidence');
+  assert.deepEqual(partialWorkflowFailureModes.missing_evidence, ['scenario_clause_e2e']);
+  assert.equal(partialWorkflowDone.status, 'needs_evidence');
+  assert.deepEqual(partialWorkflowDone.missing_evidence, ['scenario_clause_e2e']);
 
   const authRepo = await makeGitRepoWithStory();
   await mkdir(path.join(authRepo, 'src'), { recursive: true });

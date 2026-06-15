@@ -5463,6 +5463,12 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     ? evidenceMatches.docs
     : evidenceMatches.current_reality;
   const currentRealityRequiredMatches = currentRealityMatches.filter((item) => !item.optional);
+  const currentRealityMissing = missingEvidenceKinds(
+    surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
+    surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
+  );
+  const failureModesMissing = missingEvidenceKinds(failureModesRequirement, evidenceMatches.failure_modes);
+  const doneEvidenceMissing = missingEvidenceKinds(doneEvidenceRequirement, evidenceMatches.done_evidence);
   return [
     {
       id: 'intent',
@@ -5480,20 +5486,17 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       id: 'current_reality',
       status: surfaceProfile.surface === 'docs_only'
         ? (evidenceMatches.docs.length > 0 || changedFileCount > 0 ? 'passed' : 'needs_evidence')
-        : currentRealityRequiredMatches.length > 0 ? 'passed' : 'needs_evidence',
+        : currentRealityMissing.length === 0 ? 'passed' : 'needs_evidence',
       evidence: firstEvidenceRef(currentRealityMatches)
         ?? `${changedFileCount} changed file(s) classified`,
       surface: surfaceProfile.surface,
       optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
       matched_evidence: currentRealityMatches,
-      missing_evidence: missingEvidenceKinds(
-        surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
-        surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
-      ),
+      missing_evidence: currentRealityMissing,
       reason: surfaceProfile.surface === 'docs_only'
         ? 'Docs-only changes can establish current reality through Story/Spec/doc reference traceability'
-        : currentRealityRequiredMatches.length > 0
+        : currentRealityMissing.length === 0
           ? `${surfaceProfile.surface} current reality is backed by ${currentRealityRequiredMatches[0].kind}`
           : `${surfaceProfile.surface} changes need focused runtime/path evidence; changed-file classification alone is not enough`
     },
@@ -5543,28 +5546,28 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     },
     {
       id: 'failure_modes',
-      status: !highRisk || evidenceMatches.failure_modes.length > 0 ? 'passed' : 'needs_evidence',
+      status: !highRisk || failureModesMissing.length === 0 ? 'passed' : 'needs_evidence',
       evidence: firstEvidenceRef(evidenceMatches.failure_modes),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? failureModesRequirement : ['not_applicable'],
       matched_evidence: evidenceMatches.failure_modes,
-      missing_evidence: (!highRisk || evidenceMatches.failure_modes.length > 0)
+      missing_evidence: (!highRisk || failureModesMissing.length === 0)
         ? []
-        : failureModesRequirement,
+        : failureModesMissing,
       reason: highRisk
         ? `${surfaceProfile.surface} changes need failure-mode evidence matching ${failureModesRequirement.join('|')}`
         : 'Light route does not require additional failure-mode evidence'
     },
     {
       id: 'done_evidence',
-      status: !highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0) ? 'passed' : 'needs_evidence',
+      status: !highRisk || doneEvidenceMissing.length === 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0) ? 'passed' : 'needs_evidence',
       evidence: firstEvidenceRef(evidenceMatches.done_evidence) ?? (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? doneEvidenceRequirement : ['downstream_gate'],
       matched_evidence: evidenceMatches.done_evidence,
-      missing_evidence: (!highRisk || evidenceMatches.done_evidence.length > 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
+      missing_evidence: (!highRisk || doneEvidenceMissing.length === 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
         ? []
-        : doneEvidenceRequirement,
+        : doneEvidenceMissing,
       reason: highRisk
         ? `${surfaceProfile.surface} changes need done evidence matching ${doneEvidenceRequirement.join('|')}`
         : 'Light route completion is covered by the downstream Unit/Integration/Agent Review gates'
