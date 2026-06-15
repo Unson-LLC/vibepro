@@ -22,6 +22,12 @@ title: Execution and Judgment Status Integrity Spec
 - review lifecycle entries MAY include a synthesized flag or provenance source that explains they were reconstructed from `review-result-<role>.json`.
 - execution DAG nodes remain the same ids, but their statuses MUST reflect the latest merged/pr-created/review-complete artifacts.
 
+## Scenarios
+
+- `S-001`: Given a merged Story has `pr-merge.json` and a gate-stage `review-summary.json` with no unmet/stale/timed-out/blocked required reviews, when `vibepro execute status` or `vibepro execute reconcile` rebuilds execution state, then the workflow state transition moves the Story to `completion_status=merged` with both `agent_review_recorded` and `pr_created` marked `passed`.
+- `S-002`: Given `review record --agent-closed` receives a closed agent provenance for the current HEAD but no matching lifecycle start artifact exists, when the review result is recorded, then the review lifecycle transitions from missing-start evidence to a synthesized closed lifecycle entry that stays bound to the same story/stage/role/git state.
+- `S-003`: Given a judgment axis still has unresolved `missing_evidence[]`, when PR prepare renders `judgment_axes[]`, PR body, and Gate DAG summary, then the workflow status transition keeps the axis at `active_needs_evidence` or `active_accepted_followup`, never `active_passed`, until the missing evidence is closed or an accepted defer decision exists.
+
 ## Non Goals
 
 - Replacing `review start` / `review close` with implicit-only lifecycle tracking.
