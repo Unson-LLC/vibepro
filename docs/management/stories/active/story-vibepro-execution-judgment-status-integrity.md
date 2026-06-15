@@ -2,6 +2,7 @@
 story_id: story-vibepro-execution-judgment-status-integrity
 title: Execution stateとjudgment axisのstatusを過大表示しない
 status: active
+architecture_reason: 既存のexecution/review/judgment artifactの再計算条件とstatus判定を揃える変更であり、新しい境界・外部依存・永続化モデルは導入しない
 source:
   type: value_audit_followup
   id: execution-judgment-status-integrity
