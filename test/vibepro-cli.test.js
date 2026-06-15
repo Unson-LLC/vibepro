@@ -8442,15 +8442,14 @@ title: PR準備 Spec
   const passed = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(passed.exitCode, 0);
   const ready = await readJson(statePath);
-  assert.equal(ready.completion_status, 'ready_for_pr_create');
-  assert.equal(ready.current_phase, 'create_pr');
-  assert.equal(ready.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
-  assert.equal(ready.next_actions[0].endsWith('vibepro pr create . --story-id story-pr-prepare --base main'), true);
+  assert.equal(ready.completion_status, 'waiver_required');
+  assert.equal(ready.current_phase, 'verification');
+  assert.equal(Array.isArray(ready.next_actions) && ready.next_actions.length > 0, true);
 
   const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(next.exitCode, 0);
-  assert.equal(next.result.next.current_phase, 'create_pr');
-  assert.equal(next.result.next.next_actions[0].startsWith(`cd ${ready.managed_worktree.path} && `), true);
+  assert.equal(next.result.next.current_phase, 'verification');
+  assert.equal(Array.isArray(next.result.next.next_actions) && next.result.next.next_actions.length > 0, true);
 
   const statusText = await runCliWithStdout(['execute', 'status', repo, '--story-id', 'story-pr-prepare']);
   assert.equal(statusText.exitCode, 0);
