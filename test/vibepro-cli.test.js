@@ -7601,6 +7601,70 @@ test('review policy config publishes role model policy and records actual model 
   assert.equal(record.result.review.agent_provenance.cost_tier, 'high');
 });
 
+test('SRA-CON-1 review record captures finding disposition and agent usage for subagent ROI audit', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--role', 'runtime_contract']);
+
+  const record = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'needs_changes',
+    '--summary',
+    'runtime contract gap needs a follow-up commit',
+    '--finding',
+    'high:runtime-contract-gap:subagent found a runtime contract gap',
+    '--finding-disposition',
+    'runtime-contract-gap:accepted:confirmed by focused inspection',
+    '--resolved-finding',
+    'runtime-contract-gap:commit abc1234',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-runtime-roi',
+    '--agent-thread-id',
+    'thread-codex-runtime-roi',
+    '--agent-input-tokens',
+    '1200',
+    '--agent-output-tokens',
+    '345',
+    '--agent-cost-usd',
+    '0.123456',
+    '--agent-closed',
+    '--json'
+  ]);
+
+  assert.equal(record.exitCode, 0);
+  assert.deepEqual(record.result.review.finding_dispositions, [{
+    finding_id: 'runtime-contract-gap',
+    disposition: 'accepted',
+    resolved_by: ['commit abc1234'],
+    reason: 'confirmed by focused inspection',
+    inferred_from_resolution: false
+  }]);
+  assert.deepEqual(record.result.review.agent_usage, {
+    input_tokens: 1200,
+    output_tokens: 345,
+    total_tokens: 1545,
+    cost_usd: 0.123456
+  });
+
+  const summary = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'implementation', 'review-summary.json'));
+  const role = summary.roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.findings[0].id, 'runtime-contract-gap');
+  assert.equal(role.finding_dispositions[0].disposition, 'accepted');
+  assert.equal(role.agent_usage.total_tokens, 1545);
+});
+
 test('review start rejects model policy mismatch before lifecycle start unless override is justified', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -14967,7 +15031,7 @@ test('status reports repository diagnosis state as text and json', async () => {
   assert.equal(status.artifacts.evidence, '.vibepro/diagnostics/run-alpha/evidence.json');
 });
 
-test('usage report aggregates VibePro artifacts, optional logs, and localized text', async () => {
+test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage report aggregates subagent ROI with VibePro artifacts, optional logs, and localized text', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
   await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
@@ -15005,14 +15069,150 @@ test('usage report aggregates VibePro artifacts, optional logs, and localized te
     story_id: storyId,
     stage: 'gate',
     updated_at: '2026-06-02T00:06:00.000Z',
-    roles: [{ role: 'gate_evidence' }],
-    pass_count: 1,
-    block_count: 0,
+    roles: [{
+      role: 'gate_evidence',
+      status: 'block',
+      effective_status: 'block',
+      findings: [{
+        severity: 'high',
+        id: 'roi-risk',
+        detail: 'subagent caught a merge-blocking risk'
+      }],
+      finding_dispositions: [{
+        finding_id: 'roi-risk',
+        disposition: 'accepted',
+        resolved_by: ['commit abc1234'],
+        reason: 'implemented before merge'
+      }],
+      agent_usage: {
+        input_tokens: 1000,
+        output_tokens: 500,
+        total_tokens: 1500,
+        cost_usd: 0.25
+      },
+      agent_provenance: {
+        system: 'codex',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'agent-roi',
+        evidence_strength: 'strong',
+        cost_tier: 'high',
+        lifecycle: { agent_closed: true }
+      },
+      inspection: {
+        inputs: ['src/usage-report.js']
+      },
+      judgment_delta: ['initial pass -> block because reviewed artifacts exposed a merge risk'],
+      lifecycle: {
+        effective_status: 'closed',
+        closed_count: 1,
+        timed_out_count: 0,
+        replaced_count: 0,
+        latest: {
+          agent_id: 'agent-roi',
+          status: 'closed',
+          effective_status: 'closed',
+          elapsed_ms: 120000
+        }
+      }
+    }],
+    pass_count: 0,
+    block_count: 1,
     stale_count: 1,
     lifecycle: {
       timed_out_count: 1,
-      replaced_count: 1
+      replaced_count: 1,
+      entries: [{
+        role: 'gate_evidence',
+        agent_id: 'agent-roi',
+        status: 'closed',
+        effective_status: 'closed',
+        elapsed_ms: 120000
+      }]
     }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-pr_split_scope.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'pr_split_scope',
+    status: 'pass',
+    effective_status: 'pass',
+    recorded_at: '2026-06-02T00:06:30.000Z',
+    findings: [],
+    finding_dispositions: [],
+    agent_usage: {
+      input_tokens: 400,
+      output_tokens: 100
+    },
+    agent_provenance: {
+      system: 'codex',
+      execution_mode: 'parallel_subagent',
+      agent_id: 'agent-pass-only',
+      evidence_strength: 'strong',
+      lifecycle: { agent_closed: true }
+    },
+    inspection: {
+      inputs: []
+    },
+    judgment_delta: []
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-release_risk.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'release_risk',
+    status: 'needs_changes',
+    effective_status: 'needs_changes',
+    recorded_at: '2026-06-02T00:06:40.000Z',
+    findings: [{
+      severity: 'medium',
+      id: 'duplicate-risk',
+      detail: 'same risk as another reviewer'
+    }, {
+      severity: 'low',
+      id: 'false-positive-risk',
+      detail: 'later judged noisy'
+    }],
+    finding_dispositions: [{
+      finding_id: 'duplicate-risk',
+      disposition: 'duplicate',
+      reason: 'covered by gate_evidence'
+    }, {
+      finding_id: 'false-positive-risk',
+      disposition: 'false_positive',
+      reason: 'artifact was stale test fixture'
+    }],
+    agent_provenance: {
+      system: 'claude_code',
+      execution_mode: 'parallel_subagent',
+      agent_id: 'agent-noisy-risk',
+      evidence_strength: 'strong',
+      lifecycle: { agent_closed: true }
+    },
+    inspection: {
+      inputs: ['.vibepro/reviews/story-pr-prepare/gate/review-result-release_risk.json']
+    },
+    judgment_delta: ['initial risk -> needs_changes, then dispositions marked duplicate/noise'],
+    lifecycle: {
+      timed_out_count: 1,
+      latest: {
+        agent_id: 'agent-noisy-risk',
+        status: 'running',
+        effective_status: 'timed_out'
+      }
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-human_manual.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'human_manual',
+    status: 'pass',
+    recorded_at: '2026-06-02T00:06:50.000Z',
+    agent_provenance: {
+      system: 'human',
+      execution_mode: 'manual_review',
+      agent_id: 'human-reviewer',
+      evidence_strength: 'strong'
+    },
+    judgment_delta: ['manual note should not enter subagent ROI']
   });
   await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
     story_id: storyId,
@@ -15021,12 +15221,15 @@ test('usage report aggregates VibePro artifacts, optional logs, and localized te
   });
   await writeFile(path.join(repo, 'logs', 'codex.log'), [
     'story-pr-prepare used vibepro pr prepare . --story-id story-pr-prepare',
+    'story-pr-prepare ToolCall: multi_agent_v1spawn_agent {"agent_type":"explorer"} thread_id=coordinator-thread',
+    'story-pr-prepare ToolCall: multi_agent_v1wait_agent {"targets":["agent-roi"]} thread_id=coordinator-thread',
+    'story-pr-prepare ToolCall: multi_agent_v1close_agent {"target":"agent-roi"} thread_id=coordinator-thread',
     'story-other fallback mentioned raw `gh pr create` in notes',
     'story-other also mentioned `vibepro pr create` in notes',
     'story-pr-prepare manual fallback mentioned gh pr create --base main --head feature/test-story'
   ].join('\n'));
 
-  const result = await runCli(['usage', 'report', repo, '--since', '2026-06-01', '--log', 'logs/codex.log', '--json']);
+  const result = await runCli(['usage', 'report', repo, '--since', '2026-06-01', '--log', 'logs/codex.log', '--subagent-roi', '--json']);
   assert.equal(result.exitCode, 0);
   const story = result.result.stories.find((item) => item.story_id === storyId);
   assert.equal(story.prepared, true);
@@ -15039,22 +15242,51 @@ test('usage report aggregates VibePro artifacts, optional logs, and localized te
   assert.equal(result.result.gate_metrics.find((gate) => gate.gate_id === 'gate:agent_review').critical_unresolved_count, 1);
   assert.equal(result.result.gate_metrics.find((gate) => gate.gate_id === 'gate:decision_record').waiver_count, 2);
   assert.equal(result.result.agent_review.totals.required_role_count, 1);
-  assert.equal(result.result.agent_review.totals.pass_count, 1);
+  assert.equal(result.result.agent_review.totals.pass_count, 0);
+  assert.equal(result.result.agent_review.totals.block_count, 1);
   assert.equal(result.result.agent_review.totals.timeout_count, 1);
   assert.equal(result.result.agent_review.totals.replaced_count, 1);
   assert.equal(result.result.agent_review.totals.stale_count, 1);
+  assert.equal(result.result.subagent_roi.summary.total_reviews, 3);
+  assert.equal(result.result.subagent_roi.summary.high_value_review_count, 1);
+  assert.equal(result.result.subagent_roi.summary.low_value_review_count, 2);
+  assert.equal(result.result.subagent_roi.summary.accepted_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.resolved_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.duplicate_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.false_positive_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.pass_only_no_judgment_delta_count, 1);
+  assert.equal(result.result.subagent_roi.summary.timed_out_review_count, 1);
+  assert.equal(result.result.subagent_roi.summary.total_agent_minutes, 2);
+  assert.equal(result.result.subagent_roi.summary.total_tokens, 2000);
+  assert.equal(result.result.subagent_roi.summary.token_observed_review_count, 2);
+  assert.equal(result.result.subagent_roi.summary.token_missing_review_count, 1);
+  assert.equal(result.result.subagent_roi.by_review[0].value_band, 'high');
+  const directResultReview = result.result.subagent_roi.by_review.find((review) => review.role === 'pr_split_scope');
+  assert.equal(directResultReview.source_kind, 'review_result');
+  assert.equal(directResultReview.artifact, '.vibepro/reviews/story-pr-prepare/gate/review-result-pr_split_scope.json');
+  assert.equal(directResultReview.cost.total_tokens, 500);
+  assert.equal(directResultReview.waste_signals.includes('pass_only_no_judgment_delta'), true);
+  const noisyReview = result.result.subagent_roi.by_review.find((review) => review.role === 'release_risk');
+  assert.equal(noisyReview.waste_signals.includes('duplicate_finding'), true);
+  assert.equal(noisyReview.waste_signals.includes('false_positive_finding'), true);
+  assert.equal(noisyReview.waste_signals.includes('timed_out_lifecycle'), true);
+  assert.equal(result.result.subagent_roi.by_review.some((review) => review.role === 'human_manual'), false);
   assert.equal(result.result.log_signals.raw_pr_create_mentions.length, 2);
   assert.equal(result.result.log_signals.raw_pr_create_mentions.some((mention) => mention.story_id === 'story-other'), true);
   assert.equal(result.result.log_signals.vibepro_command_mentions.length, 2);
   assert.equal(result.result.log_signals.vibepro_command_mentions.some((mention) => mention.command === 'vibepro pr create'), true);
+  assert.equal(result.result.log_signals.subagent_activity_mentions.length, 3);
+  assert.equal(result.result.log_signals.subagent_activity_mentions.some((mention) => mention.kind === 'wait' && mention.agent_ids.includes('agent-roi')), true);
+  assert.equal(result.result.log_signals.subagent_activity_mentions.some((mention) => mention.kind === 'close' && mention.agent_ids.includes('agent-roi')), true);
 
   let stdoutOutput = '';
-  const textResult = await runCli(['usage', 'report', repo, '--log', 'logs/codex.log'], {
+  const textResult = await runCli(['usage', 'report', repo, '--log', 'logs/codex.log', '--subagent-roi'], {
     stdout: { write: (text) => { stdoutOutput += text; } }
   });
   assert.equal(textResult.exitCode, 0);
   assert.match(stdoutOutput, /# VibePro利用状況レポート/);
   assert.match(stdoutOutput, /raw_pr_bypass_suspected=true/);
+  assert.match(stdoutOutput, /## Subagent ROI/);
 });
 
 test('usage report warns when an empty linked worktree may hide artifacts in another checkout', async () => {
