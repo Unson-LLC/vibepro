@@ -1083,6 +1083,16 @@ export function renderAgentReviewPrSection(agentReviews) {
     .map((role) => (
       `- ${stage.stage}:${role.role} (${role.effective_status}) artifact: ${role.artifact ?? '-'}${formatHistoryArtifactSuffix(role.history_artifacts)}`
     )));
+  const bindingRows = stages.flatMap((stage) => (stage.roles ?? [])
+    .filter((role) => role.binding_status || role.merge_delta_reuse)
+    .map((role) => {
+      const reuse = role.merge_delta_reuse;
+      const delta = reuse
+        ? ` / recorded=${reuse.recorded_head_sha?.slice(0, 12) ?? '-'} / current=${reuse.current_head_sha?.slice(0, 12) ?? '-'} / changed=${Array.isArray(reuse.merge_delta_changed_files) ? reuse.merge_delta_changed_files.length : reuse.merge_delta_changed_files === null ? 'unresolved' : '-'} / impacted=${Array.isArray(reuse.impacted_files) ? reuse.impacted_files.length : '-'}`
+        : '';
+      const reason = role.stale_reason ? ` / reason=${role.stale_reason}` : '';
+      return `- ${stage.stage}:${role.role} binding=${role.binding_status ?? '-'}${delta}${reason}`;
+    }));
   return [
     `- status: ${agentReviews.status}`,
     `- required reviews: ${agentReviews.summary?.required_review_count ?? 0}`,
@@ -1094,6 +1104,8 @@ export function renderAgentReviewPrSection(agentReviews) {
     checkpointRows.join('\n') || '- checkpoint roles passed or not required',
     '### Stage Summary',
     stageRows.join('\n') || '- no review stages recorded',
+    '### Review Binding',
+    bindingRows.slice(0, 20).join('\n') || '- no review binding details recorded',
     '### Review Artifacts',
     artifactRows.slice(0, 20).join('\n') || '- no review artifacts recorded'
   ].join('\n');
@@ -2073,7 +2085,19 @@ async function evaluateMergeDeltaReviewReuse(repoRoot, result, recordedContext, 
       reason: `review was recorded for ${recordedHead.slice(0, 12)}, current head is ${currentHead.slice(0, 12)} and no inspected file surface was recorded for merge-delta reuse`
     };
   }
-  const changedFiles = await getChangedFilesBetween(repoRoot, recordedHead, currentHead);
+  const changedFilesResult = await getChangedFilesBetween(repoRoot, recordedHead, currentHead);
+  if (!changedFilesResult.ok) {
+    return {
+      reusable: false,
+      reason: `review was recorded for ${recordedHead.slice(0, 12)}, current head is ${currentHead.slice(0, 12)}, and merge delta changed files could not be resolved: ${changedFilesResult.reason}`,
+      recorded_head_sha: recordedHead,
+      current_head_sha: currentHead,
+      inspected_files: inspectedFiles,
+      merge_delta_changed_files: null,
+      diff_status: 'unresolved'
+    };
+  }
+  const changedFiles = changedFilesResult.files;
   if (changedFiles.length === 0) {
     return {
       reusable: true,
@@ -2149,9 +2173,16 @@ async function getChangedFilesBetween(repoRoot, fromRef, toRef) {
       cwd: repoRoot,
       encoding: 'utf8'
     });
-    return stdout.split('\n').map((line) => line.trim()).filter(Boolean).sort();
-  } catch {
-    return [];
+    return {
+      ok: true,
+      files: stdout.split('\n').map((line) => line.trim()).filter(Boolean).sort()
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      files: [],
+      reason: error?.stderr?.trim() || error?.message || 'git diff failed'
+    };
   }
 }
 

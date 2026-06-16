@@ -18,6 +18,7 @@ import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
 import { preparePullRequest } from '../src/pr-manager.js';
 import { scanPublicDiscovery } from '../src/public-discovery-scanner.js';
+import { renderAgentReviewPrSection } from '../src/agent-review.js';
 import { writeInferredSpec } from '../src/spec-store.js';
 import { scanTerminalLinkContracts } from '../src/terminal-link-scanner.js';
 import { buildStoryTaskState } from '../src/story-task-generator.js';
@@ -8237,6 +8238,119 @@ test('review status does not reuse merge delta review without inspected file inp
   assert.equal(role.effective_status, 'stale');
   assert.equal(role.binding_status, 'stale');
   assert.match(role.stale_reason, /no inspected file surface/);
+});
+
+test('review status keeps stale review when merge delta diff cannot be resolved', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'merge-delta-missing-head.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/merge-delta-missing-head.js']);
+  await git(repo, ['commit', '-m', 'feat: add missing head target']);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'runtime contract reviewed before missing-head merge delta',
+    '--inspection-summary',
+    'inspected runtime source before merge delta',
+    '--inspection-input',
+    'src/merge-delta-missing-head.js',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-merge-delta-missing-head-agent',
+    '--agent-thread-id',
+    'thread-merge-delta-missing-head-agent',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-reasoning-effort',
+    'low',
+    '--agent-cost-tier',
+    'medium',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
+
+  const reviewPath = path.join(
+    repo,
+    '.vibepro',
+    'reviews',
+    'story-pr-prepare',
+    'implementation',
+    'review-result-runtime_contract.json'
+  );
+  const reviewResult = await readJson(reviewPath);
+  const missingHead = 'f'.repeat(40);
+  reviewResult.git_context.head_sha = missingHead;
+  await writeJson(reviewPath, reviewResult);
+
+  await writeFile(path.join(repo, 'docs', 'base-sync-missing-head.md'), 'unrelated base sync note\n');
+  await git(repo, ['add', 'docs/base-sync-missing-head.md']);
+  await git(repo, ['commit', '-m', 'chore: sync docs after missing head']);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'stale');
+  assert.equal(role.binding_status, 'stale');
+  assert.match(role.stale_reason, /could not be resolved/);
+  assert.equal(role.merge_delta_reuse.recorded_head_sha, missingHead);
+  assert.equal(role.merge_delta_reuse.diff_status, 'unresolved');
+  assert.equal(role.merge_delta_reuse.merge_delta_changed_files, null);
+});
+
+test('agent review PR section shows merge delta binding reasons', () => {
+  const section = renderAgentReviewPrSection({
+    status: 'passed',
+    summary: {
+      required_review_count: 1,
+      unmet_required_review_count: 0,
+      checkpoint_required_review_count: 0,
+      unmet_checkpoint_review_count: 0
+    },
+    stages: [
+      {
+        stage: 'implementation',
+        status: 'passed',
+        stale_count: 0,
+        block_count: 0,
+        roles: [
+          {
+            role: 'runtime_contract',
+            effective_status: 'pass',
+            binding_status: 'reused_merge_delta',
+            stale_reason: 'review was reused because merge delta changed files outside inspected review inputs',
+            merge_delta_reuse: {
+              recorded_head_sha: 'a'.repeat(40),
+              current_head_sha: 'b'.repeat(40),
+              merge_delta_changed_files: ['docs/base-sync.md'],
+              impacted_files: []
+            }
+          }
+        ]
+      }
+    ]
+  });
+
+  assert.match(section, /### Review Binding/);
+  assert.match(section, /implementation:runtime_contract binding=reused_merge_delta/);
+  assert.match(section, /changed=1/);
+  assert.match(section, /impacted=0/);
+  assert.match(section, /reason=review was reused/);
 });
 
 test('review status keeps current review when only tracked VibePro manifest changes', async () => {

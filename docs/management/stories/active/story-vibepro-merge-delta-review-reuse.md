@@ -24,6 +24,7 @@ For those cases, VibePro should reuse an already passing Agent Review result whe
 - The reused review is visibly marked as `reused_merge_delta` in review status artifacts.
 - A review is still stale when the merge delta touches a recorded inspection input.
 - Reviews without concrete inspected file inputs are not reused across HEAD changes.
+- Reviews remain stale when VibePro cannot resolve the changed path set between the recorded review HEAD and current HEAD.
 - Dirty worktree fingerprint changes still make review evidence stale.
 
 ## Non Goals
