@@ -15031,7 +15031,7 @@ test('status reports repository diagnosis state as text and json', async () => {
   assert.equal(status.artifacts.evidence, '.vibepro/diagnostics/run-alpha/evidence.json');
 });
 
-test('SRA-SC-1 usage report aggregates subagent ROI with VibePro artifacts, optional logs, and localized text', async () => {
+test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage report aggregates subagent ROI with VibePro artifacts, optional logs, and localized text', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
   await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
@@ -15130,6 +15130,90 @@ test('SRA-SC-1 usage report aggregates subagent ROI with VibePro artifacts, opti
       }]
     }
   });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-pr_split_scope.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'pr_split_scope',
+    status: 'pass',
+    effective_status: 'pass',
+    recorded_at: '2026-06-02T00:06:30.000Z',
+    findings: [],
+    finding_dispositions: [],
+    agent_usage: {
+      input_tokens: 400,
+      output_tokens: 100
+    },
+    agent_provenance: {
+      system: 'codex',
+      execution_mode: 'parallel_subagent',
+      agent_id: 'agent-pass-only',
+      evidence_strength: 'strong',
+      lifecycle: { agent_closed: true }
+    },
+    inspection: {
+      inputs: []
+    },
+    judgment_delta: []
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-release_risk.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'release_risk',
+    status: 'needs_changes',
+    effective_status: 'needs_changes',
+    recorded_at: '2026-06-02T00:06:40.000Z',
+    findings: [{
+      severity: 'medium',
+      id: 'duplicate-risk',
+      detail: 'same risk as another reviewer'
+    }, {
+      severity: 'low',
+      id: 'false-positive-risk',
+      detail: 'later judged noisy'
+    }],
+    finding_dispositions: [{
+      finding_id: 'duplicate-risk',
+      disposition: 'duplicate',
+      reason: 'covered by gate_evidence'
+    }, {
+      finding_id: 'false-positive-risk',
+      disposition: 'false_positive',
+      reason: 'artifact was stale test fixture'
+    }],
+    agent_provenance: {
+      system: 'claude_code',
+      execution_mode: 'parallel_subagent',
+      agent_id: 'agent-noisy-risk',
+      evidence_strength: 'strong',
+      lifecycle: { agent_closed: true }
+    },
+    inspection: {
+      inputs: ['.vibepro/reviews/story-pr-prepare/gate/review-result-release_risk.json']
+    },
+    judgment_delta: ['initial risk -> needs_changes, then dispositions marked duplicate/noise'],
+    lifecycle: {
+      timed_out_count: 1,
+      latest: {
+        agent_id: 'agent-noisy-risk',
+        status: 'running',
+        effective_status: 'timed_out'
+      }
+    }
+  });
+  await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-human_manual.json'), {
+    story_id: storyId,
+    stage: 'gate',
+    role: 'human_manual',
+    status: 'pass',
+    recorded_at: '2026-06-02T00:06:50.000Z',
+    agent_provenance: {
+      system: 'human',
+      execution_mode: 'manual_review',
+      agent_id: 'human-reviewer',
+      evidence_strength: 'strong'
+    },
+    judgment_delta: ['manual note should not enter subagent ROI']
+  });
   await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
     story_id: storyId,
     updated_at: '2026-06-02T00:07:00.000Z',
@@ -15138,6 +15222,7 @@ test('SRA-SC-1 usage report aggregates subagent ROI with VibePro artifacts, opti
   await writeFile(path.join(repo, 'logs', 'codex.log'), [
     'story-pr-prepare used vibepro pr prepare . --story-id story-pr-prepare',
     'story-pr-prepare ToolCall: multi_agent_v1spawn_agent {"agent_type":"explorer"} thread_id=coordinator-thread',
+    'story-pr-prepare ToolCall: multi_agent_v1wait_agent {"targets":["agent-roi"]} thread_id=coordinator-thread',
     'story-pr-prepare ToolCall: multi_agent_v1close_agent {"target":"agent-roi"} thread_id=coordinator-thread',
     'story-other fallback mentioned raw `gh pr create` in notes',
     'story-other also mentioned `vibepro pr create` in notes',
@@ -15162,18 +15247,36 @@ test('SRA-SC-1 usage report aggregates subagent ROI with VibePro artifacts, opti
   assert.equal(result.result.agent_review.totals.timeout_count, 1);
   assert.equal(result.result.agent_review.totals.replaced_count, 1);
   assert.equal(result.result.agent_review.totals.stale_count, 1);
-  assert.equal(result.result.subagent_roi.summary.total_reviews, 1);
+  assert.equal(result.result.subagent_roi.summary.total_reviews, 3);
   assert.equal(result.result.subagent_roi.summary.high_value_review_count, 1);
+  assert.equal(result.result.subagent_roi.summary.low_value_review_count, 2);
   assert.equal(result.result.subagent_roi.summary.accepted_finding_count, 1);
   assert.equal(result.result.subagent_roi.summary.resolved_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.duplicate_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.false_positive_finding_count, 1);
+  assert.equal(result.result.subagent_roi.summary.pass_only_no_judgment_delta_count, 1);
+  assert.equal(result.result.subagent_roi.summary.timed_out_review_count, 1);
   assert.equal(result.result.subagent_roi.summary.total_agent_minutes, 2);
-  assert.equal(result.result.subagent_roi.summary.total_tokens, 1500);
+  assert.equal(result.result.subagent_roi.summary.total_tokens, 2000);
+  assert.equal(result.result.subagent_roi.summary.token_observed_review_count, 2);
+  assert.equal(result.result.subagent_roi.summary.token_missing_review_count, 1);
   assert.equal(result.result.subagent_roi.by_review[0].value_band, 'high');
+  const directResultReview = result.result.subagent_roi.by_review.find((review) => review.role === 'pr_split_scope');
+  assert.equal(directResultReview.source_kind, 'review_result');
+  assert.equal(directResultReview.artifact, '.vibepro/reviews/story-pr-prepare/gate/review-result-pr_split_scope.json');
+  assert.equal(directResultReview.cost.total_tokens, 500);
+  assert.equal(directResultReview.waste_signals.includes('pass_only_no_judgment_delta'), true);
+  const noisyReview = result.result.subagent_roi.by_review.find((review) => review.role === 'release_risk');
+  assert.equal(noisyReview.waste_signals.includes('duplicate_finding'), true);
+  assert.equal(noisyReview.waste_signals.includes('false_positive_finding'), true);
+  assert.equal(noisyReview.waste_signals.includes('timed_out_lifecycle'), true);
+  assert.equal(result.result.subagent_roi.by_review.some((review) => review.role === 'human_manual'), false);
   assert.equal(result.result.log_signals.raw_pr_create_mentions.length, 2);
   assert.equal(result.result.log_signals.raw_pr_create_mentions.some((mention) => mention.story_id === 'story-other'), true);
   assert.equal(result.result.log_signals.vibepro_command_mentions.length, 2);
   assert.equal(result.result.log_signals.vibepro_command_mentions.some((mention) => mention.command === 'vibepro pr create'), true);
-  assert.equal(result.result.log_signals.subagent_activity_mentions.length, 2);
+  assert.equal(result.result.log_signals.subagent_activity_mentions.length, 3);
+  assert.equal(result.result.log_signals.subagent_activity_mentions.some((mention) => mention.kind === 'wait' && mention.agent_ids.includes('agent-roi')), true);
   assert.equal(result.result.log_signals.subagent_activity_mentions.some((mention) => mention.kind === 'close' && mention.agent_ids.includes('agent-roi')), true);
 
   let stdoutOutput = '';

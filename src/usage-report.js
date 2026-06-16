@@ -65,6 +65,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   for (const artifact of reviewArtifacts) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
     story.artifacts.push(artifact.path);
+    if (artifact.kind !== 'review_summary') continue;
     story.agent_review.required_role_count += artifact.data?.roles?.length ?? 0;
     story.agent_review.pass_count += artifact.data?.pass_count ?? 0;
     story.agent_review.block_count += artifact.data?.block_count ?? 0;
@@ -303,10 +304,19 @@ async function collectReviewArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const storyId of await safeReaddir(reviewDir)) {
     for (const stage of await safeReaddir(path.join(reviewDir, storyId))) {
-      const filePath = path.join(reviewDir, storyId, stage, 'review-summary.json');
+      const stageDir = path.join(reviewDir, storyId, stage);
+      const filePath = path.join(stageDir, 'review-summary.json');
       const data = await readJsonIfExists(filePath);
-      if (!data || !isWithinSince(data.updated_at, since)) continue;
-      artifacts.push({ kind: 'review_summary', story_id: data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
+      if (data && isWithinSince(data.updated_at, since)) {
+        artifacts.push({ kind: 'review_summary', story_id: data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
+      }
+      for (const entry of await safeReaddirEntries(stageDir)) {
+        if (!entry.isFile() || !/^review-result-.+\.json$/.test(entry.name)) continue;
+        const resultPath = path.join(stageDir, entry.name);
+        const result = await readJsonIfExists(resultPath);
+        if (!result || !isWithinSince(result.recorded_at ?? result.updated_at ?? result.created_at, since)) continue;
+        artifacts.push({ kind: 'review_result', story_id: result.story_id ?? storyId, path: toWorkspaceRelative(root, resultPath), data: result });
+      }
     }
   }
   return artifacts;
@@ -635,6 +645,7 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
     }
 
     for (const review of reviewItems) {
+      if (review.kind !== 'review_summary') continue;
       const reason = getIncompleteReviewEvidenceReason(review.data);
       if (!reason) continue;
       addTraceabilityGap(story, {
@@ -670,7 +681,7 @@ function latestArtifact(artifacts) {
 }
 
 function artifactTime(artifact) {
-  const value = artifact?.data?.updated_at ?? artifact?.data?.created_at ?? artifact?.data?.generated_at ?? artifact?.data?.merged_at;
+  const value = artifact?.data?.updated_at ?? artifact?.data?.recorded_at ?? artifact?.data?.created_at ?? artifact?.data?.generated_at ?? artifact?.data?.merged_at;
   const parsed = new Date(value ?? 0);
   return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
 }
@@ -779,10 +790,9 @@ function buildValueSignals(stories) {
 }
 
 function buildSubagentRoiMetrics(reviewArtifacts) {
-  const reviews = [];
+  const reviewByKey = new Map();
   for (const artifact of reviewArtifacts) {
-    const lifecycleEntries = Array.isArray(artifact.data?.lifecycle?.entries) ? artifact.data.lifecycle.entries : [];
-    for (const role of artifact.data?.roles ?? []) {
+    for (const { storyId, stage, role, lifecycleEntries } of expandSubagentRoiArtifactRoles(artifact)) {
       const provenance = role.agent_provenance ?? {};
       if (!ROI_AGENT_SYSTEMS.has(provenance.system) || provenance.execution_mode !== 'parallel_subagent') continue;
       const lifecycleEntry = findLifecycleEntryForReviewRole(role, lifecycleEntries);
@@ -802,9 +812,11 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
         usage,
         elapsedMs
       });
-      reviews.push({
-        story_id: artifact.story_id,
-        stage: artifact.data?.stage ?? role.stage ?? 'unknown',
+      const review = {
+        source_kind: artifact.kind,
+        source_kinds: [artifact.kind],
+        story_id: storyId,
+        stage,
         role: role.role,
         status: role.status ?? 'missing',
         effective_status: role.effective_status ?? role.status ?? 'missing',
@@ -839,9 +851,12 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
         value_band: score.band,
         value_signals: score.value_signals,
         waste_signals: score.waste_signals
-      });
+      };
+      const key = buildSubagentRoiReviewKey({ review, provenance, lifecycleEntry });
+      reviewByKey.set(key, preferSubagentRoiReview(reviewByKey.get(key), review));
     }
   }
+  const reviews = [...reviewByKey.values()];
   reviews.sort((a, b) => (
     a.story_id.localeCompare(b.story_id)
     || a.stage.localeCompare(b.stage)
@@ -852,6 +867,58 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
     summary: summarizeSubagentRoiReviews(reviews),
     by_story: summarizeSubagentRoiByStory(reviews),
     by_review: reviews
+  };
+}
+
+function expandSubagentRoiArtifactRoles(artifact) {
+  if (artifact.kind === 'review_result') {
+    return [{
+      storyId: artifact.data?.story_id ?? artifact.story_id,
+      stage: artifact.data?.stage ?? 'unknown',
+      role: artifact.data ?? {},
+      lifecycleEntries: []
+    }];
+  }
+  const lifecycleEntries = Array.isArray(artifact.data?.lifecycle?.entries) ? artifact.data.lifecycle.entries : [];
+  return (artifact.data?.roles ?? []).map((role) => ({
+    storyId: artifact.story_id,
+    stage: artifact.data?.stage ?? role.stage ?? 'unknown',
+    role,
+    lifecycleEntries
+  }));
+}
+
+function buildSubagentRoiReviewKey({ review, provenance, lifecycleEntry }) {
+  const agentId = provenance.agent_id ?? lifecycleEntry?.agent_id ?? review.agent.agent_id ?? review.artifact;
+  return [review.story_id, review.stage, review.role, agentId].join('\0');
+}
+
+function preferSubagentRoiReview(previous, next) {
+  if (!previous) return next;
+  const previousPriority = previous.source_kind === 'review_result' ? 2 : 1;
+  const nextPriority = next.source_kind === 'review_result' ? 2 : 1;
+  const primary = nextPriority >= previousPriority ? next : previous;
+  const fallback = primary === next ? previous : next;
+  const elapsedMs = primary.cost.elapsed_ms ?? fallback.cost.elapsed_ms;
+  return {
+    ...primary,
+    source_kinds: [...new Set([...(fallback.source_kinds ?? [fallback.source_kind]), ...(primary.source_kinds ?? [primary.source_kind])])],
+    agent: {
+      ...primary.agent,
+      agent_id: primary.agent.agent_id ?? fallback.agent.agent_id,
+      model: primary.agent.model ?? fallback.agent.model,
+      reasoning_effort: primary.agent.reasoning_effort ?? fallback.agent.reasoning_effort,
+      cost_tier: primary.agent.cost_tier ?? fallback.agent.cost_tier,
+      evidence_strength: primary.agent.evidence_strength ?? fallback.agent.evidence_strength
+    },
+    cost: {
+      elapsed_ms: elapsedMs,
+      agent_minutes: elapsedMs === null ? null : Number((elapsedMs / 60000).toFixed(2)),
+      input_tokens: primary.cost.input_tokens ?? fallback.cost.input_tokens,
+      output_tokens: primary.cost.output_tokens ?? fallback.cost.output_tokens,
+      total_tokens: primary.cost.total_tokens ?? fallback.cost.total_tokens,
+      cost_usd: primary.cost.cost_usd ?? fallback.cost.cost_usd
+    }
   };
 }
 
