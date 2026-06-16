@@ -39,6 +39,7 @@ const AGENT_REVIEW_SYSTEMS = new Set(['codex', 'claude_code']);
 const REVIEW_EXECUTION_MODES = new Set(['parallel_subagent', 'manual_review', 'unknown']);
 const MODEL_REASONING_EFFORTS = new Set(['low', 'medium', 'high']);
 const MODEL_COST_TIERS = new Set(['low', 'medium', 'high']);
+const FINDING_DISPOSITIONS = new Set(['accepted', 'rejected', 'duplicate', 'deferred', 'false_positive']);
 const DEFAULT_REVIEW_TIMEOUT_MS = 10 * 60 * 1000;
 const LIFECYCLE_STATUSES = new Set(['running', 'closed', 'replaced']);
 const execFileAsync = promisify(execFile);
@@ -256,6 +257,10 @@ export async function recordAgentReview(repoRoot, options = {}) {
     status,
     summary: options.summary ?? options.stdinText.trim(),
     findings: parseFindings(options.findings ?? []),
+    finding_dispositions: parseFindingDispositions({
+      dispositions: options.findingDispositions ?? [],
+      resolvedFindings: options.resolvedFindings ?? []
+    }),
     artifacts: (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact)),
     inspection: buildInspectionBlock(options),
     judgment_delta: normalizeTextList(options.judgmentDeltas),
@@ -267,7 +272,8 @@ export async function recordAgentReview(repoRoot, options = {}) {
     agent_provenance: buildAgentProvenance(root, {
       ...options,
       defaultRequestPath: getReviewRequestPath(reviewDir, role)
-    })
+    }),
+    agent_usage: buildAgentUsage(options)
   };
   if (requiresInspectionForPass(result) && !result.inspection.summary) {
     throw new Error(
@@ -1873,7 +1879,10 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       summary: result?.summary ?? null,
       inspection: normalizeReviewInspectionForSummary(result?.inspection),
       judgment_delta: Array.isArray(result?.judgment_delta) ? result.judgment_delta : [],
+      findings: normalizeReviewFindingsForSummary(result?.findings),
+      finding_dispositions: normalizeFindingDispositionsForSummary(result?.finding_dispositions),
       finding_count: Array.isArray(result?.findings) ? result.findings.length : 0,
+      agent_usage: normalizeAgentUsageForSummary(result?.agent_usage),
       recorded_at: result?.recorded_at ?? null,
       git_context: result?.git_context ?? null,
       source_git_context: result?.source_git_context ?? null,
@@ -2394,6 +2403,36 @@ function normalizeReviewInspectionForSummary(inspection = null) {
   };
 }
 
+function normalizeReviewFindingsForSummary(findings = []) {
+  if (!Array.isArray(findings)) return [];
+  return findings.map((finding) => ({
+    severity: normalizeNullable(finding?.severity) ?? 'medium',
+    id: normalizeNullable(finding?.id) ?? 'finding',
+    detail: normalizeNullable(finding?.detail)
+  }));
+}
+
+function normalizeFindingDispositionsForSummary(dispositions = []) {
+  if (!Array.isArray(dispositions)) return [];
+  return dispositions.map((item) => ({
+    finding_id: item.finding_id,
+    disposition: item.disposition,
+    resolved_by: Array.isArray(item.resolved_by) ? item.resolved_by : [],
+    reason: item.reason ?? null,
+    inferred_from_resolution: Boolean(item.inferred_from_resolution)
+  }));
+}
+
+function normalizeAgentUsageForSummary(usage = null) {
+  if (!usage) return null;
+  return {
+    input_tokens: usage.input_tokens ?? null,
+    output_tokens: usage.output_tokens ?? null,
+    total_tokens: usage.total_tokens ?? null,
+    cost_usd: usage.cost_usd ?? null
+  };
+}
+
 function normalizeTextList(values = []) {
   const list = Array.isArray(values) ? values : [values];
   return [...new Set(list
@@ -2423,6 +2462,79 @@ function parseFindings(values) {
       detail: detailParts.join(':') || value
     };
   });
+}
+
+function parseFindingDispositions({ dispositions = [], resolvedFindings = [] } = {}) {
+  const dispositionById = new Map();
+  for (const value of dispositions) {
+    const [rawFindingId, rawDisposition, ...reasonParts] = String(value).split(':');
+    const findingId = normalizeNullable(rawFindingId);
+    const disposition = normalizeDisposition(rawDisposition);
+    if (!findingId) throw new Error('review record --finding-disposition requires <finding-id>:<disposition>');
+    const existing = dispositionById.get(findingId) ?? {
+      finding_id: findingId,
+      disposition,
+      resolved_by: [],
+      reason: null,
+      inferred_from_resolution: false
+    };
+    existing.disposition = disposition;
+    existing.reason = normalizeNullable(reasonParts.join(':')) ?? existing.reason;
+    dispositionById.set(findingId, existing);
+  }
+  for (const value of resolvedFindings) {
+    const [rawFindingId, ...refParts] = String(value).split(':');
+    const findingId = normalizeNullable(rawFindingId);
+    const ref = normalizeNullable(refParts.join(':'));
+    if (!findingId || !ref) throw new Error('review record --resolved-finding requires <finding-id>:<ref>');
+    const existing = dispositionById.get(findingId) ?? {
+      finding_id: findingId,
+      disposition: 'accepted',
+      resolved_by: [],
+      reason: null,
+      inferred_from_resolution: true
+    };
+    existing.resolved_by = [...new Set([...existing.resolved_by, ref])];
+    dispositionById.set(findingId, existing);
+  }
+  return [...dispositionById.values()].sort((a, b) => a.finding_id.localeCompare(b.finding_id));
+}
+
+function normalizeDisposition(value) {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/-/g, '_');
+  if (!FINDING_DISPOSITIONS.has(normalized)) {
+    throw new Error(`review record --finding-disposition disposition must be one of: ${[...FINDING_DISPOSITIONS].join(', ')}`);
+  }
+  return normalized;
+}
+
+function buildAgentUsage(options = {}) {
+  const inputTokens = parseNonNegativeIntegerOption(options.agentInputTokens, '--agent-input-tokens');
+  const outputTokens = parseNonNegativeIntegerOption(options.agentOutputTokens, '--agent-output-tokens');
+  const explicitTotalTokens = parseNonNegativeIntegerOption(options.agentTotalTokens, '--agent-total-tokens');
+  const costUsd = parseNonNegativeNumberOption(options.agentCostUsd, '--agent-cost-usd');
+  const inferredTotalTokens = inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null;
+  const totalTokens = explicitTotalTokens ?? inferredTotalTokens;
+  if (inputTokens === null && outputTokens === null && totalTokens === null && costUsd === null) return null;
+  return {
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    total_tokens: totalTokens,
+    cost_usd: costUsd
+  };
+}
+
+function parseNonNegativeIntegerOption(value, label) {
+  if (value === undefined || value === null || value === '') return null;
+  if (!/^\d+$/.test(String(value))) throw new Error(`review record ${label} must be a non-negative integer`);
+  return Number(value);
+}
+
+function parseNonNegativeNumberOption(value, label) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) throw new Error(`review record ${label} must be a non-negative number`);
+  return parsed;
 }
 
 function normalizeArtifact(repoRoot, artifact) {

@@ -7,6 +7,8 @@ import { resolveHumanOutputLanguage } from './language.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
+const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
+const ROI_DISPOSITIONS = ['accepted', 'rejected', 'duplicate', 'deferred', 'false_positive'];
 
 export async function createUsageReport(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -86,6 +88,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   const stories = [...storyMap.values()].sort((a, b) => a.story_id.localeCompare(b.story_id));
   const gate_metrics = buildGateMetrics(prArtifacts);
   const agent_review = buildAgentReviewMetrics(stories);
+  const subagent_roi = options.subagentRoi ? buildSubagentRoiMetrics(reviewArtifacts) : null;
   const value_signals = buildValueSignals(stories);
   const artifactCounts = {
     pr: countRealPrArtifacts(prArtifacts),
@@ -105,6 +108,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     stories,
     gate_metrics,
     agent_review,
+    ...(subagent_roi ? { subagent_roi } : {}),
     value_signals,
     log_signals: logs
   };
@@ -127,6 +131,7 @@ export function renderUsageReport(report) {
         `- ${item.story_id}: required=${item.required_role_count} pass=${item.pass_count} block=${item.block_count} timeout=${item.timeout_count} replaced=${item.replaced_count} stale=${item.stale_count}`
       )).join('\n')
     : '- none';
+  const subagentRoiRows = renderSubagentRoiRows(report);
   const valueSignals = report.value_signals ?? {};
   const valueRows = [
     `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
@@ -160,6 +165,7 @@ ${gateRows}
 ## Agent Review
 
 ${reviewRows}
+${subagentRoiRows}
 
 ## Value Signals
 
@@ -173,6 +179,7 @@ ${traceabilityRows}
 
 - raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
 - VibePro command mentions: ${report.log_signals.vibepro_command_mentions.length}
+- subagent activity mentions: ${report.log_signals.subagent_activity_mentions?.length ?? 0}
 `;
   }
   return `# VibePro利用状況レポート
@@ -193,6 +200,7 @@ ${gateRows}
 ## Agent Review
 
 ${reviewRows}
+${subagentRoiRows}
 
 ## Value Signals
 
@@ -206,6 +214,7 @@ ${traceabilityRows}
 
 - raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
 - VibePro command mentions: ${report.log_signals.vibepro_command_mentions.length}
+- subagent activity mentions: ${report.log_signals.subagent_activity_mentions?.length ?? 0}
 `;
 }
 
@@ -320,6 +329,7 @@ async function collectUsageLogs(root, options = {}) {
     .map((file) => path.resolve(root, file));
   const rawMentions = [];
   const vibeproMentions = [];
+  const subagentActivityMentions = [];
   for (const file of files) {
     const text = await readTextIfExists(file);
     if (!text) continue;
@@ -330,6 +340,7 @@ async function collectUsageLogs(root, options = {}) {
       if (lineStoryId) latestStoryId = lineStoryId;
       const rawMatches = [...line.matchAll(/(?:^|[^A-Za-z0-9_-])(gh\s+pr\s+create)(?=$|[^A-Za-z0-9_-])/g)];
       const vibeproMatches = [...line.matchAll(/(?:^|[^A-Za-z0-9_-])(vibepro\s+[a-z][^`]*)/g)];
+      const subagentActivity = parseSubagentActivityLine(line);
       for (const _match of rawMatches) {
         rawMentions.push({
           file: relative,
@@ -346,12 +357,21 @@ async function collectUsageLogs(root, options = {}) {
           command: normalizeLogCommand(match[1])
         });
       }
+      if (subagentActivity) {
+        subagentActivityMentions.push({
+          file: relative,
+          line: lineIndex + 1,
+          story_id: lineStoryId ?? latestStoryId,
+          ...subagentActivity
+        });
+      }
     }
   }
   return {
     files: files.map((file) => toWorkspaceRelative(root, file)),
     raw_pr_create_mentions: rawMentions,
-    vibepro_command_mentions: vibeproMentions
+    vibepro_command_mentions: vibeproMentions,
+    subagent_activity_mentions: subagentActivityMentions
   };
 }
 
@@ -516,6 +536,31 @@ function normalizeLogCommand(value) {
     .trim()
     .replace(/[`"'）)】\].,;:、。]+$/g, '')
     .trim();
+}
+
+function parseSubagentActivityLine(line) {
+  if (!/multi_agent_v1(?:spawn_agent|wait_agent|close_agent)|spawn_agent|wait_agent|close_agent/.test(line)) return null;
+  const text = String(line ?? '');
+  const kind = text.includes('multi_agent_v1spawn_agent') || /\bspawn_agent\b/.test(text)
+    ? 'spawn'
+    : text.includes('multi_agent_v1wait_agent') || /\bwait_agent\b/.test(text)
+      ? 'wait'
+      : text.includes('multi_agent_v1close_agent') || /\bclose_agent\b/.test(text)
+        ? 'close'
+        : null;
+  if (!kind) return null;
+  const agentIds = [...new Set([
+    ...[...text.matchAll(/"target"\s*:\s*"([^"]+)"/g)].map((match) => match[1]),
+    ...[...text.matchAll(/"targets"\s*:\s*\[([^\]]*)\]/g)]
+      .flatMap((match) => [...match[1].matchAll(/"([^"]+)"/g)].map((idMatch) => idMatch[1])),
+    ...[...text.matchAll(/\btarget=([0-9a-f-]{12,})/g)].map((match) => match[1])
+  ])];
+  const threadId = text.match(/\bthread_id=([0-9a-f-]{12,})/)?.[1] ?? null;
+  return {
+    kind,
+    agent_ids: agentIds,
+    thread_id: threadId
+  };
 }
 
 function buildGateMetrics(prArtifacts) {
@@ -731,6 +776,325 @@ function buildValueSignals(stories) {
     story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount),
     traceability_gap_rate: calculateRate(traceabilityGapStoryCount, storyCount)
   };
+}
+
+function buildSubagentRoiMetrics(reviewArtifacts) {
+  const reviews = [];
+  for (const artifact of reviewArtifacts) {
+    const lifecycleEntries = Array.isArray(artifact.data?.lifecycle?.entries) ? artifact.data.lifecycle.entries : [];
+    for (const role of artifact.data?.roles ?? []) {
+      const provenance = role.agent_provenance ?? {};
+      if (!ROI_AGENT_SYSTEMS.has(provenance.system) || provenance.execution_mode !== 'parallel_subagent') continue;
+      const lifecycleEntry = findLifecycleEntryForReviewRole(role, lifecycleEntries);
+      const findings = normalizeReviewFindings(role);
+      const findingCount = Math.max(findings.length, Number(role.finding_count ?? 0));
+      const dispositions = normalizeReviewDispositions(role.finding_dispositions);
+      const dispositionCounts = countDispositions(dispositions);
+      const usage = normalizeReviewUsage(role.agent_usage);
+      const elapsedMs = lifecycleEntry?.elapsed_ms ?? role.lifecycle?.latest?.elapsed_ms ?? null;
+      const score = scoreSubagentReview({
+        role,
+        provenance,
+        lifecycleEntry,
+        findings,
+        findingCount,
+        dispositionCounts,
+        usage,
+        elapsedMs
+      });
+      reviews.push({
+        story_id: artifact.story_id,
+        stage: artifact.data?.stage ?? role.stage ?? 'unknown',
+        role: role.role,
+        status: role.status ?? 'missing',
+        effective_status: role.effective_status ?? role.status ?? 'missing',
+        artifact: artifact.path,
+        agent: {
+          system: provenance.system ?? null,
+          agent_id: provenance.agent_id ?? lifecycleEntry?.agent_id ?? null,
+          model: provenance.model ?? lifecycleEntry?.agent_model ?? null,
+          reasoning_effort: provenance.reasoning_effort ?? lifecycleEntry?.agent_reasoning_effort ?? null,
+          cost_tier: provenance.cost_tier ?? lifecycleEntry?.agent_cost_tier ?? null,
+          evidence_strength: provenance.evidence_strength ?? null
+        },
+        cost: {
+          elapsed_ms: elapsedMs,
+          agent_minutes: elapsedMs === null ? null : Number((elapsedMs / 60000).toFixed(2)),
+          input_tokens: usage.input_tokens,
+          output_tokens: usage.output_tokens,
+          total_tokens: usage.total_tokens,
+          cost_usd: usage.cost_usd
+        },
+        findings: {
+          total: findingCount,
+          accepted: dispositionCounts.accepted,
+          rejected: dispositionCounts.rejected,
+          duplicate: dispositionCounts.duplicate,
+          deferred: dispositionCounts.deferred,
+          false_positive: dispositionCounts.false_positive,
+          resolved: dispositions.filter((item) => item.resolved_by.length > 0).length,
+          undisposed: Math.max(0, findingCount - dispositions.length)
+        },
+        value_score: score.score,
+        value_band: score.band,
+        value_signals: score.value_signals,
+        waste_signals: score.waste_signals
+      });
+    }
+  }
+  reviews.sort((a, b) => (
+    a.story_id.localeCompare(b.story_id)
+    || a.stage.localeCompare(b.stage)
+    || a.role.localeCompare(b.role)
+  ));
+  return {
+    schema_version: '0.1.0',
+    summary: summarizeSubagentRoiReviews(reviews),
+    by_story: summarizeSubagentRoiByStory(reviews),
+    by_review: reviews
+  };
+}
+
+function findLifecycleEntryForReviewRole(role, entries) {
+  const agentId = role.agent_provenance?.agent_id;
+  const roleEntries = entries.filter((entry) => (
+    entry.role === role.role
+    && (!agentId || entry.agent_id === agentId)
+  ));
+  return roleEntries.at(-1) ?? role.lifecycle?.latest ?? null;
+}
+
+function normalizeReviewFindings(role) {
+  if (!Array.isArray(role.findings)) return [];
+  return role.findings.map((finding) => ({
+    id: String(finding?.id ?? 'finding'),
+    severity: String(finding?.severity ?? 'medium').toLowerCase(),
+    detail: finding?.detail ?? null
+  }));
+}
+
+function normalizeReviewDispositions(dispositions = []) {
+  if (!Array.isArray(dispositions)) return [];
+  return dispositions.map((item) => {
+    const disposition = String(item?.disposition ?? '').toLowerCase();
+    return {
+      finding_id: String(item?.finding_id ?? ''),
+      disposition: ROI_DISPOSITIONS.includes(disposition) ? disposition : 'deferred',
+      resolved_by: Array.isArray(item?.resolved_by) ? item.resolved_by.filter(Boolean) : [],
+      reason: item?.reason ?? null
+    };
+  }).filter((item) => item.finding_id);
+}
+
+function countDispositions(dispositions) {
+  const counts = Object.fromEntries(ROI_DISPOSITIONS.map((disposition) => [disposition, 0]));
+  for (const item of dispositions) counts[item.disposition] += 1;
+  return counts;
+}
+
+function normalizeReviewUsage(usage = null) {
+  const inputTokens = normalizeNullableNumber(usage?.input_tokens);
+  const outputTokens = normalizeNullableNumber(usage?.output_tokens);
+  const explicitTotal = normalizeNullableNumber(usage?.total_tokens);
+  return {
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    total_tokens: explicitTotal ?? (inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null),
+    cost_usd: normalizeNullableNumber(usage?.cost_usd)
+  };
+}
+
+function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findingCount, dispositionCounts, elapsedMs }) {
+  let score = 0;
+  const valueSignals = [];
+  const wasteSignals = [];
+  const status = role.effective_status ?? role.status;
+  if (status === 'block') {
+    score += 35;
+    valueSignals.push('blocked_merge_risk');
+  } else if (status === 'needs_changes') {
+    score += 25;
+    valueSignals.push('requested_change');
+  } else if (status === 'pass') {
+    score += 12;
+    valueSignals.push('independent_pass_confirmation');
+  }
+  if (dispositionCounts.accepted > 0) {
+    score += Math.min(45, dispositionCounts.accepted * 25);
+    valueSignals.push('accepted_finding');
+  }
+  const resolvedCount = dispositionCounts.accepted > 0
+    ? Math.min(dispositionCounts.accepted, normalizeReviewDispositions(role.finding_dispositions).filter((item) => item.resolved_by.length > 0).length)
+    : 0;
+  if (resolvedCount > 0) {
+    score += Math.min(20, resolvedCount * 10);
+    valueSignals.push('resolved_by_followup_change');
+  }
+  const highSeverityCount = findings.filter((finding) => ['critical', 'high'].includes(finding.severity)).length;
+  if (highSeverityCount > 0 && ['block', 'needs_changes'].includes(role.status)) {
+    score += 10;
+    valueSignals.push('high_severity_finding');
+  }
+  if ((role.inspection?.inputs ?? []).length > 0) {
+    score += 8;
+    valueSignals.push('reconstructable_inputs');
+  }
+  if ((role.judgment_delta ?? []).length > 0) {
+    score += 8;
+    valueSignals.push('judgment_delta_recorded');
+  }
+  if (provenance.evidence_strength === 'strong') {
+    score += 8;
+    valueSignals.push('strong_agent_provenance');
+  }
+  if (provenance.lifecycle?.agent_closed === true || lifecycleEntry?.effective_status === 'closed' || lifecycleEntry?.status === 'closed') {
+    score += 6;
+    valueSignals.push('closed_lifecycle');
+  }
+  if (findingCount === 0 && (role.judgment_delta ?? []).length === 0 && role.status === 'pass') {
+    score -= 10;
+    wasteSignals.push('pass_only_no_judgment_delta');
+  }
+  if (dispositionCounts.duplicate > 0) {
+    score -= Math.min(30, dispositionCounts.duplicate * 15);
+    wasteSignals.push('duplicate_finding');
+  }
+  if (dispositionCounts.false_positive > 0) {
+    score -= Math.min(40, dispositionCounts.false_positive * 20);
+    wasteSignals.push('false_positive_finding');
+  }
+  if (status === 'stale') {
+    score -= 20;
+    wasteSignals.push('stale_review');
+  }
+  if (lifecycleEntry?.effective_status === 'timed_out' || role.lifecycle?.timed_out_count > 0) {
+    score -= 15;
+    wasteSignals.push('timed_out_lifecycle');
+  }
+  if (role.lifecycle?.replaced_count > 0) {
+    score -= 5;
+    wasteSignals.push('replacement_overhead');
+  }
+  if (provenance.evidence_strength && provenance.evidence_strength !== 'strong') {
+    score -= 15;
+    wasteSignals.push('weak_agent_provenance');
+  }
+  if (Number.isFinite(elapsedMs) && elapsedMs > 10 * 60 * 1000) {
+    score -= elapsedMs > 20 * 60 * 1000 ? 10 : 5;
+    wasteSignals.push('high_elapsed_time');
+  }
+  const clamped = Math.max(0, Math.min(100, score));
+  return {
+    score: clamped,
+    band: clamped >= 70 ? 'high' : clamped >= 40 ? 'medium' : 'low',
+    value_signals: [...new Set(valueSignals)],
+    waste_signals: [...new Set(wasteSignals)]
+  };
+}
+
+function summarizeSubagentRoiReviews(reviews) {
+  const tokenObservedCount = reviews.filter((review) => review.cost.total_tokens !== null).length;
+  const totalElapsedMs = sumNumbers(reviews.map((review) => review.cost.elapsed_ms));
+  return {
+    total_reviews: reviews.length,
+    high_value_review_count: reviews.filter((review) => review.value_band === 'high').length,
+    medium_value_review_count: reviews.filter((review) => review.value_band === 'medium').length,
+    low_value_review_count: reviews.filter((review) => review.value_band === 'low').length,
+    value_score_average: averageNumbers(reviews.map((review) => review.value_score)),
+    accepted_finding_count: sumNumbers(reviews.map((review) => review.findings.accepted)),
+    resolved_finding_count: sumNumbers(reviews.map((review) => review.findings.resolved)),
+    duplicate_finding_count: sumNumbers(reviews.map((review) => review.findings.duplicate)),
+    false_positive_finding_count: sumNumbers(reviews.map((review) => review.findings.false_positive)),
+    undisposed_finding_count: sumNumbers(reviews.map((review) => review.findings.undisposed)),
+    pass_only_no_judgment_delta_count: reviews.filter((review) => review.waste_signals.includes('pass_only_no_judgment_delta')).length,
+    stale_review_count: reviews.filter((review) => review.waste_signals.includes('stale_review')).length,
+    timed_out_review_count: reviews.filter((review) => review.waste_signals.includes('timed_out_lifecycle')).length,
+    total_agent_elapsed_ms: totalElapsedMs,
+    total_agent_minutes: Number((totalElapsedMs / 60000).toFixed(2)),
+    total_input_tokens: sumNumbers(reviews.map((review) => review.cost.input_tokens)),
+    total_output_tokens: sumNumbers(reviews.map((review) => review.cost.output_tokens)),
+    total_tokens: sumNumbers(reviews.map((review) => review.cost.total_tokens)),
+    total_cost_usd: Number(sumNumbers(reviews.map((review) => review.cost.cost_usd)).toFixed(6)),
+    token_observed_review_count: tokenObservedCount,
+    token_missing_review_count: reviews.length - tokenObservedCount
+  };
+}
+
+function summarizeSubagentRoiByStory(reviews) {
+  const byStory = new Map();
+  for (const review of reviews) {
+    const item = byStory.get(review.story_id) ?? {
+      story_id: review.story_id,
+      review_count: 0,
+      value_score_average: null,
+      accepted_finding_count: 0,
+      resolved_finding_count: 0,
+      duplicate_finding_count: 0,
+      false_positive_finding_count: 0,
+      total_agent_elapsed_ms: 0,
+      total_agent_minutes: 0,
+      total_tokens: 0,
+      total_cost_usd: 0
+    };
+    item.review_count += 1;
+    item.accepted_finding_count += review.findings.accepted;
+    item.resolved_finding_count += review.findings.resolved;
+    item.duplicate_finding_count += review.findings.duplicate;
+    item.false_positive_finding_count += review.findings.false_positive;
+    item.total_agent_elapsed_ms += review.cost.elapsed_ms ?? 0;
+    item.total_tokens += review.cost.total_tokens ?? 0;
+    item.total_cost_usd += review.cost.cost_usd ?? 0;
+    const scores = [...(item._scores ?? []), review.value_score];
+    item._scores = scores;
+    item.value_score_average = averageNumbers(scores);
+    item.total_agent_minutes = Number((item.total_agent_elapsed_ms / 60000).toFixed(2));
+    item.total_cost_usd = Number(item.total_cost_usd.toFixed(6));
+    byStory.set(review.story_id, item);
+  }
+  return [...byStory.values()]
+    .map(({ _scores, ...item }) => item)
+    .sort((a, b) => a.story_id.localeCompare(b.story_id));
+}
+
+function renderSubagentRoiRows(report) {
+  const roi = report.subagent_roi;
+  if (!roi) return '';
+  const summary = roi.summary ?? {};
+  const reviewRows = roi.by_review?.length
+    ? roi.by_review.slice(0, 12).map((review) => (
+        `- ${review.story_id}:${review.stage}:${review.role}: score=${review.value_score} band=${review.value_band} accepted=${review.findings.accepted} duplicate=${review.findings.duplicate} false_positive=${review.findings.false_positive} minutes=${review.cost.agent_minutes ?? '-'} tokens=${review.cost.total_tokens ?? '-'} waste=${review.waste_signals.join('|') || '-'}`
+      )).join('\n')
+    : '- none';
+  const title = report.output?.language === 'en' ? '## Subagent ROI' : '## Subagent ROI';
+  return `
+${title}
+
+- reviews: ${summary.total_reviews ?? 0}
+- value_score_average: ${summary.value_score_average ?? '-'}
+- high/medium/low: ${summary.high_value_review_count ?? 0}/${summary.medium_value_review_count ?? 0}/${summary.low_value_review_count ?? 0}
+- accepted/resolved findings: ${summary.accepted_finding_count ?? 0}/${summary.resolved_finding_count ?? 0}
+- duplicate/false_positive findings: ${summary.duplicate_finding_count ?? 0}/${summary.false_positive_finding_count ?? 0}
+- total_agent_minutes: ${summary.total_agent_minutes ?? 0}
+- total_tokens: ${summary.total_tokens ?? 0} (observed_reviews=${summary.token_observed_review_count ?? 0}, missing_reviews=${summary.token_missing_review_count ?? 0})
+
+${reviewRows}
+`;
+}
+
+function normalizeNullableNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function sumNumbers(values) {
+  return values.reduce((sum, value) => sum + (Number.isFinite(value) ? value : 0), 0);
+}
+
+function averageNumbers(values) {
+  const numbers = values.filter((value) => Number.isFinite(value));
+  if (numbers.length === 0) return null;
+  return Number((sumNumbers(numbers) / numbers.length).toFixed(2));
 }
 
 function calculateRate(count, total) {
