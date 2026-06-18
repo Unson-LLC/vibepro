@@ -3,6 +3,7 @@ import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { collectCanonicalAuditArtifacts, mergeArtifactsPreferLocal } from './canonical-audit.js';
 import { resolveHumanOutputLanguage } from './language.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
@@ -15,8 +16,11 @@ export async function createUsageReport(repoRoot, options = {}) {
   const workspaceDir = getWorkspaceDir(root);
   const since = parseSince(options.since);
   const language = await resolveHumanOutputLanguage(root, { language: options.language }).catch(() => options.language ?? 'ja');
-  const prArtifacts = await collectPrArtifacts(root, workspaceDir, since);
-  const reviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
+  const localPrArtifacts = await collectPrArtifacts(root, workspaceDir, since);
+  const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
+  const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
+  const prArtifacts = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
   const logs = await collectUsageLogs(root, options);
@@ -95,6 +99,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     pr: countRealPrArtifacts(prArtifacts),
     traceability: prArtifacts.length - countRealPrArtifacts(prArtifacts),
     review: reviewArtifacts.length,
+    canonical_audit: canonicalArtifacts.bundleArtifacts.length,
     execution: executionArtifacts.length,
     logs: logs.files.length
   };
@@ -152,7 +157,7 @@ export function renderUsageReport(report) {
 
 - since: ${report.since ?? 'all'}
 - stories: ${report.stories.length}
-- artifacts: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+- artifacts: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} canonical_audit=${report.artifact_counts.canonical_audit ?? 0} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
 ${artifactHintRows}
 
 ## Stories
@@ -187,7 +192,7 @@ ${traceabilityRows}
 
 - 対象期間: ${report.since ?? '全期間'}
 - Story数: ${report.stories.length}
-- artifact数: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
+- artifact数: pr=${report.artifact_counts.pr} review=${report.artifact_counts.review} canonical_audit=${report.artifact_counts.canonical_audit ?? 0} execution=${report.artifact_counts.execution} logs=${report.artifact_counts.logs}
 ${artifactHintRows}
 
 ## Story別

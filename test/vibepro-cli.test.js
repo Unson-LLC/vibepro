@@ -10326,10 +10326,15 @@ process.exit(99);
   assert.equal(artifact.status, 'dry_run_planned');
   assert.equal(artifact.dry_run, true);
   assert.equal(artifact.results.length, 0);
+  assert.equal(
+    await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
+    false
+  );
   const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
   assert.match(html, /data-vibepro-report="pr-merge"/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
+  assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
 });
 
 test('execute merge dry-run ignores stale pr-create selectors', async () => {
@@ -10396,9 +10401,13 @@ process.exit(99);
   assert.equal(result.result.merge.stop_reason, 'pr_selector_missing');
   assert.equal(result.result.merge.commands.length, 0);
   assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(
+    await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
+    false
+  );
 });
 
-test('execute merge completes merge artifacts and execution state after a successful GitHub merge', async () => {
+test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -10417,6 +10426,12 @@ test('execute merge completes merge artifacts and execution state after a succes
     gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
     git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -10479,11 +10494,26 @@ test('execute merge completes merge artifacts and execution state after a succes
   assert.equal(result.result.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
   assert.equal(result.result.merge.branch_cleanup.requested, false);
+  assert.equal(result.result.merge.canonical_audit.artifact_count > 0, true);
+
+  const auditDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare');
+  const auditBundle = await readJson(path.join(auditDir, 'audit-bundle.json'));
+  assert.equal(auditBundle.story_id, 'story-pr-prepare');
+  assert.equal(auditBundle.source, 'execute_merge');
+  assert.equal(auditBundle.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
+  assert.equal(auditBundle.artifacts.some((artifact) => artifact.kind === 'pr_merge'), true);
+  assert.equal(await pathExists(path.join(auditDir, 'pr', 'pr-merge.json')), true);
+  assert.equal(await pathExists(path.join(auditDir, 'pr', 'gate-dag.json')), true);
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'passed');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
+  const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
+  assert.equal(
+    manifest.canonical_audit_artifacts['story-pr-prepare'].latest_bundle,
+    'docs/management/audit-artifacts/story-pr-prepare/audit-bundle.json'
+  );
 });
 
 test('execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out', async () => {
