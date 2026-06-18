@@ -127,3 +127,42 @@ test('prepared story is unaffected by traceability accounting', async () => {
   assert.equal(missingGaps(story).length, 0);
   assert.equal(story.prepared, true);
 });
+
+test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-canonical-audit' }
+  ]);
+  const auditDir = path.join(root, 'docs', 'management', 'audit-artifacts', 'story-canonical-audit');
+  await mkdir(path.join(auditDir, 'pr'), { recursive: true });
+  await writeFile(path.join(auditDir, 'audit-bundle.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-canonical-audit',
+    source: 'execute_merge',
+    promoted_at: '2026-06-12T00:10:00.000Z',
+    artifacts: [
+      { kind: 'pr_prepare', canonical_path: 'docs/management/audit-artifacts/story-canonical-audit/pr/pr-prepare.json' },
+      { kind: 'pr_merge', canonical_path: 'docs/management/audit-artifacts/story-canonical-audit/pr/pr-merge.json' }
+    ]
+  }, null, 2));
+  await writeFile(path.join(auditDir, 'pr', 'pr-prepare.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    created_at: '2026-06-12T00:00:00.000Z',
+    story: { story_id: 'story-canonical-audit' },
+    gate_status: { ready_for_pr_create: true, overall_status: 'ready_for_review' }
+  }, null, 2));
+  await writeFile(path.join(auditDir, 'pr', 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    created_at: '2026-06-12T00:05:00.000Z',
+    story: { story_id: 'story-canonical-audit' },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z'
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-canonical-audit');
+  assert.equal(story.prepared, true);
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(missingGaps(story).length, 0);
+  assert.equal(report.artifact_counts.canonical_audit, 1);
+  assert.equal(report.value_signals.traceability_gap_count, 0);
+});

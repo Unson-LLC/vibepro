@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
 import { renderPrMergeHtml } from './html-report.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -317,6 +318,20 @@ export async function executeMerge(repoRoot, options = {}) {
       summary: `merged ${merge.pr?.url ?? 'PR'} at ${merge.merged_at ?? 'unknown time'} (commit ${merge.merge_commit_sha ?? 'unknown'})`
     }]
   });
+  const canonicalAudit = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    source: 'execute_merge',
+    merge
+  });
+  merge.canonical_audit = {
+    bundle: toWorkspaceRelative(root, canonicalAudit.bundle_path),
+    directory: toWorkspaceRelative(root, canonicalAudit.canonical_dir),
+    artifact_count: canonicalAudit.bundle.artifacts.length,
+    missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
+  };
+  await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
+  artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
+  artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
   return { merge, artifacts };
 }
 
@@ -539,6 +554,26 @@ async function writePrMergeArtifacts(repoRoot, storyId, merge) {
     pr_merge_json: jsonPath,
     pr_merge_report: reportPath
   };
+}
+
+async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, merge) {
+  try {
+    const manifest = await readManifest(repoRoot);
+    manifest.canonical_audit_artifacts = {
+      ...(manifest.canonical_audit_artifacts ?? {}),
+      [storyId]: {
+        latest_bundle: toWorkspaceRelative(repoRoot, canonicalAudit.bundle_path),
+        latest_directory: toWorkspaceRelative(repoRoot, canonicalAudit.canonical_dir),
+        latest_source: canonicalAudit.bundle.source,
+        latest_promoted_at: canonicalAudit.bundle.promoted_at,
+        latest_pr_url: merge.pr?.url ?? null,
+        latest_merge_commit: merge.merge_commit_sha ?? null
+      }
+    };
+    await writeManifest(repoRoot, manifest);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
 }
 
 const PR_VIEW_FIELDS = [
