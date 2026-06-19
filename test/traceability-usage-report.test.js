@@ -276,3 +276,20 @@ test('manifest dry-run merge record does not resolve traceability', async () => 
   assert.equal(missingGaps(story).length, 1);
   assert.equal(report.artifact_counts.pr, 0);
 });
+
+test('malformed manifest does not resolve traceability or crash usage report', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-malformed-manifest' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), '{not valid json');
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-malformed-manifest');
+  assert.equal(story.pr_merge_count, 0);
+  assert.equal(story.traceability_resolution.status, 'actual_missing');
+  assert.equal(story.traceability_resolution.artifact_source, null);
+  assert.equal(missingGaps(story).length, 1);
+  assert.equal(report.artifact_counts.pr, 0);
+});

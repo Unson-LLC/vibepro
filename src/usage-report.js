@@ -301,7 +301,10 @@ async function collectPrArtifacts(root, workspaceDir, since) {
 
 async function collectManifestPrArtifacts(root, workspaceDir, since) {
   const manifestPath = path.join(workspaceDir, MANIFEST_FILE);
-  const manifest = await readJsonIfExists(manifestPath);
+  const manifest = await readJsonIfExists(manifestPath).catch((error) => {
+    if (error instanceof SyntaxError) return null;
+    throw error;
+  });
   if (!manifest || typeof manifest !== 'object') return [];
   const artifacts = [];
   for (const [storyId, record] of Object.entries(manifest.pr_merges ?? {})) {
