@@ -175,3 +175,38 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
     /artifact_source=pr_merge:canonical_audit:docs\/management\/audit-artifacts\/story-canonical-audit\/pr\/pr-merge\.json/
   );
 });
+
+test('manifest merge record resolves traceability when pr artifacts are absent', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-manifest-merge' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-merge': {
+        latest_merge: '.vibepro/pr/story-manifest-merge/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/123',
+        latest_merge_commit: 'abc123manifest',
+        latest_merged_at: '2026-06-19T00:00:00.000Z',
+        latest_dry_run: false
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-manifest-merge');
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.latest_merge_status, 'merged');
+  assert.equal(story.latest_merged_at, '2026-06-19T00:00:00.000Z');
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'manifest');
+  assert.equal(missingGaps(story).length, 0);
+  assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'manifest'), true);
+  assert.match(
+    renderUsageReport(report),
+    /artifact_source=pr_merge:manifest:\.vibepro\/vibepro-manifest\.json#pr_merges\.story-manifest-merge/
+  );
+});

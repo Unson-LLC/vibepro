@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { collectCanonicalAuditArtifacts, mergeArtifactsPreferLocal } from './canonical-audit.js';
 import { resolveHumanOutputLanguage } from './language.js';
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -17,9 +17,10 @@ export async function createUsageReport(repoRoot, options = {}) {
   const since = parseSince(options.since);
   const language = await resolveHumanOutputLanguage(root, { language: options.language }).catch(() => options.language ?? 'ja');
   const localPrArtifacts = await collectPrArtifacts(root, workspaceDir, since);
+  const manifestPrArtifacts = await collectManifestPrArtifacts(root, workspaceDir, since);
   const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
-  const prArtifacts = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifacts = mergeArtifactsPreferLocal([...manifestPrArtifacts, ...localPrArtifacts], canonicalArtifacts.prArtifacts);
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
@@ -293,6 +294,35 @@ async function collectPrArtifacts(root, workspaceDir, since) {
       if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
       artifacts.push({ kind, story_id: data.story?.story_id ?? data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
     }
+  }
+  return artifacts;
+}
+
+async function collectManifestPrArtifacts(root, workspaceDir, since) {
+  const manifestPath = path.join(workspaceDir, MANIFEST_FILE);
+  const manifest = await readJsonIfExists(manifestPath);
+  if (!manifest || typeof manifest !== 'object') return [];
+  const artifacts = [];
+  for (const [storyId, record] of Object.entries(manifest.pr_merges ?? {})) {
+    if (!record || typeof record !== 'object') continue;
+    const createdAt = record.latest_merged_at ?? record.updated_at ?? record.created_at;
+    if (!isWithinSince(createdAt, since)) continue;
+    artifacts.push({
+      kind: 'pr_merge',
+      story_id: storyId,
+      path: `${toWorkspaceRelative(root, manifestPath)}#pr_merges.${storyId}`,
+      source: 'manifest',
+      data: {
+        schema_version: manifest.schema_version ?? '0.1.0',
+        story_id: storyId,
+        status: record.latest_dry_run ? 'dry_run_planned' : 'merged',
+        pr_url: record.latest_pr_url ?? null,
+        merge_commit_sha: record.latest_merge_commit ?? null,
+        merged_at: record.latest_merged_at ?? null,
+        created_at: createdAt ?? null,
+        manifest_record: record
+      }
+    });
   }
   return artifacts;
 }

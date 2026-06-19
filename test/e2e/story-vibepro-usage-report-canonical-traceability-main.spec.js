@@ -33,6 +33,7 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-usage-report-canonical-e2e-'));
   await writeStory(root, STORY_ID);
   await writeStory(root, 'story-local-priority');
+  await writeStory(root, 'story-manifest-merge');
   await writeStory(root, 'story-tracked-traceability');
   await writeStory(root, 'story-actual-missing');
 
@@ -67,6 +68,19 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
     source: 'tracked_traceability',
     evidence: [{ type: 'git_log', ref: 'abc123', summary: 'merged outside VibePro artifact path' }]
   });
+  await writeJson(path.join(root, '.vibepro', 'vibepro-manifest.json'), {
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-merge': {
+        latest_merge: '.vibepro/pr/story-manifest-merge/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/456',
+        latest_merge_commit: 'def456manifest',
+        latest_merged_at: '2026-06-19T00:15:00.000Z',
+        latest_dry_run: false
+      }
+    }
+  });
 
   // story-vibepro-usage-report-canonical-traceability ac:4
   // local artifacts win over canonical copies for the same story/kind and avoid double counting.
@@ -90,6 +104,7 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   const rendered = renderUsageReport(report);
   const story = report.stories.find((item) => item.story_id === STORY_ID);
   const localPriority = report.stories.find((item) => item.story_id === 'story-local-priority');
+  const manifestMerge = report.stories.find((item) => item.story_id === 'story-manifest-merge');
   const trackedTraceability = report.stories.find((item) => item.story_id === 'story-tracked-traceability');
   const actualMissing = report.stories.find((item) => item.story_id === 'story-actual-missing');
 
@@ -125,10 +140,12 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   assert.equal(localPriority.artifact_sources[0].source, 'local', `${STORY_ID} S-006 Workflow state transition local and canonical evidence both exist same Story artifact kind local status winning state aggregate traceability metrics do not double count`);
 
   // story-vibepro-usage-report-canonical-traceability ac:5
+  assert.equal(manifestMerge.traceability_resolution.status, 'alternate_source_resolved', `${STORY_ID} ac:1 manifest merge record source search`);
+  assert.equal(manifestMerge.traceability_resolution.artifact_source, 'manifest', `${STORY_ID} ac:3 manifest artifact_source`);
   assert.equal(trackedTraceability.traceability_resolution.status, 'alternate_source_resolved', `${STORY_ID} ac:1 tracked traceability artifact source search`);
   assert.equal(actualMissing.traceability_resolution.status, 'actual_missing', `${STORY_ID} S-005 Workflow state transition no local canonical manifest or tracked traceability evidence actual_missing actual_missing_traceability_gap_count`);
   assert.equal(report.value_signals.actual_missing_traceability_gap_count, 1, `${STORY_ID} ac:5 actual missing と alternate-source-resolved を区別`);
-  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 2, `${STORY_ID} ac:5 value_signals.traceability_gap_rate actual missing alternate-source-resolved`);
+  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 3, `${STORY_ID} ac:5 value_signals.traceability_gap_rate actual missing alternate-source-resolved`);
 
   // story-vibepro-usage-report-canonical-traceability ac:6
   assert.match(
