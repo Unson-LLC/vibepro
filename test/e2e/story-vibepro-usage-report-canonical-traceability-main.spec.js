@@ -94,27 +94,47 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   const actualMissing = report.stories.find((item) => item.story_id === 'story-actual-missing');
 
   // story-vibepro-usage-report-canonical-traceability ac:2
-  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
-  assert.equal(story.traceability_gaps.some((gap) => gap.kind === 'traceability_missing_pr_artifact'), false);
-  assert.equal(story.latest_merge_status, 'merged');
+  assert.equal(
+    story.traceability_resolution.status,
+    'alternate_source_resolved',
+    `${STORY_ID} ac:2 canonicalまたはtracked traceabilityからPR URLとmerge commitが読めるstoryは traceability_missing_pr_artifact にしない`
+  );
+  assert.equal(
+    story.traceability_gaps.some((gap) => gap.kind === 'traceability_missing_pr_artifact'),
+    false,
+    `${STORY_ID} URCT-S-001 canonical audit bundle pr-prepare pr-merge traceability_resolution alternate_source_resolved traceability_missing_pr_artifact`
+  );
+  assert.equal(story.latest_merge_status, 'merged', `${STORY_ID} ac:1 local .vibepro canonical audit bundle manifest merge record tracked traceability artifact`);
 
   // story-vibepro-usage-report-canonical-traceability ac:3
-  assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit');
-  assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'canonical_audit'), true);
-  assert.match(rendered, new RegExp(`artifact_source=pr_merge:canonical_audit:docs/management/audit-artifacts/${STORY_ID}/pr/pr-merge\\.json`));
+  assert.equal(
+    story.traceability_resolution.artifact_source,
+    'canonical_audit',
+    `${STORY_ID} ac:3 証跡候補のsourceを artifact_source または同等のmachine-readable fieldに出す`
+  );
+  assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'canonical_audit'), true, `${STORY_ID} ac:3 artifact_source canonical_audit`);
+  assert.match(
+    rendered,
+    new RegExp(`artifact_source=pr_merge:canonical_audit:docs/management/audit-artifacts/${STORY_ID}/pr/pr-merge\\.json`),
+    `${STORY_ID} ac:3 machine-readable artifact_source rendered`
+  );
 
-  assert.equal(localPriority.prepare_count, 1);
-  assert.equal(localPriority.latest_gate_status, 'local-copy');
-  assert.equal(localPriority.artifact_sources.filter((item) => item.kind === 'pr_prepare').length, 1);
-  assert.equal(localPriority.artifact_sources[0].source, 'local');
+  assert.equal(localPriority.prepare_count, 1, `${STORY_ID} ac:4 local .vibepro とcanonical bundleの両方が存在する場合は二重集計しない`);
+  assert.equal(localPriority.latest_gate_status, 'local-copy', `${STORY_ID} ac:4 localを優先`);
+  assert.equal(localPriority.artifact_sources.filter((item) => item.kind === 'pr_prepare').length, 1, `${STORY_ID} ac:4 double count guard`);
+  assert.equal(localPriority.artifact_sources[0].source, 'local', `${STORY_ID} URCT-S-003 local and canonical evidence both exist local artifact wins aggregate metrics do not double count`);
 
   // story-vibepro-usage-report-canonical-traceability ac:5
-  assert.equal(trackedTraceability.traceability_resolution.status, 'alternate_source_resolved');
-  assert.equal(actualMissing.traceability_resolution.status, 'actual_missing');
-  assert.equal(report.value_signals.actual_missing_traceability_gap_count, 1);
-  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 2);
+  assert.equal(trackedTraceability.traceability_resolution.status, 'alternate_source_resolved', `${STORY_ID} ac:1 tracked traceability artifact source search`);
+  assert.equal(actualMissing.traceability_resolution.status, 'actual_missing', `${STORY_ID} URCT-S-002 no local canonical manifest or tracked traceability evidence actual_missing`);
+  assert.equal(report.value_signals.actual_missing_traceability_gap_count, 1, `${STORY_ID} ac:5 actual missing と alternate-source-resolved を区別`);
+  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 2, `${STORY_ID} ac:5 value_signals.traceability_gap_rate actual missing alternate-source-resolved`);
 
   // story-vibepro-usage-report-canonical-traceability ac:6
-  assert.match(rendered, /traceability_missing_pr_artifact artifact=docs\/management\/stories\/active\/story-actual-missing\.md/);
-  assert.match(rendered, /traceability=alternate_source_resolved/);
+  assert.match(
+    rendered,
+    /traceability_missing_pr_artifact artifact=docs\/management\/stories\/active\/story-actual-missing\.md/,
+    `${STORY_ID} ac:6 human-readable report missing story`
+  );
+  assert.match(rendered, /traceability=alternate_source_resolved/, `${STORY_ID} ac:6 alternate sourceで解決済みのstoryを分けて表示`);
 });
