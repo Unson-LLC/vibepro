@@ -556,10 +556,17 @@ function renderTraceabilityGaps(report) {
 }
 
 function formatArtifactSources(sources) {
-  if (!sources || typeof sources !== 'object') return '-';
-  const entries = Object.entries(sources)
-    .filter(([, value]) => value && typeof value === 'object' && value.source)
-    .map(([key, value]) => `${key}:${value.source}`);
+  const items = Array.isArray(sources)
+    ? sources
+    : Object.entries(sources && typeof sources === 'object' ? sources : {})
+      .map(([kind, value]) => ({ kind, ...(value && typeof value === 'object' ? value : {}) }));
+  const entries = items
+    .filter((value) => value && typeof value === 'object' && value.source)
+    .map((value) => [
+      value.kind ?? 'artifact',
+      value.source,
+      value.artifact
+    ].filter(Boolean).join(':'));
   return entries.length ? entries.join(',') : '-';
 }
 
