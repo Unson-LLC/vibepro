@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -307,7 +307,7 @@ export async function executeMerge(repoRoot, options = {}) {
 
   merge.status = 'merged';
   merge.stop_reason = null;
-  const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+  let artifacts = await writePrMergeArtifacts(root, storyId, merge);
   await bindStoryTraceability(root, {
     storyId,
     source: 'execute_merge',
@@ -318,7 +318,7 @@ export async function executeMerge(repoRoot, options = {}) {
       summary: `merged ${merge.pr?.url ?? 'PR'} at ${merge.merged_at ?? 'unknown time'} (commit ${merge.merge_commit_sha ?? 'unknown'})`
     }]
   });
-  const canonicalAudit = await promoteCanonicalAuditArtifacts(root, {
+  let canonicalAudit = await promoteCanonicalAuditArtifacts(root, {
     storyId,
     source: 'execute_merge',
     merge
@@ -329,6 +329,63 @@ export async function executeMerge(repoRoot, options = {}) {
     artifact_count: canonicalAudit.bundle.artifacts.length,
     missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
   };
+  await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
+  const canonicalPersistence = await persistCanonicalAuditToBase(root, {
+    storyId,
+    canonicalAudit,
+    baseBranch,
+    merge,
+    options
+  });
+  merge.canonical_audit.persistence = canonicalPersistence.summary;
+  if (canonicalPersistence.summary.status === 'failed') {
+    merge.warnings.push(`Canonical audit persistence failed: ${canonicalPersistence.summary.reason}`);
+    merge.status = 'failed';
+    merge.stop_reason = 'canonical_audit_persistence_failed';
+  }
+  artifacts = {
+    ...artifacts,
+    ...(await writePrMergeArtifacts(root, storyId, merge))
+  };
+  canonicalAudit = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    source: 'execute_merge',
+    merge
+  });
+  if (canonicalPersistence.summary.status === 'pushed') {
+    const finalCanonicalPersistence = await persistCanonicalAuditToBase(root, {
+      storyId,
+      canonicalAudit,
+      baseBranch,
+      merge,
+      options
+    });
+    merge.canonical_audit.final_persistence = finalCanonicalPersistence.summary;
+    if (finalCanonicalPersistence.summary.status === 'failed') {
+      merge.warnings.push(`Canonical audit final artifact persistence failed: ${finalCanonicalPersistence.summary.reason}`);
+      merge.status = 'failed';
+      merge.stop_reason = 'canonical_audit_final_persistence_failed';
+    }
+  }
+  merge.canonical_audit.bundle = toWorkspaceRelative(root, canonicalAudit.bundle_path);
+  merge.canonical_audit.directory = toWorkspaceRelative(root, canonicalAudit.canonical_dir);
+  merge.canonical_audit.artifact_count = canonicalAudit.bundle.artifacts.length;
+  merge.canonical_audit.missing_artifact_count = canonicalAudit.bundle.missing_artifacts.length;
+  if (merge.canonical_audit.final_persistence?.status === 'failed') {
+    artifacts = {
+      ...artifacts,
+      ...(await writePrMergeArtifacts(root, storyId, merge))
+    };
+    canonicalAudit = await promoteCanonicalAuditArtifacts(root, {
+      storyId,
+      source: 'execute_merge',
+      merge
+    });
+    merge.canonical_audit.bundle = toWorkspaceRelative(root, canonicalAudit.bundle_path);
+    merge.canonical_audit.directory = toWorkspaceRelative(root, canonicalAudit.canonical_dir);
+    merge.canonical_audit.artifact_count = canonicalAudit.bundle.artifacts.length;
+    merge.canonical_audit.missing_artifact_count = canonicalAudit.bundle.missing_artifacts.length;
+  }
   await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
   artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
   artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
@@ -573,6 +630,123 @@ async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, me
     await writeManifest(repoRoot, manifest);
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
+  }
+}
+
+async function persistCanonicalAuditToBase(repoRoot, { storyId, canonicalAudit, baseBranch, merge, options = {} } = {}) {
+  const relativeDir = toWorkspaceRelative(repoRoot, canonicalAudit.canonical_dir);
+  const tempWorktree = path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`);
+  const commands = [];
+  const results = [];
+  const summary = {
+    schema_version: '0.1.0',
+    status: 'not_run',
+    base: baseBranch,
+    directory: relativeDir,
+    worktree_path: tempWorktree,
+    base_head_sha: null,
+    merge_commit_on_base: null,
+    commit_sha: null,
+    pushed: false,
+    reason: null,
+    cleanup: {
+      attempted: false,
+      removed: false,
+      exit_code: null
+    },
+    commands,
+    results
+  };
+
+  if (!merge?.merge_commit_sha) {
+    summary.status = 'failed';
+    summary.reason = 'canonical_audit_merge_commit_missing';
+    return { summary, commands, results };
+  }
+
+  const run = async (command, execution = {}) => {
+    commands.push(formatCommand(command));
+    const result = await runCommand(repoRoot, command, options, execution);
+    results.push(result);
+    return result;
+  };
+
+  const refreshBase = await run(['git', ['fetch', 'origin', baseBranch]]);
+  if (refreshBase.exit_code !== 0) {
+    summary.status = 'failed';
+    summary.reason = 'canonical_audit_post_merge_base_fetch_failed';
+    return { summary, commands, results };
+  }
+  summary.base_head_sha = await gitOptional(repoRoot, ['rev-parse', `origin/${baseBranch}`]);
+  summary.merge_commit_on_base = await gitIsAncestor(repoRoot, merge.merge_commit_sha, `origin/${baseBranch}`);
+  if (!summary.merge_commit_on_base) {
+    summary.status = 'failed';
+    summary.reason = 'canonical_audit_post_merge_base_missing_merge_commit';
+    return { summary, commands, results };
+  }
+
+  const addWorktree = await run(['git', ['worktree', 'add', '--detach', tempWorktree, `origin/${baseBranch}`]]);
+  if (addWorktree.exit_code !== 0) {
+    summary.status = 'failed';
+    summary.reason = 'canonical_audit_worktree_add_failed';
+    return { summary, commands, results };
+  }
+
+  try {
+    const destination = path.join(tempWorktree, relativeDir);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await cp(canonicalAudit.canonical_dir, destination, { recursive: true });
+
+    const addResult = await run(['git', ['add', relativeDir]], { cwd: tempWorktree });
+    if (addResult.exit_code !== 0) {
+      summary.status = 'failed';
+      summary.reason = 'canonical_audit_git_add_failed';
+      return { summary, commands, results };
+    }
+
+    const diffResult = await run(['git', ['diff', '--cached', '--quiet', '--', relativeDir]], { cwd: tempWorktree });
+    if (diffResult.exit_code === 0) {
+      summary.status = 'already_present';
+      summary.pushed = false;
+      summary.reason = 'canonical_audit_already_present_on_base';
+      return { summary, commands, results };
+    }
+    if (diffResult.exit_code !== 1) {
+      summary.status = 'failed';
+      summary.reason = 'canonical_audit_diff_check_failed';
+      return { summary, commands, results };
+    }
+
+    const commitResult = await run([
+      'git',
+      ['commit', '-m', `docs: persist VibePro audit artifacts for ${storyId}`]
+    ], { cwd: tempWorktree });
+    if (commitResult.exit_code !== 0) {
+      summary.status = 'failed';
+      summary.reason = 'canonical_audit_commit_failed';
+      return { summary, commands, results };
+    }
+    summary.commit_sha = await gitOptional(tempWorktree, ['rev-parse', 'HEAD']);
+
+    const pushResult = await run(['git', ['push', 'origin', `HEAD:${baseBranch}`]], { cwd: tempWorktree });
+    if (pushResult.exit_code !== 0) {
+      summary.status = 'failed';
+      summary.reason = 'canonical_audit_push_failed';
+      return { summary, commands, results };
+    }
+    summary.status = 'pushed';
+    summary.pushed = true;
+    summary.reason = `canonical audit bundle persisted after merge ${merge.merge_commit_sha ?? 'unknown'}`;
+    return { summary, commands, results };
+  } finally {
+    summary.cleanup.attempted = true;
+    const removeResult = await run(['git', ['worktree', 'remove', '--force', tempWorktree]]);
+    summary.cleanup.exit_code = removeResult.exit_code;
+    summary.cleanup.removed = removeResult.exit_code === 0;
+    if (removeResult.exit_code !== 0) {
+      summary.reason = `${summary.reason ?? 'canonical_audit_persistence'}; cleanup_failed`;
+      if (summary.status !== 'failed') summary.status = 'failed';
+    }
   }
 }
 
