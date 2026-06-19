@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { createUsageReport } from '../src/usage-report.js';
+import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 
 function storyDoc(storyId, status = 'active') {
   return `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: ${status}\n---\n\n# ${storyId}\n`;
@@ -163,6 +163,140 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   assert.equal(story.prepared, true);
   assert.equal(story.pr_merge_count, 1);
   assert.equal(missingGaps(story).length, 0);
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit');
+  assert.equal(story.artifact_sources.some((item) => item.source === 'canonical_audit' && item.kind === 'pr_merge'), true);
   assert.equal(report.artifact_counts.canonical_audit, 1);
   assert.equal(report.value_signals.traceability_gap_count, 0);
+  assert.equal(report.value_signals.actual_missing_traceability_gap_count, 0);
+  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 1);
+  assert.match(renderUsageReport(report), /## Alternate Source Resolved\n\n- story-canonical-audit: source=canonical_audit/);
+  assert.match(
+    renderUsageReport(report),
+    /artifact_source=pr_merge:canonical_audit:docs\/management\/audit-artifacts\/story-canonical-audit\/pr\/pr-merge\.json/
+  );
+});
+
+test('manifest merge record resolves traceability when pr artifacts are absent', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-manifest-merge' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-merge': {
+        latest_merge: '.vibepro/pr/story-manifest-merge/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/123',
+        latest_merge_commit: 'abc123manifest',
+        latest_merged_at: '2026-06-19T00:00:00.000Z',
+        latest_dry_run: false
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-manifest-merge');
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.latest_merge_status, 'merged');
+  assert.equal(story.latest_merged_at, '2026-06-19T00:00:00.000Z');
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'manifest');
+  assert.equal(missingGaps(story).length, 0);
+  assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'manifest'), true);
+  assert.match(renderUsageReport(report), /## Alternate Source Resolved\n\n- story-manifest-merge: source=manifest/);
+  assert.match(
+    renderUsageReport(report),
+    /artifact_source=pr_merge:manifest:\.vibepro\/vibepro-manifest\.json#pr_merges\.story-manifest-merge/
+  );
+});
+
+test('local pr-merge wins over manifest merge record without double counting', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-local-manifest-dupe' }
+  ]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-local-manifest-dupe');
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-local-manifest-dupe',
+    story: { story_id: 'story-local-manifest-dupe' },
+    status: 'merged',
+    merged_at: '2026-06-19T00:20:00.000Z',
+    pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/124' }
+  }, null, 2));
+  await writeFile(path.join(root, '.vibepro', 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-local-manifest-dupe': {
+        latest_merge: '.vibepro/pr/story-local-manifest-dupe/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/124',
+        latest_merge_commit: 'abc123manifest',
+        latest_merged_at: '2026-06-19T00:20:00.000Z',
+        latest_dry_run: false
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-local-manifest-dupe');
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.traceability_resolution.status, 'local_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'local');
+  assert.deepEqual(story.artifact_sources.filter((item) => item.kind === 'pr_merge').map((item) => item.source), ['local']);
+  assert.equal(report.artifact_counts.pr, 1);
+});
+
+test('manifest dry-run merge record does not resolve traceability', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-manifest-dry-run' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-dry-run': {
+        latest_merge: '.vibepro/pr/story-manifest-dry-run/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/125',
+        latest_merge_commit: null,
+        latest_merged_at: null,
+        latest_dry_run: true
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-manifest-dry-run');
+  assert.equal(story.pr_merge_count, 0);
+  assert.equal(story.traceability_resolution.status, 'actual_missing');
+  assert.equal(story.traceability_resolution.artifact_source, null);
+  assert.equal(missingGaps(story).length, 1);
+  assert.equal(report.artifact_counts.pr, 0);
+});
+
+test('malformed manifest does not resolve traceability or crash usage report', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-malformed-manifest' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), '{not valid json');
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-malformed-manifest');
+  assert.equal(story.pr_merge_count, 0);
+  assert.equal(story.traceability_resolution.status, 'actual_missing');
+  assert.equal(story.traceability_resolution.artifact_source, null);
+  assert.equal(missingGaps(story).length, 1);
+  assert.equal(report.artifact_counts.pr, 0);
+  assert.equal(report.manifest_parse_failures.length, 1);
+  assert.equal(report.manifest_parse_failures[0].kind, 'parse_failure');
+  assert.equal(report.manifest_parse_failures[0].artifact, '.vibepro/vibepro-manifest.json');
+  assert.match(renderUsageReport(report), /Manifest Parse Failures/);
+  assert.match(renderUsageReport(report), /parse_failure: artifact=\.vibepro\/vibepro-manifest\.json/);
 });

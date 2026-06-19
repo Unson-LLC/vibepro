@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { collectCanonicalAuditArtifacts, mergeArtifactsPreferLocal } from './canonical-audit.js';
 import { resolveHumanOutputLanguage } from './language.js';
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -17,9 +17,11 @@ export async function createUsageReport(repoRoot, options = {}) {
   const since = parseSince(options.since);
   const language = await resolveHumanOutputLanguage(root, { language: options.language }).catch(() => options.language ?? 'ja');
   const localPrArtifacts = await collectPrArtifacts(root, workspaceDir, since);
+  const manifestPrArtifacts = await collectManifestPrArtifacts(root, workspaceDir, since);
   const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
-  const prArtifacts = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifactsWithoutManifest = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts.artifacts, prArtifactsWithoutManifest)];
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
@@ -35,6 +37,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   for (const artifact of prArtifacts) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
     story.artifacts.push(artifact.path);
+    recordStoryArtifactSource(story, artifact);
     if (artifact.kind === 'pr_prepare') {
       story.prepared = true;
       story.prepare_count += 1;
@@ -111,6 +114,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     since: since ? since.toISOString() : null,
     artifact_counts: artifactCounts,
     artifact_source_hints,
+    manifest_parse_failures: manifestPrArtifacts.parse_failures,
     stories,
     gate_metrics,
     agent_review,
@@ -124,7 +128,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} traceability=${story.traceability_resolution?.status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -144,6 +148,8 @@ export function renderUsageReport(report) {
     `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
     `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`,
     `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`,
+    `- actual_missing_traceability_gaps: ${valueSignals.actual_missing_traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- alternate_source_resolved_traceability: ${valueSignals.alternate_source_resolved_traceability_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- declared_unstarted: ${valueSignals.declared_unstarted_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- verification_observation_missing: ${valueSignals.verification_observation_missing_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
@@ -151,6 +157,8 @@ export function renderUsageReport(report) {
     `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
+  const alternateSourceRows = renderAlternateSourceResolved(report);
+  const manifestParseRows = renderManifestParseFailures(report);
   const artifactHintRows = renderArtifactSourceHints(report);
   if (language === 'en') {
     return `# VibePro Usage Report
@@ -180,6 +188,14 @@ ${valueRows}
 ## Traceability Gaps
 
 ${traceabilityRows}
+
+## Alternate Source Resolved
+
+${alternateSourceRows}
+
+## Manifest Parse Failures
+
+${manifestParseRows}
 
 ## Log Signals
 
@@ -216,6 +232,14 @@ ${valueRows}
 
 ${traceabilityRows}
 
+## Alternate Source Resolved
+
+${alternateSourceRows}
+
+## Manifest Parse Failures
+
+${manifestParseRows}
+
 ## ログ補助シグナル
 
 - raw gh pr create mentions: ${report.log_signals.raw_pr_create_mentions.length}
@@ -247,6 +271,12 @@ function ensureStoryUsage(storyMap, storyId) {
       fast_lane: false,
       merged_without_vibepro_evidence: false,
       evidence_in_other_worktree: false,
+      artifact_sources: [],
+      traceability_resolution: {
+        status: 'unknown',
+        artifact_source: null,
+        artifact: null
+      },
       traceability_gaps: [],
       prepare_count: 0,
       pr_create_count: 0,
@@ -286,6 +316,56 @@ async function collectPrArtifacts(root, workspaceDir, since) {
     }
   }
   return artifacts;
+}
+
+async function collectManifestPrArtifacts(root, workspaceDir, since) {
+  const manifestPath = path.join(workspaceDir, MANIFEST_FILE);
+  const parseFailures = [];
+  const manifest = await readJsonIfExists(manifestPath).catch((error) => {
+    if (error instanceof SyntaxError) {
+      parseFailures.push({
+        kind: 'parse_failure',
+        artifact: toWorkspaceRelative(root, manifestPath),
+        detail: error.message
+      });
+      return null;
+    }
+    throw error;
+  });
+  if (!manifest || typeof manifest !== 'object') return { artifacts: [], parse_failures: parseFailures };
+  const artifacts = [];
+  for (const [storyId, record] of Object.entries(manifest.pr_merges ?? {})) {
+    if (!record || typeof record !== 'object') continue;
+    if (record.latest_dry_run === true) continue;
+    const createdAt = record.latest_merged_at ?? record.updated_at ?? record.created_at;
+    if (!isWithinSince(createdAt, since)) continue;
+    artifacts.push({
+      kind: 'pr_merge',
+      story_id: storyId,
+      path: `${toWorkspaceRelative(root, manifestPath)}#pr_merges.${storyId}`,
+      source: 'manifest',
+      data: {
+        schema_version: manifest.schema_version ?? '0.1.0',
+        story_id: storyId,
+        status: record.latest_dry_run ? 'dry_run_planned' : 'merged',
+        pr_url: record.latest_pr_url ?? null,
+        merge_commit_sha: record.latest_merge_commit ?? null,
+        merged_at: record.latest_merged_at ?? null,
+        created_at: createdAt ?? null,
+        manifest_record: record
+      }
+    });
+  }
+  return { artifacts, parse_failures: parseFailures };
+}
+
+function filterManifestFallbackArtifacts(manifestArtifacts, preferredArtifacts) {
+  const preferredKeys = new Set(preferredArtifacts
+    .filter((artifact) => artifact.kind === 'pr_merge')
+    .map((artifact) => artifact.story_id));
+  return manifestArtifacts.filter((artifact) => (
+    artifact.kind !== 'pr_merge' || !preferredKeys.has(artifact.story_id)
+  ));
 }
 
 async function collectStoryDocs(root, since) {
@@ -546,6 +626,39 @@ function renderTraceabilityGaps(report) {
   )).join('\n');
 }
 
+function renderAlternateSourceResolved(report) {
+  const stories = (report.stories ?? [])
+    .filter((story) => story.traceability_resolution?.status === 'alternate_source_resolved');
+  if (stories.length === 0) return '- none';
+  return stories.map((story) => {
+    const source = story.traceability_resolution?.artifact_source ?? '-';
+    return `- ${story.story_id}: source=${source} artifact_source=${formatArtifactSources(story.artifact_sources)}`;
+  }).join('\n');
+}
+
+function renderManifestParseFailures(report) {
+  const failures = report.manifest_parse_failures ?? [];
+  if (failures.length === 0) return '- none';
+  return failures.map((failure) => (
+    `- ${failure.kind}: artifact=${failure.artifact ?? '-'} detail="${failure.detail ?? '-'}"`
+  )).join('\n');
+}
+
+function formatArtifactSources(sources) {
+  const items = Array.isArray(sources)
+    ? sources
+    : Object.entries(sources && typeof sources === 'object' ? sources : {})
+      .map(([kind, value]) => ({ kind, ...(value && typeof value === 'object' ? value : {}) }));
+  const entries = items
+    .filter((value) => value && typeof value === 'object' && value.source)
+    .map((value) => [
+      value.kind ?? 'artifact',
+      value.source,
+      value.artifact
+    ].filter(Boolean).join(':'));
+  return entries.length ? entries.join(',') : '-';
+}
+
 function normalizeLogCommand(value) {
   return String(value ?? '')
     .trim()
@@ -618,16 +731,46 @@ function evaluateTraceabilityGaps(storyMap, { prArtifacts, reviewArtifacts }) {
     const createArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_create'));
     const prepareArtifact = latestArtifact(prItems.filter((item) => item.kind === 'pr_prepare'));
     const traceabilityArtifact = latestArtifact(prItems.filter((item) => item.kind === 'traceability'));
+    const selectedRealArtifact = latestArtifact(prItems.filter((item) => !NON_PR_EVIDENCE_KINDS.has(item.kind)));
+
+    if (hasRealPrArtifact) {
+      const artifactSource = getArtifactSource(selectedRealArtifact);
+      story.traceability_resolution = {
+        status: artifactSource === 'local' ? 'local_resolved' : 'alternate_source_resolved',
+        artifact_source: artifactSource,
+        artifact: selectedRealArtifact?.path ?? null
+      };
+    }
 
     if (story.story_doc_present && !hasRealPrArtifact) {
       const lifecycle = traceabilityArtifact?.data?.lifecycle ?? null;
       if (lifecycle === 'declared_not_started') {
         story.declared_unstarted = true;
+        story.traceability_resolution = {
+          status: 'declared_not_started',
+          artifact_source: getArtifactSource(traceabilityArtifact),
+          artifact: traceabilityArtifact?.path ?? null
+        };
       } else if (lifecycle === 'merged_without_vibepro_evidence') {
         story.merged_without_vibepro_evidence = true;
+        story.traceability_resolution = {
+          status: 'alternate_source_resolved',
+          artifact_source: getArtifactSource(traceabilityArtifact),
+          artifact: traceabilityArtifact?.path ?? null
+        };
       } else if (lifecycle === 'evidence_in_other_worktree') {
         story.evidence_in_other_worktree = true;
+        story.traceability_resolution = {
+          status: 'alternate_source_resolved',
+          artifact_source: getArtifactSource(traceabilityArtifact),
+          artifact: traceabilityArtifact?.path ?? null
+        };
       } else {
+        story.traceability_resolution = {
+          status: 'actual_missing',
+          artifact_source: null,
+          artifact: story.story_doc_path
+        };
         addTraceabilityGap(story, {
           kind: 'traceability_missing_pr_artifact',
           artifact: story.story_doc_path,
@@ -744,6 +887,20 @@ function addTraceabilityGap(story, gap) {
   story.traceability_gaps.push(gap);
 }
 
+function recordStoryArtifactSource(story, artifact) {
+  const entry = {
+    kind: artifact.kind,
+    source: getArtifactSource(artifact),
+    artifact: artifact.path
+  };
+  if (story.artifact_sources.some((item) => item.kind === entry.kind && item.source === entry.source && item.artifact === entry.artifact)) return;
+  story.artifact_sources.push(entry);
+}
+
+function getArtifactSource(artifact) {
+  return artifact?.source ?? 'local';
+}
+
 function shortSha(value) {
   return String(value ?? '').slice(0, 12);
 }
@@ -770,6 +927,8 @@ function buildValueSignals(stories) {
     story.traceability_gaps.map((gap) => ({ story_id: story.story_id, ...gap }))
   ));
   const traceabilityGapStoryCount = stories.filter((story) => story.traceability_gaps.length > 0).length;
+  const actualMissingTraceabilityGapCount = stories.filter((story) => story.traceability_resolution?.status === 'actual_missing').length;
+  const alternateSourceResolvedTraceabilityCount = stories.filter((story) => story.traceability_resolution?.status === 'alternate_source_resolved').length;
   const declaredUnstartedCount = stories.filter((story) => story.declared_unstarted).length;
   const verificationObservationMissingCount = stories.filter((story) => story.verification_observation_missing).length;
   const fastLaneCount = stories.filter((story) => story.fast_lane).length;
@@ -781,6 +940,8 @@ function buildValueSignals(stories) {
     stale_evidence_story_count: staleEvidenceCount,
     story_source_mismatch_story_count: storySourceMismatchCount,
     traceability_gap_count: traceabilityGapStoryCount,
+    actual_missing_traceability_gap_count: actualMissingTraceabilityGapCount,
+    alternate_source_resolved_traceability_count: alternateSourceResolvedTraceabilityCount,
     declared_unstarted_story_count: declaredUnstartedCount,
     verification_observation_missing_story_count: verificationObservationMissingCount,
     fast_lane_story_count: fastLaneCount,
@@ -976,7 +1137,7 @@ function normalizeReviewUsage(usage = null) {
   };
 }
 
-function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findingCount, dispositionCounts, elapsedMs }) {
+function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findingCount, dispositionCounts, usage, elapsedMs }) {
   let score = 0;
   const valueSignals = [];
   const wasteSignals = [];
@@ -994,13 +1155,16 @@ function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findi
   if (dispositionCounts.accepted > 0) {
     score += Math.min(45, dispositionCounts.accepted * 25);
     valueSignals.push('accepted_finding');
+    valueSignals.push('high_value_candidate');
   }
-  const resolvedCount = dispositionCounts.accepted > 0
-    ? Math.min(dispositionCounts.accepted, normalizeReviewDispositions(role.finding_dispositions).filter((item) => item.resolved_by.length > 0).length)
-    : 0;
+  const resolvedCount = normalizeReviewDispositions(role.finding_dispositions).filter((item) => item.resolved_by.length > 0).length;
   if (resolvedCount > 0) {
-    score += Math.min(20, resolvedCount * 10);
-    valueSignals.push('resolved_by_followup_change');
+    score += Math.min(30, resolvedCount * 15);
+    valueSignals.push('resolved_finding');
+    valueSignals.push('high_value_candidate');
+  }
+  if (findingCount > 0 && normalizeReviewDispositions(role.finding_dispositions).length === 0) {
+    wasteSignals.push('undisposed_finding');
   }
   const highSeverityCount = findings.filter((finding) => ['critical', 'high'].includes(finding.severity)).length;
   if (highSeverityCount > 0 && ['block', 'needs_changes'].includes(role.status)) {
@@ -1025,6 +1189,7 @@ function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findi
   }
   if (findingCount === 0 && (role.judgment_delta ?? []).length === 0 && role.status === 'pass') {
     score -= 10;
+    wasteSignals.push('pass_only_no_decision_signal');
     wasteSignals.push('pass_only_no_judgment_delta');
   }
   if (dispositionCounts.duplicate > 0) {
@@ -1055,7 +1220,15 @@ function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findi
     score -= elapsedMs > 20 * 60 * 1000 ? 10 : 5;
     wasteSignals.push('high_elapsed_time');
   }
-  const clamped = Math.max(0, Math.min(100, score));
+  if (usage?.total_tokens === null || usage?.total_tokens === undefined) {
+    wasteSignals.push('token_missing');
+  }
+  if (usage?.cost_usd === null || usage?.cost_usd === undefined) {
+    wasteSignals.push('cost_missing');
+  }
+  const clamped = valueSignals.includes('high_value_candidate')
+    ? Math.max(70, Math.max(0, Math.min(100, score)))
+    : Math.max(0, Math.min(100, score));
   return {
     score: clamped,
     band: clamped >= 70 ? 'high' : clamped >= 40 ? 'medium' : 'low',
@@ -1078,6 +1251,7 @@ function summarizeSubagentRoiReviews(reviews) {
     duplicate_finding_count: sumNumbers(reviews.map((review) => review.findings.duplicate)),
     false_positive_finding_count: sumNumbers(reviews.map((review) => review.findings.false_positive)),
     undisposed_finding_count: sumNumbers(reviews.map((review) => review.findings.undisposed)),
+    pass_only_no_decision_signal_count: reviews.filter((review) => review.waste_signals.includes('pass_only_no_decision_signal')).length,
     pass_only_no_judgment_delta_count: reviews.filter((review) => review.waste_signals.includes('pass_only_no_judgment_delta')).length,
     stale_review_count: reviews.filter((review) => review.waste_signals.includes('stale_review')).length,
     timed_out_review_count: reviews.filter((review) => review.waste_signals.includes('timed_out_lifecycle')).length,
@@ -1088,7 +1262,8 @@ function summarizeSubagentRoiReviews(reviews) {
     total_tokens: sumNumbers(reviews.map((review) => review.cost.total_tokens)),
     total_cost_usd: Number(sumNumbers(reviews.map((review) => review.cost.cost_usd)).toFixed(6)),
     token_observed_review_count: tokenObservedCount,
-    token_missing_review_count: reviews.length - tokenObservedCount
+    token_missing_review_count: reviews.filter((review) => review.waste_signals.includes('token_missing')).length,
+    cost_missing_review_count: reviews.filter((review) => review.waste_signals.includes('cost_missing')).length
   };
 }
 
@@ -1106,7 +1281,12 @@ function summarizeSubagentRoiByStory(reviews) {
       total_agent_elapsed_ms: 0,
       total_agent_minutes: 0,
       total_tokens: 0,
-      total_cost_usd: 0
+      total_cost_usd: 0,
+      role_recommendations: {
+        continue: [],
+        reduce: [],
+        needs_evidence: []
+      }
     };
     item.review_count += 1;
     item.accepted_finding_count += review.findings.accepted;
@@ -1116,6 +1296,11 @@ function summarizeSubagentRoiByStory(reviews) {
     item.total_agent_elapsed_ms += review.cost.elapsed_ms ?? 0;
     item.total_tokens += review.cost.total_tokens ?? 0;
     item.total_cost_usd += review.cost.cost_usd ?? 0;
+    if (review.value_signals.includes('high_value_candidate')) item.role_recommendations.continue.push(review.role);
+    if (review.waste_signals.includes('pass_only_no_decision_signal')) item.role_recommendations.reduce.push(review.role);
+    if (review.waste_signals.includes('undisposed_finding') || review.waste_signals.includes('token_missing') || review.waste_signals.includes('cost_missing')) {
+      item.role_recommendations.needs_evidence.push(review.role);
+    }
     const scores = [...(item._scores ?? []), review.value_score];
     item._scores = scores;
     item.value_score_average = averageNumbers(scores);
@@ -1124,7 +1309,14 @@ function summarizeSubagentRoiByStory(reviews) {
     byStory.set(review.story_id, item);
   }
   return [...byStory.values()]
-    .map(({ _scores, ...item }) => item)
+    .map(({ _scores, ...item }) => ({
+      ...item,
+      role_recommendations: {
+        continue: unique(item.role_recommendations.continue),
+        reduce: unique(item.role_recommendations.reduce),
+        needs_evidence: unique(item.role_recommendations.needs_evidence)
+      }
+    }))
     .sort((a, b) => a.story_id.localeCompare(b.story_id));
 }
 
@@ -1133,7 +1325,7 @@ function renderSubagentRoiRows(report) {
   if (!roi) return '';
   const summary = roi.summary ?? {};
   const reviewRows = roi.by_review?.length
-    ? roi.by_review.slice(0, 12).map((review) => (
+    ? roi.by_review.slice().sort(compareSubagentRoiForOperations).slice(0, 12).map((review) => (
         `- ${review.story_id}:${review.stage}:${review.role}: score=${review.value_score} band=${review.value_band} accepted=${review.findings.accepted} duplicate=${review.findings.duplicate} false_positive=${review.findings.false_positive} minutes=${review.cost.agent_minutes ?? '-'} tokens=${review.cost.total_tokens ?? '-'} waste=${review.waste_signals.join('|') || '-'}`
       )).join('\n')
     : '- none';
@@ -1147,10 +1339,25 @@ ${title}
 - accepted/resolved findings: ${summary.accepted_finding_count ?? 0}/${summary.resolved_finding_count ?? 0}
 - duplicate/false_positive findings: ${summary.duplicate_finding_count ?? 0}/${summary.false_positive_finding_count ?? 0}
 - total_agent_minutes: ${summary.total_agent_minutes ?? 0}
-- total_tokens: ${summary.total_tokens ?? 0} (observed_reviews=${summary.token_observed_review_count ?? 0}, missing_reviews=${summary.token_missing_review_count ?? 0})
+- total_tokens: ${(summary.token_observed_review_count ?? 0) > 0 ? summary.total_tokens : 'unknown'} (observed_reviews=${summary.token_observed_review_count ?? 0}, missing_reviews=${summary.token_missing_review_count ?? 0})
+- cost_usd: ${(summary.cost_missing_review_count ?? 0) > 0 ? 'partial_or_unknown' : summary.total_cost_usd ?? 0}
 
 ${reviewRows}
 `;
+}
+
+function compareSubagentRoiForOperations(a, b) {
+  return subagentOperationalRank(a) - subagentOperationalRank(b)
+    || b.value_score - a.value_score
+    || a.story_id.localeCompare(b.story_id)
+    || a.role.localeCompare(b.role);
+}
+
+function subagentOperationalRank(review) {
+  if (review.value_signals.includes('high_value_candidate')) return 0;
+  if (review.waste_signals.includes('undisposed_finding') || review.waste_signals.includes('token_missing') || review.waste_signals.includes('cost_missing')) return 1;
+  if (review.waste_signals.includes('pass_only_no_decision_signal')) return 2;
+  return 3;
 }
 
 function normalizeNullableNumber(value) {
@@ -1161,6 +1368,10 @@ function normalizeNullableNumber(value) {
 
 function sumNumbers(values) {
   return values.reduce((sum, value) => sum + (Number.isFinite(value) ? value : 0), 0);
+}
+
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
 }
 
 function averageNumbers(values) {

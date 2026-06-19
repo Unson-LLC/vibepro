@@ -20,3 +20,7 @@ If facts are incomplete, reconcile does not mark the story passed. It emits `nee
 ## Boundary
 
 This story does not query all historical GitHub PRs and does not track the entire `.vibepro` history. Existing artifacts remain the replay source; synthesized lifecycle entries are explicitly labeled when used.
+
+## Implementation Note
+
+The implementation adds `execute reconcile --all-merged` as a batch wrapper over single-story reconcile. It discovers merged Stories from local PR merge artifacts, canonical audit bundles, and merged Story docs, then emits a before/after report with evidence references.

@@ -7665,6 +7665,88 @@ test('SRA-CON-1 review record captures finding disposition and agent usage for s
   assert.equal(role.agent_usage.total_tokens, 1545);
 });
 
+test('subagent ROI report classifies decision signal, waste signal, and missing usage evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'needs_changes',
+    '--summary',
+    'runtime contract gap needs a follow-up commit',
+    '--finding',
+    'high:runtime-contract-gap:subagent found a runtime contract gap',
+    '--finding-disposition',
+    'runtime-contract-gap:accepted:confirmed by focused inspection',
+    '--resolved-finding',
+    'runtime-contract-gap:commit abc1234',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-runtime-roi',
+    '--agent-thread-id',
+    'thread-codex-runtime-roi',
+    '--agent-input-tokens',
+    '1200',
+    '--agent-output-tokens',
+    '345',
+    '--agent-cost-usd',
+    '0.123456',
+    '--agent-closed',
+    '--json'
+  ]);
+  await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'code_spec_alignment',
+    '--status',
+    'pass',
+    '--summary',
+    'pass-only confirmation',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-code-spec-smoke',
+    '--agent-thread-id',
+    'thread-codex-code-spec-smoke',
+    '--agent-closed',
+    '--json'
+  ]);
+
+  const report = await runCliWithStdout(['usage', 'report', repo, '--subagent-roi', '--json']);
+  assert.equal(report.exitCode, 0);
+  const parsed = JSON.parse(report.stdout);
+  const valuable = parsed.subagent_roi.by_review.find((review) => review.role === 'runtime_contract');
+  assert.equal(valuable.value_band, 'high');
+  assert.equal(valuable.value_signals.includes('accepted_finding'), true);
+  assert.equal(valuable.value_signals.includes('resolved_finding'), true);
+  assert.equal(valuable.value_signals.includes('high_value_candidate'), true);
+  const waste = parsed.subagent_roi.by_review.find((review) => review.role === 'code_spec_alignment');
+  assert.equal(waste.waste_signals.includes('pass_only_no_decision_signal'), true);
+  assert.equal(waste.waste_signals.includes('token_missing'), true);
+  assert.equal(parsed.subagent_roi.summary.token_missing_review_count, 1);
+  assert.deepEqual(parsed.subagent_roi.by_story[0].role_recommendations.continue, ['runtime_contract']);
+  assert.deepEqual(parsed.subagent_roi.by_story[0].role_recommendations.reduce, ['code_spec_alignment']);
+  assert.deepEqual(parsed.subagent_roi.by_story[0].role_recommendations.needs_evidence, ['code_spec_alignment']);
+});
+
 test('review start rejects model policy mismatch before lifecycle start unless override is justified', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -11078,6 +11160,52 @@ architecture_docs:
   assert.equal(result.result.state.current_phase, 'verification');
   assert.equal(result.result.state.completed_phases.includes('ready_for_pr_create'), false);
   assert.equal(result.result.state.next_actions.some((action) => action.includes('ADR evidence')), true);
+});
+
+test('execute reconcile --all-merged recalculates merged story state from artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-merged-reconcile';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-12T00:00:00.000Z',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    pr_url: 'https://github.com/example/repo/pull/123',
+    status: 'created'
+  });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-12T00:05:00.000Z',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    pr: { url: 'https://github.com/example/repo/pull/123' },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head
+  });
+  await mkdir(path.join(repo, '.vibepro', 'executions', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    completion_status: 'pr_created',
+    managed_worktree: null
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.updated_story_count, 1);
+  assert.equal(result.result.stories[0].story_id, storyId);
+  assert.equal(result.result.stories[0].before_status, 'pr_created');
+  assert.equal(result.result.stories[0].after_status, 'merged');
+  assert.equal(result.result.stories[0].evidence.some((item) => item.kind === 'pr_merge'), true);
+  assert.deepEqual(result.result.stories[0].missing_evidence, []);
+
+  const state = await readJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'));
+  assert.equal(state.completion_status, 'merged');
+  assert.equal(state.execution_dag.nodes.find((node) => node.id === 'pr_created').status, 'passed');
 });
 
 test('execute state treats workflow-heavy gates as critical blockers', async () => {

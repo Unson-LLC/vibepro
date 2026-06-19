@@ -36,3 +36,9 @@ diagrams:
 - Unit coverage builds local-only, canonical-only, manifest-only, and missing fixtures.
 - JSON report assertions verify `artifact_source`, actual missing count, alternate-source resolved count, and no double counting.
 - Human-readable report assertions verify missing and resolved sections are separate.
+
+## Implementation Scenarios
+
+- Scenario `URCT-S-001`: Given a Story has no local `.vibepro/pr/<story-id>` directory but has a canonical audit bundle with `pr-prepare.json` and `pr-merge.json`, `usage report --json` marks the Story as prepared/merged evidence present, sets `traceability_resolution.status=alternate_source_resolved`, sets `artifact_source=canonical_audit`, and does not emit `traceability_missing_pr_artifact`.
+- Scenario `URCT-S-002`: Given a Story has no local, canonical, manifest, or tracked traceability evidence, `usage report --json` sets `traceability_resolution.status=actual_missing` and increments `actual_missing_traceability_gap_count`.
+- Scenario `URCT-S-003`: Given local and canonical evidence both exist for the same artifact key, the local artifact wins and aggregate traceability metrics do not double count that Story.

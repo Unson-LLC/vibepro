@@ -20,3 +20,7 @@ Each story row exposes which source was selected and whether the traceability ga
 ## Boundary
 
 This does not query GitHub or infer old PRs by branch naming. The architecture stays file-backed so offline/fresh checkout audits remain reproducible.
+
+## Implementation Note
+
+The implementation records artifact source at the story row level and separates `actual_missing` from `alternate_source_resolved` in aggregate value signals. This makes the report useful for audit decisions instead of merely reducing a gap count.

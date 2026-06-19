@@ -20,3 +20,7 @@ The machine-readable report emits per-review signals and story-level role recomm
 ## Boundary
 
 This story does not make ROI a blocking gate and does not require historical token/cost backfill. Missing cost is represented explicitly so reports cannot accidentally imply that subagent review was free.
+
+## Implementation Note
+
+The implementation treats ROI as an operational classification layer. Reviews with accepted or resolved findings become high-value candidates; pass-only reviews without decision signal become reduction candidates; missing token/cost evidence becomes an evidence-quality issue.
