@@ -230,6 +230,28 @@ test('change classifier avoids workflow_heavy for narrow changes', () => {
   }).profile, 'ui_interaction');
 });
 
+test('change classifier recognizes monorepo app runtime API source paths', () => {
+  const result = classifyChangeRisk({
+    fileGroups: {
+      source: {
+        files: [
+          'apps/hono-api/src/lib/mastra/tools/zeims-knowledge-tool.ts',
+          'apps/zeims-batch/src/routes/search/post.ts'
+        ]
+      },
+      tests: { files: ['apps/zeims-batch/src/routes/search/post.spec.ts'] },
+      repo_control: { files: [] },
+      story_docs: { files: [] },
+      specifications: { files: [] }
+    },
+    storySource: { title: 'Zeims tax judgment DAG' }
+  });
+
+  assert.equal(result.profile, 'api_contract');
+  assert.ok(result.risk_surfaces.includes('server_api'));
+  assert.ok(!result.reasons.includes('no runtime source files changed'));
+});
+
 test('change classifier marks Story Spec and test marker edits as low-risk evidence changes', () => {
   const docsOnly = classifyChangeRisk({
     fileGroups: {
@@ -259,6 +281,57 @@ test('change classifier marks Story Spec and test marker edits as low-risk evide
   });
   assert.equal(markerOnly.change_type, 'low_risk_evidence_change');
   assert.deepEqual(markerOnly.evidence_reuse_policy.rerun_required_for, ['test/e2e/story-risk-adaptive-main.spec.ts']);
+});
+
+test('pr prepare groups monorepo apps src runtime files as source', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'apps', 'hono-api', 'src', 'lib', 'mastra', 'tools'), { recursive: true });
+  await mkdir(path.join(repo, 'apps', 'zeims-batch', 'src', 'routes', 'search'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Zeims tax judgment DAG
+architecture_docs:
+  reason: monorepo runtime source fixture
+---
+
+# Zeims tax judgment DAG
+
+## 背景
+
+Tax judgment runtime changes span an API app and a batch route in a monorepo.
+
+## 受け入れ基準
+
+- [ ] Runtime source under apps/*/src is classified as source.
+`);
+  await writeFile(
+    path.join(repo, 'apps', 'hono-api', 'src', 'lib', 'mastra', 'tools', 'zeims-knowledge-tool.ts'),
+    'export function searchKnowledge(){ return "knowledge"; }\n'
+  );
+  await writeFile(
+    path.join(repo, 'apps', 'zeims-batch', 'src', 'routes', 'search', 'post.ts'),
+    'export async function POST(){ return { status: "ok" }; }\n'
+  );
+  await writeFile(
+    path.join(repo, 'apps', 'zeims-batch', 'src', 'routes', 'search', 'post.spec.ts'),
+    'import { test } from "node:test";\ntest("post route", () => {});\n'
+  );
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+
+  assert.deepEqual(prepare.file_groups.source.files.sort(), [
+    'apps/hono-api/src/lib/mastra/tools/zeims-knowledge-tool.ts',
+    'apps/zeims-batch/src/routes/search/post.ts'
+  ]);
+  assert.deepEqual(prepare.file_groups.tests.files, ['apps/zeims-batch/src/routes/search/post.spec.ts']);
+  assert.equal(prepare.file_groups.other.files.includes('apps/hono-api/src/lib/mastra/tools/zeims-knowledge-tool.ts'), false);
+  assert.equal(prepare.pr_context.change_classification.profile, 'api_contract');
+  assert.ok(!prepare.pr_context.change_classification.reasons.includes('no runtime source files changed'));
+  assert.equal(prepare.pr_context.pr_route.route_type, 'runtime_change');
+  assert.equal(prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'code').status, 'present');
 });
 
 test('bug physics triage requires probe evidence before selecting a timing gate profile', async () => {
