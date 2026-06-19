@@ -125,7 +125,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} traceability=${story.traceability_resolution?.status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -145,6 +145,8 @@ export function renderUsageReport(report) {
     `- stale_evidence: ${valueSignals.stale_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.stale_evidence_rate)})`,
     `- story_source_mismatch: ${valueSignals.story_source_mismatch_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.story_source_mismatch_rate)})`,
     `- traceability_gaps: ${valueSignals.traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.traceability_gap_rate)})`,
+    `- actual_missing_traceability_gaps: ${valueSignals.actual_missing_traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- alternate_source_resolved_traceability: ${valueSignals.alternate_source_resolved_traceability_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- declared_unstarted: ${valueSignals.declared_unstarted_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- verification_observation_missing: ${valueSignals.verification_observation_missing_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
@@ -551,6 +553,14 @@ function renderTraceabilityGaps(report) {
   return gaps.map((gap) => (
     `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} next="${gap.next_command}"`
   )).join('\n');
+}
+
+function formatArtifactSources(sources) {
+  if (!sources || typeof sources !== 'object') return '-';
+  const entries = Object.entries(sources)
+    .filter(([, value]) => value && typeof value === 'object' && value.source)
+    .map(([key, value]) => `${key}:${value.source}`);
+  return entries.length ? entries.join(',') : '-';
 }
 
 function normalizeLogCommand(value) {
@@ -1031,7 +1041,7 @@ function normalizeReviewUsage(usage = null) {
   };
 }
 
-function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findingCount, dispositionCounts, elapsedMs }) {
+function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findingCount, dispositionCounts, usage, elapsedMs }) {
   let score = 0;
   const valueSignals = [];
   const wasteSignals = [];
@@ -1084,6 +1094,7 @@ function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findi
   if (findingCount === 0 && (role.judgment_delta ?? []).length === 0 && role.status === 'pass') {
     score -= 10;
     wasteSignals.push('pass_only_no_decision_signal');
+    wasteSignals.push('pass_only_no_judgment_delta');
   }
   if (dispositionCounts.duplicate > 0) {
     score -= Math.min(30, dispositionCounts.duplicate * 15);
@@ -1113,10 +1124,10 @@ function scoreSubagentReview({ role, provenance, lifecycleEntry, findings, findi
     score -= elapsedMs > 20 * 60 * 1000 ? 10 : 5;
     wasteSignals.push('high_elapsed_time');
   }
-  if (role.agent_usage?.total_tokens === null || role.agent_usage?.total_tokens === undefined) {
+  if (usage?.total_tokens === null || usage?.total_tokens === undefined) {
     wasteSignals.push('token_missing');
   }
-  if (role.agent_usage?.cost_usd === null || role.agent_usage?.cost_usd === undefined) {
+  if (usage?.cost_usd === null || usage?.cost_usd === undefined) {
     wasteSignals.push('cost_missing');
   }
   const clamped = valueSignals.includes('high_value_candidate')
@@ -1145,6 +1156,7 @@ function summarizeSubagentRoiReviews(reviews) {
     false_positive_finding_count: sumNumbers(reviews.map((review) => review.findings.false_positive)),
     undisposed_finding_count: sumNumbers(reviews.map((review) => review.findings.undisposed)),
     pass_only_no_decision_signal_count: reviews.filter((review) => review.waste_signals.includes('pass_only_no_decision_signal')).length,
+    pass_only_no_judgment_delta_count: reviews.filter((review) => review.waste_signals.includes('pass_only_no_judgment_delta')).length,
     stale_review_count: reviews.filter((review) => review.waste_signals.includes('stale_review')).length,
     timed_out_review_count: reviews.filter((review) => review.waste_signals.includes('timed_out_lifecycle')).length,
     total_agent_elapsed_ms: totalElapsedMs,
