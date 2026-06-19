@@ -671,6 +671,20 @@ export async function createPullRequest(repoRoot, options = {}) {
     '--body-file',
     bodyFile
   ]];
+  const ghExistingPrListCommand = ['gh', [
+    'pr',
+    'list',
+    '--base',
+    baseBranch,
+    '--head',
+    headBranch,
+    '--state',
+    'open',
+    '--json',
+    'number,url,state,isDraft,headRefName,headRefOid,baseRefName,mergeStateStatus',
+    '--limit',
+    '1'
+  ]];
   const dryRun = options.dryRun === true;
   const createdAt = new Date().toISOString();
   const execution = {
@@ -713,12 +727,83 @@ export async function createPullRequest(repoRoot, options = {}) {
     const ghResult = await runCommand(root, ghCommand, options);
     execution.results.push(ghResult);
     if (ghResult.exit_code !== 0) {
-      execution.status = 'failed';
-      execution.error = `Command failed: ${ghResult.command}`;
-      await writePrCreateArtifacts(root, prepareResult, execution);
-      throw new Error(execution.error);
+      if (!isExistingPullRequestCreateError(ghResult)) {
+        execution.status = 'failed';
+        execution.error = `Command failed: ${ghResult.command}`;
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      execution.commands.push(formatCommand(ghExistingPrListCommand));
+      const existingPrListResult = await runCommand(root, ghExistingPrListCommand, options);
+      execution.results.push(existingPrListResult);
+      if (existingPrListResult.exit_code !== 0) {
+        execution.status = 'failed';
+        execution.error = `Existing PR lookup failed after duplicate PR create response: ${existingPrListResult.command}`;
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      const existingPr = parseExistingPullRequestFromList(existingPrListResult.stdout);
+      if (!existingPr) {
+        execution.status = 'failed';
+        execution.error = 'Existing PR create response was returned, but no open PR matched the requested base/head.';
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      const normalizedExistingPr = normalizeExistingPullRequest(existingPr);
+      const expectedHeadSha = preparation.git.head_sha ?? null;
+      if (!isMatchingHeadOid(normalizedExistingPr.head_ref_oid, expectedHeadSha)) {
+        execution.status = 'failed';
+        execution.existing_pr = {
+          ...normalizedExistingPr,
+          body_updated: false
+        };
+        execution.error = `Existing PR head mismatch: expected current head ${expectedHeadSha ?? '-'}, got ${normalizedExistingPr.head_ref_oid ?? '-'}.`;
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      const editTarget = normalizedExistingPr.url ?? (normalizedExistingPr.number ? String(normalizedExistingPr.number) : null);
+      if (!editTarget) {
+        execution.status = 'failed';
+        execution.existing_pr = {
+          ...normalizedExistingPr,
+          body_updated: false
+        };
+        execution.error = 'Existing PR lookup succeeded, but no URL or number was available for PR body refresh.';
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      const ghExistingPrEditCommand = ['gh', [
+        'pr',
+        'edit',
+        editTarget,
+        '--title',
+        title,
+        '--body-file',
+        bodyFile
+      ]];
+      execution.commands.push(formatCommand(ghExistingPrEditCommand));
+      const existingPrEditResult = await runCommand(root, ghExistingPrEditCommand, options);
+      execution.results.push(existingPrEditResult);
+      if (existingPrEditResult.exit_code !== 0) {
+        execution.status = 'failed';
+        execution.existing_pr = {
+          ...normalizedExistingPr,
+          body_updated: false
+        };
+        execution.error = `Existing PR body refresh failed: ${existingPrEditResult.command}`;
+        await writePrCreateArtifacts(root, prepareResult, execution);
+        throw new Error(execution.error);
+      }
+      execution.status = 'updated_existing_pr';
+      execution.pr_url = normalizedExistingPr.url;
+      execution.existing_pr = {
+        ...normalizedExistingPr,
+        body_updated: true
+      };
+      execution.warnings.push('Existing open PR detected for the requested base/head; refreshed PR body and pr-create artifact for the current head instead of creating a duplicate PR.');
+    } else {
+      execution.pr_url = extractPrUrl(ghResult.stdout);
     }
-    execution.pr_url = extractPrUrl(ghResult.stdout);
   }
 
   const artifacts = await writePrCreateArtifacts(root, prepareResult, execution);
@@ -9494,6 +9579,41 @@ async function runCommand(repoRoot, command, options = {}) {
 function extractPrUrl(stdout) {
   const match = stdout.match(/https?:\/\/\S+/);
   return match?.[0] ?? null;
+}
+
+function isExistingPullRequestCreateError(result) {
+  const text = `${result?.stdout ?? ''}\n${result?.stderr ?? ''}`;
+  return /pull request/i.test(text) && /(already|exist)/i.test(text);
+}
+
+function parseExistingPullRequestFromList(stdout) {
+  const trimmed = String(stdout ?? '').trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) return parsed[0] ?? null;
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeExistingPullRequest(pr) {
+  return {
+    number: Number.isInteger(pr?.number) ? pr.number : null,
+    url: typeof pr?.url === 'string' && pr.url ? pr.url : null,
+    state: typeof pr?.state === 'string' && pr.state ? pr.state : null,
+    is_draft: typeof pr?.isDraft === 'boolean' ? pr.isDraft : null,
+    base_ref_name: typeof pr?.baseRefName === 'string' && pr.baseRefName ? pr.baseRefName : null,
+    head_ref_name: typeof pr?.headRefName === 'string' && pr.headRefName ? pr.headRefName : null,
+    head_ref_oid: typeof pr?.headRefOid === 'string' && pr.headRefOid ? pr.headRefOid : null,
+    merge_state_status: typeof pr?.mergeStateStatus === 'string' && pr.mergeStateStatus ? pr.mergeStateStatus : null
+  };
+}
+
+function isMatchingHeadOid(actual, expected) {
+  if (!actual || !expected) return false;
+  return actual.toLowerCase() === expected.toLowerCase();
 }
 
 async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
