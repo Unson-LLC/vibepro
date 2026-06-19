@@ -36,3 +36,9 @@ diagrams:
 - Unit fixtures cover a merged story with stale pending state that can be repaired.
 - Unit fixtures cover a merged story with insufficient facts that remains `needs_evidence`.
 - Report assertions verify before/after status and source artifact references are present.
+
+## Implementation Scenarios
+
+- Scenario `MARB-S-001`: Given `.vibepro/pr/<story-id>/pr-create.json` and `pr-merge.json` prove a Story was merged while execution state still says `pr_created`, `vibepro execute reconcile . --all-merged --json` rewrites that Story to `completion_status=merged`.
+- Scenario `MARB-S-002`: The all-merged reconcile report includes `story_id`, `before_status`, `after_status`, `changed`, the written execution artifact, and source evidence artifacts for each reconciled Story.
+- Scenario `MARB-S-003`: If a merged candidate lacks enough artifact facts, reconcile does not synthesize pass evidence and reports missing evidence instead.

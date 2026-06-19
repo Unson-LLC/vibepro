@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -106,6 +106,37 @@ export async function reconcileExecutionState(repoRoot, options = {}) {
     preserveStartedAt: true
   });
   return writeExecutionStateWithLinkedCopies(repoRoot, state);
+}
+
+export async function reconcileAllMergedExecutionStates(repoRoot, options = {}) {
+  await assertWorkspaceInitialized(repoRoot, 'execute reconcile --all-merged');
+  const root = path.resolve(repoRoot);
+  const storyIds = await collectMergedStoryIds(root);
+  const stories = [];
+  for (const storyId of storyIds) {
+    const before = await readManagedExecutionState(root, storyId).catch(() => null);
+    const result = await reconcileExecutionState(root, {
+      ...options,
+      storyId
+    });
+    const evidence = await collectMergedReconcileEvidence(root, storyId);
+    stories.push({
+      story_id: storyId,
+      before_status: before?.completion_status ?? null,
+      after_status: result.state.completion_status,
+      changed: (before?.completion_status ?? null) !== result.state.completion_status,
+      artifact: result.artifact,
+      evidence,
+      missing_evidence: inferMissingMergedEvidence(result.state, evidence)
+    });
+  }
+  return {
+    schema_version: SCHEMA_VERSION,
+    status: 'completed',
+    story_count: stories.length,
+    updated_story_count: stories.filter((story) => story.changed).length,
+    stories
+  };
 }
 
 export async function updateExecutionStateFromPrPrepare(repoRoot, prepareResult, options = {}) {
@@ -225,6 +256,22 @@ ${managedWorktree.details}
 ${executionDag.details}
 
 ${actions}
+`;
+}
+
+export function renderExecutionReconcileAllSummary(result) {
+  const rows = result.stories?.length
+    ? result.stories.map((story) => (
+        `- ${story.story_id}: ${story.before_status ?? 'none'} -> ${story.after_status} evidence=${story.evidence.map((item) => item.kind).join('|') || '-'} missing=${story.missing_evidence.join('|') || '-'}`
+      )).join('\n')
+    : '- none';
+  return `# VibePro Merged Reconcile
+
+- status: ${result.status}
+- stories: ${result.story_count}
+- updated: ${result.updated_story_count}
+
+${rows}
 `;
 }
 
@@ -726,6 +773,92 @@ async function syncManagedWorktreeArtifactsToSource(repoRoot, state) {
     path.join(workspace, 'vibepro-manifest.json'),
     path.join(sourceWorkspace, 'vibepro-manifest.json')
   );
+}
+
+async function collectMergedStoryIds(root) {
+  const ids = new Set();
+  for (const storyId of await safeReaddir(path.join(getWorkspaceDir(root), 'pr'))) {
+    const merge = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json'));
+    if (isMergedArtifact(merge)) ids.add(storyId);
+  }
+  const auditRoot = path.join(root, 'docs', 'management', 'audit-artifacts');
+  for (const storyId of await safeReaddir(auditRoot)) {
+    const merge = await readJsonIfExists(path.join(auditRoot, storyId, 'pr', 'pr-merge.json'));
+    const bundle = await readJsonIfExists(path.join(auditRoot, storyId, 'audit-bundle.json'));
+    if (isMergedArtifact(merge) || bundle?.merge?.status === 'merged') ids.add(storyId);
+  }
+  for (const story of await collectMergedStoryDocs(root)) {
+    ids.add(story.story_id);
+  }
+  return [...ids].sort();
+}
+
+async function collectMergedStoryDocs(root) {
+  const dirs = [
+    path.join(root, 'docs', 'management', 'stories', 'active'),
+    path.join(root, 'docs', 'management', 'stories', 'completed'),
+    path.join(root, 'docs', 'management', 'stories', 'done')
+  ];
+  const stories = [];
+  for (const dir of dirs) {
+    for (const entry of await safeReaddir(dir)) {
+      if (!entry.endsWith('.md')) continue;
+      const filePath = path.join(dir, entry);
+      const content = await readFile(filePath, 'utf8').catch(() => '');
+      const storyId = content.match(/^story_id:\s*([^\n]+)/m)?.[1]?.trim();
+      const status = content.match(/^status:\s*([^\n]+)/m)?.[1]?.trim()?.toLowerCase();
+      if (storyId && ['merged', 'closed', 'done', 'completed'].includes(status)) {
+        stories.push({ story_id: storyId, path: filePath });
+      }
+    }
+  }
+  return stories;
+}
+
+async function collectMergedReconcileEvidence(root, storyId) {
+  const candidates = [
+    ['pr_create', path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-create.json')],
+    ['pr_merge', path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json')],
+    ['review_summary', path.join(getWorkspaceDir(root), 'reviews', storyId, 'gate', 'review-summary.json')],
+    ['canonical_pr_create', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-create.json')],
+    ['canonical_pr_merge', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-merge.json')],
+    ['canonical_bundle', path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-bundle.json')]
+  ];
+  const evidence = [];
+  for (const [kind, filePath] of candidates) {
+    if (await readJsonIfExists(filePath)) {
+      evidence.push({
+        kind,
+        artifact: toWorkspaceRelative(root, filePath)
+      });
+    }
+  }
+  return evidence;
+}
+
+function inferMissingMergedEvidence(state, evidence) {
+  if (state.completion_status === 'merged') return [];
+  const kinds = new Set(evidence.map((item) => item.kind));
+  const missing = [];
+  if (!kinds.has('pr_merge') && !kinds.has('canonical_pr_merge') && !kinds.has('canonical_bundle')) missing.push('pr_merge');
+  if (!kinds.has('pr_create') && !kinds.has('canonical_pr_create')) missing.push('pr_create');
+  return missing;
+}
+
+function isMergedArtifact(artifact) {
+  return artifact?.status === 'merged'
+    || Boolean(artifact?.merged_at)
+    || Boolean(artifact?.merge_commit_sha)
+    || artifact?.merge?.status === 'merged';
+}
+
+async function safeReaddir(dir) {
+  try {
+    return (await readdir(dir)).sort();
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 function collectLinkedExecutionRoots(state) {

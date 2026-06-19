@@ -36,3 +36,9 @@ diagrams:
 - Unit coverage uses fixtures for accepted finding, resolved finding, pass-only, undisposed finding, and missing token/cost.
 - JSON report assertions cover value signals, waste signals, token missing state, and role recommendations.
 - Human-readable report assertions verify operational grouping is visible before numeric score ordering.
+
+## Implementation Scenarios
+
+- Scenario `SRDS-S-001`: Given a parallel subagent review has an accepted finding and resolved finding evidence, `usage report --subagent-roi --json` marks it as `high_value_candidate`, includes `accepted_finding` and `resolved_finding`, and recommends the role under `continue`.
+- Scenario `SRDS-S-002`: Given a pass-only parallel subagent review has no finding, disposition, or judgment delta, `usage report --subagent-roi --json` emits `pass_only_no_decision_signal` and recommends the role under `reduce`.
+- Scenario `SRDS-S-003`: Given token/cost evidence is absent, `usage report --subagent-roi` emits `token_missing`/`cost_missing` and renders total cost as partial or unknown instead of treating missing cost as free.

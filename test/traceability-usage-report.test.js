@@ -163,6 +163,11 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   assert.equal(story.prepared, true);
   assert.equal(story.pr_merge_count, 1);
   assert.equal(missingGaps(story).length, 0);
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit');
+  assert.equal(story.artifact_sources.some((item) => item.source === 'canonical_audit' && item.kind === 'pr_merge'), true);
   assert.equal(report.artifact_counts.canonical_audit, 1);
   assert.equal(report.value_signals.traceability_gap_count, 0);
+  assert.equal(report.value_signals.actual_missing_traceability_gap_count, 0);
+  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 1);
 });
