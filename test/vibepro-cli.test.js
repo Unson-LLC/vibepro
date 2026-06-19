@@ -6577,8 +6577,134 @@ console.log('https://github.example.test/unson/vibepro/pull/123');
   });
   assert.equal(actualCreateResult.exitCode, 0);
   assert.equal(actualCreateResult.result.execution.dry_run, false);
-	  assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
-	  assert.equal(actualCreateResult.result.execution.results.length, 2);
+  assert.equal(actualCreateResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
+  assert.equal(actualCreateResult.result.execution.results.length, 2);
+
+  const currentHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await writeFile(ghBin, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] !== 'pr') {
+  console.error('unexpected gh args: ' + args.join(' '));
+  process.exit(1);
+}
+if (args[1] === 'create') {
+  console.error('a pull request for branch "feature/test-story" into branch "main" already exists: https://github.example.test/unson/vibepro/pull/123');
+  process.exit(1);
+}
+if (args[1] === 'list') {
+  console.log(JSON.stringify([{
+    number: 123,
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    state: 'OPEN',
+    isDraft: false,
+    headRefName: 'feature/test-story',
+    headRefOid: ${JSON.stringify(currentHeadSha)},
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN'
+  }]));
+  process.exit(0);
+}
+if (args[1] === 'edit') {
+  if (!args.includes('--body-file')) {
+    console.error('missing body file');
+    process.exit(2);
+  }
+  console.log('https://github.example.test/unson/vibepro/pull/123');
+  process.exit(0);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`);
+  await chmod(ghBin, 0o755);
+  const refreshedExistingPrResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--title',
+    'Test PR',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'fixtureでは既存PR refresh 経路だけを検証する'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(refreshedExistingPrResult.exitCode, 0);
+  assert.equal(refreshedExistingPrResult.result.execution.status, 'updated_existing_pr');
+  assert.equal(refreshedExistingPrResult.result.execution.pr_url, 'https://github.example.test/unson/vibepro/pull/123');
+  assert.equal(refreshedExistingPrResult.result.execution.current_head_sha, currentHeadSha);
+  assert.equal(refreshedExistingPrResult.result.execution.artifact_freshness.artifact_head_sha, currentHeadSha);
+  assert.equal(refreshedExistingPrResult.result.execution.results.length, 4);
+  assert.equal(refreshedExistingPrResult.result.execution.commands.some((command) => command.includes('gh pr list')), true);
+  assert.equal(refreshedExistingPrResult.result.execution.commands.some((command) => command.includes('gh pr edit')), true);
+  const refreshedPrCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(refreshedPrCreate.status, 'updated_existing_pr');
+  assert.equal(refreshedPrCreate.current_head_sha, currentHeadSha);
+  assert.equal(refreshedPrCreate.artifact_freshness.artifact_head_sha, currentHeadSha);
+  assert.equal(refreshedPrCreate.existing_pr.url, 'https://github.example.test/unson/vibepro/pull/123');
+  assert.equal(refreshedPrCreate.existing_pr.head_ref_oid, currentHeadSha);
+  assert.equal(refreshedPrCreate.existing_pr.body_updated, true);
+  assert.match(refreshedPrCreate.results[1].stderr, /already exists/);
+
+  const mismatchedHeadSha = '0'.repeat(40);
+  await writeFile(ghBin, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] !== 'pr') {
+  console.error('unexpected gh args: ' + args.join(' '));
+  process.exit(1);
+}
+if (args[1] === 'create') {
+  console.error('a pull request for branch "feature/test-story" into branch "main" already exists: https://github.example.test/unson/vibepro/pull/123');
+  process.exit(1);
+}
+if (args[1] === 'list') {
+  console.log(JSON.stringify([{
+    number: 123,
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    state: 'OPEN',
+    isDraft: false,
+    headRefName: 'feature/test-story',
+    headRefOid: ${JSON.stringify(mismatchedHeadSha)},
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN'
+  }]));
+  process.exit(0);
+}
+if (args[1] === 'edit') {
+  console.error('edit should not be reached on head mismatch');
+  process.exit(99);
+}
+console.error('unexpected gh args: ' + args.join(' '));
+process.exit(1);
+`);
+  await chmod(ghBin, 0o755);
+  const mismatchedExistingPrResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--title',
+    'Test PR',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'fixtureでは既存PR head mismatch 経路だけを検証する'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  });
+  assert.equal(mismatchedExistingPrResult.exitCode, 1);
+  const mismatchedPrCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(mismatchedPrCreate.status, 'failed');
+  assert.match(mismatchedPrCreate.error, /Existing PR head mismatch/);
+  assert.equal(mismatchedPrCreate.existing_pr.head_ref_oid, mismatchedHeadSha);
+  assert.equal(mismatchedPrCreate.existing_pr.body_updated, false);
+  assert.equal(mismatchedPrCreate.results.length, 3);
+  assert.equal(mismatchedPrCreate.commands.some((command) => command.includes('gh pr edit')), false);
 
   await writeFile(ghBin, `#!/usr/bin/env node
 console.error('gh create failed');

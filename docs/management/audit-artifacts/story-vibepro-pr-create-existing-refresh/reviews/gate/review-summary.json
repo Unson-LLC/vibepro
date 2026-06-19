@@ -1,0 +1,193 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-create-existing-refresh",
+  "stage": "gate",
+  "status": "pass",
+  "roles": [
+    {
+      "role": "gate_evidence",
+      "status": "pass",
+      "effective_status": "pass",
+      "stale": false,
+      "stale_reason": "review is bound to the current git state",
+      "binding_status": "current",
+      "merge_delta_reuse": null,
+      "provenance_status": "verified_agent",
+      "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
+      "agent_provenance": {
+        "schema_version": "0.1.0",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "agent_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+        "agent_role": null,
+        "model": "gpt-5",
+        "reasoning_effort": "medium",
+        "cost_tier": "medium",
+        "thread_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+        "session_id": null,
+        "tool_call_id": null,
+        "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-request-gate_evidence.md",
+        "request_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-request-gate_evidence.md",
+        "recorded_by": null,
+        "lifecycle": {
+          "agent_closed": true,
+          "close_evidence": "multi_agent close_agent previous_status completed",
+          "close_note": null
+        },
+        "evidence_strength": "strong"
+      },
+      "summary": "PR-final gate evidence review passed for existing PR create artifact refresh; no findings.",
+      "inspection": {
+        "summary": "Reviewed Story/Spec/Architecture, src/pr-manager.js, test/vibepro-cli.test.js, current VibePro verification evidence, pr-prepare/gate-dag/pr-body artifacts, and decision records. Confirmed duplicate PR create errors refresh existing PR evidence only when remote head matches current HEAD; mismatch fails before gh pr edit; normal create path remains unchanged. Evidence is current-bound to commit 84e054d with dirty=false and includes typecheck, targeted integration, full npm test 625 pass, and flow/artifact replay observations.",
+        "evidence": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+        "inputs": [
+          "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md",
+          "docs/specs/vibepro-pr-create-existing-refresh.md",
+          "docs/architecture/vibepro-pr-create-existing-refresh.md",
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-prepare.json",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/gate-dag.json",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-body.md",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json"
+        ]
+      },
+      "judgment_delta": [
+        "Concern stale pr-create artifact could remain after additional commits -> pass because refresh success asserts current_head_sha, artifact_freshness.artifact_head_sha, and existing_pr.head_ref_oid equal current HEAD.",
+        "Concern remote head mismatch could update PR body incorrectly -> pass because implementation exits before gh pr edit and tests assert command absence plus body_updated=false.",
+        "Concern normal create/dirty/merge lifecycle regressions -> pass because duplicate fallback is isolated to existing PR create errors and full npm test covers lifecycle freshness, dirty guard, and execute merge."
+      ],
+      "findings": [],
+      "finding_dispositions": [],
+      "finding_count": 0,
+      "agent_usage": null,
+      "recorded_at": "2026-06-19T14:33:30.700Z",
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T14:33:30.694Z"
+      },
+      "source_git_context": null,
+      "lifecycle": {
+        "effective_status": "closed",
+        "running_count": 0,
+        "timed_out_count": 0,
+        "closed_count": 1,
+        "replaced_count": 0,
+        "latest": {
+          "schema_version": "0.1.0",
+          "lifecycle_id": "synthetic-gate-gate_evidence-1781879610700",
+          "story_id": "story-vibepro-pr-create-existing-refresh",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "status": "closed",
+          "agent_system": "codex",
+          "agent_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+          "agent_model": "gpt-5",
+          "agent_reasoning_effort": "medium",
+          "agent_cost_tier": "medium",
+          "intended_model_policy": null,
+          "model_policy_preflight": null,
+          "thread_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+          "session_id": null,
+          "tool_call_id": null,
+          "started_at": "2026-06-19T14:33:30.700Z",
+          "timeout_ms": null,
+          "replacement_for": null,
+          "close_reason": "completed",
+          "close_evidence": "multi_agent close_agent previous_status completed",
+          "closed_at": "2026-06-19T14:33:30.700Z",
+          "result_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-result-gate_evidence.json",
+          "synthesized_from_result": true,
+          "synthesized_from_provenance": true,
+          "effective_status": "closed",
+          "timed_out": false,
+          "elapsed_ms": 0
+        }
+      },
+      "artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-result-gate_evidence.json",
+      "history_artifacts": [
+        ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/history/review-result-gate_evidence-2026-06-19T14-33-30.700Z.json"
+      ]
+    }
+  ],
+  "pass_count": 1,
+  "stale_count": 0,
+  "missing_count": 0,
+  "unverified_agent_count": 0,
+  "block_count": 0,
+  "needs_changes_count": 0,
+  "lifecycle": {
+    "entry_count": 1,
+    "running_count": 0,
+    "timed_out_count": 0,
+    "closed_count": 1,
+    "replaced_count": 0,
+    "entries": [
+      {
+        "schema_version": "0.1.0",
+        "lifecycle_id": "synthetic-gate-gate_evidence-1781879610700",
+        "story_id": "story-vibepro-pr-create-existing-refresh",
+        "stage": "gate",
+        "role": "gate_evidence",
+        "status": "closed",
+        "agent_system": "codex",
+        "agent_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+        "agent_model": "gpt-5",
+        "agent_reasoning_effort": "medium",
+        "agent_cost_tier": "medium",
+        "intended_model_policy": null,
+        "model_policy_preflight": null,
+        "thread_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+        "session_id": null,
+        "tool_call_id": null,
+        "started_at": "2026-06-19T14:33:30.700Z",
+        "timeout_ms": null,
+        "replacement_for": null,
+        "close_reason": "completed",
+        "close_evidence": "multi_agent close_agent previous_status completed",
+        "closed_at": "2026-06-19T14:33:30.700Z",
+        "result_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-result-gate_evidence.json",
+        "synthesized_from_result": true,
+        "synthesized_from_provenance": true,
+        "effective_status": "closed",
+        "timed_out": false,
+        "elapsed_ms": 0
+      }
+    ]
+  },
+  "next_actions": [],
+  "updated_at": "2026-06-19T14:33:30.703Z",
+  "current_git_context": {
+    "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+    "current_branch": "codex/vibepro-refresh-existing-pr-create",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-19T14:33:30.694Z"
+  },
+  "parallel_dispatch": {
+    "mode": "policy_aware_parallel_reviews",
+    "prepared": true,
+    "artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/parallel-dispatch.md",
+    "artifact_updated_at": "2026-06-19T14:29:54.977Z",
+    "prepare_command": "vibepro review prepare . --id story-vibepro-pr-create-existing-refresh --stage gate --role gate_evidence"
+  }
+}

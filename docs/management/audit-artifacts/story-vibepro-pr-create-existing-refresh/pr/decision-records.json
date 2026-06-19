@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-create-existing-refresh",
+  "updated_at": "2026-06-19T14:31:06.243Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1781879466243-167ab497",
+      "story_id": "story-vibepro-pr-create-existing-refresh",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Single-PR scope accepted for existing PR create artifact refresh.",
+      "reason": "The diff is one cohesive lifecycle repair: Story/Spec/Architecture define the same PR create existing-refresh contract, src/pr-manager.js implements the fallback, and test/vibepro-cli.test.js covers both refresh and head-mismatch failure. Split plan from pr prepare is single_pr_ok, and the review owner is gate_evidence for artifact freshness, command reliability, and PR lifecycle handoff. Splitting docs, implementation, and tests would remove the traceability needed to prove the artifact lifecycle behavior.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-19T14:31:06.242Z"
+      },
+      "recorded_at": "2026-06-19T14:31:06.243Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1781879466243-167ab497",
+      "story_id": "story-vibepro-pr-create-existing-refresh",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Single-PR scope accepted for existing PR create artifact refresh.",
+      "reason": "The diff is one cohesive lifecycle repair: Story/Spec/Architecture define the same PR create existing-refresh contract, src/pr-manager.js implements the fallback, and test/vibepro-cli.test.js covers both refresh and head-mismatch failure. Split plan from pr prepare is single_pr_ok, and the review owner is gate_evidence for artifact freshness, command reliability, and PR lifecycle handoff. Splitting docs, implementation, and tests would remove the traceability needed to prove the artifact lifecycle behavior.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-19T14:31:06.242Z"
+      },
+      "recorded_at": "2026-06-19T14:31:06.243Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json"
+}
