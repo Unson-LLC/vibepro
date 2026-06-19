@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-artifacts",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-19T13:56:25.914Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/200",
+    "merge_commit_sha": "2ae70b15e398704ba98a142c41870b4993358e22",
+    "merged_at": "2026-06-19T13:56:22Z",
+    "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589"
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-canonical-audit-artifacts/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-canonical-audit-artifacts/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-canonical-audit-artifacts/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/review-summary.json"
+    }
+  ],
+  "missing_artifacts": []
+}

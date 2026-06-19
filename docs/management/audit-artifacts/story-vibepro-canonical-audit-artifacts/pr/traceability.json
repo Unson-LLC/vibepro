@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-artifacts",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-canonical-audit-artifacts.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-canonical-audit-artifacts/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/192 at 2026-06-18T14:05:01Z (commit fb224f01ca047a30459f1aa2f206706938cb53f0)"
+    }
+  ],
+  "created_at": "2026-06-18T13:00:02.984Z",
+  "updated_at": "2026-06-19T13:56:25.914Z"
+}

@@ -1,0 +1,482 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-artifacts",
+  "updated_at": "2026-06-19T13:05:56.707Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "verify record",
+      "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+      "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+      "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+      "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+        "branch": "feat/vibepro-canonical-audit-artifacts",
+        "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+        "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "commands": [
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "node --test --test-name-pattern 'execute merge promotes traceability lifecycle to merged with merge evidence|execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out' test/traceability-promotion.test.js test/vibepro-cli.test.js",
+      "summary": "CI-failed execute merge regression tests passed on current HEAD 73b65b7 after aligning fake merge fixtures with canonical audit persistence",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "test/traceability-promotion.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "traceability_lifecycle_merge_evidence",
+          "branch_cleanup_after_canonical_audit_persistence"
+        ],
+        "values": {
+          "head_sha": "73b65b7",
+          "tests": "2",
+          "failures": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T13:05:56.707Z",
+      "git_context": {
+        "head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T13:05:56.679Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+        "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+        "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "branch": "feat/vibepro-canonical-audit-artifacts",
+          "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+            "branch": "feat/vibepro-canonical-audit-artifacts",
+            "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+            "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "node --test --test-name-pattern CAA-VERIFY-001 test/vibepro-cli.test.js",
+      "summary": "CAA-VERIFY-001 unit coverage passed on current HEAD 73b65b7 for successful persistence, missing merge commit safety stop, and final push rejection failure",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/merge-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "CAA-VERIFY-001",
+          "missing_merge_commit_blocks_persistence",
+          "final_persistence_rejection_fails_merge"
+        ],
+        "values": {
+          "head_sha": "73b65b7",
+          "tests": "3",
+          "failures": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T13:05:45.102Z",
+      "git_context": {
+        "head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T13:05:45.096Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+        "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+        "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "branch": "feat/vibepro-canonical-audit-artifacts",
+          "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+            "branch": "feat/vibepro-canonical-audit-artifacts",
+            "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+            "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test --test-name-pattern CAA-VERIFY-001 test/vibepro-cli.test.js",
+      "summary": "CAA-VERIFY-001 scenario replay passed on current HEAD 73b65b7: successful merge persists final canonical audit artifact to remote main, missing merge commit fails persistence, and final push rejection fails execute merge",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/merge-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "flow_replay",
+          "artifact_replay",
+          "scenario clause e2e",
+          "CAA-VERIFY-001",
+          "missing_merge_commit_blocks_persistence",
+          "final_persistence_rejection_fails_merge"
+        ],
+        "values": {
+          "head_sha": "73b65b7",
+          "tests": "3",
+          "failures": "0",
+          "clause": "CAA-CONTRACT-009"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T13:05:35.488Z",
+      "git_context": {
+        "head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T13:05:35.465Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+        "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+        "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "branch": "feat/vibepro-canonical-audit-artifacts",
+          "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+            "branch": "feat/vibepro-canonical-audit-artifacts",
+            "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+            "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "node --check based typecheck passed for current HEAD 73b65b7",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/merge-manager.js",
+          "test/traceability-promotion.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [],
+        "values": {
+          "head_sha": "73b65b7"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T13:05:25.937Z",
+      "git_context": {
+        "head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T13:05:25.930Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+        "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+        "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+        "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "branch": "feat/vibepro-canonical-audit-artifacts",
+          "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "repo root /Users/ksato/.codex/worktrees/2131/vibepro is not recorded managed worktree /Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5; managed branch mismatch: expected feat/vibepro-canonical-audit-artifacts, found codex/vibepro-canonical-audit-main-persistence-final",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/2131/vibepro",
+          "expected_root": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+          "expected_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/2131/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/2131/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-artifacts-4jwfu5",
+            "branch": "feat/vibepro-canonical-audit-artifacts",
+            "actual_branch": "codex/vibepro-canonical-audit-main-persistence-final",
+            "current_head_sha": "73b65b7d88e89d0cb10b7b0734385b76ce2ca589",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
