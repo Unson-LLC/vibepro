@@ -1,0 +1,120 @@
+import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+
+import { createUsageReport, renderUsageReport } from '../../src/usage-report.js';
+
+const STORY_ID = 'story-vibepro-usage-report-canonical-traceability';
+
+async function writeJson(filePath, value) {
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function writeStory(root, storyId, body = '') {
+  const storyPath = path.join(root, 'docs', 'management', 'stories', 'active', `${storyId}.md`);
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: active\n---\n\n# ${storyId}\n${body}\n`);
+}
+
+function prArtifact(storyId, extra = {}) {
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    story: { story_id: storyId },
+    created_at: '2026-06-19T00:00:00.000Z',
+    ...extra
+  };
+}
+
+test('story-vibepro-usage-report-canonical-traceability acceptance coverage', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-usage-report-canonical-e2e-'));
+  await writeStory(root, STORY_ID);
+  await writeStory(root, 'story-local-priority');
+  await writeStory(root, 'story-tracked-traceability');
+  await writeStory(root, 'story-actual-missing');
+
+  // story-vibepro-usage-report-canonical-traceability ac:1
+  // usage report searches local .vibepro/pr/<story-id>, canonical audit bundle, and tracked traceability artifacts.
+  const canonicalDir = path.join(root, 'docs', 'management', 'audit-artifacts', STORY_ID);
+  await writeJson(path.join(canonicalDir, 'audit-bundle.json'), {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    source: 'execute_merge',
+    promoted_at: '2026-06-19T00:05:00.000Z',
+    artifacts: [
+      { kind: 'pr_prepare', canonical_path: `docs/management/audit-artifacts/${STORY_ID}/pr/pr-prepare.json` },
+      { kind: 'pr_merge', canonical_path: `docs/management/audit-artifacts/${STORY_ID}/pr/pr-merge.json` }
+    ]
+  });
+  await writeJson(path.join(canonicalDir, 'pr', 'pr-prepare.json'), prArtifact(STORY_ID, {
+    gate_status: { ready_for_pr_create: true, overall_status: 'ready_for_review' }
+  }));
+  await writeJson(path.join(canonicalDir, 'pr', 'pr-merge.json'), prArtifact(STORY_ID, {
+    status: 'merged',
+    merged_at: '2026-06-19T00:10:00.000Z',
+    pr: {
+      url: 'https://github.com/Unson-LLC/vibepro/pull/999',
+      head_ref_oid: 'abc123canonical'
+    }
+  }));
+  await writeJson(path.join(root, '.vibepro', 'pr', 'story-tracked-traceability', 'traceability.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-tracked-traceability',
+    lifecycle: 'merged_without_vibepro_evidence',
+    source: 'tracked_traceability',
+    evidence: [{ type: 'git_log', ref: 'abc123', summary: 'merged outside VibePro artifact path' }]
+  });
+
+  // story-vibepro-usage-report-canonical-traceability ac:4
+  // local artifacts win over canonical copies for the same story/kind and avoid double counting.
+  const priorityCanonical = path.join(root, 'docs', 'management', 'audit-artifacts', 'story-local-priority');
+  await writeJson(path.join(priorityCanonical, 'audit-bundle.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-local-priority',
+    promoted_at: '2026-06-19T00:05:00.000Z',
+    artifacts: [{ kind: 'pr_prepare', canonical_path: 'docs/management/audit-artifacts/story-local-priority/pr/pr-prepare.json' }]
+  });
+  await writeJson(path.join(priorityCanonical, 'pr', 'pr-prepare.json'), prArtifact('story-local-priority', {
+    created_at: '2026-06-19T00:01:00.000Z',
+    gate_status: { ready_for_pr_create: false, overall_status: 'canonical-copy' }
+  }));
+  await writeJson(path.join(root, '.vibepro', 'pr', 'story-local-priority', 'pr-prepare.json'), prArtifact('story-local-priority', {
+    created_at: '2026-06-19T00:02:00.000Z',
+    gate_status: { ready_for_pr_create: true, overall_status: 'local-copy' }
+  }));
+
+  const report = await createUsageReport(root);
+  const rendered = renderUsageReport(report);
+  const story = report.stories.find((item) => item.story_id === STORY_ID);
+  const localPriority = report.stories.find((item) => item.story_id === 'story-local-priority');
+  const trackedTraceability = report.stories.find((item) => item.story_id === 'story-tracked-traceability');
+  const actualMissing = report.stories.find((item) => item.story_id === 'story-actual-missing');
+
+  // story-vibepro-usage-report-canonical-traceability ac:2
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_gaps.some((gap) => gap.kind === 'traceability_missing_pr_artifact'), false);
+  assert.equal(story.latest_merge_status, 'merged');
+
+  // story-vibepro-usage-report-canonical-traceability ac:3
+  assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit');
+  assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'canonical_audit'), true);
+  assert.match(rendered, new RegExp(`artifact_source=pr_merge:canonical_audit:docs/management/audit-artifacts/${STORY_ID}/pr/pr-merge\\.json`));
+
+  assert.equal(localPriority.prepare_count, 1);
+  assert.equal(localPriority.latest_gate_status, 'local-copy');
+  assert.equal(localPriority.artifact_sources.filter((item) => item.kind === 'pr_prepare').length, 1);
+  assert.equal(localPriority.artifact_sources[0].source, 'local');
+
+  // story-vibepro-usage-report-canonical-traceability ac:5
+  assert.equal(trackedTraceability.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(actualMissing.traceability_resolution.status, 'actual_missing');
+  assert.equal(report.value_signals.actual_missing_traceability_gap_count, 1);
+  assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 2);
+
+  // story-vibepro-usage-report-canonical-traceability ac:6
+  assert.match(rendered, /traceability_missing_pr_artifact artifact=docs\/management\/stories\/active\/story-actual-missing\.md/);
+  assert.match(rendered, /traceability=alternate_source_resolved/);
+});
