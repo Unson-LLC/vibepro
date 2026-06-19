@@ -7451,17 +7451,14 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
   const highRisk = changeClassification?.profile === 'workflow_heavy'
     || ['api_contract', 'auth', 'security', 'database', 'persistence', 'runtime_behavior', 'deploy'].some((surface) => (changeClassification?.risk_surfaces ?? []).includes(surface));
   const currentEvidence = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
-  const evidenceText = currentEvidence
-    .map((command) => buildVerificationCommandSearchText(command))
-    .join('\n')
-    .toLowerCase();
-  const coveredModes = modes.map((mode) => ({
-    ...mode,
-    status: failureModeCoveredByEvidence(mode, evidenceText) ? 'covered' : highRisk ? 'missing_coverage' : 'not_required',
-    evidence: failureModeCoveredByEvidence(mode, evidenceText)
-      ? currentEvidence.find((command) => failureModeCoveredByEvidence(mode, buildVerificationCommandSearchText(command).toLowerCase()))?.command ?? 'verification_evidence'
-      : null
-  }));
+  const coveredModes = modes.map((mode) => {
+    const evidenceCommand = findFailureModeEvidenceCommand(mode, currentEvidence);
+    return {
+      ...mode,
+      status: evidenceCommand ? 'covered' : highRisk ? 'missing_coverage' : 'not_required',
+      evidence: evidenceCommand?.command ?? null
+    };
+  });
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
   const status = missing.length === 0 ? 'passed' : 'missing_coverage';
   return {
@@ -7552,11 +7549,35 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
   return candidates;
 }
 
+function findFailureModeEvidenceCommand(mode, currentEvidence) {
+  let bestMatch = null;
+  for (const command of currentEvidence ?? []) {
+    const evidenceText = buildVerificationCommandSearchText(command).toLowerCase();
+    const score = scoreFailureModeEvidence(mode, evidenceText);
+    if (score > (bestMatch?.score ?? 0)) {
+      bestMatch = { command, score };
+    }
+  }
+  return bestMatch?.score > 0 ? bestMatch.command : null;
+}
+
 function failureModeCoveredByEvidence(mode, evidenceText) {
-  if (!evidenceText) return false;
-  return [mode.id, ...(mode.keywords ?? [])]
-    .filter(Boolean)
-    .some((keyword) => evidenceText.includes(String(keyword).toLowerCase()));
+  return scoreFailureModeEvidence(mode, evidenceText) > 0;
+}
+
+function scoreFailureModeEvidence(mode, evidenceText) {
+  if (!evidenceText) return 0;
+  const modeId = String(mode?.id ?? '').toLowerCase();
+  if (modeId && evidenceText.includes(modeId)) return 100;
+  const keywords = (mode?.keywords ?? [])
+    .map((keyword) => String(keyword).toLowerCase())
+    .filter(Boolean);
+  if (modeId === 'parse_failure') {
+    const strongParseKeywords = keywords.filter((keyword) => keyword !== 'json');
+    return strongParseKeywords.some((keyword) => evidenceText.includes(keyword)) ? 80 : 0;
+  }
+  const matchCount = keywords.filter((keyword) => evidenceText.includes(keyword)).length;
+  return matchCount > 0 ? 10 + matchCount : 0;
 }
 
 function buildVerificationCommandSearchText(command) {
