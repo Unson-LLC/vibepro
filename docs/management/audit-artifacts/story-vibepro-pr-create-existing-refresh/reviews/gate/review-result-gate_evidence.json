@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-create-existing-refresh",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "PR-final gate evidence review passed for existing PR create artifact refresh; no findings.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed Story/Spec/Architecture, src/pr-manager.js, test/vibepro-cli.test.js, current VibePro verification evidence, pr-prepare/gate-dag/pr-body artifacts, and decision records. Confirmed duplicate PR create errors refresh existing PR evidence only when remote head matches current HEAD; mismatch fails before gh pr edit; normal create path remains unchanged. Evidence is current-bound to commit 84e054d with dirty=false and includes typecheck, targeted integration, full npm test 625 pass, and flow/artifact replay observations.",
+    "evidence": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md",
+      "docs/specs/vibepro-pr-create-existing-refresh.md",
+      "docs/architecture/vibepro-pr-create-existing-refresh.md",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-pr-create-existing-refresh/gate-dag.json",
+      ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-body.md",
+      ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json"
+    ]
+  },
+  "judgment_delta": [
+    "Concern stale pr-create artifact could remain after additional commits -> pass because refresh success asserts current_head_sha, artifact_freshness.artifact_head_sha, and existing_pr.head_ref_oid equal current HEAD.",
+    "Concern remote head mismatch could update PR body incorrectly -> pass because implementation exits before gh pr edit and tests assert command absence plus body_updated=false.",
+    "Concern normal create/dirty/merge lifecycle regressions -> pass because duplicate fallback is isolated to existing PR create errors and full npm test covers lifecycle freshness, dirty guard, and execute merge."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-19T14:33:30.700Z",
+  "git_context": {
+    "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+    "current_branch": "codex/vibepro-refresh-existing-pr-create",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-19T14:33:30.694Z"
+  },
+  "source_fingerprint": "f6ae41ba55ee302a7f7ae9f6d49b80c6c9035fac5aae417a3c27bb8ef2812b15",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-request-gate_evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent close_agent previous_status completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

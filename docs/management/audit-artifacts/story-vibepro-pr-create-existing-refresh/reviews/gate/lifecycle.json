@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-create-existing-refresh",
+  "stage": "gate",
+  "updated_at": "2026-06-19T14:33:30.701Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "lifecycle_id": "synthetic-gate-gate_evidence-1781879610700",
+      "story_id": "story-vibepro-pr-create-existing-refresh",
+      "stage": "gate",
+      "role": "gate_evidence",
+      "status": "closed",
+      "agent_system": "codex",
+      "agent_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+      "agent_model": "gpt-5",
+      "agent_reasoning_effort": "medium",
+      "agent_cost_tier": "medium",
+      "intended_model_policy": null,
+      "model_policy_preflight": null,
+      "thread_id": "019ee04a-18bd-7112-bffc-49f0df3e75e5",
+      "session_id": null,
+      "tool_call_id": null,
+      "started_at": "2026-06-19T14:33:30.700Z",
+      "timeout_ms": null,
+      "replacement_for": null,
+      "close_reason": "completed",
+      "close_evidence": "multi_agent close_agent previous_status completed",
+      "closed_at": "2026-06-19T14:33:30.700Z",
+      "result_artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/review-result-gate_evidence.json",
+      "synthesized_from_result": true,
+      "synthesized_from_provenance": true
+    }
+  ]
+}

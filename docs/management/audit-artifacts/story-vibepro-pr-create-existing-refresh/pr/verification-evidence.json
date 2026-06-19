@@ -1,0 +1,215 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-create-existing-refresh",
+  "updated_at": "2026-06-19T14:30:57.295Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
+      "summary": "Current executable evidence covers PR lifecycle flow replay, artifact replay, duplicate existing PR refresh, and remote head mismatch failure modes.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/gate-dag.json",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-body.md",
+          ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json"
+        ],
+        "scenarios": [
+          "flow_replay: vibepro pr create push/create/fallback/list/edit lifecycle is replayed through the CLI integration fixture.",
+          "artifact_replay: pr-create.json current_head_sha, artifact_freshness, results, commands, and existing_pr metadata are asserted.",
+          "evidence_lifecycle_regression: stale or mismatched remote head does not produce a successful current artifact.",
+          "workflow_state_regression: normal initial gh pr create path and duplicate existing PR refresh path both remain covered.",
+          "scenario_clause_e2e: PCR-VERIFY-001 PCR-VERIFY-002 PCR-VERIFY-003 are represented by executable assertions."
+        ],
+        "values": {
+          "flow_replay": "pass",
+          "artifact_replay": "pass",
+          "evidence_lifecycle_regression": "pass",
+          "workflow_state_regression": "pass",
+          "scenario_clause_e2e": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T14:30:57.295Z",
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T14:30:57.292Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "npm test",
+      "summary": "Full node test suite passed at commit 84e054d: 625 tests passed, 0 failed.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "test",
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "Full regression suite covers PR create, PR lifecycle artifact freshness, execute merge, review lifecycle, and self-dogfood checks."
+        ],
+        "values": {
+          "tests": "625",
+          "passed": "625",
+          "failed": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T14:29:16.491Z",
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T14:29:16.489Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+      "summary": "CLI integration test passed at commit 84e054d for duplicate existing PR refresh and remote head mismatch blocking.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/vibepro-pr-create-existing-refresh.md"
+        ],
+        "scenarios": [
+          "PCR-VERIFY-001: Existing PR refresh writes current pr-create artifact.",
+          "PCR-VERIFY-002: Existing PR remote head mismatch fails before PR body edit.",
+          "PCR-VERIFY-003: Initial gh pr create compatibility remains covered."
+        ],
+        "values": {
+          "existing_pr_refresh": "pass",
+          "head_mismatch_block": "pass",
+          "initial_create_compatibility": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T14:29:09.733Z",
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T14:29:09.732Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "Typecheck passed at commit 84e054d for PR create existing PR refresh changes.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "bin/vibepro.js"
+        ],
+        "scenarios": [
+          "PCR-VERIFY-003: Existing initial PR creation path remains syntactically valid."
+        ],
+        "values": {
+          "typecheck": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-19T14:29:02.165Z",
+      "git_context": {
+        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_branch": "codex/vibepro-refresh-existing-pr-create",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-19T14:29:02.164Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    }
+  ]
+}
