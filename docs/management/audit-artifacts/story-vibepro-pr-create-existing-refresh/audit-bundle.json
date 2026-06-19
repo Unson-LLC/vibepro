@@ -1,8 +1,8 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-create-existing-refresh",
-  "source": "pr_prepare",
-  "promoted_at": "2026-06-19T14:34:29.035Z",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-19T14:39:45.617Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -15,11 +15,12 @@
       "temporary execution state"
     ]
   },
-  "pr": {
-    "status": "prepared_for_pr_create",
-    "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
-    "branch": "codex/vibepro-refresh-existing-pr-create",
-    "base": "main"
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/201",
+    "merge_commit_sha": "0f8d956cd489024eec79cb6309cbffa3f6097dd9",
+    "merged_at": "2026-06-19T14:39:42Z",
+    "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19"
   },
   "artifacts": [
     {
@@ -28,9 +29,19 @@
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json"
     },
     {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-create.json"
+    },
+    {
       "kind": "gate_dag",
       "source": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/gate-dag.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-merge.json"
     },
     {
       "kind": "traceability",
@@ -41,11 +52,6 @@
       "kind": "verification_evidence",
       "source": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json"
-    },
-    {
-      "kind": "decision_records",
-      "source": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json"
     },
     {
       "kind": "review_lifecycle",

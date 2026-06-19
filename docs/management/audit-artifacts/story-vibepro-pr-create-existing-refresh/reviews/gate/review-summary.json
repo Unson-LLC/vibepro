@@ -9,9 +9,33 @@
       "status": "pass",
       "effective_status": "pass",
       "stale": false,
-      "stale_reason": "review is bound to the current git state",
-      "binding_status": "current",
-      "merge_delta_reuse": null,
+      "stale_reason": "review was recorded for 84e054d32851 and reused for e2b2eb6f138e because merge delta changed 9 file(s) outside inspected review inputs",
+      "binding_status": "reused_merge_delta",
+      "merge_delta_reuse": {
+        "reusable": true,
+        "reason": "review was recorded for 84e054d32851 and reused for e2b2eb6f138e because merge delta changed 9 file(s) outside inspected review inputs",
+        "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+        "inspected_files": [
+          "docs/architecture/vibepro-pr-create-existing-refresh.md",
+          "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md",
+          "docs/specs/vibepro-pr-create-existing-refresh.md",
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "merge_delta_changed_files": [
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+        ],
+        "impacted_files": []
+      },
       "provenance_status": "verified_agent",
       "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
       "agent_provenance": {
@@ -167,9 +191,9 @@
     ]
   },
   "next_actions": [],
-  "updated_at": "2026-06-19T14:33:30.703Z",
+  "updated_at": "2026-06-19T14:36:28.801Z",
   "current_git_context": {
-    "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+    "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
     "current_branch": "codex/vibepro-refresh-existing-pr-create",
     "dirty": false,
     "raw_dirty": false,
@@ -181,13 +205,13 @@
         ".worktrees/vibepro/"
       ]
     },
-    "recorded_at": "2026-06-19T14:33:30.694Z"
+    "recorded_at": "2026-06-19T14:36:28.749Z"
   },
   "parallel_dispatch": {
     "mode": "policy_aware_parallel_reviews",
     "prepared": true,
     "artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/parallel-dispatch.md",
-    "artifact_updated_at": "2026-06-19T14:29:54.977Z",
+    "artifact_updated_at": "2026-06-19T14:36:28.752Z",
     "prepare_command": "vibepro review prepare . --id story-vibepro-pr-create-existing-refresh --stage gate --role gate_evidence"
   }
 }

@@ -11,7 +11,7 @@
     "started_at": null,
     "due_at": null
   },
-  "created_at": "2026-06-19T14:33:40.936Z",
+  "created_at": "2026-06-19T14:37:32.683Z",
   "output": {
     "language": "ja"
   },
@@ -45,6 +45,12 @@
     "schema_version": "0.1.0",
     "authorization_level": "high",
     "signals": [
+      {
+        "kind": "decision_record_accepted",
+        "decision_id": "decision-1781879819378-77865af5",
+        "source": "gate:split_resolution",
+        "addresses_risk_surface": null
+      },
       {
         "kind": "decision_record_accepted",
         "decision_id": "decision-1781879466243-167ab497",
@@ -86,21 +92,21 @@
   "git": {
     "current_branch": "codex/vibepro-refresh-existing-pr-create",
     "base_ref": "main",
-    "head_ref": "codex/vibepro-refresh-existing-pr-create",
-    "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+    "head_ref": "HEAD",
+    "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
     "base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
     "merge_base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
     "pr_freshness": {
       "schema_version": "0.1.0",
       "status": "passed",
       "base_ref": "main",
-      "head_ref": "codex/vibepro-refresh-existing-pr-create",
+      "head_ref": "HEAD",
       "base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
-      "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+      "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
       "merge_base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
       "head_contains_base": true,
       "pr_prepare_regenerated_at_runtime": true,
-      "reason": "codex/vibepro-refresh-existing-pr-create contains current main; PR prepare artifacts are based on the latest resolved base ref",
+      "reason": "HEAD contains current main; PR prepare artifacts are based on the latest resolved base ref",
       "required_actions": []
     },
     "origin_url": "https://github.com/Unson-LLC/vibepro.git",
@@ -118,6 +124,42 @@
       {
         "status": "A",
         "path": "docs/architecture/vibepro-pr-create-existing-refresh.md"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
       },
       {
         "status": "A",
@@ -143,6 +185,42 @@
       },
       {
         "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json"
+      },
+      {
+        "status": "A",
+        "path": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+      },
+      {
+        "status": "A",
         "path": "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md"
       },
       {
@@ -161,6 +239,42 @@
     "diff_line_stats": {
       "docs/architecture/vibepro-pr-create-existing-refresh.md": {
         "additions": 30,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json": {
+        "additions": 67,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json": {
+        "additions": 75,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json": {
+        "additions": 1896,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json": {
+        "additions": 5140,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json": {
+        "additions": 26,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json": {
+        "additions": 215,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json": {
+        "additions": 35,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json": {
+        "additions": 73,
+        "deletions": 0
+      },
+      "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json": {
+        "additions": 193,
         "deletions": 0
       },
       "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md": {
@@ -183,12 +297,12 @@
     "dirty_files": [],
     "raw_dirty_files": [],
     "vibepro_internal_dirty_files": [],
-    "includes_dirty_in_changed_files": false,
+    "includes_dirty_in_changed_files": true,
     "commit_message_health": {
       "schema_version": "0.1.0",
-      "range": "main..codex/vibepro-refresh-existing-pr-create",
+      "range": "main..HEAD",
       "scope": "base_head",
-      "commit_count": 1,
+      "commit_count": 2,
       "empty_message_count": 0,
       "empty_message_commits": [],
       "status": "pass",
@@ -198,6 +312,12 @@
       "note": "PR readiness uses the explicit base..head range; internal refs such as refs/jj/keep/* are not treated as PR commits."
     },
     "commits": [
+      {
+        "sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+        "short_sha": "e2b2eb6f138e",
+        "message": "chore: persist pr create refresh audit evidence",
+        "message_empty": false
+      },
       {
         "sha": "84e054d32851d379664d73d087d73109079b1be3",
         "short_sha": "84e054d32851",
@@ -254,25 +374,38 @@
       "files": []
     },
     "other": {
-      "count": 0,
-      "files": []
+      "count": 9,
+      "files": [
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json",
+        "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+      ]
     }
   },
   "scope": {
-    "status": "reviewable",
-    "recommended_strategy": "current_branch_pr",
-    "reasons": [],
+    "status": "needs_clean_branch",
+    "recommended_strategy": "clean_branch_or_split_pr",
+    "reasons": [
+      "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+    ],
     "reviewable_file_limit": 30,
-    "changed_file_count": 5
+    "changed_file_count": 14
   },
   "split_plan": {
     "schema_version": "0.1.0",
     "model": "story-pr-split-plan-v1",
     "story_id": "story-vibepro-pr-create-existing-refresh",
-    "status": "single_pr_ok",
-    "recommended_strategy": "keep_current_pr",
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare",
     "rationale": [
-      "2 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+      "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある",
+      "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
       "Graphifyで 2 changed files が一致し、25 related files を影響調査候補にした"
     ],
     "graph_context": {
@@ -362,7 +495,7 @@
         "order": 10,
         "title": "Story / Spec / Architecture / Policy SSOT",
         "category": "requirements",
-        "recommendation": "same_pr_allowed",
+        "recommendation": "separate_pr",
         "files": [
           "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md",
           "docs/specs/vibepro-pr-create-existing-refresh.md",
@@ -415,17 +548,45 @@
           "src/html-report.js"
         ],
         "suggested_branch": "feat/vibepro-pr-create-existing-refresh-runtime-behavior"
+      },
+      {
+        "id": "misc-follow-up",
+        "order": 90,
+        "title": "Miscellaneous follow-up",
+        "category": "other",
+        "recommendation": "separate_pr",
+        "files": [
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json",
+          "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+        ],
+        "required_gates": [
+          "Manual Review"
+        ],
+        "review_focus": [
+          "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+        ],
+        "file_count": 9,
+        "graph_investigation_files": [],
+        "suggested_branch": "feat/vibepro-pr-create-existing-refresh-misc-follow-up"
       }
     ],
     "merge_order": [
       "requirements-ssot",
-      "runtime-behavior"
+      "runtime-behavior",
+      "misc-follow-up"
     ],
     "stacked_gate_plan": {
       "schema_version": "0.1.0",
       "model": "stacked-pr-gate-plan-v1",
       "summary": {
-        "lane_count": 2,
+        "lane_count": 3,
         "cumulative_gate_count": 0,
         "requires_cumulative_e2e": false
       },
@@ -445,24 +606,48 @@
           "gate_mode": "isolated_pr",
           "depends_on": [],
           "isolated_checks": [
-            "npm test",
+            "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
             "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
           ],
           "cumulative_checks": [],
           "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+        },
+        {
+          "lane_id": "misc-follow-up",
+          "gate_mode": "isolated_pr",
+          "depends_on": [],
+          "isolated_checks": [
+            "manual review"
+          ],
+          "cumulative_checks": [],
+          "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
         }
       ],
       "final_validation": {
         "required": false,
         "trigger": "各PRのisolated checksで十分",
         "commands": [
-          "npm test",
+          "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
           "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
         ]
       }
     },
     "next_actions": [
-      "現PRのまま進め、split-planをレビュー観点として使う"
+      {
+        "lane_id": "requirements-ssot",
+        "action": "Create feat/vibepro-pr-create-existing-refresh-requirements-ssot with 3 files",
+        "command": "git switch -c feat/vibepro-pr-create-existing-refresh-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md docs/specs/vibepro-pr-create-existing-refresh.md docs/architecture/vibepro-pr-create-existing-refresh.md"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "action": "Create feat/vibepro-pr-create-existing-refresh-runtime-behavior with 2 files",
+        "command": "git switch -c feat/vibepro-pr-create-existing-refresh-runtime-behavior <base> && git add src/pr-manager.js test/vibepro-cli.test.js"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "action": "Create feat/vibepro-pr-create-existing-refresh-misc-follow-up with 9 files",
+        "command": "git switch -c feat/vibepro-pr-create-existing-refresh-misc-follow-up <base> && git add docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+      }
     ]
   },
   "pr_context": {
@@ -908,10 +1093,12 @@
         "story",
         "spec",
         "verification",
-        "pr_body_contract"
+        "pr_body_contract",
+        "split_resolution"
       ],
       "signals": [
-        "file_group:source"
+        "file_group:source",
+        "scope:needs_clean_branch"
       ]
     },
     "engineering_judgment": {
@@ -970,42 +1157,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1013,12 +1188,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1093,42 +1264,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1136,12 +1295,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1216,42 +1371,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1259,12 +1402,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1339,42 +1478,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1382,12 +1509,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1423,8 +1546,8 @@
         {
           "axis": "execution_topology",
           "status": "active_passed",
-          "reason": "surface:workflow_or_agent",
-          "confidence": 0.84,
+          "reason": "surface:workflow_or_agent; text:execution_topology",
+          "confidence": 0.88,
           "decision_question": "process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。",
           "required_evidence": [
             "topology_diagram",
@@ -1439,7 +1562,8 @@
           ],
           "acceptable_followup": "Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.",
           "signals": [
-            "surface:workflow_or_agent"
+            "surface:workflow_or_agent",
+            "text:execution_topology"
           ],
           "matched_evidence": [
             {
@@ -1464,42 +1588,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1507,12 +1619,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1591,42 +1699,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1634,12 +1730,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1713,42 +1805,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1756,12 +1836,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1797,8 +1873,8 @@
         {
           "axis": "scope_reviewability",
           "status": "active_accepted_followup",
-          "reason": "graphify:related_files",
-          "confidence": 0.78,
+          "reason": "scope:needs_clean_branch; graphify:related_files",
+          "confidence": 0.82,
           "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
           "required_evidence": [
             "scope_reviewed",
@@ -1813,6 +1889,7 @@
           ],
           "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
           "signals": [
+            "scope:needs_clean_branch",
             "graphify:related_files"
           ],
           "matched_evidence": [
@@ -1838,42 +1915,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -1881,12 +1946,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -1926,7 +1987,7 @@
             }
           ],
           "missing_evidence": [
-            "split_plan"
+            "scope_reviewed"
           ],
           "ignored_accepted_decision": null
         },
@@ -1972,42 +2033,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -2015,12 +2064,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -2215,7 +2260,8 @@
       "アーキテクチャ判断を追加: docs/architecture/vibepro-pr-create-existing-refresh.md",
       "仕様文書を更新: docs/specs/vibepro-pr-create-existing-refresh.md",
       "実装を変更: src/pr-manager.js",
-      "テストを追加・更新: test/vibepro-cli.test.js"
+      "テストを追加・更新: test/vibepro-cli.test.js",
+      "その他の差分: docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json, docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json, docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json, docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json, ..."
     ],
     "verification_commands": [
       {
@@ -2301,7 +2347,7 @@
     "performance_evidence": {
       "schema_version": "0.1.0",
       "story_id": "story-vibepro-pr-create-existing-refresh",
-      "generated_at": "2026-06-19T14:33:40.464Z",
+      "generated_at": "2026-06-19T14:37:32.288Z",
       "metric_count": 0,
       "run_count": 0,
       "comparable_count": 0,
@@ -2356,7 +2402,7 @@
       "status": "pass",
       "required": true,
       "current_git_context": {
-        "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
         "current_branch": "codex/vibepro-refresh-existing-pr-create",
         "dirty": false,
         "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
@@ -2367,7 +2413,7 @@
             ".worktrees/vibepro/"
           ]
         },
-        "recorded_at": "2026-06-19T14:33:40.921Z"
+        "recorded_at": "2026-06-19T14:37:32.616Z"
       },
       "required_reviews": [
         {
@@ -2392,9 +2438,33 @@
               "status": "pass",
               "effective_status": "pass",
               "stale": false,
-              "stale_reason": "review is bound to the current git state",
-              "binding_status": "current",
-              "merge_delta_reuse": null,
+              "stale_reason": "review was recorded for 84e054d32851 and reused for e2b2eb6f138e because merge delta changed 9 file(s) outside inspected review inputs",
+              "binding_status": "reused_merge_delta",
+              "merge_delta_reuse": {
+                "reusable": true,
+                "reason": "review was recorded for 84e054d32851 and reused for e2b2eb6f138e because merge delta changed 9 file(s) outside inspected review inputs",
+                "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+                "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+                "inspected_files": [
+                  "docs/architecture/vibepro-pr-create-existing-refresh.md",
+                  "docs/management/stories/active/story-vibepro-pr-create-existing-refresh.md",
+                  "docs/specs/vibepro-pr-create-existing-refresh.md",
+                  "src/pr-manager.js",
+                  "test/vibepro-cli.test.js"
+                ],
+                "merge_delta_changed_files": [
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/decision-records.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/gate-dag.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-prepare.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/traceability.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/verification-evidence.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/lifecycle.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-result-gate_evidence.json",
+                  "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/reviews/gate/review-summary.json"
+                ],
+                "impacted_files": []
+              },
               "provenance_status": "verified_agent",
               "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
               "agent_provenance": {
@@ -2550,9 +2620,9 @@
             ]
           },
           "next_actions": [],
-          "updated_at": "2026-06-19T14:33:40.923Z",
+          "updated_at": "2026-06-19T14:37:32.670Z",
           "current_git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
@@ -2563,13 +2633,13 @@
                 ".worktrees/vibepro/"
               ]
             },
-            "recorded_at": "2026-06-19T14:33:40.921Z"
+            "recorded_at": "2026-06-19T14:37:32.616Z"
           },
           "parallel_dispatch": {
             "mode": "policy_aware_parallel_reviews",
             "prepared": true,
             "artifact": ".vibepro/reviews/story-vibepro-pr-create-existing-refresh/gate/parallel-dispatch.md",
-            "artifact_updated_at": "2026-06-19T14:29:54.977Z",
+            "artifact_updated_at": "2026-06-19T14:36:28.752Z",
             "prepare_command": "vibepro review prepare . --id story-vibepro-pr-create-existing-refresh --stage gate --role gate_evidence"
           }
         }
@@ -2625,8 +2695,8 @@
       "repo_root": "/Users/ksato/workspace/code/vibepro",
       "actual_root": "/Users/ksato/workspace/code/vibepro",
       "expected_root": null,
-      "expected_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
-      "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+      "expected_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+      "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
       "managed_worktree": null
     },
     "managed_worktree_gate": {
@@ -2643,14 +2713,69 @@
     "verification_evidence": {
       "schema_version": "0.1.0",
       "story_id": "story-vibepro-pr-create-existing-refresh",
-      "updated_at": "2026-06-19T14:30:57.295Z",
+      "updated_at": "2026-06-19T14:36:17.907Z",
       "warnings": [],
       "commands": [
         {
+          "kind": "unit",
+          "status": "pass",
+          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+          "summary": "Current-head unit/regression fixture passed at commit e2b2eb6 after canonical audit evidence persistence.",
+          "artifact": null,
+          "artifact_check": {
+            "status": "missing",
+            "format": null,
+            "artifact_outcome": null,
+            "reason": "no machine-readable artifact was provided for a passing claim"
+          },
+          "observation": {
+            "targets": [
+              "test/vibepro-cli.test.js",
+              "src/pr-manager.js",
+              "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
+            ],
+            "scenarios": [
+              "PR create duplicate fallback regression fixture remains passing after artifact commit."
+            ],
+            "values": {
+              "tests": "1",
+              "passed": "1",
+              "failed": "0"
+            }
+          },
+          "observation_check": {
+            "status": "recorded",
+            "reason": "observation states the inspected targets and what was observed"
+          },
+          "executed_at": "2026-06-19T14:36:17.907Z",
+          "git_context": {
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+            "current_branch": "codex/vibepro-refresh-existing-pr-create",
+            "dirty": false,
+            "raw_dirty": false,
+            "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            },
+            "recorded_at": "2026-06-19T14:36:17.906Z"
+          },
+          "managed_worktree_context": null,
+          "warnings": [],
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          },
+          "stale": false
+        },
+        {
           "kind": "e2e",
           "status": "pass",
-          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
-          "summary": "Current executable evidence covers PR lifecycle flow replay, artifact replay, duplicate existing PR refresh, and remote head mismatch failure modes.",
+          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+          "summary": "Current-head PR lifecycle flow replay evidence passed at commit e2b2eb6 after audit artifact persistence.",
           "artifact": null,
           "artifact_check": {
             "status": "missing",
@@ -2664,7 +2789,8 @@
               "test/vibepro-cli.test.js",
               ".vibepro/pr/story-vibepro-pr-create-existing-refresh/gate-dag.json",
               ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-body.md",
-              ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json"
+              ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+              "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
             ],
             "scenarios": [
               "flow_replay: vibepro pr create push/create/fallback/list/edit lifecycle is replayed through the CLI integration fixture.",
@@ -2685,9 +2811,9 @@
             "status": "recorded",
             "reason": "observation states the inspected targets and what was observed"
           },
-          "executed_at": "2026-06-19T14:30:57.295Z",
+          "executed_at": "2026-06-19T14:35:50.907Z",
           "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "raw_dirty": false,
@@ -2699,62 +2825,7 @@
                 ".worktrees/vibepro/"
               ]
             },
-            "recorded_at": "2026-06-19T14:30:57.292Z"
-          },
-          "managed_worktree_context": null,
-          "warnings": [],
-          "binding": {
-            "status": "current",
-            "reason": "verification evidence is bound to the current git state"
-          },
-          "stale": false
-        },
-        {
-          "kind": "unit",
-          "status": "pass",
-          "command": "npm test",
-          "summary": "Full node test suite passed at commit 84e054d: 625 tests passed, 0 failed.",
-          "artifact": null,
-          "artifact_check": {
-            "status": "missing",
-            "format": null,
-            "artifact_outcome": null,
-            "reason": "no machine-readable artifact was provided for a passing claim"
-          },
-          "observation": {
-            "targets": [
-              "test",
-              "src/pr-manager.js",
-              "test/vibepro-cli.test.js"
-            ],
-            "scenarios": [
-              "Full regression suite covers PR create, PR lifecycle artifact freshness, execute merge, review lifecycle, and self-dogfood checks."
-            ],
-            "values": {
-              "tests": "625",
-              "passed": "625",
-              "failed": "0"
-            }
-          },
-          "observation_check": {
-            "status": "recorded",
-            "reason": "observation states the inspected targets and what was observed"
-          },
-          "executed_at": "2026-06-19T14:29:16.491Z",
-          "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
-            "current_branch": "codex/vibepro-refresh-existing-pr-create",
-            "dirty": false,
-            "raw_dirty": false,
-            "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
-            "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
-            "fingerprint_scope": {
-              "user_excludes": [
-                ".vibepro/",
-                ".worktrees/vibepro/"
-              ]
-            },
-            "recorded_at": "2026-06-19T14:29:16.489Z"
+            "recorded_at": "2026-06-19T14:35:50.901Z"
           },
           "managed_worktree_context": null,
           "warnings": [],
@@ -2768,7 +2839,7 @@
           "kind": "integration",
           "status": "pass",
           "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
-          "summary": "CLI integration test passed at commit 84e054d for duplicate existing PR refresh and remote head mismatch blocking.",
+          "summary": "CLI integration test passed at commit e2b2eb6 after canonical audit evidence persistence.",
           "artifact": null,
           "artifact_check": {
             "status": "missing",
@@ -2780,12 +2851,13 @@
             "targets": [
               "src/pr-manager.js",
               "test/vibepro-cli.test.js",
-              "docs/specs/vibepro-pr-create-existing-refresh.md"
+              "docs/specs/vibepro-pr-create-existing-refresh.md",
+              "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
             ],
             "scenarios": [
               "PCR-VERIFY-001: Existing PR refresh writes current pr-create artifact.",
               "PCR-VERIFY-002: Existing PR remote head mismatch fails before PR body edit.",
-              "PCR-VERIFY-003: Initial gh pr create compatibility remains covered."
+              "PCR-VERIFY-003: Initial gh pr create compatibility remains covered after audit artifact persistence."
             ],
             "values": {
               "existing_pr_refresh": "pass",
@@ -2797,9 +2869,9 @@
             "status": "recorded",
             "reason": "observation states the inspected targets and what was observed"
           },
-          "executed_at": "2026-06-19T14:29:09.733Z",
+          "executed_at": "2026-06-19T14:35:37.810Z",
           "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "raw_dirty": false,
@@ -2811,7 +2883,7 @@
                 ".worktrees/vibepro/"
               ]
             },
-            "recorded_at": "2026-06-19T14:29:09.732Z"
+            "recorded_at": "2026-06-19T14:35:37.809Z"
           },
           "managed_worktree_context": null,
           "warnings": [],
@@ -2825,7 +2897,7 @@
           "kind": "typecheck",
           "status": "pass",
           "command": "npm run typecheck",
-          "summary": "Typecheck passed at commit 84e054d for PR create existing PR refresh changes.",
+          "summary": "Typecheck passed at commit e2b2eb6 after canonical audit evidence persistence.",
           "artifact": null,
           "artifact_check": {
             "status": "missing",
@@ -2836,10 +2908,11 @@
           "observation": {
             "targets": [
               "src/pr-manager.js",
-              "bin/vibepro.js"
+              "bin/vibepro.js",
+              "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json"
             ],
             "scenarios": [
-              "PCR-VERIFY-003: Existing initial PR creation path remains syntactically valid."
+              "PCR-VERIFY-003: Existing initial PR creation path remains syntactically valid after audit artifact persistence."
             ],
             "values": {
               "typecheck": "pass"
@@ -2849,9 +2922,9 @@
             "status": "recorded",
             "reason": "observation states the inspected targets and what was observed"
           },
-          "executed_at": "2026-06-19T14:29:02.165Z",
+          "executed_at": "2026-06-19T14:35:28.557Z",
           "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "raw_dirty": false,
@@ -2863,7 +2936,7 @@
                 ".worktrees/vibepro/"
               ]
             },
-            "recorded_at": "2026-06-19T14:29:02.164Z"
+            "recorded_at": "2026-06-19T14:35:28.555Z"
           },
           "managed_worktree_context": null,
           "warnings": [],
@@ -2876,7 +2949,7 @@
       ],
       "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
       "binding": {
-        "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
         "current_dirty": false,
         "current_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
         "current_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
@@ -2887,9 +2960,36 @@
       "schema_version": "0.1.0",
       "model": "vibepro-decision-records-v1",
       "story_id": "story-vibepro-pr-create-existing-refresh",
-      "updated_at": "2026-06-19T14:31:06.243Z",
+      "updated_at": "2026-06-19T14:36:59.378Z",
       "warnings": [],
       "decisions": [
+        {
+          "schema_version": "0.1.0",
+          "decision_id": "decision-1781879819378-77865af5",
+          "story_id": "story-vibepro-pr-create-existing-refresh",
+          "type": "waiver",
+          "status": "accepted",
+          "source": "gate:split_resolution",
+          "source_status": "accepted",
+          "summary": "Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+          "reason": "The first commit implements and tests existing PR create refresh. The second commit persists the current VibePro evidence bundle under docs/management/audit-artifacts so main-only audit can reconstruct Story/Spec/Architecture, verification, review, and pr-prepare state. Splitting them would either ship behavior without the audit artifact that proves VibePro value, or ship an artifact-only PR that is not independently meaningful. Review owner remains gate_evidence; review status reused the prior subagent review for e2b2eb6 because the merge delta only added files outside inspected implementation inputs.",
+          "reviewer": "codex",
+          "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
+          "secret_exposure": null,
+          "redaction": {
+            "applied": false,
+            "hit_count": 0
+          },
+          "warnings": [],
+          "git_context": {
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+            "current_branch": "codex/vibepro-refresh-existing-pr-create",
+            "dirty": false,
+            "status_fingerprint": "",
+            "recorded_at": "2026-06-19T14:36:59.377Z"
+          },
+          "recorded_at": "2026-06-19T14:36:59.378Z"
+        },
         {
           "schema_version": "0.1.0",
           "decision_id": "decision-1781879466243-167ab497",
@@ -2919,25 +3019,25 @@
         }
       ],
       "summary": {
-        "total": 1,
+        "total": 2,
         "open": 0,
         "by_type": {
-          "waiver": 1
+          "waiver": 2
         },
         "by_status": {
-          "accepted": 1
+          "accepted": 2
         },
         "warnings": [],
         "latest": {
           "schema_version": "0.1.0",
-          "decision_id": "decision-1781879466243-167ab497",
+          "decision_id": "decision-1781879819378-77865af5",
           "story_id": "story-vibepro-pr-create-existing-refresh",
           "type": "waiver",
           "status": "accepted",
-          "source": "gate:judgment_axis_scope_reviewability",
+          "source": "gate:split_resolution",
           "source_status": "accepted",
-          "summary": "Single-PR scope accepted for existing PR create artifact refresh.",
-          "reason": "The diff is one cohesive lifecycle repair: Story/Spec/Architecture define the same PR create existing-refresh contract, src/pr-manager.js implements the fallback, and test/vibepro-cli.test.js covers both refresh and head-mismatch failure. Split plan from pr prepare is single_pr_ok, and the review owner is gate_evidence for artifact freshness, command reliability, and PR lifecycle handoff. Splitting docs, implementation, and tests would remove the traceability needed to prove the artifact lifecycle behavior.",
+          "summary": "Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+          "reason": "The first commit implements and tests existing PR create refresh. The second commit persists the current VibePro evidence bundle under docs/management/audit-artifacts so main-only audit can reconstruct Story/Spec/Architecture, verification, review, and pr-prepare state. Splitting them would either ship behavior without the audit artifact that proves VibePro value, or ship an artifact-only PR that is not independently meaningful. Review owner remains gate_evidence; review status reused the prior subagent review for e2b2eb6 because the merge delta only added files outside inspected implementation inputs.",
           "reviewer": "codex",
           "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
           "secret_exposure": null,
@@ -2947,13 +3047,13 @@
           },
           "warnings": [],
           "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "status_fingerprint": "",
-            "recorded_at": "2026-06-19T14:31:06.242Z"
+            "recorded_at": "2026-06-19T14:36:59.377Z"
           },
-          "recorded_at": "2026-06-19T14:31:06.243Z"
+          "recorded_at": "2026-06-19T14:36:59.378Z"
         }
       },
       "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json"
@@ -2966,7 +3066,7 @@
       "story_id": "story-vibepro-pr-create-existing-refresh",
       "summary": {
         "acceptance_criteria_count": 5,
-        "required_gate_count": 37,
+        "required_gate_count": 38,
         "needs_evidence_count": 0,
         "engineering_judgment_route": "agent_workflow",
         "engineering_judgment_dag": "agent_workflow_dag",
@@ -3088,7 +3188,7 @@
             {
               "id": "current_reality",
               "status": "passed",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "surface": "workflow",
               "optional_evidence_kind": [
                 "graph_impact_scope"
@@ -3100,16 +3200,20 @@
               ],
               "matched_evidence": [
                 {
+                  "kind": "artifact_replay",
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+                },
+                {
                   "kind": "flow_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "scenario_clause_e2e",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
@@ -3138,7 +3242,7 @@
                 }
               ],
               "missing_evidence": [],
-              "reason": "workflow current reality is backed by flow_replay"
+              "reason": "workflow current reality is backed by artifact_replay"
             },
             {
               "id": "invariants",
@@ -3207,11 +3311,11 @@
                 },
                 {
                   "kind": "decision_record",
-                  "ref": "decision-1781879466243-167ab497"
+                  "ref": "decision-1781879819378-77865af5"
                 },
                 {
                   "kind": "current_verification",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "graph_impact_scope",
@@ -3241,7 +3345,7 @@
             {
               "id": "failure_modes",
               "status": "passed",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "surface": "workflow",
               "required_evidence_kind": [
                 "flow_replay",
@@ -3250,16 +3354,20 @@
               ],
               "matched_evidence": [
                 {
+                  "kind": "artifact_replay",
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+                },
+                {
                   "kind": "flow_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "scenario_clause_e2e",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
@@ -3272,7 +3380,7 @@
             {
               "id": "done_evidence",
               "status": "passed",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "surface": "workflow",
               "required_evidence_kind": [
                 "flow_replay",
@@ -3281,16 +3389,20 @@
               ],
               "matched_evidence": [
                 {
+                  "kind": "artifact_replay",
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+                },
+                {
                   "kind": "flow_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "scenario_clause_e2e",
-                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+                  "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
                 },
                 {
                   "kind": "artifact_replay",
@@ -3353,42 +3465,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -3396,12 +3496,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -3432,7 +3528,7 @@
             }
           ],
           "missing_evidence": [],
-          "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, artifact_replay, scope_reviewed, graph_impact_scope."
+          "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, artifact_replay, e2e_runtime_path, flow_replay, scenario_clause_e2e, integration_runtime_path, split_plan, graph_impact_scope."
         },
         {
           "id": "gate:judgment_axis_execution_topology",
@@ -3442,7 +3538,7 @@
           "axis_status": "active_passed",
           "required": true,
           "axis": "execution_topology",
-          "confidence": 0.84,
+          "confidence": 0.88,
           "decision_question": "process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。",
           "required_evidence": [
             "topology_diagram",
@@ -3457,7 +3553,8 @@
           ],
           "acceptable_followup": "Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.",
           "signals": [
-            "surface:workflow_or_agent"
+            "surface:workflow_or_agent",
+            "text:execution_topology"
           ],
           "matched_evidence": [
             {
@@ -3482,42 +3579,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -3525,12 +3610,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -3565,7 +3646,7 @@
             }
           ],
           "missing_evidence": [],
-          "reason": "execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, artifact_replay, scope_reviewed, graph_impact_scope, agent_review."
+          "reason": "execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, artifact_replay, e2e_runtime_path, flow_replay, scenario_clause_e2e, integration_runtime_path, split_plan, graph_impact_scope, agent_review."
         },
         {
           "id": "gate:judgment_axis_scope_reviewability",
@@ -3575,7 +3656,7 @@
           "axis_status": "active_accepted_followup",
           "required": true,
           "axis": "scope_reviewability",
-          "confidence": 0.78,
+          "confidence": 0.82,
           "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
           "required_evidence": [
             "scope_reviewed",
@@ -3590,6 +3671,7 @@
           ],
           "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
           "signals": [
+            "scope:needs_clean_branch",
             "graphify:related_files"
           ],
           "matched_evidence": [
@@ -3615,42 +3697,30 @@
             },
             {
               "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "runtime_path_evidence",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "e2e_runtime_path",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "flow_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "kind": "scenario_clause_e2e",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
-            },
-            {
-              "kind": "focused_test",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "current_verification",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "runtime_path_evidence",
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
@@ -3658,12 +3728,8 @@
               "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
-              "kind": "artifact_replay",
-              "ref": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
-            },
-            {
-              "kind": "scope_reviewed",
-              "ref": "scope.status=reviewable"
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr"
             },
             {
               "kind": "graph_impact_scope",
@@ -3703,9 +3769,9 @@
             }
           ],
           "missing_evidence": [
-            "split_plan"
+            "scope_reviewed"
           ],
-          "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: split_plan. Current PR is coherent; separate cleanup is tracked without hiding required review ownership."
+          "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: scope_reviewed. Current PR is coherent; separate cleanup is tracked without hiding required review ownership."
         },
         {
           "id": "gate:pr_scope_judgment",
@@ -3713,21 +3779,29 @@
           "label": "PR Scope Judgment Gate",
           "status": "passed",
           "required": true,
-          "classification": "focused",
-          "scope_status": "reviewable",
-          "recommended_strategy": "current_branch_pr",
-          "changed_file_count": 5,
+          "classification": "needs_split",
+          "scope_status": "needs_clean_branch",
+          "recommended_strategy": "clean_branch_or_split_pr",
+          "changed_file_count": 14,
           "reviewable_file_limit": 30,
           "story_doc_count": 1,
           "source_file_count": 1,
           "test_file_count": 1,
           "doc_file_count": 2,
           "risk_surface_count": 0,
-          "accepted_decision": null,
-          "reasons": [],
-          "split_suggestions": [],
+          "accepted_decision": {
+            "source": "gate:split_resolution",
+            "summary": "Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+            "reviewer": "codex"
+          },
+          "reasons": [
+            "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+          ],
+          "split_suggestions": [
+            "clean_branch_or_split_pr"
+          ],
           "required_actions": [],
-          "reason": "PR scope is focused; 5 changed file(s) are reviewable as one Story PR"
+          "reason": "PR scope split risk accepted by decision record: Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair."
         },
         {
           "id": "gate:bug_physics_triage",
@@ -3809,10 +3883,12 @@
             "story",
             "spec",
             "verification",
-            "pr_body_contract"
+            "pr_body_contract",
+            "split_resolution"
           ],
           "signals": [
-            "file_group:source"
+            "file_group:source",
+            "scope:needs_clean_branch"
           ],
           "reason": "PR route selected: runtime_change; body template: runtime_contract_review"
         },
@@ -3830,8 +3906,21 @@
             "gate_status",
             "verification_or_waiver"
           ],
-          "scope_status": "reviewable",
+          "scope_status": "needs_clean_branch",
           "reason": "PR body must use runtime_contract_review and expose the route-specific decision contract"
+        },
+        {
+          "id": "gate:split_resolution",
+          "type": "split_resolution_gate",
+          "label": "Split Resolution Gate",
+          "status": "passed",
+          "required": true,
+          "route_type": "runtime_change",
+          "reasons": [
+            "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+          ],
+          "reason": "Split/clean-branch decision is explicitly recorded: Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+          "decision_id": "decision-1781879819378-77865af5"
         },
         {
           "id": "gate:managed_worktree",
@@ -3866,14 +3955,14 @@
           "status": "passed",
           "required": true,
           "base_ref": "main",
-          "head_ref": "codex/vibepro-refresh-existing-pr-create",
+          "head_ref": "HEAD",
           "base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
-          "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+          "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
           "merge_base_sha": "9e09ccb36c34a41559b2046714eca967d18572b5",
           "head_contains_base": true,
           "pr_prepare_regenerated_at_runtime": true,
           "required_actions": [],
-          "reason": "codex/vibepro-refresh-existing-pr-create contains current main; PR prepare artifacts are based on the latest resolved base ref"
+          "reason": "HEAD contains current main; PR prepare artifacts are based on the latest resolved base ref"
         },
         {
           "id": "architecture",
@@ -4010,7 +4099,7 @@
               "reason": "Gate/report artifact code changed: src/pr-manager.js",
               "required": true,
               "status": "covered",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "surface": "review_surface",
@@ -4018,7 +4107,7 @@
               "reason": "Story mentions report/review/gate artifact output",
               "required": true,
               "status": "covered",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             }
           ],
           "missing_surfaces": [],
@@ -4069,7 +4158,7 @@
                 "artifact replay"
               ],
               "status": "covered",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             },
             {
               "id": "workflow_state_regression",
@@ -4083,7 +4172,7 @@
                 "stale"
               ],
               "status": "covered",
-              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test"
+              "evidence": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js"
             }
           ],
           "missing_modes": [],
@@ -4096,28 +4185,28 @@
           "label": "Decision Record Gate",
           "status": "passed",
           "required": true,
-          "reason": "Decision records are captured; total=1, waivers=1, noise=0, secret_exposure=0",
+          "reason": "Decision records are captured; total=2, waivers=2, noise=0, secret_exposure=0",
           "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/decision-records.json",
           "summary": {
-            "total": 1,
+            "total": 2,
             "open": 0,
             "by_type": {
-              "waiver": 1
+              "waiver": 2
             },
             "by_status": {
-              "accepted": 1
+              "accepted": 2
             },
             "warnings": [],
             "latest": {
               "schema_version": "0.1.0",
-              "decision_id": "decision-1781879466243-167ab497",
+              "decision_id": "decision-1781879819378-77865af5",
               "story_id": "story-vibepro-pr-create-existing-refresh",
               "type": "waiver",
               "status": "accepted",
-              "source": "gate:judgment_axis_scope_reviewability",
+              "source": "gate:split_resolution",
               "source_status": "accepted",
-              "summary": "Single-PR scope accepted for existing PR create artifact refresh.",
-              "reason": "The diff is one cohesive lifecycle repair: Story/Spec/Architecture define the same PR create existing-refresh contract, src/pr-manager.js implements the fallback, and test/vibepro-cli.test.js covers both refresh and head-mismatch failure. Split plan from pr prepare is single_pr_ok, and the review owner is gate_evidence for artifact freshness, command reliability, and PR lifecycle handoff. Splitting docs, implementation, and tests would remove the traceability needed to prove the artifact lifecycle behavior.",
+              "summary": "Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+              "reason": "The first commit implements and tests existing PR create refresh. The second commit persists the current VibePro evidence bundle under docs/management/audit-artifacts so main-only audit can reconstruct Story/Spec/Architecture, verification, review, and pr-prepare state. Splitting them would either ship behavior without the audit artifact that proves VibePro value, or ship an artifact-only PR that is not independently meaningful. Review owner remains gate_evidence; review status reused the prior subagent review for e2b2eb6 because the merge delta only added files outside inspected implementation inputs.",
               "reviewer": "codex",
               "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
               "secret_exposure": null,
@@ -4127,13 +4216,13 @@
               },
               "warnings": [],
               "git_context": {
-                "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+                "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
                 "current_branch": "codex/vibepro-refresh-existing-pr-create",
                 "dirty": false,
                 "status_fingerprint": "",
-                "recorded_at": "2026-06-19T14:31:06.242Z"
+                "recorded_at": "2026-06-19T14:36:59.377Z"
               },
-              "recorded_at": "2026-06-19T14:31:06.243Z"
+              "recorded_at": "2026-06-19T14:36:59.378Z"
             }
           },
           "open_decisions": [],
@@ -4145,14 +4234,14 @@
           "label": "Unit Gate",
           "status": "passed",
           "required": true,
-          "command": "npm test",
-          "reason": "Full node test suite passed at commit 84e054d: 625 tests passed, 0 failed.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+          "reason": "Current-head unit/regression fixture passed at commit e2b2eb6 after canonical audit evidence persistence.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
           "evidence": {
             "kind": "unit",
             "status": "pass",
-            "summary": "Full node test suite passed at commit 84e054d: 625 tests passed, 0 failed.",
+            "summary": "Current-head unit/regression fixture passed at commit e2b2eb6 after canonical audit evidence persistence.",
             "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-            "executed_at": "2026-06-19T14:29:16.491Z",
+            "executed_at": "2026-06-19T14:36:17.907Z",
             "binding": {
               "status": "current",
               "reason": "verification evidence is bound to the current git state"
@@ -4166,13 +4255,13 @@
           "status": "passed",
           "required": true,
           "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
-          "reason": "CLI integration test passed at commit 84e054d for duplicate existing PR refresh and remote head mismatch blocking.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+          "reason": "CLI integration test passed at commit e2b2eb6 after canonical audit evidence persistence.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
           "evidence": {
             "kind": "integration",
             "status": "pass",
-            "summary": "CLI integration test passed at commit 84e054d for duplicate existing PR refresh and remote head mismatch blocking.",
+            "summary": "CLI integration test passed at commit e2b2eb6 after canonical audit evidence persistence.",
             "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-            "executed_at": "2026-06-19T14:29:09.733Z",
+            "executed_at": "2026-06-19T14:35:37.810Z",
             "binding": {
               "status": "current",
               "reason": "verification evidence is bound to the current git state"
@@ -4185,8 +4274,8 @@
           "label": "E2E Gate",
           "status": "passed",
           "required": false,
-          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
-          "reason": "Current executable evidence covers PR lifecycle flow replay, artifact replay, duplicate existing PR refresh, and remote head mismatch failure modes.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
+          "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+          "reason": "Current-head PR lifecycle flow replay evidence passed at commit e2b2eb6 after audit artifact persistence.; evidence: .vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
           "flow_verification": null,
           "acceptance_e2e_coverage": {
             "schema_version": "0.1.0",
@@ -4222,9 +4311,9 @@
           "evidence": {
             "kind": "e2e",
             "status": "pass",
-            "summary": "Current executable evidence covers PR lifecycle flow replay, artifact replay, duplicate existing PR refresh, and remote head mismatch failure modes.",
+            "summary": "Current-head PR lifecycle flow replay evidence passed at commit e2b2eb6 after audit artifact persistence.",
             "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-            "executed_at": "2026-06-19T14:30:57.295Z",
+            "executed_at": "2026-06-19T14:35:50.907Z",
             "binding": {
               "status": "current",
               "reason": "verification evidence is bound to the current git state"
@@ -4394,7 +4483,7 @@
           "status": "passed",
           "required": true,
           "current": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
             "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
             "raw_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
@@ -4413,7 +4502,7 @@
               "id": null,
               "path": null,
               "branch": null,
-              "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+              "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
               "dirty": null,
               "dirty_fingerprint": null,
               "raw_dirty": null,
@@ -4426,10 +4515,10 @@
           "artifacts": [
             {
               "artifact_type": "verification_command",
-              "kind": "e2e",
-              "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js && npm test",
+              "kind": "unit",
+              "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-              "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+              "recorded_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
               "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "status": "current",
@@ -4438,10 +4527,10 @@
             },
             {
               "artifact_type": "verification_command",
-              "kind": "unit",
-              "command": "npm test",
+              "kind": "e2e",
+              "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-              "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+              "recorded_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
               "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "status": "current",
@@ -4453,7 +4542,7 @@
               "kind": "integration",
               "command": "node --test --test-name-pattern 'pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
               "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-              "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+              "recorded_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
               "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "status": "current",
@@ -4465,7 +4554,7 @@
               "kind": "typecheck",
               "command": "npm run typecheck",
               "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/verification-evidence.json",
-              "recorded_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+              "recorded_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
               "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
               "status": "current",
@@ -4627,6 +4716,14 @@
         },
         {
           "from": "gate:pr_route_classification",
+          "to": "gate:pr_body_contract"
+        },
+        {
+          "from": "gate:pr_route_classification",
+          "to": "gate:split_resolution"
+        },
+        {
+          "from": "gate:split_resolution",
           "to": "gate:pr_body_contract"
         },
         {
@@ -4890,25 +4987,25 @@
         "required_actions": []
       },
       "decision_record_summary": {
-        "total": 1,
+        "total": 2,
         "open": 0,
         "by_type": {
-          "waiver": 1
+          "waiver": 2
         },
         "by_status": {
-          "accepted": 1
+          "accepted": 2
         },
         "warnings": [],
         "latest": {
           "schema_version": "0.1.0",
-          "decision_id": "decision-1781879466243-167ab497",
+          "decision_id": "decision-1781879819378-77865af5",
           "story_id": "story-vibepro-pr-create-existing-refresh",
           "type": "waiver",
           "status": "accepted",
-          "source": "gate:judgment_axis_scope_reviewability",
+          "source": "gate:split_resolution",
           "source_status": "accepted",
-          "summary": "Single-PR scope accepted for existing PR create artifact refresh.",
-          "reason": "The diff is one cohesive lifecycle repair: Story/Spec/Architecture define the same PR create existing-refresh contract, src/pr-manager.js implements the fallback, and test/vibepro-cli.test.js covers both refresh and head-mismatch failure. Split plan from pr prepare is single_pr_ok, and the review owner is gate_evidence for artifact freshness, command reliability, and PR lifecycle handoff. Splitting docs, implementation, and tests would remove the traceability needed to prove the artifact lifecycle behavior.",
+          "summary": "Two-commit PR kept together because implementation and canonical audit evidence are one lifecycle repair.",
+          "reason": "The first commit implements and tests existing PR create refresh. The second commit persists the current VibePro evidence bundle under docs/management/audit-artifacts so main-only audit can reconstruct Story/Spec/Architecture, verification, review, and pr-prepare state. Splitting them would either ship behavior without the audit artifact that proves VibePro value, or ship an artifact-only PR that is not independently meaningful. Review owner remains gate_evidence; review status reused the prior subagent review for e2b2eb6 because the merge delta only added files outside inspected implementation inputs.",
           "reviewer": "codex",
           "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/split-plan.json",
           "secret_exposure": null,
@@ -4918,19 +5015,19 @@
           },
           "warnings": [],
           "git_context": {
-            "head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+            "head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
             "current_branch": "codex/vibepro-refresh-existing-pr-create",
             "dirty": false,
             "status_fingerprint": "",
-            "recorded_at": "2026-06-19T14:31:06.242Z"
+            "recorded_at": "2026-06-19T14:36:59.377Z"
           },
-          "recorded_at": "2026-06-19T14:31:06.243Z"
+          "recorded_at": "2026-06-19T14:36:59.378Z"
         }
       }
     },
     "toolchain": {
       "schema_version": "0.1.0",
-      "collected_at": "2026-06-19T14:33:39.924Z",
+      "collected_at": "2026-06-19T14:37:31.653Z",
       "package": {
         "name": "vibepro",
         "version": "0.1.0-beta.0",
@@ -4942,7 +5039,7 @@
       },
       "source_git": {
         "is_git_repo": true,
-        "commit": "84e054d32851d379664d73d087d73109079b1be3",
+        "commit": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
         "branch": "codex/vibepro-refresh-existing-pr-create",
         "origin_url": "https://github.com/Unson-LLC/vibepro.git",
         "origin_main_commit": "9e09ccb36c34a41559b2046714eca967d18572b5",
@@ -4954,7 +5051,7 @@
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-06-19T14:33:39.924Z",
+    "collected_at": "2026-06-19T14:37:31.653Z",
     "package": {
       "name": "vibepro",
       "version": "0.1.0-beta.0",
@@ -4966,7 +5063,7 @@
     },
     "source_git": {
       "is_git_repo": true,
-      "commit": "84e054d32851d379664d73d087d73109079b1be3",
+      "commit": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
       "branch": "codex/vibepro-refresh-existing-pr-create",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
       "origin_main_commit": "9e09ccb36c34a41559b2046714eca967d18572b5",
@@ -4979,129 +5076,131 @@
   "latest_story_run": null,
   "suggested_branch": "feat/vibepro-pr-create-existing-refresh",
   "next_commands": [
-    "npx vibepro pr create . --story-id story-vibepro-pr-create-existing-refresh --base main --head codex/vibepro-refresh-existing-pr-create"
+    "git switch -c feat/vibepro-pr-create-existing-refresh main",
+    "git cherry-pick <story-related-commit-sha>",
+    "npx vibepro pr create . --story-id story-vibepro-pr-create-existing-refresh --base main --head feat/vibepro-pr-create-existing-refresh"
   ],
   "diagnostics": {
     "pr_prepare_stages": [
       {
         "name": "collect_runtime_info",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:39.572Z",
+        "started_at": "2026-06-19T14:37:31.253Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:39.924Z",
-        "duration_ms": 352
+        "finished_at": "2026-06-19T14:37:31.653Z",
+        "duration_ms": 400
       },
       {
         "name": "collect_git_state",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:39.924Z",
+        "started_at": "2026-06-19T14:37:31.654Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.392Z",
-        "duration_ms": 468
+        "finished_at": "2026-06-19T14:37:32.222Z",
+        "duration_ms": 568
       },
       {
         "name": "read_workspace_state",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.392Z",
+        "started_at": "2026-06-19T14:37:32.222Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.392Z",
+        "finished_at": "2026-06-19T14:37:32.222Z",
         "duration_ms": 0
       },
       {
         "name": "resolve_story",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.392Z",
+        "started_at": "2026-06-19T14:37:32.222Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.408Z",
-        "duration_ms": 16
+        "finished_at": "2026-06-19T14:37:32.234Z",
+        "duration_ms": 12
       },
       {
         "name": "read_manifest",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.408Z",
+        "started_at": "2026-06-19T14:37:32.234Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.409Z",
+        "finished_at": "2026-06-19T14:37:32.235Z",
         "duration_ms": 1
       },
       {
         "name": "read_verification_evidence",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.409Z",
+        "started_at": "2026-06-19T14:37:32.236Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.410Z",
-        "duration_ms": 1
+        "finished_at": "2026-06-19T14:37:32.236Z",
+        "duration_ms": 0
       },
       {
         "name": "read_decision_records",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.410Z",
+        "started_at": "2026-06-19T14:37:32.236Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.410Z",
-        "duration_ms": 0
+        "finished_at": "2026-06-19T14:37:32.237Z",
+        "duration_ms": 1
       },
       {
         "name": "evaluate_managed_worktree_gate",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.410Z",
+        "started_at": "2026-06-19T14:37:32.237Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.460Z",
-        "duration_ms": 50
+        "finished_at": "2026-06-19T14:37:32.286Z",
+        "duration_ms": 49
       },
       {
         "name": "build_pr_context",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.460Z",
+        "started_at": "2026-06-19T14:37:32.286Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.932Z",
-        "duration_ms": 472
+        "finished_at": "2026-06-19T14:37:32.679Z",
+        "duration_ms": 393
       },
       {
         "name": "build_split_plan",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.932Z",
+        "started_at": "2026-06-19T14:37:32.679Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.933Z",
+        "finished_at": "2026-06-19T14:37:32.680Z",
         "duration_ms": 1
       },
       {
         "name": "read_pr_body_narrative",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.934Z",
+        "started_at": "2026-06-19T14:37:32.680Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.934Z",
-        "duration_ms": 0
+        "finished_at": "2026-06-19T14:37:32.681Z",
+        "duration_ms": 1
       },
       {
         "name": "render_pr_body",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.934Z",
+        "started_at": "2026-06-19T14:37:32.681Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.936Z",
+        "finished_at": "2026-06-19T14:37:32.683Z",
         "duration_ms": 2
       },
       {
         "name": "inspect_pr_lifecycle_artifacts",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.936Z",
+        "started_at": "2026-06-19T14:37:32.683Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.936Z",
+        "finished_at": "2026-06-19T14:37:32.683Z",
         "duration_ms": 0
       },
       {
         "name": "write_pr_prepare_artifacts",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.936Z",
+        "started_at": "2026-06-19T14:37:32.683Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.942Z",
-        "duration_ms": 6
+        "finished_at": "2026-06-19T14:37:32.691Z",
+        "duration_ms": 8
       },
       {
         "name": "write_manifest",
         "status": "completed",
-        "started_at": "2026-06-19T14:33:40.942Z",
+        "started_at": "2026-06-19T14:37:32.691Z",
         "timeout_ms": 600000,
-        "finished_at": "2026-06-19T14:33:40.943Z",
-        "duration_ms": 1
+        "finished_at": "2026-06-19T14:37:32.691Z",
+        "duration_ms": 0
       }
     ]
   },
@@ -5110,8 +5209,8 @@
     "model": "vibepro-pr-lifecycle-artifact-freshness-v1",
     "story_id": "story-vibepro-pr-create-existing-refresh",
     "status": "not_started",
-    "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
-    "checked_at": "2026-06-19T14:33:40.936Z",
+    "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
+    "checked_at": "2026-06-19T14:37:32.683Z",
     "artifacts": [
       {
         "kind": "pr_create",
@@ -5120,9 +5219,9 @@
         "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-create.json",
         "report": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-create.html",
         "artifact_head_sha": null,
-        "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
         "reason": "pr-create.json has not been created yet",
-        "checked_at": "2026-06-19T14:33:40.936Z"
+        "checked_at": "2026-06-19T14:37:32.683Z"
       },
       {
         "kind": "pr_merge",
@@ -5131,9 +5230,9 @@
         "artifact": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-merge.json",
         "report": ".vibepro/pr/story-vibepro-pr-create-existing-refresh/pr-merge.html",
         "artifact_head_sha": null,
-        "current_head_sha": "84e054d32851d379664d73d087d73109079b1be3",
+        "current_head_sha": "e2b2eb6f138eef5d840ba7f8fa6544fd42ec6b19",
         "reason": "pr-merge.json has not been created yet",
-        "checked_at": "2026-06-19T14:33:40.936Z"
+        "checked_at": "2026-06-19T14:37:32.683Z"
       }
     ]
   }
