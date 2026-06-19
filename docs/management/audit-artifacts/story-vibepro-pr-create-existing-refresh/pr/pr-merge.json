@@ -2068,5 +2068,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "0f8d956cd489024eec79cb6309cbffa3f6097dd9",
-  "merged_at": "2026-06-19T14:39:42Z"
+  "merged_at": "2026-06-19T14:39:42Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+    "artifact_count": 9,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-pr-create-existing-refresh-1781879985625",
+      "base_head_sha": "0f8d956cd489024eec79cb6309cbffa3f6097dd9",
+      "merge_commit_on_base": true,
+      "commit_sha": "0ba726793a8fe8df78421ec329d46d6d366e4f49",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 0f8d956cd489024eec79cb6309cbffa3f6097dd9",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-pr-create-existing-refresh-1781879985625 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-pr-create-existing-refresh'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-pr-create-existing-refresh-1781879985625"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-19T14:39:45.625Z",
+          "finished_at": "2026-06-19T14:39:46.479Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   9e09ccb..0f8d956  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-pr-create-existing-refresh-1781879985625 origin/main",
+          "started_at": "2026-06-19T14:39:46.607Z",
+          "finished_at": "2026-06-19T14:39:46.869Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 0f8d956 Merge pull request #201 from Unson-LLC/codex/vibepro-refresh-existing-pr-create",
+          "stderr": "Preparing worktree (detached HEAD 0f8d956)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+          "started_at": "2026-06-19T14:39:46.878Z",
+          "finished_at": "2026-06-19T14:39:46.966Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh",
+          "started_at": "2026-06-19T14:39:46.966Z",
+          "finished_at": "2026-06-19T14:39:47.023Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-pr-create-existing-refresh'",
+          "started_at": "2026-06-19T14:39:47.023Z",
+          "finished_at": "2026-06-19T14:39:47.161Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD 0ba7267] docs: persist VibePro audit artifacts for story-vibepro-pr-create-existing-refresh\n 8 files changed, 4964 insertions(+), 757 deletions(-)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-pr-create-existing-refresh/pr/pr-merge.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-19T14:39:47.205Z",
+          "finished_at": "2026-06-19T14:39:49.011Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   0f8d956..0ba7267  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-pr-create-existing-refresh-1781879985625",
+          "started_at": "2026-06-19T14:39:49.011Z",
+          "finished_at": "2026-06-19T14:39:49.088Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
