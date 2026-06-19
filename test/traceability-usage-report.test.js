@@ -247,3 +247,32 @@ test('local pr-merge wins over manifest merge record without double counting', a
   assert.deepEqual(story.artifact_sources.filter((item) => item.kind === 'pr_merge').map((item) => item.source), ['local']);
   assert.equal(report.artifact_counts.pr, 1);
 });
+
+test('manifest dry-run merge record does not resolve traceability', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-manifest-dry-run' }
+  ]);
+  const manifestDir = path.join(root, '.vibepro');
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(path.join(manifestDir, 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-manifest-dry-run': {
+        latest_merge: '.vibepro/pr/story-manifest-dry-run/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/125',
+        latest_merge_commit: null,
+        latest_merged_at: null,
+        latest_dry_run: true
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-manifest-dry-run');
+  assert.equal(story.pr_merge_count, 0);
+  assert.equal(story.traceability_resolution.status, 'actual_missing');
+  assert.equal(story.traceability_resolution.artifact_source, null);
+  assert.equal(missingGaps(story).length, 1);
+  assert.equal(report.artifact_counts.pr, 0);
+});

@@ -306,6 +306,7 @@ async function collectManifestPrArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const [storyId, record] of Object.entries(manifest.pr_merges ?? {})) {
     if (!record || typeof record !== 'object') continue;
+    if (record.latest_dry_run === true) continue;
     const createdAt = record.latest_merged_at ?? record.updated_at ?? record.created_at;
     if (!isWithinSince(createdAt, since)) continue;
     artifacts.push({
