@@ -20,7 +20,8 @@ export async function createUsageReport(repoRoot, options = {}) {
   const manifestPrArtifacts = await collectManifestPrArtifacts(root, workspaceDir, since);
   const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
-  const prArtifacts = mergeArtifactsPreferLocal([...manifestPrArtifacts, ...localPrArtifacts], canonicalArtifacts.prArtifacts);
+  const prArtifactsWithoutManifest = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts, prArtifactsWithoutManifest)];
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
@@ -325,6 +326,15 @@ async function collectManifestPrArtifacts(root, workspaceDir, since) {
     });
   }
   return artifacts;
+}
+
+function filterManifestFallbackArtifacts(manifestArtifacts, preferredArtifacts) {
+  const preferredKeys = new Set(preferredArtifacts
+    .filter((artifact) => artifact.kind === 'pr_merge')
+    .map((artifact) => artifact.story_id));
+  return manifestArtifacts.filter((artifact) => (
+    artifact.kind !== 'pr_merge' || !preferredKeys.has(artifact.story_id)
+  ));
 }
 
 async function collectStoryDocs(root, since) {

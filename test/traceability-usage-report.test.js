@@ -210,3 +210,40 @@ test('manifest merge record resolves traceability when pr artifacts are absent',
     /artifact_source=pr_merge:manifest:\.vibepro\/vibepro-manifest\.json#pr_merges\.story-manifest-merge/
   );
 });
+
+test('local pr-merge wins over manifest merge record without double counting', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-local-manifest-dupe' }
+  ]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-local-manifest-dupe');
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-local-manifest-dupe',
+    story: { story_id: 'story-local-manifest-dupe' },
+    status: 'merged',
+    merged_at: '2026-06-19T00:20:00.000Z',
+    pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/124' }
+  }, null, 2));
+  await writeFile(path.join(root, '.vibepro', 'vibepro-manifest.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    pr_merges: {
+      'story-local-manifest-dupe': {
+        latest_merge: '.vibepro/pr/story-local-manifest-dupe/pr-merge.json',
+        latest_pr_url: 'https://github.com/Unson-LLC/vibepro/pull/124',
+        latest_merge_commit: 'abc123manifest',
+        latest_merged_at: '2026-06-19T00:20:00.000Z',
+        latest_dry_run: false
+      }
+    }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-local-manifest-dupe');
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.traceability_resolution.status, 'local_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'local');
+  assert.deepEqual(story.artifact_sources.filter((item) => item.kind === 'pr_merge').map((item) => item.source), ['local']);
+  assert.equal(report.artifact_counts.pr, 1);
+});
