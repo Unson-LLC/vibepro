@@ -1597,6 +1597,15 @@ function groupChangedFiles(files) {
 }
 
 function isSourcePath(filePath) {
+  return isRootSourcePath(stripMonorepoPackagePrefix(filePath));
+}
+
+function stripMonorepoPackagePrefix(filePath) {
+  if (typeof filePath !== 'string') return '';
+  return filePath.replace(/^(?:apps|packages|services)\/[^/]+\//, '');
+}
+
+function isRootSourcePath(filePath) {
   return filePath.startsWith('src/')
     || filePath.startsWith('app/')
     || filePath.startsWith('pages/')

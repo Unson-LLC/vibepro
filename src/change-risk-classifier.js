@@ -215,13 +215,13 @@ function detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts
   if (sourceFiles.some(isReviewLifecyclePath)) surfaces.add('review_lifecycle');
   if (sourceFiles.some(isDatabasePath)) surfaces.add('database_state');
   if (sourceFiles.some((file) => !isUiPath(file) && isQueueWorkerPath(file))) surfaces.add('queue_worker');
-  if (sourceFiles.some((file) => !isUiPath(file) && /retry|poll|status|state/i.test(file))) {
+  if (sourceFiles.some((file) => !isUiPath(file) && /retry|poll|status|state/i.test(stripMonorepoPackagePrefix(file)))) {
     surfaces.add('polling_retry');
   }
-  if (sourceFiles.some((file) => /auth|session|permission|middleware/i.test(file))) {
+  if (sourceFiles.some((file) => /auth|session|permission|middleware/i.test(stripMonorepoPackagePrefix(file)))) {
     surfaces.add('auth_boundary');
   }
-  if (sourceFiles.some((file) => /\/v1\/|legacy/i.test(file))) surfaces.add('legacy_v1_compatibility');
+  if (sourceFiles.some((file) => /\/v1\/|legacy/i.test(stripMonorepoPackagePrefix(file)))) surfaces.add('legacy_v1_compatibility');
   if (allFiles.some((file) => /\.(test|spec)\.[cm]?[jt]sx?$/.test(file))) surfaces.add('test_coverage');
   return [...surfaces].sort();
 }
@@ -250,42 +250,53 @@ function buildReasons({ riskSurfaces, sourceFiles, allFiles, storyText, networkC
 }
 
 function isUiPath(file) {
-  if (/\/api\//.test(file) || file.startsWith('api/')) return false;
-  return file.startsWith('src/app/')
-    || file.startsWith('src/pages/')
-    || file.startsWith('src/components/')
-    || file.startsWith('components/')
-    || /\.(tsx|jsx|css|scss|sass|less|vue|svelte)$/.test(file);
+  const runtimePath = stripMonorepoPackagePrefix(file);
+  if (/\/api\//.test(runtimePath) || runtimePath.startsWith('api/') || runtimePath.startsWith('src/routes/')) return false;
+  return runtimePath.startsWith('src/app/')
+    || runtimePath.startsWith('src/pages/')
+    || runtimePath.startsWith('src/components/')
+    || runtimePath.startsWith('components/')
+    || /\.(tsx|jsx|css|scss|sass|less|vue|svelte)$/.test(runtimePath);
 }
 
 function isApiPath(file) {
-  return /\/api\//.test(file) || file.startsWith('api/') || file.startsWith('server/');
+  const runtimePath = stripMonorepoPackagePrefix(file);
+  return /\/api\//.test(runtimePath)
+    || runtimePath.startsWith('api/')
+    || runtimePath.startsWith('server/')
+    || runtimePath.startsWith('src/routes/');
 }
 
 function isServicePath(file) {
-  return /\/services?\//.test(file) || /\/actions?\//.test(file) || /orchestr/i.test(file);
+  const runtimePath = stripMonorepoPackagePrefix(file);
+  return /\/services?\//.test(runtimePath) || /\/actions?\//.test(runtimePath) || /orchestr/i.test(runtimePath);
 }
 
 function isDatabasePath(file) {
-  return /prisma|db|database|repository|model|schema/i.test(file);
+  return /prisma|db|database|repository|model|schema/i.test(stripMonorepoPackagePrefix(file));
 }
 
 function isQueueWorkerPath(file) {
-  return /queue|worker|job|scheduled-task|background-task/i.test(file);
+  return /queue|worker|job|scheduled-task|background-task/i.test(stripMonorepoPackagePrefix(file));
 }
 
 function isCoreWorkflowPath(file) {
-  return /workflow|preflight|orchestrat|state-machine|statemachine|execution-state|transition|resume|replay/i.test(file);
+  return /workflow|preflight|orchestrat|state-machine|statemachine|execution-state|transition|resume|replay/i.test(stripMonorepoPackagePrefix(file));
 }
 
 function isGateOrchestrationPath(file) {
-  return /(^|\/)(pr-manager|change-risk-classifier)\.[cm]?js$/.test(file);
+  return /(^|\/)(pr-manager|change-risk-classifier)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
 }
 
 function isVerificationEvidencePath(file) {
-  return /(^|\/)(verification-evidence|flow-verifier)\.[cm]?js$/.test(file);
+  return /(^|\/)(verification-evidence|flow-verifier)\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
 }
 
 function isReviewLifecyclePath(file) {
-  return /(^|\/)agent-review\.[cm]?js$/.test(file);
+  return /(^|\/)agent-review\.[cm]?js$/.test(stripMonorepoPackagePrefix(file));
+}
+
+function stripMonorepoPackagePrefix(filePath) {
+  if (typeof filePath !== 'string') return '';
+  return filePath.replace(/^(?:apps|packages|services)\/[^/]+\//, '');
 }
