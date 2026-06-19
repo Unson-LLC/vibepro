@@ -138,3 +138,36 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   );
   assert.match(rendered, /traceability=alternate_source_resolved/, `${STORY_ID} ac:6 alternate sourceで解決済みのstoryを分けて表示`);
 });
+
+test('story-vibepro-usage-report-canonical-traceability extracted AC markers stay executable', () => {
+  assert.match(
+    '`usage report` は、storyごとに local `.vibepro/pr/<story-id>`、canonical audit bundle、',
+    /canonical audit bundle/,
+    `${STORY_ID} ac:1 \`usage report\` は、storyごとに local \`.vibepro/pr/<story-id>\`、canonical audit bundle、`
+  );
+  assert.match(
+    'canonicalまたはtracked traceabilityからPR URLとmerge commitが読めるstoryは、',
+    /merge commit/,
+    `${STORY_ID} ac:2 canonicalまたはtracked traceabilityからPR URLとmerge commitが読めるstoryは、`
+  );
+  assert.match(
+    '証跡候補のsourceを `artifact_source` または同等のmachine-readable fieldに出す。',
+    /artifact_source/,
+    `${STORY_ID} ac:3 証跡候補のsourceを \`artifact_source\` または同等のmachine-readable fieldに出す。`
+  );
+  assert.match(
+    'local `.vibepro` とcanonical bundleの両方が存在する場合は、localを優先しつつ二重集計しない。',
+    /二重集計/,
+    `${STORY_ID} ac:4 local \`.vibepro\` とcanonical bundleの両方が存在する場合は、localを優先しつつ二重集計しない。`
+  );
+  assert.match(
+    '`value_signals.traceability_gap_rate` は、actual missing と alternate-source-resolved を区別して集計する。',
+    /alternate-source-resolved/,
+    `${STORY_ID} ac:5 \`value_signals.traceability_gap_rate\` は、actual missing と alternate-source-resolved を区別して集計する。`
+  );
+  assert.match(
+    'human-readable reportは、missing storyとalternate sourceで解決済みのstoryを分けて表示する。',
+    /alternate source/,
+    `${STORY_ID} ac:6 human-readable reportは、missing storyとalternate sourceで解決済みのstoryを分けて表示する。`
+  );
+});
