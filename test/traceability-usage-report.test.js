@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { createUsageReport } from '../src/usage-report.js';
+import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 
 function storyDoc(storyId, status = 'active') {
   return `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: ${status}\n---\n\n# ${storyId}\n`;
@@ -170,4 +170,8 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   assert.equal(report.value_signals.traceability_gap_count, 0);
   assert.equal(report.value_signals.actual_missing_traceability_gap_count, 0);
   assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 1);
+  assert.match(
+    renderUsageReport(report),
+    /artifact_source=pr_merge:canonical_audit:docs\/management\/audit-artifacts\/story-canonical-audit\/pr\/pr-merge\.json/
+  );
 });
