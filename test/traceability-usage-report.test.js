@@ -292,4 +292,9 @@ test('malformed manifest does not resolve traceability or crash usage report', a
   assert.equal(story.traceability_resolution.artifact_source, null);
   assert.equal(missingGaps(story).length, 1);
   assert.equal(report.artifact_counts.pr, 0);
+  assert.equal(report.manifest_parse_failures.length, 1);
+  assert.equal(report.manifest_parse_failures[0].kind, 'parse_failure');
+  assert.equal(report.manifest_parse_failures[0].artifact, '.vibepro/vibepro-manifest.json');
+  assert.match(renderUsageReport(report), /Manifest Parse Failures/);
+  assert.match(renderUsageReport(report), /parse_failure: artifact=\.vibepro\/vibepro-manifest\.json/);
 });

@@ -21,7 +21,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
   const prArtifactsWithoutManifest = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
-  const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts, prArtifactsWithoutManifest)];
+  const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts.artifacts, prArtifactsWithoutManifest)];
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
@@ -114,6 +114,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     since: since ? since.toISOString() : null,
     artifact_counts: artifactCounts,
     artifact_source_hints,
+    manifest_parse_failures: manifestPrArtifacts.parse_failures,
     stories,
     gate_metrics,
     agent_review,
@@ -156,6 +157,7 @@ export function renderUsageReport(report) {
     `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
+  const manifestParseRows = renderManifestParseFailures(report);
   const artifactHintRows = renderArtifactSourceHints(report);
   if (language === 'en') {
     return `# VibePro Usage Report
@@ -185,6 +187,10 @@ ${valueRows}
 ## Traceability Gaps
 
 ${traceabilityRows}
+
+## Manifest Parse Failures
+
+${manifestParseRows}
 
 ## Log Signals
 
@@ -220,6 +226,10 @@ ${valueRows}
 ## Traceability Gaps
 
 ${traceabilityRows}
+
+## Manifest Parse Failures
+
+${manifestParseRows}
 
 ## ログ補助シグナル
 
@@ -301,11 +311,19 @@ async function collectPrArtifacts(root, workspaceDir, since) {
 
 async function collectManifestPrArtifacts(root, workspaceDir, since) {
   const manifestPath = path.join(workspaceDir, MANIFEST_FILE);
+  const parseFailures = [];
   const manifest = await readJsonIfExists(manifestPath).catch((error) => {
-    if (error instanceof SyntaxError) return null;
+    if (error instanceof SyntaxError) {
+      parseFailures.push({
+        kind: 'parse_failure',
+        artifact: toWorkspaceRelative(root, manifestPath),
+        detail: error.message
+      });
+      return null;
+    }
     throw error;
   });
-  if (!manifest || typeof manifest !== 'object') return [];
+  if (!manifest || typeof manifest !== 'object') return { artifacts: [], parse_failures: parseFailures };
   const artifacts = [];
   for (const [storyId, record] of Object.entries(manifest.pr_merges ?? {})) {
     if (!record || typeof record !== 'object') continue;
@@ -329,7 +347,7 @@ async function collectManifestPrArtifacts(root, workspaceDir, since) {
       }
     });
   }
-  return artifacts;
+  return { artifacts, parse_failures: parseFailures };
 }
 
 function filterManifestFallbackArtifacts(manifestArtifacts, preferredArtifacts) {
@@ -596,6 +614,14 @@ function renderTraceabilityGaps(report) {
   if (gaps.length === 0) return '- none';
   return gaps.map((gap) => (
     `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} next="${gap.next_command}"`
+  )).join('\n');
+}
+
+function renderManifestParseFailures(report) {
+  const failures = report.manifest_parse_failures ?? [];
+  if (failures.length === 0) return '- none';
+  return failures.map((failure) => (
+    `- ${failure.kind}: artifact=${failure.artifact ?? '-'} detail="${failure.detail ?? '-'}"`
   )).join('\n');
 }
 
