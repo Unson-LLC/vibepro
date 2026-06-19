@@ -153,7 +153,16 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
     /traceability_missing_pr_artifact artifact=docs\/management\/stories\/active\/story-actual-missing\.md/,
     `${STORY_ID} ac:6 human-readable report missing story`
   );
-  assert.match(rendered, /traceability=alternate_source_resolved/, `${STORY_ID} ac:6 alternate sourceで解決済みのstoryを分けて表示`);
+  assert.match(
+    rendered,
+    new RegExp([
+      '## Alternate Source Resolved',
+      '[\\s\\S]*- story-manifest-merge: source=manifest',
+      '[\\s\\S]*- story-tracked-traceability: source=local',
+      `[\\s\\S]*- ${STORY_ID}: source=canonical_audit`
+    ].join('')),
+    `${STORY_ID} ac:6 alternate sourceで解決済みのstoryを専用セクションに分けて表示`
+  );
 });
 
 test('story-vibepro-usage-report-canonical-traceability extracted AC markers stay executable', () => {

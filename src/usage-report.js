@@ -157,6 +157,7 @@ export function renderUsageReport(report) {
     `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
+  const alternateSourceRows = renderAlternateSourceResolved(report);
   const manifestParseRows = renderManifestParseFailures(report);
   const artifactHintRows = renderArtifactSourceHints(report);
   if (language === 'en') {
@@ -187,6 +188,10 @@ ${valueRows}
 ## Traceability Gaps
 
 ${traceabilityRows}
+
+## Alternate Source Resolved
+
+${alternateSourceRows}
 
 ## Manifest Parse Failures
 
@@ -226,6 +231,10 @@ ${valueRows}
 ## Traceability Gaps
 
 ${traceabilityRows}
+
+## Alternate Source Resolved
+
+${alternateSourceRows}
 
 ## Manifest Parse Failures
 
@@ -615,6 +624,16 @@ function renderTraceabilityGaps(report) {
   return gaps.map((gap) => (
     `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} next="${gap.next_command}"`
   )).join('\n');
+}
+
+function renderAlternateSourceResolved(report) {
+  const stories = (report.stories ?? [])
+    .filter((story) => story.traceability_resolution?.status === 'alternate_source_resolved');
+  if (stories.length === 0) return '- none';
+  return stories.map((story) => {
+    const source = story.traceability_resolution?.artifact_source ?? '-';
+    return `- ${story.story_id}: source=${source} artifact_source=${formatArtifactSources(story.artifact_sources)}`;
+  }).join('\n');
 }
 
 function renderManifestParseFailures(report) {

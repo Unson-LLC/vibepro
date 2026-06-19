@@ -170,6 +170,7 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   assert.equal(report.value_signals.traceability_gap_count, 0);
   assert.equal(report.value_signals.actual_missing_traceability_gap_count, 0);
   assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 1);
+  assert.match(renderUsageReport(report), /## Alternate Source Resolved\n\n- story-canonical-audit: source=canonical_audit/);
   assert.match(
     renderUsageReport(report),
     /artifact_source=pr_merge:canonical_audit:docs\/management\/audit-artifacts\/story-canonical-audit\/pr\/pr-merge\.json/
@@ -205,6 +206,7 @@ test('manifest merge record resolves traceability when pr artifacts are absent',
   assert.equal(story.traceability_resolution.artifact_source, 'manifest');
   assert.equal(missingGaps(story).length, 0);
   assert.equal(story.artifact_sources.some((item) => item.kind === 'pr_merge' && item.source === 'manifest'), true);
+  assert.match(renderUsageReport(report), /## Alternate Source Resolved\n\n- story-manifest-merge: source=manifest/);
   assert.match(
     renderUsageReport(report),
     /artifact_source=pr_merge:manifest:\.vibepro\/vibepro-manifest\.json#pr_merges\.story-manifest-merge/
