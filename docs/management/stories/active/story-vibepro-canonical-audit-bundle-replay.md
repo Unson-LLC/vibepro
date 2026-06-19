@@ -9,6 +9,10 @@ source:
   id: VP-VALUE-AUDIT-2026-06-19-CANONICAL-REPLAY
 related_stories:
   - story-vibepro-canonical-audit-artifacts
+architecture_docs:
+  - docs/architecture/vibepro-canonical-audit-bundle-replay.md
+spec_docs:
+  - docs/specs/vibepro-canonical-audit-bundle-replay.md
 ---
 
 # Story
