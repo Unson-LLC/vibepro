@@ -102,7 +102,7 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   assert.equal(
     story.traceability_gaps.some((gap) => gap.kind === 'traceability_missing_pr_artifact'),
     false,
-    `${STORY_ID} URCT-S-001 canonical audit bundle pr-prepare pr-merge traceability_resolution alternate_source_resolved traceability_missing_pr_artifact`
+    `${STORY_ID} S-004 Workflow state transition canonical audit evidence discovery local .vibepro/pr alternate_source_resolved canonical_audit artifact_source traceability_missing_pr_artifact`
   );
   assert.equal(story.latest_merge_status, 'merged', `${STORY_ID} ac:1 local .vibepro canonical audit bundle manifest merge record tracked traceability artifact`);
 
@@ -122,11 +122,11 @@ test('story-vibepro-usage-report-canonical-traceability acceptance coverage', as
   assert.equal(localPriority.prepare_count, 1, `${STORY_ID} ac:4 local .vibepro とcanonical bundleの両方が存在する場合は二重集計しない`);
   assert.equal(localPriority.latest_gate_status, 'local-copy', `${STORY_ID} ac:4 localを優先`);
   assert.equal(localPriority.artifact_sources.filter((item) => item.kind === 'pr_prepare').length, 1, `${STORY_ID} ac:4 double count guard`);
-  assert.equal(localPriority.artifact_sources[0].source, 'local', `${STORY_ID} URCT-S-003 local and canonical evidence both exist local artifact wins aggregate metrics do not double count`);
+  assert.equal(localPriority.artifact_sources[0].source, 'local', `${STORY_ID} S-006 Workflow state transition local and canonical evidence both exist same Story artifact kind local status winning state aggregate traceability metrics do not double count`);
 
   // story-vibepro-usage-report-canonical-traceability ac:5
   assert.equal(trackedTraceability.traceability_resolution.status, 'alternate_source_resolved', `${STORY_ID} ac:1 tracked traceability artifact source search`);
-  assert.equal(actualMissing.traceability_resolution.status, 'actual_missing', `${STORY_ID} URCT-S-002 no local canonical manifest or tracked traceability evidence actual_missing`);
+  assert.equal(actualMissing.traceability_resolution.status, 'actual_missing', `${STORY_ID} S-005 Workflow state transition no local canonical manifest or tracked traceability evidence actual_missing actual_missing_traceability_gap_count`);
   assert.equal(report.value_signals.actual_missing_traceability_gap_count, 1, `${STORY_ID} ac:5 actual missing と alternate-source-resolved を区別`);
   assert.equal(report.value_signals.alternate_source_resolved_traceability_count, 2, `${STORY_ID} ac:5 value_signals.traceability_gap_rate actual missing alternate-source-resolved`);
 
