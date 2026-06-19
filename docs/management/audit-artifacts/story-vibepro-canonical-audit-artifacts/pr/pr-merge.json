@@ -2098,5 +2098,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "2ae70b15e398704ba98a142c41870b4993358e22",
-  "merged_at": "2026-06-19T13:56:22Z"
+  "merged_at": "2026-06-19T13:56:22Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+    "artifact_count": 9,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-artifacts-1781877385926",
+      "base_head_sha": "2ae70b15e398704ba98a142c41870b4993358e22",
+      "merge_commit_on_base": true,
+      "commit_sha": "295b7b6e7dfc913a64d6b5c8e53b5b084af319e6",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 2ae70b15e398704ba98a142c41870b4993358e22",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-artifacts-1781877385926 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-artifacts'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-artifacts-1781877385926"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-19T13:56:25.927Z",
+          "finished_at": "2026-06-19T13:56:26.713Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   17d0aad..2ae70b1  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-artifacts-1781877385926 origin/main",
+          "started_at": "2026-06-19T13:56:26.796Z",
+          "finished_at": "2026-06-19T13:56:26.992Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 2ae70b1 Merge pull request #200 from Unson-LLC/codex/vibepro-canonical-audit-main-persistence-final",
+          "stderr": "Preparing worktree (detached HEAD 2ae70b1)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+          "started_at": "2026-06-19T13:56:27.008Z",
+          "finished_at": "2026-06-19T13:56:27.088Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
+          "started_at": "2026-06-19T13:56:27.088Z",
+          "finished_at": "2026-06-19T13:56:27.145Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-artifacts'",
+          "started_at": "2026-06-19T13:56:27.145Z",
+          "finished_at": "2026-06-19T13:56:27.252Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD 295b7b6] docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-artifacts\n 10 files changed, 12856 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-19T13:56:27.292Z",
+          "finished_at": "2026-06-19T13:56:29.133Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   2ae70b1..295b7b6  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-artifacts-1781877385926",
+          "started_at": "2026-06-19T13:56:29.133Z",
+          "finished_at": "2026-06-19T13:56:29.210Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }

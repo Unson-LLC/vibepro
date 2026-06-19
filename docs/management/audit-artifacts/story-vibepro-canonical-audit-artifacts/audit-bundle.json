@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-canonical-audit-artifacts",
   "source": "execute_merge",
-  "promoted_at": "2026-06-19T13:56:25.914Z",
+  "promoted_at": "2026-06-19T13:56:29.212Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-canonical-audit-artifacts",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
