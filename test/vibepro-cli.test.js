@@ -10927,8 +10927,9 @@ test('execute merge deletes the remote branch and records local cleanup skip whe
       { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
     ],
     mergeStdout: 'merged pull request',
-    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
-    mergedAt: '2026-06-07T00:32:55Z'
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
   });
 
   const result = await runCli([
