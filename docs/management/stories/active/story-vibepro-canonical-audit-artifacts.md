@@ -19,11 +19,12 @@ VibeProの価値は、Gateがgreenになることではなく、merge後に別en
 
 現状は `.vibepro/` がgitignoreされ、PR準備・検証・review・mergeの証跡がworktree localに分散しやすい。これにより、main checkoutだけで `usage report` を実行すると、本来は別worktreeに存在する証跡を missing artifact と誤判定しやすい。
 
-VibeProは成功した `execute merge` の後、監査に必要な最小JSON artifactを tracked な canonical audit bundle へ昇格し、main checkoutだけでもStory-to-PR-to-mergeの証跡を読める必要がある。
+VibeProは成功した `execute merge` の後、監査に必要な最小JSON artifactを tracked な canonical audit bundle へ昇格し、base branchへ永続化する必要がある。main checkoutだけでもStory-to-PR-to-mergeの証跡を読める状態が正である。
 
 ## Acceptance Criteria
 
-- `execute merge` が `merged` になったとき、`docs/management/audit-artifacts/<story-id>/audit-bundle.json` を生成する。
+- `execute merge` が `merged` になったとき、`docs/management/audit-artifacts/<story-id>/audit-bundle.json` を生成し、base branchへfast-forward pushする。
+- base branch上の canonical `pr-merge.json` は、merge結果だけでなく `canonical_audit.persistence.status=pushed` を含む。
 - bundleは `pr-prepare.json`、`pr-create.json`、`gate-dag.json`、`verification-evidence.json`、`traceability.json`、`pr-merge.json` のうち存在するJSONを canonical path にコピーする。
 - bundleは review の `review-summary.json`、`review-result-*.json`、`lifecycle.json` のうち存在するJSONを canonical path にコピーする。
 - dry-run、blocked、failed mergeでは canonical昇格を行わない。
@@ -34,4 +35,4 @@ VibeProは成功した `execute merge` の後、監査に必要な最小JSON art
 
 - `.vibepro/` 全体をgit管理すること。
 - raw transcriptや一時ログをすべてmainへ保存すること。
-- merge後のcanonical bundleを自動commit/pushすること。
+- PR前やblocked mergeの途中artifactをmainへ保存すること。

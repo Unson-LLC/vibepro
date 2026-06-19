@@ -7,13 +7,13 @@ title: Canonical Audit Artifacts Architecture
 
 ## Decision
 
-VibeProは `execute merge` が成功した後に、merge判断を再構成するための最小JSON artifactを `docs/management/audit-artifacts/<story-id>/` に昇格する。
+VibeProは `execute merge` が成功した後に、merge判断を再構成するための最小JSON artifactを `docs/management/audit-artifacts/<story-id>/` に昇格し、base branchへ永続化する。
 
 `.vibepro/` は作業中のcontrol-plane workspaceであり、raw logsや途中状態を含む。これを丸ごとmainに入れると、実装入力、一時ログ、監査証跡が混ざる。代わりに、merge後の監査に必要なJSONだけをcanonical audit bundleとして永続化する。
 
 ## Boundary
 
-- `execute merge` は最終監査とmerge結果記録の境界なので、canonical昇格の責務を持つ。
+- `execute merge` は最終監査とmerge結果記録の境界なので、canonical昇格とbase branch永続化の責務を持つ。
 - `pr prepare` / `pr create` / `review record` は引き続き `.vibepro/` に作業中artifactを出す。
 - `usage report` はローカル `.vibepro/` を優先し、無い場合に canonical audit bundle を読む。
 - canonical audit bundleは後から判断を読むための証跡であり、実装やテストの正本ではない。
@@ -28,7 +28,11 @@ flowchart TD
   Trace --> Promote["canonical audit promotion"]
   Workspace --> Promote
   Promote --> Canonical["docs/management/audit-artifacts/<story-id>"]
-  Canonical --> Usage["usage report on main checkout"]
+  Canonical --> Push["commit + fast-forward push to base branch"]
+  Push --> Summary["write persistence summary into pr-merge"]
+  Summary --> FinalPush["persist final canonical artifact"]
+  FinalPush --> Main["main checkout"]
+  Main --> Usage["usage report on main checkout"]
 ```
 
 ## Persisted
@@ -47,4 +51,4 @@ flowchart TD
 
 ## Tradeoff
 
-This makes successful merge runs produce tracked audit files. The tradeoff is intentional: merged decisions must be reconstructable from a main-readable surface. In-progress work remains local to `.vibepro/`, so normal iteration does not turn every scratch artifact into product history.
+This makes successful merge runs produce tracked audit files and small post-merge audit commits on the base branch. The tradeoff is intentional: merged decisions must be reconstructable from a main-readable surface, including whether canonical audit persistence itself succeeded. In-progress work remains local to `.vibepro/`, so normal iteration does not turn every scratch artifact into product history.

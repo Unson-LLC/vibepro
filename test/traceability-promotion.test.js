@@ -87,6 +87,7 @@ async function makeFakeGhMerge(state) {
   await writeJson(statePath, state);
   await writeFile(ghPath, `#!/usr/bin/env node
 const fs = require('node:fs');
+const { execFileSync } = require('node:child_process');
 const statePath = ${JSON.stringify(statePath)};
 const args = process.argv.slice(2);
 const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -121,6 +122,16 @@ if (args[1] === 'view') {
 }
 if (args[1] === 'merge') {
   state.merged = true;
+  if (state.remotePath) {
+    execFileSync('git', [
+      '--git-dir',
+      state.remotePath,
+      'update-ref',
+      'refs/heads/' + state.baseRefName,
+      state.headRefOid
+    ]);
+    state.mergeCommit = state.headRefOid;
+  }
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\\n');
   console.log('merged');
   process.exit(0);
@@ -182,7 +193,7 @@ async function setupMergeRepo() {
     updated_at: '2026-06-12T00:00:00.000Z'
   });
   await runCli(['execute', 'reconcile', root, '--story-id', 'story-test-promo', '--base', 'main']);
-  return { root, headSha };
+  return { root, headSha, remote };
 }
 
 function ghState(headSha, merged = false) {
@@ -201,8 +212,12 @@ function ghState(headSha, merged = false) {
 }
 
 test('execute merge promotes traceability lifecycle to merged with merge evidence', async () => {
-  const { root, headSha } = await setupMergeRepo();
-  const gh = await makeFakeGhMerge(ghState(headSha));
+  const { root, headSha, remote } = await setupMergeRepo();
+  const gh = await makeFakeGhMerge({
+    ...ghState(headSha),
+    mergeCommit: headSha,
+    remotePath: remote
+  });
   const result = await runCli(
     ['execute', 'merge', root, '--story-id', 'story-test-promo', '--base', 'main', '--json'],
     { env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` } }

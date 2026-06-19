@@ -93,6 +93,7 @@ async function makeFakeGhMerge(state) {
   await writeJson(statePath, state);
   await writeFile(ghPath, `#!/usr/bin/env node
 const fs = require('node:fs');
+const { execFileSync } = require('node:child_process');
 const statePath = ${JSON.stringify(statePath)};
 const args = process.argv.slice(2);
 const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -108,7 +109,7 @@ if (args[1] === 'view') {
       url: state.url,
       state: merged ? 'MERGED' : 'OPEN',
       mergedAt: merged ? state.mergedAt : null,
-      mergeCommit: merged ? { oid: state.mergeCommit } : null
+      mergeCommit: merged && !state.omitMergeCommit ? { oid: state.mergeCommit } : null
     }));
     process.exit(0);
   }
@@ -131,6 +132,16 @@ if (args[1] === 'merge') {
     process.exit(state.mergeExitCode);
   }
   state.merged = true;
+  if (state.remotePath) {
+    execFileSync('git', [
+      '--git-dir',
+      state.remotePath,
+      'update-ref',
+      'refs/heads/' + state.baseRefName,
+      state.headRefOid
+    ]);
+    if (!state.omitMergeCommit) state.mergeCommit = state.headRefOid;
+  }
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\\n');
   console.log(state.mergeStdout || 'merged');
   process.exit(0);
@@ -10554,8 +10565,9 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
       { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
     ],
     mergeStdout: 'merged pull request',
-    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
-    mergedAt: '2026-06-07T00:32:55Z'
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
   });
 
   const result = await runCli([
@@ -10573,19 +10585,31 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.status, 'merged');
-  assert.equal(result.result.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
+  assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
   assert.equal(result.result.merge.branch_cleanup.requested, false);
   assert.equal(result.result.merge.canonical_audit.artifact_count > 0, true);
+  assert.equal(result.result.merge.canonical_audit.persistence.status, 'pushed');
+  assert.equal(result.result.merge.canonical_audit.persistence.pushed, true);
+  assert.match(result.result.merge.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
+
+  const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
+  assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
 
   const auditDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare');
   const auditBundle = await readJson(path.join(auditDir, 'audit-bundle.json'));
   assert.equal(auditBundle.story_id, 'story-pr-prepare');
   assert.equal(auditBundle.source, 'execute_merge');
-  assert.equal(auditBundle.merge.merge_commit_sha, '59bad39e41e9a158338fa72bb262b4fa64c594ff');
+  assert.equal(auditBundle.merge.merge_commit_sha, headSha);
   assert.equal(auditBundle.artifacts.some((artifact) => artifact.kind === 'pr_merge'), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'pr-merge.json')), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'gate-dag.json')), true);
+  const canonicalPrMergeArtifact = await readJson(path.join(auditDir, 'pr', 'pr-merge.json'));
+  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.pushed, true);
+  assert.match(canonicalPrMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
@@ -10596,6 +10620,256 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     manifest.canonical_audit_artifacts['story-pr-prepare'].latest_bundle,
     'docs/management/audit-artifacts/story-pr-prepare/audit-bundle.json'
   );
+  const remoteMainTree = (await git(remote, ['ls-tree', '-r', 'main', '--name-only'])).stdout;
+  assert.match(
+    remoteMainTree,
+    /docs\/management\/audit-artifacts\/story-pr-prepare\/audit-bundle\.json/
+  );
+  assert.match(
+    remoteMainTree,
+    /docs\/management\/audit-artifacts\/story-pr-prepare\/pr\/pr-merge\.json/
+  );
+  const remoteCanonicalPrMergeArtifact = JSON.parse((await git(remote, [
+    'show',
+    'main:docs/management/audit-artifacts/story-pr-prepare/pr/pr-merge.json'
+  ])).stdout);
+  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.pushed, true);
+  assert.equal(
+    remoteCanonicalPrMergeArtifact.canonical_audit.persistence.commit_sha,
+    result.result.merge.canonical_audit.persistence.commit_sha
+  );
+  const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
+  const remoteMainParent = (await git(remote, ['rev-parse', 'main^'])).stdout.trim();
+  const persistenceCommit = result.result.merge.canonical_audit.persistence.commit_sha;
+  assert.notEqual(remoteMain, persistenceCommit);
+  assert.equal(remoteMainParent, persistenceCommit);
+  assert.equal((await git(remote, ['rev-parse', `${persistenceCommit}^`])).stdout.trim(), headSha);
+});
+
+test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts when merge commit evidence is missing', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/125',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { commit: headSha } },
+    results: []
+  });
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/125',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergedAt: '2026-06-07T00:32:55Z',
+    omitMergeCommit: true,
+    remotePath: remote
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.result.merge.status, 'failed');
+  assert.equal(result.result.merge.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(result.result.merge.merge_commit_sha, null);
+  assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
+  assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
+  assert.equal(result.result.merge.canonical_audit.persistence.pushed, false);
+
+  const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'failed');
+  assert.equal(prMergeArtifact.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
+  const canonicalPrMergeArtifact = await readJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ));
+  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.status, 'failed');
+  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
+
+  const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
+  assert.equal(remoteMain, headSha);
+  const remoteMainTree = (await git(remote, ['ls-tree', '-r', 'main', '--name-only'])).stdout;
+  assert.doesNotMatch(
+    remoteMainTree,
+    /docs\/management\/audit-artifacts\/story-pr-prepare\/audit-bundle\.json/
+  );
+});
+
+test('CAA-VERIFY-001 execute merge fails when final canonical audit artifact persistence is rejected', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  try {
+    await git(repo, ['remote', 'set-url', 'origin', remote]);
+  } catch {
+    await git(repo, ['remote', 'add', 'origin', remote]);
+  }
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/126',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { commit: headSha } },
+    results: []
+  });
+  await writeFile(path.join(remote, 'hooks', 'pre-receive'), `#!/bin/sh
+while read old new ref
+do
+  if [ "$ref" = "refs/heads/main" ] && [ "$old" != "${headSha}" ]; then
+    echo "reject final canonical audit persistence" >&2
+    exit 1
+  fi
+done
+exit 0
+`);
+  await chmod(path.join(remote, 'hooks', 'pre-receive'), 0o755);
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/126',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.result.merge.status, 'failed');
+  assert.equal(result.result.merge.stop_reason, 'canonical_audit_final_persistence_failed');
+  assert.equal(result.result.merge.merge_commit_sha, headSha);
+  assert.equal(result.result.merge.canonical_audit.persistence.status, 'pushed');
+  assert.equal(result.result.merge.canonical_audit.final_persistence.status, 'failed');
+  assert.equal(result.result.merge.canonical_audit.final_persistence.reason, 'canonical_audit_push_failed');
+
+  const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMergeArtifact.status, 'failed');
+  assert.equal(prMergeArtifact.stop_reason, 'canonical_audit_final_persistence_failed');
+  assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(prMergeArtifact.canonical_audit.final_persistence.status, 'failed');
+  assert.equal(prMergeArtifact.canonical_audit.final_persistence.reason, 'canonical_audit_push_failed');
+
+  const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
+  assert.equal(remoteMain, result.result.merge.canonical_audit.persistence.commit_sha);
+  const remoteCanonicalPrMergeArtifact = JSON.parse((await git(remote, [
+    'show',
+    'main:docs/management/audit-artifacts/story-pr-prepare/pr/pr-merge.json'
+  ])).stdout);
+  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit?.persistence, undefined);
 });
 
 test('execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out', async () => {
@@ -10653,8 +10927,9 @@ test('execute merge deletes the remote branch and records local cleanup skip whe
       { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
     ],
     mergeStdout: 'merged pull request',
-    mergeCommit: '59bad39e41e9a158338fa72bb262b4fa64c594ff',
-    mergedAt: '2026-06-07T00:32:55Z'
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
   });
 
   const result = await runCli([
