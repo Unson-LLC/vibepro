@@ -3922,14 +3922,16 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {})
   }
   const covered = acceptanceCriteria.map((criterion, index) => {
     const id = `ac:${index + 1}`;
-    const files = candidates
-      .filter((candidate) => candidate.executable && e2eCandidateCoversAcceptance(candidate, story.story_id, criterion, index))
-      .map((candidate) => candidate.path);
+    const analyses = candidates.map((candidate) => analyzeE2eAcceptanceCandidate(candidate, story.story_id, criterion, index));
+    const files = analyses
+      .filter((analysis) => analysis.covered)
+      .map((analysis) => analysis.path);
     return {
       id,
       criterion,
       covered: files.length > 0,
-      files
+      files,
+      candidate_diagnostics: files.length > 0 ? [] : analyses.map(summarizeE2eCandidateDiagnostic)
     };
   });
   const missing = covered.filter((item) => !item.covered);
@@ -3967,6 +3969,19 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {})
     covered_scenario_clause_count: scenarioCovered.length - missingScenarios.length,
     covered_scenario_clauses: scenarioCovered.filter((item) => item.covered),
     missing_scenario_clauses: missingScenarios,
+    coverage_diagnostics: {
+      missing_acceptance_criteria: missing.map((item) => ({
+        id: item.id,
+        criterion: item.criterion,
+        candidate_diagnostics: item.candidate_diagnostics ?? [],
+        guidance: 'Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion.'
+      })),
+      missing_scenario_clauses: missingScenarios.map((item) => ({
+        id: item.id,
+        statement: item.statement,
+        guidance: 'Use an explicit scenario marker near an executable assertion that checks the scenario outcome.'
+      }))
+    },
     scenario_e2e_coverage: {
       required: scenarioClauses.length > 0,
       status: scenarioClauses.length === 0
@@ -4007,6 +4022,10 @@ function isStoryE2eCandidate(relativePath, content, storyId, storySlug) {
 }
 
 function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
+  return analyzeE2eAcceptanceCandidate(candidate, storyId, criterion, index).covered;
+}
+
+function analyzeE2eAcceptanceCandidate(candidate, storyId, criterion, index) {
   const storyBoundMarkers = [
     `${storyId} ac:${index + 1}`,
     `${storyId} ac-${index + 1}`,
@@ -4018,16 +4037,58 @@ function e2eCandidateCoversAcceptance(candidate, storyId, criterion, index) {
     `acceptance:${index + 1}`
   ].map(normalizeCoverageText);
   const criterionMarker = normalizeCoverageText(criterion);
-  return getExecutableE2eBlocks(candidate.content).some((block) => {
-    const content = normalizeCoverageText(block);
-    return criterionMarker.length > 0
-      && content.includes(criterionMarker)
-      && (
-        storyBoundMarkers.some((marker) => marker.length > 0 && content.includes(marker))
-        || blockHasAssertionMessageMarker(block, assertionMessageMarkers)
-      )
-      && blockHasCriterionAssertion(block, criterion);
+  const blocks = getExecutableE2eBlockDetails(candidate.content);
+  if (blocks.length === 0) {
+    return {
+      path: candidate.path,
+      executable: false,
+      covered: false,
+      blocks: [],
+      reasons: ['matched file contains no executable assertion blocks']
+    };
+  }
+  const blockDiagnostics = blocks.map((block, blockIndex) => {
+    const content = normalizeCoverageText(block.text);
+    const storyMarkerMatched = storyBoundMarkers.some((marker) => marker.length > 0 && content.includes(marker));
+    const assertionMarkerMatched = blockHasAssertionMessageMarker(block.text, assertionMessageMarkers);
+    const markerMatched = storyMarkerMatched || assertionMarkerMatched;
+    const criterionAssertionMatched = criterionMarker.length > 0 && blockHasCriterionAssertion(block.text, criterion);
+    const fullCriterionTextMatched = criterionMarker.length > 0 && content.includes(criterionMarker);
+    const covered = markerMatched && criterionAssertionMatched;
+    const reasons = [];
+    if (!markerMatched) reasons.push(`missing AC marker (${assertionMessageMarkers.join(' or ')}) in executable assertion message or nearby story-bound block marker`);
+    if (!criterionAssertionMatched) reasons.push('executable assertions do not reference acceptance-criterion text, token, or local static binding');
+    return {
+      block_index: blockIndex + 1,
+      line_start: block.line_start,
+      line_end: block.line_end,
+      test_name: block.test_name,
+      covered,
+      story_marker_matched: storyMarkerMatched,
+      assertion_marker_matched: assertionMarkerMatched,
+      full_criterion_text_matched: fullCriterionTextMatched,
+      criterion_assertion_matched: criterionAssertionMatched,
+      assertion_text_samples: extractAssertionCoverageTexts(block.text).map((text) => compactDiagnosticText(text)).slice(0, 5),
+      reasons
+    };
   });
+  return {
+    path: candidate.path,
+    executable: true,
+    covered: blockDiagnostics.some((block) => block.covered),
+    blocks: blockDiagnostics
+  };
+}
+
+function summarizeE2eCandidateDiagnostic(analysis) {
+  return {
+    path: analysis.path,
+    executable: analysis.executable,
+    reasons: analysis.reasons ?? [],
+    blocks: (analysis.blocks ?? [])
+      .filter((block) => block.covered || block.reasons.length > 0)
+      .slice(0, 8)
+  };
 }
 
 function e2eCandidateCoversScenario(candidate, storyId, clause, index) {
@@ -4064,23 +4125,17 @@ function scenarioCoverageMarkers(storyId, clauseId, index) {
 function blockHasCriterionAssertion(block, criterion) {
   const tokens = coverageAssertionTokens(criterion);
   if (tokens.length === 0) return hasExecutableE2eAssertionsInText(block);
-  return String(block ?? '')
-    .split('\n')
-    .filter(hasExecutableE2eAssertionsInText)
-    .some((line) => {
-      const normalized = normalizeCoverageText(line);
-      return tokens.some((token) => normalized.includes(token));
-    });
+  return extractAssertionCoverageTexts(block).some((text) => {
+    const normalized = normalizeCoverageText(text);
+    return tokens.some((token) => normalized.includes(token));
+  });
 }
 
 function blockHasAssertionMessageMarker(block, markers) {
-  return String(block ?? '')
-    .split('\n')
-    .filter(hasExecutableE2eAssertionsInText)
-    .some((line) => {
-      const normalized = normalizeCoverageText(line);
-      return markers.some((marker) => marker.length > 0 && normalized.includes(marker));
-    });
+  return extractAssertionCoverageTexts(block).some((text) => {
+    const normalized = normalizeCoverageText(text);
+    return markers.some((marker) => marker.length > 0 && normalized.includes(marker));
+  });
 }
 
 function coverageAssertionTokens(text) {
@@ -4093,37 +4148,223 @@ function coverageAssertionTokens(text) {
     .slice(0, 12);
 }
 
-function getExecutableE2eBlocks(content) {
-  const lines = String(content ?? '').split('\n');
-  const blocks = [];
-  let current = [];
-  let parenBalance = 0;
-  const startsTestBlock = (line) => /^\s*(?:test|it)(?:\.only)?\s*\(/.test(line);
-  const updateBalance = (line) => {
-    const withoutLineComment = line.replace(/\/\/.*$/, '');
-    for (const char of withoutLineComment) {
-      if (char === '(') parenBalance += 1;
-      if (char === ')') parenBalance = Math.max(0, parenBalance - 1);
-    }
-  };
-  for (const line of lines) {
-    const startsBlock = startsTestBlock(line);
-    if (startsBlock && current.length > 0) {
-      blocks.push(current.join('\n'));
-      current = [];
-      parenBalance = 0;
-    }
-    if (current.length > 0 || startsBlock) {
-      current.push(line);
-      updateBalance(line);
-      if (parenBalance === 0 && /[;)]\s*$/.test(line.trim())) {
-        blocks.push(current.join('\n'));
-        current = [];
-      }
+function extractAssertionCoverageTexts(block) {
+  const statements = extractExecutableAssertionStatements(block);
+  const bindings = extractLocalStringBindings(block);
+  const texts = [];
+  for (const statement of statements) {
+    texts.push(statement);
+    texts.push(...extractStringLiterals(statement));
+    for (const [name, values] of bindings.entries()) {
+      if (referencesBinding(statement, name)) texts.push(...values);
     }
   }
-  if (current.length > 0) blocks.push(current.join('\n'));
-  return blocks.filter(hasExecutableE2eAssertionsInText);
+  return [...new Set(texts.map((text) => String(text ?? '').trim()).filter(Boolean))];
+}
+
+function extractExecutableAssertionStatements(block) {
+  const original = String(block ?? '');
+  const masked = maskJavaScriptStringsAndComments(original);
+  const statements = [];
+  const assertionPattern = /\b(?:expect\s*\(|assert\s*[.(])/g;
+  for (const match of masked.matchAll(assertionPattern)) {
+    let parenBalance = 0;
+    let end = original.length;
+    for (let index = match.index; index < masked.length; index += 1) {
+      const char = masked[index];
+      if (char === '(') parenBalance += 1;
+      if (char === ')') parenBalance -= 1;
+      if (parenBalance <= 0 && (char === ';' || char === '\n')) {
+        end = char === ';' ? index + 1 : index;
+        break;
+      }
+    }
+    statements.push(original.slice(match.index, end).trim());
+  }
+  return [...new Set(statements.filter(Boolean))];
+}
+
+function extractLocalStringBindings(block) {
+  const text = String(block ?? '');
+  const masked = maskJavaScriptStringsAndComments(text);
+  const bindings = new Map();
+  const setBinding = (name, values) => {
+    const cleanValues = values.map((value) => String(value ?? '').trim()).filter(Boolean);
+    if (cleanValues.length === 0) return;
+    bindings.set(name, [...new Set([...(bindings.get(name) ?? []), ...cleanValues])]);
+  };
+  const arrayPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*\[([\s\S]*?)\]\s*;?/g;
+  for (const match of masked.matchAll(arrayPattern)) {
+    const arrayStart = masked.indexOf('[', match.index);
+    const arrayEnd = match.index + match[0].lastIndexOf(']');
+    setBinding(match[1], extractStringLiterals(text.slice(arrayStart + 1, arrayEnd)));
+  }
+  const stringPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(['"`])((?:\\.|(?!\2)[\s\S])*?)\2\s*;?/g;
+  for (const match of masked.matchAll(stringPattern)) {
+    const originalDeclaration = text.slice(match.index, match.index + match[0].length);
+    setBinding(match[1], extractStringLiterals(originalDeclaration));
+  }
+  const aliasPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)(?:\[(\d+)])?\s*;?/g;
+  for (let pass = 0; pass < 2; pass += 1) {
+    for (const match of masked.matchAll(aliasPattern)) {
+      const sourceValues = bindings.get(match[2]);
+      if (!sourceValues) continue;
+      const index = match[3] === undefined ? null : Number(match[3]);
+      setBinding(match[1], Number.isInteger(index) ? [sourceValues[index]].filter(Boolean) : sourceValues);
+    }
+  }
+  return bindings;
+}
+
+function extractStringLiterals(text) {
+  return [...String(text ?? '').matchAll(/(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g)]
+    .map((match) => match[2])
+    .filter((value) => !value.includes('${'));
+}
+
+function referencesBinding(text, name) {
+  return new RegExp(`\\b${escapeRegExp(name)}\\b`).test(String(text ?? ''));
+}
+
+function compactDiagnosticText(text) {
+  return String(text ?? '').replace(/\s+/g, ' ').trim().slice(0, 240);
+}
+
+function getExecutableE2eBlocks(content) {
+  return getExecutableE2eBlockDetails(content).map((block) => block.text);
+}
+
+function getExecutableE2eBlockDetails(content) {
+  const original = String(content ?? '');
+  const masked = maskJavaScriptStringsAndComments(original);
+  const blocks = [];
+  const lineStarts = [0];
+  for (let index = 0; index < original.length; index += 1) {
+    if (original[index] === '\n') lineStarts.push(index + 1);
+  }
+  const lineForIndex = (charIndex) => {
+    let low = 0;
+    let high = lineStarts.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      if (lineStarts[mid] <= charIndex) low = mid + 1;
+      else high = mid - 1;
+    }
+    return high + 1;
+  };
+  const testPattern = /^\s*(?:test|it)(?:\.only)?\s*\(/gm;
+  let consumedUntil = -1;
+  for (const match of masked.matchAll(testPattern)) {
+    const start = match.index;
+    if (start < consumedUntil) continue;
+    const openParen = masked.indexOf('(', start);
+    if (openParen === -1) continue;
+    let parenBalance = 0;
+    let end = -1;
+    for (let index = openParen; index < masked.length; index += 1) {
+      const char = masked[index];
+      if (char === '(') parenBalance += 1;
+      if (char === ')') parenBalance -= 1;
+      if (parenBalance === 0) {
+        end = index + 1;
+        break;
+      }
+    }
+    if (end === -1) continue;
+    consumedUntil = end;
+    const text = original.slice(start, end);
+    if (hasExecutableE2eAssertionsInText(maskJavaScriptStringsAndComments(text))) {
+      blocks.push({
+        text,
+        line_start: lineForIndex(start),
+        line_end: lineForIndex(Math.max(start, end - 1)),
+        test_name: extractTestBlockName(text)
+      });
+    }
+  }
+  return blocks;
+}
+
+function maskJavaScriptStringsAndComments(value) {
+  const text = String(value ?? '');
+  let output = '';
+  let state = 'code';
+  let escaped = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1] ?? '';
+    if (state === 'line_comment') {
+      if (char === '\n') {
+        state = 'code';
+        output += '\n';
+      } else {
+        output += ' ';
+      }
+      continue;
+    }
+    if (state === 'block_comment') {
+      if (char === '*' && next === '/') {
+        output += '  ';
+        index += 1;
+        state = 'code';
+      } else {
+        output += char === '\n' ? '\n' : ' ';
+      }
+      continue;
+    }
+    if (state === 'single' || state === 'double' || state === 'template') {
+      const quote = state === 'single' ? '\'' : state === 'double' ? '"' : '`';
+      if (char === '\n') {
+        output += '\n';
+        escaped = false;
+        continue;
+      }
+      output += char === quote && !escaped ? quote : ' ';
+      if (char === quote && !escaped) {
+        state = 'code';
+      }
+      escaped = char === '\\' && !escaped;
+      if (char !== '\\') escaped = false;
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      output += '  ';
+      index += 1;
+      state = 'line_comment';
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      output += '  ';
+      index += 1;
+      state = 'block_comment';
+      continue;
+    }
+    if (char === '\'') {
+      output += char;
+      state = 'single';
+      escaped = false;
+      continue;
+    }
+    if (char === '"') {
+      output += char;
+      state = 'double';
+      escaped = false;
+      continue;
+    }
+    if (char === '`') {
+      output += char;
+      state = 'template';
+      escaped = false;
+      continue;
+    }
+    output += char;
+  }
+  return output;
+}
+
+function extractTestBlockName(block) {
+  const match = String(block ?? '').match(/^\s*(?:test|it)(?:\.only)?\s*\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/);
+  return match ? compactDiagnosticText(match[2]) : null;
 }
 
 function slugifyStoryId(storyId) {
@@ -8808,10 +9049,13 @@ function buildE2eCoverageReason(e2eCoverage) {
     ...missingScenarios.map((item) => item.id)
   ];
   const missingLabel = missingLabels.join(', ') || 'acceptance criteria or scenario clauses';
+  const diagnosticSuffix = (e2eCoverage.coverage_diagnostics?.missing_acceptance_criteria?.length ?? 0) > 0
+    ? '; coverage_diagnostics lists inspected files, candidate test blocks, and miss reasons; use an explicit executable coverage marker if inference is unsafe'
+    : '';
   if ((e2eCoverage.matched_files?.length ?? 0) > 0) {
-    return `Story E2E coverage needs evidence: ${missingLabel} must be covered by executable assertions in ${e2eCoverage.expected_file_patterns.join(' or ')}`;
+    return `Story E2E coverage needs evidence: ${missingLabel} must be covered by executable assertions in ${e2eCoverage.expected_file_patterns.join(' or ')}${diagnosticSuffix}`;
   }
-  return `Story E2E coverage needs evidence: ${missingLabel} must be covered by ${e2eCoverage.expected_file_patterns.join(' or ')}`;
+  return `Story E2E coverage needs evidence: ${missingLabel} must be covered by ${e2eCoverage.expected_file_patterns.join(' or ')}${diagnosticSuffix}`;
 }
 
 function summarizeFlowVerificationForGate(flowVerification) {
