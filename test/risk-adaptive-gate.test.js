@@ -999,6 +999,24 @@ test('story-risk-adaptive marker only', async () => {
   assert.equal(missingTargetReplayGate.status, 'needs_evidence');
   assert.match(missingTargetReplayGate.reason, /executable assertions|Story E2E coverage needs evidence|current passing Flow Verification or E2E replay evidence/);
 
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/workflow-replay.spec.ts',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const nonE2eTargetReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(nonE2eTargetReplay.exitCode, 0);
+  const nonE2eTargetReplayGate = nonE2eTargetReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(nonE2eTargetReplayGate.status, 'needs_evidence');
+
   await writeFile(path.join(repo, 'tests', 'e2e', 'workflow-replay.spec.ts'), `
 import { expect, test } from '@playwright/test';
 test('story-risk-adaptive workflow replay', async () => {

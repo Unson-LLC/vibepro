@@ -8007,11 +8007,35 @@ function e2eEvidenceHasExistingTarget(repoRoot, evidence) {
   return targets.some((target) => {
     const normalized = String(target ?? '').trim();
     if (!normalized || /^[a-z][a-z0-9+.-]*:/i.test(normalized)) return false;
+    if (!isE2eReplayTargetPath(normalized)) return false;
+    if (!e2eTargetMatchesCommand(normalized, evidence?.command)) return false;
     const absolute = path.resolve(repoRoot, normalized);
     const relative = path.relative(repoRoot, absolute);
     if (relative.startsWith('..') || path.isAbsolute(relative)) return false;
     return existsSync(absolute);
   });
+}
+
+function isE2eReplayTargetPath(target) {
+  const normalized = String(target ?? '').replaceAll('\\', '/').toLowerCase();
+  if (/\.(spec|test)\.[jt]sx?$/.test(normalized) && (
+    normalized.startsWith('test/e2e/')
+    || normalized.startsWith('tests/e2e/')
+    || normalized.includes('/e2e/')
+  )) return true;
+  return normalized.startsWith('app/')
+    || normalized.startsWith('src/app/')
+    || normalized.includes('/app/')
+    || normalized.includes('/route.');
+}
+
+function e2eTargetMatchesCommand(target, command) {
+  const normalizedTarget = String(target ?? '').replaceAll('\\', '/').toLowerCase();
+  const normalizedCommand = String(command ?? '').replaceAll('\\', '/').toLowerCase();
+  if (!normalizedCommand) return false;
+  if (normalizedCommand.includes(normalizedTarget)) return true;
+  const targetBase = path.basename(normalizedTarget);
+  return Boolean(targetBase) && normalizedCommand.includes(targetBase);
 }
 
 function hasExplicitObservationMarker(evidence, marker) {
