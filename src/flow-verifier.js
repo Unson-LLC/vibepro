@@ -92,7 +92,7 @@ export async function runFlowVerification(repoRoot, options = {}) {
     base_url: connection.baseUrl,
     http_auth: connection.httpAuth?.summary ?? { enabled: false },
     playwright,
-    setup: buildSetupGuidance({ playwright, commandResult }),
+    setup: buildSetupGuidance({ playwright, commandResult, probeResults, story }),
     options: {
       journey_id: options.journeyId ?? null,
       allow_mutation: options.allowMutation === true,
@@ -448,7 +448,7 @@ function detectPlaywrightSetupIssue(commandResult) {
   return null;
 }
 
-function buildSetupGuidance({ playwright, commandResult }) {
+function buildSetupGuidance({ playwright, commandResult, probeResults = [], story = null }) {
   if (!playwright.detected) {
     return {
       kind: 'playwright_dependency_missing',
@@ -456,6 +456,17 @@ function buildSetupGuidance({ playwright, commandResult }) {
       next_commands: [
         'npm install -D @playwright/test',
         'npx playwright install chromium'
+      ]
+    };
+  }
+  if (probeResults.length === 0) {
+    const storySuffix = story?.story_id ? ` --id ${story.story_id}` : ' --id <story-id>';
+    return {
+      kind: 'flow_runtime_probes_missing',
+      reason: 'No runtime probes were configured for Flow Verification.',
+      next_commands: [
+        'Add `flow_design.runtime_probes[]` to `.vibepro/config.json` with at least one non-mutating probe for the changed workflow.',
+        `vibepro verify flow . --base-url <url>${storySuffix}`
       ]
     };
   }

@@ -1351,14 +1351,8 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
   if (hasUiExperienceSourceChange(fileGroups)) {
     addRequirement({
       stage: 'preview',
-      role: 'preview_smoke',
-      reason: 'UI changes require preview smoke review before PR readiness',
-      policy: 'ui_preview'
-    });
-    addRequirement({
-      stage: 'preview',
       role: 'human_usability',
-      reason: 'UI changes require human-usability review before PR readiness',
+      reason: 'UI changes require human-usability review before PR readiness; deployed preview smoke is post-PR evidence',
       policy: 'ui_preview'
     });
   }
@@ -1375,12 +1369,6 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
       stage: 'gate',
       role: 'release_risk',
       reason: 'workflow_heavy changes require release confidence and production-path risk review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'preview',
-      role: 'preview_smoke',
-      reason: 'workflow_heavy changes require preview smoke validation',
       policy: 'workflow_heavy'
     });
     addRequirement({

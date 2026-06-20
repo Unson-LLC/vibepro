@@ -54,7 +54,6 @@ const workflowReviewRoles = [
   'gate:release_risk',
   'preview:human_usability',
   'preview:network_runtime',
-  'preview:preview_smoke'
 ];
 
 const workflowCheckpointReviewStages = [

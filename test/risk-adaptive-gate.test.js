@@ -684,8 +684,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
 		    'gate:gate_evidence',
 	    'gate:release_risk',
 	    'preview:human_usability',
-	    'preview:network_runtime',
-	    'preview:preview_smoke'
+	    'preview:network_runtime'
 		  ]);
 	  assert.deepEqual(agentReviews.required_reviews
 	    .filter((item) => item.policy === 'workflow_heavy')
@@ -952,6 +951,24 @@ test('story-risk-adaptive marker only', async () => {
   assert.equal(markerOnly.result.preparation.pr_context.acceptance_e2e_coverage.status, 'needs_evidence');
   assert.equal(markerOnly.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e').status, 'needs_evidence');
 
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/salestailor-workflow.spec.ts',
+    '--target', 'tests/e2e/salestailor-workflow.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true'
+  ])).exitCode, 0);
+
+  const explicitReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(explicitReplay.exitCode, 0);
+  const explicitReplayGate = explicitReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(explicitReplayGate.status, 'passed');
+  assert.match(explicitReplayGate.reason, /explicitly records flow_replay/);
+
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';
 test('story-risk-adaptive unrelated assertion', async () => {
@@ -1160,4 +1177,5 @@ test('story-risk-adaptive unrelated assertion with bound marker', async () => {
   const zeroProbeFlowGate = zeroProbeFlow.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
   assert.equal(zeroProbeFlowGate.status, 'needs_evidence');
   assert.match(zeroProbeFlowGate.reason, /passing runtime probe/);
+  assert.equal(zeroProbeFlowGate.required_actions.some((action) => action.includes('flow_design.runtime_probes')), true);
 		});

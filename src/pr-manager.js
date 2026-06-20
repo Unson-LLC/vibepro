@@ -7825,6 +7825,7 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
   if (changeClassification?.profile !== 'workflow_heavy') return [];
   const flowEvidence = resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificationEvidence });
   const hasPassingFlowEvidence = flowEvidence.passed;
+  const flowEvidenceActions = flowEvidence.required_actions ?? [];
   const clauses = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [];
   const scenarioCount = clauses.filter(isWorkflowStateScenarioClause).length;
   const blockerQuestions = (inferredSpec?.open_questions ?? []).filter((item) => item?.blocker === true);
@@ -7854,7 +7855,8 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
       required: true,
       reason: pathMatrixStatus === 'passed'
         ? flowEvidence.reason
-        : flowEvidence.reason ?? 'workflow_heavy changes require production path matrix evidence via Flow Verification or current E2E evidence with story acceptance coverage'
+        : flowEvidence.reason ?? 'workflow_heavy changes require production path matrix evidence via Flow Verification or current E2E evidence with story acceptance coverage',
+      required_actions: pathMatrixStatus === 'passed' ? [] : flowEvidenceActions
     },
     {
       id: 'gate:workflow_flow_replay',
@@ -7864,7 +7866,8 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
       required: true,
       reason: hasPassingFlowEvidence
         ? flowEvidence.reason
-        : flowEvidence.reason ?? 'Run `vibepro verify flow . --base-url <url> --id <story-id>` or record current E2E evidence with story acceptance coverage before release'
+        : flowEvidence.reason ?? 'Run `vibepro verify flow . --base-url <url> --id <story-id>` or record current E2E evidence with story acceptance coverage before release',
+      required_actions: hasPassingFlowEvidence ? [] : flowEvidenceActions
     },
     {
       id: 'gate:evidence_coverage',
@@ -7874,7 +7877,8 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
       required: true,
       reason: evidenceCoverageStatus === 'passed'
         ? 'Workflow clauses and flow replay evidence are both present'
-        : 'workflow_heavy release readiness requires scenario clauses plus flow replay evidence'
+        : 'workflow_heavy release readiness requires scenario clauses plus flow replay evidence',
+      required_actions: evidenceCoverageStatus === 'passed' ? [] : flowEvidenceActions
     },
     {
       id: 'gate:release_confidence',
@@ -7890,7 +7894,8 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
       },
       reason: evidenceCoverageStatus === 'passed'
         ? 'workflow_heavy evidence is sufficient for human release review'
-        : 'implementation may be consistent, but production workflow confidence is low'
+        : 'implementation may be consistent, but production workflow confidence is low',
+      required_actions: evidenceCoverageStatus === 'passed' ? [] : flowEvidenceActions
     }
   ];
 }
@@ -7920,7 +7925,8 @@ function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificati
     if (!hasPassingRuntimeProbeEvidence(flowVerification)) {
       return {
         passed: false,
-        reason: 'Flow Verification pass requires at least one passing runtime probe'
+        reason: 'Flow Verification pass requires at least one passing runtime probe; configure `.vibepro/config.json` flow_design.runtime_probes[] or record explicit current E2E replay evidence with `verify record --kind e2e --scenario flow_replay:... --scenario scenario_clause_e2e:...`',
+        required_actions: buildWorkflowReplayRequiredActions()
       };
     }
     return { passed: true, reason: 'Flow Verification passed and is available as workflow replay evidence' };
@@ -7931,20 +7937,42 @@ function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificati
   if (['needs_setup', 'skipped'].includes(flowStatus)) {
     return { passed: false, reason: 'Flow Verification did not produce passing workflow replay evidence' };
   }
+  if (flowStatus === 'needs_evidence') {
+    return {
+      passed: false,
+      reason: flowVerification?.verification?.reason ?? flowVerification?.reason ?? 'Flow Verification needs configured runtime probes before it can produce workflow replay evidence',
+      required_actions: buildWorkflowReplayRequiredActions()
+    };
+  }
 
   const e2eEvidence = Array.isArray(verificationEvidence?.commands)
     ? verificationEvidence.commands.find((item) => item.kind === 'e2e' && item.binding?.status === 'current')
     : null;
   if (!['pass', 'passed', 'success', 'ok'].includes(e2eEvidence?.status)) {
-    return { passed: false, reason: 'workflow_heavy changes require current passing Flow Verification or E2E replay evidence' };
+    return {
+      passed: false,
+      reason: 'workflow_heavy changes require current passing Flow Verification or E2E replay evidence',
+      required_actions: buildWorkflowReplayRequiredActions()
+    };
+  }
+  if (e2eObservationCoversWorkflowReplay(e2eEvidence)) {
+    return {
+      passed: true,
+      reason: 'Current E2E evidence explicitly records flow_replay and scenario_clause_e2e observations'
+    };
   }
   if (requiresStoryE2eCoverage(e2eCoverage) && e2eCoverage.status !== 'passed') {
-    return { passed: false, reason: buildE2eCoverageReason(e2eCoverage) };
+    return {
+      passed: false,
+      reason: buildE2eCoverageReason(e2eCoverage),
+      required_actions: buildWorkflowReplayRequiredActions()
+    };
   }
   if (!e2eEvidenceCoversStoryAcceptance(e2eEvidence, e2eCoverage)) {
     return {
       passed: false,
-      reason: 'Current E2E evidence must execute a story acceptance E2E file with executable assertions for workflow-heavy replay'
+      reason: 'Current E2E evidence must execute a story acceptance E2E file with executable assertions for workflow-heavy replay, or record explicit flow replay observations on current E2E evidence',
+      required_actions: buildWorkflowReplayRequiredActions()
     };
   }
   return {
@@ -7953,6 +7981,21 @@ function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificati
       ? 'Current E2E evidence passed with story acceptance coverage'
       : 'Current E2E evidence passed and no story acceptance coverage was required'
   };
+}
+
+function buildWorkflowReplayRequiredActions() {
+  return [
+    'Configure `.vibepro/config.json` with `flow_design.runtime_probes[]`, then run `vibepro verify flow . --base-url <url> --id <story-id>`.',
+    'Or record current Playwright/E2E evidence explicitly: `vibepro verify record . --id <story-id> --kind e2e --status pass --command "<playwright command>" --scenario "flow_replay: <flow exercised>" --scenario "scenario_clause_e2e: <scenario clause exercised>" --target "<e2e spec or route>"`.'
+  ];
+}
+
+function e2eObservationCoversWorkflowReplay(evidence) {
+  if (evidence?.kind !== 'e2e') return false;
+  if (!['recorded', 'partial'].includes(evidence?.observation_check?.status)) return false;
+  const matches = classifyVerificationEvidenceItem(evidence);
+  const kinds = new Set(matches.map((match) => match.kind));
+  return kinds.has('flow_replay') && kinds.has('scenario_clause_e2e');
 }
 
 function e2eEvidenceCoversStoryAcceptance(evidence, e2eCoverage) {
