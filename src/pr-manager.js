@@ -7987,7 +7987,7 @@ function resolveWorkflowFlowEvidence({ repoRoot = '.', flowVerification, e2eCove
 function buildWorkflowReplayRequiredActions() {
   return [
     'Configure `.vibepro/config.json` with `flow_design.runtime_probes[]`, then run `vibepro verify flow . --base-url <url> --id <story-id>`.',
-    'Or record current Playwright/E2E evidence explicitly: `vibepro verify record . --id <story-id> --kind e2e --status pass --command "<playwright command>" --scenario "flow_replay: <flow exercised>" --scenario "scenario_clause_e2e: <scenario clause exercised>" --target "<e2e spec or route>"`.'
+    'Or record current Playwright/E2E evidence explicitly: `vibepro verify record . --id <story-id> --kind e2e --status pass --command "<playwright command>" --scenario "flow_replay: <flow exercised>" --scenario "scenario_clause_e2e: <scenario clause exercised>" --target "<existing e2e spec file>"`.'
   ];
 }
 
@@ -8018,24 +8018,18 @@ function e2eEvidenceHasExistingTarget(repoRoot, evidence) {
 
 function isE2eReplayTargetPath(target) {
   const normalized = String(target ?? '').replaceAll('\\', '/').toLowerCase();
-  if (/\.(spec|test)\.[jt]sx?$/.test(normalized) && (
+  return /\.(spec|test)\.[jt]sx?$/.test(normalized) && (
     normalized.startsWith('test/e2e/')
     || normalized.startsWith('tests/e2e/')
     || normalized.includes('/e2e/')
-  )) return true;
-  return normalized.startsWith('app/')
-    || normalized.startsWith('src/app/')
-    || normalized.includes('/app/')
-    || normalized.includes('/route.');
+  );
 }
 
 function e2eTargetMatchesCommand(target, command) {
   const normalizedTarget = String(target ?? '').replaceAll('\\', '/').toLowerCase();
   const normalizedCommand = String(command ?? '').replaceAll('\\', '/').toLowerCase();
   if (!normalizedCommand) return false;
-  if (normalizedCommand.includes(normalizedTarget)) return true;
-  const targetBase = path.basename(normalizedTarget);
-  return Boolean(targetBase) && normalizedCommand.includes(targetBase);
+  return normalizedCommand.includes(normalizedTarget);
 }
 
 function hasExplicitObservationMarker(evidence, marker) {
