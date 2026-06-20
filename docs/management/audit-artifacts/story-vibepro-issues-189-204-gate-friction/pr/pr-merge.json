@@ -2239,5 +2239,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "8da23b6a0f691aa4c72c8a0882d03324c7c80808",
-  "merged_at": "2026-06-20T16:00:56Z"
+  "merged_at": "2026-06-20T16:00:56Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+    "artifact_count": 9,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-issues-189-204-gate-friction-1781971259330",
+      "base_head_sha": "8da23b6a0f691aa4c72c8a0882d03324c7c80808",
+      "merge_commit_on_base": true,
+      "commit_sha": "4bdafa853203f91a12421a9a87f2b4e44022a4f7",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 8da23b6a0f691aa4c72c8a0882d03324c7c80808",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-issues-189-204-gate-friction-1781971259330 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-issues-189-204-gate-friction'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-issues-189-204-gate-friction-1781971259330"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-20T16:00:59.330Z",
+          "finished_at": "2026-06-20T16:01:00.137Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   f2690b2..8da23b6  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-issues-189-204-gate-friction-1781971259330 origin/main",
+          "started_at": "2026-06-20T16:01:00.218Z",
+          "finished_at": "2026-06-20T16:01:00.436Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 8da23b6 Merge pull request #206 from Unson-LLC/codex/vibepro-issues-189-204-gate-friction",
+          "stderr": "Preparing worktree (detached HEAD 8da23b6)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+          "started_at": "2026-06-20T16:01:00.441Z",
+          "finished_at": "2026-06-20T16:01:00.533Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction",
+          "started_at": "2026-06-20T16:01:00.533Z",
+          "finished_at": "2026-06-20T16:01:00.586Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-issues-189-204-gate-friction'",
+          "started_at": "2026-06-20T16:01:00.586Z",
+          "finished_at": "2026-06-20T16:01:00.711Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD 4bdafa8] docs: persist VibePro audit artifacts for story-vibepro-issues-189-204-gate-friction\n 10 files changed, 13161 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-issues-189-204-gate-friction/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-20T16:01:00.748Z",
+          "finished_at": "2026-06-20T16:01:02.629Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   8da23b6..4bdafa8  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-issues-189-204-gate-friction-1781971259330",
+          "started_at": "2026-06-20T16:01:02.629Z",
+          "finished_at": "2026-06-20T16:01:02.698Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
