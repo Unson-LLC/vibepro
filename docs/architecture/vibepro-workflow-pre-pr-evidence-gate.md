@@ -16,9 +16,11 @@ Separate pre-PR workflow replay readiness from post-PR hosted preview validation
 Pre-PR workflow replay can be satisfied by either:
 
 - current Flow Verification with at least one passing runtime probe, or
-- current E2E verification evidence with structured observations that explicitly mention `flow_replay` and `scenario_clause_e2e`.
+- current E2E verification evidence with structured observations that explicitly mention `flow_replay` and `scenario_clause_e2e`, target an existing E2E spec/test file under an `e2e` path, and use a command containing that full target path.
 
 Zero-probe Flow Verification is not evidence. It is a configuration gap, so the Gate DAG returns concrete next actions for adding `flow_design.runtime_probes[]` or recording explicit E2E replay evidence.
+
+Route files, arbitrary repo files, missing targets, and basename-only command matches are not accepted as workflow replay proof. Those paths can describe implementation surface, but they do not prove that a replaying E2E scenario exists.
 
 Flow Verification may run through Basic Auth, but the architecture keeps secret material out of evidence. The evidence records whether Basic Auth was enabled and which environment variable source was used; it must not persist the password.
 
