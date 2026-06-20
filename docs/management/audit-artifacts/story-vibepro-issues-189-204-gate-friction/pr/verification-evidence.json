@@ -1,0 +1,210 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-issues-189-204-gate-friction",
+  "updated_at": "2026-06-20T15:51:41.886Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+      "summary": "current_verification artifact_replay: pr-prepare regenerated gate-dag, PR body, split plan, and coverage diagnostics from clean HEAD; Story AC 5/5 and scenario clauses 4/4 covered",
+      "artifact": "../../../../../tmp/vibepro-189-204/pr-prepare.json",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/gate-dag.json",
+          ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md",
+          ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-prepare.json"
+        ],
+        "scenarios": [
+          "artifact_replay: VibePro PR artifacts were regenerated from the current clean HEAD",
+          "current_verification: integration path for pr prepare was exercised",
+          "scenario_clause_e2e: gate-dag shows Story AC 5/5 and scenarios 4/4 covered"
+        ],
+        "values": {
+          "artifact_replay": "true",
+          "current_verification": "true",
+          "story_ac_covered": "5/5",
+          "scenarios_covered": "4/4"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T15:51:41.886Z",
+      "git_context": {
+        "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+        "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T15:51:41.885Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+      "summary": "flow_replay artifact_replay scenario_clause_e2e passed at clean HEAD: 9/9 focused tests, Story E2E AC 5/5 and scenario 4/4 bound to executable behavior",
+      "artifact": "../../../../../tmp/vibepro-189-204/focused.log",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js",
+          "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+        ],
+        "scenarios": [
+          "flow_replay: merge-delta review reuse and AC coverage detection paths were replayed",
+          "artifact_replay: pr-prepare gate-dag coverage_diagnostics and review binding artifacts were checked",
+          "scenario_clause_e2e: Story acceptance criteria 5/5 and internal spec scenarios 4/4 are covered by executable tests"
+        ],
+        "values": {
+          "flow_replay": "true",
+          "artifact_replay": "true",
+          "scenario_clause_e2e": "true",
+          "focused_tests": "9"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T15:51:30.684Z",
+      "git_context": {
+        "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+        "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T15:51:30.683Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "node --check bin/vibepro.js and src/*.js passed at clean HEAD after scanner masking changes",
+      "artifact": "../../../../../tmp/vibepro-189-204/typecheck.log",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "bin/vibepro.js",
+          "src/pr-manager.js"
+        ],
+        "scenarios": [
+          "current_verification: syntax/typecheck path passed"
+        ],
+        "values": {
+          "typecheck": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T15:51:19.014Z",
+      "git_context": {
+        "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+        "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T15:51:19.011Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "npm test",
+      "summary": "Full Node test suite passed at clean HEAD: 629/629 tests passed after behavior-bound Story E2E and scanner hardening",
+      "artifact": "../../../../../tmp/vibepro-189-204/npm-test.log",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+        ],
+        "scenarios": [
+          "current_verification: full regression suite passed"
+        ],
+        "values": {
+          "tests": "629",
+          "pass": "629"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T15:51:11.898Z",
+      "git_context": {
+        "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+        "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T15:51:11.888Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    }
+  ]
+}

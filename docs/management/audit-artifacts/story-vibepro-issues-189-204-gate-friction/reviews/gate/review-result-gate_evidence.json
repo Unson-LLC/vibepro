@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-issues-189-204-gate-friction",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Previous gate_evidence findings are resolved at current HEAD 06299322eefb982cab75dd5ca8f826c6a2cef057.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-command-artifacts-missing",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "resolved-by-current-head-log-artifacts",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-fake-story-e2e-coverage",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "resolved-by-behavior-bound-story-e2e",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-scenario-clauses-unbound",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "resolved-by-internal-spec-and-scenario-coverage",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the review, PR, story, spec, and architecture artifacts; confirmed clean current HEAD; inspected Story E2E behavior replay, pr-manager scanner masking, generated spec/gate/pr artifacts, verification evidence, and durable command logs.",
+    "evidence": "multi_agent_v1:019ee5bb-fb67-7432-b5ba-0a13d3121915; gate-dag scenario_clause_count=4 missing_scenario_clauses=[] covered S-001..S-004; focused.log 9/9, npm-test.log 629/629, typecheck.log passed",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/review-request-gate_evidence.md",
+      ".vibepro/spec/story-vibepro-issues-189-204-gate-friction/spec.json",
+      ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/gate-dag.json",
+      ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-prepare.json",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+      "/tmp/vibepro-189-204/focused.log",
+      "/tmp/vibepro-189-204/npm-test.log",
+      "/tmp/vibepro-189-204/typecheck.log"
+    ]
+  },
+  "judgment_delta": [
+    "gate-evidence-fake-story-e2e-coverage -> resolved because Story E2E now creates temporary repos and exercises runCli/preparePullRequest behavior for merge-delta reuse, stale binding, diagnostics, and multiline binding coverage",
+    "gate-evidence-scenario-clauses-unbound -> resolved because spec.json exists and pr-prepare/gate-dag report scenario_clause_count=4 with missing_scenario_clauses=[]",
+    "gate-evidence-command-artifacts-missing -> resolved because current-head verification evidence includes durable artifacts for npm-test.log, typecheck.log, focused.log, and pr-prepare.json"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T15:58:14.579Z",
+  "git_context": {
+    "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+    "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T15:58:14.573Z"
+  },
+  "source_fingerprint": "d64d547b75cdee907e79711e2631b662cd49b8e08dc7c13b7a52b292874df3cd",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee5bb-fb67-7432-b5ba-0a13d3121915",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "multi_agent_v1:019ee5bb-fb67-7432-b5ba-0a13d3121915",
+    "request_artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

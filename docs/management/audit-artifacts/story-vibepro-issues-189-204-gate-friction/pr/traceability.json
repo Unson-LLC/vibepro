@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-issues-189-204-gate-friction",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/206 at 2026-06-20T16:00:56Z (commit 8da23b6a0f691aa4c72c8a0882d03324c7c80808)"
+    }
+  ],
+  "created_at": "2026-06-20T15:11:49.921Z",
+  "updated_at": "2026-06-20T16:00:59.323Z"
+}

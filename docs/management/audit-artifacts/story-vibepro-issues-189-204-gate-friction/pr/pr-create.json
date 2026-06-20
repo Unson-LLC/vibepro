@@ -1,0 +1,2172 @@
+{
+  "schema_version": "0.1.0",
+  "created_at": "2026-06-20T15:58:45.724Z",
+  "mode": "pr_create",
+  "dry_run": false,
+  "workspace_initialized": true,
+  "story": {
+    "story_id": "story-vibepro-issues-189-204-gate-friction",
+    "title": "Story",
+    "ssot": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
+    "due_at": null
+  },
+  "task_context": null,
+  "output": {
+    "language": "ja"
+  },
+  "gate_dag": {
+    "schema_version": "0.1.0",
+    "model": "story-acceptance-verification-dag",
+    "overall_status": "ready_for_review",
+    "story_id": "story-vibepro-issues-189-204-gate-friction",
+    "summary": {
+      "acceptance_criteria_count": 5,
+      "required_gate_count": 38,
+      "needs_evidence_count": 0,
+      "engineering_judgment_route": "agent_workflow",
+      "engineering_judgment_dag": "agent_workflow_dag",
+      "active_judgment_axes": [
+        "public_contract",
+        "execution_topology",
+        "scope_reviewability"
+      ],
+      "judgment_axis_count": 3,
+      "judgment_axis_accepted_followup_count": 1,
+      "pr_scope_judgment_status": "passed",
+      "bug_physics_classes": [],
+      "bug_physics_profile_count": 0,
+      "pr_route": "runtime_change",
+      "pr_body_template": "runtime_contract_review",
+      "story_status": "present",
+      "story_source_integrity_status": "passed",
+      "architecture_status": "satisfied",
+      "architecture_axis_quality_status": "needs_review",
+      "spec_status": "present",
+      "path_surface_matrix_status": "passed",
+      "requirement_status": "passed",
+      "failure_mode_coverage_status": "passed",
+      "decision_record_status": "passed",
+      "review_inspection_required_status": "passed",
+      "artifact_consistency_status": "passed",
+      "managed_worktree_status": "not_applicable"
+    },
+    "nodes": [
+      {
+        "id": "story",
+        "type": "story",
+        "label": "story-vibepro-issues-189-204-gate-friction - Close issue 189 and 204 gate-friction fixes",
+        "status": "present",
+        "required": true,
+        "artifact": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+        "reason": "Story source is present"
+      },
+      {
+        "id": "gate:story_source_integrity",
+        "type": "story_source_integrity_gate",
+        "label": "Story Source Integrity Gate",
+        "status": "passed",
+        "required": true,
+        "selected_story_id": "story-vibepro-issues-189-204-gate-friction",
+        "source": {
+          "path": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+          "story_id": "story-vibepro-issues-189-204-gate-friction",
+          "vibepro_story_id": null,
+          "title": "Close issue 189 and 204 gate-friction fixes",
+          "matches_selected_story": true
+        },
+        "changed_story_docs": [
+          {
+            "path": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+            "story_id": "story-vibepro-issues-189-204-gate-friction",
+            "vibepro_story_id": null,
+            "title": "Close issue 189 and 204 gate-friction fixes",
+            "matches_selected_story": true
+          }
+        ],
+        "mismatched_changed_story_docs": [],
+        "required_actions": [],
+        "reason": "Resolved and changed Story documents match the selected Story, or no changed Story document needs binding."
+      },
+      {
+        "id": "gate:engineering_judgment_route",
+        "type": "engineering_judgment_route_gate",
+        "label": "Engineering Judgment Route Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "confidence": 0.82,
+        "signals": [
+          "surface:agent_or_gate_workflow",
+          "risk_profile:light"
+        ],
+        "reason": "Engineering judgment route selected: agent_workflow; DAG=agent_workflow_dag"
+      },
+      {
+        "id": "gate:common_judgment_spine",
+        "type": "engineering_judgment_spine_gate",
+        "label": "Common Judgment Spine Gate",
+        "status": "passed",
+        "required": true,
+        "spine": [
+          "intent",
+          "current_reality",
+          "invariants",
+          "domain_or_system_model",
+          "boundary",
+          "risk_classification",
+          "route_dag_selection",
+          "evidence_requirements",
+          "implementation_plan",
+          "verification",
+          "human_decision_contract",
+          "release_or_operation"
+        ],
+        "subchecks": [
+          {
+            "id": "intent",
+            "status": "passed",
+            "evidence": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md",
+            "surface": "story",
+            "required_evidence_kind": [
+              "story_intent"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "story_intent",
+                "ref": "docs/management/stories/active/story-vibepro-issues-189-204-gate-friction.md"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "5 acceptance criterion/criteria or Story intent text found"
+          },
+          {
+            "id": "current_reality",
+            "status": "passed",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "artifact_replay",
+                "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+                "optional": true,
+                "matched_file_count": 2,
+                "related_file_count": 25,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js",
+                  "src/html-report.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow current reality is backed by artifact_replay"
+          },
+          {
+            "id": "invariants",
+            "status": "passed",
+            "evidence": "9 inferred spec clause(s)",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "spec_clause",
+              "architecture_doc",
+              "test_contract"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "spec_clause",
+                "ref": "9 inferred spec clause(s)"
+              },
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs"
+              },
+              {
+                "kind": "test_contract",
+                "ref": "test files in diff"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+                "optional": true,
+                "matched_file_count": 2,
+                "related_file_count": 25,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js",
+                  "src/html-report.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "High-risk changes need Spec, Architecture, or test evidence for invariants"
+          },
+          {
+            "id": "boundaries",
+            "status": "passed",
+            "evidence": "explicit spec/architecture docs",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "architecture_doc",
+              "decision_record",
+              "current_verification"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs"
+              },
+              {
+                "kind": "decision_record",
+                "ref": "decision-1781970734455-277e05cd"
+              },
+              {
+                "kind": "current_verification",
+                "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+                "optional": true,
+                "matched_file_count": 2,
+                "related_file_count": 25,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js",
+                  "src/html-report.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "Boundary-sensitive changes need architecture/spec, decision, or current verification evidence"
+          },
+          {
+            "id": "failure_modes",
+            "status": "passed",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "artifact_replay",
+                "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need failure-mode evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          },
+          {
+            "id": "done_evidence",
+            "status": "passed",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "artifact_replay",
+                "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need done evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          }
+        ],
+        "missing_subchecks": [],
+        "reason": "Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile"
+      },
+      {
+        "id": "gate:judgment_axis_public_contract",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: public_contract",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "public_contract",
+        "confidence": 0.84,
+        "decision_question": "この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。",
+        "required_evidence": [
+          "story_spec_traceability",
+          "contract_doc",
+          "compat_or_output_test",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "public contract change lacks traceability or compatibility evidence",
+          "output/API/CLI behavior changed without reviewable old/new expectation"
+        ],
+        "acceptable_followup": "Current behavior is backward-compatible and the remaining doc or cleanup item is bounded with an artifact or issue reference.",
+        "signals": [
+          "pr_route:runtime_change",
+          "file_group:contract_docs",
+          "text:public_contract"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+            "optional": true,
+            "matched_file_count": 2,
+            "related_file_count": 25,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js",
+              "src/html-report.js"
+            ]
+          }
+        ],
+        "missing_evidence": [],
+        "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, artifact_replay, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, split_plan, graph_impact_scope."
+      },
+      {
+        "id": "gate:judgment_axis_execution_topology",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: execution_topology",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "execution_topology",
+        "confidence": 0.88,
+        "decision_question": "process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。",
+        "required_evidence": [
+          "topology_diagram",
+          "flow_replay",
+          "artifact_replay",
+          "agent_review",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "orchestration or artifact lifecycle changed without replay/review evidence",
+          "tool or agent side effects are not bounded"
+        ],
+        "acceptable_followup": "Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.",
+        "signals": [
+          "surface:workflow_or_agent",
+          "text:execution_topology"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)"
+          },
+          {
+            "kind": "agent_review",
+            "ref": "agent review summaries passed for required roles"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+            "optional": true,
+            "matched_file_count": 2,
+            "related_file_count": 25,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js",
+              "src/html-report.js"
+            ]
+          }
+        ],
+        "missing_evidence": [],
+        "reason": "execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, artifact_replay, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, split_plan, graph_impact_scope, agent_review."
+      },
+      {
+        "id": "gate:judgment_axis_scope_reviewability",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: scope_reviewability",
+        "status": "accepted_followup",
+        "axis_status": "active_accepted_followup",
+        "required": true,
+        "axis": "scope_reviewability",
+        "confidence": 0.82,
+        "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
+        "required_evidence": [
+          "scope_reviewed",
+          "split_plan",
+          "review_owner_map",
+          "graph_impact_scope",
+          "decision_record"
+        ],
+        "blocking_criteria": [
+          "multiple unrelated decisions are bundled without split rationale",
+          "ownership or blast radius is unclear"
+        ],
+        "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
+        "signals": [
+          "scope:needs_clean_branch",
+          "graphify:related_files"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)"
+          },
+          {
+            "kind": "review_owner_map",
+            "ref": "agent review stage/role ownership map"
+          },
+          {
+            "kind": "decision_record",
+            "ref": "decision-1781969093096-ab8ea8e2",
+            "artifact": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/split-plan.json"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (2 changed / 25 related)",
+            "optional": true,
+            "matched_file_count": 2,
+            "related_file_count": 25,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js",
+              "src/html-report.js"
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "scope_reviewed"
+        ],
+        "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: scope_reviewed. Current PR is coherent; separate cleanup is tracked without hiding required review ownership."
+      },
+      {
+        "id": "gate:pr_scope_judgment",
+        "type": "pr_scope_judgment_gate",
+        "label": "PR Scope Judgment Gate",
+        "status": "passed",
+        "required": true,
+        "classification": "needs_split",
+        "scope_status": "needs_clean_branch",
+        "recommended_strategy": "clean_branch_or_split_pr",
+        "changed_file_count": 6,
+        "reviewable_file_limit": 30,
+        "story_doc_count": 1,
+        "source_file_count": 1,
+        "test_file_count": 2,
+        "doc_file_count": 2,
+        "risk_surface_count": 0,
+        "accepted_decision": {
+          "source": "gate:split_resolution",
+          "summary": "Accept single PR after replacement work: #189 and #204 plus scanner hardening remain one VibePro gate-friction story, with requirements-ssot and runtime-behavior lanes documented in split-plan.",
+          "reviewer": "codex"
+        },
+        "reasons": [
+          "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "split_suggestions": [
+          "clean_branch_or_split_pr"
+        ],
+        "required_actions": [],
+        "reason": "PR scope split risk accepted by decision record: Accept single PR after replacement work: #189 and #204 plus scanner hardening remain one VibePro gate-friction story, with requirements-ssot and runtime-behavior lanes documented in split-plan."
+      },
+      {
+        "id": "gate:bug_physics_triage",
+        "type": "bug_physics_triage_gate",
+        "label": "Bug Physics Triage Gate",
+        "status": "passed",
+        "required": true,
+        "classes": [],
+        "enum": [
+          "timing",
+          "state-invariant",
+          "deterministic-byte",
+          "observability",
+          "deployment"
+        ],
+        "probe_evidence": [],
+        "reason": "No bug-physics-specific route selected; ordinary gate profile remains in force"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_context_acquisition",
+        "type": "route_specific_judgment_gate",
+        "label": "Context Acquisition Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "agentが読むべきrepo/docs/log/graph/current stateを先に集める"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_tool_boundary",
+        "type": "route_specific_judgment_gate",
+        "label": "Tool Boundary Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どのtool/agentがどの副作用を持つかを分離する"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_delegation_policy",
+        "type": "route_specific_judgment_gate",
+        "label": "Delegation Policy Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "type": "agent_evidence_lifecycle_gate",
+        "label": "Evidence Lifecycle Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "Agent review evidence lifecycle is closed for the current git state (recorded review or explicit waiver)"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_human_decision_contract",
+        "type": "route_specific_judgment_gate",
+        "label": "Human Decision Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "最後に人間が判断する問いと根拠をPRに出す"
+      },
+      {
+        "id": "gate:pr_route_classification",
+        "type": "pr_route_gate",
+        "label": "PR Route Classification Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "confidence": 0.7,
+        "required_gates": [
+          "story",
+          "spec",
+          "verification",
+          "pr_body_contract",
+          "split_resolution"
+        ],
+        "signals": [
+          "file_group:source",
+          "scope:needs_clean_branch"
+        ],
+        "reason": "PR route selected: runtime_change; body template: runtime_contract_review"
+      },
+      {
+        "id": "gate:pr_body_contract",
+        "type": "pr_body_contract_gate",
+        "label": "PR Body Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "required_sections": [
+          "decision_question",
+          "story_or_source_of_truth",
+          "gate_status",
+          "verification_or_waiver"
+        ],
+        "scope_status": "needs_clean_branch",
+        "reason": "PR body must use runtime_contract_review and expose the route-specific decision contract"
+      },
+      {
+        "id": "gate:split_resolution",
+        "type": "split_resolution_gate",
+        "label": "Split Resolution Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "reasons": [
+          "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "reason": "Split/clean-branch decision is explicitly recorded: Accept single PR after replacement work: #189 and #204 plus scanner hardening remain one VibePro gate-friction story, with requirements-ssot and runtime-behavior lanes documented in split-plan.",
+        "decision_id": "decision-1781970734455-277e05cd"
+      },
+      {
+        "id": "gate:managed_worktree",
+        "type": "managed_worktree_gate",
+        "label": "Managed Worktree Gate",
+        "status": "not_applicable",
+        "required": false,
+        "mode": "disabled",
+        "current_repo": "/Users/ksato/workspace/code/vibepro",
+        "managed_worktree_path": null,
+        "reason": "managed worktree mode is disabled"
+      },
+      {
+        "id": "gate:change_classification",
+        "type": "change_classification_gate",
+        "label": "Change Classification Gate",
+        "status": "passed",
+        "required": true,
+        "profile": "light",
+        "change_type": "simple_code_change",
+        "risk_surfaces": [
+          "gate_orchestration",
+          "regression_blast_radius",
+          "test_coverage"
+        ],
+        "reason": "changed module has a large call-graph blast radius; PR/gate orchestration source changed; high blast-radius module changed (many call-graph dependents): src/pr-manager.js"
+      },
+      {
+        "id": "gate:pr_freshness",
+        "type": "pr_freshness_gate",
+        "label": "PR Freshness Gate",
+        "status": "passed",
+        "required": true,
+        "base_ref": "main",
+        "head_ref": "HEAD",
+        "base_sha": "f2690b2305b10b7c97098300164da6e0082ce323",
+        "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+        "merge_base_sha": "f2690b2305b10b7c97098300164da6e0082ce323",
+        "head_contains_base": true,
+        "pr_prepare_regenerated_at_runtime": true,
+        "required_actions": [],
+        "reason": "HEAD contains current main; PR prepare artifacts are based on the latest resolved base ref"
+      },
+      {
+        "id": "architecture",
+        "type": "architecture_gate",
+        "label": "Architecture Gate",
+        "status": "satisfied",
+        "required": true,
+        "reason": "ADRあり (docs/architecture/vibepro-issues-189-204-gate-friction.md)",
+        "axis_quality": {
+          "status": "needs_review",
+          "active_axis_count": 3,
+          "missing_field_count": 6,
+          "evaluations": [
+            {
+              "axis": "public_contract",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-issues-189-204-gate-friction.md"
+              ],
+              "reason": "public_contract architecture decision is missing: alternatives_considered, compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "execution_topology",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-issues-189-204-gate-friction.md"
+              ],
+              "reason": "execution_topology architecture decision is missing: alternatives_considered, compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "scope_reviewability",
+              "status": "covered",
+              "required_fields": [
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [],
+              "sources": [
+                "docs/architecture/vibepro-issues-189-204-gate-friction.md"
+              ],
+              "reason": "scope_reviewability architecture quality fields are represented in architecture decision sources"
+            }
+          ],
+          "reason": "Active judgment axes have missing architecture decision quality fields"
+        }
+      },
+      {
+        "id": "spec",
+        "type": "spec_gate",
+        "label": "Spec Gate",
+        "status": "present",
+        "reason": "explicit Spec docs are present (docs/specs/vibepro-issues-189-204-gate-friction.md)",
+        "spec_docs": [
+          "docs/specs/vibepro-issues-189-204-gate-friction.md"
+        ],
+        "inferred_spec": {
+          "story_id": "story-vibepro-issues-189-204-gate-friction",
+          "clauses": 9,
+          "generated_at": "2026-06-20T15:34:26.096Z"
+        },
+        "drift": {
+          "spec_code_drift": 0,
+          "spec_test_drift": 0,
+          "code_test_drift": 0,
+          "spec_pr_drift": 0
+        },
+        "required": true
+      },
+      {
+        "id": "gate:design_diagrams",
+        "type": "design_diagrams_gate",
+        "label": "Design Diagrams (MUST-HAVE)",
+        "status": "not_required",
+        "required": false,
+        "blocking": true,
+        "reason": "該当する設計図トリガーなし",
+        "required_diagrams": [],
+        "provided_diagrams": [],
+        "missing_diagrams": [],
+        "detection_reasons": []
+      },
+      {
+        "id": "code",
+        "type": "code_gate",
+        "label": "Code Gate",
+        "status": "present",
+        "files": [
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "id": "gate:network_contract",
+        "type": "verification_gate",
+        "label": "Network Contract Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "No broken API client route contracts detected",
+        "summary": {
+          "api_client_call_count": 0,
+          "introduced_api_client_call_count": 0,
+          "missing_route_count": 0,
+          "dynamic_call_count": 0,
+          "server_action_replacement_count": 0
+        },
+        "missing_routes": []
+      },
+      {
+        "id": "gate:path_surface_matrix",
+        "type": "path_surface_matrix_gate",
+        "label": "Path Surface Matrix Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "row_count": 2,
+        "missing_surface_count": 0,
+        "accepted_decision": null,
+        "rows": [
+          {
+            "surface": "review_surface",
+            "path_type": "gate_or_report_surface",
+            "reason": "Gate/report artifact code changed: src/pr-manager.js",
+            "required": true,
+            "status": "covered",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "surface": "review_surface",
+            "path_type": "story_surface",
+            "reason": "Story mentions report/review/gate artifact output",
+            "required": true,
+            "status": "covered",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          }
+        ],
+        "missing_surfaces": [],
+        "required_actions": [],
+        "reason": "2 path surface row(s) are covered or not critical for this route"
+      },
+      {
+        "id": "gate:requirement",
+        "type": "requirement_gate",
+        "label": "Requirement Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない"
+      },
+      {
+        "id": "gate:failure_mode_coverage",
+        "type": "failure_mode_coverage_gate",
+        "label": "Failure Mode Coverage Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "candidate_count": 3,
+        "missing_count": 0,
+        "modes": [
+          {
+            "id": "auth_denied",
+            "reason": "Auth/permission boundary can deny or leak access",
+            "keywords": [
+              "auth",
+              "permission",
+              "security",
+              "denied"
+            ],
+            "status": "not_required",
+            "evidence": null
+          },
+          {
+            "id": "evidence_lifecycle_regression",
+            "reason": "Gate/review/evidence lifecycle changes can produce misleading green artifacts or unreconstructable handoffs",
+            "keywords": [
+              "accepted_followup",
+              "needs_evidence",
+              "active_needs_evidence",
+              "provenance",
+              "inspection",
+              "gate-dag",
+              "pr-prepare",
+              "artifact replay"
+            ],
+            "status": "covered",
+            "evidence": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json"
+          },
+          {
+            "id": "workflow_state_regression",
+            "reason": "Workflow/state transitions can leave stale, pending, or over-green gate states",
+            "keywords": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e",
+              "workflow",
+              "state transition",
+              "stale"
+            ],
+            "status": "covered",
+            "evidence": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          }
+        ],
+        "missing_modes": [],
+        "required_actions": [],
+        "reason": "3 failure mode candidate(s) are covered or not critical for this route profile"
+      },
+      {
+        "id": "gate:decision_record",
+        "type": "decision_record_gate",
+        "label": "Decision Record Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Decision records are captured; total=2, waivers=0, noise=0, secret_exposure=0",
+        "artifact": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/decision-records.json",
+        "summary": {
+          "total": 2,
+          "open": 0,
+          "by_type": {
+            "needs_review": 2
+          },
+          "by_status": {
+            "accepted": 2
+          },
+          "warnings": [],
+          "latest": {
+            "schema_version": "0.1.0",
+            "decision_id": "decision-1781970734455-277e05cd",
+            "story_id": "story-vibepro-issues-189-204-gate-friction",
+            "type": "needs_review",
+            "status": "accepted",
+            "source": "gate:split_resolution",
+            "source_status": "needs_review",
+            "summary": "Accept single PR after replacement work: #189 and #204 plus scanner hardening remain one VibePro gate-friction story, with requirements-ssot and runtime-behavior lanes documented in split-plan.",
+            "reason": "Reviewable scope remains 6 changed files; the second commit directly resolves gate_evidence findings for this same story by binding Story E2E to behavior and fixing scanner parsing, not a separate product decision.",
+            "reviewer": "codex",
+            "artifact": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/split-plan.json",
+            "secret_exposure": null,
+            "redaction": {
+              "applied": false,
+              "hit_count": 0
+            },
+            "warnings": [],
+            "git_context": {
+              "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+              "current_branch": "codex/vibepro-issues-189-204-gate-friction",
+              "dirty": false,
+              "status_fingerprint": "",
+              "recorded_at": "2026-06-20T15:52:14.454Z"
+            },
+            "recorded_at": "2026-06-20T15:52:14.455Z"
+          }
+        },
+        "open_decisions": [],
+        "secret_exposure_count": 0
+      },
+      {
+        "id": "gate:unit",
+        "type": "verification_gate",
+        "label": "Unit Gate",
+        "status": "passed",
+        "required": true,
+        "command": "npm test",
+        "reason": "Full Node test suite passed at clean HEAD: 629/629 tests passed after behavior-bound Story E2E and scanner hardening; evidence: ../../../../../tmp/vibepro-189-204/npm-test.log",
+        "evidence": {
+          "kind": "unit",
+          "status": "pass",
+          "summary": "Full Node test suite passed at clean HEAD: 629/629 tests passed after behavior-bound Story E2E and scanner hardening",
+          "artifact": "../../../../../tmp/vibepro-189-204/npm-test.log",
+          "executed_at": "2026-06-20T15:51:11.898Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:integration",
+        "type": "verification_gate",
+        "label": "Integration Gate",
+        "status": "passed",
+        "required": true,
+        "command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+        "reason": "current_verification artifact_replay: pr-prepare regenerated gate-dag, PR body, split plan, and coverage diagnostics from clean HEAD; Story AC 5/5 and scenario clauses 4/4 covered; evidence: ../../../../../tmp/vibepro-189-204/pr-prepare.json",
+        "evidence": {
+          "kind": "integration",
+          "status": "pass",
+          "summary": "current_verification artifact_replay: pr-prepare regenerated gate-dag, PR body, split plan, and coverage diagnostics from clean HEAD; Story AC 5/5 and scenario clauses 4/4 covered",
+          "artifact": "../../../../../tmp/vibepro-189-204/pr-prepare.json",
+          "executed_at": "2026-06-20T15:51:41.886Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:e2e",
+        "type": "verification_gate",
+        "label": "E2E Gate",
+        "status": "passed",
+        "required": false,
+        "command": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+        "reason": "flow_replay artifact_replay scenario_clause_e2e passed at clean HEAD: 9/9 focused tests, Story E2E AC 5/5 and scenario 4/4 bound to executable behavior; evidence: ../../../../../tmp/vibepro-189-204/focused.log",
+        "flow_verification": null,
+        "acceptance_e2e_coverage": {
+          "schema_version": "0.1.0",
+          "story_id": "story-vibepro-issues-189-204-gate-friction",
+          "required": false,
+          "status": "not_applicable",
+          "expected_file_patterns": [
+            "tests/e2e/story-vibepro-issues-189-204-gate-friction-*.spec.ts",
+            "test/e2e/story-vibepro-issues-189-204-gate-friction-*.spec.ts",
+            "e2e/story-vibepro-issues-189-204-gate-friction-*.spec.ts"
+          ],
+          "matched_files": [
+            "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          ],
+          "executable_matched_files": [
+            "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+          ],
+          "acceptance_criteria_count": 5,
+          "covered_acceptance_criteria_count": 5,
+          "covered_acceptance_criteria": [
+            {
+              "id": "ac:1",
+              "criterion": "Merge-delta review reuse remains visible as `binding_status=reused_merge_delta` when current HEAD changes only files outside recorded `inspection.inputs`.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ],
+              "candidate_diagnostics": []
+            },
+            {
+              "id": "ac:2",
+              "criterion": "Review evidence remains stale when the merge delta touches a recorded inspected file or when no concrete inspected file input exists.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ],
+              "candidate_diagnostics": []
+            },
+            {
+              "id": "ac:3",
+              "criterion": "Missing Story E2E AC coverage reports the AC id/text, inspected E2E file, candidate test block, and the reason the block did not count.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ],
+              "candidate_diagnostics": []
+            },
+            {
+              "id": "ac:4",
+              "criterion": "Multiline `expect(...)` assertions can satisfy AC coverage when the assertion references a local static string/array binding containing the AC text and a local marker such as `story-id ac:1`.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ],
+              "candidate_diagnostics": []
+            },
+            {
+              "id": "ac:5",
+              "criterion": "The detector still rejects candidate blocks that contain AC text but no executable AC marker, and it suggests explicit executable coverage markers instead of no-op scanner assertions.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ],
+              "candidate_diagnostics": []
+            }
+          ],
+          "missing_acceptance_criteria": [],
+          "scenario_clause_count": 4,
+          "covered_scenario_clause_count": 4,
+          "covered_scenario_clauses": [
+            {
+              "id": "S-001",
+              "statement": "Given a passing review inspected src/runtime.js, when current HEAD only adds docs/base-sync.md, then the role remains passing with binding_status=reused_merge_delta.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ]
+            },
+            {
+              "id": "S-002",
+              "statement": "Given the same review, when current HEAD changes src/runtime.js, then the role remains stale and names the touched reviewed file.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ]
+            },
+            {
+              "id": "S-003",
+              "statement": "Given a matching E2E file contains a candidate test block with AC text but no AC marker, when `pr prepare` runs, then the E2E gate stays `needs_evidence` and diagnostics explain the missing marker.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ]
+            },
+            {
+              "id": "S-004",
+              "statement": "Given a matching E2E file contains multiline `expect(...)` that references `criteria[0]` and `markers[0]`, when both local arrays are static string arrays, then the AC is covered.",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+              ]
+            }
+          ],
+          "missing_scenario_clauses": [],
+          "coverage_diagnostics": {
+            "missing_acceptance_criteria": [],
+            "missing_scenario_clauses": []
+          },
+          "scenario_e2e_coverage": {
+            "required": true,
+            "status": "passed",
+            "scenario_clause_count": 4,
+            "covered_scenario_clause_count": 4,
+            "covered_scenario_clauses": [
+              {
+                "id": "S-001",
+                "statement": "Given a passing review inspected src/runtime.js, when current HEAD only adds docs/base-sync.md, then the role remains passing with binding_status=reused_merge_delta.",
+                "covered": true,
+                "files": [
+                  "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+                ]
+              },
+              {
+                "id": "S-002",
+                "statement": "Given the same review, when current HEAD changes src/runtime.js, then the role remains stale and names the touched reviewed file.",
+                "covered": true,
+                "files": [
+                  "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+                ]
+              },
+              {
+                "id": "S-003",
+                "statement": "Given a matching E2E file contains a candidate test block with AC text but no AC marker, when `pr prepare` runs, then the E2E gate stays `needs_evidence` and diagnostics explain the missing marker.",
+                "covered": true,
+                "files": [
+                  "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+                ]
+              },
+              {
+                "id": "S-004",
+                "statement": "Given a matching E2E file contains multiline `expect(...)` that references `criteria[0]` and `markers[0]`, when both local arrays are static string arrays, then the AC is covered.",
+                "covered": true,
+                "files": [
+                  "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js"
+                ]
+              }
+            ],
+            "missing_scenario_clauses": []
+          },
+          "not_applicable_reason": "E2E Gate is not required for this non-UI/non-flow change; Unit and Integration evidence are authoritative."
+        },
+        "artifact_expectation": null,
+        "evidence": {
+          "kind": "e2e",
+          "status": "pass",
+          "summary": "flow_replay artifact_replay scenario_clause_e2e passed at clean HEAD: 9/9 focused tests, Story E2E AC 5/5 and scenario 4/4 bound to executable behavior",
+          "artifact": "../../../../../tmp/vibepro-189-204/focused.log",
+          "executed_at": "2026-06-20T15:51:30.684Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "review:dispatch_batch:gate",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "role_count": 1,
+        "dispatch_ready_count": 1,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All gate role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:gate:gate_evidence",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "stage": "gate",
+        "role": "gate_evidence",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current gate:gate_evidence review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:gate",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-issues-189-204-gate-friction --stage gate --role gate_evidence",
+        "artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:gate:gate_evidence",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "reason": "Previous gate_evidence findings are resolved at current HEAD 06299322eefb982cab75dd5ca8f826c6a2cef057."
+      },
+      {
+        "id": "review:record:gate:gate_evidence",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/review-result-gate_evidence.json",
+        "reason": "Recorded gate:gate_evidence review for the current git state"
+      },
+      {
+        "id": "review:join:gate",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "role_count": 1,
+        "reason": "All parallel gate agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "gate:agent_review",
+        "type": "agent_review_gate",
+        "label": "Agent Review Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Required staged agent reviews passed for the current git state",
+        "summary": {
+          "required_review_count": 1,
+          "unmet_required_review_count": 0,
+          "checkpoint_required_review_count": 0,
+          "unmet_checkpoint_review_count": 0,
+          "stage_count": 1,
+          "stale_result_count": 0,
+          "block_result_count": 0,
+          "lifecycle_running_count": 0,
+          "lifecycle_timed_out_count": 0
+        },
+        "parallel_dispatch": {
+          "required": true,
+          "mode": "policy_aware_parallel_reviews",
+          "stage_execution": {
+            "serial_between_stages": true,
+            "parallel_within_stage": true,
+            "current_stage": null,
+            "max_parallel_subagents_per_stage": 1,
+            "barrier": "A later review stage must not be dispatched until the current stage has closed and recorded every required role."
+          },
+          "required_stages": [
+            {
+              "stage": "gate",
+              "serial_index": 1,
+              "depends_on_stage": null,
+              "next_stage": null,
+              "roles": [
+                "gate_evidence"
+              ],
+              "role_count": 1,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-issues-189-204-gate-friction --stage gate --role gate_evidence",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/parallel-dispatch.md"
+            }
+          ]
+        },
+        "dispatch_contract": {
+          "required": false,
+          "expected": "dispatch_parallel_subagents",
+          "user_confirmation_required_by_vibepro": false,
+          "runner_policy_may_require_user_delegation": false,
+          "manual_review_fallback": false,
+          "applies_to": [
+            "codex",
+            "claude_code"
+          ]
+        },
+        "required_actions": [],
+        "unmet_required_reviews": [],
+        "unmet_checkpoint_reviews": []
+      },
+      {
+        "id": "gate:review_inspection_required",
+        "type": "review_inspection_required_gate",
+        "label": "Review Inspection Required Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "recorded_review_count": 1,
+        "missing_inspection_count": 0,
+        "inspected_roles": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/review-result-gate_evidence.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          }
+        ],
+        "missing_inspections": [],
+        "required_actions": [],
+        "reason": "Review inspection evidence is not critical for this route profile"
+      },
+      {
+        "id": "gate:artifact_consistency",
+        "type": "artifact_consistency_gate",
+        "label": "Artifact Consistency Gate",
+        "status": "passed",
+        "required": true,
+        "current": {
+          "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+          "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "raw_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "dirty": false,
+          "raw_dirty": false,
+          "dirty_files": [],
+          "raw_dirty_files": [],
+          "vibepro_internal_dirty_files": [],
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          },
+          "managed_worktree": {
+            "id": null,
+            "path": null,
+            "branch": null,
+            "head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "dirty": null,
+            "dirty_fingerprint": null,
+            "raw_dirty": null,
+            "raw_dirty_fingerprint": null,
+            "fingerprint_scope": null
+          }
+        },
+        "artifact_count": 5,
+        "inconsistent_artifact_count": 0,
+        "artifacts": [
+          {
+            "artifact_type": "verification_command",
+            "kind": "integration",
+            "command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-issues-189-204-gate-friction --base main --json",
+            "artifact": "../../../../../tmp/vibepro-189-204/pr-prepare.json",
+            "recorded_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "e2e",
+            "command": "node --test --test-name-pattern 'merge delta|AC coverage diagnostics|story-vibepro-issues-189-204' test/vibepro-cli.test.js test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+            "artifact": "../../../../../tmp/vibepro-189-204/focused.log",
+            "recorded_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "typecheck",
+            "command": "npm run typecheck",
+            "artifact": "../../../../../tmp/vibepro-189-204/typecheck.log",
+            "recorded_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "unit",
+            "command": "npm test",
+            "artifact": "../../../../../tmp/vibepro-189-204/npm-test.log",
+            "recorded_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "gate",
+            "role": "gate_evidence",
+            "artifact": ".vibepro/reviews/story-vibepro-issues-189-204-gate-friction/gate/review-result-gate_evidence.json",
+            "recorded_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          }
+        ],
+        "inconsistent_artifacts": [],
+        "required_actions": [],
+        "reason": "5 recorded verification/review artifact(s) are bound to the current git state"
+      },
+      {
+        "id": "gate:dag_connectivity",
+        "type": "dag_connectivity_gate",
+        "label": "DAG Connectivity Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Every DAG node is reachable from story and can reach the final PR decision",
+        "invalid_edges": [],
+        "unreachable_nodes": [],
+        "dead_end_nodes": [],
+        "unreachable_required_nodes": [],
+        "dead_end_required_nodes": []
+      },
+      {
+        "id": "pr",
+        "type": "pr_gate",
+        "label": "PR Gate",
+        "status": "pending",
+        "reason": "Unit / Integration / E2E Gateの証跡をPR本文で確認する"
+      },
+      {
+        "id": "ac:1",
+        "type": "acceptance_criterion",
+        "label": "Merge-delta review reuse remains visible as `binding_status=reused_merge_delta` when current HEAD changes only files outside recorded `inspection.inputs`.",
+        "status": "present"
+      },
+      {
+        "id": "ac:2",
+        "type": "acceptance_criterion",
+        "label": "Review evidence remains stale when the merge delta touches a recorded inspected file or when no concrete inspected file input exists.",
+        "status": "present"
+      },
+      {
+        "id": "ac:3",
+        "type": "acceptance_criterion",
+        "label": "Missing Story E2E AC coverage reports the AC id/text, inspected E2E file, candidate test block, and the reason the block did not count.",
+        "status": "present"
+      },
+      {
+        "id": "ac:4",
+        "type": "acceptance_criterion",
+        "label": "Multiline `expect(...)` assertions can satisfy AC coverage when the assertion references a local static string/array binding containing the AC text and a local marker such as `story-id ac:1`.",
+        "status": "present"
+      },
+      {
+        "id": "ac:5",
+        "type": "acceptance_criterion",
+        "label": "The detector still rejects candidate blocks that contain AC text but no executable AC marker, and it suggests explicit executable coverage markers instead of no-op scanner assertions.",
+        "status": "present"
+      }
+    ],
+    "edges": [
+      {
+        "from": "story",
+        "to": "gate:story_source_integrity"
+      },
+      {
+        "from": "gate:story_source_integrity",
+        "to": "gate:engineering_judgment_route"
+      },
+      {
+        "from": "gate:engineering_judgment_route",
+        "to": "gate:common_judgment_spine"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_public_contract"
+      },
+      {
+        "from": "gate:judgment_axis_public_contract",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_execution_topology"
+      },
+      {
+        "from": "gate:judgment_axis_execution_topology",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_scope_reviewability"
+      },
+      {
+        "from": "gate:judgment_axis_scope_reviewability",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:pr_scope_judgment",
+        "to": "gate:bug_physics_triage"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_context_acquisition"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_context_acquisition",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_tool_boundary"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_tool_boundary",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_delegation_policy"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_delegation_policy",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_evidence_lifecycle"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_human_decision_contract"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_human_decision_contract",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:split_resolution"
+      },
+      {
+        "from": "gate:split_resolution",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_body_contract",
+        "to": "gate:managed_worktree"
+      },
+      {
+        "from": "gate:managed_worktree",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:change_classification",
+        "to": "gate:pr_freshness"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "architecture"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "spec"
+      },
+      {
+        "from": "architecture",
+        "to": "code"
+      },
+      {
+        "from": "spec",
+        "to": "gate:design_diagrams"
+      },
+      {
+        "from": "gate:design_diagrams",
+        "to": "code"
+      },
+      {
+        "from": "story",
+        "to": "ac:1"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:2"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:3"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:4"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:5"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "code",
+        "to": "gate:network_contract"
+      },
+      {
+        "from": "gate:network_contract",
+        "to": "gate:path_surface_matrix"
+      },
+      {
+        "from": "gate:path_surface_matrix",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "gate:failure_mode_coverage"
+      },
+      {
+        "from": "gate:failure_mode_coverage",
+        "to": "gate:decision_record"
+      },
+      {
+        "from": "gate:decision_record",
+        "to": "gate:unit"
+      },
+      {
+        "from": "gate:unit",
+        "to": "gate:integration"
+      },
+      {
+        "from": "gate:integration",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "gate:e2e",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "spec",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:integration",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "review:dispatch_batch:gate",
+        "to": "review:preflight:gate:gate_evidence"
+      },
+      {
+        "from": "review:preflight:gate:gate_evidence",
+        "to": "review:prepare:gate"
+      },
+      {
+        "from": "review:prepare:gate",
+        "to": "review:gate:gate_evidence"
+      },
+      {
+        "from": "review:gate:gate_evidence",
+        "to": "review:record:gate:gate_evidence"
+      },
+      {
+        "from": "review:record:gate:gate_evidence",
+        "to": "review:join:gate"
+      },
+      {
+        "from": "review:join:gate",
+        "to": "gate:agent_review"
+      },
+      {
+        "from": "gate:agent_review",
+        "to": "gate:review_inspection_required"
+      },
+      {
+        "from": "gate:review_inspection_required",
+        "to": "gate:artifact_consistency"
+      },
+      {
+        "from": "gate:artifact_consistency",
+        "to": "gate:dag_connectivity"
+      },
+      {
+        "from": "gate:dag_connectivity",
+        "to": "pr"
+      }
+    ]
+  },
+  "execution_gate": {
+    "schema_version": "0.1.0",
+    "status": "ready",
+    "pr_create_allowed": true,
+    "waiver_required": false,
+    "blocking_gate_count": 0,
+    "blocking_gates": [],
+    "required_actions": []
+  },
+  "gate_override": null,
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-20T15:58:43.958Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+      "branch": "codex/vibepro-issues-189-204-gate-friction",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f2690b2305b10b7c97098300164da6e0082ce323",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "current_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+  "artifact_freshness": {
+    "kind": "pr_create",
+    "status": "current",
+    "exists": true,
+    "artifact": null,
+    "report": null,
+    "artifact_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+    "current_head_sha": "06299322eefb982cab75dd5ca8f826c6a2cef057",
+    "checked_at": "2026-06-20T15:58:45.724Z",
+    "reason": "pr-create artifact is bound to the current HEAD 06299322eefb"
+  },
+  "base": "main",
+  "head": "codex/vibepro-issues-189-204-gate-friction",
+  "title": "Fix VibePro gate friction for review reuse and AC coverage",
+  "body_file": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md",
+  "prepare_artifacts": {
+    "json": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-prepare.json",
+    "report": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-prepare.html",
+    "review_cockpit": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/review-cockpit.html",
+    "human_review": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/human-review.json",
+    "architecture_review": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/architecture-review.json",
+    "decision_records": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/decision-records.json",
+    "pr_body": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/gate-dag.json",
+    "gate_dag_report": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/gate-dag.html",
+    "split_plan": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/split-plan.json",
+    "split_plan_report": ".vibepro/pr/story-vibepro-issues-189-204-gate-friction/split-plan.html"
+  },
+  "warnings": [],
+  "commands": [
+    "git push -u origin codex/vibepro-issues-189-204-gate-friction",
+    "gh pr create --base main --head codex/vibepro-issues-189-204-gate-friction --title 'Fix VibePro gate friction for review reuse and AC coverage' --body-file /Users/ksato/workspace/code/vibepro/.vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md"
+  ],
+  "results": [
+    {
+      "command": "git push -u origin codex/vibepro-issues-189-204-gate-friction",
+      "started_at": "2026-06-20T15:58:45.724Z",
+      "finished_at": "2026-06-20T15:58:46.840Z",
+      "exit_code": 0,
+      "stdout": "branch 'codex/vibepro-issues-189-204-gate-friction' set up to track 'origin/codex/vibepro-issues-189-204-gate-friction'.",
+      "stderr": "Everything up-to-date"
+    },
+    {
+      "command": "gh pr create --base main --head codex/vibepro-issues-189-204-gate-friction --title 'Fix VibePro gate friction for review reuse and AC coverage' --body-file /Users/ksato/workspace/code/vibepro/.vibepro/pr/story-vibepro-issues-189-204-gate-friction/pr-body.md",
+      "started_at": "2026-06-20T15:58:46.840Z",
+      "finished_at": "2026-06-20T15:58:49.134Z",
+      "exit_code": 0,
+      "stdout": "https://github.com/Unson-LLC/vibepro/pull/206",
+      "stderr": ""
+    }
+  ],
+  "pr_url": "https://github.com/Unson-LLC/vibepro/pull/206"
+}
