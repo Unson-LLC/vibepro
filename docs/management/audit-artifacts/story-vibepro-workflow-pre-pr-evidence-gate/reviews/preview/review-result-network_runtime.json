@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "preview",
+  "role": "network_runtime",
+  "status": "pass",
+  "summary": "preview:network_runtime passes at HEAD 0cd3088: pre-PR preview dispatch excludes preview_smoke and workflow replay evidence failures surface explicit runtime/evidence setup actions.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected workflow-heavy review-role policy, replay/evidence gate logic, artifact role emission, focused risk-adaptive and story E2E tests; regression_guard and path_surface_coverage are satisfied for network/runtime preview risk.",
+    "evidence": "subagent 019ee532-9760-7ed1-bc6a-799f5f7f86e8 PASS JSON; focused checks include node --test test/risk-adaptive-gate.test.js and story E2E.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-network_runtime.md",
+      "src/pr-manager.js",
+      "src/agent-review.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "docs/specs/vibepro-workflow-pre-pr-evidence-gate.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: pre-PR CLI gate could emit preview_smoke or accept loose E2E replay evidence; final judgment: pass because preview required roles are network_runtime/human_usability and replay gates require explicit markers plus executable E2E target checks."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T13:33:07.189Z",
+  "git_context": {
+    "head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T13:33:07.188Z"
+  },
+  "source_fingerprint": "a371643b531644f8e381e5ff761cfd94d3d251a36c336a1002bacf406439d5c9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee532-9760-7ed1-bc6a-799f5f7f86e8",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-network_runtime.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-network_runtime.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

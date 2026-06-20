@@ -1,0 +1,3359 @@
+{
+  "schema_version": "0.1.0",
+  "created_at": "2026-06-20T14:40:09.101Z",
+  "mode": "execute_merge",
+  "dry_run": false,
+  "workspace_initialized": true,
+  "story": {
+    "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+    "title": "Story",
+    "ssot": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
+    "due_at": null
+  },
+  "output": {
+    "language": "ja"
+  },
+  "strategy": "merge",
+  "delete_branch": true,
+  "base": "main",
+  "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+  "current_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+  "artifact_freshness": {
+    "kind": "pr_merge",
+    "status": "current",
+    "exists": true,
+    "artifact": null,
+    "report": null,
+    "artifact_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "current_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "checked_at": "2026-06-20T14:40:09.101Z",
+    "reason": "pr-merge artifact is bound to the current HEAD c279e4c7022c"
+  },
+  "repository_slug": "Unson-LLC/vibepro",
+  "pr": {
+    "selector": "203",
+    "url": "https://github.com/Unson-LLC/vibepro/pull/203",
+    "state": "OPEN",
+    "is_draft": false,
+    "merge_state_status": "CLEAN",
+    "review_decision": "",
+    "head_ref_name": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "head_ref_oid": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "base_ref_name": "main",
+    "checks": [
+      {
+        "name": "test (20)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CI",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27874281223/job/82491070762"
+      },
+      {
+        "name": "analyze",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CodeQL",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27874281224/job/82491070734"
+      },
+      {
+        "name": "test (22)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CI",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27874281223/job/82491070756"
+      },
+      {
+        "name": "CodeQL",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "",
+        "details_url": "https://github.com/Unson-LLC/vibepro/runs/82491138128"
+      }
+    ]
+  },
+  "gate_dag": {
+    "schema_version": "0.1.0",
+    "model": "story-acceptance-verification-dag",
+    "overall_status": "ready_for_review",
+    "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+    "summary": {
+      "acceptance_criteria_count": 6,
+      "required_gate_count": 81,
+      "needs_evidence_count": 0,
+      "engineering_judgment_route": "agent_workflow",
+      "engineering_judgment_dag": "agent_workflow_dag",
+      "active_judgment_axes": [
+        "public_contract",
+        "execution_topology",
+        "scope_reviewability",
+        "release_ops"
+      ],
+      "judgment_axis_count": 4,
+      "judgment_axis_accepted_followup_count": 2,
+      "pr_scope_judgment_status": "passed",
+      "bug_physics_classes": [],
+      "bug_physics_profile_count": 0,
+      "pr_route": "runtime_change",
+      "pr_body_template": "runtime_contract_review",
+      "story_status": "present",
+      "story_source_integrity_status": "passed",
+      "architecture_status": "satisfied",
+      "architecture_axis_quality_status": "needs_review",
+      "spec_status": "present",
+      "path_surface_matrix_status": "passed",
+      "requirement_status": "passed",
+      "failure_mode_coverage_status": "passed",
+      "decision_record_status": "passed",
+      "review_inspection_required_status": "passed",
+      "artifact_consistency_status": "passed",
+      "managed_worktree_status": "not_applicable"
+    },
+    "nodes": [
+      {
+        "id": "story",
+        "type": "story",
+        "label": "story-vibepro-workflow-pre-pr-evidence-gate - workflow-heavy PR gateのpre-PR evidence loopを解消する",
+        "status": "present",
+        "required": true,
+        "artifact": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+        "reason": "Story source is present"
+      },
+      {
+        "id": "gate:story_source_integrity",
+        "type": "story_source_integrity_gate",
+        "label": "Story Source Integrity Gate",
+        "status": "passed",
+        "required": true,
+        "selected_story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+        "source": {
+          "path": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+          "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+          "vibepro_story_id": null,
+          "title": "workflow-heavy PR gateのpre-PR evidence loopを解消する",
+          "matches_selected_story": true
+        },
+        "changed_story_docs": [
+          {
+            "path": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+            "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+            "vibepro_story_id": null,
+            "title": "workflow-heavy PR gateのpre-PR evidence loopを解消する",
+            "matches_selected_story": true
+          }
+        ],
+        "mismatched_changed_story_docs": [],
+        "required_actions": [],
+        "reason": "Resolved and changed Story documents match the selected Story, or no changed Story document needs binding."
+      },
+      {
+        "id": "gate:engineering_judgment_route",
+        "type": "engineering_judgment_route_gate",
+        "label": "Engineering Judgment Route Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "confidence": 0.82,
+        "signals": [
+          "surface:agent_or_gate_workflow",
+          "risk_profile:workflow_heavy"
+        ],
+        "reason": "Engineering judgment route selected: agent_workflow; DAG=agent_workflow_dag"
+      },
+      {
+        "id": "gate:common_judgment_spine",
+        "type": "engineering_judgment_spine_gate",
+        "label": "Common Judgment Spine Gate",
+        "status": "passed",
+        "required": true,
+        "spine": [
+          "intent",
+          "current_reality",
+          "invariants",
+          "domain_or_system_model",
+          "boundary",
+          "risk_classification",
+          "route_dag_selection",
+          "evidence_requirements",
+          "implementation_plan",
+          "verification",
+          "human_decision_contract",
+          "release_or_operation"
+        ],
+        "subchecks": [
+          {
+            "id": "intent",
+            "status": "passed",
+            "evidence": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+            "surface": "story",
+            "required_evidence_kind": [
+              "story_intent"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "story_intent",
+                "ref": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "6 acceptance criterion/criteria or Story intent text found"
+          },
+          {
+            "id": "current_reality",
+            "status": "passed",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+                "optional": true,
+                "matched_file_count": 6,
+                "related_file_count": 30,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/execution-state.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow current reality is backed by flow_replay"
+          },
+          {
+            "id": "invariants",
+            "status": "passed",
+            "evidence": "6 inferred spec clause(s)",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "spec_clause",
+              "architecture_doc",
+              "test_contract"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "spec_clause",
+                "ref": "6 inferred spec clause(s)"
+              },
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs"
+              },
+              {
+                "kind": "test_contract",
+                "ref": "test files in diff"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+                "optional": true,
+                "matched_file_count": 6,
+                "related_file_count": 30,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/execution-state.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "High-risk changes need Spec, Architecture, or test evidence for invariants"
+          },
+          {
+            "id": "boundaries",
+            "status": "passed",
+            "evidence": "explicit spec/architecture docs",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "architecture_doc",
+              "decision_record",
+              "current_verification"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs"
+              },
+              {
+                "kind": "decision_record",
+                "ref": "decision-1781963432147-38536a5f"
+              },
+              {
+                "kind": "current_verification",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "graph_impact_scope",
+                "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+                "optional": true,
+                "matched_file_count": 6,
+                "related_file_count": 30,
+                "investigation_files": [
+                  "src/agent-review.js",
+                  "src/authorization-scoring.js",
+                  "src/change-risk-classifier.js",
+                  "src/check-packs.js",
+                  "src/checkpoint-manager.js",
+                  "src/cli.js",
+                  "src/decision-records.js",
+                  "src/diagram-requirement-resolver.js",
+                  "src/environment-graph.js",
+                  "src/execution-state.js",
+                  "src/explore-evidence.js",
+                  "src/git-fingerprint.js"
+                ]
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "Boundary-sensitive changes need architecture/spec, decision, or current verification evidence"
+          },
+          {
+            "id": "failure_modes",
+            "status": "passed",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need failure-mode evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          },
+          {
+            "id": "done_evidence",
+            "status": "passed",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "combined ui auth scope evidence for #202 at c279e4c"
+              },
+              {
+                "kind": "flow_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need done evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          }
+        ],
+        "missing_subchecks": [],
+        "reason": "Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile"
+      },
+      {
+        "id": "gate:judgment_axis_public_contract",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: public_contract",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "public_contract",
+        "confidence": 0.84,
+        "decision_question": "この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。",
+        "required_evidence": [
+          "story_spec_traceability",
+          "contract_doc",
+          "compat_or_output_test",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "public contract change lacks traceability or compatibility evidence",
+          "output/API/CLI behavior changed without reviewable old/new expectation"
+        ],
+        "acceptable_followup": "Current behavior is backward-compatible and the remaining doc or cleanup item is bounded with an artifact or issue reference.",
+        "signals": [
+          "pr_route:runtime_change",
+          "file_group:contract_docs",
+          "text:public_contract"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "auth_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "permission_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+            "optional": true,
+            "matched_file_count": 6,
+            "related_file_count": 30,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/execution-state.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js"
+            ]
+          }
+        ],
+        "missing_evidence": [],
+        "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, flow_replay, artifact_replay, auth_denied, permission_denied, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, split_plan, graph_impact_scope."
+      },
+      {
+        "id": "gate:judgment_axis_execution_topology",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: execution_topology",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "execution_topology",
+        "confidence": 0.88,
+        "decision_question": "process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。",
+        "required_evidence": [
+          "topology_diagram",
+          "flow_replay",
+          "artifact_replay",
+          "agent_review",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "orchestration or artifact lifecycle changed without replay/review evidence",
+          "tool or agent side effects are not bounded"
+        ],
+        "acceptable_followup": "Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.",
+        "signals": [
+          "surface:workflow_or_agent",
+          "text:execution_topology"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "auth_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "permission_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)"
+          },
+          {
+            "kind": "agent_review",
+            "ref": "agent review summaries passed for required roles"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+            "optional": true,
+            "matched_file_count": 6,
+            "related_file_count": 30,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/execution-state.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js"
+            ]
+          }
+        ],
+        "missing_evidence": [],
+        "reason": "execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, flow_replay, artifact_replay, auth_denied, permission_denied, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, artifact_replay, scenario_clause_e2e, split_plan, graph_impact_scope, agent_review."
+      },
+      {
+        "id": "gate:judgment_axis_scope_reviewability",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: scope_reviewability",
+        "status": "accepted_followup",
+        "axis_status": "active_accepted_followup",
+        "required": true,
+        "axis": "scope_reviewability",
+        "confidence": 0.82,
+        "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
+        "required_evidence": [
+          "scope_reviewed",
+          "split_plan",
+          "review_owner_map",
+          "graph_impact_scope",
+          "decision_record"
+        ],
+        "blocking_criteria": [
+          "multiple unrelated decisions are bundled without split rationale",
+          "ownership or blast radius is unclear"
+        ],
+        "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
+        "signals": [
+          "scope:needs_clean_branch",
+          "graphify:related_files"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "auth_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "permission_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)"
+          },
+          {
+            "kind": "review_owner_map",
+            "ref": "agent review stage/role ownership map"
+          },
+          {
+            "kind": "decision_record",
+            "ref": "decision-1781963432147-38536a5f",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json"
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+            "optional": true,
+            "matched_file_count": 6,
+            "related_file_count": 30,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/execution-state.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js"
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "scope_reviewed"
+        ],
+        "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: scope_reviewed. Current PR is coherent; separate cleanup is tracked without hiding required review ownership."
+      },
+      {
+        "id": "gate:judgment_axis_release_ops",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: release_ops",
+        "status": "accepted_followup",
+        "axis_status": "active_accepted_followup",
+        "required": true,
+        "axis": "release_ops",
+        "confidence": 0.8,
+        "decision_question": "release note、operator action、observability、support/rollback導線が必要か。",
+        "required_evidence": [
+          "release_note",
+          "rollout_plan",
+          "rollback_instruction",
+          "observability_evidence",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "operator/user action is required but not documented",
+          "release or rollback path lacks owner-visible evidence"
+        ],
+        "acceptable_followup": "No current operator action is required, or action-required work is linked and safe to defer.",
+        "signals": [
+          "changed_path:release_ops"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "integration_runtime_path",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "auth_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "permission_denied",
+            "ref": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr"
+          },
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)"
+          },
+          {
+            "kind": "decision_record",
+            "ref": "decision-1781963381414-dd4f7097",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-body.md"
+          },
+          {
+            "kind": "rollback_plan",
+            "ref": "Release operator observability rollout rollback decision for #202."
+          },
+          {
+            "kind": "release_note",
+            "ref": "Release operator observability rollout rollback decision for #202."
+          }
+        ],
+        "optional_evidence": [
+          {
+            "kind": "graph_impact_scope",
+            "ref": ".vibepro/graphify/graph.json (6 changed / 30 related)",
+            "optional": true,
+            "matched_file_count": 6,
+            "related_file_count": 30,
+            "investigation_files": [
+              "src/agent-review.js",
+              "src/authorization-scoring.js",
+              "src/change-risk-classifier.js",
+              "src/check-packs.js",
+              "src/checkpoint-manager.js",
+              "src/cli.js",
+              "src/decision-records.js",
+              "src/diagram-requirement-resolver.js",
+              "src/environment-graph.js",
+              "src/execution-state.js",
+              "src/explore-evidence.js",
+              "src/git-fingerprint.js"
+            ]
+          }
+        ],
+        "missing_evidence": [
+          "rollout_plan",
+          "rollback_instruction",
+          "observability_evidence"
+        ],
+        "reason": "release_ops: release note、operator action、observability、support/rollback導線が必要か。 Missing evidence accepted as a bounded follow-up: rollout_plan, rollback_instruction, observability_evidence. No current operator action is required, or action-required work is linked and safe to defer."
+      },
+      {
+        "id": "gate:pr_scope_judgment",
+        "type": "pr_scope_judgment_gate",
+        "label": "PR Scope Judgment Gate",
+        "status": "passed",
+        "required": true,
+        "classification": "needs_split",
+        "scope_status": "needs_clean_branch",
+        "recommended_strategy": "clean_branch_or_split_pr",
+        "changed_file_count": 11,
+        "reviewable_file_limit": 30,
+        "story_doc_count": 1,
+        "source_file_count": 3,
+        "test_file_count": 4,
+        "doc_file_count": 3,
+        "risk_surface_count": 0,
+        "accepted_decision": {
+          "source": "gate:split_resolution",
+          "summary": "Keep #202 as one PR: both commits implement the same workflow-heavy pre-PR evidence gate story; the second commit only aligns the scenario wording that the same gate consumes.",
+          "reviewer": "codex"
+        },
+        "reasons": [
+          "baseからのcommitが 11 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "split_suggestions": [
+          "clean_branch_or_split_pr"
+        ],
+        "required_actions": [],
+        "reason": "PR scope split risk accepted by decision record: Keep #202 as one PR: both commits implement the same workflow-heavy pre-PR evidence gate story; the second commit only aligns the scenario wording that the same gate consumes."
+      },
+      {
+        "id": "gate:bug_physics_triage",
+        "type": "bug_physics_triage_gate",
+        "label": "Bug Physics Triage Gate",
+        "status": "passed",
+        "required": true,
+        "classes": [],
+        "enum": [
+          "timing",
+          "state-invariant",
+          "deterministic-byte",
+          "observability",
+          "deployment"
+        ],
+        "probe_evidence": [],
+        "reason": "No bug-physics-specific route selected; ordinary gate profile remains in force"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_context_acquisition",
+        "type": "route_specific_judgment_gate",
+        "label": "Context Acquisition Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "agentが読むべきrepo/docs/log/graph/current stateを先に集める"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_tool_boundary",
+        "type": "route_specific_judgment_gate",
+        "label": "Tool Boundary Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どのtool/agentがどの副作用を持つかを分離する"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_delegation_policy",
+        "type": "route_specific_judgment_gate",
+        "label": "Delegation Policy Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "type": "agent_evidence_lifecycle_gate",
+        "label": "Evidence Lifecycle Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "Agent review evidence lifecycle is closed for the current git state (recorded review or explicit waiver)"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_human_decision_contract",
+        "type": "route_specific_judgment_gate",
+        "label": "Human Decision Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "最後に人間が判断する問いと根拠をPRに出す"
+      },
+      {
+        "id": "gate:pr_route_classification",
+        "type": "pr_route_gate",
+        "label": "PR Route Classification Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "confidence": 0.84,
+        "required_gates": [
+          "story",
+          "spec",
+          "verification",
+          "pr_body_contract",
+          "split_resolution",
+          "workflow_heavy"
+        ],
+        "signals": [
+          "file_group:source",
+          "scope:needs_clean_branch",
+          "risk_profile:workflow_heavy"
+        ],
+        "reason": "PR route selected: runtime_change; body template: runtime_contract_review"
+      },
+      {
+        "id": "gate:pr_body_contract",
+        "type": "pr_body_contract_gate",
+        "label": "PR Body Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "required_sections": [
+          "decision_question",
+          "story_or_source_of_truth",
+          "gate_status",
+          "verification_or_waiver"
+        ],
+        "scope_status": "needs_clean_branch",
+        "reason": "PR body must use runtime_contract_review and expose the route-specific decision contract"
+      },
+      {
+        "id": "gate:split_resolution",
+        "type": "split_resolution_gate",
+        "label": "Split Resolution Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "reasons": [
+          "baseからのcommitが 11 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "reason": "Split/clean-branch decision is explicitly recorded: Keep #202 as one PR: both commits implement the same workflow-heavy pre-PR evidence gate story; the second commit only aligns the scenario wording that the same gate consumes.",
+        "decision_id": "decision-1781953758040-a2e18fbc"
+      },
+      {
+        "id": "gate:managed_worktree",
+        "type": "managed_worktree_gate",
+        "label": "Managed Worktree Gate",
+        "status": "not_applicable",
+        "required": false,
+        "mode": "disabled",
+        "current_repo": "/Users/ksato/workspace/code/vibepro",
+        "managed_worktree_path": null,
+        "reason": "managed worktree mode is disabled"
+      },
+      {
+        "id": "gate:change_classification",
+        "type": "change_classification_gate",
+        "label": "Change Classification Gate",
+        "status": "passed",
+        "required": true,
+        "profile": "workflow_heavy",
+        "change_type": "cross_surface_workflow_change",
+        "risk_surfaces": [
+          "gate_orchestration",
+          "regression_blast_radius",
+          "review_lifecycle",
+          "test_coverage",
+          "verification_evidence"
+        ],
+        "reason": "changed module has a large call-graph blast radius; PR/gate orchestration source changed; verification evidence binding source changed; agent review lifecycle source changed; Story or diff contains workflow/state transition keywords; high blast-radius module changed (many call-graph dependents): src/pr-manager.js"
+      },
+      {
+        "id": "gate:pr_freshness",
+        "type": "pr_freshness_gate",
+        "label": "PR Freshness Gate",
+        "status": "passed",
+        "required": true,
+        "base_ref": "main",
+        "head_ref": "HEAD",
+        "base_sha": "9c6821255044c475d8a62b7f04ae343f560c38c4",
+        "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+        "merge_base_sha": "9c6821255044c475d8a62b7f04ae343f560c38c4",
+        "head_contains_base": true,
+        "pr_prepare_regenerated_at_runtime": true,
+        "required_actions": [],
+        "reason": "HEAD contains current main; PR prepare artifacts are based on the latest resolved base ref"
+      },
+      {
+        "id": "architecture",
+        "type": "architecture_gate",
+        "label": "Architecture Gate",
+        "status": "satisfied",
+        "required": true,
+        "reason": "ADRあり (docs/architecture/vibepro-workflow-pre-pr-evidence-gate.md)",
+        "axis_quality": {
+          "status": "needs_review",
+          "active_axis_count": 4,
+          "missing_field_count": 8,
+          "evaluations": [
+            {
+              "axis": "public_contract",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-workflow-pre-pr-evidence-gate.md"
+              ],
+              "reason": "public_contract architecture decision is missing: alternatives_considered, compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "execution_topology",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-workflow-pre-pr-evidence-gate.md"
+              ],
+              "reason": "execution_topology architecture decision is missing: alternatives_considered, compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "scope_reviewability",
+              "status": "covered",
+              "required_fields": [
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [],
+              "sources": [
+                "docs/architecture/vibepro-workflow-pre-pr-evidence-gate.md"
+              ],
+              "reason": "scope_reviewability architecture quality fields are represented in architecture decision sources"
+            },
+            {
+              "axis": "release_ops",
+              "status": "needs_review",
+              "required_fields": [
+                "compatibility_impact",
+                "rollback_plan",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-workflow-pre-pr-evidence-gate.md"
+              ],
+              "reason": "release_ops architecture decision is missing: compatibility_impact, rollback_plan"
+            }
+          ],
+          "reason": "Active judgment axes have missing architecture decision quality fields"
+        }
+      },
+      {
+        "id": "spec",
+        "type": "spec_gate",
+        "label": "Spec Gate",
+        "status": "present",
+        "reason": "explicit Spec docs are present (docs/specs/vibepro-workflow-pre-pr-evidence-gate.md, docs/specs/vibepro-risk-adaptive-gate-dag.md)",
+        "spec_docs": [
+          "docs/specs/vibepro-workflow-pre-pr-evidence-gate.md",
+          "docs/specs/vibepro-risk-adaptive-gate-dag.md"
+        ],
+        "inferred_spec": {
+          "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+          "clauses": 6,
+          "generated_at": "2026-06-20T10:52:02.727Z"
+        },
+        "drift": null,
+        "required": true
+      },
+      {
+        "id": "gate:design_diagrams",
+        "type": "design_diagrams_gate",
+        "label": "Design Diagrams (MUST-HAVE)",
+        "status": "satisfied",
+        "required": true,
+        "blocking": true,
+        "reason": "必須設計図が全て揃っている (state, flow)",
+        "required_diagrams": [
+          "state",
+          "flow"
+        ],
+        "provided_diagrams": [
+          "state",
+          "flow"
+        ],
+        "missing_diagrams": [],
+        "detection_reasons": [
+          {
+            "kind": "state",
+            "signal": "state machine file: test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+          },
+          {
+            "kind": "flow",
+            "signal": "Story.AC count 6 with workflow keyword"
+          }
+        ]
+      },
+      {
+        "id": "code",
+        "type": "code_gate",
+        "label": "Code Gate",
+        "status": "present",
+        "files": [
+          "src/agent-review.js",
+          "src/flow-verifier.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "id": "gate:network_contract",
+        "type": "verification_gate",
+        "label": "Network Contract Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "No broken API client route contracts detected",
+        "summary": {
+          "api_client_call_count": 0,
+          "introduced_api_client_call_count": 0,
+          "missing_route_count": 0,
+          "dynamic_call_count": 0,
+          "server_action_replacement_count": 0
+        },
+        "missing_routes": []
+      },
+      {
+        "id": "gate:path_surface_matrix",
+        "type": "path_surface_matrix_gate",
+        "label": "Path Surface Matrix Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": true,
+        "row_count": 3,
+        "missing_surface_count": 0,
+        "accepted_decision": null,
+        "rows": [
+          {
+            "surface": "review_surface",
+            "path_type": "gate_or_report_surface",
+            "reason": "Gate/report artifact code changed: src/pr-manager.js",
+            "required": true,
+            "status": "covered",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "surface": "review_surface",
+            "path_type": "story_surface",
+            "reason": "Story mentions report/review/gate artifact output",
+            "required": true,
+            "status": "covered",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "surface": "ui",
+            "path_type": "story_surface",
+            "reason": "Story mentions UI/screen output",
+            "required": true,
+            "status": "covered",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c"
+          }
+        ],
+        "missing_surfaces": [],
+        "required_actions": [],
+        "reason": "3 path surface row(s) are covered or not critical for this route"
+      },
+      {
+        "id": "gate:requirement",
+        "type": "requirement_gate",
+        "label": "Requirement Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない"
+      },
+      {
+        "id": "gate:failure_mode_coverage",
+        "type": "failure_mode_coverage_gate",
+        "label": "Failure Mode Coverage Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": true,
+        "candidate_count": 3,
+        "missing_count": 0,
+        "modes": [
+          {
+            "id": "auth_denied",
+            "reason": "Auth/permission boundary can deny or leak access",
+            "keywords": [
+              "auth",
+              "permission",
+              "security",
+              "denied"
+            ],
+            "status": "covered",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "id": "evidence_lifecycle_regression",
+            "reason": "Gate/review/evidence lifecycle changes can produce misleading green artifacts or unreconstructable handoffs",
+            "keywords": [
+              "accepted_followup",
+              "needs_evidence",
+              "active_needs_evidence",
+              "provenance",
+              "inspection",
+              "gate-dag",
+              "pr-prepare",
+              "artifact replay"
+            ],
+            "status": "covered",
+            "evidence": "combined ui auth scope evidence for #202 at c279e4c"
+          },
+          {
+            "id": "workflow_state_regression",
+            "reason": "Workflow/state transitions can leave stale, pending, or over-green gate states",
+            "keywords": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e",
+              "workflow",
+              "state transition",
+              "stale"
+            ],
+            "status": "covered",
+            "evidence": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js"
+          }
+        ],
+        "missing_modes": [],
+        "required_actions": [],
+        "reason": "3 failure mode candidate(s) are covered or not critical for this route profile"
+      },
+      {
+        "id": "gate:decision_record",
+        "type": "decision_record_gate",
+        "label": "Decision Record Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Decision records are captured; total=5, waivers=4, noise=0, secret_exposure=0",
+        "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/decision-records.json",
+        "summary": {
+          "total": 5,
+          "open": 0,
+          "by_type": {
+            "needs_review": 1,
+            "waiver": 4
+          },
+          "by_status": {
+            "accepted": 4,
+            "superseded": 1
+          },
+          "warnings": [],
+          "latest": {
+            "schema_version": "0.1.0",
+            "decision_id": "decision-1781963432147-38536a5f",
+            "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+            "type": "needs_review",
+            "status": "accepted",
+            "source": "gate:judgment_axis_scope_reviewability",
+            "source_status": "needs_evidence",
+            "summary": "Scope reviewed with artifact: #202 is one coherent reviewable PR.",
+            "reason": "The PR is a coherent gate-contract change with one review owner map: story/spec/docs, src/agent-review.js, src/pr-manager.js, src/flow-verifier.js, and focused tests validate one workflow-heavy pre-PR evidence gate. Splitting would separate the gate contract from the evidence and reduce reconstructability.",
+            "reviewer": "codex",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json",
+            "secret_exposure": null,
+            "redaction": {
+              "applied": false,
+              "hit_count": 0
+            },
+            "warnings": [],
+            "git_context": {
+              "head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+              "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+              "dirty": false,
+              "status_fingerprint": "",
+              "recorded_at": "2026-06-20T13:50:32.146Z"
+            },
+            "recorded_at": "2026-06-20T13:50:32.147Z"
+          }
+        },
+        "open_decisions": [],
+        "secret_exposure_count": 0
+      },
+      {
+        "id": "gate:unit",
+        "type": "verification_gate",
+        "label": "Unit Gate",
+        "status": "passed",
+        "required": true,
+        "command": "npm test",
+        "reason": "Full npm test passed at c279e4c: 626 tests, 0 failures.; evidence: .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+        "evidence": {
+          "kind": "unit",
+          "status": "pass",
+          "summary": "Full npm test passed at c279e4c: 626 tests, 0 failures.",
+          "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+          "executed_at": "2026-06-20T14:09:19.531Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:integration",
+        "type": "verification_gate",
+        "label": "Integration Gate",
+        "status": "passed",
+        "required": true,
+        "command": "combined ui auth scope evidence for #202 at c279e4c",
+        "reason": "Combined current-bound integration evidence: UI/PR artifact output surface, auth_denied/setup failure mode, scope reviewability, and review owner map are covered by full npm test plus focused workflow E2E and CLI tests at c279e4c.; evidence: .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+        "evidence": {
+          "kind": "integration",
+          "status": "pass",
+          "summary": "Combined current-bound integration evidence: UI/PR artifact output surface, auth_denied/setup failure mode, scope reviewability, and review owner map are covered by full npm test plus focused workflow E2E and CLI tests at c279e4c.",
+          "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+          "executed_at": "2026-06-20T14:22:25.682Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:e2e",
+        "type": "verification_gate",
+        "label": "E2E Gate",
+        "status": "passed",
+        "required": false,
+        "command": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js",
+        "reason": "Focused workflow-heavy E2E/spec suite passed at c279e4c: 26 tests, 0 failures; PR prepare artifact replay creates executable E2E target and validates persisted JSON/HTML/PR body.; evidence: .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap",
+        "flow_verification": null,
+        "acceptance_e2e_coverage": {
+          "schema_version": "0.1.0",
+          "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+          "required": false,
+          "status": "not_applicable",
+          "expected_file_patterns": [
+            "tests/e2e/story-vibepro-workflow-pre-pr-evidence-gate-*.spec.ts",
+            "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-*.spec.ts",
+            "e2e/story-vibepro-workflow-pre-pr-evidence-gate-*.spec.ts"
+          ],
+          "matched_files": [
+            "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+          ],
+          "executable_matched_files": [
+            "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+          ],
+          "acceptance_criteria_count": 6,
+          "covered_acceptance_criteria_count": 0,
+          "covered_acceptance_criteria": [],
+          "missing_acceptance_criteria": [],
+          "scenario_clause_count": 4,
+          "covered_scenario_clause_count": 1,
+          "covered_scenario_clauses": [
+            {
+              "id": "S-001",
+              "statement": "Given a workflow-heavy story with no configured runtime probes, when Flow Verification runs, then the workflow state transition replay remains needs_evidence and setup guidance tells the operator to configure flow_design.runtime_probes[].",
+              "covered": true,
+              "files": [
+                "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+              ]
+            }
+          ],
+          "missing_scenario_clauses": [
+            {
+              "id": "S-002",
+              "statement": "Given a workflow-heavy story with current E2E verification evidence whose observation records workflow state transition replay through flow_replay and scenario_clause_e2e fields, whose target is an existing E2E spec/test file under an e2e path, and whose command includes that full target path, when PR preparation evaluates workflow replay, then gate:workflow_flow_replay passes without requiring hosted preview smoke.",
+              "covered": false,
+              "files": []
+            },
+            {
+              "id": "S-005",
+              "statement": "Given marker-only or field-free E2E evidence, when PR preparation evaluates workflow state transition replay, then workflow replay remains unresolved.",
+              "covered": false,
+              "files": []
+            },
+            {
+              "id": "S-004",
+              "statement": "Given BASIC_AUTH_USER and BASIC_AUTH_PASSWORD are present for Flow Verification, when evidence is written, then credential values are not persisted and only Basic Auth environment provenance is stored.",
+              "covered": false,
+              "files": []
+            }
+          ],
+          "scenario_e2e_coverage": {
+            "required": true,
+            "status": "needs_evidence",
+            "scenario_clause_count": 4,
+            "covered_scenario_clause_count": 1,
+            "covered_scenario_clauses": [
+              {
+                "id": "S-001",
+                "statement": "Given a workflow-heavy story with no configured runtime probes, when Flow Verification runs, then the workflow state transition replay remains needs_evidence and setup guidance tells the operator to configure flow_design.runtime_probes[].",
+                "covered": true,
+                "files": [
+                  "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+                ]
+              }
+            ],
+            "missing_scenario_clauses": [
+              {
+                "id": "S-002",
+                "statement": "Given a workflow-heavy story with current E2E verification evidence whose observation records workflow state transition replay through flow_replay and scenario_clause_e2e fields, whose target is an existing E2E spec/test file under an e2e path, and whose command includes that full target path, when PR preparation evaluates workflow replay, then gate:workflow_flow_replay passes without requiring hosted preview smoke.",
+                "covered": false,
+                "files": []
+              },
+              {
+                "id": "S-005",
+                "statement": "Given marker-only or field-free E2E evidence, when PR preparation evaluates workflow state transition replay, then workflow replay remains unresolved.",
+                "covered": false,
+                "files": []
+              },
+              {
+                "id": "S-004",
+                "statement": "Given BASIC_AUTH_USER and BASIC_AUTH_PASSWORD are present for Flow Verification, when evidence is written, then credential values are not persisted and only Basic Auth environment provenance is stored.",
+                "covered": false,
+                "files": []
+              }
+            ]
+          },
+          "not_applicable_reason": "E2E Gate is not required for this non-UI/non-flow change; Unit and Integration evidence are authoritative."
+        },
+        "artifact_expectation": null,
+        "evidence": {
+          "kind": "e2e",
+          "status": "pass",
+          "summary": "Focused workflow-heavy E2E/spec suite passed at c279e4c: 26 tests, 0 failures; PR prepare artifact replay creates executable E2E target and validates persisted JSON/HTML/PR body.",
+          "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap",
+          "executed_at": "2026-06-20T14:10:39.965Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:workflow_state_machine",
+        "type": "workflow_heavy_gate",
+        "label": "Workflow State Machine Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "3 scenario clause(s) define workflow states and transitions"
+      },
+      {
+        "id": "gate:production_path_matrix",
+        "type": "workflow_heavy_gate",
+        "label": "Production Path Matrix Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Current E2E evidence explicitly records flow_replay and scenario_clause_e2e observations",
+        "required_actions": []
+      },
+      {
+        "id": "gate:workflow_flow_replay",
+        "type": "workflow_heavy_gate",
+        "label": "Workflow Flow Replay Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Current E2E evidence explicitly records flow_replay and scenario_clause_e2e observations",
+        "required_actions": []
+      },
+      {
+        "id": "gate:evidence_coverage",
+        "type": "workflow_heavy_gate",
+        "label": "Evidence Coverage Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Workflow clauses and flow replay evidence are both present",
+        "required_actions": []
+      },
+      {
+        "id": "gate:release_confidence",
+        "type": "workflow_heavy_gate",
+        "label": "Release Confidence Gate",
+        "status": "passed",
+        "required": true,
+        "confidence": {
+          "implementation_consistency": "unknown",
+          "production_flow_coverage": "medium",
+          "state_matrix_coverage": "medium",
+          "release_confidence": "medium"
+        },
+        "reason": "workflow_heavy evidence is sufficient for human release review",
+        "required_actions": []
+      },
+      {
+        "id": "review:dispatch_batch:architecture_spec",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: architecture_spec",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": "test_plan",
+        "dispatch_state": "complete",
+        "role_count": 1,
+        "dispatch_ready_count": 1,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All architecture_spec role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:architecture_spec:regression_risk",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: regression_risk",
+        "status": "passed",
+        "required": true,
+        "stage": "architecture_spec",
+        "role": "regression_risk",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current architecture_spec:regression_risk review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:architecture_spec",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: architecture_spec",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": "test_plan",
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage architecture_spec --role regression_risk",
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:architecture_spec:regression_risk",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: regression_risk",
+        "status": "passed",
+        "required": true,
+        "reason": "Regression-risk review passes: final c279e4c test-only delta narrows explicit preview review-prepare summary output and does not weaken workflow replay gating."
+      },
+      {
+        "id": "review:record:architecture_spec:regression_risk",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: regression_risk",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-result-regression_risk.json",
+        "reason": "Recorded architecture_spec:regression_risk review for the current git state"
+      },
+      {
+        "id": "review:join:architecture_spec",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: architecture_spec",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": "test_plan",
+        "role_count": 1,
+        "reason": "All parallel architecture_spec agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "review:dispatch_batch:test_plan",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: test_plan",
+        "status": "passed",
+        "required": true,
+        "serial_index": 2,
+        "depends_on_stage": "architecture_spec",
+        "next_stage": "implementation",
+        "dispatch_state": "complete",
+        "role_count": 2,
+        "dispatch_ready_count": 2,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All test_plan role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:test_plan:e2e_ux",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: e2e_ux",
+        "status": "passed",
+        "required": true,
+        "stage": "test_plan",
+        "role": "e2e_ux",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current test_plan:e2e_ux review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:preflight:test_plan:gate_coverage",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: gate_coverage",
+        "status": "passed",
+        "required": true,
+        "stage": "test_plan",
+        "role": "gate_coverage",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current test_plan:gate_coverage review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:test_plan",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: test_plan",
+        "status": "passed",
+        "required": true,
+        "serial_index": 2,
+        "depends_on_stage": "architecture_spec",
+        "next_stage": "implementation",
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage test_plan --role e2e_ux --role gate_coverage",
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:test_plan:e2e_ux",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: e2e_ux",
+        "status": "passed",
+        "required": true,
+        "reason": "test_plan:e2e_ux passes at HEAD 0cd3088: workflow replay now requires executable E2E evidence with explicit markers, existing E2E target, and command-target alignment; persisted PR artifacts reconstruct handoff."
+      },
+      {
+        "id": "review:record:test_plan:e2e_ux",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: e2e_ux",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-e2e_ux.json",
+        "reason": "Recorded test_plan:e2e_ux review for the current git state"
+      },
+      {
+        "id": "review:test_plan:gate_coverage",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: gate_coverage",
+        "status": "passed",
+        "required": true,
+        "reason": "test_plan:gate_coverage passes at HEAD 0cd3088: Gate DAG covers explicit workflow replay constraints and workflow-heavy PR prepare no longer requires actionable preview_smoke."
+      },
+      {
+        "id": "review:record:test_plan:gate_coverage",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: gate_coverage",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-gate_coverage.json",
+        "reason": "Recorded test_plan:gate_coverage review for the current git state"
+      },
+      {
+        "id": "review:join:test_plan",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: test_plan",
+        "status": "passed",
+        "required": true,
+        "serial_index": 2,
+        "depends_on_stage": "architecture_spec",
+        "next_stage": "implementation",
+        "role_count": 2,
+        "reason": "All parallel test_plan agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "review:dispatch_batch:implementation",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: implementation",
+        "status": "passed",
+        "required": true,
+        "serial_index": 3,
+        "depends_on_stage": "test_plan",
+        "next_stage": "preview",
+        "dispatch_state": "complete",
+        "role_count": 2,
+        "dispatch_ready_count": 2,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All implementation role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:implementation:runtime_contract",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: runtime_contract",
+        "status": "passed",
+        "required": true,
+        "stage": "implementation",
+        "role": "runtime_contract",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current implementation:runtime_contract review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:preflight:implementation:ux_completion",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: ux_completion",
+        "status": "passed",
+        "required": true,
+        "stage": "implementation",
+        "role": "ux_completion",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current implementation:ux_completion review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:implementation",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: implementation",
+        "status": "passed",
+        "required": true,
+        "serial_index": 3,
+        "depends_on_stage": "test_plan",
+        "next_stage": "preview",
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage implementation --role runtime_contract --role ux_completion",
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:implementation:runtime_contract",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: runtime_contract",
+        "status": "passed",
+        "required": true,
+        "reason": "implementation:runtime_contract passes at HEAD 0cd3088: no runtime/API/auth/db contract regressions found; stricter replay-target matching remains explicit and focused tests cover valid and invalid paths."
+      },
+      {
+        "id": "review:record:implementation:runtime_contract",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: runtime_contract",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-runtime_contract.json",
+        "reason": "Recorded implementation:runtime_contract review for the current git state"
+      },
+      {
+        "id": "review:implementation:ux_completion",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: ux_completion",
+        "status": "passed",
+        "required": true,
+        "reason": "implementation:ux_completion passes at HEAD 0cd3088: PR prepare body, Gate DAG, review cockpit, required actions, docs/spec wording, and preview role policy provide reconstructable operator handoff without misleading preview_smoke enforcement."
+      },
+      {
+        "id": "review:record:implementation:ux_completion",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: ux_completion",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-ux_completion.json",
+        "reason": "Recorded implementation:ux_completion review for the current git state"
+      },
+      {
+        "id": "review:join:implementation",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: implementation",
+        "status": "passed",
+        "required": true,
+        "serial_index": 3,
+        "depends_on_stage": "test_plan",
+        "next_stage": "preview",
+        "role_count": 2,
+        "reason": "All parallel implementation agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "review:dispatch_batch:preview",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: preview",
+        "status": "passed",
+        "required": true,
+        "serial_index": 4,
+        "depends_on_stage": "implementation",
+        "next_stage": "gate",
+        "dispatch_state": "complete",
+        "role_count": 2,
+        "dispatch_ready_count": 2,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All preview role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:preview:network_runtime",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: network_runtime",
+        "status": "passed",
+        "required": true,
+        "stage": "preview",
+        "role": "network_runtime",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current preview:network_runtime review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:preflight:preview:human_usability",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: human_usability",
+        "status": "passed",
+        "required": true,
+        "stage": "preview",
+        "role": "human_usability",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current preview:human_usability review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:preview",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: preview",
+        "status": "passed",
+        "required": true,
+        "serial_index": 4,
+        "depends_on_stage": "implementation",
+        "next_stage": "gate",
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage preview --role network_runtime --role human_usability",
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:preview:network_runtime",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: network_runtime",
+        "status": "passed",
+        "required": true,
+        "reason": "preview:network_runtime passes at HEAD 0cd3088: pre-PR preview dispatch excludes preview_smoke and workflow replay evidence failures surface explicit runtime/evidence setup actions."
+      },
+      {
+        "id": "review:record:preview:network_runtime",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: network_runtime",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-network_runtime.json",
+        "reason": "Recorded preview:network_runtime review for the current git state"
+      },
+      {
+        "id": "review:preview:human_usability",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: human_usability",
+        "status": "passed",
+        "required": true,
+        "reason": "preview:human_usability passes at HEAD 0cd3088: human-facing surfaces distinguish accepted vs missing evidence, preserve story-to-PR traceability, and do not present preview_smoke as a pre-PR blocker."
+      },
+      {
+        "id": "review:record:preview:human_usability",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: human_usability",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-human_usability.json",
+        "reason": "Recorded preview:human_usability review for the current git state"
+      },
+      {
+        "id": "review:join:preview",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: preview",
+        "status": "passed",
+        "required": true,
+        "serial_index": 4,
+        "depends_on_stage": "implementation",
+        "next_stage": "gate",
+        "role_count": 2,
+        "reason": "All parallel preview agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "review:dispatch_batch:gate",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 5,
+        "depends_on_stage": "preview",
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "role_count": 2,
+        "dispatch_ready_count": 2,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All gate role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:gate:gate_evidence",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "stage": "gate",
+        "role": "gate_evidence",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current gate:gate_evidence review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:preflight:gate:release_risk",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: release_risk",
+        "status": "passed",
+        "required": true,
+        "stage": "gate",
+        "role": "release_risk",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current gate:release_risk review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:gate",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 5,
+        "depends_on_stage": "preview",
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage gate --role gate_evidence --role release_risk",
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:gate:gate_evidence",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "reason": "gate_evidence replacement passes: current-bound PR artifacts now show path_surface_matrix, failure_mode_coverage including auth_denied, artifact_consistency, workflow_flow_replay, and dag_connectivity as passed; remaining readiness blockers were prior gate-stage block review records that this replacement resolves."
+      },
+      {
+        "id": "review:record:gate:gate_evidence",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-gate_evidence.json",
+        "reason": "Recorded gate:gate_evidence review for the current git state"
+      },
+      {
+        "id": "review:gate:release_risk",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: release_risk",
+        "status": "passed",
+        "required": true,
+        "reason": "Release-risk replacement passes: current artifacts no longer show stale readiness, failure-mode, path-surface, or artifact-consistency release blockers; remaining release_risk blockers were the previously recorded block review and derived agent-review gates that this replacement resolves."
+      },
+      {
+        "id": "review:record:gate:release_risk",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: release_risk",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-release_risk.json",
+        "reason": "Recorded gate:release_risk review for the current git state"
+      },
+      {
+        "id": "review:join:gate",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 5,
+        "depends_on_stage": "preview",
+        "next_stage": null,
+        "role_count": 2,
+        "reason": "All parallel gate agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "gate:agent_review",
+        "type": "agent_review_gate",
+        "label": "Agent Review Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Required staged agent reviews passed for the current git state",
+        "summary": {
+          "required_review_count": 4,
+          "unmet_required_review_count": 0,
+          "checkpoint_required_review_count": 5,
+          "unmet_checkpoint_review_count": 0,
+          "stage_count": 5,
+          "stale_result_count": 0,
+          "block_result_count": 0,
+          "lifecycle_running_count": 0,
+          "lifecycle_timed_out_count": 0
+        },
+        "parallel_dispatch": {
+          "required": true,
+          "mode": "policy_aware_parallel_reviews",
+          "stage_execution": {
+            "serial_between_stages": true,
+            "parallel_within_stage": true,
+            "current_stage": null,
+            "max_parallel_subagents_per_stage": 2,
+            "barrier": "A later review stage must not be dispatched until the current stage has closed and recorded every required role."
+          },
+          "required_stages": [
+            {
+              "stage": "architecture_spec",
+              "serial_index": 1,
+              "depends_on_stage": null,
+              "next_stage": "test_plan",
+              "roles": [
+                "regression_risk"
+              ],
+              "role_count": 1,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage architecture_spec --role regression_risk",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/parallel-dispatch.md"
+            },
+            {
+              "stage": "test_plan",
+              "serial_index": 2,
+              "depends_on_stage": "architecture_spec",
+              "next_stage": "implementation",
+              "roles": [
+                "e2e_ux",
+                "gate_coverage"
+              ],
+              "role_count": 2,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage test_plan --role e2e_ux --role gate_coverage",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/parallel-dispatch.md"
+            },
+            {
+              "stage": "implementation",
+              "serial_index": 3,
+              "depends_on_stage": "test_plan",
+              "next_stage": "preview",
+              "roles": [
+                "runtime_contract",
+                "ux_completion"
+              ],
+              "role_count": 2,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage implementation --role runtime_contract --role ux_completion",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/parallel-dispatch.md"
+            },
+            {
+              "stage": "preview",
+              "serial_index": 4,
+              "depends_on_stage": "implementation",
+              "next_stage": "gate",
+              "roles": [
+                "network_runtime",
+                "human_usability"
+              ],
+              "role_count": 2,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage preview --role network_runtime --role human_usability",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/parallel-dispatch.md"
+            },
+            {
+              "stage": "gate",
+              "serial_index": 5,
+              "depends_on_stage": "preview",
+              "next_stage": null,
+              "roles": [
+                "gate_evidence",
+                "release_risk"
+              ],
+              "role_count": 2,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-workflow-pre-pr-evidence-gate --stage gate --role gate_evidence --role release_risk",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/parallel-dispatch.md"
+            }
+          ]
+        },
+        "dispatch_contract": {
+          "required": false,
+          "expected": "dispatch_parallel_subagents",
+          "user_confirmation_required_by_vibepro": false,
+          "runner_policy_may_require_user_delegation": false,
+          "manual_review_fallback": false,
+          "applies_to": [
+            "codex",
+            "claude_code"
+          ]
+        },
+        "required_actions": [],
+        "unmet_required_reviews": [],
+        "unmet_checkpoint_reviews": []
+      },
+      {
+        "id": "gate:review_inspection_required",
+        "type": "review_inspection_required_gate",
+        "label": "Review Inspection Required Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": true,
+        "recorded_review_count": 9,
+        "missing_inspection_count": 0,
+        "inspected_roles": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-gate_evidence.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "gate",
+            "role": "release_risk",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-release_risk.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "preview",
+            "role": "network_runtime",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-network_runtime.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "preview",
+            "role": "human_usability",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-human_usability.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "architecture_spec",
+            "role": "regression_risk",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-result-regression_risk.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "test_plan",
+            "role": "e2e_ux",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-e2e_ux.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "test_plan",
+            "role": "gate_coverage",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-gate_coverage.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "implementation",
+            "role": "runtime_contract",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-runtime_contract.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          },
+          {
+            "stage": "implementation",
+            "role": "ux_completion",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-ux_completion.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          }
+        ],
+        "missing_inspections": [],
+        "required_actions": [],
+        "reason": "9 recorded high-risk review role(s) include required inspection fields, or no recorded high-risk review is present yet"
+      },
+      {
+        "id": "gate:artifact_consistency",
+        "type": "artifact_consistency_gate",
+        "label": "Artifact Consistency Gate",
+        "status": "passed",
+        "required": true,
+        "current": {
+          "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+          "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "raw_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "dirty": false,
+          "raw_dirty": false,
+          "dirty_files": [],
+          "raw_dirty_files": [],
+          "vibepro_internal_dirty_files": [],
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          },
+          "managed_worktree": {
+            "id": null,
+            "path": null,
+            "branch": null,
+            "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "dirty": null,
+            "dirty_fingerprint": null,
+            "raw_dirty": null,
+            "raw_dirty_fingerprint": null,
+            "fingerprint_scope": null
+          }
+        },
+        "artifact_count": 13,
+        "inconsistent_artifact_count": 0,
+        "artifacts": [
+          {
+            "artifact_type": "verification_command",
+            "kind": "integration",
+            "command": "combined ui auth scope evidence for #202 at c279e4c",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "typecheck",
+            "command": "npm run typecheck",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "e2e",
+            "command": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "unit",
+            "command": "npm test",
+            "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "gate",
+            "role": "gate_evidence",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-gate_evidence.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "gate",
+            "role": "release_risk",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-release_risk.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "preview",
+            "role": "network_runtime",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-network_runtime.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "preview",
+            "role": "human_usability",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-human_usability.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "architecture_spec",
+            "role": "regression_risk",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-result-regression_risk.json",
+            "recorded_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "test_plan",
+            "role": "e2e_ux",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-e2e_ux.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "test_plan",
+            "role": "gate_coverage",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-gate_coverage.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "implementation",
+            "role": "runtime_contract",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-runtime_contract.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "implementation",
+            "role": "ux_completion",
+            "artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-ux_completion.json",
+            "recorded_head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          }
+        ],
+        "inconsistent_artifacts": [],
+        "required_actions": [],
+        "reason": "13 recorded verification/review artifact(s) are bound to the current git state"
+      },
+      {
+        "id": "gate:dag_connectivity",
+        "type": "dag_connectivity_gate",
+        "label": "DAG Connectivity Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Every DAG node is reachable from story and can reach the final PR decision",
+        "invalid_edges": [],
+        "unreachable_nodes": [],
+        "dead_end_nodes": [],
+        "unreachable_required_nodes": [],
+        "dead_end_required_nodes": []
+      },
+      {
+        "id": "pr",
+        "type": "pr_gate",
+        "label": "PR Gate",
+        "status": "pending",
+        "reason": "Unit / Integration / E2E Gateの証跡をPR本文で確認する"
+      },
+      {
+        "id": "ac:1",
+        "type": "acceptance_criterion",
+        "label": "`preview:preview_smoke` をPR作成前の必須reviewにしない。",
+        "status": "present"
+      },
+      {
+        "id": "ac:2",
+        "type": "acceptance_criterion",
+        "label": "UI変更ではPR作成前に `preview:human_usability` を維持し、hosted preview smokeはPR作成後の証跡として扱う。",
+        "status": "present"
+      },
+      {
+        "id": "ac:3",
+        "type": "acceptance_criterion",
+        "label": "current E2E evidenceが `flow_replay` と `scenario_clause_e2e` のobservationを明示し、target が既存の `e2e` spec/test fileで、command がそのfull target pathを含む場合だけ、Workflow Flow Replay Gateはpassできる。",
+        "status": "present"
+      },
+      {
+        "id": "ac:4",
+        "type": "acceptance_criterion",
+        "label": "Flow Verificationがzero-probeの場合、Gate DAGに `flow_design.runtime_probes[]` 登録導線を出す。",
+        "status": "present"
+      },
+      {
+        "id": "ac:5",
+        "type": "acceptance_criterion",
+        "label": "zero-probe Flow Verificationはpass扱いにしない。",
+        "status": "present"
+      },
+      {
+        "id": "ac:6",
+        "type": "acceptance_criterion",
+        "label": "Basic Auth付きのFlow Verificationでも、credential値は証跡に保存せず、`basic_auth_env` の変数名だけを記録する。",
+        "status": "present"
+      }
+    ],
+    "edges": [
+      {
+        "from": "story",
+        "to": "gate:story_source_integrity"
+      },
+      {
+        "from": "gate:story_source_integrity",
+        "to": "gate:engineering_judgment_route"
+      },
+      {
+        "from": "gate:engineering_judgment_route",
+        "to": "gate:common_judgment_spine"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_public_contract"
+      },
+      {
+        "from": "gate:judgment_axis_public_contract",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_execution_topology"
+      },
+      {
+        "from": "gate:judgment_axis_execution_topology",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_scope_reviewability"
+      },
+      {
+        "from": "gate:judgment_axis_scope_reviewability",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_release_ops"
+      },
+      {
+        "from": "gate:judgment_axis_release_ops",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:pr_scope_judgment",
+        "to": "gate:bug_physics_triage"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_context_acquisition"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_context_acquisition",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_tool_boundary"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_tool_boundary",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_delegation_policy"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_delegation_policy",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_evidence_lifecycle"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_human_decision_contract"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_human_decision_contract",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:split_resolution"
+      },
+      {
+        "from": "gate:split_resolution",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_body_contract",
+        "to": "gate:managed_worktree"
+      },
+      {
+        "from": "gate:managed_worktree",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:change_classification",
+        "to": "gate:pr_freshness"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "architecture"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "spec"
+      },
+      {
+        "from": "architecture",
+        "to": "code"
+      },
+      {
+        "from": "spec",
+        "to": "gate:design_diagrams"
+      },
+      {
+        "from": "gate:design_diagrams",
+        "to": "code"
+      },
+      {
+        "from": "story",
+        "to": "ac:1"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:2"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:3"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:4"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:5"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:6"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "code",
+        "to": "gate:network_contract"
+      },
+      {
+        "from": "gate:network_contract",
+        "to": "gate:path_surface_matrix"
+      },
+      {
+        "from": "gate:path_surface_matrix",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "gate:failure_mode_coverage"
+      },
+      {
+        "from": "gate:failure_mode_coverage",
+        "to": "gate:decision_record"
+      },
+      {
+        "from": "gate:decision_record",
+        "to": "gate:unit"
+      },
+      {
+        "from": "gate:unit",
+        "to": "gate:integration"
+      },
+      {
+        "from": "gate:integration",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "gate:change_classification",
+        "to": "gate:workflow_state_machine"
+      },
+      {
+        "from": "spec",
+        "to": "gate:workflow_state_machine"
+      },
+      {
+        "from": "gate:workflow_state_machine",
+        "to": "gate:production_path_matrix"
+      },
+      {
+        "from": "gate:e2e",
+        "to": "gate:workflow_flow_replay"
+      },
+      {
+        "from": "gate:production_path_matrix",
+        "to": "gate:evidence_coverage"
+      },
+      {
+        "from": "gate:workflow_flow_replay",
+        "to": "gate:evidence_coverage"
+      },
+      {
+        "from": "gate:evidence_coverage",
+        "to": "gate:release_confidence"
+      },
+      {
+        "from": "gate:release_confidence",
+        "to": "review:dispatch_batch:architecture_spec",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "review:dispatch_batch:architecture_spec",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "spec",
+        "to": "review:dispatch_batch:architecture_spec",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:integration",
+        "to": "review:dispatch_batch:architecture_spec",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:e2e",
+        "to": "review:dispatch_batch:architecture_spec",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "review:dispatch_batch:architecture_spec",
+        "to": "review:preflight:architecture_spec:regression_risk"
+      },
+      {
+        "from": "review:preflight:architecture_spec:regression_risk",
+        "to": "review:prepare:architecture_spec"
+      },
+      {
+        "from": "review:prepare:architecture_spec",
+        "to": "review:architecture_spec:regression_risk"
+      },
+      {
+        "from": "review:architecture_spec:regression_risk",
+        "to": "review:record:architecture_spec:regression_risk"
+      },
+      {
+        "from": "review:record:architecture_spec:regression_risk",
+        "to": "review:join:architecture_spec"
+      },
+      {
+        "from": "review:join:architecture_spec",
+        "to": "review:dispatch_batch:test_plan",
+        "reason": "next Agent Review stage is blocked until the previous stage join passes"
+      },
+      {
+        "from": "review:dispatch_batch:test_plan",
+        "to": "review:preflight:test_plan:e2e_ux"
+      },
+      {
+        "from": "review:preflight:test_plan:e2e_ux",
+        "to": "review:prepare:test_plan"
+      },
+      {
+        "from": "review:dispatch_batch:test_plan",
+        "to": "review:preflight:test_plan:gate_coverage"
+      },
+      {
+        "from": "review:preflight:test_plan:gate_coverage",
+        "to": "review:prepare:test_plan"
+      },
+      {
+        "from": "review:prepare:test_plan",
+        "to": "review:test_plan:e2e_ux"
+      },
+      {
+        "from": "review:test_plan:e2e_ux",
+        "to": "review:record:test_plan:e2e_ux"
+      },
+      {
+        "from": "review:record:test_plan:e2e_ux",
+        "to": "review:join:test_plan"
+      },
+      {
+        "from": "review:prepare:test_plan",
+        "to": "review:test_plan:gate_coverage"
+      },
+      {
+        "from": "review:test_plan:gate_coverage",
+        "to": "review:record:test_plan:gate_coverage"
+      },
+      {
+        "from": "review:record:test_plan:gate_coverage",
+        "to": "review:join:test_plan"
+      },
+      {
+        "from": "review:join:test_plan",
+        "to": "review:dispatch_batch:implementation",
+        "reason": "next Agent Review stage is blocked until the previous stage join passes"
+      },
+      {
+        "from": "review:dispatch_batch:implementation",
+        "to": "review:preflight:implementation:runtime_contract"
+      },
+      {
+        "from": "review:preflight:implementation:runtime_contract",
+        "to": "review:prepare:implementation"
+      },
+      {
+        "from": "review:dispatch_batch:implementation",
+        "to": "review:preflight:implementation:ux_completion"
+      },
+      {
+        "from": "review:preflight:implementation:ux_completion",
+        "to": "review:prepare:implementation"
+      },
+      {
+        "from": "review:prepare:implementation",
+        "to": "review:implementation:runtime_contract"
+      },
+      {
+        "from": "review:implementation:runtime_contract",
+        "to": "review:record:implementation:runtime_contract"
+      },
+      {
+        "from": "review:record:implementation:runtime_contract",
+        "to": "review:join:implementation"
+      },
+      {
+        "from": "review:prepare:implementation",
+        "to": "review:implementation:ux_completion"
+      },
+      {
+        "from": "review:implementation:ux_completion",
+        "to": "review:record:implementation:ux_completion"
+      },
+      {
+        "from": "review:record:implementation:ux_completion",
+        "to": "review:join:implementation"
+      },
+      {
+        "from": "review:join:implementation",
+        "to": "review:dispatch_batch:preview",
+        "reason": "next Agent Review stage is blocked until the previous stage join passes"
+      },
+      {
+        "from": "review:dispatch_batch:preview",
+        "to": "review:preflight:preview:network_runtime"
+      },
+      {
+        "from": "review:preflight:preview:network_runtime",
+        "to": "review:prepare:preview"
+      },
+      {
+        "from": "review:dispatch_batch:preview",
+        "to": "review:preflight:preview:human_usability"
+      },
+      {
+        "from": "review:preflight:preview:human_usability",
+        "to": "review:prepare:preview"
+      },
+      {
+        "from": "review:prepare:preview",
+        "to": "review:preview:network_runtime"
+      },
+      {
+        "from": "review:preview:network_runtime",
+        "to": "review:record:preview:network_runtime"
+      },
+      {
+        "from": "review:record:preview:network_runtime",
+        "to": "review:join:preview"
+      },
+      {
+        "from": "review:prepare:preview",
+        "to": "review:preview:human_usability"
+      },
+      {
+        "from": "review:preview:human_usability",
+        "to": "review:record:preview:human_usability"
+      },
+      {
+        "from": "review:record:preview:human_usability",
+        "to": "review:join:preview"
+      },
+      {
+        "from": "review:join:preview",
+        "to": "review:dispatch_batch:gate",
+        "reason": "next Agent Review stage is blocked until the previous stage join passes"
+      },
+      {
+        "from": "review:dispatch_batch:gate",
+        "to": "review:preflight:gate:gate_evidence"
+      },
+      {
+        "from": "review:preflight:gate:gate_evidence",
+        "to": "review:prepare:gate"
+      },
+      {
+        "from": "review:dispatch_batch:gate",
+        "to": "review:preflight:gate:release_risk"
+      },
+      {
+        "from": "review:preflight:gate:release_risk",
+        "to": "review:prepare:gate"
+      },
+      {
+        "from": "review:prepare:gate",
+        "to": "review:gate:gate_evidence"
+      },
+      {
+        "from": "review:gate:gate_evidence",
+        "to": "review:record:gate:gate_evidence"
+      },
+      {
+        "from": "review:record:gate:gate_evidence",
+        "to": "review:join:gate"
+      },
+      {
+        "from": "review:prepare:gate",
+        "to": "review:gate:release_risk"
+      },
+      {
+        "from": "review:gate:release_risk",
+        "to": "review:record:gate:release_risk"
+      },
+      {
+        "from": "review:record:gate:release_risk",
+        "to": "review:join:gate"
+      },
+      {
+        "from": "review:join:gate",
+        "to": "gate:agent_review"
+      },
+      {
+        "from": "gate:agent_review",
+        "to": "gate:review_inspection_required"
+      },
+      {
+        "from": "gate:review_inspection_required",
+        "to": "gate:artifact_consistency"
+      },
+      {
+        "from": "gate:artifact_consistency",
+        "to": "gate:dag_connectivity"
+      },
+      {
+        "from": "gate:dag_connectivity",
+        "to": "pr"
+      }
+    ]
+  },
+  "preconditions": {
+    "pr_selector_resolved": true,
+    "gate_ready": true,
+    "clean_worktree": true,
+    "base_freshness": {
+      "status": "passed",
+      "required": true,
+      "base_ref": "main",
+      "merge_base_contains_base": true,
+      "fetched_ref": "origin/main"
+    },
+    "remote_head_match": {
+      "status": "passed",
+      "required": true,
+      "local_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+      "remote_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d"
+    },
+    "checks_ready": {
+      "status": "passed",
+      "required": true,
+      "pending_count": 0,
+      "failing_count": 0
+    },
+    "review_policy": {
+      "status": "passed",
+      "required": true
+    },
+    "open_pull_request": {
+      "status": "passed",
+      "required": true
+    }
+  },
+  "warnings": [
+    "Local branch deletion skipped because the merged branch is checked out in the current worktree."
+  ],
+  "commands": [
+    "git fetch origin main",
+    "gh pr view 203 --json 'url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup' --repo Unson-LLC/vibepro",
+    "gh pr merge 203 --merge --repo Unson-LLC/vibepro --match-head-commit c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "git push origin --delete codex/vibepro-issue-202-workflow-gate-deadlock"
+  ],
+  "results": [
+    {
+      "command": "git fetch origin main",
+      "started_at": "2026-06-20T14:40:09.106Z",
+      "finished_at": "2026-06-20T14:40:09.726Z",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD"
+    },
+    {
+      "command": "gh pr view 203 --json 'url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup' --repo Unson-LLC/vibepro",
+      "started_at": "2026-06-20T14:40:09.772Z",
+      "finished_at": "2026-06-20T14:40:10.322Z",
+      "exit_code": 0,
+      "stdout": "{\"baseRefName\":\"main\",\"headRefName\":\"codex/vibepro-issue-202-workflow-gate-deadlock\",\"headRefOid\":\"c279e4c7022c27a1e35f0dde420268dafe767e9d\",\"isDraft\":false,\"mergeStateStatus\":\"CLEAN\",\"reviewDecision\":\"\",\"state\":\"OPEN\",\"statusCheckRollup\":[{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-20T14:39:51Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27874281223/job/82491070762\",\"name\":\"test (20)\",\"startedAt\":\"2026-06-20T14:38:14Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CI\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-20T14:39:28Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27874281224/job/82491070734\",\"name\":\"analyze\",\"startedAt\":\"2026-06-20T14:38:14Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CodeQL\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-20T14:39:45Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27874281223/job/82491070756\",\"name\":\"test (22)\",\"startedAt\":\"2026-06-20T14:38:14Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CI\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-20T14:39:26Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/runs/82491138128\",\"name\":\"CodeQL\",\"startedAt\":\"2026-06-20T14:39:20Z\",\"status\":\"COMPLETED\",\"workflowName\":\"\"}],\"url\":\"https://github.com/Unson-LLC/vibepro/pull/203\"}",
+      "stderr": ""
+    },
+    {
+      "command": "gh pr merge 203 --merge --repo Unson-LLC/vibepro --match-head-commit c279e4c7022c27a1e35f0dde420268dafe767e9d",
+      "started_at": "2026-06-20T14:40:10.323Z",
+      "finished_at": "2026-06-20T14:40:13.391Z",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git push origin --delete codex/vibepro-issue-202-workflow-gate-deadlock",
+      "started_at": "2026-06-20T14:40:13.391Z",
+      "finished_at": "2026-06-20T14:40:14.869Z",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "To https://github.com/Unson-LLC/vibepro.git\n - [deleted]         codex/vibepro-issue-202-workflow-gate-deadlock"
+    },
+    {
+      "command": "gh pr view 203 --json 'url,state,mergedAt,mergeCommit' --repo Unson-LLC/vibepro",
+      "started_at": "2026-06-20T14:40:14.869Z",
+      "finished_at": "2026-06-20T14:40:15.602Z",
+      "exit_code": 0,
+      "stdout": "{\"mergeCommit\":{\"oid\":\"0619f6eebdd3a4832d5248ad5fc17657280a28a6\"},\"mergedAt\":\"2026-06-20T14:40:12Z\",\"state\":\"MERGED\",\"url\":\"https://github.com/Unson-LLC/vibepro/pull/203\"}",
+      "stderr": ""
+    }
+  ],
+  "branch_cleanup": {
+    "requested": true,
+    "remote": {
+      "attempted": true,
+      "deleted": true,
+      "command": "git push origin --delete codex/vibepro-issue-202-workflow-gate-deadlock"
+    },
+    "local": {
+      "attempted": false,
+      "deleted": false,
+      "command": null
+    }
+  },
+  "status": "merged",
+  "stop_reason": null,
+  "merge_commit_sha": "0619f6eebdd3a4832d5248ad5fc17657280a28a6",
+  "merged_at": "2026-06-20T14:40:12Z"
+}

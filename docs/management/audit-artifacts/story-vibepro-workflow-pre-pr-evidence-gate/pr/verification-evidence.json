@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "updated_at": "2026-06-20T14:22:25.682Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "combined ui auth scope evidence for #202 at c279e4c",
+      "summary": "Combined current-bound integration evidence: UI/PR artifact output surface, auth_denied/setup failure mode, scope reviewability, and review owner map are covered by full npm test plus focused workflow E2E and CLI tests at c279e4c.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "test/vibepro-cli.test.js",
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+          ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-body.md",
+          ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.html",
+          ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/decision-records.json"
+        ],
+        "scenarios": [
+          "ui output surface: PR body and HTML artifact output are generated and checked by E2E replay",
+          "visual review output: actionable pre-PR role list excludes preview_smoke but keeps human_usability and network_runtime",
+          "auth_denied: Basic Auth env credentials are used without persisting password values in flow evidence",
+          "permission_denied: setup-gated flow evidence does not silently pass when runtime probes are missing",
+          "scope_reviewed: final PR is one coherent gate-contract change across docs source and tests",
+          "review_owner_map: Agent Review stages and roles define ownership for architecture preview and gate"
+        ],
+        "values": {
+          "ui_surface": "covered",
+          "auth_denied": "covered",
+          "scope_reviewed": "true",
+          "artifact_replay": "covered"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T14:22:25.682Z",
+      "git_context": {
+        "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+        "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T14:22:25.681Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "node --check bin/vibepro.js and src/*.js passed at c279e4c.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "bin/vibepro.js",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/flow-verifier.js"
+        ],
+        "scenarios": [
+          "syntax_check: changed runtime modules parse under Node"
+        ],
+        "values": {
+          "typecheck": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T14:10:40.278Z",
+      "git_context": {
+        "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+        "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T14:10:40.277Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/e2e/story-vibepro-risk-adaptive-gate-dag-main.test.js test/spec-diagrams.test.js",
+      "summary": "Focused workflow-heavy E2E/spec suite passed at c279e4c: 26 tests, 0 failures; PR prepare artifact replay creates executable E2E target and validates persisted JSON/HTML/PR body.",
+      "artifact": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+        ],
+        "scenarios": [
+          "flow_replay: temp-repo PR prepare plus existing E2E target file exercised workflow replay gates",
+          "scenario_clause_e2e: workflow state scenario clause was asserted in generated PR prepare replay",
+          "artifact_replay: persisted pr prepare JSON HTML and PR body exclude preview_smoke from actionable pre-PR review outputs"
+        ],
+        "values": {
+          "flow_replay": "true",
+          "scenario_clause_e2e": "true",
+          "tests": "26",
+          "failures": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T14:10:39.965Z",
+      "git_context": {
+        "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+        "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T14:10:39.963Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "npm test",
+      "summary": "Full npm test passed at c279e4c: 626 tests, 0 failures.",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "explicit_preview_role_summary: review prepare with --role preview_smoke summarizes only the requested role"
+        ],
+        "values": {
+          "tests": "626",
+          "failures": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-20T14:09:19.531Z",
+      "git_context": {
+        "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+        "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-20T14:09:19.530Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    }
+  ]
+}

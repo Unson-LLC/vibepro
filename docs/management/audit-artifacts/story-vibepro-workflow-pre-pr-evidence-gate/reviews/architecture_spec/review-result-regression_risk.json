@@ -1,0 +1,71 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Regression-risk review passes: final c279e4c test-only delta narrows explicit preview review-prepare summary output and does not weaken workflow replay gating.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, story/spec/architecture docs, full story diff, final delta 0cd3088..HEAD, implementation call sites in src/pr-manager.js, src/agent-review.js, src/flow-verifier.js, persisted PR/gate artifacts, and focused regression tests for workflow replay, preview role summary, zero-probe flow verification, and Basic Auth redaction.",
+    "evidence": "Subagent 019ee55f-c334-7512-b6bb-41706975c627 PASS JSON; focused tests cited by subagent: risk-adaptive gate 13/13, workflow PR prepare E2E 1/1, review prepare explicit role 1/1, zero-probe and Basic Auth redaction 2/2.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-request-regression_risk.md",
+      "src/pr-manager.js",
+      "src/agent-review.js",
+      "src/flow-verifier.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: c279e4c test-only delta might hide preview review-summary regression -> final judgment: assertion matches resolveStageSummaryRoles explicit-role contract, while PR-final required reviews still exclude preview_smoke and retain network_runtime/human_usability.",
+    "Initial concern: E2E record replay could accept fake evidence -> final judgment: current logic requires structured flow_replay and scenario_clause_e2e observations, existing E2E spec target, and command containing the full target path; tests reject marker-only, missing-target, non-e2e, route-target, manifest-only, stale, zero-probe, and basename-only cases."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T14:16:39.913Z",
+  "git_context": {
+    "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T14:16:39.912Z"
+  },
+  "source_fingerprint": "9cae947b65bd1a9e67ec88dbe4d73cef46e1ea3f72db4c8082a02b3a96ca27f0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee55f-c334-7512-b6bb-41706975c627",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-request-regression_risk.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

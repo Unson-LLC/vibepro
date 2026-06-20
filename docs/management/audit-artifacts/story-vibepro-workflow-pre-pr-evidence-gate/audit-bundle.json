@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-20T14:40:15.606Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/203",
+    "merge_commit_sha": "0619f6eebdd3a4832d5248ad5fc17657280a28a6",
+    "merged_at": "2026-06-20T14:40:12Z",
+    "current_head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d"
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/review-result-regression_risk.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/architecture_spec/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/review-summary.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-result-release_risk.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-summary.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-result-runtime_contract.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-result-ux_completion.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/implementation/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-summary.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-result-human_usability.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-result-network_runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-result-network_runtime.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-summary.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-e2e_ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-result-e2e_ux.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-result-gate_coverage.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-result-gate_coverage.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-summary.json"
+    }
+  ],
+  "missing_artifacts": []
+}

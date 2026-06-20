@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "test_plan:gate_coverage passes at HEAD 0cd3088: Gate DAG covers explicit workflow replay constraints and workflow-heavy PR prepare no longer requires actionable preview_smoke.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed implementation and tests across src/agent-review.js, src/pr-manager.js, src/flow-verifier.js, risk-adaptive gate tests, story E2E, and spec docs; confirmed marker-only, missing target, non-E2E target, route target, basename-only command failures and required-only preview surfaces.",
+    "evidence": "subagent 019ee523-32e1-7933-b417-05491183b40e PASS JSON; focused evidence includes node --test test/risk-adaptive-gate.test.js and story E2E with no preview_smoke in required/dispatch artifacts.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-gate_coverage.md",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/flow-verifier.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "docs/specs/vibepro-workflow-pre-pr-evidence-gate.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: replay and preview-smoke constraints could still leak across gate/artifact surfaces; final judgment: pass because explicit gate predicate updates and negative fixtures cover the failure modes."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T13:11:32.586Z",
+  "git_context": {
+    "head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T13:11:32.585Z"
+  },
+  "source_fingerprint": "c13e783bb709b71a80f706faaaed211039d9559ac98d797c576ef3828a371672",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee523-32e1-7933-b417-05491183b40e",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-gate_coverage.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

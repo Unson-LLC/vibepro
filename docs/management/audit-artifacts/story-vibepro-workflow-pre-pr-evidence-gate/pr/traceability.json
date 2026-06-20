@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-workflow-pre-pr-evidence-gate.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/203 at 2026-06-20T14:40:12Z (commit 0619f6eebdd3a4832d5248ad5fc17657280a28a6)"
+    }
+  ],
+  "created_at": "2026-06-20T10:44:50.132Z",
+  "updated_at": "2026-06-20T14:40:15.606Z"
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "pass",
+  "summary": "preview:human_usability passes at HEAD 0cd3088: human-facing surfaces distinguish accepted vs missing evidence, preserve story-to-PR traceability, and do not present preview_smoke as a pre-PR blocker.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected spec, review request, PR body, Gate DAG, review cockpit, agent review policy, and PR manager gate surfaces for human interpretability and preview role clarity.",
+    "evidence": "subagent 019ee53d-d28e-7d13-930e-41bbca255273 PASS JSON: preview_smoke absent from pre-PR required role surfaces; human_usability/network_runtime visible with traceable causes.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-human_usability.md",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-body.md",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/review-cockpit.html",
+      "docs/specs/vibepro-workflow-pre-pr-evidence-gate.md",
+      "src/agent-review.js",
+      "src/pr-manager.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: humans could confuse preview_smoke with a pre-PR blocker or miss evidence status; final judgment: pass because spec/code/artifacts consistently show human_usability/network_runtime and explicit missing/accepted evidence states."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T13:36:08.330Z",
+  "git_context": {
+    "head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T13:36:08.327Z"
+  },
+  "source_fingerprint": "b001800200386a79c95602204269fb7244dc02b4902c71f3880833da3919e276",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee53d-d28e-7d13-930e-41bbca255273",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "medium",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-human_usability.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

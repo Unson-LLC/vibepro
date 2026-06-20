@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence replacement passes: current-bound PR artifacts now show path_surface_matrix, failure_mode_coverage including auth_denied, artifact_consistency, workflow_flow_replay, and dag_connectivity as passed; remaining readiness blockers were prior gate-stage block review records that this replacement resolves.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read-only inspected HEAD, review request/results/summaries, regenerated pr-prepare/gate-dag/verification evidence, focused TAP artifact, and source tests/docs for gate binding, evidence freshness, command reliability, regression_guard, and path_surface_coverage.",
+    "evidence": ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json; .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json; .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json; .vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/test-artifacts/story-focused-c279e4c.tap"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: prior gate_evidence block cited stale gate review binding, stale artifact consistency, and missing auth_denied coverage -> final conclusion: pass because regenerated pr-prepare is bound to HEAD c279e4c and gate-dag now marks path_surface_matrix, failure_mode_coverage, artifact_consistency, workflow_flow_replay, and dag_connectivity as passed.",
+    "Initial concern: evidence might be free-form or stale -> final conclusion: pass because verification-evidence records current-bound integration/typecheck/e2e/unit commands with explicit observations for ui surface, auth_denied, permission_denied, scope_reviewed, artifact_replay, flow_replay, and scenario_clause_e2e."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T14:37:02.965Z",
+  "git_context": {
+    "head_sha": "c279e4c7022c27a1e35f0dde420268dafe767e9d",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T14:37:02.961Z"
+  },
+  "source_fingerprint": "7f614c97882f6bef60df528238c20cd5c7a30cf29387aedc12275f1c7af2a63b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee569-ac50-7b82-ba2d-cc5d6464d161",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-request-gate_evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

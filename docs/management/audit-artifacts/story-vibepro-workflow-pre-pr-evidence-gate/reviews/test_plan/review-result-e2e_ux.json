@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "test_plan:e2e_ux passes at HEAD 0cd3088: workflow replay now requires executable E2E evidence with explicit markers, existing E2E target, and command-target alignment; persisted PR artifacts reconstruct handoff.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read-only inspection covered review request, replay gate evaluation in src/pr-manager.js, verification evidence parsing, focused risk-adaptive regressions, story E2E artifact replay, fake-value hardening E2E, and persisted .vibepro/pr handoff artifacts.",
+    "evidence": "subagent 019ee523-1e95-7830-9dec-d06084c62bdc PASS JSON; ran story E2E, risk-adaptive flow replay grep, and fake-value hardening grep according to returned evidence.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-e2e_ux.md",
+      "src/pr-manager.js",
+      "src/verification-evidence.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-workflow-pre-pr-evidence-gate/gate-dag.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: source-only or marker-only replay evidence could fake E2E UX value; final judgment: pass because current gate needs explicit replay/scenario markers, an existing E2E spec target, command-target alignment, and artifact replay surfaces."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-20T13:11:32.582Z",
+  "git_context": {
+    "head_sha": "0cd30884a43049498f114a9d5d6c93a65259c8e4",
+    "current_branch": "codex/vibepro-issue-202-workflow-gate-deadlock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-20T13:11:32.581Z"
+  },
+  "source_fingerprint": "fe4f55bb7ab00deebf3a704f6e3af09ee455a9ca2cd6f8e05545b5aeef805f75",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019ee523-1e95-7830-9dec-d06084c62bdc",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-e2e_ux.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-workflow-pre-pr-evidence-gate/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
