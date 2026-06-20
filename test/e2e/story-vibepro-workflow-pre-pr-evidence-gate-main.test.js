@@ -1,22 +1,152 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
-test('story-vibepro-workflow-pre-pr-evidence-gate covers pre-PR workflow evidence scenarios', async () => {
-  const agentReview = await readFile(new URL('../../src/agent-review.js', import.meta.url), 'utf8');
-  const prManager = await readFile(new URL('../../src/pr-manager.js', import.meta.url), 'utf8');
-  const flowVerifier = await readFile(new URL('../../src/flow-verifier.js', import.meta.url), 'utf8');
-  const gateRegressionTest = await readFile(new URL('../risk-adaptive-gate.test.js', import.meta.url), 'utf8');
+import { runCli } from '../../src/cli.js';
 
-  assert.equal(agentReview.includes("role: 'preview_smoke'"), false, 'AC1 preview_smoke is not a PR-final required review');
-  assert.match(agentReview, /human_usability/, 'AC2 human usability remains pre-PR review evidence');
-  assert.match(prManager, /flow_replay/, 'S-002 flow_replay observation is accepted as workflow replay evidence');
-  assert.match(prManager, /scenario_clause_e2e/, 'S-002 scenario_clause_e2e observation is required with flow replay');
-  assert.match(prManager, /hasExplicitObservationMarker/, 'S-002 workflow replay requires explicit structured observation markers');
-  assert.match(prManager, /observation_check/, 'S-003 marker-only or observation-free E2E remains unresolved');
-  assert.match(prManager, /flow_design\.runtime_probes\[\]/, 'S-001 zero-probe flow evidence has runtime probe registration action');
-  assert.match(flowVerifier, /flow_runtime_probes_missing/, 'S-001 zero-probe Flow Verification remains unresolved');
-  assert.match(flowVerifier, /BASIC_AUTH_USER && BASIC_AUTH_PASSWORD/, 'S-004 Basic Auth branch is explicitly covered');
-  assert.match(gateRegressionTest, /flowReplayOnlyGate\.status/, 'S-003 flow_replay-only story E2E target remains unresolved');
-  assert.match(gateRegressionTest, /scenario_clause_e2e: workflow state scenario clause was asserted/, 'S-002 positive replay fixture binds a scenario clause explicitly');
+const execFileAsync = promisify(execFile);
+const STORY_ID = 'story-vibepro-workflow-pre-pr-evidence-gate';
+
+async function git(repo, args) {
+  return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function makeWorkflowRepo() {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-workflow-pre-pr-e2e-'));
+  await writeFile(path.join(repo, 'index.html'), '<!doctype html><title>Workflow gate</title>\n');
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro E2E']);
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    STORY_ID,
+    '--title',
+    'Workflow pre-PR evidence gate',
+    '--view',
+    'dev',
+    '--horizon',
+    'now'
+  ]);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---
+story_id: ${STORY_ID}
+title: Workflow pre-PR evidence gate
+architecture_docs:
+  reason: workflow state and review dispatch surfaces are documented
+---
+
+# Workflow pre-PR evidence gate
+
+## 背景
+
+Sample generation must run a preflight workflow, start detection, poll status, and keep Agent Review dispatch artifacts reconstructable without requiring a pre-PR preview smoke.
+
+## 受け入れ基準
+
+- [ ] workflow state scenario clause is asserted before PR readiness
+- [ ] PR prepare artifacts list only required pre-PR review roles
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start sample</button>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "preflight" }); }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), 'export function replayWorkflow(){ return "poll-detection-status"; }\n');
+  await writeFile(path.join(repo, 'src', 'workers', 'workflowWorker.ts'), 'export function enqueueWorkflow(){ return "queued"; }\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'init workflow story']);
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), [
+    'export function replayWorkflow(){',
+    '  return "poll-detection-status-with-required-review-summary";',
+    '}',
+    ''
+  ].join('\n'));
+  return repo;
+}
+
+test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact replay', async () => {
+  const repo = await makeWorkflowRepo();
+
+  const firstPrepare = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  assert.equal(firstPrepare.exitCode, 0, firstPrepare.stderr);
+  const agentReviews = firstPrepare.result.preparation.pr_context.agent_reviews;
+  assert.deepEqual(
+    agentReviews.required_reviews.map((item) => `${item.stage}:${item.role}`).sort(),
+    [
+      'gate:gate_evidence',
+      'gate:release_risk',
+      'preview:human_usability',
+      'preview:network_runtime'
+    ]
+  );
+  const previewStage = agentReviews.stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(previewStage.roles.map((role) => role.role).sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(previewStage.next_actions.join('\n').includes('preview_smoke'), false);
+  const previewDispatch = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
+  assert.equal(previewDispatch.prepare_command.includes('preview_smoke'), false);
+
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    STORY_ID,
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test tests/e2e/workflow-pre-pr.spec.ts',
+    '--summary',
+    'Playwright replay exercised the workflow transition and scenario clause before PR readiness',
+    '--scenario',
+    'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario',
+    'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--target',
+    'tests/e2e/workflow-pre-pr.spec.ts',
+    '--observed',
+    'flow_replay=true',
+    '--observed',
+    'scenario_clause_e2e=true'
+  ]);
+
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    STORY_ID,
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/risk-adaptive-gate.test.js',
+    '--summary',
+    'Artifact replay verified PR prepare review summaries and dispatch commands are required-only',
+    '--scenario',
+    'artifact_replay: generated pr prepare artifacts exclude preview_smoke from actionable pre-PR review outputs',
+    '--target',
+    `.vibepro/pr/${STORY_ID}/pr-prepare.json`,
+    '--observed',
+    'artifact_replay=covered'
+  ]);
+
+  const replayPrepare = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  assert.equal(replayPrepare.exitCode, 0, replayPrepare.stderr);
+  const gateDag = replayPrepare.result.preparation.pr_context.gate_dag;
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');
+  const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  assert.equal(spine.subchecks.find((check) => check.id === 'done_evidence').status, 'passed');
 });
