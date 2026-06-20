@@ -1052,6 +1052,24 @@ test('story-risk-adaptive workflow replay', async () => {
     '--id', 'story-risk-adaptive',
     '--kind', 'e2e',
     '--status', 'pass',
+    '--command', 'npx playwright test workflow-replay.spec.ts',
+    '--target', 'tests/e2e/workflow-replay.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const basenameOnlyReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(basenameOnlyReplay.exitCode, 0);
+  const basenameOnlyReplayGate = basenameOnlyReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(basenameOnlyReplayGate.status, 'needs_evidence');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
     '--command', 'npx playwright test tests/e2e/workflow-replay.spec.ts',
     '--target', 'tests/e2e/workflow-replay.spec.ts',
     '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
