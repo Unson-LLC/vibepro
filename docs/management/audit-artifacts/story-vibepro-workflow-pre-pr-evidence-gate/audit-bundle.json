@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-workflow-pre-pr-evidence-gate",
   "source": "execute_merge",
-  "promoted_at": "2026-06-20T14:40:15.606Z",
+  "promoted_at": "2026-06-20T14:40:19.106Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {

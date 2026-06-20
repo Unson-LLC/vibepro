@@ -3355,5 +3355,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "0619f6eebdd3a4832d5248ad5fc17657280a28a6",
-  "merged_at": "2026-06-20T14:40:12Z"
+  "merged_at": "2026-06-20T14:40:12Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+    "artifact_count": 25,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-workflow-pre-pr-evidence-gate-1781966415622",
+      "base_head_sha": "0619f6eebdd3a4832d5248ad5fc17657280a28a6",
+      "merge_commit_on_base": true,
+      "commit_sha": "aa770089f0bdeb3d1f26fd222475f15775f6c7d9",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 0619f6eebdd3a4832d5248ad5fc17657280a28a6",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-workflow-pre-pr-evidence-gate-1781966415622 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-workflow-pre-pr-evidence-gate'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-workflow-pre-pr-evidence-gate-1781966415622"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-20T14:40:15.622Z",
+          "finished_at": "2026-06-20T14:40:16.420Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   9c68212..0619f6e  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-workflow-pre-pr-evidence-gate-1781966415622 origin/main",
+          "started_at": "2026-06-20T14:40:16.502Z",
+          "finished_at": "2026-06-20T14:40:16.691Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 0619f6e Merge pull request #203 from Unson-LLC/codex/vibepro-issue-202-workflow-gate-deadlock",
+          "stderr": "Preparing worktree (detached HEAD 0619f6e)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+          "started_at": "2026-06-20T14:40:16.701Z",
+          "finished_at": "2026-06-20T14:40:16.790Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate",
+          "started_at": "2026-06-20T14:40:16.790Z",
+          "finished_at": "2026-06-20T14:40:16.845Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-workflow-pre-pr-evidence-gate'",
+          "started_at": "2026-06-20T14:40:16.845Z",
+          "finished_at": "2026-06-20T14:40:16.977Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD aa77008] docs: persist VibePro audit artifacts for story-vibepro-workflow-pre-pr-evidence-gate\n 26 files changed, 24985 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/review-result-regression_risk.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/architecture_spec/review-summary.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-result-release_risk.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/gate/review-summary.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-result-runtime_contract.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-result-ux_completion.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/implementation/review-summary.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-result-human_usability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-result-network_runtime.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/preview/review-summary.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-result-e2e_ux.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-result-gate_coverage.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-workflow-pre-pr-evidence-gate/reviews/test_plan/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-20T14:40:17.016Z",
+          "finished_at": "2026-06-20T14:40:19.023Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   0619f6e..aa77008  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-workflow-pre-pr-evidence-gate-1781966415622",
+          "started_at": "2026-06-20T14:40:19.023Z",
+          "finished_at": "2026-06-20T14:40:19.104Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
