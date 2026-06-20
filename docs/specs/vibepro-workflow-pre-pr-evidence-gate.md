@@ -41,6 +41,6 @@ diagrams:
 ## Scenarios
 
 - `S-001`: Given a workflow-heavy story with no configured runtime probes, when `vibepro verify flow` runs, then the workflow state transition remains `needs_evidence` and setup guidance tells the operator to register `flow_design.runtime_probes[]`.
-- `S-002`: Given a workflow-heavy story with current E2E evidence whose observation records `flow_replay` and `scenario_clause_e2e`, when `vibepro pr prepare` runs, then `gate:workflow_flow_replay` passes without requiring hosted preview smoke.
-- `S-003`: Given marker-only or observation-free E2E evidence, when `vibepro pr prepare` evaluates workflow replay, then workflow replay remains unresolved.
+- `S-002`: Given a workflow-heavy story with current E2E verification evidence whose observation records workflow state transition replay through `flow_replay` and `scenario_clause_e2e`, when `vibepro pr prepare` runs, then `gate:workflow_flow_replay` passes without requiring hosted preview smoke.
+- `S-003`: Given marker-only or observation-free E2E evidence, when `vibepro pr prepare` evaluates workflow state transition replay, then workflow replay remains unresolved.
 - `S-004`: Given `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` are present for Flow Verification, when evidence is written, then credential values are not persisted and only the environment variable provenance is stored.
