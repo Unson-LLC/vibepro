@@ -717,6 +717,18 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(agentReviews.parallel_dispatch.stage_execution.serial_between_stages, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.parallel_within_stage, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'architecture_spec');
+  const previewStageSummary = agentReviews.stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(previewStageSummary.roles.map((role) => role.role).sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(previewStageSummary.next_actions.join('\n').includes('preview_smoke'), false);
+  const previewDispatchStage = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(previewDispatchStage.roles.sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(previewDispatchStage.prepare_command.includes('preview_smoke'), false);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => `${stage.serial_index}:${stage.stage}:${stage.dispatch_state}`), [
     '1:architecture_spec:current',

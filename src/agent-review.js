@@ -780,9 +780,20 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     ...checkpointRequiredReviews.map((item) => item.stage),
     ...await listExistingReviewStages(root, storyId)
   ])].filter((stage) => REVIEW_STAGES.has(stage));
+  const requiredRolesByStage = new Map();
+  for (const requirement of [...requiredReviews, ...checkpointRequiredReviews]) {
+    if (!requirement.stage || !requirement.role) continue;
+    const roles = requiredRolesByStage.get(requirement.stage) ?? [];
+    roles.push(requirement.role);
+    requiredRolesByStage.set(requirement.stage, roles);
+  }
   const stageSummaries = [];
   for (const stage of stages) {
-    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
+    stageSummaries.push(await buildStageSummary(root, storyId, stage, {
+      currentGitContext,
+      reviewPolicy,
+      roles: requiredRolesByStage.get(stage) ?? null
+    }));
   }
   const roleLookup = new Map();
   for (const stageSummary of stageSummaries) {
@@ -1918,6 +1929,9 @@ async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summar
   const requestedRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
     ? summaryRoles
     : await readPreparedStageRoles(reviewDir);
+  if (Array.isArray(summaryRoles) && summaryRoles.length > 0) {
+    return [...new Set(requestedRoles)];
+  }
   const existingRoles = await listExistingReviewResultRoles(reviewDir);
   const lifecycleRoles = lifecycleEntries.map((entry) => entry.role).filter(Boolean);
   const stageRoleOrder = getStageRoles(reviewPolicy, stage);
