@@ -4163,35 +4163,30 @@ function extractAssertionCoverageTexts(block) {
 }
 
 function extractExecutableAssertionStatements(block) {
-  const lines = String(block ?? '').split('\n');
+  const original = String(block ?? '');
+  const masked = maskJavaScriptStringsAndComments(original);
   const statements = [];
-  let current = [];
-  let parenBalance = 0;
-  const startsAssertion = (line) => /\bexpect\s*\(|\bassert\s*[.(]/.test(line);
-  const updateBalance = (line) => {
-    const withoutLineComment = line.replace(/\/\/.*$/, '');
-    for (const char of withoutLineComment) {
+  const assertionPattern = /\b(?:expect\s*\(|assert\s*[.(])/g;
+  for (const match of masked.matchAll(assertionPattern)) {
+    let parenBalance = 0;
+    let end = original.length;
+    for (let index = match.index; index < masked.length; index += 1) {
+      const char = masked[index];
       if (char === '(') parenBalance += 1;
       if (char === ')') parenBalance -= 1;
+      if (parenBalance <= 0 && (char === ';' || char === '\n')) {
+        end = char === ';' ? index + 1 : index;
+        break;
+      }
     }
-  };
-  for (const line of lines) {
-    if (current.length === 0 && !startsAssertion(line)) continue;
-    if (current.length === 0) parenBalance = 0;
-    current.push(line);
-    updateBalance(line);
-    if (parenBalance <= 0 && /[;)]\s*$/.test(line.trim())) {
-      statements.push(current.join('\n'));
-      current = [];
-      parenBalance = 0;
-    }
+    statements.push(original.slice(match.index, end).trim());
   }
-  if (current.length > 0) statements.push(current.join('\n'));
-  return statements;
+  return [...new Set(statements.filter(Boolean))];
 }
 
 function extractLocalStringBindings(block) {
   const text = String(block ?? '');
+  const masked = maskJavaScriptStringsAndComments(text);
   const bindings = new Map();
   const setBinding = (name, values) => {
     const cleanValues = values.map((value) => String(value ?? '').trim()).filter(Boolean);
@@ -4199,16 +4194,19 @@ function extractLocalStringBindings(block) {
     bindings.set(name, [...new Set([...(bindings.get(name) ?? []), ...cleanValues])]);
   };
   const arrayPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*\[([\s\S]*?)\]\s*;?/g;
-  for (const match of text.matchAll(arrayPattern)) {
-    setBinding(match[1], extractStringLiterals(match[2]));
+  for (const match of masked.matchAll(arrayPattern)) {
+    const arrayStart = masked.indexOf('[', match.index);
+    const arrayEnd = match.index + match[0].lastIndexOf(']');
+    setBinding(match[1], extractStringLiterals(text.slice(arrayStart + 1, arrayEnd)));
   }
   const stringPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(['"`])((?:\\.|(?!\2)[\s\S])*?)\2\s*;?/g;
-  for (const match of text.matchAll(stringPattern)) {
-    setBinding(match[1], [match[3]]);
+  for (const match of masked.matchAll(stringPattern)) {
+    const originalDeclaration = text.slice(match.index, match.index + match[0].length);
+    setBinding(match[1], extractStringLiterals(originalDeclaration));
   }
   const aliasPattern = /\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)(?:\[(\d+)])?\s*;?/g;
   for (let pass = 0; pass < 2; pass += 1) {
-    for (const match of text.matchAll(aliasPattern)) {
+    for (const match of masked.matchAll(aliasPattern)) {
       const sourceValues = bindings.get(match[2]);
       if (!sourceValues) continue;
       const index = match[3] === undefined ? null : Number(match[3]);
@@ -4237,49 +4235,131 @@ function getExecutableE2eBlocks(content) {
 }
 
 function getExecutableE2eBlockDetails(content) {
-  const lines = String(content ?? '').split('\n');
+  const original = String(content ?? '');
+  const masked = maskJavaScriptStringsAndComments(original);
   const blocks = [];
-  let current = [];
-  let startLine = 0;
-  let parenBalance = 0;
-  const startsTestBlock = (line) => /^\s*(?:test|it)(?:\.only)?\s*\(/.test(line);
-  const updateBalance = (line) => {
-    const withoutLineComment = line.replace(/\/\/.*$/, '');
-    for (const char of withoutLineComment) {
-      if (char === '(') parenBalance += 1;
-      if (char === ')') parenBalance = Math.max(0, parenBalance - 1);
+  const lineStarts = [0];
+  for (let index = 0; index < original.length; index += 1) {
+    if (original[index] === '\n') lineStarts.push(index + 1);
+  }
+  const lineForIndex = (charIndex) => {
+    let low = 0;
+    let high = lineStarts.length - 1;
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      if (lineStarts[mid] <= charIndex) low = mid + 1;
+      else high = mid - 1;
     }
+    return high + 1;
   };
-  const pushCurrent = (endLine) => {
-    const text = current.join('\n');
-    if (hasExecutableE2eAssertionsInText(text)) {
+  const testPattern = /^\s*(?:test|it)(?:\.only)?\s*\(/gm;
+  let consumedUntil = -1;
+  for (const match of masked.matchAll(testPattern)) {
+    const start = match.index;
+    if (start < consumedUntil) continue;
+    const openParen = masked.indexOf('(', start);
+    if (openParen === -1) continue;
+    let parenBalance = 0;
+    let end = -1;
+    for (let index = openParen; index < masked.length; index += 1) {
+      const char = masked[index];
+      if (char === '(') parenBalance += 1;
+      if (char === ')') parenBalance -= 1;
+      if (parenBalance === 0) {
+        end = index + 1;
+        break;
+      }
+    }
+    if (end === -1) continue;
+    consumedUntil = end;
+    const text = original.slice(start, end);
+    if (hasExecutableE2eAssertionsInText(maskJavaScriptStringsAndComments(text))) {
       blocks.push({
         text,
-        line_start: startLine,
-        line_end: endLine,
+        line_start: lineForIndex(start),
+        line_end: lineForIndex(Math.max(start, end - 1)),
         test_name: extractTestBlockName(text)
       });
     }
-    current = [];
-    startLine = 0;
-    parenBalance = 0;
-  };
-  for (const [index, line] of lines.entries()) {
-    const startsBlock = startsTestBlock(line);
-    if (startsBlock && current.length > 0) {
-      pushCurrent(index);
-    }
-    if (current.length > 0 || startsBlock) {
-      if (current.length === 0) startLine = index + 1;
-      current.push(line);
-      updateBalance(line);
-      if (parenBalance === 0 && /[;)]\s*$/.test(line.trim())) {
-        pushCurrent(index + 1);
-      }
-    }
   }
-  if (current.length > 0) pushCurrent(lines.length);
   return blocks;
+}
+
+function maskJavaScriptStringsAndComments(value) {
+  const text = String(value ?? '');
+  let output = '';
+  let state = 'code';
+  let escaped = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1] ?? '';
+    if (state === 'line_comment') {
+      if (char === '\n') {
+        state = 'code';
+        output += '\n';
+      } else {
+        output += ' ';
+      }
+      continue;
+    }
+    if (state === 'block_comment') {
+      if (char === '*' && next === '/') {
+        output += '  ';
+        index += 1;
+        state = 'code';
+      } else {
+        output += char === '\n' ? '\n' : ' ';
+      }
+      continue;
+    }
+    if (state === 'single' || state === 'double' || state === 'template') {
+      const quote = state === 'single' ? '\'' : state === 'double' ? '"' : '`';
+      if (char === '\n') {
+        output += '\n';
+        escaped = false;
+        continue;
+      }
+      output += char === quote && !escaped ? quote : ' ';
+      if (char === quote && !escaped) {
+        state = 'code';
+      }
+      escaped = char === '\\' && !escaped;
+      if (char !== '\\') escaped = false;
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      output += '  ';
+      index += 1;
+      state = 'line_comment';
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      output += '  ';
+      index += 1;
+      state = 'block_comment';
+      continue;
+    }
+    if (char === '\'') {
+      output += char;
+      state = 'single';
+      escaped = false;
+      continue;
+    }
+    if (char === '"') {
+      output += char;
+      state = 'double';
+      escaped = false;
+      continue;
+    }
+    if (char === '`') {
+      output += char;
+      state = 'template';
+      escaped = false;
+      continue;
+    }
+    output += char;
+  }
+  return output;
 }
 
 function extractTestBlockName(block) {
