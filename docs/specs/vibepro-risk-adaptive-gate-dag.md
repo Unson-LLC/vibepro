@@ -115,9 +115,10 @@ For `workflow_heavy`, phase checkpoint review roles include:
 For `workflow_heavy`, PR-final review roles include:
 
 - `gate:release_risk`
-- `preview:preview_smoke`
 - `preview:network_runtime`
 - `preview:human_usability`
+
+`preview:preview_smoke` is post-PR evidence because deployed previews normally exist after PR creation; it MUST NOT be a PR-final blocker.
 
 `pr prepare` MUST NOT pull development-phase stages (`architecture_spec`, `test_plan`, `implementation`) into the PR-final Agent Review Gate.
 

@@ -780,9 +780,20 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     ...checkpointRequiredReviews.map((item) => item.stage),
     ...await listExistingReviewStages(root, storyId)
   ])].filter((stage) => REVIEW_STAGES.has(stage));
+  const requiredRolesByStage = new Map();
+  for (const requirement of [...requiredReviews, ...checkpointRequiredReviews]) {
+    if (!requirement.stage || !requirement.role) continue;
+    const roles = requiredRolesByStage.get(requirement.stage) ?? [];
+    roles.push(requirement.role);
+    requiredRolesByStage.set(requirement.stage, roles);
+  }
   const stageSummaries = [];
   for (const stage of stages) {
-    stageSummaries.push(await buildStageSummary(root, storyId, stage, { currentGitContext, reviewPolicy }));
+    stageSummaries.push(await buildStageSummary(root, storyId, stage, {
+      currentGitContext,
+      reviewPolicy,
+      roles: requiredRolesByStage.get(stage) ?? null
+    }));
   }
   const roleLookup = new Map();
   for (const stageSummary of stageSummaries) {
@@ -1351,14 +1362,8 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
   if (hasUiExperienceSourceChange(fileGroups)) {
     addRequirement({
       stage: 'preview',
-      role: 'preview_smoke',
-      reason: 'UI changes require preview smoke review before PR readiness',
-      policy: 'ui_preview'
-    });
-    addRequirement({
-      stage: 'preview',
       role: 'human_usability',
-      reason: 'UI changes require human-usability review before PR readiness',
+      reason: 'UI changes require human-usability review before PR readiness; deployed preview smoke is post-PR evidence',
       policy: 'ui_preview'
     });
   }
@@ -1375,12 +1380,6 @@ function buildRequiredReviewPolicy({ fileGroups, networkContracts, performanceEv
       stage: 'gate',
       role: 'release_risk',
       reason: 'workflow_heavy changes require release confidence and production-path risk review',
-      policy: 'workflow_heavy'
-    });
-    addRequirement({
-      stage: 'preview',
-      role: 'preview_smoke',
-      reason: 'workflow_heavy changes require preview smoke validation',
       policy: 'workflow_heavy'
     });
     addRequirement({
@@ -1930,6 +1929,9 @@ async function resolveStageSummaryRoles({ reviewDir, reviewPolicy, stage, summar
   const requestedRoles = Array.isArray(summaryRoles) && summaryRoles.length > 0
     ? summaryRoles
     : await readPreparedStageRoles(reviewDir);
+  if (Array.isArray(summaryRoles) && summaryRoles.length > 0) {
+    return [...new Set(requestedRoles)];
+  }
   const existingRoles = await listExistingReviewResultRoles(reviewDir);
   const lifecycleRoles = lifecycleEntries.map((entry) => entry.role).filter(Boolean);
   const stageRoleOrder = getStageRoles(reviewPolicy, stage);

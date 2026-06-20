@@ -684,8 +684,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
 		    'gate:gate_evidence',
 	    'gate:release_risk',
 	    'preview:human_usability',
-	    'preview:network_runtime',
-	    'preview:preview_smoke'
+	    'preview:network_runtime'
 		  ]);
 	  assert.deepEqual(agentReviews.required_reviews
 	    .filter((item) => item.policy === 'workflow_heavy')
@@ -718,6 +717,18 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(agentReviews.parallel_dispatch.stage_execution.serial_between_stages, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.parallel_within_stage, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'architecture_spec');
+  const previewStageSummary = agentReviews.stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(previewStageSummary.roles.map((role) => role.role).sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(previewStageSummary.next_actions.join('\n').includes('preview_smoke'), false);
+  const previewDispatchStage = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(previewDispatchStage.roles.sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(previewDispatchStage.prepare_command.includes('preview_smoke'), false);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => `${stage.serial_index}:${stage.stage}:${stage.dispatch_state}`), [
     '1:architecture_spec:current',
@@ -952,6 +963,127 @@ test('story-risk-adaptive marker only', async () => {
   assert.equal(markerOnly.result.preparation.pr_context.acceptance_e2e_coverage.status, 'needs_evidence');
   assert.equal(markerOnly.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e').status, 'needs_evidence');
 
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/story-risk-adaptive-main.spec.ts',
+    '--target', 'tests/e2e/story-risk-adaptive-main.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--observed', 'flow_replay=true'
+  ])).exitCode, 0);
+
+  const flowReplayOnly = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(flowReplayOnly.exitCode, 0);
+  const flowReplayOnlyGate = flowReplayOnly.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(flowReplayOnlyGate.status, 'needs_evidence');
+  assert.match(flowReplayOnlyGate.reason, /explicit flow replay observations|executable assertions|Story E2E coverage needs evidence/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/missing-workflow-replay.spec.ts',
+    '--target', 'tests/e2e/missing-workflow-replay.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const missingTargetReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(missingTargetReplay.exitCode, 0);
+  const missingTargetReplayGate = missingTargetReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(missingTargetReplayGate.status, 'needs_evidence');
+  assert.match(missingTargetReplayGate.reason, /executable assertions|Story E2E coverage needs evidence|current passing Flow Verification or E2E replay evidence/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/workflow-replay.spec.ts',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const nonE2eTargetReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(nonE2eTargetReplay.exitCode, 0);
+  const nonE2eTargetReplayGate = nonE2eTargetReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(nonE2eTargetReplayGate.status, 'needs_evidence');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/nonexistent.spec.ts --grep route.ts',
+    '--target', 'src/app/api/batch-jobs/[id]/generate-samples/route.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const routeTargetReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(routeTargetReplay.exitCode, 0);
+  const routeTargetReplayGate = routeTargetReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(routeTargetReplayGate.status, 'needs_evidence');
+
+  await writeFile(path.join(repo, 'tests', 'e2e', 'workflow-replay.spec.ts'), `
+import { expect, test } from '@playwright/test';
+test('story-risk-adaptive workflow replay', async () => {
+  // story-risk-adaptive S-001
+  // Given the workflow state is polling status, release readiness requires replaying the transition matrix.
+  // story-risk-adaptive ac:1
+  // Workflow states prevent generation until detection is ready
+  expect('retry-status').toContain('status');
+  expect('replaying the transition matrix').toContain('transition');
+});
+`);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test workflow-replay.spec.ts',
+    '--target', 'tests/e2e/workflow-replay.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const basenameOnlyReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(basenameOnlyReplay.exitCode, 0);
+  const basenameOnlyReplayGate = basenameOnlyReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(basenameOnlyReplayGate.status, 'needs_evidence');
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/workflow-replay.spec.ts',
+    '--target', 'tests/e2e/workflow-replay.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--scenario', 'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--observed', 'flow_replay=true',
+    '--observed', 'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+
+  const explicitReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(explicitReplay.exitCode, 0);
+  const explicitReplayGate = explicitReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(explicitReplayGate.status, 'passed');
+  assert.match(explicitReplayGate.reason, /explicitly records flow_replay/);
+
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';
 test('story-risk-adaptive unrelated assertion', async () => {
@@ -1160,4 +1292,5 @@ test('story-risk-adaptive unrelated assertion with bound marker', async () => {
   const zeroProbeFlowGate = zeroProbeFlow.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
   assert.equal(zeroProbeFlowGate.status, 'needs_evidence');
   assert.match(zeroProbeFlowGate.reason, /passing runtime probe/);
+  assert.equal(zeroProbeFlowGate.required_actions.some((action) => action.includes('flow_design.runtime_probes')), true);
 		});

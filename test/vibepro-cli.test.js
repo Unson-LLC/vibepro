@@ -7215,7 +7215,7 @@ test('review prepare generates stage role requests', async () => {
   const replacement = await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'preview', '--role', 'preview_smoke', '--language', 'en', '--json']);
   assert.equal(replacement.exitCode, 0);
   assert.deepEqual(replacement.result.plan.roles, ['preview_smoke']);
-  assert.deepEqual(replacement.result.summary.roles.map((role) => role.role), ['preview_smoke', 'network_runtime', 'human_usability']);
+  assert.deepEqual(replacement.result.summary.roles.map((role) => role.role), ['preview_smoke']);
 	});
 
 test('review and explore human dispatch artifacts follow ja output language', async () => {
