@@ -7995,7 +7995,25 @@ function e2eObservationCoversWorkflowReplay(evidence) {
   if (!['recorded', 'partial'].includes(evidence?.observation_check?.status)) return false;
   const matches = classifyVerificationEvidenceItem(evidence);
   const kinds = new Set(matches.map((match) => match.kind));
-  return kinds.has('flow_replay') && kinds.has('scenario_clause_e2e');
+  return kinds.has('flow_replay')
+    && hasExplicitObservationMarker(evidence, 'flow_replay')
+    && hasExplicitObservationMarker(evidence, 'scenario_clause_e2e');
+}
+
+function hasExplicitObservationMarker(evidence, marker) {
+  const normalizedMarker = String(marker ?? '').toLowerCase();
+  if (!normalizedMarker) return false;
+  const observation = evidence?.observation ?? {};
+  const values = observation.values && typeof observation.values === 'object'
+    ? observation.values
+    : {};
+  if (Object.keys(values).some((key) => String(key).toLowerCase() === normalizedMarker)) return true;
+  return (observation.scenarios ?? []).some((scenario) => {
+    const text = String(scenario ?? '').trim().toLowerCase();
+    return text === normalizedMarker
+      || text.startsWith(`${normalizedMarker}:`)
+      || text.startsWith(`${normalizedMarker}=`);
+  });
 }
 
 function e2eEvidenceCoversStoryAcceptance(evidence, e2eCoverage) {

@@ -956,6 +956,23 @@ test('story-risk-adaptive marker only', async () => {
     '--id', 'story-risk-adaptive',
     '--kind', 'e2e',
     '--status', 'pass',
+    '--command', 'npx playwright test tests/e2e/story-risk-adaptive-main.spec.ts',
+    '--target', 'tests/e2e/story-risk-adaptive-main.spec.ts',
+    '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
+    '--observed', 'flow_replay=true'
+  ])).exitCode, 0);
+
+  const flowReplayOnly = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(flowReplayOnly.exitCode, 0);
+  const flowReplayOnlyGate = flowReplayOnly.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+  assert.equal(flowReplayOnlyGate.status, 'needs_evidence');
+  assert.match(flowReplayOnlyGate.reason, /explicit flow replay observations|executable assertions|Story E2E coverage needs evidence/);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
     '--command', 'npx playwright test tests/e2e/salestailor-workflow.spec.ts',
     '--target', 'tests/e2e/salestailor-workflow.spec.ts',
     '--scenario', 'flow_replay: pre-PR Playwright exercised the workflow transition path',
