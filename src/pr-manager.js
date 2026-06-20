@@ -6843,6 +6843,7 @@ function buildGateDag({
     decisionRecords
   });
   const workflowHeavyGates = buildWorkflowHeavyGates({
+    repoRoot,
     changeClassification,
     inferredSpec,
     flowVerification,
@@ -7821,9 +7822,9 @@ function buildFlowVerificationSurfaceSearchText(flowVerification) {
     .toLowerCase();
 }
 
-function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
+function buildWorkflowHeavyGates({ repoRoot, changeClassification, inferredSpec, flowVerification, e2eCoverage, verificationEvidence }) {
   if (changeClassification?.profile !== 'workflow_heavy') return [];
-  const flowEvidence = resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificationEvidence });
+  const flowEvidence = resolveWorkflowFlowEvidence({ repoRoot, flowVerification, e2eCoverage, verificationEvidence });
   const hasPassingFlowEvidence = flowEvidence.passed;
   const flowEvidenceActions = flowEvidence.required_actions ?? [];
   const clauses = Array.isArray(inferredSpec?.clauses) ? inferredSpec.clauses : [];
@@ -7900,7 +7901,7 @@ function buildWorkflowHeavyGates({ changeClassification, inferredSpec, flowVerif
   ];
 }
 
-function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificationEvidence }) {
+function resolveWorkflowFlowEvidence({ repoRoot = '.', flowVerification, e2eCoverage, verificationEvidence }) {
   const flowStatus = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
   const flowBinding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
   if (flowStatus === 'pass') {
@@ -7955,7 +7956,7 @@ function resolveWorkflowFlowEvidence({ flowVerification, e2eCoverage, verificati
       required_actions: buildWorkflowReplayRequiredActions()
     };
   }
-  if (e2eObservationCoversWorkflowReplay(e2eEvidence)) {
+  if (e2eObservationCoversWorkflowReplay(repoRoot, e2eEvidence)) {
     return {
       passed: true,
       reason: 'Current E2E evidence explicitly records flow_replay and scenario_clause_e2e observations'
@@ -7990,14 +7991,27 @@ function buildWorkflowReplayRequiredActions() {
   ];
 }
 
-function e2eObservationCoversWorkflowReplay(evidence) {
+function e2eObservationCoversWorkflowReplay(repoRoot, evidence) {
   if (evidence?.kind !== 'e2e') return false;
   if (!['recorded', 'partial'].includes(evidence?.observation_check?.status)) return false;
+  if (!e2eEvidenceHasExistingTarget(repoRoot, evidence)) return false;
   const matches = classifyVerificationEvidenceItem(evidence);
   const kinds = new Set(matches.map((match) => match.kind));
   return kinds.has('flow_replay')
     && hasExplicitObservationMarker(evidence, 'flow_replay')
     && hasExplicitObservationMarker(evidence, 'scenario_clause_e2e');
+}
+
+function e2eEvidenceHasExistingTarget(repoRoot, evidence) {
+  const targets = evidence?.observation?.targets ?? [];
+  return targets.some((target) => {
+    const normalized = String(target ?? '').trim();
+    if (!normalized || /^[a-z][a-z0-9+.-]*:/i.test(normalized)) return false;
+    const absolute = path.resolve(repoRoot, normalized);
+    const relative = path.relative(repoRoot, absolute);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) return false;
+    return existsSync(absolute);
+  });
 }
 
 function hasExplicitObservationMarker(evidence, marker) {

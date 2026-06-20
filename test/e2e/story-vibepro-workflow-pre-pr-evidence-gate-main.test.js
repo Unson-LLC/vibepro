@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -13,6 +13,10 @@ const STORY_ID = 'story-vibepro-workflow-pre-pr-evidence-gate';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
+}
+
+async function readJson(filePath) {
+  return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
 async function makeWorkflowRepo() {
@@ -56,10 +60,22 @@ Sample generation must run a preflight workflow, start detection, poll status, a
   await mkdir(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start sample</button>; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "preflight" }); }\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), 'export function replayWorkflow(){ return "poll-detection-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'workflowWorker.ts'), 'export function enqueueWorkflow(){ return "queued"; }\n');
+  await writeFile(path.join(repo, 'tests', 'e2e', 'workflow-pre-pr.spec.ts'), `
+import { expect, test } from '@playwright/test';
+test('workflow pre-PR replay exercises the state transition', async () => {
+  // ${STORY_ID} S-001
+  // workflow state scenario clause was asserted before PR readiness
+  // ${STORY_ID} ac:1
+  // workflow state scenario clause is asserted before PR readiness
+  expect('poll-detection-status').toContain('status');
+  expect('workflow state scenario clause').toContain('scenario');
+});
+`);
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'init workflow story']);
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), [
@@ -94,6 +110,21 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
   assert.equal(previewStage.next_actions.join('\n').includes('preview_smoke'), false);
   const previewDispatch = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
   assert.equal(previewDispatch.prepare_command.includes('preview_smoke'), false);
+  const firstPrDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  const firstPersistedPrepare = await readJson(path.join(firstPrDir, 'pr-prepare.json'));
+  const firstPersistedPreviewStage = firstPersistedPrepare.pr_context.agent_reviews.stages.find((stage) => stage.stage === 'preview');
+  assert.deepEqual(firstPersistedPreviewStage.roles.map((role) => role.role).sort(), [
+    'human_usability',
+    'network_runtime'
+  ]);
+  assert.equal(firstPersistedPreviewStage.next_actions.join('\n').includes('preview_smoke'), false);
+  assert.equal(
+    firstPersistedPrepare.pr_context.agent_reviews.parallel_dispatch.required_stages
+      .find((stage) => stage.stage === 'preview')
+      .prepare_command
+      .includes('preview_smoke'),
+    false
+  );
 
   await runCli([
     'verify',
@@ -149,4 +180,24 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');
   const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.equal(spine.subchecks.find((check) => check.id === 'done_evidence').status, 'passed');
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  const persistedPrepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+  const persistedGateDag = await readJson(path.join(prDir, 'gate-dag.json'));
+  const prBody = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
+  const prPrepareHtml = await readFile(path.join(prDir, 'pr-prepare.html'), 'utf8');
+  const cockpitHtml = await readFile(path.join(prDir, 'review-cockpit.html'), 'utf8');
+  assert.equal(persistedGateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');
+  assert.equal(
+    persistedPrepare.pr_context.agent_reviews.parallel_dispatch.required_stages
+      .find((stage) => stage.stage === 'preview')
+      .prepare_command
+      .includes('preview_smoke'),
+    false
+  );
+  assert.match(prBody, /preview:network_runtime/);
+  assert.doesNotMatch(prBody, /preview:preview_smoke\(missing\)|--role preview_smoke/);
+  assert.match(prPrepareHtml, /network_runtime/);
+  assert.doesNotMatch(prPrepareHtml, /--role preview_smoke/);
+  assert.match(cockpitHtml, /agent review|Agent Review|review/i);
+  assert.match(cockpitHtml, /agent-closed|close\/shutdown|close/i);
 });
