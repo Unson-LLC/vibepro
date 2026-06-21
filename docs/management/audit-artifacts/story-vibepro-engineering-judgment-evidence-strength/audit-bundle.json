@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-21T01:47:04.258Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/208",
+    "merge_commit_sha": "84be071a26c50c5d794d9ea79c17f57de45966f5",
+    "merged_at": "2026-06-21T01:47:02Z",
+    "current_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e"
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/review-summary.json"
+    }
+  ],
+  "missing_artifacts": []
+}

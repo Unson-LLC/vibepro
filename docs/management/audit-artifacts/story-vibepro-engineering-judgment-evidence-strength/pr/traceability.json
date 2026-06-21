@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/208 at 2026-06-21T01:47:02Z (commit 84be071a26c50c5d794d9ea79c17f57de45966f5)"
+    }
+  ],
+  "created_at": "2026-06-21T01:01:33.344Z",
+  "updated_at": "2026-06-21T01:47:04.258Z"
+}

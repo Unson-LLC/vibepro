@@ -1,0 +1,255 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+  "updated_at": "2026-06-21T01:25:51.641Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "verify record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+      "expected_root": null,
+      "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+      "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+      "managed_worktree": null
+    }
+  ],
+  "commands": [
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+      "summary": "pr prepare で engineering judgment evidence strength と gate artifact lifecycle を end-to-end replayした",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "flow_replay: pr prepare judgment gate route replayed end-to-end",
+          "artifact_replay: gate-dag and pr-prepare artifacts regenerated and replayed",
+          "scenario_clause_e2e: engineering judgment evidence strength acceptance criteria replayed",
+          "review artifact: gate review artifact and pr body surface exercised"
+        ],
+        "values": {
+          "status": "pass",
+          "flow_replay": "pass",
+          "artifact_replay": "pass",
+          "review_surface": "artifact"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T01:25:51.641Z",
+      "git_context": {
+        "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_branch": "codex/vibepro-engineering-judgment-evidence-strength",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T01:25:51.640Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "expected_root": null,
+        "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "expected_root": null,
+          "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+      "summary": "engineering judgment blocker と evidence strength の focused tests が current HEAD で通過",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "focused runtime path over judgment axis and blocker cases"
+        ],
+        "values": {
+          "status": "pass",
+          "focused_tests": "10",
+          "focused_failures": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T01:25:51.069Z",
+      "git_context": {
+        "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_branch": "codex/vibepro-engineering-judgment-evidence-strength",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T01:25:51.068Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "expected_root": null,
+        "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "expected_root": null,
+          "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "bin と src の Node syntax/typecheck が current HEAD で通過",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/typecheck.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "bin/vibepro.js",
+          "src/pr-manager.js"
+        ],
+        "scenarios": [],
+        "values": {
+          "status": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T01:25:50.529Z",
+      "git_context": {
+        "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_branch": "codex/vibepro-engineering-judgment-evidence-strength",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T01:25:50.528Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "expected_root": null,
+        "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+          "expected_root": null,
+          "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "managed_worktree": null
+        }
+      ]
+    }
+  ]
+}

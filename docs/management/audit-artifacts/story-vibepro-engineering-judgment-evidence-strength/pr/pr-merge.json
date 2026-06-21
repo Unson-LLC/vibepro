@@ -1,0 +1,2459 @@
+{
+  "schema_version": "0.1.0",
+  "created_at": "2026-06-21T01:47:00.017Z",
+  "mode": "execute_merge",
+  "dry_run": false,
+  "workspace_initialized": true,
+  "story": {
+    "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+    "title": "Engineering Judgmentのevidenceをpresence判定からstrength判定へ移す",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": "dev",
+    "period": "2026-06",
+    "started_at": null,
+    "due_at": null,
+    "category": null
+  },
+  "output": {
+    "language": "ja"
+  },
+  "strategy": "merge",
+  "delete_branch": false,
+  "base": "main",
+  "current_branch": "codex/vibepro-engineering-judgment-evidence-strength",
+  "current_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+  "artifact_freshness": {
+    "kind": "pr_merge",
+    "status": "current",
+    "exists": true,
+    "artifact": null,
+    "report": null,
+    "artifact_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+    "current_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+    "checked_at": "2026-06-21T01:47:00.017Z",
+    "reason": "pr-merge artifact is bound to the current HEAD a10ccc0453fc"
+  },
+  "repository_slug": "Unson-LLC/vibepro",
+  "pr": {
+    "selector": "208",
+    "url": "https://github.com/Unson-LLC/vibepro/pull/208",
+    "state": "OPEN",
+    "is_draft": false,
+    "merge_state_status": "CLEAN",
+    "review_decision": "",
+    "head_ref_name": "codex/vibepro-engineering-judgment-evidence-strength",
+    "head_ref_oid": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+    "base_ref_name": "main",
+    "checks": [
+      {
+        "name": "test (20)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CI",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27890031966/job/82531826258"
+      },
+      {
+        "name": "analyze",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CodeQL",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27890031947/job/82531826196"
+      },
+      {
+        "name": "test (22)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "CI",
+        "details_url": "https://github.com/Unson-LLC/vibepro/actions/runs/27890031966/job/82531826239"
+      },
+      {
+        "name": "CodeQL",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "workflow_name": "",
+        "details_url": "https://github.com/Unson-LLC/vibepro/runs/82531889650"
+      }
+    ]
+  },
+  "gate_dag": {
+    "schema_version": "0.1.0",
+    "model": "story-acceptance-verification-dag",
+    "overall_status": "ready_for_review",
+    "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+    "summary": {
+      "acceptance_criteria_count": 6,
+      "required_gate_count": 38,
+      "needs_evidence_count": 0,
+      "engineering_judgment_route": "agent_workflow",
+      "engineering_judgment_dag": "agent_workflow_dag",
+      "active_judgment_axes": [
+        "public_contract",
+        "execution_topology",
+        "scope_reviewability"
+      ],
+      "judgment_axis_count": 3,
+      "judgment_axis_accepted_followup_count": 1,
+      "pr_scope_judgment_status": "passed",
+      "bug_physics_classes": [],
+      "bug_physics_profile_count": 0,
+      "pr_route": "runtime_change",
+      "pr_body_template": "runtime_contract_review",
+      "story_status": "present",
+      "story_source_integrity_status": "passed",
+      "architecture_status": "satisfied",
+      "architecture_axis_quality_status": "needs_review",
+      "spec_status": "present",
+      "path_surface_matrix_status": "passed",
+      "requirement_status": "passed",
+      "failure_mode_coverage_status": "passed",
+      "decision_record_status": "passed",
+      "review_inspection_required_status": "passed",
+      "artifact_consistency_status": "passed",
+      "managed_worktree_status": "needs_review"
+    },
+    "nodes": [
+      {
+        "id": "story",
+        "type": "story",
+        "label": "story-vibepro-engineering-judgment-evidence-strength - evidenceがあることと、senior engineerが信用できる強さを持つことが区別されていない",
+        "status": "present",
+        "required": true,
+        "artifact": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md",
+        "reason": "Story source is present"
+      },
+      {
+        "id": "gate:story_source_integrity",
+        "type": "story_source_integrity_gate",
+        "label": "Story Source Integrity Gate",
+        "status": "passed",
+        "required": true,
+        "selected_story_id": "story-vibepro-engineering-judgment-evidence-strength",
+        "source": {
+          "path": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md",
+          "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+          "vibepro_story_id": null,
+          "title": "Engineering Judgmentのevidenceをpresence判定からstrength判定へ移す",
+          "matches_selected_story": true
+        },
+        "changed_story_docs": [
+          {
+            "path": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md",
+            "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+            "vibepro_story_id": null,
+            "title": "Engineering Judgmentのevidenceをpresence判定からstrength判定へ移す",
+            "matches_selected_story": true
+          }
+        ],
+        "mismatched_changed_story_docs": [],
+        "required_actions": [],
+        "reason": "Resolved and changed Story documents match the selected Story, or no changed Story document needs binding."
+      },
+      {
+        "id": "gate:engineering_judgment_route",
+        "type": "engineering_judgment_route_gate",
+        "label": "Engineering Judgment Route Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "confidence": 0.82,
+        "signals": [
+          "surface:agent_or_gate_workflow",
+          "risk_profile:light"
+        ],
+        "reason": "Engineering judgment route selected: agent_workflow; DAG=agent_workflow_dag"
+      },
+      {
+        "id": "gate:common_judgment_spine",
+        "type": "engineering_judgment_spine_gate",
+        "label": "Common Judgment Spine Gate",
+        "status": "passed",
+        "required": true,
+        "spine": [
+          "intent",
+          "current_reality",
+          "invariants",
+          "domain_or_system_model",
+          "boundary",
+          "risk_classification",
+          "route_dag_selection",
+          "evidence_requirements",
+          "implementation_plan",
+          "verification",
+          "human_decision_contract",
+          "release_or_operation"
+        ],
+        "subchecks": [
+          {
+            "id": "intent",
+            "status": "passed",
+            "evidence": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md",
+            "surface": "story",
+            "required_evidence_kind": [
+              "story_intent"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "story_intent",
+                "ref": "docs/management/stories/active/story-vibepro-engineering-judgment-evidence-strength.md"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "6 acceptance criterion/criteria or Story intent text found"
+          },
+          {
+            "id": "current_reality",
+            "status": "passed",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "minimum_strength": {
+              "flow_replay": "strong",
+              "artifact_replay": "strong",
+              "scenario_clause_e2e": "strong"
+            },
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow current reality is backed by flow_replay"
+          },
+          {
+            "id": "invariants",
+            "status": "passed",
+            "evidence": "explicit spec/architecture docs",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "spec_clause",
+              "architecture_doc",
+              "test_contract"
+            ],
+            "matched_evidence": [
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs",
+                "strength": "supporting",
+                "strength_reason": "architecture/spec docs bound the invariant surface",
+                "binding_status": "n/a",
+                "artifact_quality": "architecture_doc"
+              },
+              {
+                "kind": "test_contract",
+                "ref": "test files in diff",
+                "strength": "supporting",
+                "strength_reason": "changed tests indicate intended contract coverage but are not focused proof by themselves",
+                "binding_status": "n/a",
+                "artifact_quality": "changed_test_files"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "High-risk changes need Spec, Architecture, or test evidence for invariants"
+          },
+          {
+            "id": "boundaries",
+            "status": "passed",
+            "evidence": "explicit spec/architecture docs",
+            "surface": "workflow",
+            "optional_evidence_kind": [
+              "graph_impact_scope"
+            ],
+            "required_evidence_kind": [
+              "architecture_doc",
+              "decision_record",
+              "current_verification"
+            ],
+            "minimum_strength": {
+              "architecture_doc": "supporting",
+              "decision_record": "supporting",
+              "current_verification": "supporting"
+            },
+            "matched_evidence": [
+              {
+                "kind": "architecture_doc",
+                "ref": "explicit spec/architecture docs",
+                "strength": "supporting",
+                "strength_reason": "architecture/spec docs describe the relevant boundary",
+                "binding_status": "n/a",
+                "artifact_quality": "architecture_doc"
+              },
+              {
+                "kind": "decision_record",
+                "ref": "decision-1782005178741-74266f9f",
+                "strength": "supporting",
+                "strength_reason": "accepted decision records the boundary rationale",
+                "binding_status": "current",
+                "artifact_quality": "decision_record"
+              },
+              {
+                "kind": "current_verification",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current verification is tied to a durable artifact for the boundary path",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "Boundary-sensitive changes need architecture/spec, decision, or current verification evidence"
+          },
+          {
+            "id": "failure_modes",
+            "status": "passed",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "minimum_strength": {
+              "flow_replay": "strong",
+              "artifact_replay": "strong",
+              "scenario_clause_e2e": "strong"
+            },
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need failure-mode evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          },
+          {
+            "id": "done_evidence",
+            "status": "passed",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "surface": "workflow",
+            "required_evidence_kind": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e"
+            ],
+            "minimum_strength": {
+              "flow_replay": "strong",
+              "artifact_replay": "strong",
+              "scenario_clause_e2e": "strong"
+            },
+            "matched_evidence": [
+              {
+                "kind": "flow_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "artifact_replay",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              },
+              {
+                "kind": "scenario_clause_e2e",
+                "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+                "strength": "strong",
+                "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+                "binding_status": "current",
+                "artifact_quality": "verified",
+                "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+              }
+            ],
+            "missing_evidence": [],
+            "reason": "workflow changes need done evidence matching flow_replay|artifact_replay|scenario_clause_e2e"
+          }
+        ],
+        "missing_subchecks": [],
+        "reason": "Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile"
+      },
+      {
+        "id": "gate:judgment_axis_public_contract",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: public_contract",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "public_contract",
+        "confidence": 0.8,
+        "decision_question": "この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。",
+        "required_evidence": [
+          "story_spec_traceability",
+          "contract_doc",
+          "compat_or_output_test",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "public contract change lacks traceability or compatibility evidence",
+          "output/API/CLI behavior changed without reviewable old/new expectation"
+        ],
+        "acceptable_followup": "Current behavior is backward-compatible and the remaining doc or cleanup item is bounded with an artifact or issue reference.",
+        "signals": [
+          "pr_route:runtime_change",
+          "file_group:contract_docs",
+          "text:public_contract"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff",
+            "strength": "supporting",
+            "strength_reason": "story/spec docs exist in the diff and provide traceability",
+            "binding_status": "n/a",
+            "artifact_quality": "story_doc"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture/policy docs are present for the changed contract surface",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture docs describe topology but are not replay proof",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests signal intent but do not prove focused runtime coverage alone",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests indicate semantic coverage intent but remain indirect",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current verification includes a durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr",
+            "strength": "supporting",
+            "strength_reason": "scope classification recommends split planning",
+            "binding_status": "derived",
+            "artifact_quality": "scope_classification"
+          }
+        ],
+        "optional_evidence": [],
+        "missing_evidence": [],
+        "matched_blockers": [],
+        "blocker_waiver": null,
+        "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, e2e_runtime_path, e2e_runtime_path, flow_replay, flow_replay, artifact_replay, artifact_replay, scenario_clause_e2e, scenario_clause_e2e, focused_test, runtime_path_evidence, current_verification, split_plan."
+      },
+      {
+        "id": "gate:judgment_axis_execution_topology",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: execution_topology",
+        "status": "passed",
+        "axis_status": "active_passed",
+        "required": true,
+        "axis": "execution_topology",
+        "confidence": 0.84,
+        "decision_question": "process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。",
+        "required_evidence": [
+          "topology_diagram",
+          "flow_replay",
+          "artifact_replay",
+          "agent_review",
+          "current_verification"
+        ],
+        "blocking_criteria": [
+          "orchestration or artifact lifecycle changed without replay/review evidence",
+          "tool or agent side effects are not bounded"
+        ],
+        "acceptable_followup": "Current topology is safe and observable; deferred work is a bounded diagram/doc improvement.",
+        "signals": [
+          "surface:workflow_or_agent",
+          "text:execution_topology"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff",
+            "strength": "supporting",
+            "strength_reason": "story/spec docs exist in the diff and provide traceability",
+            "binding_status": "n/a",
+            "artifact_quality": "story_doc"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture/policy docs are present for the changed contract surface",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture docs describe topology but are not replay proof",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests signal intent but do not prove focused runtime coverage alone",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests indicate semantic coverage intent but remain indirect",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current verification includes a durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr",
+            "strength": "supporting",
+            "strength_reason": "scope classification recommends split planning",
+            "binding_status": "derived",
+            "artifact_quality": "scope_classification"
+          },
+          {
+            "kind": "agent_review",
+            "ref": "agent review summaries passed for required roles",
+            "strength": "strong",
+            "strength_reason": "current-bound agent review lifecycle evidence is recorded for required roles",
+            "binding_status": "current",
+            "artifact_quality": "agent_review_artifact"
+          }
+        ],
+        "optional_evidence": [],
+        "missing_evidence": [],
+        "matched_blockers": [],
+        "blocker_waiver": null,
+        "reason": "execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, e2e_runtime_path, e2e_runtime_path, flow_replay, flow_replay, artifact_replay, artifact_replay, scenario_clause_e2e, scenario_clause_e2e, focused_test, runtime_path_evidence, current_verification, split_plan, agent_review."
+      },
+      {
+        "id": "gate:judgment_axis_scope_reviewability",
+        "type": "judgment_axis_gate",
+        "label": "Judgment Axis: scope_reviewability",
+        "status": "accepted_followup",
+        "axis_status": "active_accepted_followup",
+        "required": true,
+        "axis": "scope_reviewability",
+        "confidence": 0.74,
+        "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
+        "required_evidence": [
+          "scope_reviewed",
+          "split_plan",
+          "review_owner_map",
+          "graph_impact_scope",
+          "decision_record"
+        ],
+        "blocking_criteria": [
+          "multiple unrelated decisions are bundled without split rationale",
+          "ownership or blast radius is unclear"
+        ],
+        "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
+        "signals": [
+          "scope:needs_clean_branch"
+        ],
+        "matched_evidence": [
+          {
+            "kind": "story_spec_traceability",
+            "ref": "story/spec docs in diff",
+            "strength": "supporting",
+            "strength_reason": "story/spec docs exist in the diff and provide traceability",
+            "binding_status": "n/a",
+            "artifact_quality": "story_doc"
+          },
+          {
+            "kind": "contract_doc",
+            "ref": "architecture/policy docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture/policy docs are present for the changed contract surface",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "topology_diagram",
+            "ref": "architecture docs in diff",
+            "strength": "supporting",
+            "strength_reason": "architecture docs describe topology but are not replay proof",
+            "binding_status": "n/a",
+            "artifact_quality": "architecture_doc"
+          },
+          {
+            "kind": "compat_or_output_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests signal intent but do not prove focused runtime coverage alone",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "semantic_invariant_test",
+            "ref": "test files in diff",
+            "strength": "supporting",
+            "strength_reason": "changed tests indicate semantic coverage intent but remain indirect",
+            "binding_status": "n/a",
+            "artifact_quality": "changed_test_files"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "e2e_runtime_path",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "flow_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "artifact_replay",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "scenario_clause_e2e",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "focused_test",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "runtime_path_evidence",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current-bound focused evidence includes recorded observation plus durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json"
+          },
+          {
+            "kind": "current_verification",
+            "ref": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "strength": "strong",
+            "strength_reason": "current verification includes a durable artifact",
+            "binding_status": "current",
+            "artifact_quality": "verified",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json"
+          },
+          {
+            "kind": "split_plan",
+            "ref": "clean_branch_or_split_pr",
+            "strength": "supporting",
+            "strength_reason": "scope classification recommends split planning",
+            "binding_status": "derived",
+            "artifact_quality": "scope_classification"
+          },
+          {
+            "kind": "review_owner_map",
+            "ref": "agent review stage/role ownership map",
+            "strength": "supporting",
+            "strength_reason": "agent review stages expose an ownership map for review responsibility",
+            "binding_status": "current",
+            "artifact_quality": "agent_review_artifact"
+          },
+          {
+            "kind": "decision_record",
+            "ref": "decision-1782005178741-74266f9f",
+            "strength": "supporting",
+            "strength_reason": "accepted decision provides explicit follow-up rationale",
+            "binding_status": "current",
+            "artifact_quality": "decision_record",
+            "artifact": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/split-plan.json"
+          }
+        ],
+        "optional_evidence": [],
+        "missing_evidence": [
+          "scope_reviewed",
+          "graph_impact_scope"
+        ],
+        "matched_blockers": [],
+        "blocker_waiver": null,
+        "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: scope_reviewed, graph_impact_scope. Current PR is coherent; separate cleanup is tracked without hiding required review ownership."
+      },
+      {
+        "id": "gate:pr_scope_judgment",
+        "type": "pr_scope_judgment_gate",
+        "label": "PR Scope Judgment Gate",
+        "status": "passed",
+        "required": true,
+        "classification": "needs_split",
+        "scope_status": "needs_clean_branch",
+        "recommended_strategy": "clean_branch_or_split_pr",
+        "changed_file_count": 5,
+        "reviewable_file_limit": 30,
+        "story_doc_count": 1,
+        "source_file_count": 1,
+        "test_file_count": 1,
+        "doc_file_count": 2,
+        "risk_surface_count": 0,
+        "accepted_decision": {
+          "source": "gate:split_resolution",
+          "summary": "Accept single PR for engineering judgment evidence strength: feature commit plus follow-up fix remain one coherent story and the split-plan already documents the lane boundaries.",
+          "reviewer": "codex"
+        },
+        "reasons": [
+          "baseからのcommitが 3 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "split_suggestions": [
+          "clean_branch_or_split_pr"
+        ],
+        "required_actions": [],
+        "reason": "PR scope split risk accepted by decision record: Accept single PR for engineering judgment evidence strength: feature commit plus follow-up fix remain one coherent story and the split-plan already documents the lane boundaries."
+      },
+      {
+        "id": "gate:bug_physics_triage",
+        "type": "bug_physics_triage_gate",
+        "label": "Bug Physics Triage Gate",
+        "status": "passed",
+        "required": true,
+        "classes": [],
+        "enum": [
+          "timing",
+          "state-invariant",
+          "deterministic-byte",
+          "observability",
+          "deployment"
+        ],
+        "probe_evidence": [],
+        "reason": "No bug-physics-specific route selected; ordinary gate profile remains in force"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_context_acquisition",
+        "type": "route_specific_judgment_gate",
+        "label": "Context Acquisition Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "agentが読むべきrepo/docs/log/graph/current stateを先に集める"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_tool_boundary",
+        "type": "route_specific_judgment_gate",
+        "label": "Tool Boundary Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どのtool/agentがどの副作用を持つかを分離する"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_delegation_policy",
+        "type": "route_specific_judgment_gate",
+        "label": "Delegation Policy Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "type": "agent_evidence_lifecycle_gate",
+        "label": "Evidence Lifecycle Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "Agent review evidence lifecycle is closed for the current git state (recorded review or explicit waiver)"
+      },
+      {
+        "id": "gate:judgment_agent_workflow_human_decision_contract",
+        "type": "route_specific_judgment_gate",
+        "label": "Human Decision Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "agent_workflow",
+        "route_dag": "agent_workflow_dag",
+        "reason": "最後に人間が判断する問いと根拠をPRに出す"
+      },
+      {
+        "id": "gate:pr_route_classification",
+        "type": "pr_route_gate",
+        "label": "PR Route Classification Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "confidence": 0.7,
+        "required_gates": [
+          "story",
+          "spec",
+          "verification",
+          "pr_body_contract",
+          "split_resolution"
+        ],
+        "signals": [
+          "file_group:source",
+          "scope:needs_clean_branch"
+        ],
+        "reason": "PR route selected: runtime_change; body template: runtime_contract_review"
+      },
+      {
+        "id": "gate:pr_body_contract",
+        "type": "pr_body_contract_gate",
+        "label": "PR Body Contract Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "body_template": "runtime_contract_review",
+        "required_sections": [
+          "decision_question",
+          "story_or_source_of_truth",
+          "gate_status",
+          "verification_or_waiver"
+        ],
+        "scope_status": "needs_clean_branch",
+        "reason": "PR body must use runtime_contract_review and expose the route-specific decision contract"
+      },
+      {
+        "id": "gate:split_resolution",
+        "type": "split_resolution_gate",
+        "label": "Split Resolution Gate",
+        "status": "passed",
+        "required": true,
+        "route_type": "runtime_change",
+        "reasons": [
+          "baseからのcommitが 3 件あり、Story外の変更混入を確認する必要がある"
+        ],
+        "reason": "Split/clean-branch decision is explicitly recorded: Accept single PR for engineering judgment evidence strength: feature commit plus follow-up fix remain one coherent story and the split-plan already documents the lane boundaries.",
+        "decision_id": "decision-1782004475826-b67ebba8"
+      },
+      {
+        "id": "gate:managed_worktree",
+        "type": "managed_worktree_gate",
+        "label": "Managed Worktree Gate",
+        "status": "needs_review",
+        "required": false,
+        "mode": "preferred",
+        "current_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+        "managed_worktree_path": null,
+        "branch": null,
+        "current_head_sha": null,
+        "managed_worktree": null,
+        "reason": "VibePro managed worktree execution state is missing"
+      },
+      {
+        "id": "gate:change_classification",
+        "type": "change_classification_gate",
+        "label": "Change Classification Gate",
+        "status": "passed",
+        "required": true,
+        "profile": "light",
+        "change_type": "simple_code_change",
+        "risk_surfaces": [
+          "gate_orchestration",
+          "test_coverage"
+        ],
+        "reason": "PR/gate orchestration source changed"
+      },
+      {
+        "id": "gate:pr_freshness",
+        "type": "pr_freshness_gate",
+        "label": "PR Freshness Gate",
+        "status": "passed",
+        "required": true,
+        "base_ref": "main",
+        "head_ref": "HEAD",
+        "base_sha": "76c75a546ef1c877fb64b1fa76f9873219f78506",
+        "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+        "merge_base_sha": "76c75a546ef1c877fb64b1fa76f9873219f78506",
+        "head_contains_base": true,
+        "pr_prepare_regenerated_at_runtime": true,
+        "required_actions": [],
+        "reason": "HEAD contains current main; PR prepare artifacts are based on the latest resolved base ref"
+      },
+      {
+        "id": "architecture",
+        "type": "architecture_gate",
+        "label": "Architecture Gate",
+        "status": "satisfied",
+        "required": true,
+        "reason": "ADRあり (docs/architecture/vibepro-engineering-judgment-evidence-strength.md)",
+        "axis_quality": {
+          "status": "needs_review",
+          "active_axis_count": 3,
+          "missing_field_count": 4,
+          "evaluations": [
+            {
+              "axis": "public_contract",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-engineering-judgment-evidence-strength.md"
+              ],
+              "reason": "public_contract architecture decision is missing: compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "execution_topology",
+              "status": "needs_review",
+              "required_fields": [
+                "alternatives_considered",
+                "compatibility_impact",
+                "rollback_plan",
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [
+                "compatibility_impact",
+                "rollback_plan"
+              ],
+              "sources": [
+                "docs/architecture/vibepro-engineering-judgment-evidence-strength.md"
+              ],
+              "reason": "execution_topology architecture decision is missing: compatibility_impact, rollback_plan"
+            },
+            {
+              "axis": "scope_reviewability",
+              "status": "covered",
+              "required_fields": [
+                "boundary",
+                "accepted_followups"
+              ],
+              "missing_fields": [],
+              "sources": [
+                "docs/architecture/vibepro-engineering-judgment-evidence-strength.md"
+              ],
+              "reason": "scope_reviewability architecture quality fields are represented in architecture decision sources"
+            }
+          ],
+          "reason": "Active judgment axes have missing architecture decision quality fields"
+        }
+      },
+      {
+        "id": "spec",
+        "type": "spec_gate",
+        "label": "Spec Gate",
+        "status": "present",
+        "reason": "explicit Spec docs are present (docs/specs/vibepro-engineering-judgment-evidence-strength.md)",
+        "spec_docs": [
+          "docs/specs/vibepro-engineering-judgment-evidence-strength.md"
+        ],
+        "inferred_spec": null,
+        "drift": null,
+        "required": true
+      },
+      {
+        "id": "gate:design_diagrams",
+        "type": "design_diagrams_gate",
+        "label": "Design Diagrams (MUST-HAVE)",
+        "status": "not_required",
+        "required": false,
+        "blocking": true,
+        "reason": "該当する設計図トリガーなし",
+        "required_diagrams": [],
+        "provided_diagrams": [],
+        "missing_diagrams": [],
+        "detection_reasons": []
+      },
+      {
+        "id": "code",
+        "type": "code_gate",
+        "label": "Code Gate",
+        "status": "present",
+        "files": [
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "id": "gate:network_contract",
+        "type": "verification_gate",
+        "label": "Network Contract Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "No broken API client route contracts detected",
+        "summary": {
+          "api_client_call_count": 0,
+          "introduced_api_client_call_count": 0,
+          "missing_route_count": 0,
+          "dynamic_call_count": 0,
+          "server_action_replacement_count": 0
+        },
+        "missing_routes": []
+      },
+      {
+        "id": "gate:path_surface_matrix",
+        "type": "path_surface_matrix_gate",
+        "label": "Path Surface Matrix Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "row_count": 2,
+        "missing_surface_count": 0,
+        "accepted_decision": null,
+        "rows": [
+          {
+            "surface": "review_surface",
+            "path_type": "gate_or_report_surface",
+            "reason": "Gate/report artifact code changed: src/pr-manager.js",
+            "required": true,
+            "status": "covered",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js"
+          },
+          {
+            "surface": "review_surface",
+            "path_type": "story_surface",
+            "reason": "Story mentions report/review/gate artifact output",
+            "required": true,
+            "status": "covered",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js"
+          }
+        ],
+        "missing_surfaces": [],
+        "required_actions": [],
+        "reason": "2 path surface row(s) are covered or not critical for this route"
+      },
+      {
+        "id": "gate:requirement",
+        "type": "requirement_gate",
+        "label": "Requirement Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない"
+      },
+      {
+        "id": "gate:failure_mode_coverage",
+        "type": "failure_mode_coverage_gate",
+        "label": "Failure Mode Coverage Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "candidate_count": 2,
+        "missing_count": 0,
+        "modes": [
+          {
+            "id": "evidence_lifecycle_regression",
+            "reason": "Gate/review/evidence lifecycle changes can produce misleading green artifacts or unreconstructable handoffs",
+            "keywords": [
+              "accepted_followup",
+              "needs_evidence",
+              "active_needs_evidence",
+              "provenance",
+              "inspection",
+              "gate-dag",
+              "pr-prepare",
+              "artifact replay"
+            ],
+            "status": "covered",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js"
+          },
+          {
+            "id": "workflow_state_regression",
+            "reason": "Workflow/state transitions can leave stale, pending, or over-green gate states",
+            "keywords": [
+              "flow_replay",
+              "artifact_replay",
+              "scenario_clause_e2e",
+              "workflow",
+              "state transition",
+              "stale"
+            ],
+            "status": "covered",
+            "evidence": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js"
+          }
+        ],
+        "missing_modes": [],
+        "required_actions": [],
+        "reason": "2 failure mode candidate(s) are covered or not critical for this route profile"
+      },
+      {
+        "id": "gate:decision_record",
+        "type": "decision_record_gate",
+        "label": "Decision Record Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Decision records are captured; total=2, waivers=0, noise=0, secret_exposure=0",
+        "artifact": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/decision-records.json",
+        "summary": {
+          "total": 2,
+          "open": 0,
+          "by_type": {
+            "needs_review": 2
+          },
+          "by_status": {
+            "accepted": 2
+          },
+          "warnings": [
+            {
+              "id": "managed_worktree_locality",
+              "status": "needs_review",
+              "mode": "preferred",
+              "required": false,
+              "command_name": "decision record",
+              "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+              "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+              "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+              "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+              "expected_root": null,
+              "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+              "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+              "managed_worktree": null
+            }
+          ],
+          "latest": {
+            "schema_version": "0.1.0",
+            "decision_id": "decision-1782005178741-74266f9f",
+            "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+            "type": "needs_review",
+            "status": "accepted",
+            "source": "gate:judgment_axis_scope_reviewability",
+            "source_status": "needs_evidence",
+            "summary": "Accept single-PR scope for engineering judgment evidence strength; one source file, one test file, and story/spec/architecture docs remain one coherent reviewer decision with split-plan lane boundaries documented.",
+            "reason": "Bounded scope remains 5 changed files. The follow-up commits only fixed strength propagation and durable-artifact trust for the same story outcome after gate review, and the split-plan artifact already documents the reviewable lane boundary without bundling unrelated product work.",
+            "reviewer": "codex",
+            "artifact": ".vibepro/pr/story-vibepro-engineering-judgment-evidence-strength/split-plan.json",
+            "secret_exposure": null,
+            "redaction": {
+              "applied": false,
+              "hit_count": 0
+            },
+            "warnings": [
+              {
+                "id": "managed_worktree_locality",
+                "status": "needs_review",
+                "mode": "preferred",
+                "required": false,
+                "command_name": "decision record",
+                "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+                "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+                "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+                "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-evidence-strength",
+                "expected_root": null,
+                "expected_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+                "current_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+                "managed_worktree": null
+              }
+            ],
+            "git_context": {
+              "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+              "current_branch": "codex/vibepro-engineering-judgment-evidence-strength",
+              "dirty": false,
+              "status_fingerprint": "",
+              "recorded_at": "2026-06-21T01:26:18.741Z"
+            },
+            "recorded_at": "2026-06-21T01:26:18.742Z"
+          }
+        },
+        "open_decisions": [],
+        "secret_exposure_count": 0
+      },
+      {
+        "id": "gate:unit",
+        "type": "verification_gate",
+        "label": "Unit Gate",
+        "status": "passed",
+        "required": true,
+        "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+        "reason": "engineering judgment blocker と evidence strength の focused tests が current HEAD で通過; evidence: .vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json",
+        "evidence": {
+          "kind": "unit",
+          "status": "pass",
+          "summary": "engineering judgment blocker と evidence strength の focused tests が current HEAD で通過",
+          "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json",
+          "executed_at": "2026-06-21T01:25:51.069Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:integration",
+        "type": "verification_gate",
+        "label": "Integration Gate",
+        "status": "passed",
+        "required": true,
+        "command": "npm run typecheck",
+        "reason": "bin と src の Node syntax/typecheck が current HEAD で通過; evidence: .vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/typecheck.json",
+        "evidence": {
+          "kind": "typecheck",
+          "status": "pass",
+          "summary": "bin と src の Node syntax/typecheck が current HEAD で通過",
+          "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/typecheck.json",
+          "executed_at": "2026-06-21T01:25:50.529Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "gate:e2e",
+        "type": "verification_gate",
+        "label": "E2E Gate",
+        "status": "passed",
+        "required": false,
+        "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+        "reason": "pr prepare で engineering judgment evidence strength と gate artifact lifecycle を end-to-end replayした; evidence: .vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json",
+        "flow_verification": null,
+        "acceptance_e2e_coverage": {
+          "schema_version": "0.1.0",
+          "story_id": "story-vibepro-engineering-judgment-evidence-strength",
+          "required": false,
+          "status": "not_applicable",
+          "expected_file_patterns": [
+            "tests/e2e/story-vibepro-engineering-judgment-evidence-strength-*.spec.ts",
+            "test/e2e/story-vibepro-engineering-judgment-evidence-strength-*.spec.ts",
+            "e2e/story-vibepro-engineering-judgment-evidence-strength-*.spec.ts"
+          ],
+          "matched_files": [],
+          "executable_matched_files": [],
+          "acceptance_criteria_count": 6,
+          "covered_acceptance_criteria_count": 0,
+          "covered_acceptance_criteria": [],
+          "missing_acceptance_criteria": [],
+          "scenario_clause_count": 0,
+          "covered_scenario_clause_count": 0,
+          "covered_scenario_clauses": [],
+          "missing_scenario_clauses": [],
+          "coverage_diagnostics": {
+            "missing_acceptance_criteria": [
+              {
+                "id": "ac:1",
+                "criterion": "`matched_evidence[]` の各要素は `strength` と `strength_reason` を持つ",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              },
+              {
+                "id": "ac:2",
+                "criterion": "high-risk surface では、required evidence kindごとに minimum strength が定義される",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              },
+              {
+                "id": "ac:3",
+                "criterion": "`test files in diff` や broad regression suite は supporting evidence にはなれても、",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              },
+              {
+                "id": "ac:4",
+                "criterion": "verification evidence に machine-readable artifact が無い pass claim は、",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              },
+              {
+                "id": "ac:5",
+                "criterion": "PR body / Gate DAG / review cockpit から、",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              },
+              {
+                "id": "ac:6",
+                "criterion": "representative tests として、`#203` 型の artifact薄いケースと",
+                "candidate_diagnostics": [],
+                "guidance": "Use an explicit AC marker near an executable assertion, or a local static string/array binding referenced by that assertion. Avoid marker-only comments without an assertion."
+              }
+            ],
+            "missing_scenario_clauses": []
+          },
+          "scenario_e2e_coverage": {
+            "required": false,
+            "status": "not_applicable",
+            "scenario_clause_count": 0,
+            "covered_scenario_clause_count": 0,
+            "covered_scenario_clauses": [],
+            "missing_scenario_clauses": []
+          },
+          "not_applicable_reason": "E2E Gate is not required for this non-UI/non-flow change; Unit and Integration evidence are authoritative."
+        },
+        "artifact_expectation": null,
+        "evidence": {
+          "kind": "e2e",
+          "status": "pass",
+          "summary": "pr prepare で engineering judgment evidence strength と gate artifact lifecycle を end-to-end replayした",
+          "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json",
+          "executed_at": "2026-06-21T01:25:51.641Z",
+          "binding": {
+            "status": "current",
+            "reason": "verification evidence is bound to the current git state"
+          }
+        }
+      },
+      {
+        "id": "review:dispatch_batch:gate",
+        "type": "agent_review_dispatch_batch_gate",
+        "label": "Review Dispatch Batch: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "role_count": 1,
+        "dispatch_ready_count": 1,
+        "dispatch_blocker_count": 0,
+        "dispatch_warning_count": 0,
+        "reason": "All gate role preflight checks passed and dispatch instructions are prepared"
+      },
+      {
+        "id": "review:preflight:gate:gate_evidence",
+        "type": "agent_review_dispatch_preflight_gate",
+        "label": "Review Dispatch Preflight: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "stage": "gate",
+        "role": "gate_evidence",
+        "preflight_kind": "dedupe_current_pass",
+        "reason": "Current gate:gate_evidence review already passed; do not dispatch a duplicate reviewer for the same git state"
+      },
+      {
+        "id": "review:prepare:gate",
+        "type": "agent_review_prepare_gate",
+        "label": "Review Prepare: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "dispatch_state": "complete",
+        "command": "vibepro review prepare . --id story-vibepro-engineering-judgment-evidence-strength --stage gate --role gate_evidence",
+        "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/parallel-dispatch.md",
+        "reason": "Policy-aware agent review dispatch instructions were generated"
+      },
+      {
+        "id": "review:gate:gate_evidence",
+        "type": "agent_review_role_gate",
+        "label": "Agent Review: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "reason": "Current HEAD resolves prior durable-artifact trust and strength-aware missing-evidence binding findings."
+      },
+      {
+        "id": "review:record:gate:gate_evidence",
+        "type": "agent_review_record_gate",
+        "label": "Review Record: gate_evidence",
+        "status": "passed",
+        "required": true,
+        "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/review-result-gate_evidence.json",
+        "reason": "Recorded gate:gate_evidence review for the current git state"
+      },
+      {
+        "id": "review:join:gate",
+        "type": "agent_review_stage_join_gate",
+        "label": "Review Stage Join: gate",
+        "status": "passed",
+        "required": true,
+        "serial_index": 1,
+        "depends_on_stage": null,
+        "next_stage": null,
+        "role_count": 1,
+        "reason": "All parallel gate agent review roles are closed and recorded for the current git state"
+      },
+      {
+        "id": "gate:agent_review",
+        "type": "agent_review_gate",
+        "label": "Agent Review Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Required staged agent reviews passed for the current git state",
+        "summary": {
+          "required_review_count": 1,
+          "unmet_required_review_count": 0,
+          "checkpoint_required_review_count": 0,
+          "unmet_checkpoint_review_count": 0,
+          "stage_count": 1,
+          "stale_result_count": 0,
+          "block_result_count": 0,
+          "lifecycle_running_count": 0,
+          "lifecycle_timed_out_count": 0
+        },
+        "parallel_dispatch": {
+          "required": true,
+          "mode": "policy_aware_parallel_reviews",
+          "stage_execution": {
+            "serial_between_stages": true,
+            "parallel_within_stage": true,
+            "current_stage": null,
+            "max_parallel_subagents_per_stage": 1,
+            "barrier": "A later review stage must not be dispatched until the current stage has closed and recorded every required role."
+          },
+          "required_stages": [
+            {
+              "stage": "gate",
+              "serial_index": 1,
+              "depends_on_stage": null,
+              "next_stage": null,
+              "roles": [
+                "gate_evidence"
+              ],
+              "role_count": 1,
+              "status": "pass",
+              "prepared": true,
+              "dispatch_state": "complete",
+              "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+              "prepare_command": "vibepro review prepare . --id story-vibepro-engineering-judgment-evidence-strength --stage gate --role gate_evidence",
+              "dispatch_artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/parallel-dispatch.md"
+            }
+          ]
+        },
+        "dispatch_contract": {
+          "required": false,
+          "expected": "dispatch_parallel_subagents",
+          "user_confirmation_required_by_vibepro": false,
+          "runner_policy_may_require_user_delegation": false,
+          "manual_review_fallback": false,
+          "applies_to": [
+            "codex",
+            "claude_code"
+          ]
+        },
+        "required_actions": [],
+        "unmet_required_reviews": [],
+        "unmet_checkpoint_reviews": []
+      },
+      {
+        "id": "gate:review_inspection_required",
+        "type": "review_inspection_required_gate",
+        "label": "Review Inspection Required Gate",
+        "status": "passed",
+        "required": true,
+        "high_risk": false,
+        "recorded_review_count": 1,
+        "missing_inspection_count": 0,
+        "inspected_roles": [
+          {
+            "stage": "gate",
+            "role": "gate_evidence",
+            "status": "pass",
+            "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/review-result-gate_evidence.json",
+            "inspection_summary_present": true,
+            "inspection_evidence_present": true,
+            "missing": []
+          }
+        ],
+        "missing_inspections": [],
+        "required_actions": [],
+        "reason": "Review inspection evidence is not critical for this route profile"
+      },
+      {
+        "id": "gate:artifact_consistency",
+        "type": "artifact_consistency_gate",
+        "label": "Artifact Consistency Gate",
+        "status": "passed",
+        "required": true,
+        "current": {
+          "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+          "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "raw_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+          "dirty": false,
+          "raw_dirty": false,
+          "dirty_files": [],
+          "raw_dirty_files": [],
+          "vibepro_internal_dirty_files": [],
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          },
+          "managed_worktree": {
+            "id": null,
+            "path": null,
+            "branch": null,
+            "head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+            "dirty": null,
+            "dirty_fingerprint": null,
+            "raw_dirty": null,
+            "raw_dirty_fingerprint": null,
+            "fingerprint_scope": null
+          }
+        },
+        "artifact_count": 4,
+        "inconsistent_artifact_count": 0,
+        "artifacts": [
+          {
+            "artifact_type": "verification_command",
+            "kind": "e2e",
+            "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-e2e.json",
+            "recorded_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "unit",
+            "command": "npm test -- --test-name-pattern='evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts|common judgment spine|judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/judgment-strength-unit.json",
+            "recorded_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "verification_command",
+            "kind": "typecheck",
+            "command": "npm run typecheck",
+            "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-evidence-strength/typecheck.json",
+            "recorded_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "verification evidence is bound to the current git state"
+          },
+          {
+            "artifact_type": "agent_review_result",
+            "stage": "gate",
+            "role": "gate_evidence",
+            "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-evidence-strength/gate/review-result-gate_evidence.json",
+            "recorded_head_sha": "b8bd4f647da66e0363ba091c7f5e1164cc71595f",
+            "recorded_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "recorded_user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "status": "current",
+            "reuse_policy": null,
+            "reason": "agent review result is bound to the current git state; review outcome is handled by Agent Review Gate"
+          }
+        ],
+        "inconsistent_artifacts": [],
+        "required_actions": [],
+        "reason": "4 recorded verification/review artifact(s) are bound to the current git state"
+      },
+      {
+        "id": "gate:dag_connectivity",
+        "type": "dag_connectivity_gate",
+        "label": "DAG Connectivity Gate",
+        "status": "passed",
+        "required": true,
+        "reason": "Every DAG node is reachable from story and can reach the final PR decision",
+        "invalid_edges": [],
+        "unreachable_nodes": [],
+        "dead_end_nodes": [],
+        "unreachable_required_nodes": [],
+        "dead_end_required_nodes": []
+      },
+      {
+        "id": "pr",
+        "type": "pr_gate",
+        "label": "PR Gate",
+        "status": "pending",
+        "reason": "Unit / Integration / E2E Gateの証跡をPR本文で確認する"
+      },
+      {
+        "id": "ac:1",
+        "type": "acceptance_criterion",
+        "label": "`matched_evidence[]` の各要素は `strength` と `strength_reason` を持つ",
+        "status": "present"
+      },
+      {
+        "id": "ac:2",
+        "type": "acceptance_criterion",
+        "label": "high-risk surface では、required evidence kindごとに minimum strength が定義される",
+        "status": "present"
+      },
+      {
+        "id": "ac:3",
+        "type": "acceptance_criterion",
+        "label": "`test files in diff` や broad regression suite は supporting evidence にはなれても、",
+        "status": "present"
+      },
+      {
+        "id": "ac:4",
+        "type": "acceptance_criterion",
+        "label": "verification evidence に machine-readable artifact が無い pass claim は、",
+        "status": "present"
+      },
+      {
+        "id": "ac:5",
+        "type": "acceptance_criterion",
+        "label": "PR body / Gate DAG / review cockpit から、",
+        "status": "present"
+      },
+      {
+        "id": "ac:6",
+        "type": "acceptance_criterion",
+        "label": "representative tests として、`#203` 型の artifact薄いケースと",
+        "status": "present"
+      }
+    ],
+    "edges": [
+      {
+        "from": "story",
+        "to": "gate:story_source_integrity"
+      },
+      {
+        "from": "gate:story_source_integrity",
+        "to": "gate:engineering_judgment_route"
+      },
+      {
+        "from": "gate:engineering_judgment_route",
+        "to": "gate:common_judgment_spine"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_public_contract"
+      },
+      {
+        "from": "gate:judgment_axis_public_contract",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_execution_topology"
+      },
+      {
+        "from": "gate:judgment_axis_execution_topology",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:common_judgment_spine",
+        "to": "gate:judgment_axis_scope_reviewability"
+      },
+      {
+        "from": "gate:judgment_axis_scope_reviewability",
+        "to": "gate:pr_scope_judgment"
+      },
+      {
+        "from": "gate:pr_scope_judgment",
+        "to": "gate:bug_physics_triage"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_context_acquisition"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_context_acquisition",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_tool_boundary"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_tool_boundary",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_delegation_policy"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_delegation_policy",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_evidence_lifecycle"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:judgment_agent_workflow_human_decision_contract"
+      },
+      {
+        "from": "gate:judgment_agent_workflow_human_decision_contract",
+        "to": "gate:pr_route_classification"
+      },
+      {
+        "from": "gate:bug_physics_triage",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_route_classification",
+        "to": "gate:split_resolution"
+      },
+      {
+        "from": "gate:split_resolution",
+        "to": "gate:pr_body_contract"
+      },
+      {
+        "from": "gate:pr_body_contract",
+        "to": "gate:managed_worktree"
+      },
+      {
+        "from": "gate:managed_worktree",
+        "to": "gate:change_classification"
+      },
+      {
+        "from": "gate:change_classification",
+        "to": "gate:pr_freshness"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "architecture"
+      },
+      {
+        "from": "gate:pr_freshness",
+        "to": "spec"
+      },
+      {
+        "from": "architecture",
+        "to": "code"
+      },
+      {
+        "from": "spec",
+        "to": "gate:design_diagrams"
+      },
+      {
+        "from": "gate:design_diagrams",
+        "to": "code"
+      },
+      {
+        "from": "story",
+        "to": "ac:1"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:1",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:2"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:2",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:3"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:3",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:4"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:4",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:5"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:5",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "story",
+        "to": "ac:6"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:unit"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:integration"
+      },
+      {
+        "from": "ac:6",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "code",
+        "to": "gate:network_contract"
+      },
+      {
+        "from": "gate:network_contract",
+        "to": "gate:path_surface_matrix"
+      },
+      {
+        "from": "gate:path_surface_matrix",
+        "to": "gate:requirement"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "gate:failure_mode_coverage"
+      },
+      {
+        "from": "gate:failure_mode_coverage",
+        "to": "gate:decision_record"
+      },
+      {
+        "from": "gate:decision_record",
+        "to": "gate:unit"
+      },
+      {
+        "from": "gate:unit",
+        "to": "gate:integration"
+      },
+      {
+        "from": "gate:integration",
+        "to": "gate:e2e"
+      },
+      {
+        "from": "gate:e2e",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:requirement",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "spec",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "gate:integration",
+        "to": "review:dispatch_batch:gate",
+        "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+      },
+      {
+        "from": "review:dispatch_batch:gate",
+        "to": "review:preflight:gate:gate_evidence"
+      },
+      {
+        "from": "review:preflight:gate:gate_evidence",
+        "to": "review:prepare:gate"
+      },
+      {
+        "from": "review:prepare:gate",
+        "to": "review:gate:gate_evidence"
+      },
+      {
+        "from": "review:gate:gate_evidence",
+        "to": "review:record:gate:gate_evidence"
+      },
+      {
+        "from": "review:record:gate:gate_evidence",
+        "to": "review:join:gate"
+      },
+      {
+        "from": "review:join:gate",
+        "to": "gate:agent_review"
+      },
+      {
+        "from": "gate:agent_review",
+        "to": "gate:review_inspection_required"
+      },
+      {
+        "from": "gate:review_inspection_required",
+        "to": "gate:artifact_consistency"
+      },
+      {
+        "from": "gate:artifact_consistency",
+        "to": "gate:dag_connectivity"
+      },
+      {
+        "from": "gate:dag_connectivity",
+        "to": "pr"
+      }
+    ]
+  },
+  "preconditions": {
+    "pr_selector_resolved": true,
+    "gate_ready": true,
+    "clean_worktree": true,
+    "base_freshness": {
+      "status": "passed",
+      "required": true,
+      "base_ref": "main",
+      "merge_base_contains_base": true,
+      "fetched_ref": "origin/main"
+    },
+    "remote_head_match": {
+      "status": "passed",
+      "required": true,
+      "local_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+      "remote_head_sha": "a10ccc0453fc85c0472781be8a1e407a601a0c8e"
+    },
+    "checks_ready": {
+      "status": "passed",
+      "required": true,
+      "pending_count": 0,
+      "failing_count": 0
+    },
+    "review_policy": {
+      "status": "passed",
+      "required": true
+    },
+    "open_pull_request": {
+      "status": "passed",
+      "required": true
+    }
+  },
+  "warnings": [],
+  "commands": [
+    "git fetch origin main",
+    "gh pr view 208 --json 'url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup' --repo Unson-LLC/vibepro",
+    "gh pr merge 208 --merge --repo Unson-LLC/vibepro --match-head-commit a10ccc0453fc85c0472781be8a1e407a601a0c8e"
+  ],
+  "results": [
+    {
+      "command": "git fetch origin main",
+      "started_at": "2026-06-21T01:47:00.018Z",
+      "finished_at": "2026-06-21T01:47:00.652Z",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD"
+    },
+    {
+      "command": "gh pr view 208 --json 'url,state,isDraft,mergeStateStatus,reviewDecision,headRefName,headRefOid,baseRefName,statusCheckRollup' --repo Unson-LLC/vibepro",
+      "started_at": "2026-06-21T01:47:00.698Z",
+      "finished_at": "2026-06-21T01:47:01.279Z",
+      "exit_code": 0,
+      "stdout": "{\"baseRefName\":\"main\",\"headRefName\":\"codex/vibepro-engineering-judgment-evidence-strength\",\"headRefOid\":\"a10ccc0453fc85c0472781be8a1e407a601a0c8e\",\"isDraft\":false,\"mergeStateStatus\":\"CLEAN\",\"reviewDecision\":\"\",\"state\":\"OPEN\",\"statusCheckRollup\":[{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-21T01:46:25Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27890031966/job/82531826258\",\"name\":\"test (20)\",\"startedAt\":\"2026-06-21T01:44:53Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CI\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-21T01:46:09Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27890031947/job/82531826196\",\"name\":\"analyze\",\"startedAt\":\"2026-06-21T01:44:52Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CodeQL\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-21T01:46:24Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/actions/runs/27890031966/job/82531826239\",\"name\":\"test (22)\",\"startedAt\":\"2026-06-21T01:44:52Z\",\"status\":\"COMPLETED\",\"workflowName\":\"CI\"},{\"__typename\":\"CheckRun\",\"completedAt\":\"2026-06-21T01:46:07Z\",\"conclusion\":\"SUCCESS\",\"detailsUrl\":\"https://github.com/Unson-LLC/vibepro/runs/82531889650\",\"name\":\"CodeQL\",\"startedAt\":\"2026-06-21T01:46:00Z\",\"status\":\"COMPLETED\",\"workflowName\":\"\"}],\"url\":\"https://github.com/Unson-LLC/vibepro/pull/208\"}",
+      "stderr": ""
+    },
+    {
+      "command": "gh pr merge 208 --merge --repo Unson-LLC/vibepro --match-head-commit a10ccc0453fc85c0472781be8a1e407a601a0c8e",
+      "started_at": "2026-06-21T01:47:01.279Z",
+      "finished_at": "2026-06-21T01:47:03.864Z",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "gh pr view 208 --json 'url,state,mergedAt,mergeCommit' --repo Unson-LLC/vibepro",
+      "started_at": "2026-06-21T01:47:03.864Z",
+      "finished_at": "2026-06-21T01:47:04.255Z",
+      "exit_code": 0,
+      "stdout": "{\"mergeCommit\":{\"oid\":\"84be071a26c50c5d794d9ea79c17f57de45966f5\"},\"mergedAt\":\"2026-06-21T01:47:02Z\",\"state\":\"MERGED\",\"url\":\"https://github.com/Unson-LLC/vibepro/pull/208\"}",
+      "stderr": ""
+    }
+  ],
+  "branch_cleanup": {
+    "requested": false,
+    "remote": {
+      "attempted": false,
+      "deleted": false,
+      "command": null
+    },
+    "local": {
+      "attempted": false,
+      "deleted": false,
+      "command": null
+    }
+  },
+  "status": "merged",
+  "stop_reason": null,
+  "merge_commit_sha": "84be071a26c50c5d794d9ea79c17f57de45966f5",
+  "merged_at": "2026-06-21T01:47:02Z"
+}
