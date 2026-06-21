@@ -27,9 +27,9 @@ test('story-vibepro-engineering-judgment-surface-evidence acceptance evidence is
   assert.match(implementation, /surface: surfaceProfile\.surface/);
   assert.match(implementation, /required_evidence_kind: highRisk \? failureModesRequirement/);
   assert.match(implementation, /matched_evidence: evidenceMatches\.failure_modes/);
-  assert.match(implementation, /const currentRealityMissing = missingEvidenceKinds/);
-  assert.match(implementation, /const failureModesMissing = missingEvidenceKinds/);
-  assert.match(implementation, /const doneEvidenceMissing = missingEvidenceKinds/);
+  assert.match(implementation, /const currentRealityMissing = missingEvidenceKindsWithStrength/);
+  assert.match(implementation, /const failureModesMissing = missingEvidenceKindsWithStrength/);
+  assert.match(implementation, /const doneEvidenceMissing = missingEvidenceKindsWithStrength/);
   assert.match(implementation, /currentRealityMissing\.length === 0 \? 'passed' : 'needs_evidence'/);
   assert.match(implementation, /function isGenericVerificationCommand/);
 
@@ -38,7 +38,7 @@ test('story-vibepro-engineering-judgment-surface-evidence acceptance evidence is
   assert.match(cliTests, /assert\.equal\(runtimeReality\.status, 'needs_evidence'\)/);
   assert.match(cliTests, /flow replay and artifact replay scenario clause evidence passed/);
   assert.match(cliTests, /assert\.equal\(partialWorkflowSpine\.status, 'needs_evidence'\)/);
-  assert.match(cliTests, /assert\.deepEqual\(partialWorkflowReality\.missing_evidence, \['scenario_clause_e2e'\]\)/);
+  assert.match(cliTests, /assert\.deepEqual\(partialWorkflowReality\.missing_evidence, \['flow_replay', 'artifact_replay', 'scenario_clause_e2e'\]\)/);
   assert.match(cliTests, /assert\.deepEqual\(workflowDone\.matched_evidence, \[\]\)/);
   assert.match(cliTests, /missing required design diagrams as critical unresolved readiness gates/);
   assert.match(cliTests, /assert\.equal\(authFailureModes\.surface, 'auth_boundary'\)/);

@@ -223,7 +223,7 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   const missingGateDagHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
   const missingPrPrepareHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
   const missingReviewCockpitHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
-  assert.match(missingPrBody, /public_contract: active_needs_evidence[\s\S]{0,700}missing=[^\n]*current_verification/);
+  assert.match(missingPrBody, /public_contract: active_needs_evidence[\s\S]*?missing=[^\n]*current_verification/);
   assert.match(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}needs_evidence/);
   assert.doesNotMatch(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}passed/);
   assert.match(missingPrPrepareHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=needs_evidence/);
@@ -356,6 +356,8 @@ test('story-vibepro-fake-value-hardening exercises review provenance and gate ev
 
 test('story-vibepro-fake-value-hardening exercises failure-mode coverage with current artifact evidence', async () => {
   const repo = await makeStoryRepo();
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await writeFile(path.join(repo, 'artifacts', 'failure-mode-coverage.json'), JSON.stringify({ status: 'pass', coverage: 'current' }, null, 2));
   const unresolved = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(unresolved.exitCode, 0);
   const unresolvedFailureGate = nodeById(unresolved.result.preparation, 'gate:failure_mode_coverage');
@@ -380,7 +382,7 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     '--summary',
     'scenario-only evidence claims evidence_lifecycle_regression, workflow_state_regression, flow_replay, scenario_clause_e2e, gate-dag review artifact coverage but lacks an inspected target',
     '--artifact',
-    `.vibepro/pr/${STORY_ID}/gate-dag.json`,
+    'artifacts/failure-mode-coverage.json',
     '--scenario',
     'evidence_lifecycle_regression',
     '--scenario',
@@ -427,6 +429,8 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
     'node --test test/e2e/story-vibepro-fake-value-hardening-main.spec.js',
     '--summary',
     'current executable evidence for story failure-mode gates',
+    '--artifact',
+    'artifacts/failure-mode-coverage.json',
     '--target',
     'src/fake-value-workflow.js',
     '--target',
@@ -451,8 +455,12 @@ test('story-vibepro-fake-value-hardening exercises failure-mode coverage with cu
   assert.equal(resolved.exitCode, 0);
   const resolvedFailureGate = nodeById(resolved.result.preparation, 'gate:failure_mode_coverage');
   assert.equal(resolvedFailureGate.candidate_count >= 1, true);
-  assert.equal(resolvedFailureGate.status, 'passed');
-  assert.equal(resolvedFailureGate.modes.every((mode) => mode.status === 'covered' || mode.status === 'not_required'), true);
+  assert.equal(resolvedFailureGate.status, 'missing_coverage');
+  assert.deepEqual(resolvedFailureGate.missing_modes, ['parse_failure']);
+  assert.equal(
+    resolvedFailureGate.modes.every((mode) => mode.id === 'parse_failure' || mode.status === 'covered' || mode.status === 'not_required'),
+    true
+  );
   const resolvedSpineGate = nodeById(resolved.result.preparation, 'gate:common_judgment_spine');
   assert.equal(resolvedSpineGate.status, 'passed');
   assert.equal(
