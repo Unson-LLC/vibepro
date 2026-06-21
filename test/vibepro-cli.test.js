@@ -13583,8 +13583,9 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
   await mkdir(path.join(repo, 'artifacts'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
   await writeFile(path.join(repo, 'test', 'agent-workflow.test.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
-  await writeFile(path.join(repo, 'artifacts', 'workflow-replay.json'), JSON.stringify({ status: 'ok', replay: true }, null, 2));
-  await git(repo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js', 'artifacts/workflow-replay.json']);
+  await writeFile(path.join(repo, 'artifacts', 'workflow-replay-unrecognized.json'), JSON.stringify({ replay: true, note: 'artifact exists but status format is unknown' }, null, 2));
+  await writeFile(path.join(repo, 'artifacts', 'workflow-replay-verified.json'), JSON.stringify({ status: 'pass', replay: true }, null, 2));
+  await git(repo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js', 'artifacts/workflow-replay-unrecognized.json', 'artifacts/workflow-replay-verified.json']);
   await git(repo, ['commit', '-m', 'feat: add durable workflow replay artifact']);
 
   await runCli([
@@ -13615,8 +13616,30 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     '--kind', 'e2e',
     '--status', 'pass',
     '--command', 'node --test test/agent-workflow.test.js',
+    '--summary', 'workflow replay recorded with unrecognized artifact',
+    '--artifact', 'artifacts/workflow-replay-unrecognized.json',
+    '--target', 'src/agent-workflow.js',
+    '--scenario', 'flow replay for workflow path',
+    '--scenario', 'artifact replay for gate artifact path',
+    '--scenario', 'scenario clause e2e for workflow story'
+  ]);
+  const unrecognizedPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const unrecognizedSpine = unrecognizedPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const unrecognizedReality = unrecognizedSpine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(unrecognizedReality.status, 'needs_evidence');
+  assert.equal(
+    unrecognizedReality.matched_evidence.some((item) => item.kind === 'flow_replay' && item.strength === 'supporting'),
+    true
+  );
+
+  await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/agent-workflow.test.js',
     '--summary', 'workflow replay verified with durable artifact',
-    '--artifact', 'artifacts/workflow-replay.json',
+    '--artifact', 'artifacts/workflow-replay-verified.json',
     '--target', 'src/agent-workflow.js',
     '--scenario', 'flow replay for workflow path',
     '--scenario', 'artifact replay for gate artifact path',

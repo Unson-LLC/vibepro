@@ -5493,7 +5493,7 @@ function buildSeniorJudgmentAxes({
       signals: activationSignals,
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
-      missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : [],
+      missing_evidence: active ? missingSeniorAxisEvidenceKinds(definition, evidence.matched) : [],
       matched_blockers: matchedBlockers,
       blocker_waiver: blockerWaiver
         ? {
@@ -5715,11 +5715,7 @@ function classifySeniorAxisEvidence({
 
 function resolveSeniorAxisStatus(definition, evidence, { matchedBlockers = [] } = {}) {
   const matchedKinds = new Set(evidence.matched.map((item) => item.kind));
-  const missingEvidence = missingEvidenceKindsWithStrength(
-    definition.required_evidence,
-    evidence.matched,
-    buildMinimumStrengthMap(definition.required_evidence)
-  );
+  const missingEvidence = missingSeniorAxisEvidenceKinds(definition, evidence.matched);
   if (matchedBlockers.length > 0) {
     return 'active_blocked';
   }
@@ -5845,7 +5841,7 @@ function summarizeIgnoredAxisFollowupDecision(decision) {
 
 function evaluateSeniorAxisBlockers(definition, context = {}) {
   const matchedKinds = new Set((context.evidence?.matched ?? []).map((item) => item.kind));
-  const missingEvidence = missingEvidenceKinds(definition.required_evidence, context.evidence?.matched ?? []);
+  const missingEvidence = missingSeniorAxisEvidenceKinds(definition, context.evidence?.matched ?? []);
   const supportingEvidence = (kinds) => kinds.filter((kind) => matchedKinds.has(kind));
   const unresolvedCounterEvidence = (kinds) => kinds.filter((kind) => missingEvidence.includes(kind));
   const sourceCount = context.fileGroups?.source?.count ?? 0;
@@ -6279,6 +6275,14 @@ function missingEvidenceKinds(required, matched) {
   return required.filter((kind) => !matchedKinds.has(kind));
 }
 
+function missingSeniorAxisEvidenceKinds(definition, matched) {
+  return missingEvidenceKindsWithStrength(
+    definition.required_evidence,
+    matched,
+    buildMinimumStrengthMap(definition.required_evidence)
+  );
+}
+
 function missingEvidenceKindsWithStrength(required, matched, minimumStrengthByKind = {}) {
   return required.filter((kind) => !matchedEvidenceMeetsStrength(kind, matched, minimumStrengthByKind[kind] ?? 'supporting'));
 }
@@ -6308,7 +6312,7 @@ function buildEvidenceItem(kind, ref, extra = {}) {
 function buildVerificationEvidenceItem(kind, ref, item, { generic = false } = {}) {
   const bindingStatus = item?.binding?.status ?? 'unknown';
   const artifactStatus = item?.artifact_check?.status ?? (item?.artifact ? 'recorded' : 'missing');
-  const hasDurableArtifact = Boolean(item?.artifact) && artifactStatus !== 'missing';
+  const hasDurableArtifact = Boolean(item?.artifact) && artifactStatus === 'verified';
   const strongCandidate = !generic && bindingStatus === 'current' && hasDurableArtifact && item?.observation_check?.status === 'recorded';
   const strength = strongCandidate ? 'strong' : bindingStatus === 'current' ? 'supporting' : 'declared';
   const strengthReason = strongCandidate
@@ -6316,12 +6320,12 @@ function buildVerificationEvidenceItem(kind, ref, item, { generic = false } = {}
     : bindingStatus === 'current'
       ? hasDurableArtifact
         ? 'current-bound evidence is useful but remains indirect or broad for high-risk proof'
-        : 'current-bound pass claim lacks durable machine-readable/raw artifact, so it cannot be strong'
+        : 'current-bound pass claim lacks a verified durable artifact, so it cannot be strong'
       : 'evidence is declared without current-bound verification binding';
   return buildEvidenceItem(kind, ref, {
     artifact: item?.artifact ?? null,
     binding_status: bindingStatus,
-    artifact_quality: hasDurableArtifact ? artifactStatus : 'missing_artifact',
+    artifact_quality: item?.artifact ? artifactStatus : 'missing_artifact',
     strength,
     strength_reason: strengthReason
   });
