@@ -62,6 +62,17 @@ This note mentions workflow, review, artifact, and gate wording for human docume
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /suppressed_candidates: execution_topology\[insufficient_signal\]/);
+  const gateDag = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'), 'utf8'));
+  assert.deepEqual(
+    gateDag.summary.suppressed_judgment_axes.map((item) => [item.axis, item.precision_status]),
+    [['execution_topology', 'insufficient_signal']]
+  );
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
+  assert.match(gateDagHtml, /Suppressed Axis Candidates/);
+  assert.match(gateDagHtml, /execution_topology\[insufficient_signal\]/);
+  const reviewCockpit = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
+  assert.match(reviewCockpit, /Suppressed Axes/);
+  assert.match(reviewCockpit, /execution_topology: suppressed/);
 });
 
 test('non-text workflow corroboration activates execution topology axis', async () => {
@@ -88,4 +99,43 @@ title: Workflow runtime change
   assert.equal(axis.activation_precision.status, 'active');
   assert.equal(axis.activation_precision.non_text_signal_count >= 1, true);
   assert.equal(axis.activation_signals.some((signal) => signal.startsWith('surface:') || signal.startsWith('changed_path:')), true);
+});
+
+test('runtime route corroboration activates public contract axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: CLI output contract runtime change
+---
+
+# Story
+
+## 背景
+
+This story updates CLI output contract wording and runtime behavior together.
+
+## 受け入れ基準
+
+- [ ] CLI output contract remains reviewable
+`);
+  await writeFile(path.join(repo, 'src', 'cli-output.js'), 'export function renderOutput(){ return \"public cli output format\"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/cli-output.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output runtime']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.notEqual(axis.status, 'inactive');
+  assert.equal(axis.activation_precision.status, 'active');
+  assert.equal(
+    axis.activation_signals.some((signal) => (
+      signal.startsWith('pr_route:')
+      || signal.startsWith('changed_path:')
+      || signal.startsWith('file_group:')
+      || signal.startsWith('network_contract:')
+    )),
+    true
+  );
 });

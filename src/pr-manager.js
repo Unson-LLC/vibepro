@@ -2095,8 +2095,12 @@ function formatEngineeringJudgmentForHuman(engineeringJudgment) {
   const activeAxes = (engineeringJudgment.judgment_axes ?? [])
     .filter((axis) => axis.status !== 'inactive')
     .map((axis) => axis.axis);
+  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   const axisText = activeAxes.length > 0 ? ` / axes=${activeAxes.join(',')}` : '';
-  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}`;
+  const suppressedText = suppressedAxes.length > 0
+    ? ` / suppressed=${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(',')}`
+    : '';
+  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}${suppressedText}`;
 }
 
 function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, prContext = {}, git = {} }) {
@@ -2155,7 +2159,7 @@ function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
 function buildJudgmentAxisReasoning(engineeringJudgment) {
   const axes = engineeringJudgment?.judgment_axes ?? [];
   const activeAxes = axes.filter((axis) => axis.status !== 'inactive');
-  const suppressedAxes = axes.filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0);
+  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   if (activeAxes.length === 0 && suppressedAxes.length === 0) {
     return '- active axisなし。general engineeringとして既存Gateを確認します。';
   }
@@ -2188,9 +2192,20 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
     })
     .join('\n');
   const suppressedLines = suppressedAxes.length > 0
-    ? `\n- suppressed_candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.activation_precision?.status ?? 'inactive'}]:${axis.activation_precision?.reason ?? 'reason missing'}`).join(' ; ')}`
+    ? `\n- suppressed_candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
     : '';
   return `${activeLines}${suppressedLines}`;
+}
+
+function collectSuppressedJudgmentAxes(engineeringJudgment) {
+  return (engineeringJudgment?.judgment_axes ?? [])
+    .filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0)
+    .map((axis) => ({
+      axis: axis.axis,
+      precision_status: axis.activation_precision?.status ?? 'inactive',
+      reason: axis.activation_precision?.reason ?? 'reason missing',
+      candidates: axis.activation_candidates ?? []
+    }));
 }
 
 function buildCommonSpineReasoning(gateDag) {
@@ -2326,9 +2341,15 @@ function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan,
   const engineering = gateDag?.summary?.engineering_judgment_route
     ? `${gateDag.summary.engineering_judgment_route} / dag=${gateDag.summary.engineering_judgment_dag ?? '-'}`
     : '未分類';
+  const suppressedAxes = Array.isArray(gateDag?.summary?.suppressed_judgment_axes)
+    ? gateDag.summary.suppressed_judgment_axes
+    : [];
   return [
     `- 目的: ${title}`,
     `- Engineering Judgment: ${engineering}`,
+    suppressedAxes.length > 0
+      ? `- Suppressed Axis Candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(', ')}`
+      : null,
     `- PR Route: ${route}`,
     `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
     `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
@@ -7738,6 +7759,7 @@ function buildGateDag({
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
+  const suppressedJudgmentAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   return {
     schema_version: '0.1.0',
     model: 'story-acceptance-verification-dag',
@@ -7752,6 +7774,7 @@ function buildGateDag({
       active_judgment_axes: (engineeringJudgment?.judgment_axes ?? [])
         .filter((axis) => axis.status !== 'inactive')
         .map((axis) => axis.axis),
+      suppressed_judgment_axes: suppressedJudgmentAxes,
       judgment_axis_count: judgmentAxisGates.length,
       judgment_axis_accepted_followup_count: judgmentAxisGates.filter((gate) => gate.status === 'accepted_followup').length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
@@ -9805,6 +9828,9 @@ function renderPrGateSummary(gateDag) {
   const lines = [
     `- overall: ${gateDag.overall_status}`,
     `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
+    Array.isArray(gateDag.summary.suppressed_judgment_axes) && gateDag.summary.suppressed_judgment_axes.length > 0
+      ? `- suppressed axis candidates: ${gateDag.summary.suppressed_judgment_axes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
+      : null,
     storyGate
       ? `- ${storyGate.label}: ${storyGate.status} (${storyGate.required ? 'required' : 'optional'}) - ${storyGate.reason ?? storyGate.artifact ?? '-'}`
       : null,

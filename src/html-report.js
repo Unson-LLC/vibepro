@@ -113,6 +113,9 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
 export function renderGateDagHtml(gateDag, options = {}) {
   const requiredGates = gateDag.nodes.filter((node) => node.required);
   const unresolved = requiredGates.filter((node) => isUnresolvedStatus(node.status));
+  const suppressedAxes = Array.isArray(gateDag.summary?.suppressed_judgment_axes)
+    ? gateDag.summary.suppressed_judgment_axes
+    : [];
   return renderDocument({
     title: 'VibePro Gate DAG',
     reportType: 'gate-dag',
@@ -133,6 +136,12 @@ export function renderGateDagHtml(gateDag, options = {}) {
         ${metricCard('Needs Evidence', gateDag.summary.needs_evidence_count, 'unresolved')}
         ${metricCard('Requirement', gateDag.summary.requirement_status, 'status')}
       </section>
+      ${suppressedAxes.length > 0 ? renderCards('Suppressed Axis Candidates', suppressedAxes.map((axis) => ({
+        title: `${axis.axis}[${axis.precision_status}]`,
+        detail: axis.reason ?? '-',
+        meta: (axis.candidates ?? []).length > 0 ? `candidates=${axis.candidates.join(', ')}` : null,
+        tone: 'warn'
+      }))) : ''}
       ${renderCards('Unresolved Gates', unresolved.map((node) => ({
         title: node.label ?? node.id,
         detail: node.reason ?? node.command ?? node.id,
@@ -609,6 +618,8 @@ function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language =
     }]);
   }
   const axes = (engineeringJudgment.judgment_axes ?? []).filter((axis) => axis.status !== 'inactive');
+  const suppressedAxes = (engineeringJudgment.judgment_axes ?? [])
+    .filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0);
   const acceptedFollowups = axes.filter((axis) => axis.status === 'active_accepted_followup');
   const axisCards = axes.slice(0, 8).map((axis) => {
     const gate = gateDag?.nodes?.find((node) => node.id === `gate:judgment_axis_${axis.axis}`);
@@ -624,23 +635,30 @@ function renderEngineeringJudgmentPanel(engineeringJudgment, gateDag, language =
       tone: toneForStatus(axis.status)
     };
   });
+  const suppressedCards = suppressedAxes.slice(0, 8).map((axis) => ({
+    title: `${axis.axis}: suppressed`,
+    detail: `candidates=${(axis.activation_candidates ?? []).join(', ')} / precision=${axis.activation_precision?.status ?? 'inactive'}:${axis.activation_precision?.reason ?? '-'}`,
+    meta: localizedText(language, { ja: 'precision filterでinactive', en: 'suppressed by precision filter' }),
+    tone: 'warn'
+  }));
   return `
     <section>
       <h2>Engineering Judgment</h2>
       <div class="metrics">
         ${metricCard('Route', engineeringJudgment.route_type ?? '-', engineeringJudgment.route_dag ?? '-')}
         ${metricCard(localizedText(language, { ja: 'Active Axes', en: 'Active Axes' }), axes.length, 'senior first scan')}
+        ${metricCard(localizedText(language, { ja: 'Suppressed Axes', en: 'Suppressed Axes' }), suppressedAxes.length, localizedText(language, { ja: 'precision filtered', en: 'precision filtered' }))}
         ${metricCard('accepted_followup', acceptedFollowups.length, localizedText(language, { ja: 'passedではない後続許容', en: 'accepted but not passed' }))}
         ${metricCard('Confidence', typeof engineeringJudgment.confidence === 'number' ? `${Math.round(engineeringJudgment.confidence * 100)}%` : '-', 'classifier')}
       </div>
-      <div class="cards">${(axisCards.length > 0 ? axisCards : [{
+      <div class="cards">${([...(axisCards.length > 0 ? axisCards : [{
         title: localizedText(language, { ja: 'Active axisなし', en: 'No active axis' }),
         detail: localizedText(language, {
           ja: 'general engineeringとして既存Gateを確認します。',
           en: 'Existing gates are used as the general engineering contract.'
         }),
         tone: 'neutral'
-      }]).map((card) => `
+      }]), ...suppressedCards]).map((card) => `
         <article class="card ${escapeAttr(card.tone)}">
           <h3>${escapeHtml(card.title)}</h3>
           ${card.meta ? `<p class="muted">${escapeHtml(card.meta)}</p>` : ''}
