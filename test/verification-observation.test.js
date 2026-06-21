@@ -212,6 +212,10 @@ test('observation text contributes to judgment evidence classification', async (
     path.join(root, 'docs', 'management', 'stories', 'active', 'story-test-obs.md'),
     '---\nstory_id: story-test-obs\ntitle: Observation story\n---\n\n# Story\n\n## Background\nImprove the gate review workflow artifact handling.\n\n## Acceptance Criteria\n- The gate artifact workflow stays consistent.\n'
   );
+  await writeFile(
+    path.join(root, 'observation-evidence.json'),
+    JSON.stringify({ status: 'pass', source: 'observation' }, null, 2)
+  );
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'docs: story']);
   await git(root, ['switch', '-c', 'feature/obs']);
@@ -223,6 +227,7 @@ test('observation text contributes to judgment evidence classification', async (
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'e2e', '--status', 'pass',
     '--command', 'node run-check.js',
     '--summary', 'verification done',
+    '--artifact', 'observation-evidence.json',
     '--target', 'src-change.js',
     '--scenario', 'flow_replay: gate review workflow was replayed',
     '--scenario', 'artifact_replay: generated gate-dag and pr-prepare outputs were replayed',

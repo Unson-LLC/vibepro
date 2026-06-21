@@ -61,6 +61,8 @@ Sample generation must run a preflight workflow, start detection, poll status, a
   await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
   await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await writeFile(path.join(repo, 'artifacts', 'workflow-pre-pr-replay.json'), JSON.stringify({ status: 'pass', replay: 'artifact' }, null, 2));
   await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start sample</button>; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "preflight" }); }\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), 'export function replayWorkflow(){ return "poll-detection-status"; }\n');
@@ -140,12 +142,16 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     'npx playwright test tests/e2e/workflow-pre-pr.spec.ts',
     '--summary',
     'Playwright replay exercised the workflow transition and scenario clause before PR readiness',
+    '--artifact',
+    'artifacts/workflow-pre-pr-replay.json',
     '--scenario',
     'flow_replay: pre-PR Playwright exercised the workflow transition path',
     '--scenario',
     'scenario_clause_e2e: workflow state scenario clause was asserted',
     '--target',
     'tests/e2e/workflow-pre-pr.spec.ts',
+    '--target',
+    'src/lib/services/workflowService.ts',
     '--observed',
     'flow_replay=true',
     '--observed',
@@ -166,6 +172,8 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     'node --test test/risk-adaptive-gate.test.js',
     '--summary',
     'Artifact replay verified PR prepare review summaries and dispatch commands are required-only',
+    '--artifact',
+    'artifacts/workflow-pre-pr-replay.json',
     '--scenario',
     'artifact_replay: generated pr prepare artifacts exclude preview_smoke from actionable pre-PR review outputs',
     '--target',
@@ -180,6 +188,7 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'passed');
   const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.equal(spine.subchecks.find((check) => check.id === 'done_evidence').status, 'passed');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:path_surface_matrix').status, 'passed');
   const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
   const persistedPrepare = await readJson(path.join(prDir, 'pr-prepare.json'));
   const persistedGateDag = await readJson(path.join(prDir, 'gate-dag.json'));
