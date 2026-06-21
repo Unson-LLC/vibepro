@@ -2095,8 +2095,12 @@ function formatEngineeringJudgmentForHuman(engineeringJudgment) {
   const activeAxes = (engineeringJudgment.judgment_axes ?? [])
     .filter((axis) => axis.status !== 'inactive')
     .map((axis) => axis.axis);
+  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   const axisText = activeAxes.length > 0 ? ` / axes=${activeAxes.join(',')}` : '';
-  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}`;
+  const suppressedText = suppressedAxes.length > 0
+    ? ` / suppressed=${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(',')}`
+    : '';
+  return `${engineeringJudgment.route_type} / dag=${engineeringJudgment.route_dag} / confidence=${confidence}${axisText}${suppressedText}`;
 }
 
 function renderEngineeringJudgmentReasoning({ source = {}, fileGroups, gateDag, prContext = {}, git = {} }) {
@@ -2153,14 +2157,24 @@ function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
 }
 
 function buildJudgmentAxisReasoning(engineeringJudgment) {
-  const activeAxes = (engineeringJudgment?.judgment_axes ?? [])
-    .filter((axis) => axis.status !== 'inactive');
-  if (activeAxes.length === 0) {
+  const axes = engineeringJudgment?.judgment_axes ?? [];
+  const activeAxes = axes.filter((axis) => axis.status !== 'inactive');
+  const suppressedAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
+  if (activeAxes.length === 0 && suppressedAxes.length === 0) {
     return '- active axisなし。general engineeringとして既存Gateを確認します。';
   }
-  return activeAxes
+  const activeLines = activeAxes
     .map((axis) => {
       const required = axis.required_evidence?.join('|') ?? '-';
+      const candidates = axis.activation_candidates?.length > 0
+        ? ` / candidates=${axis.activation_candidates.join(', ')}`
+        : '';
+      const activationSignals = axis.activation_signals?.length > 0
+        ? ` / active_signals=${axis.activation_signals.join(', ')}`
+        : '';
+      const precision = axis.activation_precision?.status
+        ? ` / precision=${axis.activation_precision.status}:${axis.activation_precision.reason ?? ''}`
+        : '';
       const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
       const matched = axis.matched_evidence?.length > 0
         ? ` / matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
@@ -2174,9 +2188,24 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const waiver = axis.blocker_waiver?.decision_id
         ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
         : '';
-      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}${blockers}${waiver}`;
+      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${candidates}${activationSignals}${precision}${matched}${optional}${missing}${blockers}${waiver}`;
     })
     .join('\n');
+  const suppressedLines = suppressedAxes.length > 0
+    ? `\n- suppressed_candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
+    : '';
+  return `${activeLines}${suppressedLines}`;
+}
+
+function collectSuppressedJudgmentAxes(engineeringJudgment) {
+  return (engineeringJudgment?.judgment_axes ?? [])
+    .filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0)
+    .map((axis) => ({
+      axis: axis.axis,
+      precision_status: axis.activation_precision?.status ?? 'inactive',
+      reason: axis.activation_precision?.reason ?? 'reason missing',
+      candidates: axis.activation_candidates ?? []
+    }));
 }
 
 function buildCommonSpineReasoning(gateDag) {
@@ -2312,9 +2341,15 @@ function renderHumanDecisionGraph({ source = {}, fileGroups, gateDag, splitPlan,
   const engineering = gateDag?.summary?.engineering_judgment_route
     ? `${gateDag.summary.engineering_judgment_route} / dag=${gateDag.summary.engineering_judgment_dag ?? '-'}`
     : '未分類';
+  const suppressedAxes = Array.isArray(gateDag?.summary?.suppressed_judgment_axes)
+    ? gateDag.summary.suppressed_judgment_axes
+    : [];
   return [
     `- 目的: ${title}`,
     `- Engineering Judgment: ${engineering}`,
+    suppressedAxes.length > 0
+      ? `- Suppressed Axis Candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.precision_status}]`).join(', ')}`
+      : null,
     `- PR Route: ${route}`,
     `- 正本: ${formatGithubFileLink(sourcePath, git)}`,
     `- 差分: ${changeIntent}${changeLinks ? `（${changeLinks}）` : ''}`,
@@ -5430,6 +5465,7 @@ function buildSeniorJudgmentAxes({
   if (/\b(database|db|migration|schema|cache|idempot|replay|query|orm|backfill|model|repository)\b/.test(fileText)) addSignal('data_state', 'changed_path:data_state');
 
   if (route?.route_type === 'agent_workflow' || riskSurfaces.has('gate_orchestration') || riskSurfaces.has('review_lifecycle') || riskSurfaces.has('core_workflow_state') || riskSurfaces.has('queue_worker')) addSignal('execution_topology', 'surface:workflow_or_agent');
+  if (/\b(workflow|agent|review|gate|queue|worker|retry)\b/.test((fileGroups.source?.files ?? []).join('\n').toLowerCase())) addSignal('execution_topology', 'changed_path:execution_topology');
   if (/\b(process|thread|worker|queue|agent|subagent|retry|deadlock|artifact lifecycle|orchestration|workflow|gate|dag|graphify)\b|エージェント|ワーカー|再試行|証跡/.test(text)) addSignal('execution_topology', 'text:execution_topology');
 
   if (prRoute?.route_type === 'design_or_ui_change' || hasUiExperienceSourceChange(fileGroups)) addSignal('ux_surface', 'surface:ui_source');
@@ -5447,8 +5483,10 @@ function buildSeniorJudgmentAxes({
   if (/\b(release|deploy|rollout|rollback|observability|operator|runbook|alert|ci|workflow)\b/.test(fileText)) addSignal('release_ops', 'changed_path:release_ops');
 
   return JUDGMENT_AXIS_DEFINITIONS.map((definition) => {
-    const activationSignals = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
-    const active = activationSignals.length > 0;
+    const activationCandidates = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
+    const precision = classifyAxisActivationPrecision(definition.axis, activationCandidates);
+    const activationSignals = precision.active_signals;
+    const active = precision.status === 'active';
     const evidence = classifySeniorAxisEvidence({
       axis: definition.axis,
       fileGroups,
@@ -5484,13 +5522,21 @@ function buildSeniorJudgmentAxes({
       status,
       reason: active
         ? activationSignals.join('; ')
-        : `No ${definition.axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+        : precision.reason,
       confidence: active ? calculateAxisConfidence(definition.confidence, activationSignals, graphContext) : 0,
       decision_question: definition.decision_question,
       required_evidence: definition.required_evidence,
       blocking_criteria: definition.blocking_criteria,
       acceptable_followup: definition.acceptable_followup,
       signals: activationSignals,
+      activation_candidates: activationCandidates,
+      activation_signals: activationSignals,
+      activation_precision: {
+        status: precision.status,
+        reason: precision.reason,
+        candidate_count: activationCandidates.length,
+        non_text_signal_count: precision.non_text_signal_count
+      },
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
       missing_evidence: active ? missingSeniorAxisEvidenceKinds(definition, evidence.matched) : [],
@@ -5506,6 +5552,52 @@ function buildSeniorJudgmentAxes({
       ignored_accepted_decision: evidence.ignored_accepted_decision
     };
   });
+}
+
+function classifyAxisActivationPrecision(axis, candidates = []) {
+  const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  if (uniqueCandidates.length === 0) {
+    return {
+      status: 'no_signal',
+      reason: `No ${axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+      active_signals: [],
+      non_text_signal_count: 0
+    };
+  }
+  const nonTextSignals = uniqueCandidates.filter((signal) => isCorroboratingActivationSignal(axis, signal));
+  if (nonTextSignals.length === 0) {
+    return {
+      status: 'insufficient_signal',
+      reason: `${axis} has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists`,
+      active_signals: [],
+      non_text_signal_count: 0
+    };
+  }
+  if (axis === 'public_contract') {
+    const corroboratingSignals = nonTextSignals.filter((signal) => /^(pr_route|file_group|network_contract|changed_path):/.test(String(signal)));
+    if (corroboratingSignals.length === 0) {
+      return {
+        status: 'insufficient_signal',
+        reason: 'public_contract candidates were present, but no contract-correlated non-text signal was found',
+        active_signals: [],
+        non_text_signal_count: nonTextSignals.length
+      };
+    }
+  }
+  return {
+    status: 'active',
+    reason: `${axis} activated from ${nonTextSignals.length} non-text corroborating signal(s)`,
+    active_signals: uniqueCandidates,
+    non_text_signal_count: nonTextSignals.length
+  };
+}
+
+function isCorroboratingActivationSignal(axis, signal) {
+  const normalized = String(signal ?? '');
+  if (!normalized || normalized.startsWith('text:')) return false;
+  if (normalized.startsWith('surface:')) return false;
+  if (axis === 'public_contract' && normalized.startsWith('pr_route:')) return true;
+  return true;
 }
 
 const JUDGMENT_AXIS_DEFINITIONS = [
@@ -7667,6 +7759,7 @@ function buildGateDag({
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
+  const suppressedJudgmentAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   return {
     schema_version: '0.1.0',
     model: 'story-acceptance-verification-dag',
@@ -7681,6 +7774,7 @@ function buildGateDag({
       active_judgment_axes: (engineeringJudgment?.judgment_axes ?? [])
         .filter((axis) => axis.status !== 'inactive')
         .map((axis) => axis.axis),
+      suppressed_judgment_axes: suppressedJudgmentAxes,
       judgment_axis_count: judgmentAxisGates.length,
       judgment_axis_accepted_followup_count: judgmentAxisGates.filter((gate) => gate.status === 'accepted_followup').length,
       pr_scope_judgment_status: prScopeJudgmentGate.status,
@@ -9734,6 +9828,9 @@ function renderPrGateSummary(gateDag) {
   const lines = [
     `- overall: ${gateDag.overall_status}`,
     `- acceptance criteria: ${gateDag.summary.acceptance_criteria_count}`,
+    Array.isArray(gateDag.summary.suppressed_judgment_axes) && gateDag.summary.suppressed_judgment_axes.length > 0
+      ? `- suppressed axis candidates: ${gateDag.summary.suppressed_judgment_axes.map((axis) => `${axis.axis}[${axis.precision_status}]:${axis.reason}`).join(' ; ')}`
+      : null,
     storyGate
       ? `- ${storyGate.label}: ${storyGate.status} (${storyGate.required ? 'required' : 'optional'}) - ${storyGate.reason ?? storyGate.artifact ?? '-'}`
       : null,
