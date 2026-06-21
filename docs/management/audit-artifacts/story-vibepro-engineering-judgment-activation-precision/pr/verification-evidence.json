@@ -1,0 +1,268 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-activation-precision",
+  "updated_at": "2026-06-21T02:56:21.427Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "verify record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+      "expected_root": null,
+      "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+      "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+      "managed_worktree": null
+    }
+  ],
+  "commands": [
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "node --test test/engineering-judgment-activation-precision.test.js && node --test --test-name-pattern 'pr prepare blocks timed out workflow checkpoint review lifecycle even when checkpoint result passed|pr prepare recommends a clean branch for broad session diffs|pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity|pr prepare emits Senior first scan multi-axis DAG with optional Graphify scope' test/vibepro-cli.test.js",
+      "summary": "pass",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-activation-precision/activation-precision-unit-result.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "src/html-report.js",
+          "test/engineering-judgment-activation-precision.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [
+          "unit replay: activation precision fixtures and CLI gate regression cases pass on current head",
+          "artifact_replay: CLI gate regression cases cover gate-dag and review artifact lifecycle assertions"
+        ],
+        "values": {
+          "status": "pass",
+          "tests_passed": "7",
+          "cli_regression_cases": "4",
+          "exit_code": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T02:56:21.427Z",
+      "git_context": {
+        "head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_branch": "codex/vibepro-engineering-judgment-activation-precision-clean3",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T02:56:21.425Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "expected_root": null,
+        "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "expected_root": null,
+          "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test test/engineering-judgment-activation-precision.test.js test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+      "summary": "pass",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-activation-precision/activation-precision-e2e-result.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts",
+          "test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js",
+          ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/gate-dag.json",
+          ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-body.md",
+          ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/review-cockpit.html"
+        ],
+        "scenarios": [
+          "flow_replay: activation precision workflow replay exercised suppression and public_contract activation on current head",
+          "artifact_replay: gate-dag pr-body review artifact outputs were replayed and inspected",
+          "scenario_clause_e2e: story acceptance clauses for suppression visibility and route corroboration were exercised"
+        ],
+        "values": {
+          "status": "pass",
+          "tests_passed": "5",
+          "tests_failed": "0",
+          "exit_code": "0",
+          "flow_replay": "true",
+          "artifact_replay": "true",
+          "scenario_clause_e2e": "true"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T02:50:13.017Z",
+      "git_context": {
+        "head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_branch": "codex/vibepro-engineering-judgment-activation-precision-clean3",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T02:50:13.013Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "expected_root": null,
+        "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "expected_root": null,
+          "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "pass",
+      "artifact": ".vibepro/manual-verification/story-vibepro-engineering-judgment-activation-precision/typecheck-result.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          "src/html-report.js"
+        ],
+        "scenarios": [
+          "typecheck replay: gate/report surfaces compile on current head"
+        ],
+        "values": {
+          "status": "pass",
+          "checked_paths": "2",
+          "exit_code": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T02:50:12.995Z",
+      "git_context": {
+        "head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_branch": "codex/vibepro-engineering-judgment-activation-precision-clean3",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T02:50:12.993Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+        "expected_root": null,
+        "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-activation-precision-clean3",
+          "expected_root": null,
+          "expected_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d",
+          "managed_worktree": null
+        }
+      ]
+    }
+  ]
+}

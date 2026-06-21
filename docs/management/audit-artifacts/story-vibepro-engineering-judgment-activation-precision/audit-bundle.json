@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-activation-precision",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-21T03:05:32.967Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/210",
+    "merge_commit_sha": "6382b7882c3982b5a1af1f19dcd5656bbfd7e79d",
+    "merged_at": "2026-06-21T03:05:31Z",
+    "current_head_sha": "2918c431eab88b253b76f1f22b71027c81169a2d"
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-activation-precision/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-activation-precision/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-activation-precision/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/review-summary.json"
+    }
+  ],
+  "missing_artifacts": []
+}

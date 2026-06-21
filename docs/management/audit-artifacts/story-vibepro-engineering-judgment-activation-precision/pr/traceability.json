@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-activation-precision",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-engineering-judgment-activation-precision.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-activation-precision/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/210 at 2026-06-21T03:05:31Z (commit 6382b7882c3982b5a1af1f19dcd5656bbfd7e79d)"
+    }
+  ],
+  "created_at": "2026-06-21T02:44:20.877Z",
+  "updated_at": "2026-06-21T03:05:32.966Z"
+}
