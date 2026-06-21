@@ -2205,7 +2205,10 @@ function buildCommonSpineReasoning(gateDag) {
 
 function formatEvidenceReferenceForHuman(item) {
   const base = `${item.kind}:${item.ref}`;
-  return item.artifact ? `${base} (artifact=${item.artifact})` : base;
+  const strength = item.strength ? ` / ${item.strength}` : '';
+  const reason = item.strength_reason ? ` / ${item.strength_reason}` : '';
+  const artifact = item.artifact ? ` / artifact=${item.artifact}` : '';
+  return `${base}${strength}${reason}${artifact}`;
 }
 
 function formatEngineeringJudgmentGateForHuman(gate) {
@@ -5596,20 +5599,45 @@ function classifySeniorAxisEvidence({
   const optional = classifyGraphImpactEvidence(graphContext);
   const add = (kind, ref, extra = {}) => {
     if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
-      matched.push({ kind, ref, ...extra });
+      matched.push(buildEvidenceItem(kind, ref, extra));
     }
   };
 
   if ((fileGroups.story_docs?.count ?? 0) > 0 || (fileGroups.specifications?.count ?? 0) > 0) {
-    add('story_spec_traceability', 'story/spec docs in diff');
+    add('story_spec_traceability', 'story/spec docs in diff', {
+      strength: 'supporting',
+      strength_reason: 'story/spec docs exist in the diff and provide traceability',
+      binding_status: 'n/a',
+      artifact_quality: 'story_doc'
+    });
   }
   if ((fileGroups.architecture_docs?.count ?? 0) > 0 || (fileGroups.policy_docs?.count ?? 0) > 0) {
-    add('contract_doc', 'architecture/policy docs in diff');
-    add('topology_diagram', 'architecture docs in diff');
+    add('contract_doc', 'architecture/policy docs in diff', {
+      strength: 'supporting',
+      strength_reason: 'architecture/policy docs are present for the changed contract surface',
+      binding_status: 'n/a',
+      artifact_quality: 'architecture_doc'
+    });
+    add('topology_diagram', 'architecture docs in diff', {
+      strength: 'supporting',
+      strength_reason: 'architecture docs describe topology but are not replay proof',
+      binding_status: 'n/a',
+      artifact_quality: 'architecture_doc'
+    });
   }
   if ((fileGroups.tests?.count ?? 0) > 0) {
-    add('compat_or_output_test', 'test files in diff');
-    add('semantic_invariant_test', 'test files in diff');
+    add('compat_or_output_test', 'test files in diff', {
+      strength: 'supporting',
+      strength_reason: 'changed tests signal intent but do not prove focused runtime coverage alone',
+      binding_status: 'n/a',
+      artifact_quality: 'changed_test_files'
+    });
+    add('semantic_invariant_test', 'test files in diff', {
+      strength: 'supporting',
+      strength_reason: 'changed tests indicate semantic coverage intent but remain indirect',
+      binding_status: 'n/a',
+      artifact_quality: 'changed_test_files'
+    });
   }
   for (const item of verificationMatches) {
     add(item.kind, item.ref);
@@ -5619,15 +5647,43 @@ function classifySeniorAxisEvidence({
     if (item.kind === 'flow_replay') add('flow_replay', item.ref);
     if (item.kind === 'artifact_replay') add('artifact_replay', item.ref);
   }
-  if (currentVerification.length > 0) add('current_verification', currentVerification[0].command ?? 'current verification');
-  if (scope?.status === 'reviewable') add('scope_reviewed', 'scope.status=reviewable');
-  if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status);
+  if (currentVerification.length > 0) add('current_verification', currentVerification[0].command ?? 'current verification', {
+    strength: currentVerification[0].artifact ? 'strong' : 'supporting',
+    strength_reason: currentVerification[0].artifact
+      ? 'current verification includes a durable artifact'
+      : 'current verification is bound to HEAD but lacks a durable artifact',
+    binding_status: currentVerification[0].binding?.status ?? 'current',
+    artifact_quality: currentVerification[0].artifact ? (currentVerification[0].artifact_check?.status ?? 'recorded') : 'missing_artifact',
+    artifact: currentVerification[0].artifact ?? null
+  });
+  if (scope?.status === 'reviewable') add('scope_reviewed', 'scope.status=reviewable', {
+    strength: 'supporting',
+    strength_reason: 'scope classification says the current diff is reviewable',
+    binding_status: 'derived',
+    artifact_quality: 'scope_classification'
+  });
+  if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status, {
+    strength: 'supporting',
+    strength_reason: 'scope classification recommends split planning',
+    binding_status: 'derived',
+    artifact_quality: 'scope_classification'
+  });
   if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
   if (axis === 'execution_topology' && hasAgentEvidenceLifecycle({ agentReviews, decisionRecords })) {
-    add('agent_review', 'agent review summaries passed for required roles');
+    add('agent_review', 'agent review summaries passed for required roles', {
+      strength: 'strong',
+      strength_reason: 'current-bound agent review lifecycle evidence is recorded for required roles',
+      binding_status: 'current',
+      artifact_quality: 'agent_review_artifact'
+    });
   }
   if (axis === 'scope_reviewability' && hasAgentReviewOwnerMapEvidence(agentReviews)) {
-    add('review_owner_map', 'agent review stage/role ownership map');
+    add('review_owner_map', 'agent review stage/role ownership map', {
+      strength: 'supporting',
+      strength_reason: 'agent review stages expose an ownership map for review responsibility',
+      binding_status: 'current',
+      artifact_quality: 'agent_review_artifact'
+    });
   }
 
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, `gate:judgment_axis_${axis}`);
@@ -5636,7 +5692,13 @@ function classifySeniorAxisEvidence({
     add(
       'decision_record',
       acceptedDecision.decision_id ?? acceptedDecision.summary ?? `gate:judgment_axis_${axis}`,
-      acceptedDecision.artifact ? { artifact: acceptedDecision.artifact } : {}
+      {
+        strength: 'supporting',
+        strength_reason: 'accepted decision provides explicit follow-up rationale',
+        binding_status: 'current',
+        artifact_quality: 'decision_record',
+        ...(acceptedDecision.artifact ? { artifact: acceptedDecision.artifact } : {})
+      }
     );
     if (/rollback|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('rollback_plan', acceptedDecision.summary ?? acceptedDecision.source);
     if (/release|operator|observability|rollout/i.test(acceptedDecision.summary ?? acceptedDecision.reason ?? '')) add('release_note', acceptedDecision.summary ?? acceptedDecision.source);
@@ -5653,7 +5715,11 @@ function classifySeniorAxisEvidence({
 
 function resolveSeniorAxisStatus(definition, evidence, { matchedBlockers = [] } = {}) {
   const matchedKinds = new Set(evidence.matched.map((item) => item.kind));
-  const missingEvidence = missingEvidenceKinds(definition.required_evidence, evidence.matched);
+  const missingEvidence = missingEvidenceKindsWithStrength(
+    definition.required_evidence,
+    evidence.matched,
+    buildMinimumStrengthMap(definition.required_evidence)
+  );
   if (matchedBlockers.length > 0) {
     return 'active_blocked';
   }
@@ -5936,12 +6002,16 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     ? evidenceMatches.docs
     : evidenceMatches.current_reality;
   const currentRealityRequiredMatches = currentRealityMatches.filter((item) => !item.optional);
-  const currentRealityMissing = missingEvidenceKinds(
+  const currentRealityMinimums = minimumStrengthByJudgmentSubcheck('current_reality', surfaceProfile, { highRisk });
+  const failureModesMinimums = minimumStrengthByJudgmentSubcheck('failure_modes', surfaceProfile, { highRisk });
+  const doneEvidenceMinimums = minimumStrengthByJudgmentSubcheck('done_evidence', surfaceProfile, { highRisk });
+  const currentRealityMissing = missingEvidenceKindsWithStrength(
     surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
-    surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches
+    surfaceProfile.surface === 'docs_only' ? evidenceMatches.docs : currentRealityRequiredMatches,
+    surfaceProfile.surface === 'docs_only' ? buildMinimumStrengthMap(docsRequirement) : currentRealityMinimums
   );
-  const failureModesMissing = missingEvidenceKinds(failureModesRequirement, evidenceMatches.failure_modes);
-  const doneEvidenceMissing = missingEvidenceKinds(doneEvidenceRequirement, evidenceMatches.done_evidence);
+  const failureModesMissing = missingEvidenceKindsWithStrength(failureModesRequirement, evidenceMatches.failure_modes, failureModesMinimums);
+  const doneEvidenceMissing = missingEvidenceKindsWithStrength(doneEvidenceRequirement, evidenceMatches.done_evidence, doneEvidenceMinimums);
   return [
     {
       id: 'intent',
@@ -5965,6 +6035,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       surface: surfaceProfile.surface,
       optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
+      minimum_strength: surfaceProfile.surface === 'docs_only' ? buildMinimumStrengthMap(docsRequirement) : currentRealityMinimums,
       matched_evidence: currentRealityMatches,
       missing_evidence: currentRealityMissing,
       reason: surfaceProfile.surface === 'docs_only'
@@ -6006,6 +6077,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       surface: surfaceProfile.surface,
       optional_evidence_kind: ['graph_impact_scope'],
       required_evidence_kind: boundarySensitive ? ['architecture_doc', 'decision_record', 'current_verification'] : ['not_applicable'],
+      minimum_strength: boundarySensitive ? buildMinimumStrengthMap(['architecture_doc', 'decision_record', 'current_verification']) : {},
       matched_evidence: [
         ...buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }),
         ...evidenceMatches.graph_impact
@@ -6023,6 +6095,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       evidence: firstEvidenceRef(evidenceMatches.failure_modes),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? failureModesRequirement : ['not_applicable'],
+      minimum_strength: highRisk ? failureModesMinimums : {},
       matched_evidence: evidenceMatches.failure_modes,
       missing_evidence: (!highRisk || failureModesMissing.length === 0)
         ? []
@@ -6037,6 +6110,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       evidence: firstEvidenceRef(evidenceMatches.done_evidence) ?? (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0 ? `${reviewPassCount} passing review role(s)` : null),
       surface: surfaceProfile.surface,
       required_evidence_kind: highRisk ? doneEvidenceRequirement : ['downstream_gate'],
+      minimum_strength: highRisk ? doneEvidenceMinimums : {},
       matched_evidence: evidenceMatches.done_evidence,
       missing_evidence: (!highRisk || doneEvidenceMissing.length === 0 || (surfaceProfile.surface !== 'workflow' && reviewPassCount > 0))
         ? []
@@ -6111,13 +6185,28 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
   const graphImpact = classifyGraphImpactEvidence(graphContext);
   const docs = [];
   if (storySource?.path || storySource?.story_id) {
-    docs.push({ kind: 'story_spec_traceability', ref: storySource.path ?? storySource.story_id });
+    docs.push(buildEvidenceItem('story_spec_traceability', storySource.path ?? storySource.story_id, {
+      strength: 'supporting',
+      strength_reason: 'story/spec source is traceable to the selected story',
+      binding_status: 'n/a',
+      artifact_quality: 'story_doc'
+    }));
   }
   if ((fileGroups?.specifications?.count ?? 0) > 0 || (fileGroups?.architecture_docs?.count ?? 0) > 0) {
-    docs.push({ kind: 'doc_reference_integrity', ref: 'spec_or_architecture_docs' });
+    docs.push(buildEvidenceItem('doc_reference_integrity', 'spec_or_architecture_docs', {
+      strength: 'supporting',
+      strength_reason: 'explicit spec/architecture docs are present for the changed surface',
+      binding_status: 'n/a',
+      artifact_quality: 'architecture_doc'
+    }));
   }
   if ((inferredSpec?.clauses?.length ?? 0) > 0) {
-    docs.push({ kind: 'impact_scope_explained', ref: `${inferredSpec.clauses.length} inferred spec clause(s)` });
+    docs.push(buildEvidenceItem('impact_scope_explained', `${inferredSpec.clauses.length} inferred spec clause(s)`, {
+      strength: 'supporting',
+      strength_reason: 'spec clauses explain the changed scope',
+      binding_status: 'n/a',
+      artifact_quality: 'spec_clause'
+    }));
   }
   const currentRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', surfaceProfile);
   const failureRequirement = requiredEvidenceForJudgmentSubcheck('failure_modes', surfaceProfile);
@@ -6140,14 +6229,16 @@ function classifyGraphImpactEvidence(graphContext) {
   const matched = graphContext.matched_file_count ?? 0;
   if (matched <= 0) return [];
   const related = graphContext.related_file_count ?? 0;
-  return [{
-    kind: 'graph_impact_scope',
-    ref: `${graphContext.graph_path ?? 'graphify graph'} (${matched} changed / ${related} related)`,
+  return [buildEvidenceItem('graph_impact_scope', `${graphContext.graph_path ?? 'graphify graph'} (${matched} changed / ${related} related)`, {
     optional: true,
     matched_file_count: matched,
     related_file_count: related,
-    investigation_files: (graphContext.investigation_files ?? []).slice(0, 12)
-  }];
+    investigation_files: (graphContext.investigation_files ?? []).slice(0, 12),
+    strength: 'supporting',
+    strength_reason: 'Graphify narrows impact scope but does not prove runtime correctness',
+    binding_status: 'derived',
+    artifact_quality: 'graph_context'
+  })];
 }
 
 function classifyVerificationEvidenceItem(item) {
@@ -6157,7 +6248,7 @@ function classifyVerificationEvidenceItem(item) {
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
   const matches = [];
   const add = (kind) => {
-    if (!matches.some((match) => match.kind === kind)) matches.push({ kind, ref });
+    if (!matches.some((match) => match.kind === kind)) matches.push(buildVerificationEvidenceItem(kind, ref, item, { generic }));
   };
   if (!text) return matches;
   if (!generic && ['unit', 'integration', 'e2e', 'build', 'typecheck'].includes(item.kind)) add('focused_test');
@@ -6188,25 +6279,138 @@ function missingEvidenceKinds(required, matched) {
   return required.filter((kind) => !matchedKinds.has(kind));
 }
 
+function missingEvidenceKindsWithStrength(required, matched, minimumStrengthByKind = {}) {
+  return required.filter((kind) => !matchedEvidenceMeetsStrength(kind, matched, minimumStrengthByKind[kind] ?? 'supporting'));
+}
+
+function matchedEvidenceMeetsStrength(kind, matched, minimumStrength) {
+  return matched.some((item) => item.kind === kind && evidenceStrengthRank(item.strength) >= evidenceStrengthRank(minimumStrength));
+}
+
+function evidenceStrengthRank(strength) {
+  if (strength === 'strong') return 3;
+  if (strength === 'supporting') return 2;
+  return 1;
+}
+
+function buildEvidenceItem(kind, ref, extra = {}) {
+  return {
+    kind,
+    ref,
+    strength: extra.strength ?? 'declared',
+    strength_reason: extra.strength_reason ?? 'strength was not classified',
+    binding_status: extra.binding_status ?? 'n/a',
+    artifact_quality: extra.artifact_quality ?? 'unknown',
+    ...extra
+  };
+}
+
+function buildVerificationEvidenceItem(kind, ref, item, { generic = false } = {}) {
+  const bindingStatus = item?.binding?.status ?? 'unknown';
+  const artifactStatus = item?.artifact_check?.status ?? (item?.artifact ? 'recorded' : 'missing');
+  const hasDurableArtifact = Boolean(item?.artifact) && artifactStatus !== 'missing';
+  const strongCandidate = !generic && bindingStatus === 'current' && hasDurableArtifact && item?.observation_check?.status === 'recorded';
+  const strength = strongCandidate ? 'strong' : bindingStatus === 'current' ? 'supporting' : 'declared';
+  const strengthReason = strongCandidate
+    ? 'current-bound focused evidence includes recorded observation plus durable artifact'
+    : bindingStatus === 'current'
+      ? hasDurableArtifact
+        ? 'current-bound evidence is useful but remains indirect or broad for high-risk proof'
+        : 'current-bound pass claim lacks durable machine-readable/raw artifact, so it cannot be strong'
+      : 'evidence is declared without current-bound verification binding';
+  return buildEvidenceItem(kind, ref, {
+    artifact: item?.artifact ?? null,
+    binding_status: bindingStatus,
+    artifact_quality: hasDurableArtifact ? artifactStatus : 'missing_artifact',
+    strength,
+    strength_reason: strengthReason
+  });
+}
+
+function buildMinimumStrengthMap(requiredKinds, overrides = {}) {
+  const map = {};
+  for (const kind of requiredKinds ?? []) {
+    map[kind] = overrides[kind] ?? 'supporting';
+  }
+  return map;
+}
+
 function firstEvidenceRef(items) {
   return items[0]?.ref ?? null;
 }
 
 function buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }) {
   const evidence = [];
-  if (specClauseCount > 0) evidence.push({ kind: 'spec_clause', ref: `${specClauseCount} inferred spec clause(s)` });
-  if (hasExplicitSpecOrArchitecture) evidence.push({ kind: 'architecture_doc', ref: 'explicit spec/architecture docs' });
-  if (hasTests) evidence.push({ kind: 'test_contract', ref: 'test files in diff' });
-  if (evidence.length === 0 && (storySource?.path || storySource?.story_id)) evidence.push({ kind: 'story_or_diff_scope', ref: storySource.path ?? storySource.story_id });
+  if (specClauseCount > 0) evidence.push(buildEvidenceItem('spec_clause', `${specClauseCount} inferred spec clause(s)`, {
+    strength: 'supporting',
+    strength_reason: 'spec clauses describe the invariant surface',
+    binding_status: 'n/a',
+    artifact_quality: 'spec_clause'
+  }));
+  if (hasExplicitSpecOrArchitecture) evidence.push(buildEvidenceItem('architecture_doc', 'explicit spec/architecture docs', {
+    strength: 'supporting',
+    strength_reason: 'architecture/spec docs bound the invariant surface',
+    binding_status: 'n/a',
+    artifact_quality: 'architecture_doc'
+  }));
+  if (hasTests) evidence.push(buildEvidenceItem('test_contract', 'test files in diff', {
+    strength: 'supporting',
+    strength_reason: 'changed tests indicate intended contract coverage but are not focused proof by themselves',
+    binding_status: 'n/a',
+    artifact_quality: 'changed_test_files'
+  }));
+  if (evidence.length === 0 && (storySource?.path || storySource?.story_id)) evidence.push(buildEvidenceItem('story_or_diff_scope', storySource.path ?? storySource.story_id, {
+    strength: 'declared',
+    strength_reason: 'story scope exists but invariant evidence is indirect',
+    binding_status: 'n/a',
+    artifact_quality: 'story_doc'
+  }));
   return evidence;
 }
 
 function buildBoundaryEvidence({ hasExplicitSpecOrArchitecture, acceptedDecisions, currentVerification }) {
   const evidence = [];
-  if (hasExplicitSpecOrArchitecture) evidence.push({ kind: 'architecture_doc', ref: 'explicit spec/architecture docs' });
-  if (acceptedDecisions[0]) evidence.push({ kind: 'decision_record', ref: acceptedDecisions[0].decision_id });
-  if (currentVerification[0]) evidence.push({ kind: 'current_verification', ref: currentVerification[0].command });
+  if (hasExplicitSpecOrArchitecture) evidence.push(buildEvidenceItem('architecture_doc', 'explicit spec/architecture docs', {
+    strength: 'supporting',
+    strength_reason: 'architecture/spec docs describe the relevant boundary',
+    binding_status: 'n/a',
+    artifact_quality: 'architecture_doc'
+  }));
+  if (acceptedDecisions[0]) evidence.push(buildEvidenceItem('decision_record', acceptedDecisions[0].decision_id, {
+    strength: 'supporting',
+    strength_reason: 'accepted decision records the boundary rationale',
+    binding_status: 'current',
+    artifact_quality: 'decision_record'
+  }));
+  if (currentVerification[0]) evidence.push(buildEvidenceItem('current_verification', currentVerification[0].command, {
+    strength: currentVerification[0].artifact ? 'strong' : 'supporting',
+    strength_reason: currentVerification[0].artifact
+      ? 'current verification is tied to a durable artifact for the boundary path'
+      : 'current verification is HEAD-bound but lacks a durable artifact',
+    binding_status: currentVerification[0].binding?.status ?? 'current',
+    artifact_quality: currentVerification[0].artifact ? (currentVerification[0].artifact_check?.status ?? 'recorded') : 'missing_artifact',
+    artifact: currentVerification[0].artifact ?? null
+  }));
   return evidence;
+}
+
+function minimumStrengthByJudgmentSubcheck(id, surfaceProfile, { highRisk = false } = {}) {
+  const required = requiredEvidenceForJudgmentSubcheck(id, surfaceProfile);
+  const map = buildMinimumStrengthMap(required);
+  if (!highRisk) return map;
+  const surface = surfaceProfile?.surface ?? 'runtime';
+  if (surface === 'workflow') {
+    for (const kind of required) map[kind] = 'strong';
+    return map;
+  }
+  if (surface === 'auth_boundary' && id === 'failure_modes') {
+    for (const kind of required) map[kind] = 'strong';
+    return map;
+  }
+  if (surface === 'runtime' && ['current_reality', 'failure_modes', 'done_evidence'].includes(id)) {
+    for (const kind of required) map[kind] = 'strong';
+  }
+  return map;
 }
 
 function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null, prRoute = null, decisionRecords = null } = {}) {

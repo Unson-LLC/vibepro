@@ -13496,6 +13496,11 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(workflowReality.surface, 'workflow');
   assert.equal(workflowReality.status, 'needs_evidence');
   assert.deepEqual(workflowReality.matched_evidence, []);
+  assert.deepEqual(workflowReality.minimum_strength, {
+    flow_replay: 'strong',
+    artifact_replay: 'strong',
+    scenario_clause_e2e: 'strong'
+  });
   assert.equal(workflowFailureModes.status, 'needs_evidence');
   assert.deepEqual(workflowFailureModes.matched_evidence, []);
   assert.equal(workflowDone.status, 'needs_evidence');
@@ -13523,11 +13528,15 @@ test('common judgment spine requires surface-specific evidence instead of generi
   const partialWorkflowDone = partialWorkflowSpine.subchecks.find((check) => check.id === 'done_evidence');
   assert.equal(partialWorkflowSpine.status, 'needs_evidence');
   assert.equal(partialWorkflowReality.status, 'needs_evidence');
-  assert.deepEqual(partialWorkflowReality.missing_evidence, ['scenario_clause_e2e']);
+  assert.deepEqual(
+    partialWorkflowReality.matched_evidence.map((item) => [item.kind, item.strength]),
+    [['flow_replay', 'supporting'], ['artifact_replay', 'supporting']]
+  );
+  assert.deepEqual(partialWorkflowReality.missing_evidence, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
   assert.equal(partialWorkflowFailureModes.status, 'needs_evidence');
-  assert.deepEqual(partialWorkflowFailureModes.missing_evidence, ['scenario_clause_e2e']);
+  assert.deepEqual(partialWorkflowFailureModes.missing_evidence, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
   assert.equal(partialWorkflowDone.status, 'needs_evidence');
-  assert.deepEqual(partialWorkflowDone.missing_evidence, ['scenario_clause_e2e']);
+  assert.deepEqual(partialWorkflowDone.missing_evidence, ['flow_replay', 'artifact_replay', 'scenario_clause_e2e']);
 
   const authRepo = await makeGitRepoWithStory();
   await mkdir(path.join(authRepo, 'src'), { recursive: true });
@@ -13565,6 +13574,62 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(docsReality.surface, 'docs_only');
   assert.deepEqual(docsReality.required_evidence_kind, ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained']);
   assert.equal(docsReality.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
+});
+
+test('evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
+  await writeFile(path.join(repo, 'test', 'agent-workflow.test.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
+  await writeFile(path.join(repo, 'artifacts', 'workflow-replay.json'), JSON.stringify({ status: 'ok', replay: true }, null, 2));
+  await git(repo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js', 'artifacts/workflow-replay.json']);
+  await git(repo, ['commit', '-m', 'feat: add durable workflow replay artifact']);
+
+  await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/agent-workflow.test.js',
+    '--summary', 'workflow replay verified',
+    '--target', 'src/agent-workflow.js',
+    '--scenario', 'flow replay for workflow path',
+    '--scenario', 'artifact replay for gate artifact path',
+    '--scenario', 'scenario clause e2e for workflow story'
+  ]);
+  const thinPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const thinSpine = thinPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const thinReality = thinSpine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(thinReality.status, 'needs_evidence');
+  assert.deepEqual(
+    thinReality.matched_evidence.map((item) => [item.kind, item.strength]),
+    [['flow_replay', 'supporting'], ['artifact_replay', 'supporting'], ['scenario_clause_e2e', 'supporting']]
+  );
+  assert.equal(thinReality.matched_evidence.every((item) => typeof item.strength_reason === 'string'), true);
+
+  await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/agent-workflow.test.js',
+    '--summary', 'workflow replay verified with durable artifact',
+    '--artifact', 'artifacts/workflow-replay.json',
+    '--target', 'src/agent-workflow.js',
+    '--scenario', 'flow replay for workflow path',
+    '--scenario', 'artifact replay for gate artifact path',
+    '--scenario', 'scenario clause e2e for workflow story'
+  ]);
+  const strongPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const strongSpine = strongPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const strongReality = strongSpine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(strongReality.status, 'passed');
+  assert.deepEqual(
+    strongReality.matched_evidence.filter((item) => ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'].includes(item.kind)).map((item) => [item.kind, item.strength]),
+    [['flow_replay', 'strong'], ['artifact_replay', 'strong'], ['scenario_clause_e2e', 'strong']]
+  );
 });
 
 test('common judgment spine uses optional Graphify impact evidence when available', async () => {
