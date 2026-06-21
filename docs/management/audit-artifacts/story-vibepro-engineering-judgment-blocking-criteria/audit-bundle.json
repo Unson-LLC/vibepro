@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-21T01:00:43.392Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/207",
+    "merge_commit_sha": "55759241c42be59f2fcd2d8d545911f1deaeddf7",
+    "merged_at": "2026-06-21T01:00:41Z",
+    "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f"
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-blocking-criteria/reviews/gate/review-summary.json"
+    }
+  ],
+  "missing_artifacts": []
+}

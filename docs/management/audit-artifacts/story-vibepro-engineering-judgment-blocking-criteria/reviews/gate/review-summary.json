@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "stage": "gate",
+  "status": "pass",
+  "roles": [
+    {
+      "role": "gate_evidence",
+      "status": "pass",
+      "effective_status": "pass",
+      "stale": false,
+      "stale_reason": "review is bound to the current git state",
+      "binding_status": "current",
+      "merge_delta_reuse": null,
+      "provenance_status": "verified_agent",
+      "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
+      "agent_provenance": {
+        "schema_version": "0.1.0",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "agent_id": "codex-gate-evidence-1",
+        "agent_role": null,
+        "model": "gpt-5",
+        "reasoning_effort": "high",
+        "cost_tier": "high",
+        "thread_id": null,
+        "session_id": null,
+        "tool_call_id": null,
+        "transcript_artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+        "request_artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+        "recorded_by": null,
+        "lifecycle": {
+          "agent_closed": true,
+          "close_evidence": null,
+          "close_note": null
+        },
+        "evidence_strength": "strong"
+      },
+      "summary": "Current blocker evidence is bound to HEAD and the reviewed artifacts reconstruct why block vs followup differs.",
+      "inspection": {
+        "summary": "Reviewed src/pr-manager.js, focused blocker regression tests, gate-dag/review-cockpit outputs, and the new scope waiver record.",
+        "evidence": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/gate-dag.html",
+        "inputs": [
+          "src/pr-manager.js",
+          "test/vibepro-cli.test.js",
+          ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/review-cockpit.html",
+          ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/decision-records.json"
+        ]
+      },
+      "judgment_delta": [
+        "Initial concern: blocking criteria were descriptive only -> Final judgment: blocker status, blocker waiver, and human-facing artifacts now stay in sync because targeted regression cases and current-bound review-surface evidence cover the changed paths."
+      ],
+      "findings": [],
+      "finding_dispositions": [],
+      "finding_count": 0,
+      "agent_usage": null,
+      "recorded_at": "2026-06-21T00:57:58.047Z",
+      "git_context": {
+        "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T00:57:58.040Z"
+      },
+      "source_git_context": null,
+      "lifecycle": {
+        "effective_status": "closed",
+        "running_count": 0,
+        "timed_out_count": 0,
+        "closed_count": 1,
+        "replaced_count": 0,
+        "latest": {
+          "schema_version": "0.1.0",
+          "lifecycle_id": "94a857f2-d11a-403b-be0b-a4f3f9ca7b35",
+          "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "status": "closed",
+          "agent_system": "codex",
+          "agent_id": "codex-gate-evidence-1",
+          "agent_model": "gpt-5",
+          "agent_reasoning_effort": "high",
+          "agent_cost_tier": "high",
+          "intended_model_policy": null,
+          "model_policy_preflight": null,
+          "thread_id": null,
+          "session_id": null,
+          "tool_call_id": null,
+          "started_at": "2026-06-21T00:57:29.889Z",
+          "timeout_ms": 600000,
+          "replacement_for": null,
+          "close_reason": "completed",
+          "close_evidence": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+          "closed_at": "2026-06-21T00:57:41.271Z",
+          "result_artifact": null,
+          "effective_status": "closed",
+          "timed_out": false,
+          "elapsed_ms": 11382
+        }
+      },
+      "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-result-gate_evidence.json",
+      "history_artifacts": [
+        ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/history/review-result-gate_evidence-2026-06-21T00-57-58.047Z.json"
+      ]
+    }
+  ],
+  "pass_count": 1,
+  "stale_count": 0,
+  "missing_count": 0,
+  "unverified_agent_count": 0,
+  "block_count": 0,
+  "needs_changes_count": 0,
+  "lifecycle": {
+    "entry_count": 1,
+    "running_count": 0,
+    "timed_out_count": 0,
+    "closed_count": 1,
+    "replaced_count": 0,
+    "entries": [
+      {
+        "schema_version": "0.1.0",
+        "lifecycle_id": "94a857f2-d11a-403b-be0b-a4f3f9ca7b35",
+        "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+        "stage": "gate",
+        "role": "gate_evidence",
+        "status": "closed",
+        "agent_system": "codex",
+        "agent_id": "codex-gate-evidence-1",
+        "agent_model": "gpt-5",
+        "agent_reasoning_effort": "high",
+        "agent_cost_tier": "high",
+        "intended_model_policy": null,
+        "model_policy_preflight": null,
+        "thread_id": null,
+        "session_id": null,
+        "tool_call_id": null,
+        "started_at": "2026-06-21T00:57:29.889Z",
+        "timeout_ms": 600000,
+        "replacement_for": null,
+        "close_reason": "completed",
+        "close_evidence": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+        "closed_at": "2026-06-21T00:57:41.271Z",
+        "result_artifact": null,
+        "effective_status": "closed",
+        "timed_out": false,
+        "elapsed_ms": 11382
+      }
+    ]
+  },
+  "next_actions": [],
+  "updated_at": "2026-06-21T00:57:58.058Z",
+  "current_git_context": {
+    "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+    "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-21T00:57:58.040Z"
+  },
+  "parallel_dispatch": {
+    "mode": "policy_aware_parallel_reviews",
+    "prepared": true,
+    "artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/parallel-dispatch.md",
+    "artifact_updated_at": "2026-06-21T00:57:11.339Z",
+    "prepare_command": "vibepro review prepare . --id story-vibepro-engineering-judgment-blocking-criteria --stage gate --role gate_evidence"
+  }
+}

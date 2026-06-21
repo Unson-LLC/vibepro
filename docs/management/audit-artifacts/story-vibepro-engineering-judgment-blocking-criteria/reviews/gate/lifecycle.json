@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "stage": "gate",
+  "updated_at": "2026-06-21T00:57:58.053Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "lifecycle_id": "94a857f2-d11a-403b-be0b-a4f3f9ca7b35",
+      "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+      "stage": "gate",
+      "role": "gate_evidence",
+      "status": "closed",
+      "agent_system": "codex",
+      "agent_id": "codex-gate-evidence-1",
+      "agent_model": "gpt-5",
+      "agent_reasoning_effort": "high",
+      "agent_cost_tier": "high",
+      "intended_model_policy": null,
+      "model_policy_preflight": null,
+      "thread_id": null,
+      "session_id": null,
+      "tool_call_id": null,
+      "started_at": "2026-06-21T00:57:29.889Z",
+      "timeout_ms": 600000,
+      "replacement_for": null,
+      "close_reason": "completed",
+      "close_evidence": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+      "closed_at": "2026-06-21T00:57:41.271Z",
+      "result_artifact": null
+    }
+  ]
+}

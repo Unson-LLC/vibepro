@@ -1,0 +1,94 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current blocker evidence is bound to HEAD and the reviewed artifacts reconstruct why block vs followup differs.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed src/pr-manager.js, focused blocker regression tests, gate-dag/review-cockpit outputs, and the new scope waiver record.",
+    "evidence": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/gate-dag.html",
+    "inputs": [
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/review-cockpit.html",
+      ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/decision-records.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: blocking criteria were descriptive only -> Final judgment: blocker status, blocker waiver, and human-facing artifacts now stay in sync because targeted regression cases and current-bound review-surface evidence cover the changed paths."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+    "expected_root": null,
+    "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+    "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+      "expected_root": null,
+      "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+      "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-06-21T00:57:58.047Z",
+  "git_context": {
+    "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+    "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-21T00:57:58.040Z"
+  },
+  "source_fingerprint": "6fdd59910be71fbfd681e5ace4d884ebc88b024e754a933efdc77b4198bc43b3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "codex-gate-evidence-1",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-engineering-judgment-blocking-criteria/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

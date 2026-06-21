@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-engineering-judgment-blocking-criteria.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/207 at 2026-06-21T01:00:41Z (commit 55759241c42be59f2fcd2d8d545911f1deaeddf7)"
+    }
+  ],
+  "created_at": "2026-06-21T00:46:10.725Z",
+  "updated_at": "2026-06-21T01:00:43.391Z"
+}

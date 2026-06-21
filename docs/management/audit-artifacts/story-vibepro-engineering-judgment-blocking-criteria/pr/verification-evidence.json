@@ -1,0 +1,241 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-engineering-judgment-blocking-criteria",
+  "updated_at": "2026-06-21T00:56:24.537Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "verify record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+      "expected_root": null,
+      "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+      "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+      "managed_worktree": null
+    }
+  ],
+  "commands": [
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "npm test -- --test-name-pattern='public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+      "summary": "workflow review surface evidence for blocker cases",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js",
+          ".vibepro/pr/story-vibepro-engineering-judgment-blocking-criteria/gate-dag.html"
+        ],
+        "scenarios": [
+          "flow replay for story-vibepro-engineering-judgment-blocking-criteria review surface",
+          "artifact replay for gate-dag and pr-prepare review surface",
+          "scenario clause e2e for blocker and waiver paths"
+        ],
+        "values": {
+          "surface": "review_surface"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-21T00:56:24.537Z",
+      "git_context": {
+        "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T00:56:24.527Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "expected_root": null,
+        "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "expected_root": null,
+          "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "CLI entrypoint and src modules parse cleanly after blocker changes",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/pr-manager.js"
+        ],
+        "scenarios": [],
+        "values": {}
+      },
+      "observation_check": {
+        "status": "partial",
+        "reason": "observation is incomplete; record targets plus scenarios or observed values"
+      },
+      "executed_at": "2026-06-21T00:54:18.091Z",
+      "git_context": {
+        "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T00:54:18.083Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "expected_root": null,
+        "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "expected_root": null,
+          "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "managed_worktree": null
+        }
+      ]
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "npm test -- --test-name-pattern='judgment axis|public contract judgment axis blocks|security boundary judgment axis blocks|release ops judgment axis blocks|blocker waiver keeps axis blocked' test/vibepro-cli.test.js",
+      "summary": "judgment axis blocker cases covered in vibepro-cli tests",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "test/vibepro-cli.test.js"
+        ],
+        "scenarios": [],
+        "values": {}
+      },
+      "observation_check": {
+        "status": "partial",
+        "reason": "observation is incomplete; record targets plus scenarios or observed values"
+      },
+      "executed_at": "2026-06-21T00:54:18.057Z",
+      "git_context": {
+        "head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_branch": "codex/vibepro-engineering-judgment-blocking-criteria",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-21T00:54:18.050Z"
+      },
+      "managed_worktree_context": {
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "verify record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+        "expected_root": null,
+        "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+        "managed_worktree": null
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "verify record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-engineering-judgment-blocking-criteria",
+          "expected_root": null,
+          "expected_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "current_head_sha": "6f37221772ccda84b34104ac66cda543f5ee501f",
+          "managed_worktree": null
+        }
+      ]
+    }
+  ]
+}
