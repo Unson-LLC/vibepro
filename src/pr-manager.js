@@ -5640,12 +5640,12 @@ function classifySeniorAxisEvidence({
     });
   }
   for (const item of verificationMatches) {
-    add(item.kind, item.ref);
-    add('current_verification', item.ref);
-    if (item.kind === 'negative_path') add('negative_path_test', item.ref);
-    if (item.kind === 'boundary_condition') add('boundary_condition', item.ref);
-    if (item.kind === 'flow_replay') add('flow_replay', item.ref);
-    if (item.kind === 'artifact_replay') add('artifact_replay', item.ref);
+    add(item.kind, item.ref, item);
+    add('current_verification', item.ref, item);
+    if (item.kind === 'negative_path') add('negative_path_test', item.ref, item);
+    if (item.kind === 'boundary_condition') add('boundary_condition', item.ref, item);
+    if (item.kind === 'flow_replay') add('flow_replay', item.ref, item);
+    if (item.kind === 'artifact_replay') add('artifact_replay', item.ref, item);
   }
   if (currentVerification.length > 0) add('current_verification', currentVerification[0].command ?? 'current verification', {
     strength: currentVerification[0].artifact ? 'strong' : 'supporting',
