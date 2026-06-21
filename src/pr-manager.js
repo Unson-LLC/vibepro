@@ -2168,7 +2168,13 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const optional = axis.optional_evidence?.length > 0
         ? ` / optional=${axis.optional_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
         : '';
-      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}`;
+      const blockers = axis.matched_blockers?.length > 0
+        ? ` / blockers=${axis.matched_blockers.map((item) => `${item.id}:${item.criterion}`).join(', ')}`
+        : '';
+      const waiver = axis.blocker_waiver?.decision_id
+        ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
+        : '';
+      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}${blockers}${waiver}`;
     })
     .join('\n');
 }
@@ -5449,8 +5455,26 @@ function buildSeniorJudgmentAxes({
       scope,
       agentReviews
     });
+    const matchedBlockers = active
+      ? evaluateSeniorAxisBlockers(definition, {
+        signals: activationSignals,
+        evidence,
+        fileGroups,
+        prRoute,
+        route,
+        graphContext,
+        scope,
+        storySource,
+        verificationEvidence,
+        decisionRecords,
+        networkContracts
+      })
+      : [];
+    const blockerWaiver = active
+      ? findAcceptedBlockerWaiverForSource(decisionRecords, `gate:judgment_axis_${definition.axis}`)
+      : null;
     const status = active
-      ? resolveSeniorAxisStatus(definition, evidence)
+      ? resolveSeniorAxisStatus(definition, evidence, { matchedBlockers, blockerWaiver })
       : 'inactive';
     return {
       axis: definition.axis,
@@ -5467,6 +5491,15 @@ function buildSeniorJudgmentAxes({
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
       missing_evidence: active ? missingEvidenceKinds(definition.required_evidence, evidence.matched) : [],
+      matched_blockers: matchedBlockers,
+      blocker_waiver: blockerWaiver
+        ? {
+          decision_id: blockerWaiver.decision_id ?? null,
+          source: blockerWaiver.source ?? null,
+          artifact: blockerWaiver.artifact ?? null,
+          reason: blockerWaiver.reason ?? null
+        }
+        : null,
       ignored_accepted_decision: evidence.ignored_accepted_decision
     };
   });
@@ -5618,9 +5651,12 @@ function classifySeniorAxisEvidence({
   };
 }
 
-function resolveSeniorAxisStatus(definition, evidence) {
+function resolveSeniorAxisStatus(definition, evidence, { matchedBlockers = [] } = {}) {
   const matchedKinds = new Set(evidence.matched.map((item) => item.kind));
   const missingEvidence = missingEvidenceKinds(definition.required_evidence, evidence.matched);
+  if (matchedBlockers.length > 0) {
+    return 'active_blocked';
+  }
   if (missingEvidence.length === 0) {
     return 'active_passed';
   }
@@ -5660,7 +5696,9 @@ function buildJudgmentAxisGates(engineeringJudgment) {
     id: `gate:judgment_axis_${axis.axis}`,
     type: 'judgment_axis_gate',
     label: `Judgment Axis: ${axis.axis}`,
-    status: mapJudgmentAxisStatusToGateStatus(axis.status),
+    status: axis.status === 'active_blocked' && axis.blocker_waiver
+      ? 'accepted_followup'
+      : mapJudgmentAxisStatusToGateStatus(axis.status),
     axis_status: axis.status,
     required: true,
     axis: axis.axis,
@@ -5673,6 +5711,8 @@ function buildJudgmentAxisGates(engineeringJudgment) {
     matched_evidence: axis.matched_evidence ?? [],
     optional_evidence: axis.optional_evidence ?? [],
     missing_evidence: axis.missing_evidence ?? [],
+    matched_blockers: axis.matched_blockers ?? [],
+    blocker_waiver: axis.blocker_waiver ?? null,
     reason: buildJudgmentAxisGateReason(axis)
   }));
 }
@@ -5687,6 +5727,9 @@ function mapJudgmentAxisStatusToGateStatus(status) {
 
 function buildJudgmentAxisGateReason(axis) {
   const prefix = `${axis.axis}: ${axis.decision_question}`;
+  const blockerSummary = (axis.matched_blockers ?? [])
+    .map((item) => `${item.id}:${item.criterion} / support=${item.supporting_evidence.join('|') || 'none'} / unresolved=${item.unresolved_counter_evidence.join('|') || 'none'}`)
+    .join('; ');
   if (axis.status === 'active_passed') {
     return `${prefix} Evidence matched: ${(axis.matched_evidence ?? []).map((item) => item.kind).join(', ') || 'none'}.`;
   }
@@ -5697,7 +5740,10 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
   }
   if (axis.status === 'active_blocked') {
-    return `${prefix} Blocking criteria matched: ${(axis.blocking_criteria ?? []).join('; ')}`;
+    if (axis.blocker_waiver) {
+      return `${prefix} Blocking criteria matched but explicitly waived: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}. Waiver=${axis.blocker_waiver.decision_id ?? axis.blocker_waiver.source ?? 'accepted waiver'} / artifact=${axis.blocker_waiver.artifact ?? 'none'}.`;
+    }
+    return `${prefix} Blocking criteria matched: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}`;
   }
   return `${axis.axis}: inactive`;
 }
@@ -5705,6 +5751,17 @@ function buildJudgmentAxisGateReason(axis) {
 function isAcceptedAxisFollowupDecision(decision) {
   if (!decision || decision.status !== 'accepted') return false;
   return Boolean(String(decision.reason ?? '').trim() && String(decision.artifact ?? '').trim());
+}
+
+function findAcceptedBlockerWaiverForSource(decisionRecords, source) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  return decisions.find((decision) => (
+    decision.source === source
+    && decision.status === 'accepted'
+    && decision.type === 'waiver'
+    && Boolean(String(decision.reason ?? '').trim())
+    && Boolean(String(decision.artifact ?? '').trim())
+  )) ?? null;
 }
 
 function summarizeIgnoredAxisFollowupDecision(decision) {
@@ -5718,6 +5775,87 @@ function summarizeIgnoredAxisFollowupDecision(decision) {
     ].filter(Boolean),
     reason: 'accepted axis follow-up decisions require both reason and artifact before they can cover missing evidence'
   };
+}
+
+function evaluateSeniorAxisBlockers(definition, context = {}) {
+  const matchedKinds = new Set((context.evidence?.matched ?? []).map((item) => item.kind));
+  const missingEvidence = missingEvidenceKinds(definition.required_evidence, context.evidence?.matched ?? []);
+  const supportingEvidence = (kinds) => kinds.filter((kind) => matchedKinds.has(kind));
+  const unresolvedCounterEvidence = (kinds) => kinds.filter((kind) => missingEvidence.includes(kind));
+  const sourceCount = context.fileGroups?.source?.count ?? 0;
+  const verificationCommands = Array.isArray(context.verificationEvidence?.commands)
+    ? context.verificationEvidence.commands.filter((item) => item.binding?.status === 'current')
+    : [];
+  const genericOnlyVerification = verificationCommands.length > 0
+    && verificationCommands.every((item) => isGenericVerificationCommand(item.command));
+  const signalSet = new Set(context.signals ?? []);
+  const blockers = [];
+  const addBlocker = (id, criterion, supportKinds = [], counterKinds = []) => {
+    blockers.push({
+      id,
+      criterion,
+      supporting_evidence: supportingEvidence(supportKinds),
+      unresolved_counter_evidence: unresolvedCounterEvidence(counterKinds)
+    });
+  };
+
+  if (definition.axis === 'public_contract') {
+    const publicSurfaceChanged = sourceCount > 0
+      || (context.networkContracts?.introduced_api_client_call_count ?? 0) > 0
+      || [...signalSet].some((signal) => signal.startsWith('pr_route:') && signal !== 'pr_route:docs_only');
+    if (publicSurfaceChanged && unresolvedCounterEvidence(['story_spec_traceability', 'contract_doc']).length > 0) {
+      addBlocker(
+        'public_contract_traceability_missing',
+        'public contract change lacks traceability or compatibility evidence',
+        ['current_verification'],
+        ['story_spec_traceability', 'contract_doc']
+      );
+    }
+    if (publicSurfaceChanged && unresolvedCounterEvidence(['compat_or_output_test']).length > 0 && genericOnlyVerification) {
+      addBlocker(
+        'public_contract_expectation_unreviewed',
+        'output/API/CLI behavior changed without reviewable old/new expectation',
+        ['current_verification'],
+        ['compat_or_output_test']
+      );
+    }
+  }
+
+  if (definition.axis === 'security_boundary') {
+    const authBoundaryChanged = signalSet.has('surface:security_or_auth')
+      || signalSet.has('changed_path:security_boundary');
+    if (authBoundaryChanged && unresolvedCounterEvidence(['negative_path_test', 'boundary_condition']).length > 0) {
+      addBlocker(
+        'security_boundary_negative_path_missing',
+        'trust boundary changed without negative-path evidence',
+        ['current_verification'],
+        ['negative_path_test', 'boundary_condition']
+      );
+    }
+  }
+
+  if (definition.axis === 'release_ops') {
+    const operatorFacingChange = signalSet.has('route:release_engineering')
+      || signalSet.has('changed_path:release_ops');
+    if (operatorFacingChange && unresolvedCounterEvidence(['release_note', 'rollback_instruction']).length > 0) {
+      addBlocker(
+        'release_ops_operator_path_missing',
+        'operator/user action is required but not documented',
+        ['current_verification'],
+        ['release_note', 'rollback_instruction']
+      );
+    }
+    if (operatorFacingChange && unresolvedCounterEvidence(['observability_evidence', 'rollback_instruction']).length > 0) {
+      addBlocker(
+        'release_ops_owner_visible_evidence_missing',
+        'release or rollback path lacks owner-visible evidence',
+        ['current_verification'],
+        ['observability_evidence', 'rollback_instruction']
+      );
+    }
+  }
+
+  return blockers;
 }
 
 function buildCommonJudgmentSpineGate(engineeringJudgment, evidenceContext = {}) {
