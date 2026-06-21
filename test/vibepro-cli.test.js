@@ -12147,9 +12147,14 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   assert.equal(agentGate.status, 'needs_review');
   const topologyAxis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((axis) => axis.axis === 'execution_topology');
   assert.equal(topologyAxis.matched_evidence.some((item) => item.kind === 'agent_review'), false, JSON.stringify(topologyAxis, null, 2));
-  assert.equal(topologyAxis.missing_evidence.includes('agent_review'), true);
+  assert.equal(topologyAxis.activation_precision?.status, 'insufficient_signal');
+  assert.equal((topologyAxis.activation_candidates?.length ?? 0) > 0, true);
   const topologyGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_execution_topology');
-  assert.notEqual(topologyGate.status, 'passed', JSON.stringify(topologyGate, null, 2));
+  assert.equal(topologyGate, undefined);
+  assert.equal(
+    result.result.preparation.pr_context.gate_dag.summary.suppressed_judgment_axes.some((axis) => axis.axis === 'execution_topology'),
+    true
+  );
 });
 
 test('pr prepare advances current review stage after required roles pass despite default missing roles', async () => {
@@ -13356,7 +13361,7 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   const humanPrBody = prBody.slice(0, prBody.indexOf('## 監査ログ'));
   assert.match(humanPrBody, /Scope判断: 差分範囲の説明または分割判断が必要/);
-  assert.doesNotMatch(humanPrBody, /needs_clean_branch/);
+  assert.match(humanPrBody, /scope:needs_clean_branch/);
   assert.match(prBody.slice(prBody.indexOf('## 監査ログ')), /VibePro scope: needs_clean_branch/);
   const splitPlan = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.json'));
   assert.equal(splitPlan.model, 'story-pr-split-plan-v1');
@@ -13433,11 +13438,12 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.deepEqual(connectivityGate?.dead_end_nodes, []);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:story_source_integrity'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:engineering_judgment_route'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_axis_execution_topology'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_axis_execution_topology' && edge.to === 'gate:pr_scope_judgment'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_axis_public_contract'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_axis_public_contract' && edge.to === 'gate:pr_scope_judgment'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_scope_judgment' && edge.to === 'gate:bug_physics_triage'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:bug_physics_triage' && edge.to === 'gate:judgment_agent_workflow_context_acquisition'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_agent_workflow_context_acquisition' && edge.to === 'gate:pr_route_classification'), true);
+  assert.equal(gateDag.summary.suppressed_judgment_axes.some((axis) => axis.axis === 'execution_topology'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
@@ -13755,10 +13761,13 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   const activeAxes = judgment.judgment_axes.filter((axis) => axis.status !== 'inactive');
   assert.equal(Array.isArray(judgment.judgment_axes), true);
   assert.deepEqual(activeAxes.map((axis) => axis.axis).sort(), [
-    'execution_topology',
     'public_contract',
     'scope_reviewability'
   ]);
+  const suppressedExecutionTopology = judgment.judgment_axes.find((axis) => axis.axis === 'execution_topology');
+  assert.equal(suppressedExecutionTopology.status, 'inactive');
+  assert.equal(suppressedExecutionTopology.activation_precision?.status, 'insufficient_signal');
+  assert.equal((suppressedExecutionTopology.activation_candidates?.length ?? 0) > 0, true);
   assert.equal(activeAxes.some((axis) => ['rollback_sensitive', 'security_boundary', 'data_state', 'ux_surface', 'performance_semantic', 'release_ops'].includes(axis.axis)), false);
   const publicContract = activeAxes.find((axis) => axis.axis === 'public_contract');
   assert.equal(publicContract.status, 'active_needs_evidence');
@@ -13775,8 +13784,9 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
 
   const gateDag = prepare.pr_context.gate_dag;
-  assert.equal(gateDag.summary.judgment_axis_count >= 3, true);
+  assert.equal(gateDag.summary.judgment_axis_count >= 2, true);
   assert.equal(gateDag.summary.active_judgment_axes.includes('public_contract'), true);
+  assert.equal(gateDag.summary.suppressed_judgment_axes.some((axis) => axis.axis === 'execution_topology'), true);
   const axisGate = gateDag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
   assert.equal(axisGate?.type, 'judgment_axis_gate');
   assert.equal(axisGate?.status, 'needs_evidence');
@@ -13786,7 +13796,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
   const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
   assert.equal(architectureGate.axis_quality.status, 'covered');
-  assert.equal(architectureGate.axis_quality.evaluations.some((item) => item.axis === 'execution_topology'), true);
+  assert.equal(architectureGate.axis_quality.evaluations.some((item) => item.axis === 'public_contract'), true);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /#### Senior first scan axes/);
@@ -13841,7 +13851,11 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
     .filter((axis) => axis.status !== 'inactive')
     .map((axis) => axis.axis)
     .sort();
-  assert.deepEqual(noGraphActiveAxes, ['execution_topology', 'public_contract']);
+  assert.deepEqual(noGraphActiveAxes, ['public_contract']);
+  assert.equal(
+    noGraphPrepare.pr_context.gate_dag.summary.suppressed_judgment_axes.some((axis) => axis.axis === 'execution_topology'),
+    true
+  );
   assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:judgment_axis_scope_reviewability'), false);
   assert.equal(noGraphPrepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
 });
