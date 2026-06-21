@@ -2332,5 +2332,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "6382b7882c3982b5a1af1f19dcd5656bbfd7e79d",
-  "merged_at": "2026-06-21T03:05:31Z"
+  "merged_at": "2026-06-21T03:05:31Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+    "artifact_count": 9,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-activation-precision-1782011132977",
+      "base_head_sha": "6382b7882c3982b5a1af1f19dcd5656bbfd7e79d",
+      "merge_commit_on_base": true,
+      "commit_sha": "d894f827e227933e04af3862178eeafabcadfa60",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 6382b7882c3982b5a1af1f19dcd5656bbfd7e79d",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-activation-precision-1782011132977 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-activation-precision'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-activation-precision-1782011132977"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-21T03:05:32.977Z",
+          "finished_at": "2026-06-21T03:05:33.845Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   55791ef..6382b78  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-activation-precision-1782011132977 origin/main",
+          "started_at": "2026-06-21T03:05:33.929Z",
+          "finished_at": "2026-06-21T03:05:34.198Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 6382b78 Merge pull request #210 from Unson-LLC/codex/vibepro-engineering-judgment-activation-precision-clean3",
+          "stderr": "Preparing worktree (detached HEAD 6382b78)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+          "started_at": "2026-06-21T03:05:34.204Z",
+          "finished_at": "2026-06-21T03:05:34.296Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision",
+          "started_at": "2026-06-21T03:05:34.296Z",
+          "finished_at": "2026-06-21T03:05:34.351Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-activation-precision'",
+          "started_at": "2026-06-21T03:05:34.351Z",
+          "finished_at": "2026-06-21T03:05:34.484Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD d894f82] docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-activation-precision\n 10 files changed, 15149 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-activation-precision/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-21T03:05:34.523Z",
+          "finished_at": "2026-06-21T03:05:36.372Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   6382b78..d894f82  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-activation-precision-1782011132977",
+          "started_at": "2026-06-21T03:05:36.372Z",
+          "finished_at": "2026-06-21T03:05:36.456Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
