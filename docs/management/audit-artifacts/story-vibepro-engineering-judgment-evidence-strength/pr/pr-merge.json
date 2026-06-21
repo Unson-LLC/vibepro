@@ -2455,5 +2455,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "84be071a26c50c5d794d9ea79c17f57de45966f5",
-  "merged_at": "2026-06-21T01:47:02Z"
+  "merged_at": "2026-06-21T01:47:02Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+    "artifact_count": 9,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-evidence-strength-1782006424268",
+      "base_head_sha": "84be071a26c50c5d794d9ea79c17f57de45966f5",
+      "merge_commit_on_base": true,
+      "commit_sha": "f12d8461e3c4a763801d544a476cfa6da4a58acd",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 84be071a26c50c5d794d9ea79c17f57de45966f5",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-evidence-strength-1782006424268 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-evidence-strength'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-evidence-strength-1782006424268"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-21T01:47:04.268Z",
+          "finished_at": "2026-06-21T01:47:05.090Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   76c75a5..84be071  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-evidence-strength-1782006424268 origin/main",
+          "started_at": "2026-06-21T01:47:05.175Z",
+          "finished_at": "2026-06-21T01:47:05.392Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 84be071 Merge pull request #208 from Unson-LLC/codex/vibepro-engineering-judgment-evidence-strength",
+          "stderr": "Preparing worktree (detached HEAD 84be071)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+          "started_at": "2026-06-21T01:47:05.397Z",
+          "finished_at": "2026-06-21T01:47:05.487Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength",
+          "started_at": "2026-06-21T01:47:05.487Z",
+          "finished_at": "2026-06-21T01:47:05.541Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-evidence-strength'",
+          "started_at": "2026-06-21T01:47:05.541Z",
+          "finished_at": "2026-06-21T01:47:05.673Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD f12d846] docs: persist VibePro audit artifacts for story-vibepro-engineering-judgment-evidence-strength\n 10 files changed, 14331 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-engineering-judgment-evidence-strength/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-21T01:47:05.712Z",
+          "finished_at": "2026-06-21T01:47:07.420Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   84be071..f12d846  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-engineering-judgment-evidence-strength-1782006424268",
+          "started_at": "2026-06-21T01:47:07.420Z",
+          "finished_at": "2026-06-21T01:47:07.502Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
