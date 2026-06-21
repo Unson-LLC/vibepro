@@ -2153,14 +2153,24 @@ function collectEngineeringJudgmentRouteGates(gateDag, routeType) {
 }
 
 function buildJudgmentAxisReasoning(engineeringJudgment) {
-  const activeAxes = (engineeringJudgment?.judgment_axes ?? [])
-    .filter((axis) => axis.status !== 'inactive');
-  if (activeAxes.length === 0) {
+  const axes = engineeringJudgment?.judgment_axes ?? [];
+  const activeAxes = axes.filter((axis) => axis.status !== 'inactive');
+  const suppressedAxes = axes.filter((axis) => axis.status === 'inactive' && (axis.activation_candidates?.length ?? 0) > 0);
+  if (activeAxes.length === 0 && suppressedAxes.length === 0) {
     return '- active axisなし。general engineeringとして既存Gateを確認します。';
   }
-  return activeAxes
+  const activeLines = activeAxes
     .map((axis) => {
       const required = axis.required_evidence?.join('|') ?? '-';
+      const candidates = axis.activation_candidates?.length > 0
+        ? ` / candidates=${axis.activation_candidates.join(', ')}`
+        : '';
+      const activationSignals = axis.activation_signals?.length > 0
+        ? ` / active_signals=${axis.activation_signals.join(', ')}`
+        : '';
+      const precision = axis.activation_precision?.status
+        ? ` / precision=${axis.activation_precision.status}:${axis.activation_precision.reason ?? ''}`
+        : '';
       const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
       const matched = axis.matched_evidence?.length > 0
         ? ` / matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
@@ -2174,9 +2184,13 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const waiver = axis.blocker_waiver?.decision_id
         ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
         : '';
-      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${matched}${optional}${missing}${blockers}${waiver}`;
+      return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${candidates}${activationSignals}${precision}${matched}${optional}${missing}${blockers}${waiver}`;
     })
     .join('\n');
+  const suppressedLines = suppressedAxes.length > 0
+    ? `\n- suppressed_candidates: ${suppressedAxes.map((axis) => `${axis.axis}[${axis.activation_precision?.status ?? 'inactive'}]:${axis.activation_precision?.reason ?? 'reason missing'}`).join(' ; ')}`
+    : '';
+  return `${activeLines}${suppressedLines}`;
 }
 
 function buildCommonSpineReasoning(gateDag) {
@@ -5430,6 +5444,7 @@ function buildSeniorJudgmentAxes({
   if (/\b(database|db|migration|schema|cache|idempot|replay|query|orm|backfill|model|repository)\b/.test(fileText)) addSignal('data_state', 'changed_path:data_state');
 
   if (route?.route_type === 'agent_workflow' || riskSurfaces.has('gate_orchestration') || riskSurfaces.has('review_lifecycle') || riskSurfaces.has('core_workflow_state') || riskSurfaces.has('queue_worker')) addSignal('execution_topology', 'surface:workflow_or_agent');
+  if (/\b(workflow|agent|review|gate|queue|worker|retry)\b/.test((fileGroups.source?.files ?? []).join('\n').toLowerCase())) addSignal('execution_topology', 'changed_path:execution_topology');
   if (/\b(process|thread|worker|queue|agent|subagent|retry|deadlock|artifact lifecycle|orchestration|workflow|gate|dag|graphify)\b|エージェント|ワーカー|再試行|証跡/.test(text)) addSignal('execution_topology', 'text:execution_topology');
 
   if (prRoute?.route_type === 'design_or_ui_change' || hasUiExperienceSourceChange(fileGroups)) addSignal('ux_surface', 'surface:ui_source');
@@ -5447,8 +5462,10 @@ function buildSeniorJudgmentAxes({
   if (/\b(release|deploy|rollout|rollback|observability|operator|runbook|alert|ci|workflow)\b/.test(fileText)) addSignal('release_ops', 'changed_path:release_ops');
 
   return JUDGMENT_AXIS_DEFINITIONS.map((definition) => {
-    const activationSignals = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
-    const active = activationSignals.length > 0;
+    const activationCandidates = [...new Set(signalsByAxis.get(definition.axis) ?? [])];
+    const precision = classifyAxisActivationPrecision(definition.axis, activationCandidates);
+    const activationSignals = precision.active_signals;
+    const active = precision.status === 'active';
     const evidence = classifySeniorAxisEvidence({
       axis: definition.axis,
       fileGroups,
@@ -5484,13 +5501,21 @@ function buildSeniorJudgmentAxes({
       status,
       reason: active
         ? activationSignals.join('; ')
-        : `No ${definition.axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+        : precision.reason,
       confidence: active ? calculateAxisConfidence(definition.confidence, activationSignals, graphContext) : 0,
       decision_question: definition.decision_question,
       required_evidence: definition.required_evidence,
       blocking_criteria: definition.blocking_criteria,
       acceptable_followup: definition.acceptable_followup,
       signals: activationSignals,
+      activation_candidates: activationCandidates,
+      activation_signals: activationSignals,
+      activation_precision: {
+        status: precision.status,
+        reason: precision.reason,
+        candidate_count: activationCandidates.length,
+        non_text_signal_count: precision.non_text_signal_count
+      },
       matched_evidence: evidence.matched,
       optional_evidence: evidence.optional,
       missing_evidence: active ? missingSeniorAxisEvidenceKinds(definition, evidence.matched) : [],
@@ -5506,6 +5531,52 @@ function buildSeniorJudgmentAxes({
       ignored_accepted_decision: evidence.ignored_accepted_decision
     };
   });
+}
+
+function classifyAxisActivationPrecision(axis, candidates = []) {
+  const uniqueCandidates = [...new Set(candidates.filter(Boolean))];
+  if (uniqueCandidates.length === 0) {
+    return {
+      status: 'no_signal',
+      reason: `No ${axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+      active_signals: [],
+      non_text_signal_count: 0
+    };
+  }
+  const nonTextSignals = uniqueCandidates.filter((signal) => isCorroboratingActivationSignal(axis, signal));
+  if (nonTextSignals.length === 0) {
+    return {
+      status: 'insufficient_signal',
+      reason: `${axis} has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists`,
+      active_signals: [],
+      non_text_signal_count: 0
+    };
+  }
+  if (axis === 'public_contract') {
+    const corroboratingSignals = nonTextSignals.filter((signal) => /^(pr_route|file_group|network_contract|changed_path):/.test(String(signal)));
+    if (corroboratingSignals.length === 0) {
+      return {
+        status: 'insufficient_signal',
+        reason: 'public_contract candidates were present, but no contract-correlated non-text signal was found',
+        active_signals: [],
+        non_text_signal_count: nonTextSignals.length
+      };
+    }
+  }
+  return {
+    status: 'active',
+    reason: `${axis} activated from ${nonTextSignals.length} non-text corroborating signal(s)`,
+    active_signals: uniqueCandidates,
+    non_text_signal_count: nonTextSignals.length
+  };
+}
+
+function isCorroboratingActivationSignal(axis, signal) {
+  const normalized = String(signal ?? '');
+  if (!normalized || normalized.startsWith('text:')) return false;
+  if (normalized.startsWith('surface:')) return false;
+  if (axis === 'public_contract' && normalized.startsWith('pr_route:')) return true;
+  return true;
 }
 
 const JUDGMENT_AXIS_DEFINITIONS = [
