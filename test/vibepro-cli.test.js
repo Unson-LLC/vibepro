@@ -13976,6 +13976,211 @@ spec_docs:
   assert.equal(gate.status, 'needs_evidence');
 });
 
+test('public contract judgment axis blocks generic verification without reviewable expectation evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Block
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.matched_blockers.some((item) => item.id === 'public_contract_traceability_missing'), true);
+  assert.equal(axis.matched_blockers.some((item) => item.id === 'public_contract_expectation_unreviewed'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
+
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(prBody, /public_contract: active_blocked/);
+  assert.match(prBody, /public_contract_traceability_missing/);
+});
+
+test('security boundary judgment axis blocks auth changes without negative path evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Security Boundary Block
+---
+
+# Story
+
+- [ ] auth permission boundary still rejects unauthorized access
+`);
+  await writeFile(path.join(repo, 'src', 'auth.js'), 'export function authorize(token) { return token === "root"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/auth.js']);
+  await git(repo, ['commit', '-m', 'feat: change auth boundary']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad auth suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'security_boundary');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.matched_blockers.some((item) => item.id === 'security_boundary_negative_path_missing'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_security_boundary');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.reason.includes('negative_path_test'), true);
+});
+
+test('release ops judgment axis blocks operator-facing release changes without owner-visible evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Release Ops Block
+---
+
+# Story
+
+- [ ] operator release workflow remains safe during rollout and rollback
+`);
+  await writeFile(path.join(repo, 'src', 'release-workflow.js'), 'export const releaseWorkflow = "operator rollout rollback observability";\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/release-workflow.js']);
+  await git(repo, ['commit', '-m', 'feat: change operator rollout workflow']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad release regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'release_ops');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.matched_blockers.some((item) => item.id === 'release_ops_operator_path_missing'), true);
+  assert.equal(axis.matched_blockers.some((item) => item.id === 'release_ops_owner_visible_evidence_missing'), true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_release_ops');
+  assert.equal(gate.status, 'block');
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
+});
+
+test('blocker waiver keeps axis blocked but downgrades the gate from block to accepted followup', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Blocker Waiver
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format with blocker waiver']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.blocker_waiver.decision_id != null, true);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'accepted_followup');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.equal(gate.reason.includes('explicitly waived'), true);
+});
+
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
