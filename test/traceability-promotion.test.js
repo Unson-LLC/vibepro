@@ -7,6 +7,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { buildTraceabilityClauseMap } from '../src/traceability.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -92,6 +93,40 @@ test('pr prepare links verification evidence when present and stays idempotent o
   const second = await readJson(traceabilityPath(root, 'story-test-promo'));
   assert.equal(second.evidence.length, first.evidence.length, 'rerun must not duplicate evidence');
   assert.equal(second.created_at, first.created_at, 'created_at must be preserved');
+});
+
+test('clause map keeps unmapped AC and scenario clauses visible', () => {
+  const storyText = [
+    '# Story',
+    '',
+    '## Acceptance Criteria',
+    '- AC-backed evidence is present.',
+    '- Missing clause-specific evidence remains visible.'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({
+    storyText,
+    changedFiles: [],
+    tests: [],
+    evidence: [{
+      type: 'verification_evidence',
+      ref: 'test/ac-backed.test.js',
+      summary: 'AC-backed evidence is present',
+      strength: 'supporting',
+      binding_status: 'current',
+      artifact_quality: 'verified',
+      current_head_sha: 'abc123',
+      targets: ['AC-1']
+    }],
+    scenarioClauses: [{
+      id: 'S-001',
+      statement: 'Scenario clause needs replay coverage.'
+    }]
+  });
+  assert.equal(map.acceptance_criteria[0].status, 'mapped');
+  assert.equal(map.acceptance_criteria[0].mapped_evidence[0].binding_status, 'current');
+  assert.equal(map.acceptance_criteria[0].mapped_evidence[0].current_head_sha, 'abc123');
+  assert.equal(map.acceptance_criteria[1].status, 'unmapped');
+  assert.equal(map.scenario_clauses[0].status, 'unmapped');
 });
 
 async function makeFakeGhMerge(state) {

@@ -2126,7 +2126,8 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
         ...Object.entries(command.observation?.values ?? {}).map(([key, value]) => `${key}=${value}`)
       ].filter(Boolean).join(' | '),
       strength: isPassingVerificationStatus(command.status) ? 'supporting' : 'weak',
-      binding_status: command.git_context?.status ?? command.binding?.status ?? null,
+      binding_status: command.git_context?.head_sha && command.git_context?.dirty === false ? 'current' : command.binding?.status ?? null,
+      current_head_sha: command.git_context?.head_sha ?? null,
       artifact_quality: command.artifact_check?.status ?? null,
       targets: [
         ...(command.observation?.targets ?? []),

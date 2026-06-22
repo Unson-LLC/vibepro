@@ -165,6 +165,7 @@ test('traceability clause coverage gaps surface in usage report', async () => {
   );
   assert.match(renderUsageReport(report), /clause_traceability=mapped=1\/weak=1\/unmapped=0/);
   assert.match(renderUsageReport(report), /traceability_clause_mapping_incomplete/);
+  assert.match(renderUsageReport(report), /AC-2:weakly_mapped:Evidence is clause specific\./);
 });
 
 test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts', async () => {

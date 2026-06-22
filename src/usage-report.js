@@ -67,6 +67,7 @@ export async function createUsageReport(repoRoot, options = {}) {
           kind: 'traceability_clause_mapping_incomplete',
           artifact: artifact.path,
           detail: `${story.traceability_clause_coverage.weakly_mapped_count ?? 0} weakly_mapped and ${story.traceability_clause_coverage.unmapped_count ?? 0} unmapped clause(s)`,
+          examples: story.traceability_clause_coverage.examples ?? [],
           next_command: `vibepro verify record . --id ${story.story_id} --kind <unit|integration|e2e> --status pass --command <cmd> --target <AC-or-scenario-target> --observed <key=value>`
         });
       }
@@ -656,8 +657,16 @@ function renderTraceabilityGaps(report) {
   const gaps = report.value_signals?.traceability_gaps ?? [];
   if (gaps.length === 0) return '- none';
   return gaps.map((gap) => (
-    `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} next="${gap.next_command}"`
+    `- ${gap.story_id}: ${gap.kind} artifact=${gap.artifact ?? '-'} detail="${gap.detail ?? '-'}" examples=${formatTraceabilityGapExamples(gap.examples)} next="${gap.next_command}"`
   )).join('\n');
+}
+
+function formatTraceabilityGapExamples(examples) {
+  if (!Array.isArray(examples) || examples.length === 0) return '-';
+  return examples
+    .slice(0, 3)
+    .map((item) => `${item.id ?? '-'}:${item.status ?? '-'}:${String(item.source_text ?? '').slice(0, 80)}`)
+    .join(' | ');
 }
 
 function renderAlternateSourceResolved(report) {

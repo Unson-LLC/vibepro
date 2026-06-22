@@ -123,14 +123,13 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
   const matchedTests = tests.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
   const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
     clauseMatchesPathOrText({ id, text, value: item.ref })
-    || clauseMatchesPathOrText({ id, text, value: item.summary })
     || evidenceTargetsClause({ id, text, item })
   ));
   const matchedReviewFindings = evidence.filter((item) => item.type === 'review_finding' && (
     clauseMatchesPathOrText({ id, text, value: item.ref })
     || clauseMatchesPathOrText({ id, text, value: item.summary })
   ));
-  const broadEvidence = evidence.length > 0 && matchedEvidence.length === 0 && matchedTests.length === 0 && matchedReviewFindings.length === 0;
+  const broadEvidence = evidence.some((item) => item.type === 'pr_artifact') && matchedEvidence.length === 0 && matchedTests.length === 0 && matchedReviewFindings.length === 0;
   const status = matchedTests.length > 0 || matchedEvidence.length > 0 || matchedReviewFindings.length > 0
     ? 'mapped'
     : matchedFiles.length > 0 || broadEvidence
@@ -157,6 +156,7 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
       summary: item.summary ?? null,
       strength: item.strength ?? item.evidence_strength ?? null,
       binding_status: item.binding_status ?? item.binding?.status ?? null,
+      current_head_sha: item.current_head_sha ?? item.git_context?.head_sha ?? null,
       artifact_quality: item.artifact_quality ?? item.artifact_check?.status ?? null,
       target_match: evidenceTargetsClause({ id, text, item })
     })),
