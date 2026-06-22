@@ -23,7 +23,16 @@ const REAL_PR_ARTIFACT_FILES = ['pr-prepare.json', 'pr-create.json', 'gate-dag.j
 const EXPLICIT_NOT_STARTED_DOC_STATUSES = ['backlog', 'draft', 'planned', 'idea', 'proposed'];
 const MAX_GIT_EVIDENCE_COMMITS = 5;
 
-export function buildTraceability(existing, { storyId, storyDocPath = null, source, lifecycle, evidence = [], now = null }) {
+export function buildTraceability(existing, {
+  storyId,
+  storyDocPath = null,
+  source,
+  lifecycle,
+  evidence = [],
+  acceptanceCriteria = null,
+  scenarioClauses = null,
+  now = null
+}) {
   const timestamp = now ?? new Date().toISOString();
   const baseEvidence = Array.isArray(existing?.evidence) ? existing.evidence : [];
   const mergedEvidence = [...baseEvidence];
@@ -31,6 +40,16 @@ export function buildTraceability(existing, { storyId, storyDocPath = null, sour
     if (mergedEvidence.some((entry) => entry.type === item.type && entry.ref === item.ref)) continue;
     mergedEvidence.push(item);
   }
+  const acceptance_criteria = Array.isArray(acceptanceCriteria)
+    ? acceptanceCriteria
+    : Array.isArray(existing?.acceptance_criteria)
+      ? existing.acceptance_criteria
+      : [];
+  const scenario_clauses = Array.isArray(scenarioClauses)
+    ? scenarioClauses
+    : Array.isArray(existing?.scenario_clauses)
+      ? existing.scenario_clauses
+      : [];
   return {
     schema_version: TRACEABILITY_SCHEMA_VERSION,
     story_id: storyId,
@@ -38,9 +57,194 @@ export function buildTraceability(existing, { storyId, storyDocPath = null, sour
     source,
     lifecycle,
     evidence: mergedEvidence,
+    acceptance_criteria,
+    scenario_clauses,
+    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses }),
     created_at: existing?.created_at ?? timestamp,
     updated_at: timestamp
   };
+}
+
+export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [] } = {}) {
+  const clauses = [...acceptance_criteria, ...scenario_clauses];
+  const countByStatus = (status) => clauses.filter((item) => item.status === status).length;
+  return {
+    clause_count: clauses.length,
+    acceptance_criteria_count: acceptance_criteria.length,
+    scenario_clause_count: scenario_clauses.length,
+    mapped_count: countByStatus('mapped'),
+    weakly_mapped_count: countByStatus('weakly_mapped'),
+    unmapped_count: countByStatus('unmapped'),
+    examples: clauses
+      .filter((item) => item.status === 'unmapped' || item.status === 'weakly_mapped')
+      .slice(0, 3)
+      .map((item) => ({
+        id: item.id,
+        type: item.type,
+        status: item.status,
+        source_text: item.source_text,
+        weak_mapping_reason: item.weak_mapping_reason ?? null
+      }))
+  };
+}
+
+export function buildTraceabilityClauseMap({
+  storyText = '',
+  changedFiles = [],
+  tests = [],
+  evidence = [],
+  scenarioClauses = []
+} = {}) {
+  const criteria = extractAcceptanceCriteria(storyText).map((criterion) => (
+    buildClauseTraceabilityItem({
+      ...criterion,
+      type: 'acceptance_criterion',
+      changedFiles,
+      tests,
+      evidence
+    })
+  ));
+  const scenarios = scenarioClauses.map((scenario, index) => (
+    buildClauseTraceabilityItem({
+      id: scenario.id ?? `S-${index + 1}`,
+      text: scenario.statement ?? scenario.text ?? String(scenario),
+      source_line: scenario.source_line ?? null,
+      type: 'scenario_clause',
+      changedFiles,
+      tests,
+      evidence
+    })
+  ));
+  return { acceptance_criteria: criteria, scenario_clauses: scenarios };
+}
+
+function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles, tests, evidence }) {
+  const matchedFiles = changedFiles.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
+  const matchedTests = tests.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
+  const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
+    evidenceTargetsClause({ id, text, item })
+    || evidenceRefMatchesClauseId({ id, item })
+  ));
+  const matchedReviewFindings = evidence.filter((item) => item.type === 'review_finding' && (
+    clauseMatchesPathOrText({ id, text, value: item.ref })
+    || clauseMatchesPathOrText({ id, text, value: item.summary })
+  ));
+  const broadEvidence = evidence.some((item) => item.type === 'pr_artifact') && matchedEvidence.length === 0 && matchedTests.length === 0 && matchedReviewFindings.length === 0;
+  const status = matchedTests.length > 0 || matchedEvidence.length > 0 || matchedReviewFindings.length > 0
+    ? 'mapped'
+    : matchedFiles.length > 0 || broadEvidence
+      ? 'weakly_mapped'
+      : 'unmapped';
+  const weakReason = status === 'weakly_mapped'
+    ? matchedFiles.length > 0
+      ? 'changed files mention this clause, but no clause-specific test, review finding, or current-bound evidence was found'
+      : 'verification or PR evidence exists, but no AC/scenario-specific binding was found'
+    : broadEvidence
+      ? 'verification or PR evidence exists, but no AC/scenario-specific binding was found'
+      : null;
+  return {
+    id,
+    type,
+    source_text: text,
+    source_line,
+    status,
+    mapped_files: matchedFiles.map((file) => file.path ?? file),
+    mapped_tests: matchedTests.map((file) => file.path ?? file),
+    mapped_evidence: matchedEvidence.map((item) => ({
+      type: item.type ?? null,
+      ref: item.ref ?? null,
+      summary: item.summary ?? null,
+      strength: item.strength ?? item.evidence_strength ?? null,
+      binding_status: item.binding_status ?? item.binding?.status ?? null,
+      current_head_sha: item.current_head_sha ?? item.git_context?.head_sha ?? null,
+      artifact_quality: item.artifact_quality ?? item.artifact_check?.status ?? null,
+      target_match: evidenceTargetsClause({ id, text, item })
+    })),
+    mapped_review_findings: matchedReviewFindings.map((item) => ({
+      ref: item.ref ?? null,
+      summary: item.summary ?? null,
+      severity: item.severity ?? null,
+      status: item.status ?? null
+    })),
+    weak_mapping_reason: weakReason
+  };
+}
+
+function isStrongClauseEvidence(item) {
+  if (!item || item.type === 'pr_artifact') return false;
+  const bindingStatus = item.binding_status ?? item.binding?.status ?? null;
+  const artifactQuality = item.artifact_quality ?? item.artifact_check?.status ?? null;
+  const strength = item.strength ?? item.evidence_strength ?? null;
+  return bindingStatus === 'current'
+    || artifactQuality === 'verified'
+    || ['strong', 'supporting'].includes(strength)
+    || item.type === 'verification_evidence';
+}
+
+function evidenceTargetsClause({ id, text, item }) {
+  const targets = Array.isArray(item?.targets) ? item.targets : [];
+  return targets.some((target) => {
+    if (targetMatchesClauseId({ id, value: target })) return true;
+    if (!isClauseBindingTarget(target)) return false;
+    return clauseMatchesPathOrText({ id, text, value: target });
+  });
+}
+
+function evidenceRefMatchesClauseId({ id, item }) {
+  return targetMatchesClauseId({ id, value: item?.ref });
+}
+
+function targetMatchesClauseId({ id, value }) {
+  const normalizedId = String(id ?? '').toLowerCase();
+  if (!normalizedId) return false;
+  return String(value ?? '').toLowerCase().includes(normalizedId);
+}
+
+function isClauseBindingTarget(value) {
+  const target = String(value ?? '').trim();
+  if (!target) return false;
+  if (/^(node|npm|npx|pnpm|yarn|bun)\s+/.test(target)) return false;
+  if (target.includes(' --')) return false;
+  if (/\.vibepro\/manual-verification\//.test(target)) return false;
+  if (/\.(tap|log|json)$/i.test(target) && /\.vibepro\//.test(target)) return false;
+  return true;
+}
+
+function extractAcceptanceCriteria(storyText) {
+  const lines = String(storyText ?? '').split(/\r?\n/);
+  const criteria = [];
+  let inSection = false;
+  for (const [index, line] of lines.entries()) {
+    if (/^#{2,}\s*(Acceptance Criteria|受け入れ基準)\s*$/i.test(line.trim())) {
+      inSection = true;
+      continue;
+    }
+    if (inSection && /^#{1,}\s+/.test(line)) break;
+    if (!inSection) continue;
+    const match = line.match(/^\s*-\s*(?:\[[ xX]\]\s*)?(.+?)\s*$/);
+    if (!match) continue;
+    const text = match[1].trim();
+    if (!text) continue;
+    criteria.push({
+      id: `AC-${criteria.length + 1}`,
+      text,
+      source_line: index + 1
+    });
+  }
+  return criteria;
+}
+
+function clauseMatchesPathOrText({ id, text, value }) {
+  const target = String(value ?? '').toLowerCase();
+  if (!target) return false;
+  const normalizedId = String(id ?? '').toLowerCase();
+  if (normalizedId && target.includes(normalizedId)) return true;
+  const words = String(text ?? '')
+    .toLowerCase()
+    .split(/[^a-z0-9_-]+/)
+    .filter((word) => word.length >= 5)
+    .slice(0, 8);
+  return words.some((word) => target.includes(word));
 }
 
 export function traceabilityArtifactPath(repoRoot, storyId) {

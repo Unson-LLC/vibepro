@@ -7,6 +7,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { buildTraceabilityClauseMap } from '../src/traceability.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -54,12 +55,22 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   const root = await setupPrepareRepo();
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
   const traceability = await readJson(traceabilityPath(root, 'story-test-promo'));
+  const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'gate-dag.json'));
+  const prBody = await readFile(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'pr-body.md'), 'utf8');
   assert.equal(traceability.story_doc_path, 'docs/management/stories/active/story-test-promo.md');
   assert.equal(traceability.lifecycle, 'in_progress');
   const refs = evidenceRefs(traceability, 'pr_artifact');
   assert.ok(refs.some((ref) => ref.endsWith('pr-body.md')), 'pr-body.md must be linked');
   assert.ok(refs.some((ref) => ref.endsWith('gate-dag.json')), 'gate-dag.json must be linked');
   assert.ok(!refs.some((ref) => ref.endsWith('verification-evidence.json')), 'absent verification evidence must not be linked');
+  assert.equal(traceability.acceptance_criteria.length, 1);
+  assert.equal(traceability.acceptance_criteria[0].id, 'AC-1');
+  assert.equal(traceability.acceptance_criteria[0].status, 'weakly_mapped');
+  assert.equal(traceability.coverage_summary.weakly_mapped_count, 1);
+  assert.equal(traceability.coverage_summary.mapped_count, 0);
+  assert.equal(gateDag.summary.traceability_clause_coverage.weakly_mapped_count, 1);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:traceability_clause_coverage').status, 'needs_evidence');
+  assert.match(prBody, /weakly_mapped: 1/);
 });
 
 test('pr prepare links verification evidence when present and stays idempotent on rerun', async () => {
@@ -74,10 +85,77 @@ test('pr prepare links verification evidence when present and stays idempotent o
     evidenceRefs(first, 'pr_artifact').some((ref) => ref.endsWith('verification-evidence.json')),
     'existing verification evidence must be linked'
   );
+  assert.equal(first.acceptance_criteria[0].status, 'mapped');
+  assert.equal(first.acceptance_criteria[0].mapped_evidence.length, 1);
+  assert.equal(first.coverage_summary.mapped_count, 1);
+  assert.equal(first.coverage_summary.weakly_mapped_count, 0);
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
   const second = await readJson(traceabilityPath(root, 'story-test-promo'));
   assert.equal(second.evidence.length, first.evidence.length, 'rerun must not duplicate evidence');
   assert.equal(second.created_at, first.created_at, 'created_at must be preserved');
+});
+
+test('clause map keeps unmapped AC and scenario clauses visible', () => {
+  const storyText = [
+    '# Story',
+    '',
+    '## Acceptance Criteria',
+    '- AC-backed evidence is present.',
+    '- Missing clause-specific evidence remains visible.'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({
+    storyText,
+    changedFiles: [],
+    tests: [],
+    evidence: [{
+      type: 'verification_evidence',
+      ref: 'test/ac-backed.test.js',
+      summary: 'AC-backed evidence is present',
+      strength: 'supporting',
+      binding_status: 'current',
+      artifact_quality: 'verified',
+      current_head_sha: 'abc123',
+      targets: ['AC-1']
+    }],
+    scenarioClauses: [{
+      id: 'S-001',
+      statement: 'Scenario clause needs replay coverage.'
+    }]
+  });
+  assert.equal(map.acceptance_criteria[0].status, 'mapped');
+  assert.equal(map.acceptance_criteria[0].mapped_evidence[0].binding_status, 'current');
+  assert.equal(map.acceptance_criteria[0].mapped_evidence[0].current_head_sha, 'abc123');
+  assert.equal(map.acceptance_criteria[1].status, 'unmapped');
+  assert.equal(map.scenario_clauses[0].status, 'unmapped');
+});
+
+test('broad verification command and artifact paths do not map every AC', () => {
+  const storyText = [
+    '# Story',
+    '',
+    '## Acceptance Criteria',
+    '- PR body, Gate DAG, and usage report show unmapped counts.',
+    '- Generic broad suite must not satisfy this clause.'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({
+    storyText,
+    changedFiles: [],
+    tests: [],
+    evidence: [{
+      type: 'verification_evidence',
+      ref: '.vibepro/manual-verification/story/focused.tap',
+      summary: 'node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js',
+      strength: 'supporting',
+      binding_status: 'current',
+      artifact_quality: 'unrecognized',
+      targets: [
+        'node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js',
+        '.vibepro/manual-verification/story/focused.tap'
+      ]
+    }]
+  });
+  assert.equal(map.acceptance_criteria[0].status, 'unmapped');
+  assert.equal(map.acceptance_criteria[1].status, 'unmapped');
 });
 
 async function makeFakeGhMerge(state) {

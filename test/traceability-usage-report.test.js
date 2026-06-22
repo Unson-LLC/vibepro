@@ -10,7 +10,7 @@ function storyDoc(storyId, status = 'active') {
   return `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: ${status}\n---\n\n# ${storyId}\n`;
 }
 
-function traceabilityArtifact(storyId, lifecycle, source = 'trace_backfill', evidence = []) {
+function traceabilityArtifact(storyId, lifecycle, source = 'trace_backfill', evidence = [], coverageSummary = null) {
   return JSON.stringify({
     schema_version: '0.1.0',
     story_id: storyId,
@@ -18,6 +18,7 @@ function traceabilityArtifact(storyId, lifecycle, source = 'trace_backfill', evi
     source,
     lifecycle,
     evidence,
+    ...(coverageSummary ? { coverage_summary: coverageSummary } : {}),
     created_at: '2026-06-12T00:00:00.000Z',
     updated_at: '2026-06-12T00:00:00.000Z'
   }, null, 2);
@@ -34,7 +35,13 @@ async function setupReportRepo(stories) {
       await mkdir(prDir, { recursive: true });
       await writeFile(
         path.join(prDir, 'traceability.json'),
-        traceabilityArtifact(story.story_id, story.traceability.lifecycle, story.traceability.source, story.traceability.evidence ?? [])
+        traceabilityArtifact(
+          story.story_id,
+          story.traceability.lifecycle,
+          story.traceability.source,
+          story.traceability.evidence ?? [],
+          story.traceability.coverage_summary ?? null
+        )
       );
     }
     if (story.prepare) {
@@ -126,6 +133,39 @@ test('prepared story is unaffected by traceability accounting', async () => {
   const story = findStory(report, 'story-prepared');
   assert.equal(missingGaps(story).length, 0);
   assert.equal(story.prepared, true);
+});
+
+test('traceability clause coverage gaps surface in usage report', async () => {
+  const root = await setupReportRepo([
+    {
+      story_id: 'story-weak-clause-map',
+      prepare: true,
+      traceability: {
+        lifecycle: 'in_progress',
+        source: 'pr_prepare',
+        coverage_summary: {
+          clause_count: 2,
+          acceptance_criteria_count: 2,
+          scenario_clause_count: 0,
+          mapped_count: 1,
+          weakly_mapped_count: 1,
+          unmapped_count: 0,
+          examples: [{ id: 'AC-2', status: 'weakly_mapped', source_text: 'Evidence is clause specific.' }]
+        }
+      }
+    }
+  ]);
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-weak-clause-map');
+  assert.equal(story.traceability_clause_coverage.weakly_mapped_count, 1);
+  assert.equal(report.value_signals.traceability_clause_mapping_incomplete_count, 1);
+  assert.equal(
+    story.traceability_gaps.some((gap) => gap.kind === 'traceability_clause_mapping_incomplete'),
+    true
+  );
+  assert.match(renderUsageReport(report), /clause_traceability=mapped=1\/weak=1\/unmapped=0/);
+  assert.match(renderUsageReport(report), /traceability_clause_mapping_incomplete/);
+  assert.match(renderUsageReport(report), /AC-2:weakly_mapped:Evidence is clause specific\./);
 });
 
 test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts', async () => {
