@@ -177,6 +177,47 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   );
 });
 
+test('blocked canonical handoff replay is surfaced as a fake-value signal', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-blocked-handoff' }
+  ]);
+  const auditDir = path.join(root, 'docs', 'management', 'audit-artifacts', 'story-blocked-handoff');
+  await mkdir(path.join(auditDir, 'pr'), { recursive: true });
+  await writeFile(path.join(auditDir, 'audit-bundle.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-blocked-handoff',
+    source: 'execute_merge',
+    promoted_at: '2026-06-22T00:10:00.000Z',
+    handoff_replay_status: 'blocked',
+    handoff_replay: {
+      status: 'blocked',
+      unresolved_reference_count: 1
+    },
+    unresolved_references: [
+      { source: '.vibepro/reviews/story-blocked-handoff/gate/subagent.json', reason: 'source_missing' }
+    ],
+    artifacts: [
+      { kind: 'pr_merge', canonical_path: 'docs/management/audit-artifacts/story-blocked-handoff/pr/pr-merge.json' }
+    ]
+  }, null, 2));
+  await writeFile(path.join(auditDir, 'pr', 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-blocked-handoff',
+    status: 'merged',
+    merged_at: '2026-06-22T00:11:00.000Z'
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-blocked-handoff');
+  assert.equal(story.handoff_replay_status, 'blocked');
+  assert.equal(report.value_signals.canonical_handoff_replay_blocked_count, 1);
+  assert.equal(
+    report.value_signals.traceability_gaps.some((gap) => gap.kind === 'canonical_handoff_replay_blocked'),
+    true
+  );
+  assert.match(renderUsageReport(report), /canonical_handoff_replay_blocked/);
+});
+
 test('manifest merge record resolves traceability when pr artifacts are absent', async () => {
   const root = await setupReportRepo([
     { story_id: 'story-manifest-merge' }
