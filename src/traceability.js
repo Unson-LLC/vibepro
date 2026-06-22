@@ -122,8 +122,8 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
   const matchedFiles = changedFiles.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
   const matchedTests = tests.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
   const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
-    clauseMatchesPathOrText({ id, text, value: item.ref })
-    || evidenceTargetsClause({ id, text, item })
+    evidenceTargetsClause({ id, text, item })
+    || evidenceRefMatchesClauseId({ id, item })
   ));
   const matchedReviewFindings = evidence.filter((item) => item.type === 'review_finding' && (
     clauseMatchesPathOrText({ id, text, value: item.ref })
@@ -183,7 +183,31 @@ function isStrongClauseEvidence(item) {
 
 function evidenceTargetsClause({ id, text, item }) {
   const targets = Array.isArray(item?.targets) ? item.targets : [];
-  return targets.some((target) => clauseMatchesPathOrText({ id, text, value: target }));
+  return targets.some((target) => {
+    if (targetMatchesClauseId({ id, value: target })) return true;
+    if (!isClauseBindingTarget(target)) return false;
+    return clauseMatchesPathOrText({ id, text, value: target });
+  });
+}
+
+function evidenceRefMatchesClauseId({ id, item }) {
+  return targetMatchesClauseId({ id, value: item?.ref });
+}
+
+function targetMatchesClauseId({ id, value }) {
+  const normalizedId = String(id ?? '').toLowerCase();
+  if (!normalizedId) return false;
+  return String(value ?? '').toLowerCase().includes(normalizedId);
+}
+
+function isClauseBindingTarget(value) {
+  const target = String(value ?? '').trim();
+  if (!target) return false;
+  if (/^(node|npm|npx|pnpm|yarn|bun)\s+/.test(target)) return false;
+  if (target.includes(' --')) return false;
+  if (/\.vibepro\/manual-verification\//.test(target)) return false;
+  if (/\.(tap|log|json)$/i.test(target) && /\.vibepro\//.test(target)) return false;
+  return true;
 }
 
 function extractAcceptanceCriteria(storyText) {

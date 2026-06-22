@@ -2131,9 +2131,7 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
       artifact_quality: command.artifact_check?.status ?? null,
       targets: [
         ...(command.observation?.targets ?? []),
-        ...(command.observation?.scenarios ?? []),
-        command.command,
-        command.artifact
+        ...(command.observation?.scenarios ?? [])
       ].filter(Boolean)
     });
   }

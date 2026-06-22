@@ -129,6 +129,35 @@ test('clause map keeps unmapped AC and scenario clauses visible', () => {
   assert.equal(map.scenario_clauses[0].status, 'unmapped');
 });
 
+test('broad verification command and artifact paths do not map every AC', () => {
+  const storyText = [
+    '# Story',
+    '',
+    '## Acceptance Criteria',
+    '- PR body, Gate DAG, and usage report show unmapped counts.',
+    '- Generic broad suite must not satisfy this clause.'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({
+    storyText,
+    changedFiles: [],
+    tests: [],
+    evidence: [{
+      type: 'verification_evidence',
+      ref: '.vibepro/manual-verification/story/focused.tap',
+      summary: 'node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js',
+      strength: 'supporting',
+      binding_status: 'current',
+      artifact_quality: 'unrecognized',
+      targets: [
+        'node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js',
+        '.vibepro/manual-verification/story/focused.tap'
+      ]
+    }]
+  });
+  assert.equal(map.acceptance_criteria[0].status, 'unmapped');
+  assert.equal(map.acceptance_criteria[1].status, 'unmapped');
+});
+
 async function makeFakeGhMerge(state) {
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-promo-gh-bin-'));
   const ghPath = path.join(binDir, 'gh');
