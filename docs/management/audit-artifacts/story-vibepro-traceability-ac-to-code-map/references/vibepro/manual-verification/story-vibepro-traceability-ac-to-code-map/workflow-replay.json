@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "observed": {
+    "flow_replay": "true",
+    "artifact_replay": "true",
+    "scenario_clause_e2e": "true",
+    "usage_examples": "true",
+    "current_bound_metadata": "true",
+    "broad_evidence_not_mapped": "true"
+  }
+}

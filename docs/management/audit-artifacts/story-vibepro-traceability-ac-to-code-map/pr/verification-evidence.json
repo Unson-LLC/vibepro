@@ -1,0 +1,165 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "updated_at": "2026-06-22T02:03:56.553Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js",
+      "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping",
+      "artifact": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/traceability.js",
+          "src/pr-manager.js",
+          "src/usage-report.js",
+          "test/traceability-promotion.test.js",
+          "test/traceability-usage-report.test.js"
+        ],
+        "scenarios": [
+          "flow_replay: pr prepare maps Story acceptance criteria into traceability.json",
+          "artifact_replay: artifact-only evidence remains weakly_mapped, not mapped",
+          "scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced",
+          "broad_evidence_not_mapped: command/artifact paths do not map AC clauses"
+        ],
+        "values": {
+          "status": "pass",
+          "flow_replay": "true",
+          "artifact_replay": "true",
+          "scenario_clause_e2e": "true",
+          "usage_examples": "true",
+          "current_bound_metadata": "true",
+          "broad_evidence_not_mapped": "true",
+          "exit_code": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T02:03:56.553Z",
+      "git_context": {
+        "head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+        "current_branch": "feat/vibepro-traceability-ac-to-code-map",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T02:03:56.552Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js",
+      "summary": "pass",
+      "artifact": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "AC-1 acceptance_criteria stable id source text mapped files mapped tests mapped evidence mapped review findings",
+          "AC-3 status unmapped weakly_mapped no changed file test verification evidence",
+          "AC-4 mapped evidence current-bound artifact quality evidence strength target match current_head_sha",
+          "AC-5 PR body Gate DAG usage report unmapped weakly_mapped counts examples",
+          "AC-6 generic test pass broad suite not mapped",
+          "AC-7 artifact-only AC-to-test no-code scenario clause fixtures",
+          "S-001 artifact presence not mapped",
+          "S-002 verification evidence target maps AC",
+          "S-003 scenario appears missing weakly covered"
+        ],
+        "scenarios": [],
+        "values": {
+          "exit_code": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T02:03:55.528Z",
+      "git_context": {
+        "head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+        "current_branch": "feat/vibepro-traceability-ac-to-code-map",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T02:03:55.526Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "pass",
+      "artifact": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "traceability explicit clause evidence targets",
+          "usage report clause examples"
+        ],
+        "scenarios": [],
+        "values": {
+          "exit_code": "0"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T02:03:54.549Z",
+      "git_context": {
+        "head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+        "current_branch": "feat/vibepro-traceability-ac-to-code-map",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T02:03:54.547Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    }
+  ]
+}

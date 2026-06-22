@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "created_at": "2026-06-22T02:07:51.000Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html",
+    "split_plan": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.html",
+    "decision_records": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-traceability-ac-to-code-map.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-traceability-ac-to-code-map.md)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "waiver": 1,
+        "needs_review": 1
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1782094051306-0e8f847d",
+        "story_id": "story-vibepro-traceability-ac-to-code-map",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "accepted_followup",
+        "summary": "Split not required after scope review",
+        "reason": "Splitting would obscure the review story because later commits directly close gate_evidence findings against the same Story and tests. Keep as one PR with explicit review history artifacts and current pass review.",
+        "reviewer": null,
+        "artifact": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-result-gate_evidence.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "current_branch": "feat/vibepro-traceability-ac-to-code-map",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-06-22T02:07:31.305Z"
+        },
+        "recorded_at": "2026-06-22T02:07:31.306Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-22T02:07:49.994Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.npm-cache/_npx/05fcd527b829843b/node_modules/.bin/vibepro",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+      "branch": "feat/vibepro-traceability-ac-to-code-map",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b1634ae1a3015bd98e17934b6b98566d20f0d832",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

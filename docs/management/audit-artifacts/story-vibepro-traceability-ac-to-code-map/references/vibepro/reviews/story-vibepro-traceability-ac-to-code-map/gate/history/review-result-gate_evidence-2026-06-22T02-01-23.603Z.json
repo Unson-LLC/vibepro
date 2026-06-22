@@ -1,0 +1,63 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Broad verification evidence can still map ACs",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Subagent reviewed HEAD 72ca2bc and found command/artifact path lexical matches can still mark clauses mapped.",
+    "evidence": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "usage examples/current metadata/fixtures fixed -> needs_changes because broad verification path matching can still map ACs"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-22T02:01:23.603Z",
+  "git_context": {
+    "head_sha": "72ca2bca6ca0261f3cd2557951ebff4f3a98ecaf",
+    "current_branch": "feat/vibepro-traceability-ac-to-code-map",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-22T02:01:23.602Z"
+  },
+  "source_fingerprint": "633f8387d317f4f94db8cc026c9abecc798c40cb9a9fe316f694fea836dddec9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019eed0c-eb46-71f2-a1fd-2a28c02046aa",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

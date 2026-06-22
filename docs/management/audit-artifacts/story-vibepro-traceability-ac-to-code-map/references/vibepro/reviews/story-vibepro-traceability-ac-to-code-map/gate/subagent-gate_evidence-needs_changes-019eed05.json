@@ -1,0 +1,43 @@
+{
+  "status": "needs_changes",
+  "summary": "Artifact-only mapping is fixed, but usage-report examples, current-bound evidence metadata, and required regression fixtures are still incomplete.",
+  "inspection_summary": "Inspected HEAD 65738829b6876c9583de19b50c7ea1d1a9b87def, requested source/artifacts/tests, and ran the focused traceability tests successfully.",
+  "inspection_evidence": "node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js passed: 16/16",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-request-gate_evidence.md",
+    "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md",
+    "docs/specs/vibepro-traceability-ac-to-code-map.md",
+    "src/traceability.js",
+    "src/pr-manager.js",
+    "src/usage-report.js",
+    "test/traceability-promotion.test.js",
+    "test/traceability-usage-report.test.js",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/traceability.json",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.json",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "artifact/pr-body/gate-dag presence alone concern -> fixed in source and focused test because pr_artifact is excluded from strong clause evidence and the no-verification pr prepare test stays weakly_mapped, not mapped",
+    "output surfaces concern -> partially fixed because PR body and Gate DAG include weakly_mapped/unmapped counts and examples, but usage report only renders compact counts and omits examples/details",
+    "mapped evidence schema concern -> partially fixed because mapped_evidence includes artifact_quality, strength, and target_match, but generated mapped evidence does not expose current-bound binding despite current git_context being available in verification-evidence.json",
+    "regression fixture concern -> not fully fixed because tests cover artifact-present weak mapping and AC-bound evidence, but do not assert an unmapped AC or construct/assert scenario clause missing/weak coverage"
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "usage-report-clause-examples-missing",
+      "detail": "usage report omits coverage_summary.examples"
+    },
+    {
+      "severity": "medium",
+      "id": "mapped-evidence-current-bound-missing",
+      "detail": "mapped_evidence does not expose current-bound/head metadata"
+    },
+    {
+      "severity": "medium",
+      "id": "regression-fixtures-incomplete",
+      "detail": "unmapped AC and scenario clause fixtures are incomplete"
+    }
+  ]
+}

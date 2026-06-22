@@ -1,0 +1,341 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-22T02:10:33.883Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "audit_core_only",
+    "persisted_for_main_audit": true,
+    "excludes": [
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/212",
+    "merge_commit_sha": "741831fd4fecfc1d000976576f7f73d420fb0784",
+    "merged_at": "2026-06-22T02:10:30Z",
+    "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 28,
+    "copied_reference_count": 21,
+    "unresolved_reference_count": 1
+  },
+  "artifacts": [
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-prepare.json"
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-create.json"
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/gate-dag.json"
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-merge.json"
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/traceability.json"
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/verification-evidence.json"
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/lifecycle.json"
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/review-request-gate_evidence.md"
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/review-result-gate_evidence.json"
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/review-summary.json"
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T01-58-14.888Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T01-58-14.888Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-01-23.603Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-01-23.603Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-07-18.354Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-07-18.354Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed05.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed05.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-pass-019eed12.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-pass-019eed12.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/pr/story-vibepro-traceability-ac-to-code-map/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T01-58-14.888Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T01-58-14.888Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-01-23.603Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-01-23.603Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-07-18.354Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/history/review-result-gate_evidence-2026-06-22T02-07-18.354Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed05.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed05.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-needs_changes-019eed0c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-pass-019eed12.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-traceability-ac-to-code-map/references/vibepro/reviews/story-vibepro-traceability-ac-to-code-map/gate/subagent-gate_evidence-pass-019eed12.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 3369320
+    }
+  ]
+}

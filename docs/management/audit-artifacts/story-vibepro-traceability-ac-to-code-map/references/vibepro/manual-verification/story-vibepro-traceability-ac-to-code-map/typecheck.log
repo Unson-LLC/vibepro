@@ -1,0 +1,4 @@
+
+> vibepro@0.1.0-beta.0 typecheck
+> node --check bin/vibepro.js && node --check src/*.js
+

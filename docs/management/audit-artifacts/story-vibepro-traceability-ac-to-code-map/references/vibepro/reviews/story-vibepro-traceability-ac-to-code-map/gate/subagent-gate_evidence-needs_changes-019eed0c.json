@@ -1,0 +1,32 @@
+{
+  "status": "needs_changes",
+  "summary": "Follow-up fixes are mostly present, but broad verification evidence can still map ACs through loose target/ref word matching.",
+  "inspection_summary": "HEAD 72ca2bca6ca0261f3cd2557951ebff4f3a98ecaf fixed usage examples, current-bound mapped evidence metadata, and unmapped/scenario fixtures. Remaining issue: command/artifact path lexical matches still map some ACs without explicit AC/scenario binding.",
+  "inspection_evidence": "node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js passed: 17/17; focused reproduction showed broad verification path/command could map several ACs.",
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md",
+    "docs/specs/vibepro-traceability-ac-to-code-map.md",
+    "src/traceability.js",
+    "src/pr-manager.js",
+    "src/usage-report.js",
+    "test/traceability-promotion.test.js",
+    "test/traceability-usage-report.test.js",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/traceability.json",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.json",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+    ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/verification-evidence.json"
+  ],
+  "judgment_delta": [
+    "usage report examples -> fixed",
+    "current-bound mapped_evidence metadata -> fixed",
+    "unmapped AC and scenario clause fixtures -> fixed",
+    "generic broad evidence -> still open because command/artifact paths can map clauses"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "generic-broad-evidence-can-still-map-clauses",
+      "detail": "Evidence matching accepts lexical matches against item.ref and targets that include command/artifact paths; explicit AC/scenario binding should be required for mapped status."
+    }
+  ]
+}

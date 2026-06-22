@@ -1,0 +1,394 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "verification_evidence",
+      "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+      "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+      "strength": "supporting",
+      "binding_status": null,
+      "artifact_quality": "unrecognized",
+      "targets": [
+        "AC-1 acceptance_criteria stable id source text mapped files mapped tests mapped evidence mapped review findings",
+        "AC-3 status unmapped weakly_mapped no changed file test verification evidence",
+        "AC-4 mapped evidence current-bound artifact quality evidence strength target match",
+        "AC-5 PR body Gate DAG usage report unmapped weakly_mapped counts examples",
+        "AC-6 generic test pass broad suite not mapped",
+        "AC-7 artifact-only AC-to-test no-code scenario clause fixtures",
+        "S-001 artifact presence not mapped",
+        "S-002 verification evidence target maps AC",
+        "S-003 scenario appears missing weakly covered",
+        "node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js",
+        ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+      "summary": "pass | npm run typecheck | exit_code=0",
+      "strength": "supporting",
+      "binding_status": null,
+      "artifact_quality": "unrecognized",
+      "targets": [
+        "traceability.json acceptance_criteria",
+        "mapped evidence current-bound artifact quality evidence strength target match",
+        "npm run typecheck",
+        ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+      "summary": "traceability AC-to-code workflow verifies flow replay, artifact replay, and scenario clause e2e coverage | node --test test/traceability-promotion.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: traceability.json contains acceptance_criteria status and mapped evidence | scenario clause e2e for Story acceptance: mapped criterion is asserted in focused regression test | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true",
+      "strength": "supporting",
+      "binding_status": null,
+      "artifact_quality": "verified",
+      "targets": [
+        "src/traceability.js",
+        "src/pr-manager.js",
+        "test/traceability-promotion.test.js",
+        "flow_replay: pr prepare maps Story acceptance criteria into traceability.json",
+        "artifact_replay: traceability.json contains acceptance_criteria status and mapped evidence",
+        "scenario clause e2e for Story acceptance: mapped criterion is asserted in focused regression test",
+        "node --test test/traceability-promotion.test.js",
+        ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json"
+      ]
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/212 at 2026-06-22T02:10:30Z (commit 741831fd4fecfc1d000976576f7f73d420fb0784)"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "type": "acceptance_criterion",
+      "source_text": "`traceability.json` は `acceptance_criteria[]` を持ち、",
+      "source_line": 40,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/architecture/vibepro-traceability-ac-to-code-map.md",
+        "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md",
+        "docs/specs/vibepro-traceability-ac-to-code-map.md",
+        "src/traceability.js",
+        "test/traceability-promotion.test.js",
+        "test/traceability-usage-report.test.js"
+      ],
+      "mapped_tests": [
+        "test/traceability-promotion.test.js",
+        "test/traceability-usage-report.test.js"
+      ],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+          "summary": "pass | npm run typecheck | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-2",
+      "type": "acceptance_criterion",
+      "source_text": "`scenario_clauses[]` が存在する場合、各scenario clauseも同じ対応表に含める。",
+      "source_line": 43,
+      "status": "mapped",
+      "mapped_files": [],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+          "summary": "pass | npm run typecheck | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-3",
+      "type": "acceptance_criterion",
+      "source_text": "ACやscenario clauseに対応する changed file / test / verification evidence が無い場合、",
+      "source_line": 44,
+      "status": "mapped",
+      "mapped_files": [],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+          "summary": "pass | npm run typecheck | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-4",
+      "type": "acceptance_criterion",
+      "source_text": "`mapped evidence` は単なるcommand文字列ではなく、current-boundか、artifact quality、",
+      "source_line": 46,
+      "status": "mapped",
+      "mapped_files": [],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+          "summary": "pass | npm run typecheck | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-5",
+      "type": "acceptance_criterion",
+      "source_text": "PR body / Gate DAG / usage report は、unmapped ACの件数と代表例を表示する。",
+      "source_line": 48,
+      "status": "mapped",
+      "mapped_files": [
+        "src/usage-report.js",
+        "test/traceability-usage-report.test.js"
+      ],
+      "mapped_tests": [
+        "test/traceability-usage-report.test.js"
+      ],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/typecheck.log",
+          "summary": "pass | npm run typecheck | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-6",
+      "type": "acceptance_criterion",
+      "source_text": "generic test passやbroad suiteだけで全ACを満たした扱いにしない。",
+      "source_line": 49,
+      "status": "mapped",
+      "mapped_files": [],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-7",
+      "type": "acceptance_criterion",
+      "source_text": "回帰テストは、artifact一覧だけ存在するStory、AC-to-test対応があるStory、",
+      "source_line": 50,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/workflow-replay.json",
+          "summary": "traceability AC-to-code workflow verifies explicit clause binding and rejects broad evidence mapping | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | flow_replay: pr prepare maps Story acceptance criteria into traceability.json | artifact_replay: artifact-only evidence remains weakly_mapped, not mapped | scenario_clause_e2e: scenario clause weak/unmapped coverage is surfaced | broad_evidence_not_mapped: command/artifact paths do not map AC clauses | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | usage_examples=true | current_bound_metadata=true | broad_evidence_not_mapped=true | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-traceability-ac-to-code-map/focused.tap",
+          "summary": "pass | node --test test/traceability-promotion.test.js test/traceability-usage-report.test.js | exit_code=0",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    }
+  ],
+  "scenario_clauses": [],
+  "coverage_summary": {
+    "clause_count": 7,
+    "acceptance_criteria_count": 7,
+    "scenario_clause_count": 0,
+    "mapped_count": 7,
+    "weakly_mapped_count": 0,
+    "unmapped_count": 0,
+    "examples": []
+  },
+  "created_at": "2026-06-22T01:35:47.798Z",
+  "updated_at": "2026-06-22T02:10:33.882Z"
+}

@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: pr prepare sets story_doc_path and connects artifact evidence
+ok 1 - pr prepare sets story_doc_path and connects artifact evidence
+  ---
+  duration_ms: 2565.628458
+  type: 'test'
+  ...
+# Subtest: pr prepare links verification evidence when present and stays idempotent on rerun
+ok 2 - pr prepare links verification evidence when present and stays idempotent on rerun
+  ---
+  duration_ms: 3862.060125
+  type: 'test'
+  ...
+# Subtest: clause map keeps unmapped AC and scenario clauses visible
+ok 3 - clause map keeps unmapped AC and scenario clauses visible
+  ---
+  duration_ms: 0.431125
+  type: 'test'
+  ...
+# Subtest: broad verification command and artifact paths do not map every AC
+ok 4 - broad verification command and artifact paths do not map every AC
+  ---
+  duration_ms: 0.122667
+  type: 'test'
+  ...
+# Subtest: execute merge promotes traceability lifecycle to merged with merge evidence
+ok 5 - execute merge promotes traceability lifecycle to merged with merge evidence
+  ---
+  duration_ms: 4885.106416
+  type: 'test'
+  ...
+# Subtest: execute merge dry-run does not touch traceability
+ok 6 - execute merge dry-run does not touch traceability
+  ---
+  duration_ms: 2439.5285
+  type: 'test'
+  ...
+# Subtest: trace declare rejects merged lifecycle
+ok 7 - trace declare rejects merged lifecycle
+  ---
+  duration_ms: 713.521708
+  type: 'test'
+  ...
+# Subtest: skeleton alone does not clear the gap
+ok 8 - skeleton alone does not clear the gap
+  ---
+  duration_ms: 66.95
+  type: 'test'
+  ...
+# Subtest: story without any artifact keeps the gap (existing behavior)
+ok 9 - story without any artifact keeps the gap (existing behavior)
+  ---
+  duration_ms: 53.993667
+  type: 'test'
+  ...
+# Subtest: declared and merged_outside states surface as separate signals
+ok 10 - declared and merged_outside states surface as separate signals
+  ---
+  duration_ms: 68.761542
+  type: 'test'
+  ...
+# Subtest: prepared story is unaffected by traceability accounting
+ok 11 - prepared story is unaffected by traceability accounting
+  ---
+  duration_ms: 11.341209
+  type: 'test'
+  ...
+# Subtest: traceability clause coverage gaps surface in usage report
+ok 12 - traceability clause coverage gaps surface in usage report
+  ---
+  duration_ms: 13.98375
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+ok 13 - CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+  ---
+  duration_ms: 8.214583
+  type: 'test'
+  ...
+# Subtest: blocked canonical handoff replay is surfaced as a fake-value signal
+ok 14 - blocked canonical handoff replay is surfaced as a fake-value signal
+  ---
+  duration_ms: 5.350792
+  type: 'test'
+  ...
+# Subtest: manifest merge record resolves traceability when pr artifacts are absent
+ok 15 - manifest merge record resolves traceability when pr artifacts are absent
+  ---
+  duration_ms: 4.0045
+  type: 'test'
+  ...
+# Subtest: local pr-merge wins over manifest merge record without double counting
+ok 16 - local pr-merge wins over manifest merge record without double counting
+  ---
+  duration_ms: 15.867917
+  type: 'test'
+  ...
+# Subtest: manifest dry-run merge record does not resolve traceability
+ok 17 - manifest dry-run merge record does not resolve traceability
+  ---
+  duration_ms: 54.883125
+  type: 'test'
+  ...
+# Subtest: malformed manifest does not resolve traceability or crash usage report
+ok 18 - malformed manifest does not resolve traceability or crash usage report
+  ---
+  duration_ms: 43.399875
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14584.894375

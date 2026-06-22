@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-traceability-ac-to-code-map",
+  "created_at": "2026-06-22T02:07:51.000Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-traceability-ac-to-code-map.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-traceability-ac-to-code-map.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-traceability-ac-to-code-map/gate-dag.html"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-traceability-ac-to-code-map.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-traceability-ac-to-code-map.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-22T02:07:49.994Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.npm-cache/_npx/05fcd527b829843b/node_modules/.bin/vibepro",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "f5913f6fbebabd17c45d2dce7a85db1a159f0ac3",
+      "branch": "feat/vibepro-traceability-ac-to-code-map",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b1634ae1a3015bd98e17934b6b98566d20f0d832",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
