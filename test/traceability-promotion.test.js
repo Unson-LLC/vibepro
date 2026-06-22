@@ -60,6 +60,9 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   assert.ok(refs.some((ref) => ref.endsWith('pr-body.md')), 'pr-body.md must be linked');
   assert.ok(refs.some((ref) => ref.endsWith('gate-dag.json')), 'gate-dag.json must be linked');
   assert.ok(!refs.some((ref) => ref.endsWith('verification-evidence.json')), 'absent verification evidence must not be linked');
+  assert.equal(traceability.acceptance_criteria.length, 1);
+  assert.equal(traceability.acceptance_criteria[0].id, 'AC-1');
+  assert.equal(traceability.acceptance_criteria[0].status, 'mapped');
 });
 
 test('pr prepare links verification evidence when present and stays idempotent on rerun', async () => {

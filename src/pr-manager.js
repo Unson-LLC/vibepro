@@ -21,7 +21,7 @@ import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
-import { buildTraceability } from './traceability.js';
+import { buildTraceability, buildTraceabilityClauseMap } from './traceability.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -377,12 +377,28 @@ export async function preparePullRequest(repoRoot, options = {}) {
         summary: 'recorded verification evidence'
       });
     }
+    const storyText = prContext.story_source?.path
+      ? await readFile(path.join(root, prContext.story_source.path), 'utf8').catch(() => '')
+      : '';
+    const changedFilesForTraceability = (preparation.git?.changed_files ?? [])
+      .map((file) => ({ path: file.path ?? file }));
+    const testsForTraceability = changedFilesForTraceability
+      .filter((file) => /(^|\/)(test|tests|e2e)\//.test(file.path) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file.path));
+    const traceabilityMap = buildTraceabilityClauseMap({
+      storyText,
+      changedFiles: changedFilesForTraceability,
+      tests: testsForTraceability,
+      evidence: traceabilityEvidence,
+      scenarioClauses: prContext.gate_dag?.summary?.scenario_clauses ?? []
+    });
     await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
       storyId: story.story_id,
       storyDocPath: prContext.story_source?.path ?? null,
       source: 'pr_prepare',
       lifecycle: 'in_progress',
-      evidence: traceabilityEvidence
+      evidence: traceabilityEvidence,
+      acceptanceCriteria: traceabilityMap.acceptance_criteria,
+      scenarioClauses: traceabilityMap.scenario_clauses
     }), null, 2)}\n`, { signal });
     const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
     const existingHumanReview = await readJsonIfExists(humanReviewPath);
