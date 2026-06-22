@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "previous review-request omission finding is resolved",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Re-inspected src/canonical-audit.js and test/canonical-audit-self-contained.test.js at 92924cb; review-request-*.md is promoted as review_request without JSON references and focused tests pass.",
+    "evidence": ".vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/subagent-gate_evidence-result.json",
+    "inputs": [
+      "src/canonical-audit.js",
+      "test/canonical-audit-self-contained.test.js",
+      ".vibepro/manual-verification/story-vibepro-canonical-audit-bundle-self-contained/workflow-replay.json"
+    ]
+  },
+  "judgment_delta": [
+    "review-request-*.md could be silently omitted from a ready bundle -> resolved by REVIEW_HANDOFF_FILES, copyFileArtifact review_request artifacts, and regression test coverage"
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-06-22T01:23:26.579Z",
+  "git_context": {
+    "head_sha": "92924cb283ca5c7114aee8eae259c0a426a4eafd",
+    "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-22T01:23:26.578Z"
+  },
+  "source_fingerprint": "5e6eb70eeb2c20f36a73869f11cafd2f1e5e52eb6850aafd74b50f2250b5faee",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019eece8-596b-7b62-acf5-4654a5e5d80f",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/subagent-gate_evidence-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/subagent-gate_evidence-result.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

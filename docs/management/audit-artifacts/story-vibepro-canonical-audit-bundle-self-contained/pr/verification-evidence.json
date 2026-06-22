@@ -1,0 +1,208 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "updated_at": "2026-06-22T01:27:15.129Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "git diff --name-only main...HEAD",
+      "summary": "scope_reviewed split_plan decision_record: single-commit canonical audit bundle Story is reviewable as one PR",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/canonical-audit.js",
+          "src/usage-report.js",
+          "test/canonical-audit-self-contained.test.js",
+          "test/traceability-usage-report.test.js",
+          "docs/management/stories/active/story-vibepro-canonical-audit-bundle-self-contained.md",
+          "docs/specs/vibepro-canonical-audit-bundle-self-contained.md",
+          "docs/architecture/vibepro-canonical-audit-bundle-self-contained.md"
+        ],
+        "scenarios": [],
+        "values": {
+          "scope_reviewed": "true",
+          "split_plan": "single_story",
+          "decision_record": "accepted",
+          "reviewable_pr": "true"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T01:27:15.129Z",
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T01:27:15.128Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "syntax/typecheck passed",
+      "artifact": null,
+      "artifact_check": {
+        "status": "missing",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "no machine-readable artifact was provided for a passing claim"
+      },
+      "observation": {
+        "targets": [
+          "src/canonical-audit.js",
+          "src/usage-report.js"
+        ],
+        "scenarios": [],
+        "values": {
+          "status": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T01:26:34.465Z",
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T01:26:34.464Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node --test test/canonical-audit-self-contained.test.js test/traceability-usage-report.test.js",
+      "summary": "canonical audit bundle handoff replay verifies flow replay, artifact replay, and scenario clause e2e coverage",
+      "artifact": ".vibepro/manual-verification/story-vibepro-canonical-audit-bundle-self-contained/workflow-replay.json",
+      "artifact_check": {
+        "status": "verified",
+        "format": "generic_status",
+        "artifact_outcome": "pass",
+        "reason": "generic_status artifact outcome matches the claimed status (status=pass)"
+      },
+      "observation": {
+        "targets": [
+          "src/canonical-audit.js",
+          "src/usage-report.js",
+          "test/canonical-audit-self-contained.test.js",
+          "test/traceability-usage-report.test.js"
+        ],
+        "scenarios": [
+          "flow_replay: canonical bundle promotion scans and enumerates review and verification handoff artifacts",
+          "artifact_replay: audit-bundle.json records copied references, direct review_request artifacts, and unresolved references",
+          "scenario clause e2e for Story acceptance: missing .vibepro reference blocks handoff replay and surfaces a fake-value signal"
+        ],
+        "values": {
+          "status": "pass",
+          "flow_replay": "true",
+          "artifact_replay": "true",
+          "scenario_clause_e2e": "true",
+          "review_request_promotion": "true"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T01:26:33.437Z",
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T01:26:33.436Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "node --test test/canonical-audit-self-contained.test.js test/traceability-usage-report.test.js",
+      "summary": "focused canonical audit bundle tests passed",
+      "artifact": ".vibepro/manual-verification/story-vibepro-canonical-audit-bundle-self-contained/focused.tap",
+      "artifact_check": {
+        "status": "unrecognized",
+        "format": null,
+        "artifact_outcome": null,
+        "reason": "artifact is not a recognized machine-readable test output (vitest/jest, Playwright, or generic status JSON); recorded without cross-check"
+      },
+      "observation": {
+        "targets": [
+          "src/canonical-audit.js",
+          "src/usage-report.js",
+          "test/canonical-audit-self-contained.test.js",
+          "test/traceability-usage-report.test.js"
+        ],
+        "scenarios": [],
+        "values": {
+          "status": "pass"
+        }
+      },
+      "observation_check": {
+        "status": "recorded",
+        "reason": "observation states the inspected targets and what was observed"
+      },
+      "executed_at": "2026-06-22T01:26:32.275Z",
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-06-22T01:26:32.274Z"
+      },
+      "managed_worktree_context": null,
+      "warnings": []
+    }
+  ]
+}

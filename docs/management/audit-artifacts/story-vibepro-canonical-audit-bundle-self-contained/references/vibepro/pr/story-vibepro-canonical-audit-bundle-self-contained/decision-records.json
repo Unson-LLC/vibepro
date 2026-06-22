@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "updated_at": "2026-06-22T01:27:53.925Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782091673925-54b057e4",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed accepted followup: final clean branch is reviewable as one PR.",
+      "reason": "accepted followup with boundary: this is a single-commit vertical slice for canonical audit bundle handoff replay. Follow-up scope risk is non-blocking because split-plan/pr-prepare artifacts show one Story, one cohesive file set, and gate_evidence review is current.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-22T01:27:53.924Z"
+      },
+      "recorded_at": "2026-06-22T01:27:53.925Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782091524550-23ec0811",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed: this PR is reviewable as one canonical audit bundle Story.",
+      "reason": "decision_record: Changed files are one cohesive vertical slice: Story/spec/architecture docs, canonical audit promotion, usage-report value signal, and focused regression tests. The second commit is a gate_evidence finding fix in the same path, not a separate feature.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "92924cb283ca5c7114aee8eae259c0a426a4eafd",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-22T01:25:24.550Z"
+      },
+      "recorded_at": "2026-06-22T01:25:24.550Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782091492591-509b0672",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Split resolution accepted: keep canonical audit bundle implementation and review-finding fix in one PR.",
+      "reason": "The second commit only resolves the required gate_evidence finding inside the same canonical audit bundle Story. File set remains cohesive: canonical-audit promotion, usage-report signal, Story/spec/architecture docs, and focused tests.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "92924cb283ca5c7114aee8eae259c0a426a4eafd",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-22T01:24:52.591Z"
+      },
+      "recorded_at": "2026-06-22T01:24:52.591Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782091474796-73d766d9",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Two commits are intentionally one Story scope: initial canonical audit bundle implementation plus gate_evidence review finding fix for unreferenced review-request promotion.",
+      "reason": "Both commits touch the same Story contract and the second commit resolves a required VibePro agent review finding. Splitting would separate implementation from the evidence-gate fix and reduce reviewability.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "92924cb283ca5c7114aee8eae259c0a426a4eafd",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-22T01:24:34.795Z"
+      },
+      "recorded_at": "2026-06-22T01:24:34.796Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782091673925-54b057e4",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed accepted followup: final clean branch is reviewable as one PR.",
+      "reason": "accepted followup with boundary: this is a single-commit vertical slice for canonical audit bundle handoff replay. Follow-up scope risk is non-blocking because split-plan/pr-prepare artifacts show one Story, one cohesive file set, and gate_evidence review is current.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+        "current_branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-22T01:27:53.924Z"
+      },
+      "recorded_at": "2026-06-22T01:27:53.925Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/decision-records.json"
+}

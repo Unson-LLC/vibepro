@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "command": "node --test test/canonical-audit-self-contained.test.js test/traceability-usage-report.test.js",
+  "coverage": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e"
+  ],
+  "finding_resolution": [
+    "review-request artifacts are promoted directly as review_request canonical artifacts"
+  ],
+  "targets": [
+    "src/canonical-audit.js",
+    "src/usage-report.js",
+    "test/canonical-audit-self-contained.test.js",
+    "test/traceability-usage-report.test.js"
+  ],
+  "checked_at": "2026-06-22T01:26:31.555Z"
+}

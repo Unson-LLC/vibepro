@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "stage": "gate",
+  "updated_at": "2026-06-22T01:26:48.464Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "lifecycle_id": "8b25ce25-12c4-4e69-a9b5-d8831c26cf6d",
+      "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+      "stage": "gate",
+      "role": "gate_evidence",
+      "status": "closed",
+      "agent_system": "codex",
+      "agent_id": "019eece8-596b-7b62-acf5-4654a5e5d80f",
+      "agent_model": null,
+      "agent_reasoning_effort": null,
+      "agent_cost_tier": null,
+      "intended_model_policy": null,
+      "model_policy_preflight": null,
+      "thread_id": null,
+      "session_id": null,
+      "tool_call_id": null,
+      "started_at": "2026-06-22T01:18:43.756Z",
+      "timeout_ms": 600000,
+      "replacement_for": null,
+      "close_reason": "completed",
+      "close_evidence": ".vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/subagent-gate_evidence-result.json",
+      "closed_at": "2026-06-22T01:23:15.423Z",
+      "result_artifact": null
+    }
+  ]
+}

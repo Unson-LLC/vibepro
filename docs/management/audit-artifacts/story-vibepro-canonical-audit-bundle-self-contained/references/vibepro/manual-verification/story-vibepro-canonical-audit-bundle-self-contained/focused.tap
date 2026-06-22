@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: canonical audit bundle copies handoff references and reports unresolved references
+ok 1 - canonical audit bundle copies handoff references and reports unresolved references
+  ---
+  duration_ms: 43.202666
+  type: 'test'
+  ...
+# Subtest: canonical audit bundle promotes review requests even when no JSON references them
+ok 2 - canonical audit bundle promotes review requests even when no JSON references them
+  ---
+  duration_ms: 17.554875
+  type: 'test'
+  ...
+# Subtest: skeleton alone does not clear the gap
+ok 3 - skeleton alone does not clear the gap
+  ---
+  duration_ms: 85.071333
+  type: 'test'
+  ...
+# Subtest: story without any artifact keeps the gap (existing behavior)
+ok 4 - story without any artifact keeps the gap (existing behavior)
+  ---
+  duration_ms: 53.976042
+  type: 'test'
+  ...
+# Subtest: declared and merged_outside states surface as separate signals
+ok 5 - declared and merged_outside states surface as separate signals
+  ---
+  duration_ms: 67.712708
+  type: 'test'
+  ...
+# Subtest: prepared story is unaffected by traceability accounting
+ok 6 - prepared story is unaffected by traceability accounting
+  ---
+  duration_ms: 10.966708
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+ok 7 - CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit merged story artifacts
+  ---
+  duration_ms: 15.44025
+  type: 'test'
+  ...
+# Subtest: blocked canonical handoff replay is surfaced as a fake-value signal
+ok 8 - blocked canonical handoff replay is surfaced as a fake-value signal
+  ---
+  duration_ms: 21.343792
+  type: 'test'
+  ...
+# Subtest: manifest merge record resolves traceability when pr artifacts are absent
+ok 9 - manifest merge record resolves traceability when pr artifacts are absent
+  ---
+  duration_ms: 11.293875
+  type: 'test'
+  ...
+# Subtest: local pr-merge wins over manifest merge record without double counting
+ok 10 - local pr-merge wins over manifest merge record without double counting
+  ---
+  duration_ms: 10.7865
+  type: 'test'
+  ...
+# Subtest: manifest dry-run merge record does not resolve traceability
+ok 11 - manifest dry-run merge record does not resolve traceability
+  ---
+  duration_ms: 59.977
+  type: 'test'
+  ...
+# Subtest: malformed manifest does not resolve traceability or crash usage report
+ok 12 - malformed manifest does not resolve traceability or crash usage report
+  ---
+  duration_ms: 52.806208
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 454.403625

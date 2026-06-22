@@ -1,0 +1,19 @@
+{
+  "status": "pass",
+  "summary": "previous review-request omission finding is resolved",
+  "inspection_summary": "Re-inspected only src/canonical-audit.js and test/canonical-audit-self-contained.test.js on feat/vibepro-canonical-audit-bundle-self-contained at 92924cb283ca5c7114aee8eae259c0a426a4eafd; review-request-*.md is now promoted as review_request even without JSON references, the focused test file passes, and the prior temp-replay gap now produces a canonical review request artifact.",
+  "inspection_evidence": "node --test test/canonical-audit-self-contained.test.js passed 2/2; focused temp replay printed review_request in bundle.artifacts and copied docs/management/audit-artifacts/<story>/reviews/gate/review-request-gate_evidence.md",
+  "inspection_inputs": [
+    "branch feat/vibepro-canonical-audit-bundle-self-contained",
+    "HEAD 92924cb283ca5c7114aee8eae259c0a426a4eafd",
+    "git diff main...HEAD -- src/canonical-audit.js test/canonical-audit-self-contained.test.js",
+    "src/canonical-audit.js",
+    "test/canonical-audit-self-contained.test.js",
+    "node --test test/canonical-audit-self-contained.test.js",
+    "node --input-type=module focused temp replay for unreferenced review-request promotion"
+  ],
+  "judgment_delta": [
+    "previous finding: review-request-*.md could be silently omitted from a ready bundle -> resolved because REVIEW_HANDOFF_FILES now matches review-request-*.md, copyFileArtifact records kind=review_request, and focused replay confirms the canonical review request exists without a JSON reference"
+  ],
+  "findings": []
+}

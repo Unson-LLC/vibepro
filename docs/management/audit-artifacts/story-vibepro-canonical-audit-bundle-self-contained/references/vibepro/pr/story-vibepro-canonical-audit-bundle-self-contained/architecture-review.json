@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-bundle-self-contained",
+  "created_at": "2026-06-22T01:28:08.648Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-canonical-audit-bundle-self-contained.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-canonical-audit-bundle-self-contained.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/gate-dag.html"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-canonical-audit-bundle-self-contained.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-canonical-audit-bundle-self-contained.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-22T01:28:06.268Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.npm-cache/_npx/05fcd527b829843b/node_modules/.bin/vibepro",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "6700b9ac8c75d88b7a92847924b212b7a92650cf",
+      "branch": "feat/vibepro-canonical-audit-bundle-self-contained-final",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ffcd694154abc83bf34ca2f567731acc96fc866b",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
