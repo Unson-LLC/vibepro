@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
@@ -14,6 +14,9 @@ const PR_AUDIT_FILES = [
   ['verification-evidence.json', 'verification_evidence']
 ];
 const REVIEW_AUDIT_FILES = [/^review-summary\.json$/, /^review-result-.+\.json$/, /^lifecycle\.json$/];
+const REVIEW_HANDOFF_FILES = [/^review-request-.+\.md$/];
+const VIBEPRO_REFERENCE_RE = /\.vibepro\/[A-Za-z0-9_./:@-]+/g;
+const MAX_REFERENCED_ARTIFACT_BYTES = 512 * 1024;
 
 export function getCanonicalAuditDir(repoRoot, storyId) {
   return path.join(path.resolve(repoRoot), CANONICAL_AUDIT_ROOT, storyId);
@@ -42,22 +45,40 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
   for (const stage of await safeReaddir(reviewRoot)) {
     const stageDir = path.join(reviewRoot, stage);
     for (const entry of await safeReaddir(stageDir)) {
-      if (!REVIEW_AUDIT_FILES.some((pattern) => pattern.test(entry))) continue;
-      const kind = entry === 'review-summary.json'
-        ? 'review_summary'
-        : entry === 'lifecycle.json'
-          ? 'review_lifecycle'
-          : 'review_result';
-      await copyJsonArtifact({
-        root,
-        sourcePath: path.join(stageDir, entry),
-        targetPath: path.join(canonicalDir, 'reviews', stage, entry),
-        kind,
-        artifacts,
-        missing_artifacts
-      });
+      if (REVIEW_AUDIT_FILES.some((pattern) => pattern.test(entry))) {
+        const kind = entry === 'review-summary.json'
+          ? 'review_summary'
+          : entry === 'lifecycle.json'
+            ? 'review_lifecycle'
+            : 'review_result';
+        await copyJsonArtifact({
+          root,
+          sourcePath: path.join(stageDir, entry),
+          targetPath: path.join(canonicalDir, 'reviews', stage, entry),
+          kind,
+          artifacts,
+          missing_artifacts
+        });
+        continue;
+      }
+      if (REVIEW_HANDOFF_FILES.some((pattern) => pattern.test(entry))) {
+        await copyFileArtifact({
+          root,
+          sourcePath: path.join(stageDir, entry),
+          targetPath: path.join(canonicalDir, 'reviews', stage, entry),
+          kind: 'review_request',
+          artifacts,
+          missing_artifacts
+        });
+      }
     }
   }
+
+  const referenceResolution = await promoteReferencedAuditArtifacts({
+    root,
+    canonicalDir,
+    artifacts
+  });
 
   const bundle = {
     schema_version: '0.1.0',
@@ -83,8 +104,18 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
       merged_at: merge.merged_at ?? null,
       current_head_sha: merge.current_head_sha ?? null
     } : null,
+    handoff_replay_status: referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked',
+    handoff_replay: {
+      status: referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked',
+      resolved_reference_count: referenceResolution.resolved_references.length,
+      copied_reference_count: referenceResolution.copied_references.length,
+      unresolved_reference_count: referenceResolution.unresolved_references.length
+    },
     artifacts,
-    missing_artifacts
+    missing_artifacts,
+    resolved_references: referenceResolution.resolved_references,
+    copied_references: referenceResolution.copied_references,
+    unresolved_references: referenceResolution.unresolved_references
   };
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
   await mkdir(path.dirname(bundlePath), { recursive: true });
@@ -94,6 +125,70 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     bundle_path: bundlePath,
     bundle
   };
+}
+
+async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts }) {
+  const sourceToCanonical = new Map();
+  for (const artifact of artifacts) {
+    if (artifact.source && artifact.canonical_path) {
+      sourceToCanonical.set(artifact.source, artifact.canonical_path);
+    }
+  }
+  const refs = new Set();
+  for (const artifact of artifacts) {
+    if (!artifact.canonical_path) continue;
+    const text = await readTextIfExists(path.join(root, artifact.canonical_path));
+    for (const ref of extractVibeProReferences(text)) refs.add(ref);
+  }
+
+  const resolved_references = [];
+  const copied_references = [];
+  const unresolved_references = [];
+  for (const ref of [...refs].sort()) {
+    const existingCanonical = sourceToCanonical.get(ref);
+    if (existingCanonical) {
+      resolved_references.push({
+        source: ref,
+        canonical_path: existingCanonical,
+        resolution: 'canonical_artifact'
+      });
+      continue;
+    }
+
+    const sourcePath = path.join(root, ref);
+    const sourceStat = await statIfExists(sourcePath);
+    if (!sourceStat || !sourceStat.isFile()) {
+      unresolved_references.push({
+        source: ref,
+        reason: 'source_missing'
+      });
+      continue;
+    }
+    if (sourceStat.size > MAX_REFERENCED_ARTIFACT_BYTES) {
+      unresolved_references.push({
+        source: ref,
+        reason: 'source_too_large',
+        size_bytes: sourceStat.size
+      });
+      continue;
+    }
+
+    const targetPath = path.join(canonicalDir, 'references', ref.replace(/^\.vibepro\//, 'vibepro/'));
+    await mkdir(path.dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, await readFile(sourcePath));
+    const canonicalPath = toWorkspaceRelative(root, targetPath);
+    copied_references.push({
+      source: ref,
+      canonical_path: canonicalPath,
+      resolution: 'copied_reference'
+    });
+    resolved_references.push({
+      source: ref,
+      canonical_path: canonicalPath,
+      resolution: 'copied_reference'
+    });
+  }
+  return { resolved_references, copied_references, unresolved_references };
 }
 
 export async function collectCanonicalAuditArtifacts(repoRoot, since = null) {
@@ -187,6 +282,58 @@ async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts,
     source: toWorkspaceRelative(root, sourcePath),
     canonical_path: toWorkspaceRelative(root, targetPath)
   });
+}
+
+async function copyFileArtifact({ root, sourcePath, targetPath, kind, artifacts, missing_artifacts }) {
+  const sourceStat = await statIfExists(sourcePath);
+  if (!sourceStat || !sourceStat.isFile()) {
+    missing_artifacts.push({
+      kind,
+      source: toWorkspaceRelative(root, sourcePath)
+    });
+    return;
+  }
+  if (sourceStat.size > MAX_REFERENCED_ARTIFACT_BYTES) {
+    missing_artifacts.push({
+      kind,
+      source: toWorkspaceRelative(root, sourcePath),
+      reason: 'source_too_large',
+      size_bytes: sourceStat.size
+    });
+    return;
+  }
+  await mkdir(path.dirname(targetPath), { recursive: true });
+  await writeFile(targetPath, await readFile(sourcePath));
+  artifacts.push({
+    kind,
+    source: toWorkspaceRelative(root, sourcePath),
+    canonical_path: toWorkspaceRelative(root, targetPath)
+  });
+}
+
+function extractVibeProReferences(text) {
+  if (!text) return [];
+  return [...String(text).matchAll(VIBEPRO_REFERENCE_RE)]
+    .map((match) => match[0].replace(/[),.;:"'\\\]}]+$/g, ''))
+    .filter((ref) => ref.startsWith('.vibepro/'));
+}
+
+async function statIfExists(filePath) {
+  try {
+    return await stat(filePath);
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function readTextIfExists(filePath) {
+  try {
+    return await readFile(filePath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 function auditArtifactKey(artifact) {
