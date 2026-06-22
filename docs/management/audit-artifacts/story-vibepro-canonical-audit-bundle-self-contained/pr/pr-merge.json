@@ -2483,5 +2483,95 @@
   "status": "merged",
   "stop_reason": null,
   "merge_commit_sha": "3e10ef0729e9a18b1376bedf26f789bdc98e21a6",
-  "merged_at": "2026-06-22T01:31:41Z"
+  "merged_at": "2026-06-22T01:31:41Z",
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+    "artifact_count": 10,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-bundle-self-contained-1782091904820",
+      "base_head_sha": "3e10ef0729e9a18b1376bedf26f789bdc98e21a6",
+      "merge_commit_on_base": true,
+      "commit_sha": "2d78e4dc6439da582d3bd8e89d460948b4d4cdc3",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 3e10ef0729e9a18b1376bedf26f789bdc98e21a6",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-bundle-self-contained-1782091904820 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-bundle-self-contained'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-bundle-self-contained-1782091904820"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-06-22T01:31:44.820Z",
+          "finished_at": "2026-06-22T01:31:45.698Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   ffcd694..3e10ef0  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-bundle-self-contained-1782091904820 origin/main",
+          "started_at": "2026-06-22T01:31:45.781Z",
+          "finished_at": "2026-06-22T01:31:46.068Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 3e10ef0 feat: make canonical audit bundles self-contained (#211)",
+          "stderr": "Preparing worktree (detached HEAD 3e10ef0)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+          "started_at": "2026-06-22T01:31:46.089Z",
+          "finished_at": "2026-06-22T01:31:46.168Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained",
+          "started_at": "2026-06-22T01:31:46.168Z",
+          "finished_at": "2026-06-22T01:31:46.221Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-bundle-self-contained'",
+          "started_at": "2026-06-22T01:31:46.221Z",
+          "finished_at": "2026-06-22T01:31:46.338Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD 2d78e4d] docs: persist VibePro audit artifacts for story-vibepro-canonical-audit-bundle-self-contained\n 28 files changed, 18605 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/manual-verification/story-vibepro-canonical-audit-bundle-self-contained/focused.tap\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/manual-verification/story-vibepro-canonical-audit-bundle-self-contained/workflow-replay.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/architecture-review.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/decision-records.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/gate-dag.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/human-review.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/pr-body.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/pr-create.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/pr-merge.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/pr-prepare.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/review-cockpit.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/split-plan.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/pr/story-vibepro-canonical-audit-bundle-self-contained/split-plan.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/history/review-result-gate_evidence-2026-06-22T01-23-26.579Z.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/history/review-result-gate_evidence-2026-06-22T01-26-48.462Z.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/parallel-dispatch.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/references/vibepro/reviews/story-vibepro-canonical-audit-bundle-self-contained/gate/subagent-gate_evidence-result.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/reviews/gate/review-request-gate_evidence.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-canonical-audit-bundle-self-contained/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-06-22T01:31:46.377Z",
+          "finished_at": "2026-06-22T01:31:48.491Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   3e10ef0..2d78e4d  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-canonical-audit-bundle-self-contained-1782091904820",
+          "started_at": "2026-06-22T01:31:48.491Z",
+          "finished_at": "2026-06-22T01:31:48.583Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  }
 }
