@@ -54,6 +54,8 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   const root = await setupPrepareRepo();
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
   const traceability = await readJson(traceabilityPath(root, 'story-test-promo'));
+  const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'gate-dag.json'));
+  const prBody = await readFile(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'pr-body.md'), 'utf8');
   assert.equal(traceability.story_doc_path, 'docs/management/stories/active/story-test-promo.md');
   assert.equal(traceability.lifecycle, 'in_progress');
   const refs = evidenceRefs(traceability, 'pr_artifact');
@@ -62,7 +64,12 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   assert.ok(!refs.some((ref) => ref.endsWith('verification-evidence.json')), 'absent verification evidence must not be linked');
   assert.equal(traceability.acceptance_criteria.length, 1);
   assert.equal(traceability.acceptance_criteria[0].id, 'AC-1');
-  assert.equal(traceability.acceptance_criteria[0].status, 'mapped');
+  assert.equal(traceability.acceptance_criteria[0].status, 'weakly_mapped');
+  assert.equal(traceability.coverage_summary.weakly_mapped_count, 1);
+  assert.equal(traceability.coverage_summary.mapped_count, 0);
+  assert.equal(gateDag.summary.traceability_clause_coverage.weakly_mapped_count, 1);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:traceability_clause_coverage').status, 'needs_evidence');
+  assert.match(prBody, /weakly_mapped: 1/);
 });
 
 test('pr prepare links verification evidence when present and stays idempotent on rerun', async () => {
@@ -77,6 +84,10 @@ test('pr prepare links verification evidence when present and stays idempotent o
     evidenceRefs(first, 'pr_artifact').some((ref) => ref.endsWith('verification-evidence.json')),
     'existing verification evidence must be linked'
   );
+  assert.equal(first.acceptance_criteria[0].status, 'mapped');
+  assert.equal(first.acceptance_criteria[0].mapped_evidence.length, 1);
+  assert.equal(first.coverage_summary.mapped_count, 1);
+  assert.equal(first.coverage_summary.weakly_mapped_count, 0);
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
   const second = await readJson(traceabilityPath(root, 'story-test-promo'));
   assert.equal(second.evidence.length, first.evidence.length, 'rerun must not duplicate evidence');

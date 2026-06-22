@@ -61,6 +61,15 @@ export async function createUsageReport(repoRoot, options = {}) {
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
     if (artifact.kind === 'traceability') {
       story.traceability_lifecycle = artifact.data?.lifecycle ?? story.traceability_lifecycle;
+      story.traceability_clause_coverage = artifact.data?.coverage_summary ?? story.traceability_clause_coverage;
+      if ((story.traceability_clause_coverage?.weakly_mapped_count ?? 0) > 0 || (story.traceability_clause_coverage?.unmapped_count ?? 0) > 0) {
+        addTraceabilityGap(story, {
+          kind: 'traceability_clause_mapping_incomplete',
+          artifact: artifact.path,
+          detail: `${story.traceability_clause_coverage.weakly_mapped_count ?? 0} weakly_mapped and ${story.traceability_clause_coverage.unmapped_count ?? 0} unmapped clause(s)`,
+          next_command: `vibepro verify record . --id ${story.story_id} --kind <unit|integration|e2e> --status pass --command <cmd> --target <AC-or-scenario-target> --observed <key=value>`
+        });
+      }
     }
     if (artifact.kind === 'verification_evidence') {
       story.verification_observation_missing ||= (artifact.data?.commands ?? []).some((command) => (
@@ -147,7 +156,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} traceability=${story.traceability_resolution?.status ?? 'unknown'} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} traceability=${story.traceability_resolution?.status ?? 'unknown'} clause_traceability=${formatClauseTraceability(story.traceability_clause_coverage)} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -170,6 +179,7 @@ export function renderUsageReport(report) {
     `- actual_missing_traceability_gaps: ${valueSignals.actual_missing_traceability_gap_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- alternate_source_resolved_traceability: ${valueSignals.alternate_source_resolved_traceability_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- canonical_handoff_replay_blocked: ${valueSignals.canonical_handoff_replay_blocked_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    `- traceability_clause_mapping_incomplete: ${valueSignals.traceability_clause_mapping_incomplete_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- declared_unstarted: ${valueSignals.declared_unstarted_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- verification_observation_missing: ${valueSignals.verification_observation_missing_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
@@ -286,6 +296,7 @@ function ensureStoryUsage(storyMap, storyId) {
       stale_evidence: false,
       story_source_mismatch: false,
       traceability_lifecycle: null,
+      traceability_clause_coverage: null,
       declared_unstarted: false,
       verification_observation_missing: false,
       fast_lane: false,
@@ -682,6 +693,11 @@ function formatArtifactSources(sources) {
   return entries.length ? entries.join(',') : '-';
 }
 
+function formatClauseTraceability(summary) {
+  if (!summary) return 'unknown';
+  return `mapped=${summary.mapped_count ?? 0}/weak=${summary.weakly_mapped_count ?? 0}/unmapped=${summary.unmapped_count ?? 0}`;
+}
+
 function normalizeLogCommand(value) {
   return String(value ?? '')
     .trim()
@@ -958,6 +974,10 @@ function buildValueSignals(stories) {
   const mergedWithoutEvidenceCount = stories.filter((story) => story.merged_without_vibepro_evidence).length;
   const evidenceInOtherWorktreeCount = stories.filter((story) => story.evidence_in_other_worktree).length;
   const canonicalHandoffReplayBlockedCount = stories.filter((story) => story.handoff_replay_status === 'blocked').length;
+  const traceabilityClauseMappingIncompleteCount = stories.filter((story) => (
+    (story.traceability_clause_coverage?.weakly_mapped_count ?? 0) > 0
+    || (story.traceability_clause_coverage?.unmapped_count ?? 0) > 0
+  )).length;
   return {
     story_count: storyCount,
     waiver_required_story_count: waiverRequiredCount,
@@ -972,6 +992,7 @@ function buildValueSignals(stories) {
     merged_without_vibepro_evidence_story_count: mergedWithoutEvidenceCount,
     evidence_in_other_worktree_story_count: evidenceInOtherWorktreeCount,
     canonical_handoff_replay_blocked_count: canonicalHandoffReplayBlockedCount,
+    traceability_clause_mapping_incomplete_count: traceabilityClauseMappingIncompleteCount,
     traceability_gaps: traceabilityGaps,
     waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
     stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),

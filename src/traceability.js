@@ -59,8 +59,32 @@ export function buildTraceability(existing, {
     evidence: mergedEvidence,
     acceptance_criteria,
     scenario_clauses,
+    coverage_summary: summarizeTraceabilityClauseMap({ acceptance_criteria, scenario_clauses }),
     created_at: existing?.created_at ?? timestamp,
     updated_at: timestamp
+  };
+}
+
+export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scenario_clauses = [] } = {}) {
+  const clauses = [...acceptance_criteria, ...scenario_clauses];
+  const countByStatus = (status) => clauses.filter((item) => item.status === status).length;
+  return {
+    clause_count: clauses.length,
+    acceptance_criteria_count: acceptance_criteria.length,
+    scenario_clause_count: scenario_clauses.length,
+    mapped_count: countByStatus('mapped'),
+    weakly_mapped_count: countByStatus('weakly_mapped'),
+    unmapped_count: countByStatus('unmapped'),
+    examples: clauses
+      .filter((item) => item.status === 'unmapped' || item.status === 'weakly_mapped')
+      .slice(0, 3)
+      .map((item) => ({
+        id: item.id,
+        type: item.type,
+        status: item.status,
+        source_text: item.source_text,
+        weak_mapping_reason: item.weak_mapping_reason ?? null
+      }))
   };
 }
 
@@ -97,16 +121,28 @@ export function buildTraceabilityClauseMap({
 function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles, tests, evidence }) {
   const matchedFiles = changedFiles.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
   const matchedTests = tests.filter((file) => clauseMatchesPathOrText({ id, text, value: file.path ?? file }));
-  const matchedEvidence = evidence.filter((item) => (
+  const matchedEvidence = evidence.filter((item) => isStrongClauseEvidence(item) && (
+    clauseMatchesPathOrText({ id, text, value: item.ref })
+    || clauseMatchesPathOrText({ id, text, value: item.summary })
+    || evidenceTargetsClause({ id, text, item })
+  ));
+  const matchedReviewFindings = evidence.filter((item) => item.type === 'review_finding' && (
     clauseMatchesPathOrText({ id, text, value: item.ref })
     || clauseMatchesPathOrText({ id, text, value: item.summary })
   ));
-  const broadEvidence = evidence.length > 0 && matchedEvidence.length === 0;
-  const status = matchedFiles.length > 0 || matchedTests.length > 0 || matchedEvidence.length > 0
+  const broadEvidence = evidence.length > 0 && matchedEvidence.length === 0 && matchedTests.length === 0 && matchedReviewFindings.length === 0;
+  const status = matchedTests.length > 0 || matchedEvidence.length > 0 || matchedReviewFindings.length > 0
     ? 'mapped'
-    : broadEvidence
+    : matchedFiles.length > 0 || broadEvidence
       ? 'weakly_mapped'
       : 'unmapped';
+  const weakReason = status === 'weakly_mapped'
+    ? matchedFiles.length > 0
+      ? 'changed files mention this clause, but no clause-specific test, review finding, or current-bound evidence was found'
+      : 'verification or PR evidence exists, but no AC/scenario-specific binding was found'
+    : broadEvidence
+      ? 'verification or PR evidence exists, but no AC/scenario-specific binding was found'
+      : null;
   return {
     id,
     type,
@@ -121,10 +157,33 @@ function buildClauseTraceabilityItem({ id, text, source_line, type, changedFiles
       summary: item.summary ?? null,
       strength: item.strength ?? item.evidence_strength ?? null,
       binding_status: item.binding_status ?? item.binding?.status ?? null,
-      artifact_quality: item.artifact_quality ?? item.artifact_check?.status ?? null
+      artifact_quality: item.artifact_quality ?? item.artifact_check?.status ?? null,
+      target_match: evidenceTargetsClause({ id, text, item })
     })),
-    weak_mapping_reason: broadEvidence ? 'verification evidence exists but no AC/scenario-specific binding was found' : null
+    mapped_review_findings: matchedReviewFindings.map((item) => ({
+      ref: item.ref ?? null,
+      summary: item.summary ?? null,
+      severity: item.severity ?? null,
+      status: item.status ?? null
+    })),
+    weak_mapping_reason: weakReason
   };
+}
+
+function isStrongClauseEvidence(item) {
+  if (!item || item.type === 'pr_artifact') return false;
+  const bindingStatus = item.binding_status ?? item.binding?.status ?? null;
+  const artifactQuality = item.artifact_quality ?? item.artifact_check?.status ?? null;
+  const strength = item.strength ?? item.evidence_strength ?? null;
+  return bindingStatus === 'current'
+    || artifactQuality === 'verified'
+    || ['strong', 'supporting'].includes(strength)
+    || item.type === 'verification_evidence';
+}
+
+function evidenceTargetsClause({ id, text, item }) {
+  const targets = Array.isArray(item?.targets) ? item.targets : [];
+  return targets.some((target) => clauseMatchesPathOrText({ id, text, value: target }));
 }
 
 function extractAcceptanceCriteria(storyText) {

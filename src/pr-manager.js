@@ -21,7 +21,7 @@ import { localizedText, resolveOutputLanguage } from './language.js';
 import { scanNetworkContracts } from './network-contract-scanner.js';
 import { scanRegressionRisk } from './regression-risk-scanner.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
-import { buildTraceability, buildTraceabilityClauseMap } from './traceability.js';
+import { buildTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -257,12 +257,57 @@ export async function preparePullRequest(repoRoot, options = {}) {
     prContext,
     suggestedBranch
   }));
-  const gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  let gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const authorizationScoring = buildAuthorizationScoring({
     fileGroups,
     storySource: prContext.story_source,
     decisionRecords
   });
+  const prRoot = workspace.initialized
+    ? getWorkspaceDir(root)
+    : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
+  const prDir = path.join(prRoot, 'pr', story.story_id);
+  await mkdir(prDir, { recursive: true });
+  const jsonPath = path.join(prDir, 'pr-prepare.json');
+  const reportPath = path.join(prDir, 'pr-prepare.html');
+  const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
+  const humanReviewPath = path.join(prDir, 'human-review.json');
+  const architectureReviewPath = path.join(prDir, 'architecture-review.json');
+  const decisionRecordsPath = path.join(prDir, 'decision-records.json');
+  const bodyPath = path.join(prDir, 'pr-body.md');
+  const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
+  const gateDagReportPath = path.join(prDir, 'gate-dag.html');
+  const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
+  const splitPlanReportPath = path.join(prDir, 'split-plan.html');
+  const traceabilityPath = path.join(prDir, 'traceability.json');
+  const traceabilityEvidence = buildTraceabilityEvidence({
+    root,
+    bodyPath,
+    gateDagJsonPath,
+    verificationEvidence
+  });
+  const storyTextForTraceability = prContext.story_source?.path
+    ? await readFile(path.join(root, prContext.story_source.path), 'utf8').catch(() => '')
+    : '';
+  const changedFilesForTraceability = (reviewGit.changed_files ?? [])
+    .map((file) => ({ path: file.path ?? file }));
+  const testsForTraceability = changedFilesForTraceability
+    .filter((file) => /(^|\/)(test|tests|e2e)\//.test(file.path) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file.path));
+  const traceabilityMap = buildTraceabilityClauseMap({
+    storyText: storyTextForTraceability,
+    changedFiles: changedFilesForTraceability,
+    tests: testsForTraceability,
+    evidence: traceabilityEvidence,
+    scenarioClauses: prContext.gate_dag?.summary?.scenario_clauses ?? []
+  });
+  prContext.traceability_clause_coverage = summarizeTraceabilityClauseMap(traceabilityMap);
+  prContext.gate_dag.nodes.push(buildTraceabilityClauseCoverageGate(prContext.traceability_clause_coverage));
+  prContext.gate_dag.summary.traceability_clause_coverage = prContext.traceability_clause_coverage;
+  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
+    ? 'needs_verification'
+    : 'ready_for_review';
+  prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
+  gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: reviewGit.current_branch,
@@ -315,22 +360,6 @@ export async function preparePullRequest(repoRoot, options = {}) {
     }
   };
 
-  const prRoot = workspace.initialized
-    ? getWorkspaceDir(root)
-    : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
-  const prDir = path.join(prRoot, 'pr', story.story_id);
-  await mkdir(prDir, { recursive: true });
-  const jsonPath = path.join(prDir, 'pr-prepare.json');
-  const reportPath = path.join(prDir, 'pr-prepare.html');
-  const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
-  const humanReviewPath = path.join(prDir, 'human-review.json');
-  const architectureReviewPath = path.join(prDir, 'architecture-review.json');
-  const decisionRecordsPath = path.join(prDir, 'decision-records.json');
-  const bodyPath = path.join(prDir, 'pr-body.md');
-  const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
-  const gateDagReportPath = path.join(prDir, 'gate-dag.html');
-  const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
-  const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   const lifecycleArtifacts = workspace.initialized
     ? await progress.stage('inspect_pr_lifecycle_artifacts', () => inspectPrLifecycleArtifacts(root, story.story_id, {
       currentHeadSha: reviewGit.head_sha,
@@ -363,34 +392,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     });
     await writeFile(reportPath, reviewCockpitHtml, { signal });
     await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
-    const traceabilityPath = path.join(prDir, 'traceability.json');
     const existingTraceability = await readJsonIfExists(traceabilityPath);
-    const traceabilityEvidence = [
-      { type: 'pr_artifact', ref: toWorkspaceRelative(root, bodyPath), summary: 'pr prepare artifact: pr-body.md' },
-      { type: 'pr_artifact', ref: toWorkspaceRelative(root, gateDagJsonPath), summary: 'pr prepare artifact: gate-dag.json' }
-    ];
-    const verificationEvidencePath = path.join(prDir, 'verification-evidence.json');
-    if (await readJsonIfExists(verificationEvidencePath)) {
-      traceabilityEvidence.push({
-        type: 'pr_artifact',
-        ref: toWorkspaceRelative(root, verificationEvidencePath),
-        summary: 'recorded verification evidence'
-      });
-    }
-    const storyText = prContext.story_source?.path
-      ? await readFile(path.join(root, prContext.story_source.path), 'utf8').catch(() => '')
-      : '';
-    const changedFilesForTraceability = (preparation.git?.changed_files ?? [])
-      .map((file) => ({ path: file.path ?? file }));
-    const testsForTraceability = changedFilesForTraceability
-      .filter((file) => /(^|\/)(test|tests|e2e)\//.test(file.path) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file.path));
-    const traceabilityMap = buildTraceabilityClauseMap({
-      storyText,
-      changedFiles: changedFilesForTraceability,
-      tests: testsForTraceability,
-      evidence: traceabilityEvidence,
-      scenarioClauses: prContext.gate_dag?.summary?.scenario_clauses ?? []
-    });
     await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
       storyId: story.story_id,
       storyDocPath: prContext.story_source?.path ?? null,
@@ -1937,6 +1939,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
   const exploreEvidenceSection = renderExplorePrSection(prContext.explore_evidence);
   const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
+  const traceabilityClauseCoverageSection = renderPrTraceabilityClauseCoverage(prContext.traceability_clause_coverage, language);
 
   return `${decisionSection}
 
@@ -2000,6 +2003,9 @@ ${Object.entries(fileGroups)
 
 ## 要件整合性
 ${renderRequirementPrSection(prContext.requirement_consistency, language)}
+
+## AC/Scenario Traceability
+${traceabilityClauseCoverageSection}
 
 ## Network Contract
 ${renderNetworkContractPrSection(prContext.network_contracts)}
@@ -2086,6 +2092,104 @@ ${engineeringReasoning}
 
 ### 判断グラフ
 ${decisionGraph}`;
+}
+
+function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificationEvidence }) {
+  const verificationEvidencePath = path.join(path.dirname(bodyPath), 'verification-evidence.json');
+  const evidence = [
+    {
+      type: 'pr_artifact',
+      ref: toWorkspaceRelative(root, bodyPath),
+      summary: 'pr prepare artifact: pr-body.md'
+    },
+    {
+      type: 'pr_artifact',
+      ref: toWorkspaceRelative(root, gateDagJsonPath),
+      summary: 'pr prepare artifact: gate-dag.json'
+    }
+  ];
+  if ((verificationEvidence?.commands ?? []).length > 0) {
+    evidence.push({
+      type: 'pr_artifact',
+      ref: toWorkspaceRelative(root, verificationEvidencePath),
+      summary: 'recorded verification evidence'
+    });
+  }
+  for (const command of verificationEvidence?.commands ?? []) {
+    evidence.push({
+      type: 'verification_evidence',
+      ref: command.artifact ?? command.command ?? toWorkspaceRelative(root, verificationEvidencePath),
+      summary: [
+        command.summary,
+        command.command,
+        ...(command.observation?.scenarios ?? []),
+        ...Object.entries(command.observation?.values ?? {}).map(([key, value]) => `${key}=${value}`)
+      ].filter(Boolean).join(' | '),
+      strength: isPassingVerificationStatus(command.status) ? 'supporting' : 'weak',
+      binding_status: command.git_context?.status ?? command.binding?.status ?? null,
+      artifact_quality: command.artifact_check?.status ?? null,
+      targets: [
+        ...(command.observation?.targets ?? []),
+        ...(command.observation?.scenarios ?? []),
+        command.command,
+        command.artifact
+      ].filter(Boolean)
+    });
+  }
+  return evidence;
+}
+
+function buildTraceabilityClauseCoverageGate(summary) {
+  const weakCount = summary?.weakly_mapped_count ?? 0;
+  const unmappedCount = summary?.unmapped_count ?? 0;
+  const status = weakCount === 0 && unmappedCount === 0 ? 'passed' : 'needs_evidence';
+  return {
+    id: 'gate:traceability_clause_coverage',
+    type: 'traceability_clause_coverage_gate',
+    label: 'Traceability Clause Coverage Gate',
+    status,
+    required: true,
+    reason: status === 'passed'
+      ? 'Every extracted AC/scenario clause has clause-specific test, review, or verification evidence'
+      : `${weakCount} weakly_mapped and ${unmappedCount} unmapped AC/scenario clause(s) require clause-specific evidence`,
+    coverage_summary: summary ?? null,
+    required_actions: status === 'passed' ? [] : [
+      'Record verification evidence with --target/--scenario/--observed that names the specific AC or scenario, or add a focused test/review finding that binds to the clause.'
+    ]
+  };
+}
+
+function renderPrTraceabilityClauseCoverage(summary, language = 'ja') {
+  if (!summary) return '- traceability clause coverage: unavailable';
+  const examples = (summary.examples ?? []).length
+    ? summary.examples.map((item) => (
+      `- ${item.id}: ${item.status}${item.weak_mapping_reason ? ` (${item.weak_mapping_reason})` : ''}`
+    )).join('\n')
+    : '- none';
+  return localizedText(language, {
+    ja: [
+      `- clause_count: ${summary.clause_count}`,
+      `- mapped: ${summary.mapped_count}`,
+      `- weakly_mapped: ${summary.weakly_mapped_count}`,
+      `- unmapped: ${summary.unmapped_count}`,
+      '',
+      '### Weak/Unmapped Examples',
+      examples
+    ].join('\n'),
+    en: [
+      `- clause_count: ${summary.clause_count}`,
+      `- mapped: ${summary.mapped_count}`,
+      `- weakly_mapped: ${summary.weakly_mapped_count}`,
+      `- unmapped: ${summary.unmapped_count}`,
+      '',
+      '### Weak/Unmapped Examples',
+      examples
+    ].join('\n')
+  });
+}
+
+function isPassingVerificationStatus(status) {
+  return ['pass', 'passed', 'success', 'ok'].includes(String(status ?? '').toLowerCase());
 }
 
 function buildHumanReviewQuestion({ source = {}, fileGroups }) {
