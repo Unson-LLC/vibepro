@@ -108,6 +108,9 @@ export function summarizeEvidenceReuse(reuse) {
     fresh_use_allowed: reuse.fresh_use_allowed === true,
     used_as_fresh: reuse.used_as_fresh === true,
     gate_status: reuse.gate_status ?? null,
+    verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
+    verification_evidence_updated_at: reuse.key_inputs?.verification_evidence_updated_at ?? null,
+    verification_command_timestamps: reuse.key_inputs?.verification_command_timestamps ?? [],
     full_evidence: reuse.full_evidence ? {
       status: reuse.full_evidence.status ?? null,
       generation_count: reuse.full_evidence.generation_count ?? null,
@@ -135,6 +138,9 @@ export function buildEvidenceReuseGate(reuse) {
       artifact: reuse.summary_artifacts?.evidence_reuse ?? null,
       evidence_key: reuse.evidence_key ?? null,
       status: reuse.status ?? null,
+      verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
+      verification_evidence_updated_at: reuse.key_inputs?.verification_evidence_updated_at ?? null,
+      verification_command_timestamps: reuse.key_inputs?.verification_command_timestamps ?? [],
       stale_reasons: reuse.stale_reasons ?? []
     } : null
   };
@@ -168,6 +174,9 @@ export function evaluateEvidenceReuseForReview({ reuse = null, gitContext = null
     fresh,
     first_input: fresh,
     evidence_key: reuse.evidence_key ?? null,
+    verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
+    verification_evidence_updated_at: reuse.key_inputs?.verification_evidence_updated_at ?? null,
+    verification_command_timestamps: reuse.key_inputs?.verification_command_timestamps ?? [],
     artifact_status: reuse.status ?? null,
     artifact: reuse.summary_artifacts?.evidence_reuse ?? null,
     preferred_order: fresh ? (reuse.review_input_summary?.preferred_order ?? []) : [],
@@ -209,7 +218,8 @@ export function buildEvidenceKeyInputs({
       required_gates: prContext?.pr_route?.required_gates ?? []
     }
   });
-  const verificationSummaryFingerprint = fingerprintValue(summarizeVerificationEvidence(verificationEvidence));
+  const verificationSummary = summarizeVerificationEvidence(verificationEvidence);
+  const verificationSummaryFingerprint = fingerprintValue(verificationSummary);
   const plannerVersion = evidencePlan?.planner_version ?? null;
   return {
     story_id: storyId,
@@ -220,6 +230,8 @@ export function buildEvidenceKeyInputs({
     spec_fingerprint: specFingerprint,
     risk_surface_fingerprint: riskSurfaceFingerprint,
     verification_summary_fingerprint: verificationSummaryFingerprint,
+    verification_evidence_updated_at: verificationSummary.updated_at,
+    verification_command_timestamps: verificationSummary.command_timestamps,
     evidence_depth: evidencePlan?.evidence_depth ?? null,
     planner_version: plannerVersion
   };
@@ -249,6 +261,8 @@ function compareEvidenceReuse(previousReuse, keyInputs, evidenceKey) {
     staleReason('head_sha', previousInputs.head_sha, keyInputs.head_sha),
     staleReason('spec_fingerprint', previousInputs.spec_fingerprint, keyInputs.spec_fingerprint),
     staleReason('verification_summary_fingerprint', previousInputs.verification_summary_fingerprint, keyInputs.verification_summary_fingerprint),
+    staleReason('verification_evidence_updated_at', previousInputs.verification_evidence_updated_at, keyInputs.verification_evidence_updated_at),
+    staleReason('verification_command_timestamps', previousInputs.verification_command_timestamps, keyInputs.verification_command_timestamps),
     staleReason('risk_surface_fingerprint', previousInputs.risk_surface_fingerprint, keyInputs.risk_surface_fingerprint),
     staleReason('base_sha', previousInputs.base_sha, keyInputs.base_sha),
     staleReason('planner_version', previousInputs.planner_version, keyInputs.planner_version)
@@ -329,14 +343,24 @@ function normalizeSummaryArtifacts({ root, artifacts, storyId }) {
 function summarizeVerificationEvidence(verificationEvidence) {
   const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   return {
+    schema_version: verificationEvidence?.schema_version ?? null,
+    story_id: verificationEvidence?.story_id ?? null,
+    updated_at: verificationEvidence?.updated_at ?? null,
     command_count: commands.length,
+    command_timestamps: commands.map((command) => ({
+      kind: command.kind ?? null,
+      executed_at: command.executed_at ?? null,
+      git_recorded_at: command.git_context?.recorded_at ?? null
+    })),
     commands: commands.map((command) => ({
       kind: command.kind ?? null,
       status: command.status ?? null,
       command: command.command ?? null,
       target: command.target ?? null,
+      executed_at: command.executed_at ?? null,
       binding_status: command.binding?.status ?? null,
       head_sha: command.git_context?.head_sha ?? command.binding?.current_head_sha ?? null,
+      git_recorded_at: command.git_context?.recorded_at ?? null,
       artifact_check_status: command.artifact_check?.status ?? null,
       observation_check_status: command.observation_check?.status ?? null
     }))

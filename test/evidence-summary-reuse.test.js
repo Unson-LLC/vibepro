@@ -126,6 +126,70 @@ test('spec fingerprint changes mark previous summary/index stale without head ch
   assert.ok(reuse.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
 });
 
+test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/index stale without head changes', () => {
+  const base = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  const first = buildEvidenceReuse({
+    ...base,
+    verificationEvidence: {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      updated_at: '2026-06-23T00:00:00.000Z',
+      commands: [
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: 'node --test test/evidence-summary-reuse.test.js',
+          executed_at: '2026-06-23T00:00:00.000Z',
+          git_context: {
+            head_sha: 'head-a',
+            recorded_at: '2026-06-23T00:00:00.000Z'
+          },
+          artifact_check: { status: 'unrecognized' },
+          observation_check: { status: 'recorded' }
+        }
+      ]
+    }
+  });
+  const second = buildEvidenceReuse({
+    ...base,
+    verificationEvidence: {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      updated_at: '2026-06-23T00:05:00.000Z',
+      commands: [
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: 'node --test test/evidence-summary-reuse.test.js',
+          executed_at: '2026-06-23T00:05:00.000Z',
+          git_context: {
+            head_sha: 'head-a',
+            recorded_at: '2026-06-23T00:05:00.000Z'
+          },
+          artifact_check: { status: 'unrecognized' },
+          observation_check: { status: 'recorded' }
+        }
+      ]
+    },
+    previousReuse: first
+  });
+  const gate = buildEvidenceReuseGate(second);
+
+  assert.equal(first.status, 'miss');
+  assert.equal(second.status, 'stale');
+  assert.notEqual(first.evidence_key, second.evidence_key);
+  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_summary_fingerprint'));
+  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'));
+  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:05:00.000Z');
+});
+
 test('stale reuse marked as fresh fails the evidence reuse gate', () => {
   const first = buildEvidenceReuse({
     story: { story_id: STORY_ID },

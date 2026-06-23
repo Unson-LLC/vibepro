@@ -36,7 +36,7 @@ VibeProがsummary/indexを作っても、`pr prepare`、`review prepare`、revie
 
 ## Scope
 
-- `evidence_key` を定義し、Story ID、base/head SHA、Spec fingerprint、risk surface、verification summary hashから生成する
+- `evidence_key` を定義し、Story ID、base/head SHA、Spec fingerprint、risk surface、verification summary hash、verification evidence更新時刻、verification command実行時刻から生成する
 - `decision-summary` / `audit-index` / gate summary / review input summaryをkey付きで保存する
 - `review prepare` はfull artifactより先に既存summary/indexを読む
 - 同一keyのfull evidenceは1回だけ生成し、以後はdigest/referenceを再利用する
@@ -48,10 +48,10 @@ VibeProがsummary/indexを作っても、`pr prepare`、`review prepare`、revie
 - [ ] VibeProはPR lifecycle内の再利用単位として `evidence_key` を生成し、summary/index artifactに保存する。
 - [ ] `review prepare` は同じ `evidence_key` のsummary/indexがfreshなら、それをreview inputの第一資料として使う。
 - [ ] 同じ `evidence_key` でfull evidenceが必要になった場合、2回目以降は再生成せずdigest/referenceを再利用する。
-- [ ] head SHA、Spec fingerprint、verification summary、risk surfaceのいずれかが変わった場合、既存summary/indexはstale扱いになる。
+- [ ] head SHA、Spec fingerprint、verification summary、verification evidence更新時刻、verification command実行時刻、risk surfaceのいずれかが変わった場合、既存summary/indexはstale扱いになる。
 - [ ] cache hit/miss/staleは `evidence_reuse` としてmachine-readableに記録され、usage reportで確認できる。
 - [ ] stale artifactをfreshとして使った場合はgate failureになり、passにはならない。
-- [ ] regression testは「fresh reuse」「head変更でstale」「Spec変更でstale」「full evidence generated only once」を含む。
+- [ ] regression testは「fresh reuse」「head変更でstale」「Spec変更でstale」「verification timestamp変更でstale」「full evidence generated only once」を含む。
 
 ## Non Goals
 

@@ -10,8 +10,8 @@ title: Evidence Summary Reuse Spec
 ### ESR-CONTRACT-001: Evidence key
 
 `pr prepare` MUST compute an `evidence_key` from Story ID, base/head refs, base/head SHAs,
-Spec fingerprint, risk surface fingerprint, verification summary fingerprint, evidence depth,
-and planner version.
+Spec fingerprint, risk surface fingerprint, verification summary fingerprint, verification
+evidence update timestamp, verification command timestamps, evidence depth, and planner version.
 
 ### ESR-CONTRACT-002: Summary/index embedding
 
@@ -33,8 +33,9 @@ at `1` and mark the full evidence status as `reused`.
 
 ### ESR-CONTRACT-005: Stale reasons
 
-Changes to head SHA, Spec fingerprint, verification summary fingerprint, or risk surface fingerprint
-MUST mark the previous summary/index stale and record machine-readable stale reasons.
+Changes to head SHA, Spec fingerprint, verification summary fingerprint, verification evidence update
+timestamp, verification command timestamps, or risk surface fingerprint MUST mark the previous
+summary/index stale and record machine-readable stale reasons.
 
 ### ESR-CONTRACT-006: Usage report visibility
 
