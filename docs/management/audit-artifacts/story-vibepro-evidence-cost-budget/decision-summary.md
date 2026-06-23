@@ -3,7 +3,7 @@
 - story: story-vibepro-evidence-cost-budget
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 16648
+- artifact_lines: 16738
 - product_changed_lines: 0
 - artifact_code_ratio: unknown
 - pr_prepare: ready_for_review

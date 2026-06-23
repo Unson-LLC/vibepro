@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-cost-budget",
   "source": "execute_merge",
-  "promoted_at": "2026-06-23T03:07:45.358Z",
+  "promoted_at": "2026-06-23T03:07:48.811Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-evidence-cost-budget",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -30,7 +30,7 @@
     "trigger_signals": [
       "gate:gate:managed_worktree:needs_review"
     ],
-    "artifact_lines": 16648,
+    "artifact_lines": 16738,
     "changed_lines": {
       "total_changed_lines": 0,
       "unknown_file_count": 0,
@@ -93,7 +93,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-evidence-cost-budget",
     "source": "execute_merge",
-    "generated_at": "2026-06-23T03:07:45.358Z",
+    "generated_at": "2026-06-23T03:07:48.811Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -103,7 +103,7 @@
       "trigger_signals": [
         "gate:gate:managed_worktree:needs_review"
       ],
-      "artifact_lines": 16648,
+      "artifact_lines": 16738,
       "changed_lines": {
         "total_changed_lines": 0,
         "unknown_file_count": 0,
@@ -274,8 +274,8 @@
       "kind": "pr_merge",
       "source": ".vibepro/pr/story-vibepro-evidence-cost-budget/pr-merge.json",
       "persisted": false,
-      "digest": "sha256:11345bb8048ea95d8a5b7ae3801ce25ca5d4e0044e566954c377253993a7615b",
-      "line_count": 2598
+      "digest": "sha256:7d67f19e7b4fcfc51d0598b033c67d5c4934c4083e3e1c2f94e36919448496cc",
+      "line_count": 2688
     },
     {
       "kind": "traceability",

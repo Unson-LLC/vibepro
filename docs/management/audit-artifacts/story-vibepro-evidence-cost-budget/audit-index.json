@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-cost-budget",
   "source": "execute_merge",
-  "generated_at": "2026-06-23T03:07:45.358Z",
+  "generated_at": "2026-06-23T03:07:48.811Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -12,7 +12,7 @@
     "trigger_signals": [
       "gate:gate:managed_worktree:needs_review"
     ],
-    "artifact_lines": 16648,
+    "artifact_lines": 16738,
     "changed_lines": {
       "total_changed_lines": 0,
       "unknown_file_count": 0,
