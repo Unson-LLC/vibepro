@@ -48,6 +48,7 @@ import { scoreAuthorization } from './authorization-scoring.js';
 import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
+import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -268,6 +269,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
   const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
+  const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
+  const decisionIndexPath = path.join(prDir, 'decision-index.json');
   const jsonPath = path.join(prDir, 'pr-prepare.json');
   const reportPath = path.join(prDir, 'pr-prepare.html');
   const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
@@ -280,7 +283,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   const traceabilityPath = path.join(prDir, 'traceability.json');
-  const traceabilityEvidence = buildTraceabilityEvidence({
+  const traceabilityEvidenceForCoverage = buildTraceabilityEvidence({
     root,
     bodyPath,
     gateDagJsonPath,
@@ -297,7 +300,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     storyText: storyTextForTraceability,
     changedFiles: changedFilesForTraceability,
     tests: testsForTraceability,
-    evidence: traceabilityEvidence,
+    evidence: traceabilityEvidenceForCoverage,
     scenarioClauses: prContext.gate_dag?.summary?.scenario_clauses ?? []
   });
   prContext.traceability_clause_coverage = summarizeTraceabilityClauseMap(traceabilityMap);
@@ -308,6 +311,39 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : 'ready_for_review';
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  const createdAt = new Date().toISOString();
+  const evidencePlan = buildEvidencePlan({
+    story,
+    git: reviewGit,
+    fileGroups,
+    scope,
+    prContext,
+    gateStatus,
+    requestedDepth: options.evidenceDepth,
+    requestedDepthReason: options.evidenceDepthReason,
+    requestedDepthConsumer: options.evidenceDepthConsumer,
+    createdAt
+  });
+  const decisionIndex = buildEvidenceDecisionIndex({
+    story,
+    git: reviewGit,
+    fileGroups,
+    scope,
+    prContext,
+    gateStatus,
+    splitPlan,
+    evidencePlan,
+    createdAt
+  });
+  const artifactPolicy = evidencePlan.artifact_policy ?? {};
+  const writeHtmlReports = artifactPolicy.write_html_reports !== false;
+  const writeGateDagDump = artifactPolicy.write_full_gate_dag_dump !== false;
+  const traceabilityEvidence = buildTraceabilityEvidence({
+    root,
+    bodyPath,
+    gateDagJsonPath: writeGateDagDump ? gateDagJsonPath : null,
+    verificationEvidence
+  });
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
     currentBranch: reviewGit.current_branch,
@@ -335,10 +371,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const preparation = {
     schema_version: '0.1.0',
     story,
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
     output: {
       language: outputLanguage
     },
+    evidence_plan: evidencePlan,
+    decision_index: decisionIndex,
     gate_status: gateStatus,
     authorization_scoring: authorizationScoring,
     workspace: {
@@ -372,26 +410,34 @@ export async function preparePullRequest(repoRoot, options = {}) {
     });
   preparation.lifecycle_artifacts = lifecycleArtifacts;
   await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
+    await writeFile(evidencePlanPath, `${JSON.stringify(evidencePlan, null, 2)}\n`, { signal });
+    await writeFile(decisionIndexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
-    await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
-    await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
-      generatedAt: preparation.created_at,
-      language: outputLanguage
-    }), { signal });
+    if (writeGateDagDump) {
+      await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
+    }
+    if (writeHtmlReports) {
+      await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
+        generatedAt: preparation.created_at,
+        language: outputLanguage
+      }), { signal });
+    }
     await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
-    await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
-      generatedAt: preparation.created_at,
-      language: outputLanguage
-    }), { signal });
-    const reviewCockpitHtml = renderPrPrepareHtml({
-      preparation,
-      bodyPath: toWorkspaceRelative(root, bodyPath),
-      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-      splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
-      language: outputLanguage
-    });
-    await writeFile(reportPath, reviewCockpitHtml, { signal });
-    await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+    if (writeHtmlReports) {
+      await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
+        generatedAt: preparation.created_at,
+        language: outputLanguage
+      }), { signal });
+      const reviewCockpitHtml = renderPrPrepareHtml({
+        preparation,
+        bodyPath: toWorkspaceRelative(root, bodyPath),
+        gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+        splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+        language: outputLanguage
+      });
+      await writeFile(reportPath, reviewCockpitHtml, { signal });
+      await writeFile(reviewCockpitPath, reviewCockpitHtml, { signal });
+    }
     const existingTraceability = await readJsonIfExists(traceabilityPath);
     await writeFile(traceabilityPath, `${JSON.stringify(buildTraceability(existingTraceability, {
       storyId: story.story_id,
@@ -406,18 +452,18 @@ export async function preparePullRequest(repoRoot, options = {}) {
     const existingHumanReview = await readJsonIfExists(humanReviewPath);
     await writeFile(architectureReviewPath, `${JSON.stringify(buildArchitectureReviewTemplate({
       preparation,
-      reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
-      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
+      reviewCockpitPath: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
+      gateDagPath: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
       existingReview: existingArchitectureReview
     }), null, 2)}\n`, { signal });
     await writeFile(decisionRecordsPath, `${JSON.stringify(preparation.pr_context.decision_records, null, 2)}\n`, { signal });
     await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
       preparation,
-      reviewCockpitPath: toWorkspaceRelative(root, reviewCockpitPath),
+      reviewCockpitPath: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
       architectureReviewPath: toWorkspaceRelative(root, architectureReviewPath),
       bodyPath: toWorkspaceRelative(root, bodyPath),
-      gateDagPath: toWorkspaceRelative(root, gateDagReportPath),
-      splitPlanPath: toWorkspaceRelative(root, splitPlanReportPath),
+      gateDagPath: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
+      splitPlanPath: toWorkspaceRelative(root, splitPlanJsonPath),
       decisionRecordsPath: toWorkspaceRelative(root, decisionRecordsPath),
       existingReview: existingHumanReview
     }), null, 2)}\n`, { signal });
@@ -431,17 +477,19 @@ export async function preparePullRequest(repoRoot, options = {}) {
     manifest.pr_preparations = {
       ...(manifest.pr_preparations ?? {}),
       [story.story_id]: {
+        latest_evidence_plan: toWorkspaceRelative(root, evidencePlanPath),
+        latest_decision_index: toWorkspaceRelative(root, decisionIndexPath),
         latest_prepare: toWorkspaceRelative(root, jsonPath),
-        latest_report: toWorkspaceRelative(root, reportPath),
-        latest_review_cockpit: toWorkspaceRelative(root, reviewCockpitPath),
+        latest_report: writeHtmlReports ? toWorkspaceRelative(root, reportPath) : null,
+        latest_review_cockpit: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
         latest_human_review: toWorkspaceRelative(root, humanReviewPath),
         latest_architecture_review: toWorkspaceRelative(root, architectureReviewPath),
         latest_decision_records: toWorkspaceRelative(root, decisionRecordsPath),
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
-        latest_gate_dag: toWorkspaceRelative(root, gateDagJsonPath),
-        latest_gate_dag_report: toWorkspaceRelative(root, gateDagReportPath),
+        latest_gate_dag: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
+        latest_gate_dag_report: writeHtmlReports ? toWorkspaceRelative(root, gateDagReportPath) : null,
         latest_split_plan: toWorkspaceRelative(root, splitPlanJsonPath),
-        latest_split_plan_report: toWorkspaceRelative(root, splitPlanReportPath),
+        latest_split_plan_report: writeHtmlReports ? toWorkspaceRelative(root, splitPlanReportPath) : null,
         latest_prepare_generated_at: preparation.created_at
       }
     };
@@ -461,17 +509,19 @@ export async function preparePullRequest(repoRoot, options = {}) {
     story,
     preparation,
     artifacts: {
+      evidence_plan: evidencePlanPath,
+      decision_index: decisionIndexPath,
       json: jsonPath,
-      report: reportPath,
-      review_cockpit: reviewCockpitPath,
+      report: writeHtmlReports ? reportPath : null,
+      review_cockpit: writeHtmlReports ? reviewCockpitPath : null,
       human_review: humanReviewPath,
       architecture_review: architectureReviewPath,
       decision_records: decisionRecordsPath,
       pr_body: bodyPath,
-      gate_dag: gateDagJsonPath,
-      gate_dag_report: gateDagReportPath,
+      gate_dag: writeGateDagDump ? gateDagJsonPath : null,
+      gate_dag_report: writeHtmlReports ? gateDagReportPath : null,
       split_plan: splitPlanJsonPath,
-      split_plan_report: splitPlanReportPath
+      split_plan_report: writeHtmlReports ? splitPlanReportPath : null
     }
   };
 }
@@ -1130,6 +1180,8 @@ ${firstLook}
 | Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
 | Critical unresolved gates | ${formatUnresolvedGateList(gateStatus.critical_unresolved_gates)} |
 | Completion quality | ${gateStatus.completion_quality_status ?? '-'} |
+| Evidence depth | ${preparation.evidence_plan?.evidence_depth ?? '-'} |
+| Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
@@ -1152,6 +1204,8 @@ ${firstLook}
 
 ## Artifacts
 
+- evidence_plan_json: ${toDisplayPath(result.artifacts.evidence_plan)}
+- decision_index_json: ${toDisplayPath(result.artifacts.decision_index)}
 - report_html: ${toDisplayPath(result.artifacts.report)}
 - review_cockpit_html: ${toDisplayPath(result.artifacts.review_cockpit)}
 - human_review_json: ${toDisplayPath(result.artifacts.human_review)}
@@ -1179,24 +1233,42 @@ function renderPrPrepareFirstLook({ preparation, gateStatus, result, language })
         en: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}\n`
       })
     : '';
-  const artifactHint = [
-    `review-cockpit: ${toDisplayPath(result.artifacts.review_cockpit)}`,
-    `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
-    `gate-dag: ${toDisplayPath(result.artifacts.gate_dag_report)}`,
-    `split-plan: ${toDisplayPath(result.artifacts.split_plan_report)}`
-  ].join('\n- ');
+  const summaryDepth = preparation.evidence_plan?.evidence_depth === 'summary';
+  const artifactHint = (summaryDepth
+    ? [
+        `decision-index: ${toDisplayPath(result.artifacts.decision_index)}`,
+        `evidence-plan: ${toDisplayPath(result.artifacts.evidence_plan)}`,
+        `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
+        `pr-prepare-json: ${toDisplayPath(result.artifacts.json)}`
+      ]
+    : [
+        `review-cockpit: ${toDisplayPath(result.artifacts.review_cockpit)}`,
+        `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
+        `gate-dag: ${toDisplayPath(result.artifacts.gate_dag_report)}`,
+        `split-plan: ${toDisplayPath(result.artifacts.split_plan_report)}`
+      ]).join('\n- ');
+  const completionReference = summaryDepth
+    ? localizedText(language, {
+        ja: '完了条件は decision-index.json の gate_summary と engineering_judgment を参照してください。',
+        en: 'Use decision-index.json gate_summary and engineering_judgment as the completion reference.'
+      })
+    : localizedText(language, {
+        ja: '完了条件は gate-dag.html、PR分割は split-plan.html を参照させてください。',
+        en: 'Use gate-dag.html as the completion contract, and split-plan.html for PR splitting.'
+      });
   return localizedText(language, {
     ja: `## まず見る場所
 
 - 状態: ${gateStatus.ready_for_pr_create ? 'PR作成可能' : '未解決Gateあり'}
 - 未解決Gate: ${unresolvedCount}
 - base branch: ${preparation.git.base_ref}
+- evidence depth: ${preparation.evidence_plan?.evidence_depth ?? '-'}
 - .vibepro は診断・Story・PR gate・レビュー証跡を保存する作業台です。
 
 ## AIエージェントへの渡し方
 
 - ${artifactHint}
-- 実装依頼には pr-body.md を渡し、完了条件は gate-dag.html、PR分割は split-plan.html を参照させてください。
+- 実装依頼には pr-body.md を渡し、${completionReference}
 ${agentReviewLine}
 `,
     en: `## Where To Look First
@@ -1204,12 +1276,13 @@ ${agentReviewLine}
 - Status: ${gateStatus.ready_for_pr_create ? 'ready for PR creation' : 'unresolved gates remain'}
 - Unresolved gates: ${unresolvedCount}
 - base branch: ${preparation.git.base_ref}
+- evidence depth: ${preparation.evidence_plan?.evidence_depth ?? '-'}
 - .vibepro is the workspace for diagnosis, Story, PR gate, and review evidence.
 
 ## Agent Handoff
 
 - ${artifactHint}
-- Hand pr-body.md to the coding agent, use gate-dag.html as the completion contract, and use split-plan.html for PR splitting.
+- Hand pr-body.md to the coding agent. ${completionReference}
 ${agentReviewLine}
 `
   });
@@ -2101,13 +2174,15 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
       type: 'pr_artifact',
       ref: toWorkspaceRelative(root, bodyPath),
       summary: 'pr prepare artifact: pr-body.md'
-    },
-    {
+    }
+  ];
+  if (gateDagJsonPath) {
+    evidence.push({
       type: 'pr_artifact',
       ref: toWorkspaceRelative(root, gateDagJsonPath),
       summary: 'pr prepare artifact: gate-dag.json'
-    }
-  ];
+    });
+  }
   if ((verificationEvidence?.commands ?? []).length > 0) {
     evidence.push({
       type: 'pr_artifact',
@@ -10628,6 +10703,7 @@ function stripRemote(ref) {
 }
 
 function toDisplayPath(filePath) {
+  if (!filePath) return '-';
   return filePath.split(path.sep).join('/');
 }
 

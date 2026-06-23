@@ -53,7 +53,22 @@ function evidenceRefs(traceability, type) {
 
 test('pr prepare sets story_doc_path and connects artifact evidence', async () => {
   const root = await setupPrepareRepo();
-  await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
+  await runCli([
+    'pr',
+    'prepare',
+    root,
+    '--story-id',
+    'story-test-promo',
+    '--base',
+    'main',
+    '--evidence-depth',
+    'full',
+    '--evidence-depth-reason',
+    'traceability promotion test asserts standalone gate dag artifact',
+    '--evidence-depth-consumer',
+    'traceability-promotion-test',
+    '--json'
+  ]);
   const traceability = await readJson(traceabilityPath(root, 'story-test-promo'));
   const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'gate-dag.json'));
   const prBody = await readFile(path.join(root, '.vibepro', 'pr', 'story-test-promo', 'pr-body.md'), 'utf8');
