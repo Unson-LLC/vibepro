@@ -143,15 +143,20 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
     const hasPrepare = await exists(preparePath);
     const hasGateDag = await exists(gateDagPath);
     const hasCreate = await exists(createPath);
-    if (hasVerification && (!hasPrepare || !hasGateDag)) {
+    const hasSummaryGateContract = hasPrepare && !hasGateDag
+      ? await hasSummaryDepthFinalGateContract(storyPrDir, storyId)
+      : false;
+    if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
       findings.push({
         id: `self_dogfood.final_gate_missing.${storyId}`,
         severity: 'high',
         gate_effect: 'review',
         story_id: storyId,
         path: toWorkspaceRelative(repoRoot, storyPrDir),
-        detail: 'Verification evidence exists, but final pr-prepare/gate-dag artifacts are missing. Do not treat verify record as completion.',
-        required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence.`
+        detail: hasPrepare
+          ? 'Verification evidence and pr-prepare.json exist, but neither gate-dag.json nor the summary-depth decision-index contract is present. Do not treat verify record as completion.'
+          : 'Verification evidence exists, but final pr-prepare/gate-dag artifacts are missing. Do not treat verify record as completion.',
+        required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence, or ensure summary depth writes evidence-plan.json plus decision-index.json.`
       });
     }
     if (hasGateDag) {
@@ -203,6 +208,23 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
     }
   }
   return findings;
+}
+
+async function hasSummaryDepthFinalGateContract(storyPrDir, storyId) {
+  const evidencePlan = await readJson(path.join(storyPrDir, 'evidence-plan.json'));
+  const decisionIndex = await readJson(path.join(storyPrDir, 'decision-index.json'));
+  if (!evidencePlan || !decisionIndex) return false;
+  if (evidencePlan.evidence_depth !== 'summary' || decisionIndex.evidence_depth !== 'summary') return false;
+  if (decisionIndex.story_id && decisionIndex.story_id !== storyId) return false;
+
+  const generatedArtifacts = new Set(evidencePlan.generated_artifacts ?? evidencePlan.artifact_policy?.generated_artifacts ?? []);
+  const skippedArtifacts = new Set(evidencePlan.skipped_artifacts ?? evidencePlan.artifact_policy?.skipped_artifacts ?? []);
+  const gateDagExplicitlySkipped = evidencePlan.artifact_policy?.write_full_gate_dag_dump === false
+    || skippedArtifacts.has('gate-dag.json');
+  if (!gateDagExplicitlySkipped) return false;
+  if (!generatedArtifacts.has('evidence-plan.json') || !generatedArtifacts.has('decision-index.json')) return false;
+
+  return Boolean(decisionIndex.gate_summary && decisionIndex.engineering_judgment);
 }
 
 async function scanCurrentGitHubPr(repoRoot, workspaceDir, options = {}) {

@@ -1538,6 +1538,50 @@ test('check self-dogfood detects verify evidence without final gate artifacts', 
   assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
 });
 
+test('check self-dogfood accepts summary-depth decision index as final gate contract', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await runCli(['init', repo, '--story-id', 'story-summary-contract', '--title', 'Summary contract']);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-summary-contract');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'verification-evidence.json'), {
+    story_id: 'story-summary-contract',
+    commands: [
+      { kind: 'unit', status: 'pass', command: 'npm test' }
+    ]
+  });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story_id: 'story-summary-contract',
+    evidence_plan: { evidence_depth: 'summary' }
+  });
+  await writeJson(path.join(prDir, 'evidence-plan.json'), {
+    evidence_depth: 'summary',
+    generated_artifacts: ['evidence-plan.json', 'decision-index.json', 'pr-prepare.json'],
+    skipped_artifacts: ['gate-dag.json', 'gate-dag.html'],
+    artifact_policy: {
+      write_full_gate_dag_dump: false
+    }
+  });
+  await writeJson(path.join(prDir, 'decision-index.json'), {
+    story_id: 'story-summary-contract',
+    evidence_depth: 'summary',
+    gate_summary: {
+      overall_status: 'ready_for_review',
+      unresolved_gate_count: 0
+    },
+    engineering_judgment: {
+      route_type: 'knowledge_docs',
+      active_axes: ['intent']
+    }
+  });
+
+  const result = await runCli(['check', 'self-dogfood', repo, '--story-id', 'story-summary-contract', '--run-id', 'self-dogfood-summary-contract', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const findings = result.result.check.evidence.self_dogfood.findings;
+  assert.equal(findings.some((finding) => finding.id.includes('final_gate_missing')), false);
+});
+
 test('check self-dogfood detects fixed English text in ja human artifacts', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);

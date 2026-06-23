@@ -13,7 +13,7 @@ vibepro check self-dogfood <repo> --story-id <story-id>
 
 ## Findings
 
-- `self_dogfood.final_gate_missing.<story-id>`: `verification-evidence.json` があるが `pr-prepare.json` または `gate-dag.json` がない。
+- `self_dogfood.final_gate_missing.<story-id>`: `verification-evidence.json` があるが `pr-prepare.json` がない、または `gate-dag.json` と summary-depth の `evidence-plan.json` + `decision-index.json` contract の両方がない。
 - `self_dogfood.unresolved_gate_dag.<story-id>`: `gate-dag.json` があり、`overall_status` が `ready_for_review` ではない。
 - `self_dogfood.invalid_gate_dag.<story-id>`: `gate-dag.json` が存在するがvalid JSONとして読めない。
 - `self_dogfood.pr_create_without_gate_override.<story-id>`: unresolved Gateのまま `pr-create.json` が存在し、VibePro waiverが記録されていない。

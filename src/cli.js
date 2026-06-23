@@ -210,8 +210,8 @@ Typical PR-safety flow:
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase]
 
-PR prepare creates pr-body, gate-dag, split-plan, review-cockpit, and
-machine-readable evidence under .vibepro/pr/<story-id>/ when initialized.
+PR prepare creates evidence-plan, decision-index, pr-body, split-plan, and
+plan-selected gate/review artifacts under .vibepro/pr/<story-id>/ when initialized.
 If required gates are unresolved, next_commands points back to review or
 verification. Only use vibepro pr create for normal PR creation; do not use raw
 gh pr create as the standard path. After PR creation, use vibepro execute merge
@@ -313,7 +313,7 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -463,7 +463,7 @@ Usage:
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -1801,6 +1801,9 @@ export async function runCli(argv, io = {}) {
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          evidenceDepth: getOption(rest, '--evidence-depth'),
+          evidenceDepthReason: getOption(rest, '--evidence-depth-reason'),
+          evidenceDepthConsumer: getOption(rest, '--evidence-depth-consumer'),
           stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
           progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           strict: hasFlag(rest, '--strict'),
