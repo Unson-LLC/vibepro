@@ -3,9 +3,9 @@
 - story: story-vibepro-canonical-audit-diff-stats
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 19644
+- artifact_lines: 19734
 - product_changed_lines: 493
-- artifact_code_ratio: 39.846
+- artifact_code_ratio: 40.028
 - diff_stats: available
 - pr_prepare: ready_for_review
 - pr_create: https://github.com/Unson-LLC/vibepro/pull/214

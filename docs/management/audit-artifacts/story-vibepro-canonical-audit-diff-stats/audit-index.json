@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-canonical-audit-diff-stats",
   "source": "execute_merge",
-  "generated_at": "2026-06-23T05:58:21.541Z",
+  "generated_at": "2026-06-23T05:58:28.851Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-23T05:58:15.797Z",
     "diff_stats_reason": null,
-    "artifact_lines": 19644,
+    "artifact_lines": 19734,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 493,
@@ -88,7 +88,7 @@
     "product_changed_lines": 493,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 39.846,
+    "artifact_code_ratio": 40.028,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
