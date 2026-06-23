@@ -46,6 +46,12 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.blocked ||= artifact.data?.gate_status?.ready_for_pr_create === false;
       story.waiver_required ||= artifact.data?.gate_status?.execution_gate?.waiver_required === true;
       story.latest_gate_status = artifact.data?.gate_status?.overall_status ?? story.latest_gate_status;
+      if (artifact.data?.evidence_reuse && !story.evidence_reuse.latest_status) {
+        recordEvidenceReuse(story, artifact.data.evidence_reuse);
+      }
+    }
+    if (artifact.kind === 'evidence_reuse') {
+      recordEvidenceReuse(story, artifact.data);
     }
     if (artifact.kind === 'pr_create') {
       story.pr_create_count += 1;
@@ -140,6 +146,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   };
   const artifact_source_hints = await buildArtifactSourceHints(root, since, artifactCounts);
   const evidence_cost = buildEvidenceCostMetrics(stories, canonicalArtifacts.bundleArtifacts);
+  const evidence_reuse = buildEvidenceReuseMetrics(stories);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -153,6 +160,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     agent_review,
     ...(subagent_roi ? { subagent_roi } : {}),
     evidence_cost,
+    evidence_reuse,
     value_signals,
     log_signals: logs
   };
@@ -162,7 +170,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} traceability=${story.traceability_resolution?.status ?? 'unknown'} clause_traceability=${formatClauseTraceability(story.traceability_clause_coverage)} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} evidence_reuse=${story.evidence_reuse?.latest_status ?? 'unknown'} traceability=${story.traceability_resolution?.status ?? 'unknown'} clause_traceability=${formatClauseTraceability(story.traceability_clause_coverage)} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -177,6 +185,7 @@ export function renderUsageReport(report) {
     : '- none';
   const subagentRoiRows = renderSubagentRoiRows(report);
   const evidenceCostRows = renderEvidenceCostRows(report);
+  const evidenceReuseRows = renderEvidenceReuseRows(report);
   const valueSignals = report.value_signals ?? {};
   const valueRows = [
     `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
@@ -221,6 +230,10 @@ ${subagentRoiRows}
 ## Evidence Cost
 
 ${evidenceCostRows}
+
+## Evidence Reuse
+
+${evidenceReuseRows}
 
 ## Value Signals
 
@@ -268,6 +281,10 @@ ${subagentRoiRows}
 ## 証跡コスト
 
 ${evidenceCostRows}
+
+## Evidence Reuse
+
+${evidenceReuseRows}
 
 ## Value Signals
 
@@ -325,6 +342,14 @@ function ensureStoryUsage(storyMap, storyId) {
         evidence_depth: null,
         budget_status: null
       },
+      evidence_reuse: {
+        latest_status: null,
+        latest_evidence_key: null,
+        hit_count: 0,
+        miss_count: 0,
+        stale_count: 0,
+        full_evidence_generation_count: 0
+      },
       artifact_sources: [],
       traceability_resolution: {
         status: 'unknown',
@@ -362,7 +387,7 @@ async function collectPrArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const storyId of storyDirs) {
     const storyDir = path.join(prDir, storyId);
-    for (const [file, kind] of [['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
+    for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
       const filePath = path.join(storyDir, file);
       const data = await readJsonIfExists(filePath);
       if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
@@ -985,6 +1010,49 @@ function collectGateMetrics(gateDag, storyId, storyMap) {
   }
 }
 
+function recordEvidenceReuse(story, evidenceReuse) {
+  if (!evidenceReuse || typeof evidenceReuse !== 'object') return;
+  const status = evidenceReuse.status ?? null;
+  story.evidence_reuse.latest_status = status ?? story.evidence_reuse.latest_status;
+  story.evidence_reuse.latest_evidence_key = evidenceReuse.evidence_key ?? story.evidence_reuse.latest_evidence_key;
+  if (status === 'hit') story.evidence_reuse.hit_count += 1;
+  if (status === 'miss') story.evidence_reuse.miss_count += 1;
+  if (status === 'stale') story.evidence_reuse.stale_count += 1;
+  const generationCount = evidenceReuse.full_evidence?.generation_count;
+  if (Number.isFinite(generationCount)) {
+    story.evidence_reuse.full_evidence_generation_count = Math.max(
+      story.evidence_reuse.full_evidence_generation_count,
+      generationCount
+    );
+  }
+}
+
+function buildEvidenceReuseMetrics(stories) {
+  const observedStories = stories.filter((story) => story.evidence_reuse?.latest_status);
+  const hitCount = sumNumbers(observedStories.map((story) => story.evidence_reuse.hit_count));
+  const missCount = sumNumbers(observedStories.map((story) => story.evidence_reuse.miss_count));
+  const staleCount = sumNumbers(observedStories.map((story) => story.evidence_reuse.stale_count));
+  return {
+    schema_version: '0.1.0',
+    observed_story_count: observedStories.length,
+    hit_count: hitCount,
+    miss_count: missCount,
+    stale_count: staleCount,
+    hit_rate: calculateRate(hitCount, hitCount + missCount + staleCount),
+    by_story: observedStories
+      .map((story) => ({
+        story_id: story.story_id,
+        latest_status: story.evidence_reuse.latest_status,
+        evidence_key: story.evidence_reuse.latest_evidence_key,
+        hit_count: story.evidence_reuse.hit_count,
+        miss_count: story.evidence_reuse.miss_count,
+        stale_count: story.evidence_reuse.stale_count,
+        full_evidence_generation_count: story.evidence_reuse.full_evidence_generation_count
+      }))
+      .sort((a, b) => a.story_id.localeCompare(b.story_id))
+  };
+}
+
 function buildEvidenceCostMetrics(stories, bundleArtifacts) {
   const summaries = bundleArtifacts
     .map((artifact) => artifact.data?.cost_summary)
@@ -1045,6 +1113,23 @@ function renderEvidenceCostRows(report) {
   const storyRows = cost.by_story?.length
     ? cost.by_story.map((story) => (
         `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+      ))
+    : ['- none'];
+  return [...summaryRows, '', ...storyRows].join('\n');
+}
+
+function renderEvidenceReuseRows(report) {
+  const reuse = report.evidence_reuse ?? {};
+  const summaryRows = [
+    `- observed_stories: ${reuse.observed_story_count ?? 0}`,
+    `- hit: ${reuse.hit_count ?? 0}`,
+    `- miss: ${reuse.miss_count ?? 0}`,
+    `- stale: ${reuse.stale_count ?? 0}`,
+    `- hit_rate: ${formatRate(reuse.hit_rate)}`
+  ];
+  const storyRows = reuse.by_story?.length
+    ? reuse.by_story.map((story) => (
+        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');

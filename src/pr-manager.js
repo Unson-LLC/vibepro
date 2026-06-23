@@ -49,6 +49,12 @@ import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import {
+  buildEvidenceReuse,
+  buildEvidenceReuseGate,
+  readEvidenceReuseIfExists,
+  summarizeEvidenceReuse
+} from './evidence-reuse.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -269,6 +275,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
   const prDir = path.join(prRoot, 'pr', story.story_id);
   await mkdir(prDir, { recursive: true });
+  const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
   const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
   const decisionIndexPath = path.join(prDir, 'decision-index.json');
   const jsonPath = path.join(prDir, 'pr-prepare.json');
@@ -338,6 +345,38 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const artifactPolicy = evidencePlan.artifact_policy ?? {};
   const writeHtmlReports = artifactPolicy.write_html_reports !== false;
   const writeGateDagDump = artifactPolicy.write_full_gate_dag_dump !== false;
+  const previousEvidenceReuse = workspace.initialized
+    ? await progress.stage('read_evidence_reuse', () => readEvidenceReuseIfExists(root, story.story_id))
+    : null;
+  const evidenceReuse = buildEvidenceReuse({
+    repoRoot: root,
+    story,
+    git: reviewGit,
+    prContext,
+    evidencePlan,
+    decisionIndex,
+    verificationEvidence,
+    previousReuse: previousEvidenceReuse,
+    artifacts: {
+      evidenceReusePath,
+      evidencePlanPath,
+      decisionIndexPath,
+      jsonPath,
+      gateDagJsonPath: writeGateDagDump ? gateDagJsonPath : null
+    },
+    createdAt
+  });
+  const evidenceReuseSummary = summarizeEvidenceReuse(evidenceReuse);
+  evidencePlan.evidence_reuse = evidenceReuseSummary;
+  decisionIndex.evidence_reuse = evidenceReuseSummary;
+  prContext.evidence_reuse = evidenceReuseSummary;
+  prContext.gate_dag.nodes.push(buildEvidenceReuseGate(evidenceReuse));
+  prContext.gate_dag.summary.evidence_reuse = evidenceReuseSummary;
+  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
+    ? 'needs_verification'
+    : 'ready_for_review';
+  prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
+  gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const traceabilityEvidence = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -377,6 +416,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     },
     evidence_plan: evidencePlan,
     decision_index: decisionIndex,
+    evidence_reuse: evidenceReuse,
     gate_status: gateStatus,
     authorization_scoring: authorizationScoring,
     workspace: {
@@ -410,6 +450,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     });
   preparation.lifecycle_artifacts = lifecycleArtifacts;
   await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
+    await writeFile(evidenceReusePath, `${JSON.stringify(evidenceReuse, null, 2)}\n`, { signal });
     await writeFile(evidencePlanPath, `${JSON.stringify(evidencePlan, null, 2)}\n`, { signal });
     await writeFile(decisionIndexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
@@ -477,6 +518,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     manifest.pr_preparations = {
       ...(manifest.pr_preparations ?? {}),
       [story.story_id]: {
+        latest_evidence_reuse: toWorkspaceRelative(root, evidenceReusePath),
         latest_evidence_plan: toWorkspaceRelative(root, evidencePlanPath),
         latest_decision_index: toWorkspaceRelative(root, decisionIndexPath),
         latest_prepare: toWorkspaceRelative(root, jsonPath),
@@ -509,6 +551,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     story,
     preparation,
     artifacts: {
+      evidence_reuse: evidenceReusePath,
       evidence_plan: evidencePlanPath,
       decision_index: decisionIndexPath,
       json: jsonPath,
@@ -1182,6 +1225,8 @@ ${firstLook}
 | Completion quality | ${gateStatus.completion_quality_status ?? '-'} |
 | Evidence depth | ${preparation.evidence_plan?.evidence_depth ?? '-'} |
 | Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
+| Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
+| Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
 | Base | ${preparation.git.base_ref} |
 | Head | ${preparation.git.head_ref} |
 | Current branch | ${preparation.git.current_branch ?? '-'} |
@@ -1206,6 +1251,7 @@ ${firstLook}
 
 - evidence_plan_json: ${toDisplayPath(result.artifacts.evidence_plan)}
 - decision_index_json: ${toDisplayPath(result.artifacts.decision_index)}
+- evidence_reuse_json: ${toDisplayPath(result.artifacts.evidence_reuse)}
 - report_html: ${toDisplayPath(result.artifacts.report)}
 - review_cockpit_html: ${toDisplayPath(result.artifacts.review_cockpit)}
 - human_review_json: ${toDisplayPath(result.artifacts.human_review)}
@@ -1236,12 +1282,14 @@ function renderPrPrepareFirstLook({ preparation, gateStatus, result, language })
   const summaryDepth = preparation.evidence_plan?.evidence_depth === 'summary';
   const artifactHint = (summaryDepth
     ? [
+        `evidence-reuse: ${toDisplayPath(result.artifacts.evidence_reuse)}`,
         `decision-index: ${toDisplayPath(result.artifacts.decision_index)}`,
         `evidence-plan: ${toDisplayPath(result.artifacts.evidence_plan)}`,
         `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
         `pr-prepare-json: ${toDisplayPath(result.artifacts.json)}`
       ]
     : [
+        `evidence-reuse: ${toDisplayPath(result.artifacts.evidence_reuse)}`,
         `review-cockpit: ${toDisplayPath(result.artifacts.review_cockpit)}`,
         `pr-body: ${toDisplayPath(result.artifacts.pr_body)}`,
         `gate-dag: ${toDisplayPath(result.artifacts.gate_dag_report)}`,

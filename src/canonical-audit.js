@@ -11,6 +11,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
 const PR_AUDIT_FILES = [
+  ['evidence-reuse.json', 'evidence_reuse'],
   ['pr-prepare.json', 'pr_prepare'],
   ['pr-create.json', 'pr_create'],
   ['gate-dag.json', 'gate_dag'],
@@ -326,6 +327,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
     byKind.set(artifact.kind, items);
   }
   const prPrepare = latestData(byKind.get('pr_prepare'));
+  const evidenceReuse = latestData(byKind.get('evidence_reuse')) ?? prPrepare?.evidence_reuse ?? null;
   const prCreate = latestData(byKind.get('pr_create'));
   const prMerge = latestData(byKind.get('pr_merge')) ?? merge;
   const gateDag = latestData(byKind.get('gate_dag'));
@@ -351,6 +353,15 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         fast_lane: prPrepare.gate_status.fast_lane ?? null,
         critical_unresolved_gate_count: prPrepare.gate_status.critical_unresolved_gates?.length ?? 0
       } : null
+    },
+    evidence_reuse: {
+      present: Boolean(evidenceReuse),
+      created_at: evidenceReuse?.created_at ?? prPrepare?.created_at ?? null,
+      status: evidenceReuse?.status ?? null,
+      evidence_key: evidenceReuse?.evidence_key ?? null,
+      stale_reason_count: evidenceReuse?.stale_reasons?.length ?? 0,
+      full_evidence_status: evidenceReuse?.full_evidence?.status ?? null,
+      full_evidence_generation_count: evidenceReuse?.full_evidence?.generation_count ?? null
     },
     pr_create: {
       present: Boolean(prCreate),
@@ -413,6 +424,7 @@ function renderDecisionSummary(index) {
 - artifact_code_ratio: ${index.cost_summary.artifact_code_ratio ?? 'unknown'}
 - diff_stats: ${index.cost_summary.diff_stats_status ?? 'unknown'}
 - pr_prepare: ${index.pr_prepare.present ? index.pr_prepare.gate_status?.overall_status ?? 'present' : 'missing'}
+- evidence_reuse: ${index.evidence_reuse.present ? `${index.evidence_reuse.status ?? 'present'} key=${index.evidence_reuse.evidence_key ?? 'unknown'}` : 'missing'}
 - pr_create: ${index.pr_create.present ? index.pr_create.status ?? index.pr_create.pr_url ?? 'present' : 'missing'}
 - pr_merge: ${index.pr_merge.present ? index.pr_merge.summary?.status ?? 'present' : 'missing'}
 - verification: commands=${index.verification.command_count} pass=${index.verification.pass_count} fail=${index.verification.fail_count}
@@ -715,6 +727,29 @@ function buildDecisionIndexPrArtifacts({ root, storyId, index, indexPath, bundle
         created_at: index.pr_prepare.created_at ?? index.generated_at,
         story: { story_id: storyId },
         gate_status: index.pr_prepare.gate_status ?? {}
+      }
+    });
+  }
+  if (index.evidence_reuse?.present) {
+    artifacts.push({
+      kind: 'evidence_reuse',
+      story_id: storyId,
+      path: pathForArtifact,
+      source: 'canonical_audit_summary',
+      data: {
+        schema_version: '0.1.0',
+        story_id: storyId,
+        created_at: index.evidence_reuse.created_at ?? index.generated_at,
+        status: index.evidence_reuse.status ?? null,
+        evidence_key: index.evidence_reuse.evidence_key ?? null,
+        stale_reasons: Array.from({ length: index.evidence_reuse.stale_reason_count ?? 0 }, (_, index) => ({
+          field: 'compact_summary',
+          reason: `stale reason ${index + 1} recorded in compact canonical audit`
+        })),
+        full_evidence: {
+          status: index.evidence_reuse.full_evidence_status ?? null,
+          generation_count: index.evidence_reuse.full_evidence_generation_count ?? null
+        }
       }
     });
   }
