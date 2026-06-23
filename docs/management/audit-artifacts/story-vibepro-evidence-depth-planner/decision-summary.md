@@ -3,9 +3,9 @@
 - story: story-vibepro-evidence-depth-planner
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 18620
+- artifact_lines: 18710
 - product_changed_lines: 1107
-- artifact_code_ratio: 16.82
+- artifact_code_ratio: 16.902
 - diff_stats: available
 - pr_prepare: ready_for_review
 - pr_create: https://github.com/Unson-LLC/vibepro/pull/215
