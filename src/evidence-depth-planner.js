@@ -138,8 +138,8 @@ export function buildEvidencePlan({
     generated_artifacts: artifactPolicy.generated_artifacts,
     skipped_artifacts: artifactPolicy.skipped_artifacts,
     consumers: evidenceDepth === 'summary'
-      ? ['decision-index.json', 'evidence-plan.json', 'pr-body.md']
-      : ['review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json']
+      ? ['evidence-reuse.json', 'decision-index.json', 'evidence-plan.json', 'pr-body.md']
+      : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json']
   };
 }
 
@@ -217,6 +217,7 @@ export function buildEvidenceDecisionIndex({
 function buildArtifactPolicy(evidenceDepth) {
   const summary = evidenceDepth === 'summary';
   const generatedArtifacts = [
+    'evidence-reuse.json',
     'evidence-plan.json',
     'decision-index.json',
     'pr-prepare.json',

@@ -8,6 +8,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
+import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -159,6 +160,13 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   await mkdir(reviewDir, { recursive: true });
 
   const gitContext = await collectGitContext(root);
+  const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
+  const verificationEvidence = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json'));
+  const evidenceReuse = evaluateEvidenceReuseForReview({
+    reuse: evidenceReuseArtifact,
+    gitContext,
+    verificationEvidence
+  });
   const plan = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -167,6 +175,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     created_at: new Date().toISOString(),
     output: { language },
     git_context: gitContext,
+    evidence_reuse: evidenceReuse,
     review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage, roles),
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: buildCoordinatorInstructions(language),
@@ -1479,6 +1488,63 @@ function formatModelPolicyCommandArgs(modelPolicy) {
   return args.length > 0 ? ` ${args.join(' ')}` : '';
 }
 
+function renderEvidenceReuseReviewInput(plan, language = 'ja') {
+  const reuse = plan?.evidence_reuse;
+  if (!reuse) return '';
+  const staleReasonRows = (reuse.stale_reasons ?? [])
+    .slice(0, 5)
+    .map((reason) => `- ${reason.field ?? 'unknown'}: ${reason.reason ?? 'changed'} previous=${formatReviewValue(reason.previous)} current=${formatReviewValue(reason.current)}`)
+    .join('\n');
+  const timestampRows = (reuse.verification_command_timestamps ?? [])
+    .slice(0, 5)
+    .map((timestamp) => `- ${timestamp.kind ?? 'unknown'}: executed_at=${timestamp.executed_at ?? '-'} git_recorded_at=${timestamp.git_recorded_at ?? '-'}`)
+    .join('\n');
+  const currentTimestampRows = (reuse.current_verification_command_timestamps ?? [])
+    .slice(0, 5)
+    .map((timestamp) => `- ${timestamp.kind ?? 'unknown'}: executed_at=${timestamp.executed_at ?? '-'} git_recorded_at=${timestamp.git_recorded_at ?? '-'}`)
+    .join('\n');
+  if (language === 'en') {
+    return `
+## Evidence Reuse First Input
+
+- status: ${reuse.status ?? 'unknown'}
+- evidence_key: ${reuse.evidence_key ?? '-'}
+- first_input: ${reuse.first_input === true}
+- reason: ${reuse.reason ?? '-'}
+- verification_summary_fingerprint: ${reuse.verification_summary_fingerprint ?? '-'}
+- current_verification_summary_fingerprint: ${reuse.current_verification_summary_fingerprint ?? '-'}
+- verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
+- current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
+- preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
+${timestampRows ? `\nVerification command timestamps in reuse key:\n${timestampRows}` : ''}
+${currentTimestampRows ? `\nCurrent verification command timestamps:\n${currentTimestampRows}` : ''}
+${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
+`;
+  }
+  return `
+## Evidence Reuse First Input
+
+- status: ${reuse.status ?? 'unknown'}
+- evidence_key: ${reuse.evidence_key ?? '-'}
+- first_input: ${reuse.first_input === true}
+- reason: ${reuse.reason ?? '-'}
+- verification_summary_fingerprint: ${reuse.verification_summary_fingerprint ?? '-'}
+- current_verification_summary_fingerprint: ${reuse.current_verification_summary_fingerprint ?? '-'}
+- verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
+- current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
+- preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
+${timestampRows ? `\nReuse key内のverification command timestamps:\n${timestampRows}` : ''}
+${currentTimestampRows ? `\n現在のverification command timestamps:\n${currentTimestampRows}` : ''}
+${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
+`;
+}
+
+function formatReviewValue(value) {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
+}
+
 function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = plan?.output?.language ?? 'ja' }) {
   const recordCommand = buildReviewRecordCommand({ storyId, stage, role });
   const rolePolicy = plan.review_policy?.role_policies?.[role] ?? {};
@@ -1494,6 +1560,7 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   const evidenceHandling = localizedEvidenceHandlingBlock(language);
   const investigationGuidelines = localizedInvestigationGuidelinesBlock(language);
+  const evidenceReuseInput = renderEvidenceReuseReviewInput(plan, language);
   if (language === 'en') {
     return `# VibePro Agent Review Request
 
@@ -1501,6 +1568,7 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
 - Stage: ${stage}
 - Role: ${role}
 ${renderGitContextHeader(plan.git_context, language)}
+${evidenceReuseInput}
 
 ## Review Focus
 ${buildRolePromptSummary(stage, role, language)}
@@ -1556,6 +1624,7 @@ ${investigationGuidelines}
 - Stage: ${stage}
 - Role: ${role}
 ${renderGitContextHeader(plan.git_context, language)}
+${evidenceReuseInput}
 
 ## レビュー観点
 ${buildRolePromptSummary(stage, role, language)}
@@ -1608,6 +1677,7 @@ ${investigationGuidelines}
 
 function renderParallelDispatchMarkdown({ storyId, stage, roles, plan, language = plan?.output?.language ?? 'ja' }) {
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
+  const evidenceReuseInput = renderEvidenceReuseReviewInput(plan, language);
   const items = roles.map((role, index) => {
     const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
     const command = buildReviewRecordCommand({ storyId, stage, role });
@@ -1680,6 +1750,7 @@ timeout/replacement/manual shutdown用Lifecycle close command:
 - Required subagents: ${roles.length}
 ${renderGitContextHeader(plan.git_context, language)}
 - Parallel scope: this stage only; do not combine with another review stage
+${evidenceReuseInput}
 
 ## Coordinator Instructions
 
@@ -1713,6 +1784,7 @@ ${items}
 - Required subagents: ${roles.length}
 ${renderGitContextHeader(plan.git_context, language)}
 - Parallel scope: このstageのみ。別review stageと同じbatchで混ぜない
+${evidenceReuseInput}
 
 ## Coordinator指示
 

@@ -102,6 +102,29 @@ test('canonical audit bundle compacts over-budget evidence instead of copying fu
       status: 'passed'
     }))
   });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'evidence-reuse.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    created_at: '2026-06-23T00:01:00.000Z',
+    status: 'hit',
+    evidence_key: 'evk_compact',
+    key_inputs: {
+      verification_summary_fingerprint: 'sha256:compact-verification',
+      verification_evidence_updated_at: '2026-06-23T00:02:00.000Z',
+      verification_command_timestamps: [
+        {
+          kind: 'unit',
+          executed_at: '2026-06-23T00:02:00.000Z',
+          git_recorded_at: '2026-06-23T00:02:01.000Z'
+        }
+      ]
+    },
+    stale_reasons: [],
+    full_evidence: {
+      status: 'reused',
+      generation_count: 1
+    }
+  });
 
   const promoted = await promoteCanonicalAuditArtifacts(root, {
     storyId,
@@ -119,10 +142,11 @@ test('canonical audit bundle compacts over-budget evidence instead of copying fu
   assert.equal(bundle.cost_summary.budget_status, 'exceeded');
   assert.equal(bundle.artifacts.some((item) => item.kind === 'audit_index'), true);
   assert.equal(bundle.raw_artifacts.some((item) => item.kind === 'pr_prepare' && item.persisted === false), true);
-  assert.equal(
-    await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json')).then((item) => item.pr_prepare.present),
-    true
-  );
+  const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
+  assert.equal(auditIndex.pr_prepare.present, true);
+  assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
+  assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
+  assert.equal(auditIndex.evidence_reuse.verification_command_timestamps[0].executed_at, '2026-06-23T00:02:00.000Z');
   await assert.rejects(
     () => readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'), 'utf8'),
     /ENOENT/
