@@ -54,6 +54,42 @@ title: Low risk
   return root;
 }
 
+async function setupHighRiskAuthRepo() {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-edp-auth-'));
+  await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>\n');
+  await git(root, ['init', '-b', 'main']);
+  await git(root, ['config', 'user.email', 'vibepro@example.com']);
+  await git(root, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', root, '--story-id', 'story-auth-risk', '--title', 'Auth risk']);
+  await mkdir(path.join(root, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(root, 'docs', 'management', 'stories', 'active', 'story-auth-risk.md'), `---
+story_id: story-auth-risk
+title: Auth risk
+---
+
+# Story
+
+## Background
+The auth permission boundary must reject unauthorized sessions.
+
+## Acceptance Criteria
+- Update the auth permission check.
+`);
+  await git(root, ['add', '.']);
+  await git(root, ['commit', '-m', 'init']);
+  await git(root, ['switch', '-c', 'feature/auth-risk']);
+  await mkdir(path.join(root, 'src'), { recursive: true });
+  await writeFile(path.join(root, 'src', 'auth.js'), [
+    'export function canAccessSession(user, session) {',
+    '  return Boolean(user?.id && session?.ownerId === user.id);',
+    '}',
+    ''
+  ].join('\n'));
+  await git(root, ['add', 'src/auth.js']);
+  await git(root, ['commit', '-m', 'feat: add auth permission check']);
+  return root;
+}
+
 test('pr prepare summary depth writes plan/index but skips HTML and standalone Gate DAG dump', async () => {
   const repo = await setupLowRiskRepo();
 
@@ -113,4 +149,22 @@ test('pr prepare records manual full evidence-depth override', async () => {
   assert.equal(plan.manual_override.consumer, 'value-audit');
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+});
+
+test('pr prepare records targeted full surfaces for high-risk default workflow', async () => {
+  const repo = await setupHighRiskAuthRepo();
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-auth-risk', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-auth-risk');
+  const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
+  const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+
+  assert.equal(plan.default_depth, 'standard');
+  assert.equal(plan.evidence_depth, 'standard');
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, true);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
+  assert.ok(plan.risk_signals.some((signal) => signal.kind === 'risk_surface' && signal.value === 'auth_boundary'));
+  assert.ok(plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
+  assert.ok(prepare.evidence_plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
 });
