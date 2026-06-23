@@ -94,6 +94,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
     story.artifacts.push(artifact.path);
     story.canonical_audit_bundle_count += 1;
+    story.evidence_cost.canonical_audit = artifact.data?.cost_summary ?? story.evidence_cost.canonical_audit;
+    story.evidence_cost.evidence_depth = artifact.data?.evidence_depth ?? story.evidence_cost.evidence_depth;
+    story.evidence_cost.budget_status = artifact.data?.cost_summary?.budget_status ?? story.evidence_cost.budget_status;
     story.handoff_replay_status = artifact.data?.handoff_replay_status
       ?? artifact.data?.handoff_replay?.status
       ?? story.handoff_replay_status;
@@ -136,6 +139,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     logs: logs.files.length
   };
   const artifact_source_hints = await buildArtifactSourceHints(root, since, artifactCounts);
+  const evidence_cost = buildEvidenceCostMetrics(stories, canonicalArtifacts.bundleArtifacts);
   return {
     schema_version: '0.1.0',
     generated_at: new Date().toISOString(),
@@ -148,6 +152,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     gate_metrics,
     agent_review,
     ...(subagent_roi ? { subagent_roi } : {}),
+    evidence_cost,
     value_signals,
     log_signals: logs
   };
@@ -171,6 +176,7 @@ export function renderUsageReport(report) {
       )).join('\n')
     : '- none';
   const subagentRoiRows = renderSubagentRoiRows(report);
+  const evidenceCostRows = renderEvidenceCostRows(report);
   const valueSignals = report.value_signals ?? {};
   const valueRows = [
     `- waiver_required: ${valueSignals.waiver_required_story_count ?? 0}/${valueSignals.story_count ?? 0} (${formatRate(valueSignals.waiver_required_rate)})`,
@@ -211,6 +217,10 @@ ${gateRows}
 
 ${reviewRows}
 ${subagentRoiRows}
+
+## Evidence Cost
+
+${evidenceCostRows}
 
 ## Value Signals
 
@@ -254,6 +264,10 @@ ${gateRows}
 
 ${reviewRows}
 ${subagentRoiRows}
+
+## 証跡コスト
+
+${evidenceCostRows}
 
 ## Value Signals
 
@@ -306,6 +320,11 @@ function ensureStoryUsage(storyMap, storyId) {
       canonical_audit_bundle_count: 0,
       handoff_replay_status: null,
       handoff_replay_unresolved_reference_count: 0,
+      evidence_cost: {
+        canonical_audit: null,
+        evidence_depth: null,
+        budget_status: null
+      },
       artifact_sources: [],
       traceability_resolution: {
         status: 'unknown',
@@ -964,6 +983,64 @@ function collectGateMetrics(gateDag, storyId, storyMap) {
     if (node.status === 'stale_evidence') story.stale_evidence = true;
     if (node.status === 'story_source_mismatch') story.story_source_mismatch = true;
   }
+}
+
+function buildEvidenceCostMetrics(stories, bundleArtifacts) {
+  const summaries = bundleArtifacts
+    .map((artifact) => artifact.data?.cost_summary)
+    .filter(Boolean);
+  const totalArtifactLines = sumNumbers(summaries.map((summary) => summary.artifact_lines));
+  const totalProductChangedLines = sumNumbers(summaries.map((summary) => summary.product_changed_lines));
+  const budgetExceededCount = summaries.filter((summary) => summary.budget_status === 'exceeded').length;
+  return {
+    schema_version: '0.1.0',
+    canonical_bundle_count: bundleArtifacts.length,
+    observed_cost_summary_count: summaries.length,
+    budget_exceeded_count: budgetExceededCount,
+    total_artifact_lines: totalArtifactLines,
+    total_product_changed_lines: totalProductChangedLines,
+    artifact_code_ratio: totalProductChangedLines > 0 ? Number((totalArtifactLines / totalProductChangedLines).toFixed(3)) : null,
+    token_accounting_status: summaries.some((summary) => summary.token_accounting?.status !== 'unavailable')
+      ? 'partial'
+      : 'unavailable',
+    elapsed_time_accounting_status: summaries.some((summary) => summary.elapsed_time_accounting?.status !== 'unavailable')
+      ? 'partial'
+      : 'unavailable',
+    by_story: stories
+      .filter((story) => story.evidence_cost?.canonical_audit)
+      .map((story) => ({
+        story_id: story.story_id,
+        evidence_depth: story.evidence_cost.evidence_depth,
+        budget_status: story.evidence_cost.budget_status,
+        artifact_lines: story.evidence_cost.canonical_audit.artifact_lines,
+        product_changed_lines: story.evidence_cost.canonical_audit.product_changed_lines,
+        artifact_code_ratio: story.evidence_cost.canonical_audit.artifact_code_ratio,
+        tokens: story.evidence_cost.canonical_audit.token_accounting?.total_tokens ?? null,
+        elapsed_ms: story.evidence_cost.canonical_audit.elapsed_time_accounting?.elapsed_ms ?? null
+      }))
+      .sort((a, b) => a.story_id.localeCompare(b.story_id))
+  };
+}
+
+function renderEvidenceCostRows(report) {
+  const cost = report.evidence_cost ?? {};
+  const unknown = report.output?.language === 'en' ? 'unknown' : '未確認';
+  const summaryRows = [
+    `- canonical_bundles: ${cost.canonical_bundle_count ?? 0}`,
+    `- observed_cost_summaries: ${cost.observed_cost_summary_count ?? 0}`,
+    `- budget_exceeded: ${cost.budget_exceeded_count ?? 0}`,
+    `- artifact_lines: ${cost.total_artifact_lines ?? 0}`,
+    `- product_changed_lines: ${cost.total_product_changed_lines ?? 0}`,
+    `- artifact_code_ratio: ${cost.artifact_code_ratio ?? unknown}`,
+    `- tokens: ${cost.token_accounting_status === 'unavailable' ? unknown : cost.token_accounting_status}`,
+    `- elapsed_time: ${cost.elapsed_time_accounting_status === 'unavailable' ? unknown : cost.elapsed_time_accounting_status}`
+  ];
+  const storyRows = cost.by_story?.length
+    ? cost.by_story.map((story) => (
+        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? 0} ratio=${story.artifact_code_ratio ?? unknown} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+      ))
+    : ['- none'];
+  return [...summaryRows, '', ...storyRows].join('\n');
 }
 
 function buildValueSignals(stories) {

@@ -217,6 +217,82 @@ test('CAA-VERIFY-002 canonical audit bundle makes main-only usage report audit m
   );
 });
 
+test('compact canonical audit index resolves merged story and renders evidence cost', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-compact-audit' }
+  ]);
+  const auditDir = path.join(root, 'docs', 'management', 'audit-artifacts', 'story-compact-audit');
+  await mkdir(auditDir, { recursive: true });
+  const costSummary = {
+    schema_version: '0.1.0',
+    evidence_depth: 'standard',
+    artifact_lines: 2200,
+    product_changed_lines: 20,
+    artifact_code_ratio: 110,
+    budget_status: 'exceeded',
+    token_accounting: { status: 'unavailable', total_tokens: null },
+    elapsed_time_accounting: { status: 'unavailable', elapsed_ms: null }
+  };
+  await writeFile(path.join(auditDir, 'audit-index.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-compact-audit',
+    generated_at: '2026-06-23T00:10:00.000Z',
+    evidence_depth: 'standard',
+    budget_status: 'exceeded',
+    cost_summary: costSummary,
+    pr_prepare: {
+      present: true,
+      created_at: '2026-06-23T00:00:00.000Z',
+      gate_status: { ready_for_pr_create: true, overall_status: 'ready_for_review' }
+    },
+    pr_create: {
+      present: true,
+      created_at: '2026-06-23T00:03:00.000Z',
+      status: 'created',
+      pr_url: 'https://github.com/example/repo/pull/2'
+    },
+    pr_merge: {
+      present: true,
+      summary: {
+        status: 'merged',
+        pr_url: 'https://github.com/example/repo/pull/2',
+        merge_commit_sha: 'def456',
+        merged_at: '2026-06-23T00:08:00.000Z'
+      }
+    },
+    traceability: { present: false },
+    verification: { present: false },
+    review: { summary_count: 0, result_count: 0, pass_count: 0, block_count: 0 },
+    missing_artifacts: []
+  }, null, 2));
+  await writeFile(path.join(auditDir, 'audit-bundle.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-compact-audit',
+    source: 'execute_merge',
+    promoted_at: '2026-06-23T00:10:00.000Z',
+    evidence_depth: 'standard',
+    handoff_replay_status: 'summary_ready',
+    cost_summary: costSummary,
+    artifacts: [
+      { kind: 'audit_index', canonical_path: 'docs/management/audit-artifacts/story-compact-audit/audit-index.json' }
+    ]
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-compact-audit');
+  assert.equal(story.prepared, true);
+  assert.equal(story.pr_created, true);
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(missingGaps(story).length, 0);
+  assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
+  assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit_summary');
+  assert.equal(report.evidence_cost.budget_exceeded_count, 1);
+  assert.equal(report.evidence_cost.total_artifact_lines, 2200);
+  assert.match(renderUsageReport(report), /## 証跡コスト/);
+  assert.match(renderUsageReport(report), /story-compact-audit: depth=standard budget=exceeded/);
+  assert.match(renderUsageReport(report), /tokens=未確認/);
+});
+
 test('blocked canonical handoff replay is surfaced as a fake-value signal', async () => {
   const root = await setupReportRepo([
     { story_id: 'story-blocked-handoff' }
