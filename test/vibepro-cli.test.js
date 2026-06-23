@@ -10635,6 +10635,19 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   } catch {
     await git(repo, ['remote', 'add', 'origin', remote]);
   }
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'merge-diff-fixture.js'), [
+    'export const mergeDiffFixture = true;',
+    ...Array.from({ length: 800 }, (_, index) => `export const mergeDiffFixtureLine${index} = ${index};`)
+  ].join('\n') + '\n');
+  await writeFile(path.join(repo, 'test', 'merge-diff-fixture.test.js'), [
+    'import assert from "node:assert/strict";',
+    'assert.equal(true, true);',
+    ...Array.from({ length: 200 }, (_, index) => `assert.equal(${index}, ${index});`)
+  ].join('\n') + '\n');
+  await git(repo, ['add', 'src/merge-diff-fixture.js', 'test/merge-diff-fixture.test.js']);
+  await git(repo, ['commit', '-m', 'feat: add merge diff fixture']);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
@@ -10729,6 +10742,10 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(auditBundle.story_id, 'story-pr-prepare');
   assert.equal(auditBundle.source, 'execute_merge');
   assert.equal(auditBundle.merge.merge_commit_sha, headSha);
+  assert.equal(auditBundle.cost_summary.diff_stats_status, 'available');
+  assert.equal(auditBundle.cost_summary.changed_lines.buckets.src.changed_lines > 0, true);
+  assert.equal(auditBundle.cost_summary.changed_lines.buckets.test.changed_lines > 0, true);
+  assert.equal(auditBundle.cost_summary.product_changed_lines > 0, true);
   assert.equal(auditBundle.artifacts.some((artifact) => artifact.kind === 'pr_merge'), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'pr-merge.json')), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'gate-dag.json')), true);

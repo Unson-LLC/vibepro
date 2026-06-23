@@ -128,3 +128,59 @@ test('canonical audit bundle compacts over-budget evidence instead of copying fu
     /ENOENT/
   );
 });
+
+test('canonical audit bundle stores diff stats provenance and bucketed changed lines', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-diff-stats-'));
+  const storyId = 'story-diff-stats';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-23T00:00:00.000Z',
+    story: { story_id: storyId },
+    gate_status: {
+      ready_for_pr_create: true,
+      overall_status: 'ready_for_review',
+      critical_unresolved_gates: []
+    }
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge: {
+      status: 'merged',
+      merged_at: '2026-06-23T00:05:00.000Z',
+      merge_commit_sha: 'abc123',
+      pr: { url: 'https://github.com/example/repo/pull/1' },
+      git: {
+        diff_stats: {
+          status: 'available',
+          source: 'git diff --numstat origin/main...abc123',
+          refs: {
+            base_ref: 'origin/main',
+            head_ref: 'abc123',
+            base_sha: 'base123',
+            head_sha: 'abc123',
+            merge_commit_sha: 'abc123'
+          },
+          collected_at: '2026-06-23T00:04:00.000Z',
+          reason: null
+        },
+        diff_line_stats: {
+          'src/canonical-audit.js': { additions: 12, deletions: 3 },
+          'test/canonical-audit.test.js': { additions: 5, deletions: 1 },
+          'docs/specs/vibepro-canonical-audit-diff-stats.md': { additions: 10, deletions: 0 },
+          'docs/management/audit-artifacts/story-x/audit-bundle.json': { additions: 50, deletions: 0 }
+        }
+      }
+    }
+  });
+
+  const cost = promoted.bundle.cost_summary;
+  assert.equal(cost.diff_stats_status, 'available');
+  assert.equal(cost.diff_stats_source, 'git diff --numstat origin/main...abc123');
+  assert.equal(cost.changed_lines.buckets.src.changed_lines, 15);
+  assert.equal(cost.changed_lines.buckets.test.changed_lines, 6);
+  assert.equal(cost.changed_lines.buckets.story_spec_architecture_docs.changed_lines, 10);
+  assert.equal(cost.changed_lines.buckets.audit_artifacts.changed_lines, 50);
+  assert.equal(cost.product_changed_lines, 31);
+  assert.equal(cost.artifact_code_ratio !== null, true);
+});

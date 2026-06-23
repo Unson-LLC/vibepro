@@ -990,7 +990,10 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
     .map((artifact) => artifact.data?.cost_summary)
     .filter(Boolean);
   const totalArtifactLines = sumNumbers(summaries.map((summary) => summary.artifact_lines));
-  const totalProductChangedLines = sumNumbers(summaries.map((summary) => summary.product_changed_lines));
+  const productChangedValues = summaries
+    .map((summary) => summary.product_changed_lines)
+    .filter((value) => Number.isFinite(value));
+  const totalProductChangedLines = productChangedValues.length > 0 ? sumNumbers(productChangedValues) : null;
   const budgetExceededCount = summaries.filter((summary) => summary.budget_status === 'exceeded').length;
   return {
     schema_version: '0.1.0',
@@ -1000,6 +1003,7 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
     total_artifact_lines: totalArtifactLines,
     total_product_changed_lines: totalProductChangedLines,
     artifact_code_ratio: totalProductChangedLines > 0 ? Number((totalArtifactLines / totalProductChangedLines).toFixed(3)) : null,
+    diff_stats_unavailable_count: summaries.filter((summary) => summary.diff_stats_status === 'unavailable').length,
     token_accounting_status: summaries.some((summary) => summary.token_accounting?.status !== 'unavailable')
       ? 'partial'
       : 'unavailable',
@@ -1015,6 +1019,8 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
         artifact_lines: story.evidence_cost.canonical_audit.artifact_lines,
         product_changed_lines: story.evidence_cost.canonical_audit.product_changed_lines,
         artifact_code_ratio: story.evidence_cost.canonical_audit.artifact_code_ratio,
+        diff_stats_status: story.evidence_cost.canonical_audit.diff_stats_status ?? null,
+        changed_lines: story.evidence_cost.canonical_audit.changed_lines ?? null,
         tokens: story.evidence_cost.canonical_audit.token_accounting?.total_tokens ?? null,
         elapsed_ms: story.evidence_cost.canonical_audit.elapsed_time_accounting?.elapsed_ms ?? null
       }))
@@ -1030,17 +1036,30 @@ function renderEvidenceCostRows(report) {
     `- observed_cost_summaries: ${cost.observed_cost_summary_count ?? 0}`,
     `- budget_exceeded: ${cost.budget_exceeded_count ?? 0}`,
     `- artifact_lines: ${cost.total_artifact_lines ?? 0}`,
-    `- product_changed_lines: ${cost.total_product_changed_lines ?? 0}`,
+    `- product_changed_lines: ${cost.total_product_changed_lines ?? unknown}`,
     `- artifact_code_ratio: ${cost.artifact_code_ratio ?? unknown}`,
+    `- diff_stats_unavailable: ${cost.diff_stats_unavailable_count ?? 0}`,
     `- tokens: ${cost.token_accounting_status === 'unavailable' ? unknown : cost.token_accounting_status}`,
     `- elapsed_time: ${cost.elapsed_time_accounting_status === 'unavailable' ? unknown : cost.elapsed_time_accounting_status}`
   ];
   const storyRows = cost.by_story?.length
     ? cost.by_story.map((story) => (
-        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? 0} ratio=${story.artifact_code_ratio ?? unknown} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
+}
+
+function renderChangedLineBuckets(changedLines, unknown) {
+  const buckets = changedLines?.buckets;
+  if (!buckets) return `buckets=${unknown}`;
+  return [
+    `src=${buckets.src?.changed_lines ?? 0}`,
+    `test=${buckets.test?.changed_lines ?? 0}`,
+    `docs=${buckets.story_spec_architecture_docs?.changed_lines ?? 0}`,
+    `audit=${buckets.audit_artifacts?.changed_lines ?? 0}`,
+    `other=${buckets.other?.changed_lines ?? 0}`
+  ].join(' ');
 }
 
 function buildValueSignals(stories) {

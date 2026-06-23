@@ -36,6 +36,7 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
   const costSummary = buildCanonicalEvidenceCostSummary({
     artifactLineCount: inventory.artifact_line_count,
     diffStats: merge?.git?.diff_line_stats ?? merge?.diff_line_stats ?? merge?.pr_context?.git?.diff_line_stats ?? null,
+    diffStatsProvenance: merge?.git?.diff_stats ?? merge?.diff_stats ?? merge?.pr_context?.git?.diff_stats ?? null,
     riskProfile: merge?.gate_dag?.risk_profile ?? merge?.gate_dag?.change_classification?.profile ?? null,
     triggerSignals: collectCanonicalAuditTriggerSignals({ merge, missingArtifacts: inventory.missing_artifacts })
   });
@@ -131,7 +132,9 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
-      current_head_sha: merge.current_head_sha ?? null
+      current_head_sha: merge.current_head_sha ?? null,
+      diff_stats_status: costSummary.diff_stats_status,
+      diff_stats_source: costSummary.diff_stats_source
     } : null,
     handoff_replay_status: referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked',
     handoff_replay: {
@@ -363,7 +366,9 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         pr_url: prMerge.pr?.url ?? prMerge.pr?.selector ?? prMerge.pr_url ?? null,
         merge_commit_sha: prMerge.merge_commit_sha ?? null,
         merged_at: prMerge.merged_at ?? null,
-        current_head_sha: prMerge.current_head_sha ?? null
+        current_head_sha: prMerge.current_head_sha ?? null,
+        diff_stats_status: costSummary.diff_stats_status,
+        diff_stats_source: costSummary.diff_stats_source
       } : null
     },
     gate_dag: {
@@ -404,8 +409,9 @@ function renderDecisionSummary(index) {
 - evidence_depth: ${index.evidence_depth}
 - budget_status: ${index.budget_status}
 - artifact_lines: ${index.cost_summary.artifact_lines}
-- product_changed_lines: ${index.cost_summary.product_changed_lines}
+- product_changed_lines: ${index.cost_summary.product_changed_lines ?? 'unknown'}
 - artifact_code_ratio: ${index.cost_summary.artifact_code_ratio ?? 'unknown'}
+- diff_stats: ${index.cost_summary.diff_stats_status ?? 'unknown'}
 - pr_prepare: ${index.pr_prepare.present ? index.pr_prepare.gate_status?.overall_status ?? 'present' : 'missing'}
 - pr_create: ${index.pr_create.present ? index.pr_create.status ?? index.pr_create.pr_url ?? 'present' : 'missing'}
 - pr_merge: ${index.pr_merge.present ? index.pr_merge.summary?.status ?? 'present' : 'missing'}

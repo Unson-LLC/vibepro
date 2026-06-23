@@ -5,6 +5,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
+import { parseNumstat } from './evidence-cost-budget.js';
 import { renderPrMergeHtml } from './html-report.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -51,6 +52,26 @@ export async function executeMerge(repoRoot, options = {}) {
     base: baseBranch,
     current_branch: currentBranch,
     current_head_sha: currentHeadSha,
+    git: {
+      base_branch: baseBranch,
+      base_ref: `origin/${baseBranch}`,
+      head_ref: currentHeadSha ?? null,
+      head_ref_name: currentBranch ?? null,
+      diff_stats: {
+        status: 'not_run',
+        source: null,
+        refs: {
+          base_ref: `origin/${baseBranch}`,
+          head_ref: currentHeadSha ?? null,
+          base_sha: null,
+          head_sha: currentHeadSha ?? null,
+          merge_commit_sha: null
+        },
+        collected_at: null,
+        reason: 'diff statistics are collected after PR metadata is resolved'
+      },
+      diff_line_stats: null
+    },
     artifact_freshness: buildCurrentPrLifecycleArtifactFreshness('pr_merge', currentHeadSha, createdAt),
     repository_slug: repositorySlug,
     pr: {
@@ -227,6 +248,13 @@ export async function executeMerge(repoRoot, options = {}) {
   merge.preconditions.open_pull_request.status = (
     prView.state === 'OPEN' && prView.isDraft !== true && prView.mergeStateStatus === 'CLEAN'
   ) ? 'passed' : 'blocked';
+  const diffStatsResult = await collectMergeDiffLineStats(root, {
+    baseBranch,
+    currentHeadSha,
+    pr: merge.pr
+  });
+  merge.git.diff_stats = diffStatsResult.diff_stats;
+  merge.git.diff_line_stats = diffStatsResult.diff_line_stats;
 
   const blockingReasons = [];
   if (merge.preconditions.gate_ready !== true) blockingReasons.push('gate_not_ready');
@@ -303,6 +331,9 @@ export async function executeMerge(repoRoot, options = {}) {
     merge.merged_at = mergedView.mergedAt ?? null;
   } else {
     merge.warnings.push(`Post-merge PR view failed: ${mergedViewResult.command}`);
+  }
+  if (merge.git?.diff_stats?.refs) {
+    merge.git.diff_stats.refs.merge_commit_sha = merge.merge_commit_sha ?? null;
   }
 
   merge.status = 'merged';
@@ -527,6 +558,72 @@ async function gitOptional(repoRoot, args) {
     return result.stdout.trim() || null;
   } catch {
     return null;
+  }
+}
+
+async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha, pr } = {}) {
+  const collectedAt = new Date().toISOString();
+  const baseRef = `origin/${stripRemote(pr?.base_ref_name ?? baseBranch ?? 'main')}`;
+  const headRef = currentHeadSha ?? pr?.head_ref_oid ?? 'HEAD';
+  const refs = {
+    base_ref: baseRef,
+    head_ref: headRef,
+    base_sha: await gitOptional(repoRoot, ['rev-parse', baseRef]),
+    head_sha: currentHeadSha ?? pr?.head_ref_oid ?? null,
+    merge_commit_sha: null
+  };
+  const attempts = [
+    ['git', ['diff', '--numstat', `${baseRef}...${headRef}`]],
+    ['git', ['diff', '--numstat', baseRef, headRef]]
+  ];
+
+  let lastFailure = null;
+  for (const command of attempts) {
+    const result = await runGitForOutput(repoRoot, command);
+    if (result.exit_code === 0) {
+      return {
+        diff_line_stats: parseNumstat(result.stdout),
+        diff_stats: {
+          status: 'available',
+          source: formatCommand(command),
+          refs,
+          collected_at: collectedAt,
+          reason: null
+        }
+      };
+    }
+    lastFailure = result;
+  }
+
+  return {
+    diff_line_stats: null,
+    diff_stats: {
+      status: 'unavailable',
+      source: lastFailure?.command ?? null,
+      refs,
+      collected_at: collectedAt,
+      reason: lastFailure?.stderr || lastFailure?.stdout || 'git diff --numstat failed'
+    }
+  };
+}
+
+async function runGitForOutput(repoRoot, command) {
+  const [bin, args] = command;
+  try {
+    const result = await execFileAsync(bin, args, { cwd: repoRoot, encoding: 'utf8' });
+    return {
+      command: formatCommand(command),
+      exit_code: 0,
+      stdout: result.stdout.trim(),
+      stderr: result.stderr.trim()
+    };
+  } catch (error) {
+    return {
+      command: formatCommand(command),
+      exit_code: Number.isInteger(error.code) ? error.code : 1,
+      stdout: String(error.stdout ?? '').trim(),
+      stderr: String(error.stderr ?? error.message ?? '').trim()
+    };
   }
 }
 

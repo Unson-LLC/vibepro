@@ -44,3 +44,30 @@ test('canonical evidence cost budget selects compact persistence on artifact/cod
   assert.equal(cost.budget_exceeded_reasons.includes('artifact_code_ratio_exceeded'), true);
   assert.equal(shouldUseCompactCanonicalEvidence(cost), true);
 });
+
+test('canonical evidence cost budget preserves unavailable diff stats instead of fake zeroes', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 120,
+    diffStats: null,
+    diffStatsProvenance: {
+      status: 'unavailable',
+      source: 'git diff --numstat origin/main...HEAD',
+      refs: {
+        base_ref: 'origin/main',
+        head_ref: 'HEAD',
+        base_sha: null,
+        head_sha: null,
+        merge_commit_sha: null
+      },
+      collected_at: '2026-06-23T00:00:00.000Z',
+      reason: 'base ref missing'
+    }
+  });
+
+  assert.equal(cost.diff_stats_status, 'unavailable');
+  assert.equal(cost.product_changed_lines, null);
+  assert.equal(cost.product_changed_lines_status, 'unavailable');
+  assert.equal(cost.artifact_code_ratio, null);
+  assert.equal(cost.artifact_code_ratio_reason, 'diff_stats_unavailable');
+  assert.equal(cost.changed_lines.status, 'unavailable');
+});
