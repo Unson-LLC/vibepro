@@ -44,3 +44,72 @@ test('canonical evidence cost budget selects compact persistence on artifact/cod
   assert.equal(cost.budget_exceeded_reasons.includes('artifact_code_ratio_exceeded'), true);
   assert.equal(shouldUseCompactCanonicalEvidence(cost), true);
 });
+
+test('canonical evidence cost budget counts docs-only changes as product context', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 20,
+    diffStats: {
+      'docs/specs/vibepro-canonical-audit-diff-stats.md': { additions: 12, deletions: 3 },
+      'docs/architecture/vibepro-canonical-audit-diff-stats.md': { additions: 7, deletions: 1 }
+    },
+    diffStatsProvenance: {
+      status: 'available',
+      source: 'git diff --numstat origin/main...HEAD',
+      refs: { base_ref: 'origin/main', head_ref: 'HEAD' },
+      collected_at: '2026-06-23T00:00:00.000Z'
+    }
+  });
+
+  assert.equal(cost.diff_stats_status, 'available');
+  assert.equal(cost.changed_lines.buckets.story_spec_architecture_docs.changed_lines, 23);
+  assert.equal(cost.product_changed_lines, 23);
+  assert.equal(cost.artifact_code_ratio, 0.87);
+});
+
+test('canonical evidence cost budget keeps audit-only changes out of product ratio denominator', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 75,
+    diffStats: {
+      'docs/management/audit-artifacts/story-x/audit-bundle.json': { additions: 70, deletions: 5 }
+    },
+    diffStatsProvenance: {
+      status: 'available',
+      source: 'git diff --numstat origin/main...HEAD',
+      refs: { base_ref: 'origin/main', head_ref: 'HEAD' },
+      collected_at: '2026-06-23T00:00:00.000Z'
+    }
+  });
+
+  assert.equal(cost.diff_stats_status, 'available');
+  assert.equal(cost.changed_lines.buckets.audit_artifacts.changed_lines, 75);
+  assert.equal(cost.product_changed_lines, 0);
+  assert.equal(cost.artifact_code_ratio, null);
+  assert.equal(cost.artifact_code_ratio_reason, 'product_changed_lines_zero');
+});
+
+test('canonical evidence cost budget preserves unavailable diff stats instead of fake zeroes', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 120,
+    diffStats: null,
+    diffStatsProvenance: {
+      status: 'unavailable',
+      source: 'git diff --numstat origin/main...HEAD',
+      refs: {
+        base_ref: 'origin/main',
+        head_ref: 'HEAD',
+        base_sha: null,
+        head_sha: null,
+        merge_commit_sha: null
+      },
+      collected_at: '2026-06-23T00:00:00.000Z',
+      reason: 'base ref missing'
+    }
+  });
+
+  assert.equal(cost.diff_stats_status, 'unavailable');
+  assert.equal(cost.product_changed_lines, null);
+  assert.equal(cost.product_changed_lines_status, 'unavailable');
+  assert.equal(cost.artifact_code_ratio, null);
+  assert.equal(cost.artifact_code_ratio_reason, 'diff_stats_unavailable');
+  assert.equal(cost.changed_lines.status, 'unavailable');
+});

@@ -230,6 +230,17 @@ test('compact canonical audit index resolves merged story and renders evidence c
     product_changed_lines: 20,
     artifact_code_ratio: 110,
     budget_status: 'exceeded',
+    diff_stats_status: 'available',
+    changed_lines: {
+      status: 'available',
+      buckets: {
+        src: { files: 1, changed_lines: 8, unknown_files: 0, paths: ['src/canonical-audit.js'] },
+        test: { files: 1, changed_lines: 4, unknown_files: 0, paths: ['test/canonical-audit.test.js'] },
+        story_spec_architecture_docs: { files: 1, changed_lines: 6, unknown_files: 0, paths: ['docs/specs/vibepro-canonical-audit-diff-stats.md'] },
+        audit_artifacts: { files: 1, changed_lines: 30, unknown_files: 0, paths: ['docs/management/audit-artifacts/story-x/audit-bundle.json'] },
+        other: { files: 1, changed_lines: 2, unknown_files: 0, paths: ['README.md'] }
+      }
+    },
     token_accounting: { status: 'unavailable', total_tokens: null },
     elapsed_time_accounting: { status: 'unavailable', elapsed_ms: null }
   };
@@ -290,6 +301,7 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.equal(report.evidence_cost.total_artifact_lines, 2200);
   assert.match(renderUsageReport(report), /## 証跡コスト/);
   assert.match(renderUsageReport(report), /story-compact-audit: depth=standard budget=exceeded/);
+  assert.match(renderUsageReport(report), /diff=available src=8 test=4 docs=6 audit=30 other=2/);
   assert.match(renderUsageReport(report), /tokens=未確認/);
 });
 

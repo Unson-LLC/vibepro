@@ -56,6 +56,7 @@ export function classifyChangedPath(filePath) {
 
 export function summarizeDiffLineStats(diffStats = null) {
   const summary = {
+    status: diffStats && typeof diffStats === 'object' ? 'available' : 'unavailable',
     total_changed_lines: 0,
     unknown_file_count: 0,
     buckets: {
@@ -92,21 +93,31 @@ export function summarizeDiffLineStats(diffStats = null) {
 export function buildCanonicalEvidenceCostSummary({
   artifactLineCount = 0,
   diffStats = null,
+  diffStatsProvenance = null,
   riskProfile = null,
   triggerSignals = [],
   requestedDepth = null,
   budget = DEFAULT_EVIDENCE_COST_BUDGET
 } = {}) {
-  const changed_lines = summarizeDiffLineStats(diffStats);
-  const productChangedLines = (
-    changed_lines.buckets.src.changed_lines
-    + changed_lines.buckets.test.changed_lines
-    + changed_lines.buckets.story_spec_architecture_docs.changed_lines
-    + changed_lines.buckets.other.changed_lines
-  );
+  const diffStatsStatus = normalizeDiffStatsProvenance(diffStats, diffStatsProvenance);
+  const diffStatsAvailable = diffStatsStatus.status === 'available';
+  const changed_lines = summarizeDiffLineStats(diffStatsAvailable ? diffStats : null);
+  changed_lines.status = diffStatsStatus.status;
+  changed_lines.source = diffStatsStatus.source;
+  changed_lines.refs = diffStatsStatus.refs;
+  changed_lines.collected_at = diffStatsStatus.collected_at;
+  changed_lines.reason = diffStatsStatus.reason;
+  const productChangedLines = diffStatsAvailable
+    ? (
+        changed_lines.buckets.src.changed_lines
+        + changed_lines.buckets.test.changed_lines
+        + changed_lines.buckets.story_spec_architecture_docs.changed_lines
+        + changed_lines.buckets.other.changed_lines
+      )
+    : null;
   const highRisk = isHighRiskProfile(riskProfile) || triggerSignals.length > 0;
   const thresholds = highRisk ? budget.high : budget.normal;
-  const ratio = productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
+  const ratio = Number.isFinite(productChangedLines) && productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
   const lineBudgetExceeded = artifactLineCount > thresholds.canonical_artifact_lines;
   const ratioBudgetExceeded = ratio !== null && ratio > thresholds.artifact_code_ratio;
   const explicitDepth = normalizeEvidenceDepth(requestedDepth);
@@ -119,10 +130,20 @@ export function buildCanonicalEvidenceCostSummary({
     evidence_depth: persistenceDepth,
     risk_profile: riskProfile ?? (highRisk ? 'high' : 'normal'),
     trigger_signals: [...new Set(triggerSignals.filter(Boolean))],
+    diff_stats_status: diffStatsStatus.status,
+    diff_stats_source: diffStatsStatus.source,
+    diff_stats_refs: diffStatsStatus.refs,
+    diff_stats_collected_at: diffStatsStatus.collected_at,
+    diff_stats_reason: diffStatsStatus.reason,
     artifact_lines: artifactLineCount,
     changed_lines,
     product_changed_lines: productChangedLines,
+    product_changed_lines_status: diffStatsAvailable ? 'available' : 'unavailable',
+    product_changed_lines_reason: diffStatsAvailable ? null : diffStatsStatus.reason,
     artifact_code_ratio: ratio === null ? null : Number(ratio.toFixed(3)),
+    artifact_code_ratio_reason: ratio === null
+      ? (diffStatsAvailable ? 'product_changed_lines_zero' : 'diff_stats_unavailable')
+      : null,
     budget: {
       profile: highRisk ? 'high' : 'normal',
       canonical_artifact_lines: thresholds.canonical_artifact_lines,
@@ -155,6 +176,21 @@ function changedLineCount(stats) {
   const deletions = stats?.deletions;
   if (!Number.isFinite(additions) || !Number.isFinite(deletions)) return null;
   return additions + deletions;
+}
+
+function normalizeDiffStatsProvenance(diffStats, provenance) {
+  const hasStats = diffStats && typeof diffStats === 'object';
+  const status = provenance?.status
+    ?? (hasStats ? 'available' : 'unavailable');
+  return {
+    status: status === 'available' && hasStats ? 'available' : 'unavailable',
+    source: provenance?.source ?? null,
+    refs: provenance?.refs ?? null,
+    collected_at: provenance?.collected_at ?? null,
+    reason: status === 'available' && hasStats
+      ? null
+      : (provenance?.reason ?? 'diff statistics were not provided to canonical audit promotion')
+  };
 }
 
 function emptyLineBucket() {
