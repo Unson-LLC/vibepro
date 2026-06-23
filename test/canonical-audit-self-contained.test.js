@@ -83,3 +83,48 @@ test('canonical audit bundle promotes review requests even when no JSON referenc
     '# Gate evidence review request\n'
   );
 });
+
+test('canonical audit bundle compacts over-budget evidence instead of copying full raw artifacts', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-budget-'));
+  const storyId = 'story-over-budget-evidence';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-23T00:00:00.000Z',
+    story: { story_id: storyId },
+    gate_status: {
+      ready_for_pr_create: true,
+      overall_status: 'ready_for_review',
+      fast_lane: false,
+      critical_unresolved_gates: []
+    },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({
+      id: `gate-${index}`,
+      status: 'passed'
+    }))
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge: {
+      status: 'merged',
+      merged_at: '2026-06-23T00:05:00.000Z',
+      merge_commit_sha: 'abc123',
+      pr: { url: 'https://github.com/example/repo/pull/1' }
+    }
+  });
+  const bundle = promoted.bundle;
+
+  assert.equal(bundle.artifact_policy.compacted, true);
+  assert.equal(bundle.evidence_depth, 'standard');
+  assert.equal(bundle.cost_summary.budget_status, 'exceeded');
+  assert.equal(bundle.artifacts.some((item) => item.kind === 'audit_index'), true);
+  assert.equal(bundle.raw_artifacts.some((item) => item.kind === 'pr_prepare' && item.persisted === false), true);
+  assert.equal(
+    await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json')).then((item) => item.pr_prepare.present),
+    true
+  );
+  await assert.rejects(
+    () => readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'), 'utf8'),
+    /ENOENT/
+  );
+});
