@@ -126,6 +126,62 @@ test('spec fingerprint changes mark previous summary/index stale without head ch
   assert.ok(reuse.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
 });
 
+test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evidence changes after pr prepare', async () => {
+  const repo = await setupReuseRepo();
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    updated_at: '2026-06-23T12:00:00.000Z',
+    warnings: [],
+    commands: [
+      {
+        kind: 'unit',
+        status: 'pass',
+        command: 'node --test test/evidence-summary-reuse.test.js',
+        executed_at: '2026-06-23T12:00:00.000Z',
+        git_context: {
+          head_sha: 'head-a',
+          recorded_at: '2026-06-23T12:00:01.000Z'
+        },
+        artifact_check: { status: 'unrecognized' },
+        observation_check: { status: 'recorded' }
+      }
+    ]
+  }, null, 2));
+
+  const staleReview = await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--json']);
+  assert.equal(staleReview.exitCode, 0);
+  assert.equal(staleReview.result.plan.evidence_reuse.status, 'stale');
+  assert.equal(staleReview.result.plan.evidence_reuse.first_input, false);
+  assert.ok(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'));
+  assert.ok(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
+  const staleRequest = await readFile(path.join(repo, '.vibepro', 'reviews', STORY_ID, 'gate', 'review-request-gate_evidence.md'), 'utf8');
+  assert.match(staleRequest, /current_verification_evidence_updated_at: 2026-06-23T12:00:00\.000Z/);
+  assert.match(staleRequest, /verification_summary_fingerprint/);
+  assert.doesNotMatch(staleRequest, /preferred_order: \.vibepro\/pr\/story-evidence-reuse\/evidence-reuse\.json/);
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const reuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
+  assert.equal(reuse.key_inputs.verification_evidence_updated_at, '2026-06-23T12:00:00.000Z');
+  assert.equal(reuse.key_inputs.verification_command_timestamps[0].executed_at, '2026-06-23T12:00:00.000Z');
+
+  const freshReview = await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--json']);
+  assert.equal(freshReview.exitCode, 0);
+  assert.equal(freshReview.result.plan.evidence_reuse.status, 'fresh');
+  const freshRequest = await readFile(path.join(repo, '.vibepro', 'reviews', STORY_ID, 'gate', 'review-request-gate_evidence.md'), 'utf8');
+  assert.match(freshRequest, /verification_evidence_updated_at: 2026-06-23T12:00:00\.000Z/);
+  const dispatch = await readFile(path.join(repo, '.vibepro', 'reviews', STORY_ID, 'gate', 'parallel-dispatch.md'), 'utf8');
+  assert.match(dispatch, /verification_summary_fingerprint/);
+  assert.match(dispatch, /2026-06-23T12:00:00\.000Z/);
+
+  const report = await createUsageReport(repo, { language: 'ja' });
+  assert.equal(report.evidence_reuse.by_story[0].verification_evidence_updated_at, '2026-06-23T12:00:00.000Z');
+  assert.match(renderUsageReport(report), /verification_updated_at=2026-06-23T12:00:00\.000Z/);
+});
+
 test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/index stale without head changes', () => {
   const base = {
     story: { story_id: STORY_ID },

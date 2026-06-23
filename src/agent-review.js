@@ -161,9 +161,11 @@ export async function prepareAgentReview(repoRoot, options = {}) {
 
   const gitContext = await collectGitContext(root);
   const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
+  const verificationEvidence = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json'));
   const evidenceReuse = evaluateEvidenceReuseForReview({
     reuse: evidenceReuseArtifact,
-    gitContext
+    gitContext,
+    verificationEvidence
   });
   const plan = {
     schema_version: '0.1.0',
@@ -1491,7 +1493,15 @@ function renderEvidenceReuseReviewInput(plan, language = 'ja') {
   if (!reuse) return '';
   const staleReasonRows = (reuse.stale_reasons ?? [])
     .slice(0, 5)
-    .map((reason) => `- ${reason.field ?? 'unknown'}: ${reason.reason ?? 'changed'}`)
+    .map((reason) => `- ${reason.field ?? 'unknown'}: ${reason.reason ?? 'changed'} previous=${formatReviewValue(reason.previous)} current=${formatReviewValue(reason.current)}`)
+    .join('\n');
+  const timestampRows = (reuse.verification_command_timestamps ?? [])
+    .slice(0, 5)
+    .map((timestamp) => `- ${timestamp.kind ?? 'unknown'}: executed_at=${timestamp.executed_at ?? '-'} git_recorded_at=${timestamp.git_recorded_at ?? '-'}`)
+    .join('\n');
+  const currentTimestampRows = (reuse.current_verification_command_timestamps ?? [])
+    .slice(0, 5)
+    .map((timestamp) => `- ${timestamp.kind ?? 'unknown'}: executed_at=${timestamp.executed_at ?? '-'} git_recorded_at=${timestamp.git_recorded_at ?? '-'}`)
     .join('\n');
   if (language === 'en') {
     return `
@@ -1501,7 +1511,13 @@ function renderEvidenceReuseReviewInput(plan, language = 'ja') {
 - evidence_key: ${reuse.evidence_key ?? '-'}
 - first_input: ${reuse.first_input === true}
 - reason: ${reuse.reason ?? '-'}
+- verification_summary_fingerprint: ${reuse.verification_summary_fingerprint ?? '-'}
+- current_verification_summary_fingerprint: ${reuse.current_verification_summary_fingerprint ?? '-'}
+- verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
+- current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
 - preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
+${timestampRows ? `\nVerification command timestamps in reuse key:\n${timestampRows}` : ''}
+${currentTimestampRows ? `\nCurrent verification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 `;
   }
@@ -1512,9 +1528,21 @@ ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 - evidence_key: ${reuse.evidence_key ?? '-'}
 - first_input: ${reuse.first_input === true}
 - reason: ${reuse.reason ?? '-'}
+- verification_summary_fingerprint: ${reuse.verification_summary_fingerprint ?? '-'}
+- current_verification_summary_fingerprint: ${reuse.current_verification_summary_fingerprint ?? '-'}
+- verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
+- current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
 - preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
+${timestampRows ? `\nReuse key内のverification command timestamps:\n${timestampRows}` : ''}
+${currentTimestampRows ? `\n現在のverification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 `;
+}
+
+function formatReviewValue(value) {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
 }
 
 function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = plan?.output?.language ?? 'ja' }) {

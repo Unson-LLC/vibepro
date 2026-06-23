@@ -146,7 +146,7 @@ export function buildEvidenceReuseGate(reuse) {
   };
 }
 
-export function evaluateEvidenceReuseForReview({ reuse = null, gitContext = null } = {}) {
+export function evaluateEvidenceReuseForReview({ reuse = null, gitContext = null, verificationEvidence = null } = {}) {
   if (!reuse) {
     return {
       status: 'missing',
@@ -167,16 +167,42 @@ export function evaluateEvidenceReuseForReview({ reuse = null, gitContext = null
       reason: 'review prepare current HEAD does not match evidence key HEAD'
     });
   }
+  const currentVerificationSummary = summarizeVerificationEvidence(verificationEvidence);
+  const currentVerificationFingerprint = fingerprintValue(currentVerificationSummary);
+  const verificationReasons = [
+    staleReason(
+      'verification_summary_fingerprint',
+      reuse.key_inputs?.verification_summary_fingerprint,
+      currentVerificationFingerprint
+    ),
+    staleReason(
+      'verification_evidence_updated_at',
+      reuse.key_inputs?.verification_evidence_updated_at,
+      currentVerificationSummary.updated_at
+    ),
+    staleReason(
+      'verification_command_timestamps',
+      reuse.key_inputs?.verification_command_timestamps,
+      currentVerificationSummary.command_timestamps
+    )
+  ].filter(Boolean).map((reason) => ({
+    ...reason,
+    reason: `review prepare current ${reason.field} does not match evidence key input`
+  }));
+  staleReasons.push(...verificationReasons);
   const baseFresh = FRESH_REUSE_STATUSES.has(reuse.status) && reuse.fresh_use_allowed === true;
-  const fresh = baseFresh && headMatches;
+  const fresh = baseFresh && headMatches && verificationReasons.length === 0;
   return {
     status: fresh ? 'fresh' : 'stale',
     fresh,
     first_input: fresh,
     evidence_key: reuse.evidence_key ?? null,
     verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
+    current_verification_summary_fingerprint: currentVerificationFingerprint,
     verification_evidence_updated_at: reuse.key_inputs?.verification_evidence_updated_at ?? null,
+    current_verification_evidence_updated_at: currentVerificationSummary.updated_at,
     verification_command_timestamps: reuse.key_inputs?.verification_command_timestamps ?? [],
+    current_verification_command_timestamps: currentVerificationSummary.command_timestamps,
     artifact_status: reuse.status ?? null,
     artifact: reuse.summary_artifacts?.evidence_reuse ?? null,
     preferred_order: fresh ? (reuse.review_input_summary?.preferred_order ?? []) : [],

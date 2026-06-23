@@ -345,6 +345,9 @@ function ensureStoryUsage(storyMap, storyId) {
       evidence_reuse: {
         latest_status: null,
         latest_evidence_key: null,
+        verification_summary_fingerprint: null,
+        verification_evidence_updated_at: null,
+        verification_command_timestamps: [],
         hit_count: 0,
         miss_count: 0,
         stale_count: 0,
@@ -1015,6 +1018,15 @@ function recordEvidenceReuse(story, evidenceReuse) {
   const status = evidenceReuse.status ?? null;
   story.evidence_reuse.latest_status = status ?? story.evidence_reuse.latest_status;
   story.evidence_reuse.latest_evidence_key = evidenceReuse.evidence_key ?? story.evidence_reuse.latest_evidence_key;
+  story.evidence_reuse.verification_summary_fingerprint = evidenceReuse.verification_summary_fingerprint
+    ?? evidenceReuse.key_inputs?.verification_summary_fingerprint
+    ?? story.evidence_reuse.verification_summary_fingerprint;
+  story.evidence_reuse.verification_evidence_updated_at = evidenceReuse.verification_evidence_updated_at
+    ?? evidenceReuse.key_inputs?.verification_evidence_updated_at
+    ?? story.evidence_reuse.verification_evidence_updated_at;
+  story.evidence_reuse.verification_command_timestamps = evidenceReuse.verification_command_timestamps
+    ?? evidenceReuse.key_inputs?.verification_command_timestamps
+    ?? story.evidence_reuse.verification_command_timestamps;
   if (status === 'hit') story.evidence_reuse.hit_count += 1;
   if (status === 'miss') story.evidence_reuse.miss_count += 1;
   if (status === 'stale') story.evidence_reuse.stale_count += 1;
@@ -1044,6 +1056,9 @@ function buildEvidenceReuseMetrics(stories) {
         story_id: story.story_id,
         latest_status: story.evidence_reuse.latest_status,
         evidence_key: story.evidence_reuse.latest_evidence_key,
+        verification_summary_fingerprint: story.evidence_reuse.verification_summary_fingerprint,
+        verification_evidence_updated_at: story.evidence_reuse.verification_evidence_updated_at,
+        verification_command_timestamps: story.evidence_reuse.verification_command_timestamps,
         hit_count: story.evidence_reuse.hit_count,
         miss_count: story.evidence_reuse.miss_count,
         stale_count: story.evidence_reuse.stale_count,
@@ -1129,10 +1144,18 @@ function renderEvidenceReuseRows(report) {
   ];
   const storyRows = reuse.by_story?.length
     ? reuse.by_story.map((story) => (
-        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0}`
+        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
+}
+
+function formatVerificationCommandTimestamps(timestamps) {
+  if (!Array.isArray(timestamps) || timestamps.length === 0) return '-';
+  return timestamps
+    .slice(0, 5)
+    .map((item) => `${item.kind ?? 'unknown'}:${item.executed_at ?? '-'}:${item.git_recorded_at ?? '-'}`)
+    .join(',');
 }
 
 function renderChangedLineBuckets(changedLines, unknown) {
