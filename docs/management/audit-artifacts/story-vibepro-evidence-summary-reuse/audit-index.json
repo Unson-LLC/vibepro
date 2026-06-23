@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-summary-reuse",
   "source": "execute_merge",
-  "generated_at": "2026-06-23T11:23:39.255Z",
+  "generated_at": "2026-06-23T11:23:42.596Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-23T11:23:35.340Z",
     "diff_stats_reason": null,
-    "artifact_lines": 19212,
+    "artifact_lines": 19302,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1207,
@@ -88,7 +88,7 @@
     "product_changed_lines": 1207,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 15.917,
+    "artifact_code_ratio": 15.992,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
