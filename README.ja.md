@@ -320,6 +320,23 @@ npx vibepro review record /path/to/repo \
 実行環境がサブエージェントを起動できない場合、coordinator は gate を通した扱いにせず、
 block するか別の waiver decision として記録します。
 
+### Journey Handoff を作成する
+
+`journey derive` は Story、Spec、Architecture、Graphify、Gate evidence から
+機械的な Journey context pack を集めます。ただし、それ自体はプロダクト Journey
+の正本ではありません。プロダクト loop の解釈が必要な場合は、UI/UX gate が
+Journey を確定扱いする前に `journey handoff` で AI または人間に渡す材料を作ります。
+
+```bash
+npx vibepro journey handoff /path/to/repo --id <journey-id>
+npx vibepro journey status /path/to/repo --json
+```
+
+handoff は `.vibepro/journey/latest-handoff.md` を生成し、候補step、衝突、
+walking skeleton gap、未解決の問いを残します。curated Journey は
+`.vibepro/journeys/<journey-id>.json` に保存できます。それが存在するまでは
+`journey status` は `available` ではなく `needs_curated_journey` を返します。
+
 ### VibePro 経由で PR を作成する
 
 ```bash

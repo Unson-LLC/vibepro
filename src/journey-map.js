@@ -6,6 +6,8 @@ import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writ
 
 const JOURNEY_SCHEMA_VERSION = '0.1.0';
 const DEFAULT_JOURNEY_ID = 'default-product-journey';
+const JOURNEY_CONTEXT_ARTIFACT_KIND = 'journey_context_pack';
+const CURATED_JOURNEY_ARTIFACT_KIND = 'curated_journey';
 const STORY_DIRS = [
   path.join('docs', 'management', 'stories', 'active'),
   path.join('docs', 'user_stories', 'active'),
@@ -44,6 +46,7 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   await initWorkspace(root);
   const manifest = await readManifest(root);
+  const journeyId = options.journeyId ?? DEFAULT_JOURNEY_ID;
   const storyInputs = await readJourneyStoryInputs(root);
   const sourceStories = storyInputs.filter((story) => story.status !== 'archived');
   const placements = sourceStories.map((story) => placeStory(story));
@@ -78,7 +81,11 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
   const generatedAt = new Date().toISOString();
   const journey = {
     schema_version: JOURNEY_SCHEMA_VERSION,
-    journey_id: options.journeyId ?? DEFAULT_JOURNEY_ID,
+    journey_id: journeyId,
+    artifact_kind: JOURNEY_CONTEXT_ARTIFACT_KIND,
+    machine_derived: true,
+    authoritative: false,
+    curation_status: 'needs_curated_journey',
     generated_at: generatedAt,
     source_story_ids: sourceStories.map((story) => story.story_id),
     source_digest: buildSourceDigest(sourceStories),
@@ -94,27 +101,35 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
     conflicts,
     open_questions: openQuestions
   };
+  journey.handoff = buildJourneyHandoff(journey);
 
   const journeyDir = path.join(getWorkspaceDir(root), 'journey');
   const historyDir = path.join(journeyDir, 'history');
   await mkdir(historyDir, { recursive: true });
   const latestJsonPath = path.join(journeyDir, 'latest-journey.json');
   const latestMarkdownPath = path.join(journeyDir, 'latest-journey.md');
+  const latestHandoffPath = path.join(journeyDir, 'latest-handoff.md');
   const historyJsonPath = path.join(historyDir, `${generatedAt.replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '')}.json`);
   const markdown = renderJourneyMapMarkdown(journey);
+  const handoffMarkdown = renderJourneyHandoffMarkdown(journey);
   await writeFile(latestJsonPath, `${JSON.stringify(journey, null, 2)}\n`);
   await writeFile(latestMarkdownPath, markdown);
+  await writeFile(latestHandoffPath, handoffMarkdown);
   await writeFile(historyJsonPath, `${JSON.stringify(journey, null, 2)}\n`);
 
   manifest.artifacts = {
     ...(manifest.artifacts ?? {}),
     latest_journey: toWorkspaceRelative(root, latestJsonPath),
-    latest_journey_markdown: toWorkspaceRelative(root, latestMarkdownPath)
+    latest_journey_markdown: toWorkspaceRelative(root, latestMarkdownPath),
+    latest_journey_handoff: toWorkspaceRelative(root, latestHandoffPath)
   };
   manifest.journey = {
     schema_version: JOURNEY_SCHEMA_VERSION,
+    artifact_kind: JOURNEY_CONTEXT_ARTIFACT_KIND,
+    curation_status: 'needs_curated_journey',
     latest_journey: toWorkspaceRelative(root, latestJsonPath),
     latest_journey_markdown: toWorkspaceRelative(root, latestMarkdownPath),
+    latest_handoff: toWorkspaceRelative(root, latestHandoffPath),
     latest_history: toWorkspaceRelative(root, historyJsonPath),
     generated_at: generatedAt,
     source_story_count: sourceStories.length,
@@ -129,6 +144,7 @@ export async function deriveJourneyMap(repoRoot, options = {}) {
     artifacts: {
       json: latestJsonPath,
       markdown: latestMarkdownPath,
+      handoff_markdown: latestHandoffPath,
       history_json: historyJsonPath
     }
   };
@@ -144,59 +160,105 @@ export async function readLatestJourneyMap(repoRoot) {
   }
 }
 
-export async function getJourneyStatus(repoRoot) {
+export async function readCuratedJourneyMap(repoRoot, journeyId = DEFAULT_JOURNEY_ID) {
+  const root = path.resolve(repoRoot);
+  const candidates = [
+    path.join(getWorkspaceDir(root), 'journeys', `${journeyId}.json`),
+    path.join(getWorkspaceDir(root), 'journey', 'curated-journey.json')
+  ];
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(await readFile(candidate, 'utf8'));
+      return {
+        ...parsed,
+        schema_version: parsed.schema_version ?? JOURNEY_SCHEMA_VERSION,
+        journey_id: parsed.journey_id ?? journeyId,
+        artifact_kind: parsed.artifact_kind ?? CURATED_JOURNEY_ARTIFACT_KIND,
+        machine_derived: parsed.machine_derived ?? false,
+        authoritative: parsed.authoritative ?? true,
+        curation_status: parsed.curation_status ?? 'curated',
+        curated_journey_path: toWorkspaceRelative(root, candidate)
+      };
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
+  }
+  return null;
+}
+
+export async function getJourneyStatus(repoRoot, options = {}) {
   const journey = await readLatestJourneyMap(repoRoot);
   if (!journey) {
     return {
       schema_version: JOURNEY_SCHEMA_VERSION,
       status: 'missing',
-      reason: 'Journey Map is not generated. Run `vibepro journey derive <repo>`.',
+      curated: false,
+      handoff_available: false,
+      artifact_kind: null,
+      curation_status: 'missing',
+      reason: 'Journey context is not generated. Run `vibepro journey handoff <repo>`.',
       journey: null
     };
   }
+  const curatedJourney = await readCuratedJourneyMap(repoRoot, options.journeyId ?? journey.journey_id);
+  const effectiveJourney = curatedJourney ?? journey;
+  const status = curatedJourney
+    ? resolveJourneyReadinessStatus(curatedJourney)
+    : 'needs_curated_journey';
   return {
     schema_version: JOURNEY_SCHEMA_VERSION,
-    status: journey.conflicts?.length > 0
-      ? 'conflict'
-      : journey.walking_skeleton?.status === 'needs_evidence'
-        ? 'needs_evidence'
-        : 'available',
-    generated_at: journey.generated_at,
-    journey_id: journey.journey_id,
+    status,
+    generated_at: effectiveJourney.generated_at ?? journey.generated_at,
+    journey_id: effectiveJourney.journey_id,
+    artifact_kind: effectiveJourney.artifact_kind ?? (curatedJourney ? CURATED_JOURNEY_ARTIFACT_KIND : JOURNEY_CONTEXT_ARTIFACT_KIND),
+    curation_status: effectiveJourney.curation_status ?? (curatedJourney ? 'curated' : 'needs_curated_journey'),
+    curated: Boolean(curatedJourney),
+    curated_journey_path: curatedJourney?.curated_journey_path ?? null,
+    handoff_available: Boolean(journey.handoff),
     source_story_count: journey.source_story_ids?.length ?? 0,
-    activity_count: journey.backbone?.length ?? 0,
-    walking_skeleton_status: journey.walking_skeleton?.status ?? 'unknown',
-    conflict_count: journey.conflicts?.length ?? 0,
-    open_question_count: journey.open_questions?.length ?? 0,
-    journey
+    activity_count: effectiveJourney.backbone?.length ?? 0,
+    walking_skeleton_status: effectiveJourney.walking_skeleton?.status ?? 'unknown',
+    conflict_count: effectiveJourney.conflicts?.length ?? 0,
+    open_question_count: effectiveJourney.open_questions?.length ?? 0,
+    reason: curatedJourney ? null : 'Only machine-derived Journey context exists. Create or provide a curated Journey before treating the product Journey as settled.',
+    journey: effectiveJourney,
+    context_pack: journey,
+    curated_journey: curatedJourney
   };
 }
 
-export function summarizeJourneyForPr(journey, storyId = null) {
+export function summarizeJourneyForPr(journey, storyId = null, { curatedJourney = null } = {}) {
   if (!journey) {
     return {
       status: 'missing',
-      reason: 'Journey Map is not generated. Run `vibepro journey derive <repo>` to surface latest user Journey context.',
+      artifact_kind: null,
+      curated: false,
+      handoff_available: false,
+      curation_status: 'missing',
+      reason: 'Journey context is not generated. Run `vibepro journey handoff <repo>` to surface latest user Journey context.',
       current_story: null
     };
   }
-  const storyPlacement = findStoryPlacement(journey, storyId);
-  const affectedConflicts = findAffectedJourneyConflicts(journey, storyId, storyPlacement);
-  const affectedOpenQuestions = findAffectedJourneyOpenQuestions(journey, storyId, storyPlacement);
+  const effectiveJourney = curatedJourney ?? journey;
+  const storyPlacement = findStoryPlacement(effectiveJourney, storyId);
+  const affectedConflicts = findAffectedJourneyConflicts(effectiveJourney, storyId, storyPlacement);
+  const affectedOpenQuestions = findAffectedJourneyOpenQuestions(effectiveJourney, storyId, storyPlacement);
   return {
-    status: journey.conflicts?.length > 0
-      ? 'conflict'
-      : journey.walking_skeleton?.status === 'needs_evidence'
-        ? 'needs_evidence'
-        : 'available',
-    generated_at: journey.generated_at,
-    journey_id: journey.journey_id,
-    walking_skeleton_status: journey.walking_skeleton?.status ?? 'unknown',
-    conflict_count: journey.conflicts?.length ?? 0,
-    open_question_count: journey.open_questions?.length ?? 0,
+    status: curatedJourney ? resolveJourneyReadinessStatus(curatedJourney) : 'needs_curated_journey',
+    generated_at: effectiveJourney.generated_at ?? journey.generated_at,
+    journey_id: effectiveJourney.journey_id,
+    artifact_kind: effectiveJourney.artifact_kind ?? (curatedJourney ? CURATED_JOURNEY_ARTIFACT_KIND : JOURNEY_CONTEXT_ARTIFACT_KIND),
+    curated: Boolean(curatedJourney),
+    curated_journey_path: curatedJourney?.curated_journey_path ?? null,
+    handoff_available: Boolean(journey.handoff),
+    curation_status: effectiveJourney.curation_status ?? (curatedJourney ? 'curated' : 'needs_curated_journey'),
+    walking_skeleton_status: effectiveJourney.walking_skeleton?.status ?? 'unknown',
+    conflict_count: effectiveJourney.conflicts?.length ?? 0,
+    open_question_count: effectiveJourney.open_questions?.length ?? 0,
     current_story: storyPlacement,
     affected_release_slices: storyPlacement
-      ? (journey.release_slices ?? [])
+      ? (effectiveJourney.release_slices ?? [])
         .filter((slice) => (slice.story_ids ?? []).includes(storyId))
         .map((slice) => ({ slice_id: slice.slice_id, kind: slice.kind, label: slice.label }))
       : [],
@@ -218,12 +280,21 @@ export function renderJourneyStatus(status) {
 - status: ${status.status}
 - generated_at: ${status.generated_at}
 - journey_id: ${status.journey_id}
+- artifact_kind: ${status.artifact_kind ?? '-'}
+- curated: ${status.curated ? 'yes' : 'no'}
+- curation_status: ${status.curation_status ?? '-'}
+- handoff_available: ${status.handoff_available ? 'yes' : 'no'}
 - source stories: ${status.source_story_count}
 - activities: ${status.activity_count}
 - walking skeleton: ${status.walking_skeleton_status}
 - conflicts: ${status.conflict_count}
 - open questions: ${status.open_question_count}
+${status.reason ? `- reason: ${status.reason}\n` : ''}
 `;
+}
+
+export function renderJourneyHandoff(journey) {
+  return renderJourneyHandoffMarkdown(journey.journey ?? journey);
 }
 
 export function renderJourneyPrSection(summary) {
@@ -239,11 +310,22 @@ export function renderJourneyPrSection(summary) {
   return `## Journey Map
 - Status: ${summary.status}
 - Generated: ${summary.generated_at}
+- Artifact: ${summary.artifact_kind ?? '-'}
+- Curated: ${summary.curated ? 'yes' : 'no'}
+- Handoff available: ${summary.handoff_available ? 'yes' : 'no'}
 - Walking skeleton: ${summary.walking_skeleton_status}
 - Current Story step: ${current ? `${current.activity_id}/${current.step_id} (${current.placement_kind})` : '-'}
 - Affected release slices: ${slices}
 - Conflicts: ${summary.conflict_count}
 - Open questions: ${summary.open_question_count}`;
+}
+
+function resolveJourneyReadinessStatus(journey) {
+  return journey.conflicts?.length > 0
+    ? 'conflict'
+    : journey.walking_skeleton?.status === 'needs_evidence'
+      ? 'needs_evidence'
+      : 'available';
 }
 
 async function readJourneyStoryInputs(root) {
@@ -986,6 +1068,93 @@ function findAffectedJourneyOpenQuestions(journey, storyId, storyPlacement) {
     }));
 }
 
+function buildJourneyHandoff(journey) {
+  const blockingQuestions = (journey.open_questions ?? []).filter((question) => question.blocker === true);
+  return {
+    status: 'ready_for_ai',
+    purpose: 'Use this machine-derived context to create or revise a curated product Journey. Do not treat the candidate placements as authoritative.',
+    artifact_kind: 'ai_handoff',
+    target_curated_artifact: `.vibepro/journeys/${journey.journey_id}.json`,
+    candidate_artifact_kind: journey.artifact_kind,
+    candidate_journey_id: journey.journey_id,
+    source_story_count: journey.source_story_ids?.length ?? 0,
+    candidate_activity_count: journey.backbone?.length ?? 0,
+    conflict_count: journey.conflicts?.length ?? 0,
+    open_question_count: journey.open_questions?.length ?? 0,
+    blocking_question_count: blockingQuestions.length,
+    instructions: [
+      'Decide which product loop or user/business journey is being curated.',
+      'Classify candidate Story placements as core steps, supporting concerns, or out-of-journey evidence.',
+      'Resolve conflicts and blocking open questions explicitly.',
+      'Write a curated Journey JSON artifact before treating Journey status as available.'
+    ]
+  };
+}
+
+function renderJourneyHandoffMarkdown(journey) {
+  const handoff = journey.handoff ?? buildJourneyHandoff(journey);
+  const conflicts = (journey.conflicts ?? []).length === 0
+    ? '-'
+    : journey.conflicts.map((conflict) => `- ${conflict.id}: ${conflict.reason} (${(conflict.story_ids ?? []).join(', ')})`).join('\n');
+  const questions = (journey.open_questions ?? []).length === 0
+    ? '-'
+    : journey.open_questions.map((question) => `- ${question.id}${question.blocker ? ' [blocking]' : ''}: ${question.question}`).join('\n');
+  const candidateSteps = (journey.backbone ?? [])
+    .flatMap((activity) => (activity.steps ?? []).map((step) => ({
+      activity,
+      step
+    })))
+    .map(({ activity, step }) => [
+      activity.activity_id,
+      step.step_id,
+      summarizeStoryRefs(step.story_ids ?? [], { labels: step.story_labels ?? {}, limit: 8 }),
+      summarizeStoryRefs(step.enabler_story_ids ?? [], { labels: step.enabler_story_labels ?? {}, limit: 8 }),
+      step.confidence ?? '-'
+    ]);
+  const rows = candidateSteps.length === 0
+    ? '| - | - | - | - | - |'
+    : candidateSteps
+      .map((row) => `| ${row.map(escapeMarkdownTableCell).join(' | ')} |`)
+      .join('\n');
+  return `# Journey AI Handoff
+
+## Purpose
+
+This is a machine-derived Journey context pack for AI or human interpretation. It is not the authoritative product Journey.
+
+## Target Output
+
+- Curated artifact: \`${handoff.target_curated_artifact}\`
+- Candidate Journey: \`${journey.journey_id}\`
+- Candidate artifact kind: \`${journey.artifact_kind ?? JOURNEY_CONTEXT_ARTIFACT_KIND}\`
+- Curation status: \`${journey.curation_status ?? 'needs_curated_journey'}\`
+
+## Instructions
+
+${handoff.instructions.map((item) => `- ${item}`).join('\n')}
+
+## Candidate Steps
+
+| Activity | Step | Candidate core Stories | Supporting Stories | Confidence |
+|---|---|---|---|---|
+${rows}
+
+## Walking Skeleton
+
+- status: ${journey.walking_skeleton?.status ?? 'unknown'}
+- required_step_ids: ${(journey.walking_skeleton?.required_step_ids ?? []).join(', ') || '-'}
+- covered_step_ids: ${(journey.walking_skeleton?.covered_step_ids ?? []).join(', ') || '-'}
+
+## Conflicts
+
+${conflicts}
+
+## Open Questions
+
+${questions}
+`;
+}
+
 function renderJourneyMapMarkdown(journey) {
   const activities = journey.backbone ?? [];
   const slices = journey.release_slices ?? [];
@@ -1018,9 +1187,14 @@ function renderJourneyMapMarkdown(journey) {
   const evidenceBindings = renderEvidenceBindings(activities);
   return `# VibePro Journey
 
+> This artifact is a machine-derived Journey context pack for AI handoff. It is not the authoritative product Journey until a curated Journey exists.
+
 | 項目 | 内容 |
 |------|------|
 | Journey | ${journey.journey_id} |
+| Artifact | ${journey.artifact_kind ?? JOURNEY_CONTEXT_ARTIFACT_KIND} |
+| Authoritative | ${journey.authoritative === true ? 'yes' : 'no'} |
+| Curation status | ${journey.curation_status ?? 'needs_curated_journey'} |
 | 生成日時 | ${generatedAt} |
 | 対象Story | ${storyCount} |
 | 最小体験 | ${formatJourneyStatus(walkingSkeletonStatus)} |

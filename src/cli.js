@@ -174,6 +174,7 @@ import {
 import {
   deriveJourneyMap,
   getJourneyStatus,
+  renderJourneyHandoff,
   renderJourneyMap,
   renderJourneyStatus
 } from './journey-map.js';
@@ -324,6 +325,7 @@ Usage:
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task list [repo] [--id <story-id>]
@@ -494,6 +496,7 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
+  vibepro journey handoff [repo] [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
@@ -1733,6 +1736,15 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.journey, null, 2)}\n`
           : renderJourneyMap(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'handoff') {
+        const result = await deriveJourneyMap(repoRoot, {
+          journeyId: getOption(rest, '--id')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.journey.handoff, null, 2)}\n`
+          : renderJourneyHandoff(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'map') {
