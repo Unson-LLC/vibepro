@@ -1443,6 +1443,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:path_surface_matrix') {
     return `Record current path/surface evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:journey_context') {
+    return `Resolve Journey context for UI changes: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:review_inspection_required') {
     return `Record required review inspection evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
@@ -3760,6 +3763,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     scope,
     prRoute,
     graphContext,
+    journeyMap,
     managedWorktreeContext,
     managedWorktreeGate
   });
@@ -7582,6 +7586,7 @@ function buildGateDag({
   scope = null,
   prRoute = null,
   graphContext = null,
+  journeyMap = null,
   managedWorktreeContext = null,
   managedWorktreeGate = null
 }) {
@@ -7763,6 +7768,10 @@ function buildGateDag({
     flowVerification,
     decisionRecords
   });
+  const journeyContextGate = buildJourneyContextGate(journeyMap, {
+    uiExperienceChange,
+    decisionRecords
+  });
   const workflowHeavyGates = buildWorkflowHeavyGates({
     repoRoot,
     changeClassification,
@@ -7814,6 +7823,7 @@ function buildGateDag({
     },
     networkContractGate,
     pathSurfaceMatrixGate,
+    ...(journeyContextGate ? [journeyContextGate] : []),
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -7921,7 +7931,12 @@ function buildGateDag({
     ]),
     { from: 'code', to: 'gate:network_contract' },
     { from: 'gate:network_contract', to: 'gate:path_surface_matrix' },
-    { from: 'gate:path_surface_matrix', to: 'gate:requirement' },
+    ...(journeyContextGate
+      ? [
+        { from: 'gate:path_surface_matrix', to: 'gate:journey_context' },
+        { from: 'gate:journey_context', to: 'gate:requirement' }
+      ]
+      : [{ from: 'gate:path_surface_matrix', to: 'gate:requirement' }]),
     { from: 'gate:requirement', to: 'gate:failure_mode_coverage' },
     { from: 'gate:failure_mode_coverage', to: 'gate:decision_record' },
     { from: 'gate:decision_record', to: 'gate:unit' },
@@ -7987,6 +8002,7 @@ function buildGateDag({
     prFreshnessGate,
     networkContractGate,
     pathSurfaceMatrixGate,
+    journeyContextGate,
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -8030,6 +8046,7 @@ function buildGateDag({
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
+      journey_context_status: journeyContextGate?.status ?? null,
       requirement_status: requirementGate.status,
       failure_mode_coverage_status: failureModeCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
@@ -8587,6 +8604,73 @@ function scoreFailureModeEvidence(mode, evidenceText) {
   }
   const matchCount = keywords.filter((keyword) => evidenceText.includes(keyword)).length;
   return matchCount > 0 ? 10 + matchCount : 0;
+}
+
+function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decisionRecords = null } = {}) {
+  if (!uiExperienceChange) return null;
+  const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:journey_context');
+  const affectedConflicts = journeyMap?.affected_conflicts ?? [];
+  const affectedOpenQuestions = journeyMap?.affected_open_questions ?? [];
+  const blockerQuestions = affectedOpenQuestions.filter((question) => question.blocker === true);
+  const affectedWalkingSkeleton = (journeyMap?.affected_release_slices ?? [])
+    .some((slice) => slice.kind === 'walking_skeleton' || slice.slice_id === 'walking_skeleton');
+  const walkingSkeletonGap = affectedWalkingSkeleton && journeyMap?.walking_skeleton_status === 'needs_evidence';
+  const status = acceptedDecision
+    ? 'accepted_followup'
+    : !journeyMap || journeyMap.status === 'missing'
+      ? 'needs_evidence'
+      : !journeyMap.current_story
+        ? 'needs_review'
+        : affectedConflicts.length > 0
+          ? 'needs_review'
+          : blockerQuestions.length > 0 || walkingSkeletonGap
+            ? 'needs_evidence'
+            : 'passed';
+  const reasons = [];
+  if (!journeyMap || journeyMap.status === 'missing') {
+    reasons.push('UI experience source changed but no Journey Map is generated');
+  } else if (!journeyMap.current_story) {
+    reasons.push('UI experience source changed but the current Story is not placed on the Journey Map');
+  } else {
+    reasons.push(`Current Story Journey step: ${journeyMap.current_story.activity_id}/${journeyMap.current_story.step_id}`);
+  }
+  if (affectedConflicts.length > 0) {
+    reasons.push(`${affectedConflicts.length} Journey conflict(s) affect the current Story or step`);
+  }
+  if (blockerQuestions.length > 0) {
+    reasons.push(`${blockerQuestions.length} blocking Journey open question(s) affect the current Story or step`);
+  }
+  if (walkingSkeletonGap) {
+    reasons.push('Current Story is in the walking skeleton while walking skeleton Journey coverage still needs evidence');
+  }
+  if (acceptedDecision) {
+    reasons.push(`Journey context follow-up accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`);
+  }
+  return {
+    id: 'gate:journey_context',
+    type: 'journey_context_gate',
+    label: 'Journey Context Gate',
+    status,
+    required: true,
+    journey_status: journeyMap?.status ?? 'missing',
+    journey_id: journeyMap?.journey_id ?? null,
+    current_story: journeyMap?.current_story ?? null,
+    walking_skeleton_status: journeyMap?.walking_skeleton_status ?? null,
+    affected_release_slices: journeyMap?.affected_release_slices ?? [],
+    affected_conflicts: affectedConflicts,
+    affected_open_questions: affectedOpenQuestions,
+    accepted_decision: acceptedDecision ? {
+      source: acceptedDecision.source ?? null,
+      summary: acceptedDecision.summary ?? null,
+      reviewer: acceptedDecision.reviewer ?? null
+    } : null,
+    required_actions: status === 'passed' || status === 'accepted_followup' ? [] : [
+      'Run `vibepro journey derive .` so UI changes are reviewed against the latest Journey context',
+      'Place the changed Story on a Journey step or record why this UI change has no Journey impact',
+      'Resolve affected Journey conflicts/open questions, or record an auditable `gate:journey_context` decision'
+    ],
+    reason: reasons.join('; ')
+  };
 }
 
 function buildVerificationCommandSearchText(command) {
@@ -9567,7 +9651,7 @@ function hasUiExperienceSourceChange(fileGroups) {
     ) {
       return true;
     }
-    return /\.(css|scss|sass|less|html|vue|svelte|tsx)$/.test(file);
+    return /\.(css|scss|sass|less|html|vue|svelte|jsx|tsx)$/.test(file);
   });
 }
 
@@ -10260,6 +10344,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
+      'journey_context_gate',
       'design_diagrams_gate',
       'review_inspection_required_gate',
       'visual_qa_gate',
@@ -10352,6 +10437,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
+      if (gate.id === 'gate:journey_context') return 'Journey Context Gate requires UI changes to be checked against the latest Journey step, affected conflicts, and blocking open questions.';
       if (gate.id === 'gate:pr_freshness') return 'PR Freshness Gate requires `git fetch origin`, rebasing the PR branch onto the current base ref, rerunning verification evidence, and regenerating `vibepro pr prepare`.';
       if (gate.id === 'gate:pr_route_classification') return 'PR Route Classification Gate requires a route before VibePro can choose the correct body contract and evidence path.';
       if (gate.id === 'gate:pr_body_contract') return 'PR Body Contract Gate requires the PR text to expose the route-specific decision question, source of truth, gates, and waiver/evidence clauses.';
@@ -10414,6 +10500,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
   if (gate.id === 'gate:decision_record' && gate.status === 'needs_review') return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:journey_context' && !['passed', 'accepted_followup'].includes(gate.status)) return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
