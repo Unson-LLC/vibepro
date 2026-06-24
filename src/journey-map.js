@@ -181,6 +181,8 @@ export function summarizeJourneyForPr(journey, storyId = null) {
     };
   }
   const storyPlacement = findStoryPlacement(journey, storyId);
+  const affectedConflicts = findAffectedJourneyConflicts(journey, storyId, storyPlacement);
+  const affectedOpenQuestions = findAffectedJourneyOpenQuestions(journey, storyId, storyPlacement);
   return {
     status: journey.conflicts?.length > 0
       ? 'conflict'
@@ -197,7 +199,9 @@ export function summarizeJourneyForPr(journey, storyId = null) {
       ? (journey.release_slices ?? [])
         .filter((slice) => (slice.story_ids ?? []).includes(storyId))
         .map((slice) => ({ slice_id: slice.slice_id, kind: slice.kind, label: slice.label }))
-      : []
+      : [],
+    affected_conflicts: affectedConflicts,
+    affected_open_questions: affectedOpenQuestions
   };
 }
 
@@ -936,6 +940,50 @@ function findStoryPlacement(journey, storyId) {
     }
   }
   return null;
+}
+
+function findAffectedJourneyConflicts(journey, storyId, storyPlacement) {
+  if (!journey) return [];
+  return (journey.conflicts ?? [])
+    .filter((conflict) => (
+      (storyId && (conflict.story_ids ?? []).includes(storyId))
+      || (
+        storyPlacement
+        && conflict.activity_id === storyPlacement.activity_id
+        && conflict.step_id === storyPlacement.step_id
+      )
+    ))
+    .map((conflict) => ({
+      id: conflict.id,
+      type: conflict.type,
+      severity: conflict.severity,
+      activity_id: conflict.activity_id,
+      step_id: conflict.step_id,
+      story_ids: conflict.story_ids ?? [],
+      destinations: conflict.destinations ?? [],
+      reason: conflict.reason
+    }));
+}
+
+function findAffectedJourneyOpenQuestions(journey, storyId, storyPlacement) {
+  if (!journey) return [];
+  return (journey.open_questions ?? [])
+    .filter((question) => (
+      (storyId && question.story_id === storyId)
+      || (
+        storyPlacement
+        && question.step_id
+        && question.step_id === storyPlacement.step_id
+      )
+    ))
+    .map((question) => ({
+      id: question.id,
+      kind: question.kind,
+      blocker: question.blocker === true,
+      story_id: question.story_id ?? null,
+      step_id: question.step_id ?? null,
+      question: question.question
+    }));
 }
 
 function renderJourneyMapMarkdown(journey) {
