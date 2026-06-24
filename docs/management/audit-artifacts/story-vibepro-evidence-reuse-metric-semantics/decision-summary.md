@@ -3,9 +3,9 @@
 - story: story-vibepro-evidence-reuse-metric-semantics
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 15954
+- artifact_lines: 16044
 - product_changed_lines: 302
-- artifact_code_ratio: 52.828
+- artifact_code_ratio: 53.126
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_30d85f29dd0c128423ac2525686e515e verification_updated_at=2026-06-24T00:57:16.074Z verification_fingerprint=sha256:fe4627332e3742a1f230b766b3ea438c57e34f16cedb47be41bd1d8f27736520

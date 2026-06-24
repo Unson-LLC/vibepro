@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-reuse-metric-semantics",
   "source": "execute_merge",
-  "promoted_at": "2026-06-24T01:10:55.703Z",
+  "promoted_at": "2026-06-24T01:10:58.922Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-evidence-reuse-metric-semantics",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -43,7 +43,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T01:10:52.608Z",
     "diff_stats_reason": null,
-    "artifact_lines": 15954,
+    "artifact_lines": 16044,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 302,
@@ -105,7 +105,7 @@
     "product_changed_lines": 302,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 52.828,
+    "artifact_code_ratio": 53.126,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -132,7 +132,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-evidence-reuse-metric-semantics",
     "source": "execute_merge",
-    "generated_at": "2026-06-24T01:10:55.703Z",
+    "generated_at": "2026-06-24T01:10:58.922Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -154,7 +154,7 @@
       },
       "diff_stats_collected_at": "2026-06-24T01:10:52.608Z",
       "diff_stats_reason": null,
-      "artifact_lines": 15954,
+      "artifact_lines": 16044,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 302,
@@ -216,7 +216,7 @@
       "product_changed_lines": 302,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 52.828,
+      "artifact_code_ratio": 53.126,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "high",
@@ -408,8 +408,8 @@
       "kind": "pr_merge",
       "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/pr-merge.json",
       "persisted": false,
-      "digest": "sha256:27de6a1c6e5eededd9070c6f953020c200d9a3a86cf6b98ac5a2fea3266a51f0",
-      "line_count": 2533
+      "digest": "sha256:ddf09fda06da7e8b4ee10c49adb7bf8db8b2c90d2152326d112c533419d3442c",
+      "line_count": 2623
     },
     {
       "kind": "traceability",

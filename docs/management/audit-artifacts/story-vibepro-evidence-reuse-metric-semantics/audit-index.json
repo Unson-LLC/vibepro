@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-reuse-metric-semantics",
   "source": "execute_merge",
-  "generated_at": "2026-06-24T01:10:55.703Z",
+  "generated_at": "2026-06-24T01:10:58.922Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T01:10:52.608Z",
     "diff_stats_reason": null,
-    "artifact_lines": 15954,
+    "artifact_lines": 16044,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 302,
@@ -86,7 +86,7 @@
     "product_changed_lines": 302,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 52.828,
+    "artifact_code_ratio": 53.126,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
