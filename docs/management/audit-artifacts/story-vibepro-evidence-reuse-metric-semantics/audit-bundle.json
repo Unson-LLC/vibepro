@@ -1,0 +1,461 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-reuse-metric-semantics",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-24T01:10:55.703Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-evidence-reuse-metric-semantics",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "decision_index_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "gate:gate:managed_worktree:needs_review",
+      "gate:gate:traceability_clause_coverage:needs_evidence"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "dad6af613919fdda2918aa54b2e984eb675af24c",
+      "base_sha": "8b89d3cd53c1d844b769e75be53aa3cac7e29e69",
+      "head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+      "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2"
+    },
+    "diff_stats_collected_at": "2026-06-24T01:10:52.608Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 15954,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 302,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 3,
+          "changed_lines": 85,
+          "unknown_files": 0,
+          "paths": [
+            "src/canonical-audit.js",
+            "src/evidence-reuse.js",
+            "src/usage-report.js"
+          ]
+        },
+        "test": {
+          "files": 2,
+          "changed_lines": 43,
+          "unknown_files": 0,
+          "paths": [
+            "test/canonical-audit-self-contained.test.js",
+            "test/evidence-summary-reuse.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 174,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-evidence-reuse-metric-semantics.md",
+            "docs/management/stories/active/story-vibepro-evidence-reuse-metric-semantics.md",
+            "docs/specs/vibepro-evidence-reuse-metric-semantics.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        }
+      },
+      "source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "dad6af613919fdda2918aa54b2e984eb675af24c",
+        "base_sha": "8b89d3cd53c1d844b769e75be53aa3cac7e29e69",
+        "head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+        "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2"
+      },
+      "collected_at": "2026-06-24T01:10:52.608Z",
+      "reason": null
+    },
+    "product_changed_lines": 302,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 52.828,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    }
+  },
+  "decision_index": {
+    "schema_version": "0.1.0",
+    "story_id": "story-vibepro-evidence-reuse-metric-semantics",
+    "source": "execute_merge",
+    "generated_at": "2026-06-24T01:10:55.703Z",
+    "evidence_depth": "standard",
+    "budget_status": "exceeded",
+    "cost_summary": {
+      "schema_version": "0.1.0",
+      "evidence_depth": "standard",
+      "risk_profile": "high",
+      "trigger_signals": [
+        "gate:gate:managed_worktree:needs_review",
+        "gate:gate:traceability_clause_coverage:needs_evidence"
+      ],
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c",
+      "diff_stats_refs": {
+        "base_ref": "origin/main",
+        "head_ref": "dad6af613919fdda2918aa54b2e984eb675af24c",
+        "base_sha": "8b89d3cd53c1d844b769e75be53aa3cac7e29e69",
+        "head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+        "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2"
+      },
+      "diff_stats_collected_at": "2026-06-24T01:10:52.608Z",
+      "diff_stats_reason": null,
+      "artifact_lines": 15954,
+      "changed_lines": {
+        "status": "available",
+        "total_changed_lines": 302,
+        "unknown_file_count": 0,
+        "buckets": {
+          "src": {
+            "files": 3,
+            "changed_lines": 85,
+            "unknown_files": 0,
+            "paths": [
+              "src/canonical-audit.js",
+              "src/evidence-reuse.js",
+              "src/usage-report.js"
+            ]
+          },
+          "test": {
+            "files": 2,
+            "changed_lines": 43,
+            "unknown_files": 0,
+            "paths": [
+              "test/canonical-audit-self-contained.test.js",
+              "test/evidence-summary-reuse.test.js"
+            ]
+          },
+          "story_spec_architecture_docs": {
+            "files": 3,
+            "changed_lines": 174,
+            "unknown_files": 0,
+            "paths": [
+              "docs/architecture/vibepro-evidence-reuse-metric-semantics.md",
+              "docs/management/stories/active/story-vibepro-evidence-reuse-metric-semantics.md",
+              "docs/specs/vibepro-evidence-reuse-metric-semantics.md"
+            ]
+          },
+          "audit_artifacts": {
+            "files": 0,
+            "changed_lines": 0,
+            "unknown_files": 0,
+            "paths": []
+          },
+          "other": {
+            "files": 0,
+            "changed_lines": 0,
+            "unknown_files": 0,
+            "paths": []
+          }
+        },
+        "source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c",
+        "refs": {
+          "base_ref": "origin/main",
+          "head_ref": "dad6af613919fdda2918aa54b2e984eb675af24c",
+          "base_sha": "8b89d3cd53c1d844b769e75be53aa3cac7e29e69",
+          "head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+          "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2"
+        },
+        "collected_at": "2026-06-24T01:10:52.608Z",
+        "reason": null
+      },
+      "product_changed_lines": 302,
+      "product_changed_lines_status": "available",
+      "product_changed_lines_reason": null,
+      "artifact_code_ratio": 52.828,
+      "artifact_code_ratio_reason": null,
+      "budget": {
+        "profile": "high",
+        "canonical_artifact_lines": 1500,
+        "artifact_code_ratio": 3
+      },
+      "budget_status": "exceeded",
+      "budget_exceeded_reasons": [
+        "canonical_artifact_lines_exceeded",
+        "artifact_code_ratio_exceeded"
+      ],
+      "token_accounting": {
+        "status": "unavailable",
+        "total_tokens": null,
+        "reason": "session token logs were not provided to canonical audit promotion"
+      },
+      "elapsed_time_accounting": {
+        "status": "unavailable",
+        "elapsed_ms": null,
+        "reason": "elapsed-time logs were not provided to canonical audit promotion"
+      }
+    },
+    "pr_prepare": {
+      "present": true,
+      "created_at": "2026-06-24T01:10:24.185Z",
+      "gate_status": {
+        "ready_for_pr_create": true,
+        "overall_status": "ready_for_review",
+        "fast_lane": false,
+        "critical_unresolved_gate_count": 0
+      }
+    },
+    "evidence_reuse": {
+      "present": true,
+      "created_at": "2026-06-24T01:10:24.185Z",
+      "status": "stale",
+      "evidence_key": "evk_30d85f29dd0c128423ac2525686e515e",
+      "verification_summary_fingerprint": "sha256:fe4627332e3742a1f230b766b3ea438c57e34f16cedb47be41bd1d8f27736520",
+      "verification_evidence_updated_at": "2026-06-24T00:57:16.074Z",
+      "verification_command_timestamps": [
+        {
+          "kind": "e2e",
+          "executed_at": "2026-06-24T00:57:16.074Z",
+          "git_recorded_at": "2026-06-24T00:57:16.073Z"
+        },
+        {
+          "kind": "unit",
+          "executed_at": "2026-06-24T00:56:43.775Z",
+          "git_recorded_at": "2026-06-24T00:56:43.774Z"
+        },
+        {
+          "kind": "typecheck",
+          "executed_at": "2026-06-24T00:56:43.234Z",
+          "git_recorded_at": "2026-06-24T00:56:43.233Z"
+        }
+      ],
+      "stale_reason_count": 1,
+      "full_evidence_status": "generated",
+      "full_evidence_generation_count": 1,
+      "full_evidence_generation_count_scope": "same_evidence_key",
+      "full_evidence_same_key_generation_count": 1,
+      "full_evidence_cumulative_generation_count": 8
+    },
+    "pr_create": {
+      "present": true,
+      "created_at": "2026-06-24T01:08:48.426Z",
+      "status": null,
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/218",
+      "gate_override_allowed": false
+    },
+    "pr_merge": {
+      "present": true,
+      "summary": {
+        "status": "merged",
+        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/218",
+        "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2",
+        "merged_at": "2026-06-24T01:10:54Z",
+        "current_head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+        "diff_stats_status": "available",
+        "diff_stats_source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c"
+      }
+    },
+    "gate_dag": {
+      "present": true,
+      "overall_status": "ready_for_review",
+      "node_count": 51,
+      "blocking_count": 2
+    },
+    "traceability": {
+      "present": true,
+      "lifecycle": "merged",
+      "coverage_summary": {
+        "clause_count": 7,
+        "acceptance_criteria_count": 7,
+        "scenario_clause_count": 0,
+        "mapped_count": 5,
+        "weakly_mapped_count": 2,
+        "unmapped_count": 0,
+        "examples": [
+          {
+            "id": "AC-1",
+            "type": "acceptance_criterion",
+            "status": "weakly_mapped",
+            "source_text": "Same `evidence_key` の2回目以降の `pr prepare` は `full_evidence.generation_count=1` を維持し、`status=reused` を出す。",
+            "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+          },
+          {
+            "id": "AC-3",
+            "type": "acceptance_criterion",
+            "status": "weakly_mapped",
+            "source_text": "Stale後に同じnew keyを再実行した場合、`status=hit`、`generation_count=1`、`cumulative_generation_count` は直前の累積値を維持する。",
+            "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+          }
+        ]
+      }
+    },
+    "verification": {
+      "present": true,
+      "command_count": 3,
+      "pass_count": 3,
+      "fail_count": 0
+    },
+    "review": {
+      "summary_count": 1,
+      "result_count": 1,
+      "pass_count": 1,
+      "block_count": 0,
+      "stale_count": 0
+    },
+    "missing_artifacts": [],
+    "raw_artifact_count": 11
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/218",
+    "merge_commit_sha": "f0d5fc515b9b4953e7cfba83c543352fd3cf10c2",
+    "merged_at": "2026-06-24T01:10:54Z",
+    "current_head_sha": "dad6af613919fdda2918aa54b2e984eb675af24c",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...dad6af613919fdda2918aa54b2e984eb675af24c"
+  },
+  "handoff_replay_status": "summary_ready",
+  "handoff_replay": {
+    "status": "summary_ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-evidence-reuse-metric-semantics/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-evidence-reuse-metric-semantics/decision-summary.md"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/evidence-reuse.json",
+      "persisted": false,
+      "digest": "sha256:f952087a3f81588671d69e5d4df839de3a5cb93eeeb4ba7985c2656970b2de8f",
+      "line_count": 84
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/pr-prepare.json",
+      "persisted": false,
+      "digest": "sha256:78c560c884133f80adc4f489a702be49f8f3ea1424ce59f7fe006a6658985e83",
+      "line_count": 7481
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/pr-create.json",
+      "persisted": false,
+      "digest": "sha256:42224aeb5b1cac0e6ed4d20eff1417b7bb1606148e63bebd2c24bf75d8647747",
+      "line_count": 2409
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/gate-dag.json",
+      "persisted": false,
+      "digest": "sha256:17a6902456301940f8979ab20ac6936521d490a7c28364fb255555c927f12281",
+      "line_count": 2311
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/pr-merge.json",
+      "persisted": false,
+      "digest": "sha256:27de6a1c6e5eededd9070c6f953020c200d9a3a86cf6b98ac5a2fea3266a51f0",
+      "line_count": 2533
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/traceability.json",
+      "persisted": false,
+      "digest": "sha256:da38dbdce21f7e621bffb7e169d8a7b536715a4ff13200a0f8e28b36c5684a3f",
+      "line_count": 335
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-evidence-reuse-metric-semantics/verification-evidence.json",
+      "persisted": false,
+      "digest": "sha256:006163e79e8dd1e8f939d7979fe27cdec7f23e00ed0daf436bce16c8c4f55c32",
+      "line_count": 282
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-evidence-reuse-metric-semantics/gate/lifecycle.json",
+      "persisted": false,
+      "digest": "sha256:f9613b793db2f7f599beb0f4d98e9a9937090cdf8a15ce6a377ce836c7fe3d69",
+      "line_count": 63
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-evidence-reuse-metric-semantics/gate/review-request-gate_evidence.md",
+      "persisted": false,
+      "digest": "sha256:a660dd47e3700456faaa9b4a307d7f04ae2f3e6edfeec785579f4c593371fa70",
+      "line_count": 107
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-evidence-reuse-metric-semantics/gate/review-result-gate_evidence.json",
+      "persisted": false,
+      "digest": "sha256:bc8e047f6bb2712e0a89de42bfd8517b30dcbed67a979187e55ec4485359d03f",
+      "line_count": 115
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-evidence-reuse-metric-semantics/gate/review-summary.json",
+      "persisted": false,
+      "digest": "sha256:4c4749ed55994fe9115af315d755147aaddfd02f2b7f98c14cfb082b571ab18f",
+      "line_count": 234
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
