@@ -30,6 +30,8 @@ the legacy field's scope.
 `usage report` and canonical audit summaries MUST expose both same-key and cumulative generation counts.
 Main-only audit reconstruction MUST preserve `generation_count_scope`, `same_key_generation_count`, and
 `cumulative_generation_count` when compacting evidence reuse artifacts.
+Gate DAG and review evidence consumers MUST be able to reconstruct whether the metric is a same-key reuse
+KPI or cumulative artifact-generation cost.
 
 ## Scenarios
 
@@ -61,3 +63,4 @@ that same new key, then `status=hit`, `generation_count=1`, and `cumulative_gene
 - `ERM-VERIFY-002`: Unit coverage proves stale regeneration increments only `cumulative_generation_count`.
 - `ERM-VERIFY-003`: Usage report coverage proves both scoped metrics are visible.
 - `ERM-VERIFY-004`: Canonical audit coverage proves compact summaries preserve both metrics.
+- `ERM-VERIFY-005`: Artifact replay coverage proves the Gate/review evidence flow can consume the scoped metrics without reintroducing the old ambiguous count.

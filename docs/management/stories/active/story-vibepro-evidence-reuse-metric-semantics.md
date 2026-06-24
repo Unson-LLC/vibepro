@@ -1,6 +1,6 @@
 ---
 story_id: story-vibepro-evidence-reuse-metric-semantics
-title: "Evidence reuseの生成回数メトリクスを意味別に分離する"
+title: "Gate evidence reuseの生成回数メトリクスを意味別に分離する"
 status: active
 view: dev
 period: 2026-06
@@ -22,11 +22,11 @@ updated_at: 2026-06-24
 
 # Story
 
-VibeProの監査で、`status=hit` なのに `full_evidence_generation_count=9` と表示される merged story が見つかった。
+VibeProのGate DAG / review evidence監査で、`status=hit` なのに `full_evidence_generation_count=9` と表示される merged story が見つかった。
 既存Specは「同じ `evidence_key` のfull evidenceは2回目以降再生成せず、`generation_count` を1に保つ」と定義していたが、
 実装はstale/new keyをまたいだ累積生成回数にも同じフィールドを使っていた。
 
-このままだと、reuseが効いているのか、単に過去の再生成回数をcarryしているだけなのかをusage reportとcanonical auditから判断できない。
+このままだと、reuseが効いているのか、単に過去の再生成回数をcarryしているだけなのかをusage report、Gate evidence、canonical auditから判断できない。
 
 ## User Story
 
@@ -41,6 +41,7 @@ VibeProの監査で、`status=hit` なのに `full_evidence_generation_count=9` 
 - 明示的な `generation_count_scope` と `same_key_generation_count` を追加する
 - `usage report` はsame-key countとcumulative countを並べて表示する
 - `execute merge` のcanonical audit summaryは新旧メトリクスを保持する
+- Gate / review artifact consumersが、同じ指標をsame-key reuse KPIとして読むのか、累積cost historyとして読むのかを再構成できる
 
 ## Acceptance Criteria
 
@@ -50,6 +51,7 @@ VibeProの監査で、`status=hit` なのに `full_evidence_generation_count=9` 
 - [ ] `usage report` は `generation_count_scope`、same-key full generation count、cumulative full generation countを表示する。
 - [ ] canonical audit compact summaryはsame-keyとcumulativeの両方を保持し、main-only auditで意味を再構成できる。
 - [ ] Regression testは `ERM-CONTRACT-001` から `ERM-CONTRACT-004` のclause IDを含み、genericなpass-only証跡にしない。
+- [ ] Gate DAG / review evidence の再生成フローを、現在HEADに束縛された artifact replay として検証できる。
 
 ## Non Goals
 

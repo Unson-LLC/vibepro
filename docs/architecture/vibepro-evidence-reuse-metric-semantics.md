@@ -15,6 +15,7 @@ original reuse contract while making audit cost interpretation explicit.
 
 - `evidence-reuse`: owns metric calculation and emits scoped fields.
 - `usage report`: renders same-key and cumulative counts side by side.
+- `Gate DAG / review evidence`: consumes scoped metrics as replayable evidence rather than reinterpreting a cumulative count as reuse failure.
 - `canonical audit`: persists both metrics through full and compact audit artifacts.
 - Existing historical artifacts: remain readable through fallback from legacy `generation_count`.
 
@@ -30,6 +31,7 @@ flowchart TD
   Generate --> Cumulative["cumulative_generation_count += 1"]
   SameKey --> Report["usage report / canonical audit"]
   Cumulative --> Report
+  Report --> Gate["Gate DAG / review evidence replay"]
 ```
 
 ## Invariants
