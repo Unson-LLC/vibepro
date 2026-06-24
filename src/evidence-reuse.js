@@ -114,6 +114,9 @@ export function summarizeEvidenceReuse(reuse) {
     full_evidence: reuse.full_evidence ? {
       status: reuse.full_evidence.status ?? null,
       generation_count: reuse.full_evidence.generation_count ?? null,
+      generation_count_scope: reuse.full_evidence.generation_count_scope ?? null,
+      same_key_generation_count: reuse.full_evidence.same_key_generation_count ?? reuse.full_evidence.generation_count ?? null,
+      cumulative_generation_count: reuse.full_evidence.cumulative_generation_count ?? reuse.full_evidence.generation_count ?? null,
       digest: reuse.full_evidence.digest ?? null,
       reference: reuse.full_evidence.reference ?? null
     } : null,
@@ -325,13 +328,26 @@ function buildFullEvidenceReuse({ storyId, evidenceKey, previousReuse, decisionI
   }))}`;
   const previousFull = previousReuse?.full_evidence ?? null;
   const sameKey = previousReuse?.evidence_key === evidenceKey;
+  const previousCumulativeGenerationCount = normalizePositiveInteger(
+    previousFull?.cumulative_generation_count ?? previousFull?.generation_count,
+    0
+  );
+  const sameKeyGenerationCount = sameKey && previousFull?.digest
+    ? normalizePositiveInteger(previousFull.same_key_generation_count ?? previousFull.generation_count, 1)
+    : 1;
+  const cumulativeGenerationCount = sameKey && previousFull?.digest
+    ? normalizePositiveInteger(previousFull.cumulative_generation_count ?? previousFull.generation_count, sameKeyGenerationCount)
+    : previousCumulativeGenerationCount + 1;
   const reference = root && artifacts.decisionIndexPath
     ? toWorkspaceRelative(root, artifacts.decisionIndexPath)
     : artifacts.decision_index ?? null;
   if (sameKey && previousFull?.digest) {
     return {
       status: 'reused',
-      generation_count: previousFull.generation_count ?? 1,
+      generation_count: sameKeyGenerationCount,
+      generation_count_scope: 'same_evidence_key',
+      same_key_generation_count: sameKeyGenerationCount,
+      cumulative_generation_count: cumulativeGenerationCount,
       digest: previousFull.digest,
       reference: previousFull.reference ?? reference,
       reused_from: {
@@ -343,7 +359,10 @@ function buildFullEvidenceReuse({ storyId, evidenceKey, previousReuse, decisionI
   }
   return {
     status: 'generated',
-    generation_count: (previousFull?.generation_count ?? 0) + 1,
+    generation_count: 1,
+    generation_count_scope: 'same_evidence_key',
+    same_key_generation_count: 1,
+    cumulative_generation_count: cumulativeGenerationCount,
     digest,
     reference,
     reused_from: null
@@ -461,4 +480,10 @@ function sortForStableStringify(value) {
 
 function normalizeString(value) {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
+}
+
+function normalizePositiveInteger(value, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.trunc(parsed);
 }

@@ -84,7 +84,7 @@ test('canonical audit bundle promotes review requests even when no JSON referenc
   );
 });
 
-test('canonical audit bundle compacts over-budget evidence instead of copying full raw artifacts', async () => {
+test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence instead of copying full raw artifacts', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-budget-'));
   const storyId = 'story-over-budget-evidence';
   await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
@@ -122,7 +122,10 @@ test('canonical audit bundle compacts over-budget evidence instead of copying fu
     stale_reasons: [],
     full_evidence: {
       status: 'reused',
-      generation_count: 1
+      generation_count: 1,
+      generation_count_scope: 'same_evidence_key',
+      same_key_generation_count: 1,
+      cumulative_generation_count: 3
     }
   });
 
@@ -147,6 +150,10 @@ test('canonical audit bundle compacts over-budget evidence instead of copying fu
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
   assert.equal(auditIndex.evidence_reuse.verification_command_timestamps[0].executed_at, '2026-06-23T00:02:00.000Z');
+  assert.equal(auditIndex.evidence_reuse.full_evidence_generation_count, 1);
+  assert.equal(auditIndex.evidence_reuse.full_evidence_generation_count_scope, 'same_evidence_key');
+  assert.equal(auditIndex.evidence_reuse.full_evidence_same_key_generation_count, 1);
+  assert.equal(auditIndex.evidence_reuse.full_evidence_cumulative_generation_count, 3);
   await assert.rejects(
     () => readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'), 'utf8'),
     /ENOENT/

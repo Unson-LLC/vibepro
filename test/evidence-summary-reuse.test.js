@@ -62,7 +62,7 @@ async function writeSpec(root, statement) {
   }, null, 2));
 }
 
-test('pr prepare reuses fresh summary/index and keeps full evidence generation count at one', async () => {
+test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index and keeps full evidence generation count at one', async () => {
   const repo = await setupReuseRepo();
 
   const first = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
@@ -71,7 +71,10 @@ test('pr prepare reuses fresh summary/index and keeps full evidence generation c
   const firstReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
   assert.equal(firstReuse.status, 'miss');
   assert.equal(firstReuse.full_evidence.status, 'generated');
+  assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
   assert.equal(firstReuse.full_evidence.generation_count, 1);
+  assert.equal(firstReuse.full_evidence.same_key_generation_count, 1);
+  assert.equal(firstReuse.full_evidence.cumulative_generation_count, 1);
 
   const second = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
   assert.equal(second.exitCode, 0);
@@ -80,7 +83,10 @@ test('pr prepare reuses fresh summary/index and keeps full evidence generation c
   const index = await readJson(path.join(prDir, 'decision-index.json'));
   assert.equal(secondReuse.status, 'hit');
   assert.equal(secondReuse.full_evidence.status, 'reused');
+  assert.equal(secondReuse.full_evidence.generation_count_scope, 'same_evidence_key');
   assert.equal(secondReuse.full_evidence.generation_count, 1);
+  assert.equal(secondReuse.full_evidence.same_key_generation_count, 1);
+  assert.equal(secondReuse.full_evidence.cumulative_generation_count, 1);
   assert.equal(plan.evidence_reuse.evidence_key, secondReuse.evidence_key);
   assert.equal(index.evidence_reuse.evidence_key, secondReuse.evidence_key);
 
@@ -96,10 +102,15 @@ test('pr prepare reuses fresh summary/index and keeps full evidence generation c
   const report = await createUsageReport(repo, { language: 'ja' });
   assert.equal(report.evidence_reuse.hit_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
+  assert.equal(report.evidence_reuse.by_story[0].full_evidence_generation_count_scope, 'same_evidence_key');
+  assert.equal(report.evidence_reuse.by_story[0].same_key_full_evidence_generation_count, 1);
+  assert.equal(report.evidence_reuse.by_story[0].cumulative_full_evidence_generation_count, 1);
   assert.match(renderUsageReport(report), /Evidence Reuse/);
+  assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
+  assert.match(renderUsageReport(report), /cumulative_full_generation_count=1/);
 });
 
-test('head changes mark previous summary/index stale', async () => {
+test('ERM-CONTRACT-001 ERM-CONTRACT-002 head changes mark previous summary/index stale without changing same-key count semantics', async () => {
   const repo = await setupReuseRepo();
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   await writeFile(path.join(repo, 'README.md'), '# Reuse\n\nUpdated docs again.\n');
@@ -112,7 +123,18 @@ test('head changes mark previous summary/index stale', async () => {
   assert.ok(reuse.stale_reasons.some((reason) => reason.field === 'head_sha'));
   assert.equal(reuse.fresh_use_allowed, false);
   assert.equal(reuse.full_evidence.status, 'generated');
-  assert.equal(reuse.full_evidence.generation_count, 2);
+  assert.equal(reuse.full_evidence.generation_count_scope, 'same_evidence_key');
+  assert.equal(reuse.full_evidence.generation_count, 1);
+  assert.equal(reuse.full_evidence.same_key_generation_count, 1);
+  assert.equal(reuse.full_evidence.cumulative_generation_count, 2);
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const reusedAfterStale = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(reusedAfterStale.status, 'hit');
+  assert.equal(reusedAfterStale.full_evidence.status, 'reused');
+  assert.equal(reusedAfterStale.full_evidence.generation_count, 1);
+  assert.equal(reusedAfterStale.full_evidence.same_key_generation_count, 1);
+  assert.equal(reusedAfterStale.full_evidence.cumulative_generation_count, 2);
 });
 
 test('spec fingerprint changes mark previous summary/index stale without head changes', async () => {
@@ -179,7 +201,11 @@ test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evid
 
   const report = await createUsageReport(repo, { language: 'ja' });
   assert.equal(report.evidence_reuse.by_story[0].verification_evidence_updated_at, '2026-06-23T12:00:00.000Z');
+  assert.equal(report.evidence_reuse.by_story[0].same_key_full_evidence_generation_count, 1);
+  assert.equal(report.evidence_reuse.by_story[0].cumulative_full_evidence_generation_count, 2);
   assert.match(renderUsageReport(report), /verification_updated_at=2026-06-23T12:00:00\.000Z/);
+  assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
+  assert.match(renderUsageReport(report), /cumulative_full_generation_count=2/);
 });
 
 test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/index stale without head changes', () => {

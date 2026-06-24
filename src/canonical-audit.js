@@ -370,7 +370,14 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         ?? [],
       stale_reason_count: evidenceReuse?.stale_reasons?.length ?? 0,
       full_evidence_status: evidenceReuse?.full_evidence?.status ?? null,
-      full_evidence_generation_count: evidenceReuse?.full_evidence?.generation_count ?? null
+      full_evidence_generation_count: evidenceReuse?.full_evidence?.generation_count ?? null,
+      full_evidence_generation_count_scope: evidenceReuse?.full_evidence?.generation_count_scope ?? null,
+      full_evidence_same_key_generation_count: evidenceReuse?.full_evidence?.same_key_generation_count
+        ?? evidenceReuse?.full_evidence?.generation_count
+        ?? null,
+      full_evidence_cumulative_generation_count: evidenceReuse?.full_evidence?.cumulative_generation_count
+        ?? evidenceReuse?.full_evidence?.generation_count
+        ?? null
     },
     pr_create: {
       present: Boolean(prCreate),
@@ -760,7 +767,14 @@ function buildDecisionIndexPrArtifacts({ root, storyId, index, indexPath, bundle
         })),
         full_evidence: {
           status: index.evidence_reuse.full_evidence_status ?? null,
-          generation_count: index.evidence_reuse.full_evidence_generation_count ?? null
+          generation_count: index.evidence_reuse.full_evidence_generation_count ?? null,
+          generation_count_scope: index.evidence_reuse.full_evidence_generation_count_scope ?? null,
+          same_key_generation_count: index.evidence_reuse.full_evidence_same_key_generation_count
+            ?? index.evidence_reuse.full_evidence_generation_count
+            ?? null,
+          cumulative_generation_count: index.evidence_reuse.full_evidence_cumulative_generation_count
+            ?? index.evidence_reuse.full_evidence_generation_count
+            ?? null
         }
       }
     });
