@@ -2,7 +2,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 import { verifyCodexInstructions } from './codex-manager.js';
-import { verifyBundledSkills } from './skills-manager.js';
+import { lintBundledSkills, verifyBundledSkills } from './skills-manager.js';
 
 const GENERATED_IGNORE_PATTERNS = [
   '.vibepro/',
@@ -22,12 +22,14 @@ export async function scanAgentHarness(repoRoot) {
   const root = path.resolve(repoRoot);
   const codex = await verifyCodexInstructions(root);
   const skills = await verifyBundledSkills(root);
+  const skillsContract = await lintBundledSkills(root);
   const claude = await inspectClaudeHarness(root);
   const hooks = await inspectClaudeHooks(root);
   const ignoreNoise = await inspectIgnoreNoise(root);
   const findings = [
     ...codexFindings(codex),
     ...skillsFindings(skills),
+    ...skillsContractFindings(skillsContract),
     ...claudeFindings(claude),
     ...hooksFindings(hooks),
     ...ignoreNoiseFindings(ignoreNoise)
@@ -41,19 +43,21 @@ export async function scanAgentHarness(repoRoot) {
       codex_status: codex.status,
       claude_status: claude.status,
       skills_status: skills.overall_status,
+      skills_contract_status: skillsContract.overall_status,
       hook_findings: hooks.findings.length,
       ignore_noise_status: ignoreNoise.status
     },
     codex,
     claude,
     skills,
+    skills_contract: skillsContract,
     hooks,
     ignore_noise: ignoreNoise,
     findings,
     risk_summary: {
       findings: riskSummary
     },
-    next_actions: buildNextActions({ codex, claude, skills, hooks, ignoreNoise })
+    next_actions: buildNextActions({ codex, claude, skills, skillsContract, hooks, ignoreNoise })
   };
 }
 
@@ -69,6 +73,7 @@ export function renderAgentHarnessStatus(result) {
     `| Claude Code instructions | ${normalizeHarnessStatus(result.claude?.has_claude_file ? 'ok' : 'missing')} | ${result.claude?.target_path ?? 'CLAUDE.md'} |`,
     `| Claude Code skills dir | ${normalizeHarnessStatus(result.claude?.has_skills_dir ? 'ok' : 'missing')} | ${result.claude?.skills_dir ?? '.claude/skills'} |`,
     `| VibePro bundled skills | ${normalizeHarnessStatus(result.skills?.overall_status)} | ${formatSkillSummary(result.skills?.summary)} |`,
+    `| VibePro skill contract | ${normalizeHarnessStatus(result.skills_contract?.overall_status)} | ${formatSkillSummary(result.skills_contract?.summary)} |`,
     `| Hooks | ${normalizeHarnessStatus(result.hooks?.status)} | ${(result.hooks?.settings_files ?? []).join(', ') || 'no hook settings'} |`,
     `| Ignore noise | ${normalizeHarnessStatus(result.ignore_noise?.status)} | missing: ${(result.ignore_noise?.missing_patterns ?? []).join(', ') || '-'} |`,
     ''
@@ -91,7 +96,8 @@ export function renderAgentHarnessStatus(result) {
 }
 
 function normalizeHarnessStatus(status) {
-  if (['ok', 'pass'].includes(status)) return 'installed';
+  if (status === 'ok') return 'installed';
+  if (status === 'pass') return 'pass';
   if (status === 'needs_install') return 'missing_or_outdated';
   return status ?? 'unknown';
 }
@@ -196,6 +202,20 @@ function skillsFindings(skills) {
     }));
 }
 
+function skillsContractFindings(skillsContract) {
+  return (skillsContract.skills ?? [])
+    .filter((skill) => skill.status !== 'pass')
+    .map((skill) => ({
+      kind: 'vibepro_skill_contract_failed',
+      area: 'skills_contract',
+      skill: skill.name,
+      file: skill.source_path,
+      status: skill.status,
+      issues: skill.issues,
+      gate_effect: 'review'
+    }));
+}
+
 function claudeFindings(claude) {
   const findings = [];
   if (!claude.has_claude_file) {
@@ -235,10 +255,11 @@ function ignoreNoiseFindings(ignoreNoise) {
   }];
 }
 
-function buildNextActions({ codex, claude, skills, hooks, ignoreNoise }) {
+function buildNextActions({ codex, claude, skills, skillsContract, hooks, ignoreNoise }) {
   const actions = [];
   if (codex.overall_status !== 'ok') actions.push('vibepro codex install <repo>');
   if (skills.overall_status !== 'ok') actions.push('vibepro skills install <repo>');
+  if (skillsContract.overall_status !== 'pass') actions.push('vibepro skills lint <repo>');
   if (claude.status !== 'ok') actions.push('Add or refresh CLAUDE.md and .claude/skills for Claude Code users.');
   if (hooks.status !== 'pass') actions.push('Fix missing hook script targets before relying on automated hooks.');
   if (ignoreNoise.status !== 'pass') actions.push('Add .vibepro/ to .gitignore so VibePro evidence stays out of product diffs.');

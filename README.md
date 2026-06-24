@@ -507,7 +507,10 @@ Install bundled Claude / Claude Code skills into a target repository:
 npx vibepro skills list
 npx vibepro skills install /path/to/repo
 npx vibepro skills verify /path/to/repo
+npx vibepro skills lint /path/to/repo
 ```
+
+Bundled skills follow the VibePro Agent Skill Contract: frontmatter, usage trigger, workflow/process, common rationalizations to reject, red flags, and verification evidence. `skills lint` checks that contract before skills are installed into another repo, and `check agent-harness` includes the same contract result.
 
 Bundled skills:
 

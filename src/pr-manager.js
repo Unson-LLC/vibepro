@@ -1450,6 +1450,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:review_inspection_required') {
     return `Record required review inspection evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
+  if (gate.id === 'gate:definition_of_done') {
+    return `Close Definition of Done evidence before PR creation: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+  }
   if (gate.id === 'gate:design_diagrams') {
     return `Add required design diagram evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
@@ -7762,6 +7765,12 @@ function buildGateDag({
     changeClassification,
     engineeringJudgment
   });
+  const definitionOfDoneGate = buildDefinitionOfDoneGate({
+    fileGroups,
+    verificationEvidence,
+    flowVerification,
+    agentReviewGate
+  });
   const pathSurfaceMatrixGate = buildPathSurfaceMatrixGate({
     storySource,
     fileGroups,
@@ -7837,6 +7846,7 @@ function buildGateDag({
     ...agentReviewDag.nodes,
     agentReviewGate,
     reviewInspectionRequiredGate,
+    definitionOfDoneGate,
     artifactConsistencyGate,
     dagConnectivityGate,
     {
@@ -7972,7 +7982,8 @@ function buildGateDag({
       })
     ]),
     { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
-    { from: 'gate:review_inspection_required', to: 'gate:artifact_consistency' },
+    { from: 'gate:review_inspection_required', to: 'gate:definition_of_done' },
+    { from: 'gate:definition_of_done', to: 'gate:artifact_consistency' },
     { from: 'gate:artifact_consistency', to: 'gate:dag_connectivity' },
     { from: 'gate:dag_connectivity', to: 'pr' }
   ];
@@ -8015,6 +8026,7 @@ function buildGateDag({
     ...agentReviewDag.nodes,
     agentReviewGate,
     reviewInspectionRequiredGate,
+    definitionOfDoneGate,
     artifactConsistencyGate,
     dagConnectivityGate
   ].filter((gate) => gate?.required);
@@ -9506,6 +9518,107 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
   };
 }
 
+function buildDefinitionOfDoneGate({ fileGroups = {}, verificationEvidence = null, flowVerification = null, agentReviewGate = null } = {}) {
+  const sourceCount = fileGroups?.source?.count ?? 0;
+  const testCount = fileGroups?.tests?.count ?? 0;
+  const required = sourceCount + testCount > 0;
+  const currentPassingCommands = collectCurrentPassingVerificationEvidence(verificationEvidence);
+  const passingFlow = getCurrentPassingFlowEvidence(flowVerification);
+  const hasCurrentVerification = currentPassingCommands.length > 0 || Boolean(passingFlow);
+  const agentReviewRequired = agentReviewGate?.required === true;
+  const agentReviewUnresolved = agentReviewRequired && isUnresolvedGateStatus(agentReviewGate?.status);
+  const definitionItems = [
+    {
+      id: 'current_head_verification',
+      label: 'Current-head verification evidence',
+      status: !required ? 'not_required' : hasCurrentVerification ? 'passed' : 'missing',
+      evidence: [
+        ...currentPassingCommands.map((command) => ({
+          type: 'verification_command',
+          kind: command.kind ?? null,
+          command: command.command ?? null,
+          summary: command.summary ?? null,
+          artifact: command.artifact ?? verificationEvidence?.artifact ?? null
+        })),
+        ...(passingFlow ? [{
+          type: 'flow_verification',
+          status: passingFlow.status,
+          artifact: passingFlow.artifact,
+          run_id: passingFlow.run_id
+        }] : [])
+      ]
+    },
+    {
+      id: 'agent_review_closure',
+      label: 'Required Agent Review closed or not required',
+      status: !required || !agentReviewRequired ? 'not_required' : agentReviewUnresolved ? 'missing' : 'passed',
+      gate_status: agentReviewGate?.status ?? null
+    }
+  ];
+  const missingItems = definitionItems.filter((item) => item.status === 'missing');
+  const status = !required
+    ? 'not_required'
+    : missingItems.length === 0
+      ? 'passed'
+      : 'needs_evidence';
+  return {
+    id: 'gate:definition_of_done',
+    type: 'definition_of_done_gate',
+    label: 'Definition of Done Gate',
+    status,
+    required,
+    source_file_count: sourceCount,
+    test_file_count: testCount,
+    definition_items: definitionItems,
+    current_passing_verification_count: currentPassingCommands.length + (passingFlow ? 1 : 0),
+    common_rationalizations_rejected: [
+      'tests_pass_so_review_done',
+      'small_change_no_spec_or_evidence',
+      'manual_review_replaces_required_subagent',
+      'server_logs_prove_user_perceived_behavior',
+      'missing_path_probably_unaffected'
+    ],
+    red_flags: missingItems.map((item) => ({
+      item: item.id,
+      reason: item.id === 'current_head_verification'
+        ? 'No current-head passing verification command or flow verification evidence was recorded'
+        : 'Required Agent Review is still unresolved'
+    })),
+    required_actions: status === 'passed' || status === 'not_required' ? [] : [
+      ...(!hasCurrentVerification ? ['Record at least one current-head passing verification evidence item with `vibepro verify record --status pass`, or a current passing `vibepro verify flow` artifact.'] : []),
+      ...(agentReviewUnresolved ? ['Complete required Agent Review with parallel_subagent provenance and closed lifecycle evidence, then rerun `vibepro pr prepare`.'] : []),
+      'Rerun `vibepro pr prepare` so Definition of Done is evaluated against the current git state.'
+    ],
+    reason: status === 'not_required'
+      ? 'Docs-only or non-source change; Definition of Done source/test closure is not required'
+      : status === 'passed'
+        ? 'Current-head verification evidence exists and required Agent Review is closed or not required'
+        : `Definition of Done is incomplete: ${missingItems.map((item) => item.label).join(', ')}`
+  };
+}
+
+function collectCurrentPassingVerificationEvidence(verificationEvidence = null) {
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  return commands.filter((command) => (
+    command.binding?.status === 'current'
+    && isPassingVerificationStatus(command.status)
+  ));
+}
+
+function getCurrentPassingFlowEvidence(flowVerification = null) {
+  const status = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
+  const binding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
+  const artifact = flowVerification?.artifact ?? flowVerification?.artifacts?.flow_verification_json ?? null;
+  if (status !== 'pass' || binding?.status !== 'current') return null;
+  if (!artifact || flowVerification?.missing_artifact === true) return null;
+  if (!hasPassingRuntimeProbeEvidence(flowVerification)) return null;
+  return {
+    status,
+    artifact,
+    run_id: flowVerification?.verification?.run_id ?? flowVerification?.run_id ?? null
+  };
+}
+
 function hasNetworkAwareEvidence({ flowVerification, verificationEvidence }) {
   const flowStatus = flowVerification?.verification?.status ?? flowVerification?.status ?? null;
   const flowBinding = flowVerification?.verification?.binding ?? flowVerification?.binding ?? null;
@@ -10359,6 +10472,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'journey_context_gate',
       'design_diagrams_gate',
       'review_inspection_required_gate',
+      'definition_of_done_gate',
       'visual_qa_gate',
       'design_quality_gate',
       'workflow_heavy_gate',

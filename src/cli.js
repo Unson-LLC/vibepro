@@ -180,8 +180,10 @@ import {
 } from './journey-map.js';
 import {
   installBundledSkills,
+  lintBundledSkills,
   listBundledSkills,
   renderSkillsInstall,
+  renderSkillsLint,
   renderSkillsList,
   renderSkillsVerify,
   verifyBundledSkills
@@ -269,6 +271,7 @@ Usage:
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
+  vibepro skills lint [repo] [--json]
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
@@ -448,6 +451,7 @@ Usage:
   vibepro skills list [--json]
   vibepro skills install [repo] [--dry-run] [--force] [--json]
   vibepro skills verify [repo] [--json]
+  vibepro skills lint [repo] [--json]
   vibepro codex install [repo] [--dry-run] [--force] [--json]
   vibepro codex verify [repo] [--json]
   vibepro harness status [repo] [--json]
@@ -612,6 +616,13 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderSkillsVerify(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'lint') {
+        const result = await lintBundledSkills(repoRoot);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSkillsLint(result));
+        return { exitCode: result.overall_status === 'pass' ? 0 : 1, command, subcommand, result };
       }
       write(stderr, `Unknown skills command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };

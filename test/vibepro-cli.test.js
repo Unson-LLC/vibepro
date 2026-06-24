@@ -1653,6 +1653,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro story derive \[repo\].*--preset <id>/);
   assert.match(output, /vibepro config language \[repo\].*--language ja\|en/);
   assert.match(output, /vibepro skills install \[repo\].*--dry-run/);
+  assert.match(output, /vibepro skills lint \[repo\]/);
   assert.match(output, /vibepro codex install \[repo\].*--dry-run/);
 
   let englishOutput = '';
@@ -3028,6 +3029,7 @@ test('check agent-harness diagnoses codex claude skills hooks and ignore noise',
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.check.status, 'needs_review');
   assert.equal(result.result.check.evidence.agent_harness.codex.status, 'missing');
+  assert.equal(result.result.check.evidence.agent_harness.skills_contract.overall_status, 'pass');
   assert.equal(result.result.check.evidence.agent_harness.claude.has_claude_file, false);
   assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'hook_command_target_missing'), true);
   assert.equal(result.result.check.evidence.agent_harness.findings.some((finding) => finding.kind === 'ai_exploration_noise_ignores_incomplete'), true);
@@ -3049,11 +3051,13 @@ test('harness status summarizes installed missing outdated and invalid areas', a
   assert.equal(textResult.result.status, 'needs_review');
   assert.match(output, /VibePro Agent Harness Status/);
   assert.match(output, /Codex instructions/);
+  assert.match(output, /VibePro skill contract/);
   assert.match(output, /invalid_hook_settings_json/);
 
   const jsonResult = await runCli(['harness', 'status', repo, '--json']);
 
   assert.equal(jsonResult.exitCode, 0);
+  assert.equal(jsonResult.result.skills_contract.overall_status, 'pass');
   assert.equal(jsonResult.result.hooks.findings.some((finding) => finding.kind === 'invalid_hook_settings_json'), true);
   assert.equal(jsonResult.result.ignore_noise.status, 'pass');
 });
@@ -3237,6 +3241,14 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.equal(listResult.result.skills.length, 4);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
+
+  const lint = await runCli(['skills', 'lint', repo, '--json']);
+  assert.equal(lint.exitCode, 0);
+  assert.equal(lint.result.overall_status, 'pass');
+  assert.equal(lint.result.skills.every((skill) => skill.status === 'pass'), true);
+  assert.equal(lint.result.required_sections.includes('Common Rationalizations'), true);
+  assert.equal(lint.result.required_sections.includes('Red Flags'), true);
+  assert.equal(lint.result.required_sections.includes('Verification'), true);
 
   const dryRun = await runCli(['skills', 'install', repo, '--dry-run', '--json']);
   assert.equal(dryRun.exitCode, 0);
@@ -7345,6 +7357,8 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.subagent_lifecycle, 'close_before_record');
   assert.equal(result.result.plan.parallel_dispatch.coordinator_behavior.closure_required_for_pass, true);
   assert.match(result.result.plan.parallel_dispatch.coordinator_behavior.fallback, /manual_review does not satisfy/);
+  assert.equal(result.result.plan.agent_skill_discipline.required, true);
+  assert.equal(result.result.plan.agent_skill_discipline.common_rationalizations.includes('tests_pass_so_review_done'), true);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--execution-mode parallel_subagent/);
@@ -7365,6 +7379,9 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /Subagent 2: test_plan:e2e_ux/);
   assert.match(dispatch, /regression_guard/);
   assert.match(dispatch, /path_surface_coverage/);
+  assert.match(dispatch, /Agent Skill Discipline/);
+  assert.match(dispatch, /Common rationalizations to reject/);
+  assert.match(dispatch, /Red flags to treat as findings/);
   assert.match(dispatch, /every mandatory review lens/);
   assert.match(dispatch, /vibepro review record .*--role e2e_ux/);
   assert.match(dispatch, /vibepro review start .*--role e2e_ux/);
@@ -7386,6 +7403,8 @@ test('review prepare generates stage role requests', async () => {
   assert.match(request, /Mandatory Review Lenses/);
   assert.match(request, /regression_guard/);
   assert.match(request, /path_surface_coverage/);
+  assert.match(request, /Agent Skill Discipline/);
+  assert.match(request, /Required evidence shape/);
   assert.match(request, /pre-fix/);
   assert.match(request, /silent/);
   assert.match(request, /Required Agent Review Gate pass requires `--agent-closed` evidence/);
@@ -13645,8 +13664,30 @@ test('pr prepare classifies docs-only PR route and renders the route contract', 
   const gateDag = prepare.pr_context.gate_dag;
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:pr_route_classification')?.status, 'passed');
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:pr_body_contract')?.status, 'passed');
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:definition_of_done')?.status, 'not_required');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /PR Route: docs_only \/ body=documentation_decision_review/);
+});
+
+test('pr prepare emits Definition of Done gate for source changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const done = true;\n');
+  await git(repo, ['add', 'src/feature.js']);
+  await git(repo, ['commit', '-m', 'feat: add source change']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
+
+  assert.equal(result.exitCode, 0);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  const gate = gateDag.nodes.find((node) => node.id === 'gate:definition_of_done');
+  assert.equal(gate.required, true);
+  assert.equal(gate.status, 'needs_evidence');
+  assert.equal(gate.definition_items.some((item) => item.id === 'current_head_verification' && item.status === 'missing'), true);
+  assert.equal(gate.common_rationalizations_rejected.includes('tests_pass_so_review_done'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:review_inspection_required' && edge.to === 'gate:definition_of_done'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:definition_of_done' && edge.to === 'gate:artifact_consistency'), true);
+  assert.equal(result.result.preparation.gate_status.unresolved_gates.some((item) => item.id === 'gate:definition_of_done'), true);
 });
 
 test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity', async () => {

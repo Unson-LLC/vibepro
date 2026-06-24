@@ -9,6 +9,10 @@ description: Use when refactoring with VibePro so the agent follows Story -> Arc
 
 Use this Skill when VibePro is driving a refactor. The goal is to find and fix code defects, security risks, DRY gaps, and responsibility-boundary problems while preserving Story / Architecture / Spec consistency.
 
+## When to Use
+
+Use this Skill when a refactor, cleanup, bug fix, architecture correction, security hardening, performance refactor, UI modernization, or DRY pass is expected to move through VibePro. It applies even when the user asks for "just a small refactor" if the work changes behavior, boundaries, user flows, verification, or PR readiness.
+
 ## Required Workflow
 
 1. Start from a Story. If no Story exists, run `vibepro story derive` and inspect the Story map before implementing.
@@ -72,6 +76,27 @@ Prioritize candidates that VibePro surfaces as:
 - Do not clean dirty repository worktrees by reflexively stashing. First inspect `git status --short --branch`, unstaged diff, cached diff, and branch/HEAD reflog.
 - If a branch was advanced by external sync, merge, rebase, or another worktree, check whether the dirty state is a stale reverse diff from the previous branch commit to `HEAD`. Compare `git diff --stat <old> HEAD` with `git diff --cached --stat` / `git diff --stat` before deciding.
 - Only classify dirty state as safe to clean after proving it is already represented in `HEAD` and contains no extra user hunks. Otherwise report the exact files and keep the work intact.
+
+## Common Rationalizations
+
+- "This is only refactoring, so Story/Spec do not matter." Reject this; refactors can change contracts and must preserve or update the documented intent.
+- "No UI changed, so no user-facing evidence is needed." API, data, performance, and operational behavior can still affect users.
+- "A broad cleanup is efficient." VibePro favors scope that remains reviewable and tied to the Story.
+- "Agent Review can wait until after final." If the Gate requires it, unresolved review means the work is not complete.
+- "Design modernization is just visual polish." It must preserve routes, information architecture, CTA priority, states, data dependencies, and accessibility unless the Story/Spec intentionally change them.
+
+## Red Flags
+
+- The refactor starts from code edits without identifying the Story.
+- Architecture or Spec gaps are discovered but left implicit.
+- Verification only proves the happy path or only the changed file.
+- A split-plan recommends separation but the implementation keeps unrelated lanes together.
+- Performance claims lack comparable before/after metrics.
+- UI modernization lacks derived DS and DS gate evidence.
+
+## Verification
+
+Before calling the refactor complete, show that Story, Architecture, and Spec still align; run focused project verification for changed behavior; run the relevant diagnosis package; rerun `vibepro pr prepare`; and inspect `gate_status`, `gate:definition_of_done`, `gate:agent_review`, and the review cockpit decision path.
 
 ## Completion Check
 
