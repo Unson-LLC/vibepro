@@ -26,7 +26,7 @@ VibePro is designed to make that final stretch explicit:
 The intended workflow is:
 
 ```text
-Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
+Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create -> VibePro Execute Merge
 ```
 
 Once the story and architecture are clear, implementation can be handed to AI agents with much less ambiguity. When the change touches workflow state, runtime contracts, verification evidence, or review orchestration, VibePro expands the Gate DAG automatically instead of treating the PR like a narrow code change.
@@ -43,6 +43,7 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 - Diagnosis packs for UI, security, performance, architecture, PR readiness, and launch readiness
 - Agent review requests and risk-adaptive review evidence recording
 - `vibepro pr create` path enforcement so unresolved gates and waiver reasons are captured
+- `vibepro execute merge` so merge-time checks, merge strategy, and branch cleanup outcomes are recorded as VibePro artifacts
 - `design-system derive` for VibePro-native Design System artifacts from existing routes, code, style evidence, and optional Graphify context
 - `design-modernize` planning and derived Design System generation for existing UI modernization without changing current information architecture
 - Skills and Codex instruction installation for standardizing AI-driven workflows
@@ -203,6 +204,17 @@ npx vibepro pr create /path/to/repo \
 ```
 
 Do not use raw `gh pr create` as the normal PR path; it bypasses VibePro's Gate DAG and waiver audit.
+
+After the PR is created and checks are ready, run merge through VibePro as well:
+
+```bash
+npx vibepro execute merge /path/to/repo \
+  --story-id story-internal-beta \
+  --strategy merge \
+  --delete-branch
+```
+
+Do not treat raw `gh pr merge` as the standard merge path when you need VibePro auditability. `execute merge` records merge-time readiness checks, merge result, merge commit SHA, and branch cleanup outcomes under `.vibepro/`.
 
 `<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`. VibePro also prints branch candidates during `init` and `pr prepare`.
 

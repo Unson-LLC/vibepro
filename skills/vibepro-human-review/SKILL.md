@@ -26,7 +26,8 @@ Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifac
 7. For UI modernization PRs, read `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json`. Confirm that current routes, information architecture, CTA priority, state behavior, and data dependencies are preserved unless the Story/Spec explicitly changes them.
 8. For performance-sensitive PRs, read the `Performance Evidence` section in `pr-body.md` and the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
 9. Review next commands and confirm they use `vibepro pr create`.
-10. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
+10. If the PR is already created and the Story is about to ship, confirm the next merge step uses `vibepro execute merge`.
+11. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
 
 ## Decision Rules
 
@@ -52,6 +53,7 @@ Fill these fields in `human-review.json`:
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
 - Do not approve a PR only from the PR body. The cockpit and Gate DAG are the review control plane.
 - Do not use raw `gh pr create`; it bypasses VibePro Gate enforcement and waiver recording.
+- Do not treat raw `gh pr merge` as the normal audited merge path. When merge evidence is expected, require `vibepro execute merge`.
 - Do not approve with unresolved Agent Review Gate. Missing, stale, or blocking required roles mean the parallel subagent review workflow has not completed for the current git state.
 - Do not approve a `pass` review result that lacks Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) when `gate:agent_review` is required. It is a coordinator note, not verified subagent review evidence.
 - If a waiver is chosen, include the exact waiver reason in `vibepro pr create --allow-needs-verification --verification-waiver <reason>`.
