@@ -28,11 +28,17 @@ import {
   renderDesignModernizePlan
 } from './design-modernize.js';
 import {
+  diffDesignMarkdown,
   deriveNativeDesignSystem,
+  exportDesignMarkdown,
   exportDesignSystem,
   initDesignSystem,
+  ingestDesignMarkdown,
   ingestExternalDesignSystemBundle,
   ingestVisualDesignBrief,
+  lintDesignMarkdown,
+  renderDesignMarkdownDiffSummary,
+  renderDesignMarkdownLintSummary,
   renderDesignSystemValidationSummary,
   renderNativeDesignSystemSummary,
   validateDesignSystem
@@ -227,9 +233,19 @@ Existing UI modernization:
   vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
       Normalize external token/component/guideline bundles into VibePro-native
       DS sections as reference evidence only.
-  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css
+  vibepro design-system ingest-design-md <repo> --id <ds-id> --file DESIGN.md
+      Ingest DESIGN.md YAML tokens and Markdown rationale as reference evidence,
+      write DESIGN.md/design-md.json artifacts, and add explicit DS gate checks.
+  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css|design-md
       Export the aggregate DS JSON, human-readable summary, or CSS custom
       property aliases. CSS export reports needs_tokens when no tokens exist.
+      Use --format design-md to emit the agent-readable DESIGN.md view.
+  vibepro design-system export-design-md <repo> --id <ds-id>
+      Write and print .vibepro/design-system/<ds-id>/DESIGN.md.
+  vibepro design-system lint <repo> --id <ds-id>
+      Lint DESIGN.md structure, token references, prose intent, Do/Don'ts, and contrast.
+  vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
+      Compare the current DESIGN.md artifact with the selected git base ref.
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
       Validate DS drift, CTA priority, state semantics, component roles,
       navigation/density policy, and secret leakage before UI implementation.
@@ -266,7 +282,11 @@ Usage:
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
-  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css [--json]
+  vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
+  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css|design-md [--json]
+  vibepro design-system export-design-md [repo] --id <ds-id> [--json]
+  vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
+  vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -385,11 +405,21 @@ base branch:
   vibepro design-system ingest <repo> --id <ds-id> --bundle <file>
       外部DS bundleのtokens/components/guidelinesをreference-onlyとして正規化し、
       VibePro-native DS sectionsへ取り込みます。
+  vibepro design-system ingest-design-md <repo> --id <ds-id> --file DESIGN.md
+      DESIGN.mdのYAML tokensとMarkdown rationaleをreference-onlyとして取り込み、
+      DESIGN.md/design-md.jsonとDS gateへ接続します。
   vibepro design-system ingest-brief <repo> --id <ds-id> --brief-file <file>
       外部visual DS briefをreference-onlyなvisual foundationsとしてnative DSへ取り込みます。
-  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css
+  vibepro design-system export <repo> --id <ds-id> --format json|markdown|css|design-md
       aggregate DS JSON、人間向けMarkdown、CSS custom propertiesを出力します。
       token未定義のCSS exportはneeds_tokensとして返します。
+      --format design-md ではagent可読なDESIGN.md viewを出力します。
+  vibepro design-system export-design-md <repo> --id <ds-id>
+      .vibepro/design-system/<ds-id>/DESIGN.mdを書き出して表示します。
+  vibepro design-system lint <repo> --id <ds-id>
+      DESIGN.mdの構造、token reference、prose intent、Do/Don't、contrastを検査します。
+  vibepro design-system diff <repo> --id <ds-id> --base <base-ref>
+      current DESIGN.md artifactをgit base ref上のartifactと比較します。
   vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>
       DS drift、CTA優先度、状態意味、component role、navigation/density、secret混入を
       Story/Spec/Architecture文脈に対して検証します。
@@ -430,7 +460,11 @@ Usage:
   vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
-  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css [--json]
+  vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
+  vibepro design-system export [repo] --id <ds-id> --format json|markdown|css|design-md [--json]
+  vibepro design-system export-design-md [repo] --id <ds-id> [--json]
+  vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
+  vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -804,6 +838,20 @@ export async function runCli(argv, io = {}) {
           : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'ingest-design-md') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const result = await ingestDesignMarkdown(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          file: getOption(rest, '--file') ?? getOption(rest, '--design-md'),
+          language
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'export') {
         const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const format = getOption(rest, '--format') ?? 'json';
@@ -820,6 +868,18 @@ export async function runCli(argv, io = {}) {
         }
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'export-design-md') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const result = await exportDesignMarkdown(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          language
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : result.result.content);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'ingest-brief') {
         const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
         const result = await ingestVisualDesignBrief(repoRoot, {
@@ -832,6 +892,31 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.result, null, 2)}\n`
           : `${renderNativeDesignSystemSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'lint') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const result = await lintDesignMarkdown(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          product: getOption(rest, '--product'),
+          file: getOption(rest, '--file') ?? getOption(rest, '--design-md')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderDesignMarkdownLintSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'diff') {
+        const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
+        const result = await diffDesignMarkdown(repoRoot, {
+          id: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          designSystemId: getOption(rest, '--id') ?? getOption(rest, '--design-system-id'),
+          base: getOption(rest, '--base')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderDesignMarkdownDiffSummary(result.result, language)}\nArtifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'validate') {

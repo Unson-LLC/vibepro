@@ -1387,6 +1387,193 @@ test('design-system init and export cover scaffold lifecycle', async () => {
   assert.match(cssOutput, /--vibepro-color-1: #2563eb;/);
 });
 
+test('design-system DESIGN.md ingest, lint, export, and diff are reference-gated', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await writeFile(path.join(repo, 'DESIGN.md'), `---
+version: alpha
+name: Heritage
+colors:
+  primary: "#1A1C1E"
+  on-primary: "#FFFFFF"
+  secondary: "#6C7278"
+  tertiary: "#B8422E"
+typography:
+  body-md:
+    fontFamily: Public Sans
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 1.6
+rounded:
+  sm: 4px
+spacing:
+  sm: 8px
+components:
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    rounded: "{rounded.sm}"
+    padding: 12px
+---
+# Heritage
+
+## Overview
+
+Architectural minimalism meets journalistic clarity. The product should feel dense, durable, and work-focused rather than decorative.
+
+## Colors
+
+- Primary {colors.primary} carries core text and primary actions.
+- Tertiary {colors.tertiary} is reserved for the single strongest accent.
+
+## Typography
+
+Public Sans is used for interface copy with restrained weights and readable body text.
+
+## Layout
+
+Use compact spacing with stable repeated item dimensions.
+
+## Components
+
+Primary buttons use the primary ink surface and white text.
+
+## Do's and Don'ts
+
+- Do keep the primary action visually singular.
+- Don't introduce gradients, glass surfaces, or marketing hero composition.
+`);
+
+  const ingest = await runCli([
+    'design-system',
+    'ingest-design-md',
+    repo,
+    '--id',
+    'heritage',
+    '--file',
+    'DESIGN.md',
+    '--json'
+  ]);
+  assert.equal(ingest.exitCode, 0);
+  assert.equal(ingest.result.result.authority, 'vibepro_native_design_system');
+  assert.equal(ingest.result.result.design_md.authority, 'design_md_reference_only_current_code_and_vibepro_gates_remain_authoritative');
+  assert.equal(ingest.result.result.design_md.lint.summary.errors, 0);
+  assert.equal(ingest.result.result.design_md.lint.summary.warnings, 0);
+  assert.equal(ingest.result.result.source_evidence.design_md.source, 'DESIGN.md');
+  assert.ok(ingest.result.result.theme_tokens.color_values.includes('#1A1C1E'));
+  assert.ok(ingest.result.result.semantic_tokens.color_roles.some((role) => role.name === 'primary'));
+  assert.ok(ingest.result.result.component_roles.roles.some((role) => role.name === 'ButtonPrimary'));
+  assert.ok(ingest.result.result.ds_gate.checks.some((check) => check.id === 'DS-GATE-DESIGN-MD-AUTHORITY'));
+  assert.ok(ingest.result.result.ds_gate.checks.some((check) => check.id === 'DS-GATE-DESIGN-MD-DRIFT'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'heritage', 'DESIGN.md')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'heritage', 'design-md.json')), true);
+
+  const lint = await runCli([
+    'design-system',
+    'lint',
+    repo,
+    '--id',
+    'heritage',
+    '--json'
+  ]);
+  assert.equal(lint.exitCode, 0);
+  assert.equal(lint.result.result.status, 'pass');
+  assert.equal(lint.result.result.summary.errors, 0);
+  assert.equal(lint.result.result.summary.warnings, 0);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'heritage', 'design-md-lint.json')), true);
+
+  let exported = '';
+  const exportResult = await runCli([
+    'design-system',
+    'export',
+    repo,
+    '--id',
+    'heritage',
+    '--format',
+    'design-md'
+  ], {
+    stdout: { write: (text) => { exported += text; } }
+  });
+  assert.equal(exportResult.exitCode, 0);
+  assert.match(exported, /## Overview/);
+  assert.match(exported, /Do's and Don'ts/);
+
+  const explicitExport = await runCli([
+    'design-system',
+    'export-design-md',
+    repo,
+    '--id',
+    'heritage',
+    '--json'
+  ]);
+  assert.equal(explicitExport.exitCode, 0);
+  assert.equal(explicitExport.result.result.format, 'design-md');
+  assert.equal(explicitExport.result.result.artifact, '.vibepro/design-system/heritage/DESIGN.md');
+
+  await git(repo, ['add', '.']);
+  await git(repo, ['add', '-f', '.vibepro/design-system/heritage/DESIGN.md']);
+  await git(repo, ['commit', '-m', 'chore: baseline design md']);
+  await writeFile(path.join(repo, 'DESIGN.md'), `---
+version: alpha
+name: Heritage
+colors:
+  primary: "#1A1C1E"
+  on-primary: "#FFFFFF"
+  tertiary: "#CC3300"
+typography:
+  body-md:
+    fontFamily: Public Sans
+    fontSize: 16px
+components:
+  button-primary:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+---
+# Heritage
+
+## Overview
+
+Architectural minimalism remains, but the practical negative constraints have been removed from the document.
+
+## Colors
+
+- Tertiary {colors.tertiary} changes to a louder accent.
+`);
+  const ingestChanged = await runCli([
+    'design-system',
+    'ingest-design-md',
+    repo,
+    '--id',
+    'heritage',
+    '--file',
+    'DESIGN.md',
+    '--json'
+  ]);
+  assert.equal(ingestChanged.exitCode, 0);
+  assert.equal(ingestChanged.result.result.design_md.lint.summary.warnings > 0, true);
+  assert.equal(ingestChanged.result.result.ds_gate.checks.find((check) => check.id === 'DS-GATE-DESIGN-MD-DO-DONT-COVERAGE').status, 'needs_review');
+
+  const diff = await runCli([
+    'design-system',
+    'diff',
+    repo,
+    '--id',
+    'heritage',
+    '--base',
+    'HEAD',
+    '--json'
+  ]);
+  assert.equal(diff.exitCode, 0);
+  assert.equal(diff.result.result.baseline_status, 'found');
+  assert.equal(diff.result.result.regression, true);
+  assert.equal(diff.result.result.status, 'needs_review');
+  assert.ok(diff.result.result.tokens.modified.includes('colors.tertiary'));
+  assert.ok(diff.result.result.sections.removed.includes('do_dont'));
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'design-system', 'heritage', 'design-md-diff.json')), true);
+});
+
 test('status reports corrupt VibePro config as needs_repair', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
@@ -1439,7 +1626,11 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro design-system init \[repo\]/);
   assert.match(output, /vibepro design-system derive \[repo\]/);
   assert.match(output, /vibepro design-system ingest \[repo\]/);
+  assert.match(output, /vibepro design-system ingest-design-md \[repo\]/);
   assert.match(output, /vibepro design-system export \[repo\]/);
+  assert.match(output, /vibepro design-system export-design-md \[repo\]/);
+  assert.match(output, /vibepro design-system lint \[repo\]/);
+  assert.match(output, /vibepro design-system diff \[repo\]/);
   assert.match(output, /vibepro design-system validate \[repo\]/);
   assert.match(output, /既存UI modernize/);
   assert.match(output, /プロダクトローカルなDesign System正本/);
@@ -1478,7 +1669,11 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro design-system init \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
   assert.match(englishOutput, /vibepro design-system ingest \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system ingest-design-md \[repo\]/);
   assert.match(englishOutput, /vibepro design-system export \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system export-design-md \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system lint \[repo\]/);
+  assert.match(englishOutput, /vibepro design-system diff \[repo\]/);
   assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
   assert.match(englishOutput, /Existing UI modernization/);
   assert.match(englishOutput, /product-local Design System/);

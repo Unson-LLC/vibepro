@@ -1,5 +1,7 @@
+import { execFile } from 'node:child_process';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { promisify } from 'node:util';
 
 import {
   buildDerivedDesignSystem,
@@ -15,6 +17,7 @@ import { localizedText } from './language.js';
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const IGNORED_DIRS = new Set(['.git', '.next', '.vibepro', 'coverage', 'dist', 'node_modules']);
+const execFileAsync = promisify(execFile);
 
 export async function deriveNativeDesignSystem(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -173,7 +176,24 @@ export async function exportDesignSystem(repoRoot, options = {}) {
       result: buildCssExport(designSystem, designSystemId)
     };
   }
-  throw new Error('design-system export requires --format json|markdown|css');
+  if (format === 'design-md' || format === 'designmd') {
+    const content = await readFile(path.join(outDir, 'DESIGN.md'), 'utf8')
+      .catch(() => renderDesignMarkdownFromDesignSystem(designSystem));
+    return {
+      outDir,
+      result: {
+        schema_version: '0.1.0',
+        workflow: 'design-system-export',
+        design_system_id: designSystemId,
+        product: designSystem.product,
+        format: 'design-md',
+        status: 'pass',
+        content_type: 'text/markdown',
+        content
+      }
+    };
+  }
+  throw new Error('design-system export requires --format json|markdown|css|design-md');
 }
 
 export async function ingestVisualDesignBrief(repoRoot, options = {}) {
@@ -294,6 +314,163 @@ export async function ingestExternalDesignSystemBundle(repoRoot, options = {}) {
   return { outDir, result: nextDesignSystem };
 }
 
+export async function ingestDesignMarkdown(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system ingest-design-md requires --id <ds-id>');
+  }
+  if (!options.file) {
+    throw new Error('design-system ingest-design-md requires --file <file>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const designMdPath = path.isAbsolute(options.file) ? options.file : path.join(root, options.file);
+  const originalText = await readFile(designMdPath, 'utf8');
+  const redacted = redactLikelySecretText(originalText);
+  const source = path.relative(root, designMdPath).split(path.sep).join('/');
+  const designMd = parseDesignMarkdown({
+    designSystemId,
+    product: options.product ?? designSystemId,
+    source,
+    text: redacted.text,
+    redactedValueCount: redacted.count
+  });
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  const designSystemPath = path.join(outDir, 'design-system.json');
+  const existingDesignSystem = await readJsonIfExists(designSystemPath);
+  const product = options.product
+    ?? existingDesignSystem?.product
+    ?? designMd.tokens.name
+    ?? designSystemId;
+  const base = existingDesignSystem ?? createBundleIngestBaseDesignSystem({ designSystemId, product });
+  const nextDesignSystem = mergeDesignMarkdownIntoDesignSystem(base, {
+    designSystemId,
+    product,
+    source,
+    designMd,
+    language: options.language ?? base.output?.language ?? 'ja'
+  });
+
+  await mkdir(outDir, { recursive: true });
+  await writeDesignSystemArtifacts(outDir, nextDesignSystem);
+  await writeFile(path.join(outDir, 'DESIGN.md'), designMd.markdown);
+  await writeFile(path.join(outDir, 'design-md.json'), `${JSON.stringify(nextDesignSystem.design_md, null, 2)}\n`);
+  return { outDir, result: nextDesignSystem };
+}
+
+export async function exportDesignMarkdown(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system export-design-md requires --id <ds-id>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const exported = await exportDesignSystem(root, {
+    ...options,
+    designSystemId,
+    id: designSystemId,
+    format: 'design-md'
+  });
+  const outDir = exported.outDir;
+  await mkdir(outDir, { recursive: true });
+  await writeFile(path.join(outDir, 'DESIGN.md'), exported.result.content);
+  const designMd = parseDesignMarkdown({
+    designSystemId,
+    product: exported.result.product ?? designSystemId,
+    source: `.vibepro/design-system/${designSystemId}/DESIGN.md`,
+    text: exported.result.content
+  });
+  await writeFile(path.join(outDir, 'design-md.json'), `${JSON.stringify(toPersistedDesignMarkdown(designMd), null, 2)}\n`);
+  return {
+    outDir,
+    result: {
+      ...exported.result,
+      artifact: `.vibepro/design-system/${designSystemId}/DESIGN.md`,
+      lint_summary: designMd.lint.summary
+    }
+  };
+}
+
+export async function lintDesignMarkdown(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const designSystemId = options.designSystemId || options.id
+    ? sanitizeId(options.designSystemId ?? options.id)
+    : null;
+  const sourceFile = options.file
+    ? (path.isAbsolute(options.file) ? options.file : path.join(root, options.file))
+    : designSystemId
+      ? path.join(root, '.vibepro', 'design-system', designSystemId, 'DESIGN.md')
+      : null;
+  if (!sourceFile) {
+    throw new Error('design-system lint requires --id <ds-id> or --file <file>');
+  }
+  const text = await readFile(sourceFile, 'utf8');
+  const designMd = parseDesignMarkdown({
+    designSystemId: designSystemId ?? 'design-md',
+    product: options.product ?? designSystemId ?? 'design-md',
+    source: path.relative(root, sourceFile).split(path.sep).join('/'),
+    text
+  });
+  const result = {
+    schema_version: '0.1.0',
+    workflow: 'design-md-lint',
+    design_system_id: designSystemId,
+    source: designMd.source,
+    generated_at: new Date().toISOString(),
+    status: designMd.lint.summary.errors > 0 ? 'fail' : designMd.lint.summary.warnings > 0 ? 'needs_review' : 'pass',
+    authority: 'design_md_reference_only_current_code_and_vibepro_gates_remain_authoritative',
+    summary: designMd.lint.summary,
+    findings: designMd.lint.findings,
+    token_summary: designMd.token_summary,
+    section_summary: designMd.section_summary
+  };
+  if (designSystemId) {
+    const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+    await mkdir(outDir, { recursive: true });
+    await writeFile(path.join(outDir, 'design-md-lint.json'), `${JSON.stringify(result, null, 2)}\n`);
+    return { outDir, result };
+  }
+  return { outDir: path.dirname(sourceFile), result };
+}
+
+export async function diffDesignMarkdown(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  if (!options.designSystemId && !options.id) {
+    throw new Error('design-system diff requires --id <ds-id>');
+  }
+  if (!options.base) {
+    throw new Error('design-system diff requires --base <base-ref>');
+  }
+  const designSystemId = sanitizeId(options.designSystemId ?? options.id);
+  const artifact = `.vibepro/design-system/${designSystemId}/DESIGN.md`;
+  const currentPath = path.join(root, artifact);
+  const currentText = await readFile(currentPath, 'utf8');
+  const current = parseDesignMarkdown({
+    designSystemId,
+    product: designSystemId,
+    source: artifact,
+    text: currentText
+  });
+  const beforeText = await readGitFile(root, options.base, artifact);
+  const before = beforeText == null
+    ? null
+    : parseDesignMarkdown({
+      designSystemId,
+      product: designSystemId,
+      source: `${options.base}:${artifact}`,
+      text: beforeText
+    });
+  const result = buildDesignMarkdownDiff({
+    designSystemId,
+    base: options.base,
+    artifact,
+    before,
+    current
+  });
+  const outDir = path.join(root, '.vibepro', 'design-system', designSystemId);
+  await mkdir(outDir, { recursive: true });
+  await writeFile(path.join(outDir, 'design-md-diff.json'), `${JSON.stringify(result, null, 2)}\n`);
+  return { outDir, result };
+}
+
 export async function validateDesignSystem(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   if (!options.designSystemId && !options.id) {
@@ -397,6 +574,44 @@ export function renderDesignSystemValidationSummary(result, language = result.ou
 - ds_signal: ${result.story_context.design_system_signal ? 'yes' : 'no'}
 
 ## ${localizedText(language, { ja: '検出事項', en: 'Findings' })}
+
+${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n')}
+`;
+}
+
+export function renderDesignMarkdownLintSummary(result, language = 'ja') {
+  return `${localizedText(language, { ja: `# DESIGN.md lint: ${result.design_system_id ?? result.source}`, en: `# DESIGN.md lint: ${result.design_system_id ?? result.source}` })}
+
+- source: ${result.source}
+- status: ${result.status}
+- errors: ${result.summary.errors}
+- warnings: ${result.summary.warnings}
+- info: ${result.summary.info}
+- tokens: ${result.token_summary.token_count}
+- sections: ${result.section_summary.section_count}
+- do_dont: ${result.section_summary.do_dont_count}
+
+## ${localizedText(language, { ja: 'Findings', en: 'Findings' })}
+
+${result.findings.map((finding) => `- ${finding.severity}: ${finding.rule} ${finding.path} - ${finding.message}`).join('\n')}
+`;
+}
+
+export function renderDesignMarkdownDiffSummary(result, language = 'ja') {
+  return `${localizedText(language, { ja: `# DESIGN.md diff: ${result.design_system_id}`, en: `# DESIGN.md diff: ${result.design_system_id}` })}
+
+- base: ${result.base}
+- artifact: ${result.artifact}
+- status: ${result.status}
+- baseline: ${result.baseline_status}
+- regression: ${result.regression}
+- tokens added: ${result.tokens.added.length}
+- tokens removed: ${result.tokens.removed.length}
+- tokens modified: ${result.tokens.modified.length}
+- sections added: ${result.sections.added.join(', ') || '-'}
+- sections removed: ${result.sections.removed.join(', ') || '-'}
+
+## ${localizedText(language, { ja: 'Findings', en: 'Findings' })}
 
 ${result.findings.map((finding) => `- ${finding.status}: ${finding.id} - ${finding.summary}`).join('\n')}
 `;
@@ -1017,6 +1232,877 @@ function mergeExternalBundleGate(dsGate, externalBundle) {
       }
     ]
   };
+}
+
+function parseDesignMarkdown({ designSystemId, product, source, text, redactedValueCount = 0 }) {
+  const markdown = ensureTrailingNewline(String(text ?? '').replace(/\r\n/g, '\n'));
+  const frontmatter = splitDesignMarkdownFrontmatter(markdown);
+  const tokens = frontmatter.text ? parseYamlSubset(frontmatter.text) : {};
+  const sections = parseDesignMarkdownSections(frontmatter.body);
+  const tokenSummary = summarizeDesignMarkdownTokens(tokens);
+  const sectionSummary = summarizeDesignMarkdownSections(sections, frontmatter.body);
+  const lint = lintParsedDesignMarkdown({ tokens, sections, body: frontmatter.body, source, redactedValueCount });
+  return {
+    schema_version: '0.1.0',
+    design_system_id: designSystemId,
+    product,
+    source,
+    imported_at: new Date().toISOString(),
+    authority: 'design_md_reference_only_current_code_and_vibepro_gates_remain_authoritative',
+    parser: {
+      frontmatter: frontmatter.text ? 'present' : 'absent',
+      token_group_count: Object.keys(tokens).length,
+      section_count: sections.length,
+      unknown_section_count: sections.filter((section) => !section.canonical_key).length
+    },
+    tokens,
+    token_summary: tokenSummary,
+    sections: sections.map((section) => ({
+      title: section.title,
+      canonical_key: section.canonical_key,
+      order: section.order,
+      token_refs: section.token_refs,
+      text: section.text
+    })),
+    section_summary: sectionSummary,
+    lint,
+    redacted_value_count: redactedValueCount,
+    authority_boundary: [
+      'DESIGN.md may guide design intent, token naming, component feel, and review focus',
+      'DESIGN.md must not override current code, Story, Spec, Architecture, screenshots, Graphify/Codex evidence, or VibePro gates',
+      'VibePro-native Design System artifacts remain the implementation-facing DS authority'
+    ],
+    markdown
+  };
+}
+
+function splitDesignMarkdownFrontmatter(markdown) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!match) {
+    return { text: '', body: markdown };
+  }
+  return {
+    text: match[1],
+    body: markdown.slice(match[0].length)
+  };
+}
+
+function parseYamlSubset(text) {
+  const root = {};
+  const stack = [{ indent: -1, value: root }];
+  for (const rawLine of String(text ?? '').split('\n')) {
+    if (!rawLine.trim() || rawLine.trim().startsWith('#')) continue;
+    const indent = rawLine.match(/^\s*/)[0].length;
+    const trimmed = rawLine.trim();
+    if (trimmed.startsWith('- ')) {
+      const parent = stack[stack.length - 1].value;
+      if (!Array.isArray(parent.__items)) parent.__items = [];
+      parent.__items.push(parseYamlScalar(trimmed.slice(2)));
+      continue;
+    }
+    const match = trimmed.match(/^([^:]+):(?:\s*(.*))?$/);
+    if (!match) continue;
+    const key = stripYamlQuote(match[1].trim());
+    let rawValue = match[2] ?? '';
+    while (stack.length > 1 && indent <= stack[stack.length - 1].indent) stack.pop();
+    const parent = stack[stack.length - 1].value;
+    if (!rawValue.trim()) {
+      const child = {};
+      parent[key] = child;
+      stack.push({ indent, value: child });
+      continue;
+    }
+    rawValue = rawValue.replace(/\s+#.*$/, '').trim();
+    parent[key] = parseYamlScalar(rawValue);
+  }
+  return normalizeYamlLists(root);
+}
+
+function normalizeYamlLists(value) {
+  if (Array.isArray(value)) return value.map(normalizeYamlLists);
+  if (!value || typeof value !== 'object') return value;
+  if (Array.isArray(value.__items) && Object.keys(value).length === 1) {
+    return value.__items.map(normalizeYamlLists);
+  }
+  const next = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (key === '__items') continue;
+    next[key] = normalizeYamlLists(item);
+  }
+  if (Array.isArray(value.__items)) next.items = value.__items.map(normalizeYamlLists);
+  return next;
+}
+
+function parseYamlScalar(value) {
+  const text = String(value ?? '').trim();
+  if (text === '[]') return [];
+  if (text === '{}') return {};
+  if (/^(['"]).*\1$/.test(text)) return text.slice(1, -1);
+  if (/^(true|false)$/i.test(text)) return /^true$/i.test(text);
+  if (/^-?\d+(?:\.\d+)?$/.test(text)) return Number(text);
+  return text;
+}
+
+function stripYamlQuote(value) {
+  return String(value ?? '').replace(/^['"]|['"]$/g, '').trim();
+}
+
+function parseDesignMarkdownSections(body) {
+  const lines = String(body ?? '').split('\n');
+  const sections = [];
+  let current = null;
+  let order = 0;
+  for (const line of lines) {
+    const heading = line.match(/^##\s+(.+?)\s*$/);
+    if (heading) {
+      if (current) sections.push(finalizeDesignMarkdownSection(current));
+      const title = heading[1].trim();
+      current = {
+        title,
+        canonical_key: normalizeDesignMarkdownSectionTitle(title),
+        order,
+        lines: []
+      };
+      order += 1;
+      continue;
+    }
+    if (current) current.lines.push(line);
+  }
+  if (current) sections.push(finalizeDesignMarkdownSection(current));
+  return sections;
+}
+
+function finalizeDesignMarkdownSection(section) {
+  const text = section.lines.join('\n').trim();
+  return {
+    ...section,
+    text,
+    token_refs: collectDesignMarkdownRefs(text)
+  };
+}
+
+function normalizeDesignMarkdownSectionTitle(title) {
+  const normalized = String(title ?? '')
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  if (normalized === 'overview' || normalized === 'brand style' || normalized === 'brand and style') return 'overview';
+  if (normalized === 'colors' || normalized === 'colours') return 'colors';
+  if (normalized === 'typography') return 'typography';
+  if (normalized === 'layout' || normalized === 'layout spacing' || normalized === 'layout and spacing') return 'layout';
+  if (normalized === 'elevation depth' || normalized === 'elevation and depth' || normalized === 'elevation') return 'elevation_depth';
+  if (normalized === 'shapes') return 'shapes';
+  if (normalized === 'components') return 'components';
+  if (/^(dos? and donts?|do and dont|do dont|donts?)$/.test(normalized)) return 'do_dont';
+  return null;
+}
+
+function summarizeDesignMarkdownTokens(tokens) {
+  const tokenPaths = flattenLeafPaths(tokens)
+    .filter((item) => !['version', 'name', 'description'].includes(item.path));
+  return {
+    schema_version: '0.1.0',
+    name: typeof tokens.name === 'string' ? tokens.name : null,
+    version: typeof tokens.version === 'string' ? tokens.version : null,
+    groups: Object.keys(tokens).filter((key) => !['version', 'name', 'description'].includes(key)),
+    token_count: tokenPaths.length,
+    color_count: Object.keys(objectValue(tokens.colors)).length,
+    typography_count: Object.keys(objectValue(tokens.typography)).length,
+    rounded_count: Object.keys(objectValue(tokens.rounded)).length,
+    spacing_count: Object.keys(objectValue(tokens.spacing)).length,
+    component_count: Object.keys(objectValue(tokens.components)).length,
+    token_paths: tokenPaths.map((item) => item.path).slice(0, 240)
+  };
+}
+
+function summarizeDesignMarkdownSections(sections, body) {
+  const doDontStatements = extractDesignMarkdownDoDontStatements(sections);
+  return {
+    schema_version: '0.1.0',
+    section_count: sections.length,
+    canonical_sections: unique(sections.map((section) => section.canonical_key)).filter(Boolean),
+    unknown_sections: sections.filter((section) => !section.canonical_key).map((section) => section.title),
+    has_prose_intent: hasMeaningfulDesignMarkdownProse(body),
+    do_dont_count: doDontStatements.length,
+    do_dont_statements: doDontStatements.slice(0, 80)
+  };
+}
+
+function lintParsedDesignMarkdown({ tokens, sections, body, source, redactedValueCount }) {
+  const findings = [];
+  const refs = unique([
+    ...collectDesignMarkdownRefs(flattenText(tokens)),
+    ...sections.flatMap((section) => section.token_refs)
+  ]);
+  for (const ref of refs) {
+    if (!resolveDesignTokenPath(tokens, ref)) {
+      findings.push(designMarkdownFinding({
+        rule: 'DS-DESIGN-MD-BROKEN-REF',
+        severity: 'error',
+        path: ref,
+        message: `Token reference {${ref}} does not resolve.`
+      }));
+    }
+  }
+
+  const canonicalKeys = sections.map((section) => section.canonical_key).filter(Boolean);
+  for (const key of unique(canonicalKeys)) {
+    const count = canonicalKeys.filter((item) => item === key).length;
+    if (count > 1) {
+      findings.push(designMarkdownFinding({
+        rule: 'DS-DESIGN-MD-DUPLICATE-SECTION',
+        severity: 'error',
+        path: `sections.${key}`,
+        message: `Canonical section ${key} appears ${count} times.`
+      }));
+    }
+  }
+
+  if (!isDesignMarkdownSectionOrderValid(canonicalKeys)) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-SECTION-ORDER',
+      severity: 'warning',
+      path: 'sections',
+      message: 'Canonical sections are not in DESIGN.md order.'
+    }));
+  }
+
+  if (Object.keys(objectValue(tokens.colors)).length > 0 && !objectValue(tokens.colors).primary) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-MISSING-PRIMARY',
+      severity: 'warning',
+      path: 'tokens.colors',
+      message: 'Colors are defined but colors.primary is missing.'
+    }));
+  }
+
+  if (Object.keys(objectValue(tokens.colors)).length > 0 && Object.keys(objectValue(tokens.typography)).length === 0) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-MISSING-TYPOGRAPHY',
+      severity: 'warning',
+      path: 'tokens.typography',
+      message: 'Colors are defined but typography tokens are missing.'
+    }));
+  }
+
+  if (!hasMeaningfulDesignMarkdownProse(body)) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-MISSING-PROSE-INTENT',
+      severity: 'warning',
+      path: 'body',
+      message: 'Markdown body does not contain enough design rationale for agents.'
+    }));
+  }
+
+  if (extractDesignMarkdownDoDontStatements(sections).length === 0) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-MISSING-DO-DONT',
+      severity: 'warning',
+      path: 'sections.do_dont',
+      message: 'Do/Don\'t guidance is missing.'
+    }));
+  }
+
+  findings.push(...lintDesignMarkdownContrast(tokens));
+  if (redactedValueCount > 0) {
+    findings.push(designMarkdownFinding({
+      rule: 'DS-DESIGN-MD-SECRET-REDACTION',
+      severity: 'warning',
+      path: source,
+      message: `${redactedValueCount} likely secret value(s) were redacted before persisting DESIGN.md.`
+    }));
+  }
+
+  const tokenSummary = summarizeDesignMarkdownTokens(tokens);
+  findings.push(designMarkdownFinding({
+    rule: 'DS-DESIGN-MD-TOKEN-SUMMARY',
+    severity: 'info',
+    path: 'tokens',
+    message: `${tokenSummary.token_count} token(s), ${sections.length} section(s), ${tokenSummary.component_count} component token group(s).`
+  }));
+
+  return {
+    schema_version: '0.1.0',
+    status: findings.some((finding) => finding.severity === 'error')
+      ? 'fail'
+      : findings.some((finding) => finding.severity === 'warning')
+        ? 'needs_review'
+        : 'pass',
+    findings,
+    summary: {
+      errors: findings.filter((finding) => finding.severity === 'error').length,
+      warnings: findings.filter((finding) => finding.severity === 'warning').length,
+      info: findings.filter((finding) => finding.severity === 'info').length
+    }
+  };
+}
+
+function designMarkdownFinding({ rule, severity, path: findingPath, message }) {
+  return {
+    rule,
+    severity,
+    path: findingPath,
+    message
+  };
+}
+
+function isDesignMarkdownSectionOrderValid(keys) {
+  const order = ['overview', 'colors', 'typography', 'layout', 'elevation_depth', 'shapes', 'components', 'do_dont'];
+  const positions = keys.map((key) => order.indexOf(key)).filter((index) => index >= 0);
+  return positions.every((position, index) => index === 0 || position >= positions[index - 1]);
+}
+
+function lintDesignMarkdownContrast(tokens) {
+  const findings = [];
+  const components = objectValue(tokens.components);
+  for (const [name, rawComponent] of Object.entries(components)) {
+    const component = objectValue(rawComponent);
+    const background = resolveDesignTokenValue(tokens, component.backgroundColor);
+    const text = resolveDesignTokenValue(tokens, component.textColor);
+    const backgroundRgb = parseHexColor(background);
+    const textRgb = parseHexColor(text);
+    if (!background || !text || !backgroundRgb || !textRgb) continue;
+    const ratio = contrastRatio(backgroundRgb, textRgb);
+    if (ratio < 4.5) {
+      findings.push(designMarkdownFinding({
+        rule: 'DS-DESIGN-MD-CONTRAST',
+        severity: 'warning',
+        path: `components.${name}`,
+        message: `textColor ${text} on backgroundColor ${background} has contrast ratio ${ratio.toFixed(2)}:1, below WCAG AA 4.5:1.`
+      }));
+    }
+  }
+  return findings;
+}
+
+function mergeDesignMarkdownIntoDesignSystem(base, { designSystemId, product, source, designMd, language }) {
+  const persistedDesignMd = toPersistedDesignMarkdown(designMd);
+  const tokenEvidence = collectDesignMarkdownTokenEvidence(designMd);
+  const componentEvidence = collectDesignMarkdownComponentEvidence(designMd);
+  const guidelineEvidence = collectDesignMarkdownGuidelineEvidence(designMd);
+  return {
+    ...base,
+    workflow: base.workflow ?? 'native-design-system-design-md-ingest',
+    design_system_id: designSystemId,
+    product,
+    generated_at: new Date().toISOString(),
+    output: { language },
+    authority: 'vibepro_native_design_system',
+    external_generator_required: false,
+    source_evidence: {
+      ...(base.source_evidence ?? {}),
+      routes: base.source_evidence?.routes ?? [],
+      graphify: base.source_evidence?.graphify ?? emptyGraphifyEvidence(),
+      current_ui_code: base.source_evidence?.current_ui_code ?? [],
+      style_files: base.source_evidence?.style_files ?? [],
+      design_md: {
+        source,
+        artifact: `.vibepro/design-system/${designSystemId}/DESIGN.md`,
+        normalized_artifact: `.vibepro/design-system/${designSystemId}/design-md.json`,
+        authority: persistedDesignMd.authority,
+        lint_status: persistedDesignMd.lint.status,
+        redacted_value_count: persistedDesignMd.redacted_value_count
+      }
+    },
+    design_md: persistedDesignMd,
+    theme_tokens: mergeDesignMarkdownThemeTokens(base.theme_tokens, tokenEvidence),
+    semantic_tokens: mergeDesignMarkdownSemanticTokens(base.semantic_tokens, tokenEvidence, guidelineEvidence),
+    component_roles: mergeComponentRoles(base.component_roles, componentEvidence),
+    component_states: mergeDesignMarkdownComponentStates(base.component_states, componentEvidence),
+    cta_policy: mergeDesignMarkdownCtaPolicy(base.cta_policy, guidelineEvidence, componentEvidence),
+    density_policy: mergeDesignMarkdownDensityPolicy(base.density_policy, tokenEvidence, guidelineEvidence),
+    navigation_policy: base.navigation_policy ?? {
+      schema_version: '0.1.0',
+      policy: 'preserve_current_navigation_model',
+      navigation_targets: [],
+      rules: []
+    },
+    anti_patterns: mergeDesignMarkdownAntiPatterns(base.anti_patterns, guidelineEvidence),
+    evidence_coverage: mergeDesignMarkdownEvidenceCoverage(base.evidence_coverage, designMd),
+    ds_gate: mergeDesignMarkdownGate(base.ds_gate, designMd)
+  };
+}
+
+function toPersistedDesignMarkdown(designMd) {
+  const { markdown, ...persisted } = designMd;
+  return persisted;
+}
+
+function collectDesignMarkdownTokenEvidence(designMd) {
+  const tokenText = flattenText(designMd.tokens);
+  return {
+    schema_version: '0.1.0',
+    token_paths: designMd.token_summary.token_paths,
+    css_variables: collectCssVariables(tokenText),
+    class_hints: [],
+    color_values: collectColorValues(tokenText),
+    spacing_values: collectSpacingValues(tokenText),
+    color_roles: Object.keys(objectValue(designMd.tokens.colors)).map((name) => ({
+      name: sanitizeId(name),
+      purpose: `DESIGN.md color token: ${name}`,
+      source: 'design_md_reference',
+      candidate_tokens: [`design-md:colors.${name}`]
+    })),
+    typography_roles: Object.keys(objectValue(designMd.tokens.typography)).map((name) => ({
+      name,
+      source: 'design_md_reference'
+    }))
+  };
+}
+
+function collectDesignMarkdownComponentEvidence(designMd) {
+  const componentNames = Object.keys(objectValue(designMd.tokens.components));
+  return {
+    schema_version: '0.1.0',
+    names: componentNames,
+    states: unique(componentNames.flatMap((name) => {
+      const text = name.toLowerCase();
+      return ['hover', 'active', 'pressed', 'disabled', 'selected', 'focus', 'loading', 'error']
+        .filter((state) => text.includes(state));
+    }))
+  };
+}
+
+function collectDesignMarkdownGuidelineEvidence(designMd) {
+  const sectionText = designMd.sections.map((section) => `${section.title}\n${section.text}`).join('\n\n');
+  return {
+    schema_version: '0.1.0',
+    text: sectionText,
+    topics: unique([
+      ...designMd.sections.map((section) => section.title),
+      ...designMd.section_summary.do_dont_statements
+    ]).slice(0, 120)
+  };
+}
+
+function mergeDesignMarkdownThemeTokens(existing, tokenEvidence) {
+  return {
+    ...(existing ?? {}),
+    schema_version: existing?.schema_version ?? '0.1.0',
+    css_variables: unique([...(existing?.css_variables ?? []), ...tokenEvidence.css_variables]).slice(0, 200),
+    class_hints: existing?.class_hints ?? [],
+    color_values: unique([...(existing?.color_values ?? []), ...tokenEvidence.color_values]).slice(0, 120),
+    spacing_values: unique([...(existing?.spacing_values ?? []), ...tokenEvidence.spacing_values]).slice(0, 120),
+    design_md_token_paths: unique([...(existing?.design_md_token_paths ?? []), ...tokenEvidence.token_paths]).slice(0, 240)
+  };
+}
+
+function mergeDesignMarkdownSemanticTokens(existing, tokenEvidence, guidelineEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    ...(existing ?? {}),
+    color_roles: mergeNamedItems(existing?.color_roles ?? [], tokenEvidence.color_roles).slice(0, 100),
+    state_semantics: unique([...(existing?.state_semantics ?? []), ...inferExternalStates(guidelineEvidence)]).slice(0, 60),
+    cta_priority: unique([...(existing?.cta_priority ?? []), ...inferCtaPriorityFromDesignMarkdown(guidelineEvidence)]).slice(0, 40),
+    domain_semantics: unique([...(existing?.domain_semantics ?? []), ...inferExternalDomainSemantics(guidelineEvidence)]).slice(0, 80),
+    typography_roles: unique([...(existing?.typography_roles ?? []), ...tokenEvidence.typography_roles.map((role) => role.name)]).slice(0, 80)
+  };
+}
+
+function mergeDesignMarkdownComponentStates(existing, componentEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    required_states: unique([...(existing?.required_states ?? []), ...componentEvidence.states]).slice(0, 60),
+    discovered_states: unique([...(existing?.discovered_states ?? []), ...componentEvidence.states]).slice(0, 60),
+    state_policy: unique([
+      ...(existing?.state_policy ?? []),
+      'DESIGN.md component variants are reference constraints and must be verified against current implementation'
+    ]).slice(0, 60)
+  };
+}
+
+function mergeDesignMarkdownCtaPolicy(existing, guidelineEvidence, componentEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    hierarchy: existing?.hierarchy?.length > 0 ? existing.hierarchy : inferDesignMarkdownCtaHierarchy(guidelineEvidence),
+    discovered_ctas: unique([...(existing?.discovered_ctas ?? []), ...inferExternalCtas(guidelineEvidence, componentEvidence)]).slice(0, 80),
+    rules: unique([
+      ...(existing?.rules ?? []),
+      'DESIGN.md CTA guidance is reference evidence; preserve current product-native primary actions unless Story/Spec changes them',
+      'DESIGN.md must not promote aesthetic preference above route-level CTA evidence'
+    ]).slice(0, 60)
+  };
+}
+
+function mergeDesignMarkdownDensityPolicy(existing, tokenEvidence, guidelineEvidence) {
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    policy: existing?.policy ?? inferDensityFromText(guidelineEvidence.text),
+    evidence: {
+      ...(existing?.evidence ?? {}),
+      design_md_spacing_values: tokenEvidence.spacing_values.slice(0, 40),
+      design_md_layout_topics: guidelineEvidence.topics.filter((topic) => /layout|spacing|density|grid|compact|scan|余白|密度/i.test(topic)).slice(0, 40)
+    },
+    rules: unique([
+      ...(existing?.rules ?? []),
+      'DESIGN.md layout and density guidance must preserve current information requirements'
+    ]).slice(0, 60)
+  };
+}
+
+function mergeDesignMarkdownAntiPatterns(existing, guidelineEvidence) {
+  const forbidden = guidelineEvidence.topics.filter((topic) => /don'?t|dont|avoid|forbid|never|禁止|避ける|anti/i.test(topic));
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    items: uniqueItemsByStatement([...(existing?.items ?? []), ...forbidden.map((statement) => ({ statement, source: 'design_md_reference' }))]).slice(0, 100),
+    global_rules: unique([
+      ...(existing?.global_rules ?? []),
+      'do not treat DESIGN.md as implementation authority',
+      'do not override current UX invariants with DESIGN.md token defaults'
+    ]).slice(0, 60)
+  };
+}
+
+function mergeDesignMarkdownEvidenceCoverage(existing, designMd) {
+  const findings = mergeFindings(existing?.findings ?? [], [
+    {
+      id: 'DS-EVIDENCE-DESIGN-MD',
+      status: designMd.lint.summary.errors > 0 ? 'fail' : designMd.lint.summary.warnings > 0 ? 'warn' : 'pass',
+      summary: `${designMd.token_summary.token_count} DESIGN.md token(s), ${designMd.section_summary.section_count} section(s), lint=${designMd.lint.status}`
+    }
+  ]);
+  return {
+    schema_version: existing?.schema_version ?? '0.1.0',
+    status: findings.some((finding) => finding.status === 'fail')
+      ? 'fail'
+      : findings.some((finding) => finding.status === 'warn')
+        ? 'needs_review'
+        : 'pass',
+    findings
+  };
+}
+
+function mergeDesignMarkdownGate(dsGate, designMd) {
+  const base = dsGate ?? {
+    schema_version: '0.1.0',
+    fallback_allowed: false,
+    checks: []
+  };
+  const lintRules = new Set(designMd.lint.findings.map((finding) => finding.rule));
+  const checks = [
+    ...(base.checks ?? []).filter((check) => !String(check.id ?? '').startsWith('DS-GATE-DESIGN-MD')),
+    {
+      id: 'DS-GATE-DESIGN-MD-AUTHORITY',
+      status: 'pass',
+      statement: 'DESIGN.md is reference evidence only; VibePro-native DS, current code, Story/Spec/Architecture, and gates remain implementation authority.'
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-PARSE',
+      status: designMd.lint.summary.errors > 0 ? 'fail' : 'pass',
+      statement: `DESIGN.md parser extracted ${designMd.token_summary.token_count} token(s) and ${designMd.section_summary.section_count} section(s).`
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-TOKEN-REFERENCES',
+      status: lintRules.has('DS-DESIGN-MD-BROKEN-REF') ? 'fail' : 'pass',
+      statement: 'All DESIGN.md token references must resolve before the DS can be treated as coherent evidence.'
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-PROSE-INTENT',
+      status: designMd.section_summary.has_prose_intent ? 'pass' : 'needs_review',
+      statement: 'DESIGN.md must include prose rationale that helps human reviewers and coding agents apply tokens correctly.'
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-DO-DONT-COVERAGE',
+      status: designMd.section_summary.do_dont_count > 0 ? 'pass' : 'needs_review',
+      statement: 'DESIGN.md should include Do/Don\'t guardrails so negative design constraints are reviewable.'
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-CONTRAST',
+      status: lintRules.has('DS-DESIGN-MD-CONTRAST') ? 'needs_review' : 'pass',
+      statement: 'Component background/text token pairs that can be checked must not fall below WCAG AA contrast without review.'
+    },
+    {
+      id: 'DS-GATE-DESIGN-MD-DRIFT',
+      status: 'needs_evidence',
+      statement: 'Run design-system diff against the PR base to confirm DESIGN.md changes do not regress token or prose intent.'
+    }
+  ];
+  return {
+    ...base,
+    fallback_allowed: false,
+    checks
+  };
+}
+
+function inferCtaPriorityFromDesignMarkdown(guidelineEvidence) {
+  const text = guidelineEvidence.text;
+  const priorities = [];
+  if (/primary|main|cta|call to action|主|主要/i.test(text)) priorities.push('primary_design_intent_action');
+  if (/secondary|support|sub|補助/i.test(text)) priorities.push('secondary_design_intent_action');
+  if (/tertiary|utility|low-emphasis|低/i.test(text)) priorities.push('tertiary_design_intent_action');
+  return priorities.length > 0 ? priorities : ['preserve_current_cta_priority'];
+}
+
+function inferDesignMarkdownCtaHierarchy(guidelineEvidence) {
+  return inferCtaPriorityFromDesignMarkdown(guidelineEvidence).map((priority) => ({
+    priority,
+    role: 'DESIGN.md reference CTA guidance',
+    source: 'design_md_reference'
+  }));
+}
+
+function renderDesignMarkdownFromDesignSystem(designSystem) {
+  const product = designSystem.product ?? designSystem.design_system_id ?? 'Design System';
+  const colors = designSystem.theme_tokens?.color_values ?? [];
+  const spacing = designSystem.theme_tokens?.spacing_values ?? [];
+  const colorRoles = designSystem.semantic_tokens?.color_roles ?? [];
+  const roles = designSystem.component_roles?.roles ?? [];
+  const antiPatterns = [
+    ...(designSystem.anti_patterns?.global_rules ?? []),
+    ...(designSystem.anti_patterns?.items ?? []).map((item) => item.statement ?? item).filter(Boolean)
+  ];
+  const lines = [
+    '---',
+    'version: alpha',
+    `name: ${yamlQuote(product)}`,
+    'colors:',
+    ...colors.slice(0, 16).map((value, index) => `  color-${index + 1}: ${yamlQuote(value)}`),
+    'spacing:',
+    ...spacing.slice(0, 16).map((value, index) => `  space-${index + 1}: ${yamlQuote(value)}`),
+    'components:',
+    ...roles.slice(0, 24).flatMap((role) => [
+      `  ${sanitizeId(role.name ?? 'component')}:`,
+      `    purpose: ${yamlQuote(role.responsibility ?? role.purpose ?? 'component role')}`
+    ]),
+    '---',
+    '',
+    `# ${product} DESIGN.md`,
+    '',
+    '## Overview',
+    '',
+    'VibePro-generated DESIGN.md reference for human reviewers and coding agents. This file carries design intent as reference evidence; current code, Story, Spec, Architecture, and VibePro gates remain authoritative.',
+    '',
+    '## Colors',
+    '',
+    ...formatDesignMarkdownBullets(colorRoles.map((role) => `${role.name}: ${role.purpose ?? 'semantic color role'}`)),
+    '',
+    '## Typography',
+    '',
+    '- Preserve the current product readability scale unless Story or Spec changes it.',
+    '',
+    '## Layout',
+    '',
+    ...formatDesignMarkdownBullets(designSystem.density_policy?.rules ?? ['Preserve current information density and route hierarchy.']),
+    '',
+    '## Components',
+    '',
+    ...formatDesignMarkdownBullets(roles.slice(0, 24).map((role) => `${role.name}: ${role.responsibility ?? 'component role'}`)),
+    '',
+    '## Do\'s and Don\'ts',
+    '',
+    ...formatDesignMarkdownBullets(antiPatterns.length > 0 ? antiPatterns.map((item) => `Don\'t ${String(item).replace(/^do not\s+/i, '')}`) : ['Do keep DESIGN.md reference-only.', 'Don\'t override VibePro gates with visual preference.']),
+    ''
+  ];
+  return ensureTrailingNewline(lines.join('\n'));
+}
+
+function buildDesignMarkdownDiff({ designSystemId, base, artifact, before, current }) {
+  if (!before) {
+    return {
+      schema_version: '0.1.0',
+      workflow: 'design-md-diff',
+      design_system_id: designSystemId,
+      base,
+      artifact,
+      generated_at: new Date().toISOString(),
+      status: 'needs_baseline',
+      baseline_status: 'not_found',
+      regression: false,
+      tokens: { added: [], removed: [], modified: [] },
+      sections: { added: current.section_summary.canonical_sections, removed: [] },
+      lint: { before: null, after: current.lint.summary },
+      findings: [
+        {
+          id: 'DS-DESIGN-MD-DIFF-BASELINE',
+          status: 'needs_evidence',
+          summary: `No DESIGN.md artifact found at ${base}:${artifact}.`
+        }
+      ]
+    };
+  }
+  const beforeTokens = flattenTokenMap(before.tokens);
+  const currentTokens = flattenTokenMap(current.tokens);
+  const tokenDiff = diffFlatMaps(beforeTokens, currentTokens);
+  const beforeSections = before.section_summary.canonical_sections;
+  const currentSections = current.section_summary.canonical_sections;
+  const sections = {
+    added: currentSections.filter((section) => !beforeSections.includes(section)),
+    removed: beforeSections.filter((section) => !currentSections.includes(section))
+  };
+  const regression = current.lint.summary.errors > before.lint.summary.errors
+    || current.lint.summary.warnings > before.lint.summary.warnings
+    || (before.section_summary.has_prose_intent && !current.section_summary.has_prose_intent)
+    || (before.section_summary.do_dont_count > 0 && current.section_summary.do_dont_count === 0);
+  return {
+    schema_version: '0.1.0',
+    workflow: 'design-md-diff',
+    design_system_id: designSystemId,
+    base,
+    artifact,
+    generated_at: new Date().toISOString(),
+    status: regression ? 'needs_review' : 'pass',
+    baseline_status: 'found',
+    regression,
+    tokens: tokenDiff,
+    sections,
+    lint: {
+      before: before.lint.summary,
+      after: current.lint.summary
+    },
+    findings: [
+      {
+        id: 'DS-DESIGN-MD-DIFF-TOKENS',
+        status: tokenDiff.removed.length > 0 || tokenDiff.modified.length > 0 ? 'needs_review' : 'pass',
+        summary: `${tokenDiff.added.length} added, ${tokenDiff.removed.length} removed, ${tokenDiff.modified.length} modified token path(s).`
+      },
+      {
+        id: 'DS-DESIGN-MD-DIFF-SECTIONS',
+        status: sections.removed.length > 0 ? 'needs_review' : 'pass',
+        summary: `${sections.added.length} added, ${sections.removed.length} removed canonical section(s).`
+      },
+      {
+        id: 'DS-DESIGN-MD-DIFF-REGRESSION',
+        status: regression ? 'needs_review' : 'pass',
+        summary: regression ? 'Current DESIGN.md has more lint findings or lost prose guardrails.' : 'No DESIGN.md lint or prose regression detected.'
+      }
+    ]
+  };
+}
+
+async function readGitFile(root, ref, file) {
+  try {
+    const result = await execFileAsync('git', ['show', `${ref}:${file}`], {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 1024 * 1024 * 8
+    });
+    return result.stdout;
+  } catch {
+    return null;
+  }
+}
+
+function collectDesignMarkdownRefs(text) {
+  return [...String(text ?? '').matchAll(/\{([A-Za-z0-9_.-]+)\}/g)].map((match) => match[1]);
+}
+
+function resolveDesignTokenPath(tokens, ref) {
+  const parts = String(ref ?? '').split('.').filter(Boolean);
+  let current = tokens;
+  for (const part of parts) {
+    if (!current || typeof current !== 'object' || !(part in current)) return null;
+    current = current[part];
+  }
+  return current == null ? null : current;
+}
+
+function resolveDesignTokenValue(tokens, value) {
+  if (typeof value !== 'string') return value;
+  const ref = value.match(/^\{([A-Za-z0-9_.-]+)\}$/);
+  if (!ref) return value;
+  return resolveDesignTokenPath(tokens, ref[1]);
+}
+
+function flattenLeafPaths(value, prefix = '') {
+  if (!value || typeof value !== 'object') return prefix ? [{ path: prefix, value }] : [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => flattenLeafPaths(item, prefix ? `${prefix}.${index}` : String(index)));
+  }
+  return Object.entries(value).flatMap(([key, item]) => {
+    const nextPrefix = prefix ? `${prefix}.${key}` : key;
+    if (item && typeof item === 'object') return flattenLeafPaths(item, nextPrefix);
+    return [{ path: nextPrefix, value: item }];
+  });
+}
+
+function flattenTokenMap(tokens) {
+  const map = new Map();
+  for (const item of flattenLeafPaths(tokens)) {
+    if (['version', 'name', 'description'].includes(item.path)) continue;
+    map.set(item.path, JSON.stringify(item.value));
+  }
+  return map;
+}
+
+function diffFlatMaps(before, after) {
+  const beforeKeys = [...before.keys()];
+  const afterKeys = [...after.keys()];
+  return {
+    added: afterKeys.filter((key) => !before.has(key)).sort(),
+    removed: beforeKeys.filter((key) => !after.has(key)).sort(),
+    modified: afterKeys.filter((key) => before.has(key) && before.get(key) !== after.get(key)).sort()
+  };
+}
+
+function objectValue(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function extractDesignMarkdownDoDontStatements(sections) {
+  const targetSections = sections.filter((section) => section.canonical_key === 'do_dont');
+  const sourceSections = targetSections.length > 0 ? targetSections : sections;
+  return unique(sourceSections.flatMap((section) => (
+    section.text
+      .split('\n')
+      .map((line) => line.replace(/^[-*#\s]+/, '').trim())
+      .filter((line) => /^(do|don'?t|dont|avoid|never|forbid|禁止|避ける|必ず)\b/i.test(line))
+  ))).slice(0, 120);
+}
+
+function hasMeaningfulDesignMarkdownProse(body) {
+  const prose = String(body ?? '')
+    .replace(/^#+\s+.*$/gm, '')
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/\{[A-Za-z0-9_.-]+\}/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return prose.length >= 80;
+}
+
+function parseHexColor(value) {
+  const text = String(value ?? '').trim();
+  const match = text.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+  if (!match) return null;
+  const hex = match[1].length === 3
+    ? match[1].split('').map((char) => `${char}${char}`).join('')
+    : match[1];
+  return {
+    r: parseInt(hex.slice(0, 2), 16),
+    g: parseInt(hex.slice(2, 4), 16),
+    b: parseInt(hex.slice(4, 6), 16)
+  };
+}
+
+function contrastRatio(a, b) {
+  const l1 = relativeLuminance(a);
+  const l2 = relativeLuminance(b);
+  const light = Math.max(l1, l2);
+  const dark = Math.min(l1, l2);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+function relativeLuminance({ r, g, b }) {
+  const channels = [r, g, b].map((value) => {
+    const normalized = value / 255;
+    return normalized <= 0.03928
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function yamlQuote(value) {
+  return JSON.stringify(String(value ?? ''));
+}
+
+function formatDesignMarkdownBullets(items) {
+  return items.length > 0 ? items.map((item) => `- ${item}`) : ['- not provided'];
+}
+
+function ensureTrailingNewline(value) {
+  return value.endsWith('\n') ? value : `${value}\n`;
 }
 
 async function collectGraphifyEvidence(root, options) {
