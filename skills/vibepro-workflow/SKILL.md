@@ -9,6 +9,12 @@ description: Use when working with VibePro CLI, Graphify, Story diagnosis, task 
 
 Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. The CLI creates evidence; this Skill tells the agent how to use that evidence without skipping the intended order.
 
+## When to Use
+
+Use this Skill when the task mentions VibePro, Story/Spec/Architecture, Graphify, Gate DAG, PR preparation, Agent Review, diagnosis packages, review cockpit, or VibePro-managed evidence under `.vibepro/`.
+
+Also use it when the user asks whether VibePro work is done, PR-ready, verified, reviewable, or safe to merge. In those cases the answer must be grounded in current VibePro artifacts and repository state, not a general impression.
+
 ## Operating Order
 
 1. Confirm the target repository and current branch.
@@ -114,6 +120,27 @@ Use VibePro as a Story / Architecture / Spec / Graphify / Gate control plane. Th
   - `git diff --name-status HEAD <old-commit>`
 - If the dirty state is a proven stale reverse diff, say so explicitly and then synchronize the worktree/index to `HEAD` with the least destructive command that resolves the observed state. Do not preserve it as a stash unless the user asks for archival.
 - If the dirty state contains files or hunks that do not match the stale reverse diff, treat them as possible user work and do not clean them without reporting the exact files and asking for direction when needed.
+
+## Common Rationalizations
+
+- "The code looks done, so VibePro can be skipped." Reject this; VibePro readiness is based on Story/Spec/Architecture, verification evidence, Agent Review, and Gate DAG status.
+- "The change is small, so no Story or evidence is needed." Small changes can still affect contracts, generated artifacts, and review gates.
+- "Tests passed once, so PR readiness is proven." Tests must be current-head evidence and still need the relevant VibePro gates to close.
+- "Manual review is enough for Agent Review Gate." Required Agent Review needs Codex/Claude Code parallel subagent provenance and closed lifecycle evidence unless a waiver is explicitly recorded outside the gate.
+- "The PR body says it is verified." PR body text is not the source of truth; inspect `pr-prepare.json`, Gate DAG, and evidence artifacts.
+
+## Red Flags
+
+- `gate_status.ready_for_pr_create` is false or missing.
+- `gate:agent_review`, `gate:artifact_consistency`, `gate:definition_of_done`, `gate:network_contract`, `gate:e2e`, or any critical required gate is unresolved.
+- The answer cites HTML artifacts but not their JSON sidecars.
+- Verification evidence predates the current git head or omits the changed path.
+- Agent Review records have `manual_review` provenance where the gate required parallel subagents.
+- Dirty worktree files are cleaned or hidden before they are classified.
+
+## Verification
+
+Before saying VibePro confirmed the work, name the exact VibePro command or artifact inspected, including `.vibepro/pr/<story-id>/pr-prepare.json` and the relevant Gate DAG node. For implementation work, rerun `vibepro pr prepare` after verification evidence and review records are updated, then confirm `gate_status.ready_for_pr_create=true` and `overall_status=ready_for_review`.
 
 ## Key Artifacts
 

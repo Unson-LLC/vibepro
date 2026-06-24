@@ -9,6 +9,10 @@ description: Use when reviewing VibePro PR preparation artifacts, deciding wheth
 
 Use this Skill when a human or AI reviewer needs to interpret VibePro PR artifacts. `pr-prepare.json` is the readiness source of truth; the review cockpit is the human control plane.
 
+## When to Use
+
+Use this Skill when deciding whether a VibePro-prepared change should proceed, split, add evidence, waive with reason, or block. It applies to PR readiness reviews, merge readiness checks, waiver decisions, and cases where the user asks whether VibePro evidence is enough.
+
 ## Review Order
 
 1. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status`.
@@ -60,6 +64,27 @@ Fill these fields in `human-review.json`:
 - Check that snapshot visible, DOM visible, API completed, server ready, and interactive ready are not mixed into one completion condition.
 - Do not approve UI modernization when `ds-gate.json` is missing, has implicit fallback, or omits DS drift / component role / composition / anti-pattern checks.
 - Do not approve a generated visual direction just because it looks better. Require evidence that it preserves the existing product workflow and that the implementation follows VibePro-derived DS constraints.
+
+## Common Rationalizations
+
+- "The PR scope is reviewable, so it can proceed." Scope reviewability is not completion approval.
+- "The PR body summarizes the gates, so the JSON is unnecessary." `pr-prepare.json` and Gate DAG are the machine-readable truth.
+- "A human looked at it, so Agent Review is satisfied." Required Agent Review needs the required subagent provenance and lifecycle closure unless waived outside the gate.
+- "Only non-critical gates remain, so no reason is needed." Waivers must name the exact reason and cannot cover critical gates.
+- "The UI looks better, so modernization is acceptable." Preservation of workflow, DS constraints, and regression evidence still matter.
+
+## Red Flags
+
+- `ready_for_pr_create` is false, missing, or contradicted by unresolved gates.
+- Critical unresolved gates are being waived by explanation alone.
+- Agent Review records are stale, manual-only, missing provenance, or missing `--agent-closed`.
+- Performance evidence says `not_comparable` or `改善率不明` while the PR claims improvement.
+- UI modernization lacks DS gate or current workflow preservation evidence.
+- The reviewer only opened HTML and did not inspect JSON sidecars.
+
+## Verification
+
+Record the final decision from current `pr-prepare.json`, `gate-dag`, `review-cockpit.html`, and `human-review.json`. If the decision is proceed, confirm `gate_status.ready_for_pr_create=true`, `overall_status=ready_for_review`, no critical unresolved gates, and no split requirement. If the decision is waive, record the exact waiver reason and affected gates.
 
 ## Performance Evidence Review
 

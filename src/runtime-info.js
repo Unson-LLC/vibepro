@@ -41,7 +41,8 @@ export function buildRuntimeDoctorCheck(runtime) {
     };
   }
 
-  const stale = git.origin_main_relation === 'behind';
+  const stale = shouldWarnStaleRuntime(git);
+  const developmentCheckoutBehind = git.origin_main_relation === 'behind' && !stale;
   return {
     id: 'VP-DOCTOR-CLI-RUNTIME',
     severity: stale ? 'warning' : 'info',
@@ -49,9 +50,13 @@ export function buildRuntimeDoctorCheck(runtime) {
     fixable: false,
     detail: stale
       ? `VibePro runtime HEAD ${shortSha(git.commit)} が origin/main ${shortSha(git.origin_main_commit)} と一致しない。`
+      : developmentCheckoutBehind
+        ? `VibePro runtime HEAD ${shortSha(git.commit)} は origin/main ${shortSha(git.origin_main_commit)} より古い可能性があるが、開発checkoutとして扱う。`
       : `VibePro runtime HEAD ${shortSha(git.commit)} を使用中。`,
     recommendation: stale
       ? 'CLI実体のcheckoutを最新のorigin/mainへ合わせるか、意図したcommitであることを確認する。'
+      : developmentCheckoutBehind
+        ? 'feature branchまたはdirty checkoutでは、doctorはorigin/mainへの切替を自動推奨しない。必要なら利用者が明示的にruntimeを更新する。'
       : 'VibePro CLI実体はorigin/mainと一致している。',
     items: [runtime],
     next_actions: stale ? [{
@@ -61,6 +66,12 @@ export function buildRuntimeDoctorCheck(runtime) {
       safe_to_run: false
     }] : []
   };
+}
+
+function shouldWarnStaleRuntime(git) {
+  if (git.origin_main_relation !== 'behind') return false;
+  if (git.dirty === true) return false;
+  return !git.branch || ['main', 'master'].includes(git.branch);
 }
 
 function shortSha(value) {

@@ -9,6 +9,12 @@ description: Use when the user asks VibePro to check UI, security, performance, 
 
 Use VibePro purpose-level packages instead of guessing which low-level scanner or log to inspect. The package is the user-facing intent; the scanner set and evidence paths are VibePro's implementation detail.
 
+## When to Use
+
+Use this Skill when the user asks VibePro to check, audit, diagnose, verify, or compare UI behavior, security, performance, architecture, PR readiness, launch readiness, agent harness readiness, public discovery, self-dogfood readiness, OSS readiness, or regression risk.
+
+Use it when a claim needs package-level evidence rather than ad hoc scanner output, especially when the user asks whether VibePro has "confirmed" something.
+
 ## Diagnosis Packages
 
 List packages first when the request is ambiguous:
@@ -120,6 +126,27 @@ Run evidence is written to:
 - Static gesture findings are review candidates, not automatic proof of an app bug. Convert them to block-level evidence when Playwright/runtime probes show wrong navigation, no scroll/active-card movement, intercepted hit targets, or visible interaction failure.
 - In `vibepro verify flow`, add gesture probes for changed surfaces. Useful steps include `drag`, `touchDrag`, `expectUrlUnchanged`, `expectScrollLeftChanged`, active item change via `activeSelector` + `expectActiveChanged`, and `expectElementFromPoint`.
 - For “swipe becomes tap” regressions, verify that drag after a card/map interaction does not change URL and does update the expected scroll or active item state.
+
+## Common Rationalizations
+
+- "One scanner was clean, so the package passed." Reject this; package status comes from the configured scanner set and written evidence artifact.
+- "Server logs prove performance." Server-side readiness does not prove user-perceived speed.
+- "The main E2E path passed, so UI controls are fine." UI-heavy changes need clickable-looking controls and alternate surfaces checked.
+- "No API error appeared visually, so network contracts are safe." Network Contract Gate needs route/schema/runtime evidence and should catch hidden 4xx/5xx or HTML responses.
+- "A skipped check is a pass." Skipped, unavailable, auth-required, or unknown states must stay visible.
+
+## Red Flags
+
+- The answer does not name the package command or artifact path.
+- A performance comparison omits p50, p90, max, sample count, or incomplete rate.
+- Internal readiness and user-perceived readiness are mixed into one metric.
+- UI findings do not say whether clickable controls have an interaction contract.
+- Network/API changes are evaluated without route existence and network-aware flow evidence.
+- A package report hides `blocked`, `needs_review`, `timeout`, `auth_required`, `resource_unavailable`, or `unknown` runs.
+
+## Verification
+
+Run the purpose-level package, inspect both `.vibepro/checks/<pack>/<run-id>/check.json` and `check.md`, and report the pack status, key findings, and artifact path. For performance, define metrics, record comparable before/after runs, and use `vibepro performance compare` before claiming an improvement rate.
 
 ## Review Checklist
 
