@@ -3,9 +3,9 @@
 - story: story-vibepro-ui-journey-context-gate
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 15300
+- artifact_lines: 15390
 - product_changed_lines: 556
-- artifact_code_ratio: 27.518
+- artifact_code_ratio: 27.68
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: hit key=evk_13f181e2b2671b0ec870823a902bde67 verification_updated_at=2026-06-24T10:32:37.735Z verification_fingerprint=sha256:c16317260f3d8843dd1a0ecc4fadb7927b424e35c26b205994e3929e54b25c96

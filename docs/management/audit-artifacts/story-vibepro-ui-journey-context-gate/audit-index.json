@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-ui-journey-context-gate",
   "source": "execute_merge",
-  "generated_at": "2026-06-24T10:41:01.062Z",
+  "generated_at": "2026-06-24T10:41:04.585Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T10:40:55.907Z",
     "diff_stats_reason": null,
-    "artifact_lines": 15300,
+    "artifact_lines": 15390,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 556,
@@ -84,7 +84,7 @@
     "product_changed_lines": 556,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 27.518,
+    "artifact_code_ratio": 27.68,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
