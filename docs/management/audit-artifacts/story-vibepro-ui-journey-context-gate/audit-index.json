@@ -1,0 +1,204 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-ui-journey-context-gate",
+  "source": "execute_merge",
+  "generated_at": "2026-06-24T10:41:01.062Z",
+  "evidence_depth": "standard",
+  "budget_status": "exceeded",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "merge_warning",
+      "gate:gate:managed_worktree:needs_review"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...652b65d00364f22b9af5a2b42877b127022d6e4d",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "652b65d00364f22b9af5a2b42877b127022d6e4d",
+      "base_sha": "222a6161efaf85b1ccf7eb19ed381ae9a36b03df",
+      "head_sha": "652b65d00364f22b9af5a2b42877b127022d6e4d",
+      "merge_commit_sha": "02e2327fb87ba64543f45df60297c591419df506"
+    },
+    "diff_stats_collected_at": "2026-06-24T10:40:55.907Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 15300,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 556,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 2,
+          "changed_lines": 141,
+          "unknown_files": 0,
+          "paths": [
+            "src/journey-map.js",
+            "src/pr-manager.js"
+          ]
+        },
+        "test": {
+          "files": 1,
+          "changed_lines": 281,
+          "unknown_files": 0,
+          "paths": [
+            "test/journey-map.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 134,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-ui-journey-context-gate.md",
+            "docs/management/stories/active/story-vibepro-ui-journey-context-gate.md",
+            "docs/specs/vibepro-ui-journey-context-gate.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        }
+      },
+      "source": "git diff --numstat origin/main...652b65d00364f22b9af5a2b42877b127022d6e4d",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "652b65d00364f22b9af5a2b42877b127022d6e4d",
+        "base_sha": "222a6161efaf85b1ccf7eb19ed381ae9a36b03df",
+        "head_sha": "652b65d00364f22b9af5a2b42877b127022d6e4d",
+        "merge_commit_sha": "02e2327fb87ba64543f45df60297c591419df506"
+      },
+      "collected_at": "2026-06-24T10:40:55.907Z",
+      "reason": null
+    },
+    "product_changed_lines": 556,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 27.518,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    }
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-06-24T10:38:56.581Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-06-24T10:38:56.581Z",
+    "status": "hit",
+    "evidence_key": "evk_13f181e2b2671b0ec870823a902bde67",
+    "verification_summary_fingerprint": "sha256:c16317260f3d8843dd1a0ecc4fadb7927b424e35c26b205994e3929e54b25c96",
+    "verification_evidence_updated_at": "2026-06-24T10:32:37.735Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "e2e",
+        "executed_at": "2026-06-24T10:32:37.735Z",
+        "git_recorded_at": "2026-06-24T10:32:37.733Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-06-24T10:32:37.116Z",
+        "git_recorded_at": "2026-06-24T10:32:37.114Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-06-24T10:32:36.512Z",
+        "git_recorded_at": "2026-06-24T10:32:36.511Z"
+      }
+    ],
+    "stale_reason_count": 0,
+    "full_evidence_status": "reused",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 9
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-06-24T10:38:56.591Z",
+    "status": null,
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/220",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/220",
+      "merge_commit_sha": "02e2327fb87ba64543f45df60297c591419df506",
+      "merged_at": "2026-06-24T10:40:58Z",
+      "current_head_sha": "652b65d00364f22b9af5a2b42877b127022d6e4d",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...652b65d00364f22b9af5a2b42877b127022d6e4d"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 49,
+    "blocking_count": 1
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 6,
+      "acceptance_criteria_count": 6,
+      "scenario_clause_count": 0,
+      "mapped_count": 6,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 3,
+    "pass_count": 3,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "missing_artifacts": [],
+  "raw_artifact_count": 11
+}
