@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-journey-ai-handoff-context",
   "source": "execute_merge",
-  "generated_at": "2026-06-24T15:08:10.297Z",
+  "generated_at": "2026-06-24T15:08:14.099Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T15:08:06.378Z",
     "diff_stats_reason": null,
-    "artifact_lines": 14261,
+    "artifact_lines": 14351,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 520,
@@ -87,7 +87,7 @@
     "product_changed_lines": 520,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 27.425,
+    "artifact_code_ratio": 27.598,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",

@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-journey-ai-handoff-context",
   "source": "execute_merge",
-  "promoted_at": "2026-06-24T15:08:10.297Z",
+  "promoted_at": "2026-06-24T15:08:14.099Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-journey-ai-handoff-context",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -42,7 +42,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T15:08:06.378Z",
     "diff_stats_reason": null,
-    "artifact_lines": 14261,
+    "artifact_lines": 14351,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 520,
@@ -106,7 +106,7 @@
     "product_changed_lines": 520,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 27.425,
+    "artifact_code_ratio": 27.598,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -133,7 +133,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-journey-ai-handoff-context",
     "source": "execute_merge",
-    "generated_at": "2026-06-24T15:08:10.297Z",
+    "generated_at": "2026-06-24T15:08:14.099Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -154,7 +154,7 @@
       },
       "diff_stats_collected_at": "2026-06-24T15:08:06.378Z",
       "diff_stats_reason": null,
-      "artifact_lines": 14261,
+      "artifact_lines": 14351,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 520,
@@ -218,7 +218,7 @@
       "product_changed_lines": 520,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 27.425,
+      "artifact_code_ratio": 27.598,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "high",
@@ -400,8 +400,8 @@
       "kind": "pr_merge",
       "source": ".vibepro/pr/story-vibepro-journey-ai-handoff-context/pr-merge.json",
       "persisted": false,
-      "digest": "sha256:37e1d328994e3f79f5717cff7e62b8e8a02316a8ca14e7c24a1d51a785a091b7",
-      "line_count": 2094
+      "digest": "sha256:c3e0a0ed3e6245a907dd165e47c0d3478e0c23dcdd1cb8fc7147b18ebaf4d2c1",
+      "line_count": 2184
     },
     {
       "kind": "traceability",
