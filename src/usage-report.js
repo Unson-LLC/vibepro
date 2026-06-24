@@ -351,7 +351,10 @@ function ensureStoryUsage(storyMap, storyId) {
         hit_count: 0,
         miss_count: 0,
         stale_count: 0,
-        full_evidence_generation_count: 0
+        full_evidence_generation_count: 0,
+        full_evidence_generation_count_scope: null,
+        same_key_full_evidence_generation_count: 0,
+        cumulative_full_evidence_generation_count: 0
       },
       artifact_sources: [],
       traceability_resolution: {
@@ -1030,11 +1033,28 @@ function recordEvidenceReuse(story, evidenceReuse) {
   if (status === 'hit') story.evidence_reuse.hit_count += 1;
   if (status === 'miss') story.evidence_reuse.miss_count += 1;
   if (status === 'stale') story.evidence_reuse.stale_count += 1;
-  const generationCount = evidenceReuse.full_evidence?.generation_count;
+  const fullEvidence = evidenceReuse.full_evidence ?? {};
+  const generationCount = firstFiniteNumber(fullEvidence.generation_count);
+  const sameKeyGenerationCount = firstFiniteNumber(fullEvidence.same_key_generation_count, fullEvidence.generation_count);
+  const cumulativeGenerationCount = firstFiniteNumber(fullEvidence.cumulative_generation_count, fullEvidence.generation_count);
+  story.evidence_reuse.full_evidence_generation_count_scope = fullEvidence.generation_count_scope
+    ?? story.evidence_reuse.full_evidence_generation_count_scope;
   if (Number.isFinite(generationCount)) {
     story.evidence_reuse.full_evidence_generation_count = Math.max(
       story.evidence_reuse.full_evidence_generation_count,
       generationCount
+    );
+  }
+  if (Number.isFinite(sameKeyGenerationCount)) {
+    story.evidence_reuse.same_key_full_evidence_generation_count = Math.max(
+      story.evidence_reuse.same_key_full_evidence_generation_count,
+      sameKeyGenerationCount
+    );
+  }
+  if (Number.isFinite(cumulativeGenerationCount)) {
+    story.evidence_reuse.cumulative_full_evidence_generation_count = Math.max(
+      story.evidence_reuse.cumulative_full_evidence_generation_count,
+      cumulativeGenerationCount
     );
   }
 }
@@ -1062,7 +1082,10 @@ function buildEvidenceReuseMetrics(stories) {
         hit_count: story.evidence_reuse.hit_count,
         miss_count: story.evidence_reuse.miss_count,
         stale_count: story.evidence_reuse.stale_count,
-        full_evidence_generation_count: story.evidence_reuse.full_evidence_generation_count
+        full_evidence_generation_count: story.evidence_reuse.full_evidence_generation_count,
+        full_evidence_generation_count_scope: story.evidence_reuse.full_evidence_generation_count_scope,
+        same_key_full_evidence_generation_count: story.evidence_reuse.same_key_full_evidence_generation_count,
+        cumulative_full_evidence_generation_count: story.evidence_reuse.cumulative_full_evidence_generation_count
       }))
       .sort((a, b) => a.story_id.localeCompare(b.story_id))
   };
@@ -1144,7 +1167,7 @@ function renderEvidenceReuseRows(report) {
   ];
   const storyRows = reuse.by_story?.length
     ? reuse.by_story.map((story) => (
-        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0}`
+        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0} generation_count_scope=${story.full_evidence_generation_count_scope ?? '-'} same_key_full_generation_count=${story.same_key_full_evidence_generation_count ?? 0} cumulative_full_generation_count=${story.cumulative_full_evidence_generation_count ?? 0}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
@@ -1623,6 +1646,13 @@ function normalizeNullableNumber(value) {
   if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function firstFiniteNumber(...values) {
+  for (const value of values) {
+    if (Number.isFinite(value)) return value;
+  }
+  return null;
 }
 
 function sumNumbers(values) {
