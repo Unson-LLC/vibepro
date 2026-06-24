@@ -357,9 +357,23 @@ npx vibepro design-system ingest /path/to/repo \
   --id <ds-id> \
   --bundle external-ds-bundle.json
 
+npx vibepro design-system ingest-design-md /path/to/repo \
+  --id <ds-id> \
+  --file DESIGN.md
+
 npx vibepro design-system export /path/to/repo \
   --id <ds-id> \
   --format json
+
+npx vibepro design-system export-design-md /path/to/repo \
+  --id <ds-id>
+
+npx vibepro design-system lint /path/to/repo \
+  --id <ds-id>
+
+npx vibepro design-system diff /path/to/repo \
+  --id <ds-id> \
+  --base origin/main
 
 npx vibepro design-system validate /path/to/repo \
   --id <ds-id> \
@@ -386,7 +400,11 @@ npx vibepro design-modernize plan /path/to/repo \
 
 `design-system ingest` normalizes external DS bundles with tokens, components, guidelines, and CSS/JS string exports into VibePro-native DS sections. The external bundle remains reference evidence only; `authority` stays `vibepro_native_design_system`, `ds-gate.json` keeps fallback disabled, and likely secret values are omitted from persisted artifacts.
 
-`design-system export` emits the aggregate DS JSON, the human-readable Markdown summary, or CSS custom-property aliases for semantic/theme tokens. CSS export returns `needs_tokens` when no semantic or theme tokens exist, instead of pretending an empty stylesheet is useful.
+`design-system ingest-design-md` imports a DESIGN.md file with optional YAML tokens and Markdown rationale into the VibePro-native DS as reference evidence. It writes `.vibepro/design-system/<ds-id>/DESIGN.md` and `design-md.json`, updates `source_evidence.design_md`, and adds explicit DS gate checks for authority boundary, token references, prose intent, Do/Don't coverage, contrast, and diff evidence. DESIGN.md does not override current code, Story, Spec, Architecture, or VibePro gates.
+
+`design-system export` emits the aggregate DS JSON, the human-readable Markdown summary, CSS custom-property aliases, or the agent-readable DESIGN.md view with `--format design-md`. CSS export returns `needs_tokens` when no semantic or theme tokens exist, instead of pretending an empty stylesheet is useful.
+
+`design-system export-design-md` writes and prints `.vibepro/design-system/<ds-id>/DESIGN.md` from the current native DS. `design-system lint` validates DESIGN.md structure, token references, section order, contrast, prose intent, and Do/Don't coverage. `design-system diff` compares the current DESIGN.md artifact with a selected git base ref and reports token, section, and lint regressions.
 
 `design-system validate` checks the native DS against a selected Story/Spec/Architecture context before implementation. It writes `.vibepro/design-system/<ds-id>/validation/<story-id>.json` and `.md`, and explicitly reports DS drift, CTA priority, state semantics, component roles, navigation/density policy, Story alignment, and likely secret leakage.
 
@@ -405,6 +423,7 @@ Typical native Design System artifacts are written under `.vibepro/design-system
 - `screen-patterns.json`: route-family patterns, current CTAs, data dependencies, navigation targets, UX invariants
 - `visual-foundations.json` / `.md`: external visual DS brief distilled as reference-only foundations
 - `external-bundle.json`: external tokens/components/guidelines summarized as reference-only evidence
+- `DESIGN.md` and `design-md.json`: agent-readable design intent imported or exported as reference-only evidence
 - `implementation-mapping.json`: route/component/file mapping for implementation handoff
 - `evidence-coverage.json` and `ds-gate.json`: coverage findings and explicit DS gate clauses
 - `validation/<story-id>.json` / `.md`: Story-specific DS drift and regression gate results
@@ -415,11 +434,13 @@ Recommended sequence:
 2. Run `vibepro design-system init <repo> --id <ds-id> --product <name>` when you need a DS scaffold before evidence exists.
 3. Run `vibepro design-system derive <repo> --id <ds-id> --product <name> --routes <csv> --brief <text> --brief-file <file> --from-code`.
 4. Optionally run `vibepro design-system ingest <repo> --id <ds-id> --bundle <file>` for external DS bundle references.
-5. Export with `vibepro design-system export <repo> --id <ds-id> --format json|markdown|css` when another tool or human reviewer needs the DS.
-6. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
-7. Run `vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>`.
-8. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
-9. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
+5. Optionally run `vibepro design-system ingest-design-md <repo> --id <ds-id> --file DESIGN.md` when the design intent is maintained as an agent-readable Markdown contract.
+6. Export with `vibepro design-system export <repo> --id <ds-id> --format json|markdown|css|design-md` when another tool or human reviewer needs the DS.
+7. Run `vibepro design-system lint <repo> --id <ds-id>` and `vibepro design-system diff <repo> --id <ds-id> --base <base-ref>` before PR readiness.
+8. Review `.vibepro/design-system/<ds-id>/evidence-coverage.json` and `ds-gate.json`.
+9. Run `vibepro design-system validate <repo> --id <ds-id> --story-id <story-id>`.
+10. Use `design-modernize derive-system` or `design-modernize plan` for screen-level work.
+11. Treat generated visual ideas as hypotheses; implementation follows the VibePro-native Design System, current code, Story/Spec, and Gate DAG.
 
 Typical artifacts are written under `.vibepro/design-modernize/<story-id>/`:
 

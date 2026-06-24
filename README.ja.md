@@ -332,6 +332,28 @@ npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> -
 ### 既存UIをModernizeする
 
 ```bash
+npx vibepro design-system derive /path/to/repo \
+  --id <ds-id> \
+  --product <name> \
+  --routes /home,/map,/detail \
+  --brief "日本語ホテル探索アプリ。地図探索とプロダクト固有CTAを重視する" \
+  --from-code
+
+npx vibepro design-system ingest-design-md /path/to/repo \
+  --id <ds-id> \
+  --file DESIGN.md
+
+npx vibepro design-system lint /path/to/repo \
+  --id <ds-id>
+
+npx vibepro design-system diff /path/to/repo \
+  --id <ds-id> \
+  --base origin/main
+
+npx vibepro design-system export /path/to/repo \
+  --id <ds-id> \
+  --format design-md
+
 npx vibepro design-modernize derive-system /path/to/repo \
   --id <story-id> \
   --product <name> \
@@ -348,6 +370,8 @@ npx vibepro design-modernize plan /path/to/repo \
 `derive-system` は product brief と現行UI証跡から、VibePro内の Derived Design System を作ります。product semantics、semantic color roles、component responsibilities、composition rules、visual-hypothesis policy、明示的なDS gateを生成し、画面候補を作る前に「そのプロダクトで許されるデザイン判断の空間」を固定します。
 
 `design-modernize` は、既存のルート、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための workflow です。Design System bundle や生成された visual hypothesis は参照材料であり、VibePro が作った派生デザインシステム、現行スクリーンショット、Graphify/Codex evidence、Gate DAG が実装判断の正本です。
+
+`design-system ingest-design-md` は、DESIGN.mdのYAML tokensとMarkdown rationaleをVibePro-native DSへreference evidenceとして取り込みます。`.vibepro/design-system/<ds-id>/DESIGN.md` と `design-md.json` を保存し、token reference、prose intent、Do/Don't、contrast、diff evidenceのDS gateを追加します。DESIGN.mdは現行コード、Story、Spec、Architecture、VibePro gatesを上書きする実装正本ではありません。
 
 主な成果物は `.vibepro/design-modernize/<story-id>/` 配下に出力されます。
 
