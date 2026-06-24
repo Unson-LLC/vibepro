@@ -323,6 +323,24 @@ required Agent Review Gate. If a runtime cannot spawn subagents, the coordinator
 should block or record a separate waiver decision instead of marking the gate as
 passed.
 
+### Prepare Journey Handoff
+
+`journey derive` collects Story, Spec, Architecture, Graphify, and gate evidence
+into a machine-derived Journey context pack. It is not the authoritative product
+Journey by itself. Use `journey handoff` when the product loop needs AI or human
+interpretation before UI/UX gates treat the Journey as settled:
+
+```bash
+npx vibepro journey handoff /path/to/repo --id <journey-id>
+npx vibepro journey status /path/to/repo --json
+```
+
+The handoff writes `.vibepro/journey/latest-handoff.md` and keeps candidate
+placements, conflicts, walking skeleton gaps, and open questions visible. A
+curated Journey can be stored at `.vibepro/journeys/<journey-id>.json`; until
+that exists, `journey status` reports `needs_curated_journey` rather than
+`available`.
+
 ### Create A PR Through VibePro
 
 ```bash

@@ -39,6 +39,7 @@ import {
 } from './explore-evidence.js';
 import {
   readLatestJourneyMap,
+  readCuratedJourneyMap,
   renderJourneyPrSection,
   summarizeJourneyForPr
 } from './journey-map.js';
@@ -3690,7 +3691,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storyId: story.story_id
   });
   const latestJourney = await readLatestJourneyMap(repoRoot);
-  const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id);
+  const curatedJourney = latestJourney ? await readCuratedJourneyMap(repoRoot, latestJourney.journey_id) : null;
+  const journeyMap = summarizeJourneyForPr(latestJourney, story.story_id, { curatedJourney });
   const context = {
     story_source: primaryStory,
     story_source_integrity: storySourceIntegrity,
@@ -8625,10 +8627,14 @@ function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decis
           ? 'needs_review'
           : blockerQuestions.length > 0 || walkingSkeletonGap
             ? 'needs_evidence'
-            : 'passed';
+            : journeyMap.status === 'needs_curated_journey'
+              ? 'needs_review'
+              : 'passed';
   const reasons = [];
   if (!journeyMap || journeyMap.status === 'missing') {
-    reasons.push('UI experience source changed but no Journey Map is generated');
+    reasons.push('UI experience source changed but no Journey context pack is generated');
+  } else if (journeyMap.status === 'needs_curated_journey') {
+    reasons.push('UI experience source changed and only machine-derived Journey handoff context exists; curated Journey is still required');
   } else if (!journeyMap.current_story) {
     reasons.push('UI experience source changed but the current Story is not placed on the Journey Map');
   } else {
@@ -8654,6 +8660,11 @@ function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decis
     required: true,
     journey_status: journeyMap?.status ?? 'missing',
     journey_id: journeyMap?.journey_id ?? null,
+    artifact_kind: journeyMap?.artifact_kind ?? null,
+    curated: journeyMap?.curated === true,
+    handoff_available: journeyMap?.handoff_available === true,
+    curation_status: journeyMap?.curation_status ?? null,
+    curated_journey_path: journeyMap?.curated_journey_path ?? null,
     current_story: journeyMap?.current_story ?? null,
     walking_skeleton_status: journeyMap?.walking_skeleton_status ?? null,
     affected_release_slices: journeyMap?.affected_release_slices ?? [],
@@ -8665,7 +8676,8 @@ function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decis
       reviewer: acceptedDecision.reviewer ?? null
     } : null,
     required_actions: status === 'passed' || status === 'accepted_followup' ? [] : [
-      'Run `vibepro journey derive .` so UI changes are reviewed against the latest Journey context',
+      'Run `vibepro journey handoff .` so UI changes are reviewed against the latest Journey context pack',
+      'Create or attach a curated Journey when the product Journey must be treated as settled',
       'Place the changed Story on a Journey step or record why this UI change has no Journey impact',
       'Resolve affected Journey conflicts/open questions, or record an auditable `gate:journey_context` decision'
     ],

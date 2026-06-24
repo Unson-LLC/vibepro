@@ -30,6 +30,22 @@ async function writeStory(repo, fileName, content) {
   await writeFile(path.join(dir, fileName), content);
 }
 
+async function writeCuratedJourney(repo, journeyId = 'default-product-journey') {
+  const journeyPath = path.join(repo, '.vibepro', 'journey', 'latest-journey.json');
+  const contextPack = JSON.parse(await readFile(journeyPath, 'utf8'));
+  const curated = {
+    ...contextPack,
+    artifact_kind: 'curated_journey',
+    machine_derived: false,
+    authoritative: true,
+    curation_status: 'curated'
+  };
+  const curatedDir = path.join(repo, '.vibepro', 'journeys');
+  await mkdir(curatedDir, { recursive: true });
+  await writeFile(path.join(curatedDir, `${journeyId}.json`), `${JSON.stringify(curated, null, 2)}\n`);
+  return curated;
+}
+
 test('journey derive creates Patton-style latest journey artifacts', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-'));
   await runCli(['init', repo, '--story-id', 'story-product-public-discovery-seo', '--title', 'Public discovery']);
@@ -88,6 +104,11 @@ status: active
 
   assert.equal(derived.exitCode, 0, derived.stderr);
   const journey = JSON.parse(derived.stdout);
+  assert.equal(journey.artifact_kind, 'journey_context_pack');
+  assert.equal(journey.machine_derived, true);
+  assert.equal(journey.authoritative, false);
+  assert.equal(journey.curation_status, 'needs_curated_journey');
+  assert.equal(journey.handoff.status, 'ready_for_ai');
   assert.equal(journey.walking_skeleton.status, 'covered');
   assert.deepEqual(journey.walking_skeleton.required_step_ids, ['discover', 'signup', 'first-value']);
   assert.equal(journey.conflicts.length, 0);
@@ -97,6 +118,8 @@ status: active
   // story-vibepro-readable-journey-markdown ac:1
   // Journey Markdownは、Story ID羅列より前に日本語の判断サマリーを表示する。
   assert.match(markdown, /# VibePro Journey/);
+  assert.match(markdown, /machine-derived Journey context pack/);
+  assert.match(markdown, /needs_curated_journey/);
   assert.match(markdown, /## いまの結論/);
   assert.match(markdown, /最小体験が成立/);
   assert.match(markdown, /## 現在の体験フロー/);
@@ -108,6 +131,69 @@ status: active
   assert.doesNotMatch(markdown, /Next Slice/);
   assert.doesNotMatch(markdown, /Hardening/);
   assert.doesNotMatch(markdown.slice(0, markdown.indexOf('## 監査ログ: Patton式マップ')), /story-product-first-value/);
+});
+
+test('journey handoff writes AI-readable handoff and status requires curated Journey', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-handoff-'));
+  await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);
+  await writeStory(repo, 'story-product-auth-account-access.md', `---
+story_id: story-product-auth-account-access
+title: Account access
+journey_activity: activation
+journey_step: signup
+release_slice: walking_skeleton
+status: active
+---
+# Account access
+
+## Acceptance Criteria
+- Users can sign up
+`);
+
+  const handoff = await captureRunCli(['journey', 'handoff', repo]);
+
+  assert.equal(handoff.exitCode, 0, handoff.stderr);
+  assert.match(handoff.stdout, /# Journey AI Handoff/);
+  assert.match(handoff.stdout, /not the authoritative product Journey/);
+  assert.match(handoff.stdout, /Curated artifact: `\.vibepro\/journeys\/default-product-journey\.json`/);
+  const handoffMarkdown = await readFile(path.join(repo, '.vibepro', 'journey', 'latest-handoff.md'), 'utf8');
+  assert.match(handoffMarkdown, /## Candidate Steps/);
+  assert.match(handoffMarkdown, /signup/);
+
+  const status = await captureRunCli(['journey', 'status', repo, '--json']);
+  assert.equal(status.exitCode, 0, status.stderr);
+  const parsed = JSON.parse(status.stdout);
+  assert.equal(parsed.status, 'needs_curated_journey');
+  assert.equal(parsed.curated, false);
+  assert.equal(parsed.handoff_available, true);
+  assert.equal(parsed.artifact_kind, 'journey_context_pack');
+});
+
+test('journey status reads curated Journey separately from handoff context', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-curated-'));
+  await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);
+  await writeStory(repo, 'story-product-auth-account-access.md', `---
+story_id: story-product-auth-account-access
+title: Account access
+journey_activity: activation
+journey_step: signup
+release_slice: walking_skeleton
+status: active
+---
+# Account access
+`);
+  await runCli(['journey', 'derive', repo]);
+  await writeCuratedJourney(repo);
+
+  const status = await captureRunCli(['journey', 'status', repo, '--json']);
+
+  assert.equal(status.exitCode, 0, status.stderr);
+  const parsed = JSON.parse(status.stdout);
+  assert.equal(parsed.status, 'needs_evidence');
+  assert.equal(parsed.curated, true);
+  assert.equal(parsed.curated_journey_path, '.vibepro/journeys/default-product-journey.json');
+  assert.equal(parsed.artifact_kind, 'curated_journey');
+  assert.equal(parsed.context_pack.artifact_kind, 'journey_context_pack');
 });
 
 test('journey derive binds spec clauses, graphify surfaces, and gate evidence to steps', async () => {
@@ -249,10 +335,14 @@ status: active
 
   assert.equal(prepare.exitCode, 0, prepare.stderr);
   const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-auth-account-access', 'pr-prepare.json'), 'utf8'));
-  assert.equal(artifact.pr_context.journey_map.status, 'needs_evidence');
+  assert.equal(artifact.pr_context.journey_map.status, 'needs_curated_journey');
+  assert.equal(artifact.pr_context.journey_map.curated, false);
+  assert.equal(artifact.pr_context.journey_map.handoff_available, true);
   assert.equal(artifact.pr_context.journey_map.current_story.step_id, 'signup');
   const body = await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-auth-account-access', 'pr-body.md'), 'utf8');
   assert.match(body, /## Journey Map/);
+  assert.match(body, /Artifact: journey_context_pack/);
+  assert.match(body, /Curated: no/);
   assert.match(body, /Current Story step: activation\/signup/);
 });
 
@@ -382,6 +472,7 @@ status: active
   await git(repo, ['add', '-A']);
   await git(repo, ['commit', '-m', 'chore: bootstrap signup journey']);
   await runCli(['journey', 'derive', repo]);
+  await writeCuratedJourney(repo);
   await git(repo, ['switch', '-c', 'feature/signup-ui']);
   await writeFile(path.join(repo, 'components', 'Signup.tsx'), 'export function Signup() { return <button>Create account</button>; }\n');
   await git(repo, ['add', 'components/Signup.tsx']);
@@ -393,6 +484,8 @@ status: active
   const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-signup-ui', 'pr-prepare.json'), 'utf8'));
   const gate = artifact.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:journey_context');
   assert.equal(gate.status, 'passed');
+  assert.equal(gate.curated, true);
+  assert.equal(gate.artifact_kind, 'curated_journey');
   assert.equal(gate.current_story.step_id, 'signup');
   assert.equal(artifact.gate_status.critical_unresolved_gates.some((item) => item.id === 'gate:journey_context'), false);
 });
