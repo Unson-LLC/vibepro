@@ -3,9 +3,9 @@
 - story: story-vibepro-design-md-gate
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 16444
+- artifact_lines: 16534
 - product_changed_lines: 1593
-- artifact_code_ratio: 10.323
+- artifact_code_ratio: 10.379
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: hit key=evk_d1ee913fa5af3335c0343bc58eb72190 verification_updated_at=2026-06-24T02:11:23.391Z verification_fingerprint=sha256:5d8810ff9aa90084f5f64ea0f9b2c9d565956fffe64126e100bd82ea71a864dc

@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-design-md-gate",
   "source": "execute_merge",
-  "promoted_at": "2026-06-24T02:19:12.452Z",
+  "promoted_at": "2026-06-24T02:19:18.070Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-design-md-gate",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -40,7 +40,7 @@
     },
     "diff_stats_collected_at": "2026-06-24T02:19:08.167Z",
     "diff_stats_reason": null,
-    "artifact_lines": 16444,
+    "artifact_lines": 16534,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1593,
@@ -103,7 +103,7 @@
     "product_changed_lines": 1593,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 10.323,
+    "artifact_code_ratio": 10.379,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "normal",
@@ -130,7 +130,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-design-md-gate",
     "source": "execute_merge",
-    "generated_at": "2026-06-24T02:19:12.452Z",
+    "generated_at": "2026-06-24T02:19:18.070Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -149,7 +149,7 @@
       },
       "diff_stats_collected_at": "2026-06-24T02:19:08.167Z",
       "diff_stats_reason": null,
-      "artifact_lines": 16444,
+      "artifact_lines": 16534,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 1593,
@@ -212,7 +212,7 @@
       "product_changed_lines": 1593,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 10.323,
+      "artifact_code_ratio": 10.379,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "normal",
@@ -389,8 +389,8 @@
       "kind": "pr_merge",
       "source": ".vibepro/pr/story-vibepro-design-md-gate/pr-merge.json",
       "persisted": false,
-      "digest": "sha256:351c66b3ecc18477d6571245623fe85967314566650409b2edb32b93fe49b969",
-      "line_count": 2584
+      "digest": "sha256:94cb5fa31ff265fceb8f5e427ff4a3c4ce341c3e6af0124613c2fa763f75f7d8",
+      "line_count": 2674
     },
     {
       "kind": "traceability",
