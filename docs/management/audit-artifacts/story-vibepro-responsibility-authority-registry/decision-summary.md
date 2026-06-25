@@ -3,9 +3,9 @@
 - story: story-vibepro-responsibility-authority-registry
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 34139
+- artifact_lines: 34229
 - product_changed_lines: 2111
-- artifact_code_ratio: 16.172
+- artifact_code_ratio: 16.215
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_6059076ede032bb5cb25da72452d337e verification_updated_at=2026-06-25T15:54:10.198Z verification_fingerprint=sha256:fe1866d8183c832199c34de46600723010fcd2c355fdc2ce4ade61e54b4a70ca
