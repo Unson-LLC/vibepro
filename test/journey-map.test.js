@@ -340,10 +340,8 @@ status: active
   assert.equal(artifact.pr_context.journey_map.handoff_available, true);
   assert.equal(artifact.pr_context.journey_map.current_story.step_id, 'signup');
   const body = await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-auth-account-access', 'pr-body.md'), 'utf8');
-  assert.match(body, /## Journey Map/);
-  assert.match(body, /Artifact: journey_context_pack/);
-  assert.match(body, /Curated: no/);
-  assert.match(body, /Current Story step: activation\/signup/);
+  assert.match(body, /\.vibepro\/pr\/story-product-auth-account-access\/pr-prepare\.json/);
+  assert.doesNotMatch(body, /^## Journey Map$/m);
 });
 
 test('pr prepare requires Journey context for UI source changes', async () => {

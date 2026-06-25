@@ -406,6 +406,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun,
     scope,
     prContext,
+    evidencePlan,
     splitPlan,
     narrative: prBodyNarrative,
     language: outputLanguage
@@ -2034,151 +2035,130 @@ function renderPrNarrative(narrative) {
   return `${sections.join('\n\n')}\n\n`;
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, evidencePlan = null, splitPlan, narrative = null, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
-  const decisionSection = renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan });
-  const reviewerChangeMap = renderReviewerChangeMap(fileGroups);
-  const explicitNonGoals = renderExplicitNonGoals({ git, fileGroups });
   const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   const source = prContext.story_source;
   const storyLabel = formatPrStoryLabel(story, source);
   const requirementTitle = source.requirement_title ?? source.title ?? story.title ?? story.story_id;
-  const changeSummary = prContext.change_summary.length === 0
-    ? '- 差分なし'
-    : prContext.change_summary.map((item) => `- ${item}`).join('\n');
-  const acceptance = source.acceptance_criteria.length === 0
-    ? '- Story文書から受け入れ基準を抽出できませんでした'
-    : source.acceptance_criteria.map((item) => `- ${item}`).join('\n');
   const verification = prContext.verification_commands.length === 0
     ? '- [ ] 手動確認または対象テストを追記する'
-    : renderVerificationChecklist(prContext.verification_commands, prContext.gate_dag, prContext.verification_evidence);
-  const reviewPoints = prContext.review_points.map((item) => `- ${item}`).join('\n');
+    : renderConciseVerificationChecklist(prContext.verification_commands, prContext.gate_dag, prContext.verification_evidence);
+  const reviewPoints = limitItems(prContext.review_points, 3).map((item) => `- ${item}`).join('\n');
   const risks = prContext.risks.length === 0
-    ? '- 特記事項なし'
-    : prContext.risks.map((item) => `- ${item}`).join('\n');
-  const gateSummary = renderPrGateSummary(prContext.gate_dag);
-  const gateEnforcement = renderPrGateEnforcement(prContext.gate_dag);
-  const executionGateSection = renderPrExecutionGate(prContext.execution_gate);
-  const taskSection = renderPrTaskSection(taskContext);
-  const refactoringDeltaSection = renderPrRefactoringDelta(prContext.refactoring_delta);
-  const flowVerificationSection = renderPrFlowVerification(prContext.flow_verification);
-  const visualQaSection = renderPrVisualQaEvidence(prContext.visual_qa);
-  const completionQualitySection = renderPrCompletionQuality(prContext.completion_quality);
-  const performanceEvidenceSection = renderPerformancePrSection(prContext.performance_evidence);
-  const journeyMapSection = renderJourneyPrSection(prContext.journey_map);
-  const agentReviewSection = renderAgentReviewPrSection(prContext.agent_reviews);
-  const exploreEvidenceSection = renderExplorePrSection(prContext.explore_evidence);
-  const handoffSection = renderPrAgentHandoff({ prContext, splitPlan, language });
-  const traceabilityClauseCoverageSection = renderPrTraceabilityClauseCoverage(prContext.traceability_clause_coverage, language);
+    ? null
+    : limitRisksForPrBody(prContext.risks, 3).map((item) => `- Risk: ${item}`).join('\n');
+  const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
+  const warnings = collectReleaseDecisionWarningGates(prContext.gate_dag);
+  const gateNote = buildHumanGateNote(unresolved, warnings);
+  const scopeNote = buildScopeDecisionNote(scope, splitPlan);
+  const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
+  const evidenceDir = `.vibepro/pr/${story.story_id}`;
+  const gateStatus = prContext.gate_dag?.overall_status ?? '-';
+  const executionStatus = prContext.execution_gate?.status ?? '-';
+  const vibeproArtifacts = renderVibeProArtifactReferences({ evidenceDir, evidencePlan });
+  const sourceFiles = limitItems(fileGroups?.source?.files ?? [], 3);
+  const testFiles = limitItems(fileGroups?.tests?.files ?? [], 3);
+  const docFiles = limitItems([
+    ...(fileGroups?.story_docs?.files ?? []),
+    ...(fileGroups?.architecture_docs?.files ?? []),
+    ...(fileGroups?.specifications?.files ?? [])
+  ], 3);
+  const taskLine = taskContext
+    ? `- Task: ${taskContext.task.id} ${taskContext.task.title ?? ''}`.trim()
+    : null;
+  const sourceLine = sourceFiles.length ? `- Code: ${sourceFiles.join(', ')}` : null;
+  const testLine = testFiles.length ? `- Tests: ${testFiles.join(', ')}` : null;
+  const docLine = docFiles.length ? `- Docs: ${docFiles.join(', ')}` : null;
+  const requirementLines = [
+    `- Requirement: ${requirementTitle}`,
+    source.background ? `- Background: ${source.background}` : null,
+    source.requirement_id ? `- Requirement ID: ${source.requirement_id}` : null,
+    source.requirement_url ? `- Requirement URL: ${source.requirement_url}` : null,
+    taskLine
+  ].filter(Boolean).join('\n');
+  const reviewFocus = reviewPoints || '- Story / Spec / Architecture と実装差分が対応しているか';
+  const riskLines = risks ? `\n${risks}` : '';
 
-  return `${decisionSection}
+  return `## What
+- Story: ${storyLabel}
+- Source: ${source.path ?? 'Story未検出'}
+- Scope: ${git.changed_files.length} files / ${primaryReviewAreas}
+${[docLine, sourceLine, testLine].filter(Boolean).join('\n')}
 
-${narrativeSection}## 変更内容
-${changeSummary}
+## Why
+${requirementLines}
+${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 
-## なぜこの変更か
-- 要求: ${requirementTitle}
-${source.background ? `- 背景: ${source.background}` : '- 背景: Story文書から抽出できませんでした'}
-${source.requirement_id ? `- 要求ID: ${source.requirement_id}` : ''}
-${source.requirement_url ? `- 要求URL: ${source.requirement_url}` : ''}
+## How to review
+- Gate: ${gateNote}
+- Scope: ${scopeNote}
+- Managed worktree: ${managedWorktreeStatus}
+${reviewFocus}${riskLines}
 
-## レビューしてほしい観点
-${reviewPoints || '- Story / ADR / Spec と実装差分が対応しているか'}
-
-## 検証
+## Verification
 ${verification}
 
-## リスク・確認事項
-${risks}
-
-## 明示的にやらないこと
-${explicitNonGoals}
-
-## レビュアー向け差分分類
-${reviewerChangeMap}
-
-## 監査ログ
-- ここから下は VibePro の機械証跡です。レビュー・マージ判断は上部の判断、変更内容、レビュー観点、検証、リスクを先に確認してください。
-- Gate / Agent Review / split plan / 実行メタデータは詳細確認と再現性のために残します。
-- 管理worktree: ${managedWorktreeStatus}
-
-## 概要
-- Story: ${storyLabel}
-- VibePro scope: ${scope.status}
-- PR strategy: ${scope.recommended_strategy}
-- 変更ファイル: ${git.changed_files.length} files
-
-## 背景・要求
-- 正本: ${source.path ?? 'Story未検出'}
-- 要求: ${requirementTitle}
-${source.requirement_id ? `- 要求ID: ${source.requirement_id}` : ''}
-${source.requirement_url ? `- 要求URL: ${source.requirement_url}` : ''}
-${source.background ? `- 背景: ${source.background}` : '- 背景: Story文書から抽出できませんでした'}
-
-## 実装判断
-- ADR: ${prContext.architecture_decision}
-- Scope: ${scope.status}
-${scope.reasons.length === 0 ? '- Scope理由: current branchのままPR化可能' : scope.reasons.map((reason) => `- Scope理由: ${reason}`).join('\n')}
-
-${taskSection}
-
-## 受け入れ基準
-${acceptance}
-
-## 差分分類
-${Object.entries(fileGroups)
-    .filter(([, value]) => value.count > 0)
-    .map(([key, value]) => `- ${key}: ${value.count}`)
-    .join('\n') || '- なし'}
-
-## 要件整合性
-${renderRequirementPrSection(prContext.requirement_consistency, language)}
-
-## AC/Scenario Traceability
-${traceabilityClauseCoverageSection}
-
-## Network Contract
-${renderNetworkContractPrSection(prContext.network_contracts)}
-
-${journeyMapSection}
-
-## Agent Review
-${agentReviewSection}
-
-## Explore Evidence
-${exploreEvidenceSection}
-
-## Gate DAG
-${gateSummary}
-
-## Gate Enforcement
-${gateEnforcement}
-
-${executionGateSection}
-
-${handoffSection}
-
-${flowVerificationSection}
-
-${visualQaSection}
-
-${completionQualitySection}
-
-${performanceEvidenceSection}
-
-${refactoringDeltaSection}
-
-## 分割計画
-${renderPrSplitSection(splitPlan)}
-
 ## VibePro
-- latest story run: ${latestStoryRun?.run_id ?? '-'}
-- gate: ${latestStoryRun?.gate_status ?? '-'}
-- Engineering Judgment: ${prContext.engineering_judgment?.route_type ?? '-'} (${prContext.engineering_judgment?.route_dag ?? '-'})
-- PR route: ${prContext.pr_route?.route_type ?? '-'} (${prContext.pr_route?.body_template ?? '-'})
-- PR strategy: ${scope.recommended_strategy}
-- runtime: ${renderRuntimeSummary(prContext, story)}
+- Gate: ${gateStatus}
+- Execution: ${executionStatus}
+- Scope: ${scope.status} / ${scope.recommended_strategy}
+${vibeproArtifacts}
+- Runtime: ${renderRuntimeSummary(prContext, story)}
 `;
+}
+
+function limitItems(items = [], max = 3) {
+  const values = (Array.isArray(items) ? items : []).filter(Boolean);
+  if (values.length <= max) return values;
+  return [...values.slice(0, max), `...and ${values.length - max} more`];
+}
+
+function limitRisksForPrBody(items = [], max = 3) {
+  const values = (Array.isArray(items) ? items : []).filter(Boolean);
+  const priority = values.filter((item) => /Requirement Gate|contradicted|failed|block/i.test(item));
+  const rest = values.filter((item) => !priority.includes(item));
+  return limitItems([...priority, ...rest], max);
+}
+
+function renderConciseVerificationChecklist(commands, gateDag, verificationEvidence) {
+  return renderVerificationChecklist(commands, gateDag, verificationEvidence)
+    .split('\n')
+    .filter((line) => line.trim().startsWith('- [x]'))
+    .slice(0, 4)
+    .join('\n') || '- [ ] 手動確認または対象テストを追記する';
+}
+
+function renderVibeProArtifactReferences({ evidenceDir, evidencePlan }) {
+  const generated = new Set(evidencePlan?.generated_artifacts ?? evidencePlan?.artifact_policy?.generated_artifacts ?? []);
+  const skipped = new Set(evidencePlan?.skipped_artifacts ?? evidencePlan?.artifact_policy?.skipped_artifacts ?? []);
+  const hasPlan = evidencePlan && typeof evidencePlan === 'object';
+  const isGenerated = (artifact) => !hasPlan || generated.has(artifact);
+  const isSkipped = (artifact) => hasPlan && skipped.has(artifact);
+  const lines = [
+    `- Evidence: ${evidenceDir}/`,
+    `- Evidence plan: ${evidenceDir}/evidence-plan.json`,
+    `- Decision index: ${evidenceDir}/decision-index.json`,
+    `- PR prepare: ${evidenceDir}/pr-prepare.json`
+  ];
+
+  if (isGenerated('gate-dag.json')) {
+    lines.push(`- Gate DAG: ${evidenceDir}/gate-dag.json`);
+  } else if (isSkipped('gate-dag.json')) {
+    lines.push('- Gate DAG: embedded in PR prepare / decision index; standalone gate-dag.json not generated at this evidence depth');
+  }
+
+  if (isGenerated('review-cockpit.html')) {
+    lines.push(`- Review cockpit: ${evidenceDir}/review-cockpit.html`);
+  } else if (isSkipped('review-cockpit.html')) {
+    lines.push('- Review cockpit: not generated at this evidence depth');
+  }
+
+  if (isGenerated('split-plan.json')) {
+    lines.push(`- Split plan: ${evidenceDir}/split-plan.json`);
+  }
+
+  return lines.join('\n');
 }
 
 function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan }) {
@@ -2736,7 +2716,7 @@ function buildScopeDecisionNote(scope, splitPlan) {
     return `差分範囲の説明または分割判断が必要。理由: ${reasons} / ${split}`;
   }
   if (scope.status === 'reviewable' && splitPlan?.status === 'split_recommended') {
-    return `同一PRでレビュー可能。分割案は監査ログとして残す（${split}）`;
+    return `同一PRでレビュー可能。分割案はVibePro証跡に残す（${split}）`;
   }
   return `${scope.status}: ${reasons} / ${split}`;
 }
@@ -2762,9 +2742,9 @@ function buildHumanGateNote(unresolved, warnings) {
   if (unresolved.length === 0) {
     return warnings.length === 0
       ? '未解決の必須Gateはありません。レビューでは差分の妥当性とスコープを確認してください。'
-      : `未解決の必須Gateはありません。ただし${warningText.trim()} 詳細は監査ログの Gate DAG / Gate Enforcement を確認してください。`;
+      : `未解決の必須Gateはありません。ただし${warningText.trim()} 詳細はVibePro証跡の Gate DAG / Gate Enforcement を確認してください。`;
   }
-  return `未解決Gateがあります（対象: ${formatHumanGateSummary(unresolved)}）。詳細は監査ログの Gate DAG / Gate Enforcement を確認し、blocking か waiver 可能かを判断してください。${warningText}`;
+  return `未解決Gateがあります（対象: ${formatHumanGateSummary(unresolved)}）。詳細はVibePro証跡の Gate DAG / Gate Enforcement を確認し、blocking か waiver 可能かを判断してください。${warningText}`;
 }
 
 function buildPrimaryReviewAreas(fileGroups) {
@@ -2812,7 +2792,7 @@ function renderExplicitNonGoals({ git, fileGroups }) {
   const changed = git.changed_files.map((file) => file.path);
   const lines = [
     '- 変更ファイル外の既存挙動は、このPRの完了保証対象外',
-    '- Gate / Agent Review の詳細証跡は監査ログとして残すが、本文上部のレビュー範囲を広げるものではない'
+    '- Gate / Agent Review の詳細証跡はVibePro artifactとして残すが、GitHub本文のレビュー範囲を広げるものではない'
   ];
   if (!changed.some(isApiRoutePath)) {
     lines.push('- API route / external API contract の追加・置換はスコープ外');

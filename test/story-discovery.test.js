@@ -193,6 +193,10 @@ serializerと再構成器の境界を明示し、ADRと整合させる。
   const body = await readFile(path.join(repo, '.vibepro', 'pr', storyId, 'pr-body.md'), 'utf8');
   assert.match(body, /docs\/user_stories\/active\/US-002_shadow_gpt_realtime\.md/, 'pr-body must cite the Story path');
   assert.match(body, /serializerと再構成器の境界/, 'pr-body must include Story background');
-  assert.match(body, /Story本文に明記されたAcceptance Criteria/, 'pr-body must include acceptance criteria from Story');
+  assert.ok(
+    prepare.result.preparation.pr_context.story_source.acceptance_criteria.some((item) => item.includes('Story本文に明記されたAcceptance Criteria')),
+    'pr-context must include acceptance criteria from Story'
+  );
+  assert.doesNotMatch(body, /Story本文に明記されたAcceptance Criteria/, 'pr-body must keep acceptance criteria in artifacts instead of expanding details');
   assert.doesNotMatch(body, /Story文書から抽出できませんでした/, 'fallback discovery should prevent the missing-story banner');
 });

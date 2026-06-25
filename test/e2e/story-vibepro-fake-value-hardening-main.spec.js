@@ -178,8 +178,8 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   const gateDagHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
   const prPrepareHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(followupRepo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
-  assert.match(prBody, /active_accepted_followup/);
-  assert.match(prBody, /public_contract:[^\n]*active_accepted_followup[^\n]*decision_record:[^\n]*artifact=docs\/architecture\/fake-value-hardening\.md/);
+  assert.match(prBody, /\.vibepro\/pr\/story-vibepro-fake-value-hardening\/gate-dag\.json/);
+  assert.doesNotMatch(prBody, /public_contract:[^\n]*active_accepted_followup/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}accepted_followup/);
   assert.doesNotMatch(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}passed/);
   assert.match(prPrepareHtml, /accepted_followup/);
@@ -223,7 +223,8 @@ test('story-vibepro-fake-value-hardening exercises accepted_followup and active_
   const missingGateDagHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
   const missingPrPrepareHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
   const missingReviewCockpitHtml = await readFile(path.join(missingRepo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
-  assert.match(missingPrBody, /public_contract: active_needs_evidence[\s\S]*?missing=[^\n]*current_verification/);
+  assert.match(missingPrBody, /\.vibepro\/pr\/story-vibepro-fake-value-hardening\/gate-dag\.json/);
+  assert.doesNotMatch(missingPrBody, /public_contract: active_needs_evidence[\s\S]*?missing=/);
   assert.match(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}needs_evidence/);
   assert.doesNotMatch(missingGateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,600}passed/);
   assert.match(missingPrPrepareHtml, /public_contract: active_needs_evidence[\s\S]{0,300}gate=needs_evidence/);

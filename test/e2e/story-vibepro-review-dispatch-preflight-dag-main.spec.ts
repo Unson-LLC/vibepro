@@ -241,7 +241,8 @@ test('story-vibepro-review-dispatch-preflight-dag acceptance coverage replays ge
 
   // story-vibepro-review-dispatch-preflight-dag ac:5
   // Existing Agent Review Gate semantics remain unchanged: required reviews still need verified parallel subagent provenance and closed lifecycle evidence.
-  assert.match(prBody, /Agent Review|parallel|dispatch|preflight/i);
+  assert.match(prBody, /\.vibepro\/pr\/story-vibepro-review-dispatch-preflight-dag\/gate-dag\.json/);
+  assert.doesNotMatch(prBody, /^## Agent Review$/m);
 
   // story-vibepro-review-dispatch-preflight-dag S-001
   // Scenario: The Agent Review dispatch workflow moves through dispatch_batch, preflight, prepare, role_review, record, and join states; stale git evidence, running duplicate reviewers, timed-out lifecycles, and manual shutdown recovery stop or require review before the transition into prepare.

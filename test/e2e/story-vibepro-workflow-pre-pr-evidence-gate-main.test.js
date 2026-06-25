@@ -203,7 +203,8 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
       .includes('preview_smoke'),
     false
   );
-  assert.match(prBody, /preview:network_runtime/);
+  assert.match(prBody, /\.vibepro\/pr\/story-vibepro-workflow-pre-pr-evidence-gate\/pr-prepare\.json/);
+  assert.doesNotMatch(prBody, /preview:network_runtime/);
   assert.doesNotMatch(prBody, /preview:preview_smoke\(missing\)|--role preview_smoke/);
   assert.match(prPrepareHtml, /network_runtime/);
   assert.doesNotMatch(prPrepareHtml, /--role preview_smoke/);
