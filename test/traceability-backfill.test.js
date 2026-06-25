@@ -7,6 +7,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
+import { buildTraceability } from '../src/traceability.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -30,6 +31,46 @@ async function fileExists(filePath) {
 function storyDoc(storyId, status) {
   return `---\nstory_id: ${storyId}\ntitle: ${storyId}\nstatus: ${status}\n---\n\n# ${storyId}\n`;
 }
+
+test('buildTraceability replaces generated PR verification evidence instead of keeping stale rows', () => {
+  const traceability = buildTraceability({
+    evidence: [
+      {
+        type: 'verification_evidence',
+        ref: 'old-test',
+        binding_status: 'current',
+        current_head_sha: 'old-head'
+      },
+      {
+        type: 'git_log',
+        ref: 'abc123',
+        summary: 'historical merge evidence'
+      }
+    ]
+  }, {
+    storyId: 'story-traceability-evidence-refresh',
+    source: 'pr_prepare',
+    lifecycle: 'in_progress',
+    evidence: [
+      {
+        type: 'verification_evidence',
+        ref: 'new-test',
+        binding_status: 'current',
+        current_head_sha: 'new-head'
+      }
+    ],
+    now: '2026-06-25T00:00:00.000Z'
+  });
+
+  assert.deepEqual(
+    traceability.evidence.filter((item) => item.type === 'verification_evidence').map((item) => item.ref),
+    ['new-test']
+  );
+  assert.equal(
+    traceability.evidence.some((item) => item.type === 'git_log' && item.ref === 'abc123'),
+    true
+  );
+});
 
 async function setupBackfillRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-trace-backfill-'));

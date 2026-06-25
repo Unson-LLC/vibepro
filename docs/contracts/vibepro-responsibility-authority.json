@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1.0",
+  "domain": "vibepro-gate-dag",
+  "clauses": [
+    {
+      "id": "VIBE-RAR-001",
+      "statement": "pr prepare must resolve responsibility authority after path/surface discovery and before Requirement Gate, so cross-story contracts are visible before Story-local requirement consistency is judged.",
+      "applies_to": {
+        "responsibility": "vibepro.gate_dag.responsibility_authority",
+        "paths": [
+          "src/responsibility-authority.js",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js"
+        ],
+        "symbols": [
+          "gate:responsibility_authority",
+          "responsibility_authority_gate"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "evidence_requirements": [
+        "unit_regression",
+        "typecheck"
+      ]
+    },
+    {
+      "id": "VIBE-RAR-002",
+      "statement": "execute state must treat unresolved responsibility authority gates as PR blockers when reading standalone Gate DAG artifacts.",
+      "applies_to": {
+        "responsibility": "vibepro.gate_dag.responsibility_authority",
+        "paths": [
+          "src/execution-state.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "symbols": [
+          "gate:responsibility_authority",
+          "responsibility_authority_gate"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration"
+        ]
+      },
+      "evidence_requirements": [
+        "unit_regression"
+      ]
+    }
+  ]
+}

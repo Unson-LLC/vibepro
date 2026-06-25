@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "responsibilities": [
+    {
+      "id": "vibepro.gate_dag.responsibility_authority",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-responsibility-authority-registry.md",
+        "docs/specs/vibepro-responsibility-authority-registry.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/responsibility-authority.js",
+          "src/pr-manager.js",
+          "src/execution-state.js",
+          "src/requirement-consistency.js",
+          "test/responsibility-authority.test.js"
+        ],
+        "symbols": [
+          "gate:responsibility_authority",
+          "responsibility_authority_gate",
+          "Responsibility Authority Gate"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "typecheck",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    }
+  ]
+}
