@@ -1,0 +1,761 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-responsibility-authority-registry",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-25T16:03:20.539Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "decision_index_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "gate:gate:managed_worktree:needs_review"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+      "base_sha": "c400187b74caa31679e1748f607be7f6dafb8f17",
+      "head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+      "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc"
+    },
+    "diff_stats_collected_at": "2026-06-25T16:03:15.947Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 34139,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 2111,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 7,
+          "changed_lines": 992,
+          "unknown_files": 0,
+          "paths": [
+            "src/change-risk-classifier.js",
+            "src/cli.js",
+            "src/execution-state.js",
+            "src/pr-manager.js",
+            "src/requirement-consistency.js",
+            "src/responsibility-authority.js",
+            "src/traceability.js"
+          ]
+        },
+        "test": {
+          "files": 6,
+          "changed_lines": 731,
+          "unknown_files": 0,
+          "paths": [
+            "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "test/journey-map.test.js",
+            "test/responsibility-authority.test.js",
+            "test/risk-adaptive-gate.test.js",
+            "test/traceability-backfill.test.js",
+            "test/vibepro-cli.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 285,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-responsibility-authority-registry.md",
+            "docs/management/stories/active/story-vibepro-responsibility-authority-registry.md",
+            "docs/specs/vibepro-responsibility-authority-registry.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 4,
+          "changed_lines": 103,
+          "unknown_files": 0,
+          "paths": [
+            "README.ja.md",
+            "README.md",
+            "docs/contracts/vibepro-responsibility-authority.json",
+            "responsibility-authority.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "base_sha": "c400187b74caa31679e1748f607be7f6dafb8f17",
+        "head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc"
+      },
+      "collected_at": "2026-06-25T16:03:15.947Z",
+      "reason": null
+    },
+    "product_changed_lines": 2111,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 16.172,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 182468,
+      "expanded_bytes": 1850649,
+      "expanded_line_count": 33577
+    }
+  },
+  "decision_index": {
+    "schema_version": "0.1.0",
+    "story_id": "story-vibepro-responsibility-authority-registry",
+    "source": "execute_merge",
+    "generated_at": "2026-06-25T16:03:20.539Z",
+    "evidence_depth": "standard",
+    "budget_status": "exceeded",
+    "cost_summary": {
+      "schema_version": "0.1.0",
+      "evidence_depth": "standard",
+      "risk_profile": "high",
+      "trigger_signals": [
+        "gate:gate:managed_worktree:needs_review"
+      ],
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b",
+      "diff_stats_refs": {
+        "base_ref": "origin/main",
+        "head_ref": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "base_sha": "c400187b74caa31679e1748f607be7f6dafb8f17",
+        "head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc"
+      },
+      "diff_stats_collected_at": "2026-06-25T16:03:15.947Z",
+      "diff_stats_reason": null,
+      "artifact_lines": 34139,
+      "changed_lines": {
+        "status": "available",
+        "total_changed_lines": 2111,
+        "unknown_file_count": 0,
+        "buckets": {
+          "src": {
+            "files": 7,
+            "changed_lines": 992,
+            "unknown_files": 0,
+            "paths": [
+              "src/change-risk-classifier.js",
+              "src/cli.js",
+              "src/execution-state.js",
+              "src/pr-manager.js",
+              "src/requirement-consistency.js",
+              "src/responsibility-authority.js",
+              "src/traceability.js"
+            ]
+          },
+          "test": {
+            "files": 6,
+            "changed_lines": 731,
+            "unknown_files": 0,
+            "paths": [
+              "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "test/journey-map.test.js",
+              "test/responsibility-authority.test.js",
+              "test/risk-adaptive-gate.test.js",
+              "test/traceability-backfill.test.js",
+              "test/vibepro-cli.test.js"
+            ]
+          },
+          "story_spec_architecture_docs": {
+            "files": 3,
+            "changed_lines": 285,
+            "unknown_files": 0,
+            "paths": [
+              "docs/architecture/vibepro-responsibility-authority-registry.md",
+              "docs/management/stories/active/story-vibepro-responsibility-authority-registry.md",
+              "docs/specs/vibepro-responsibility-authority-registry.md"
+            ]
+          },
+          "audit_artifacts": {
+            "files": 0,
+            "changed_lines": 0,
+            "unknown_files": 0,
+            "paths": []
+          },
+          "other": {
+            "files": 4,
+            "changed_lines": 103,
+            "unknown_files": 0,
+            "paths": [
+              "README.ja.md",
+              "README.md",
+              "docs/contracts/vibepro-responsibility-authority.json",
+              "responsibility-authority.json"
+            ]
+          }
+        },
+        "source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "refs": {
+          "base_ref": "origin/main",
+          "head_ref": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+          "base_sha": "c400187b74caa31679e1748f607be7f6dafb8f17",
+          "head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+          "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc"
+        },
+        "collected_at": "2026-06-25T16:03:15.947Z",
+        "reason": null
+      },
+      "product_changed_lines": 2111,
+      "product_changed_lines_status": "available",
+      "product_changed_lines_reason": null,
+      "artifact_code_ratio": 16.172,
+      "artifact_code_ratio_reason": null,
+      "budget": {
+        "profile": "high",
+        "canonical_artifact_lines": 1500,
+        "artifact_code_ratio": 3
+      },
+      "budget_status": "exceeded",
+      "budget_exceeded_reasons": [
+        "canonical_artifact_lines_exceeded",
+        "artifact_code_ratio_exceeded"
+      ],
+      "token_accounting": {
+        "status": "unavailable",
+        "total_tokens": null,
+        "reason": "session token logs were not provided to canonical audit promotion"
+      },
+      "elapsed_time_accounting": {
+        "status": "unavailable",
+        "elapsed_ms": null,
+        "reason": "elapsed-time logs were not provided to canonical audit promotion"
+      },
+      "replay_bundle": {
+        "compressed_bytes": 182468,
+        "expanded_bytes": 1850649,
+        "expanded_line_count": 33577
+      }
+    },
+    "pr_prepare": {
+      "present": true,
+      "created_at": "2026-06-25T16:00:36.440Z",
+      "gate_status": {
+        "ready_for_pr_create": true,
+        "overall_status": "ready_for_review",
+        "fast_lane": false,
+        "critical_unresolved_gate_count": 0
+      }
+    },
+    "evidence_reuse": {
+      "present": true,
+      "created_at": "2026-06-25T16:00:36.440Z",
+      "status": "stale",
+      "evidence_key": "evk_6059076ede032bb5cb25da72452d337e",
+      "verification_summary_fingerprint": "sha256:fe1866d8183c832199c34de46600723010fcd2c355fdc2ce4ade61e54b4a70ca",
+      "verification_evidence_updated_at": "2026-06-25T15:54:10.198Z",
+      "verification_command_timestamps": [
+        {
+          "kind": "build",
+          "executed_at": "2026-06-25T15:54:10.198Z",
+          "git_recorded_at": "2026-06-25T15:54:10.177Z"
+        },
+        {
+          "kind": "integration",
+          "executed_at": "2026-06-25T15:47:27.947Z",
+          "git_recorded_at": "2026-06-25T15:47:27.946Z"
+        },
+        {
+          "kind": "typecheck",
+          "executed_at": "2026-06-25T15:47:26.912Z",
+          "git_recorded_at": "2026-06-25T15:47:26.910Z"
+        },
+        {
+          "kind": "e2e",
+          "executed_at": "2026-06-25T15:47:25.853Z",
+          "git_recorded_at": "2026-06-25T15:47:25.851Z"
+        },
+        {
+          "kind": "unit",
+          "executed_at": "2026-06-25T15:47:23.175Z",
+          "git_recorded_at": "2026-06-25T15:47:23.174Z"
+        }
+      ],
+      "stale_reason_count": 1,
+      "full_evidence_status": "generated",
+      "full_evidence_generation_count": 1,
+      "full_evidence_generation_count_scope": "same_evidence_key",
+      "full_evidence_same_key_generation_count": 1,
+      "full_evidence_cumulative_generation_count": 40
+    },
+    "pr_create": {
+      "present": true,
+      "created_at": "2026-06-25T15:43:54.123Z",
+      "status": null,
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/229",
+      "gate_override_allowed": false
+    },
+    "pr_merge": {
+      "present": true,
+      "summary": {
+        "status": "merged",
+        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/229",
+        "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc",
+        "merged_at": "2026-06-25T16:03:18Z",
+        "current_head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+        "diff_stats_status": "available",
+        "diff_stats_source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b"
+      }
+    },
+    "gate_dag": {
+      "present": true,
+      "overall_status": "ready_for_review",
+      "node_count": 96,
+      "blocking_count": 1
+    },
+    "traceability": {
+      "present": true,
+      "lifecycle": "merged",
+      "coverage_summary": {
+        "clause_count": 9,
+        "acceptance_criteria_count": 9,
+        "scenario_clause_count": 0,
+        "mapped_count": 9,
+        "weakly_mapped_count": 0,
+        "unmapped_count": 0,
+        "examples": []
+      }
+    },
+    "verification": {
+      "present": true,
+      "command_count": 5,
+      "pass_count": 5,
+      "fail_count": 0
+    },
+    "review": {
+      "summary_count": 5,
+      "result_count": 9,
+      "pass_count": 9,
+      "block_count": 0,
+      "stale_count": 0
+    },
+    "missing_artifacts": [],
+    "raw_artifact_count": 35,
+    "replay_bundle": {
+      "schema_version": "0.1.0",
+      "path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "media_type": "application/json",
+      "content_hash": "sha256:f2a1305fb6809805e47b836f8472c143193088338f99a0505d360e91c6d25d5b",
+      "compressed_hash": "sha256:75ccb711209ac895b0cfb611b0188c2c4c60525c0ce9514c3e3020547f021f5e",
+      "expanded_bytes": 1850649,
+      "compressed_bytes": 182468,
+      "expanded_line_count": 33577,
+      "included_artifact_kinds": [
+        "evidence_reuse",
+        "gate_dag",
+        "pr_create",
+        "pr_merge",
+        "pr_prepare",
+        "review_lifecycle",
+        "review_request",
+        "review_result",
+        "review_summary",
+        "traceability",
+        "verification_evidence"
+      ],
+      "replay_command": "vibepro audit replay . --story-id story-vibepro-responsibility-authority-registry",
+      "cost": {
+        "compressed_bytes": 182468,
+        "expanded_bytes": 1850649,
+        "expanded_line_count": 33577
+      }
+    }
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:f2a1305fb6809805e47b836f8472c143193088338f99a0505d360e91c6d25d5b",
+    "compressed_hash": "sha256:75ccb711209ac895b0cfb611b0188c2c4c60525c0ce9514c3e3020547f021f5e",
+    "expanded_bytes": 1850649,
+    "compressed_bytes": 182468,
+    "expanded_line_count": 33577,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-responsibility-authority-registry",
+    "cost": {
+      "compressed_bytes": 182468,
+      "expanded_bytes": 1850649,
+      "expanded_line_count": 33577
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/229",
+    "merge_commit_sha": "74f298ac73781ee5625de33c80c590f784b988fc",
+    "merged_at": "2026-06-25T16:03:18Z",
+    "current_head_sha": "97a4ef427e93511255ebcae104d2bdd20cef648b",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...97a4ef427e93511255ebcae104d2bdd20cef648b"
+  },
+  "handoff_replay_status": "ready",
+  "handoff_replay": {
+    "status": "ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-responsibility-authority-registry"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:f2a1305fb6809805e47b836f8472c143193088338f99a0505d360e91c6d25d5b"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:f32c4d6802c70ee5e31cc278ded9b2f563ac4df014a0fe2ba21d3a45fe05a10d",
+      "line_count": 94
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:7cfce9d1cade1e34ac67be1c7bf07773cf84410e1b49be811f62c0f70f413440",
+      "line_count": 14524
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:19b90ff794a2857aad52cc0a38b1fa7557df00b98a1103ec8cd480881dd313c8",
+      "line_count": 4236
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:669748cfd6a5438ade5773c0b4d40a6fdd4244f9b91e6fa50d358e63ea1c40f9",
+      "line_count": 4276
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:99b79c818463a9a57ffed8619334e3ff071c7e708605be9e3dfbfe403600f254",
+      "line_count": 4546
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:c430b3edcf59c3314597b8e8e4683b6d60ae21aaee7600b40828b0009544e68e",
+      "line_count": 489
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-responsibility-authority-registry/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:221f98c5b925d8469d22e144a25123bc44b699840d48dba9debf61f12a73ee21",
+      "line_count": 422
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:26fd5e9347181d1f496c5c8d1f46505fc2310fd5d0c2b1ddad3bba17bfbca062",
+      "line_count": 84
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:12cd41f3ad107a9d338259194f6ab5e8f250ad7b976553fbd59b31a43c5054bf",
+      "line_count": 137
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:1f0bfdc5dc03917d0893bab1e6b9c83d85c7ed93f4c3494fad17d42f345679db",
+      "line_count": 107
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:aa3ad80a01204f526b503d5f618a5f77103e357405a1801f86586f97bcd17db3",
+      "line_count": 253
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:c2144deaf144be9b8c129baae4106f3b001fd46ffa712c48c00694523b27fd3e",
+      "line_count": 284
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:f8e10fd2f45b538676a96c9bb6d7fcdbf6035b360d968b98e11c21b912ac4e34",
+      "line_count": 138
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:6dd5d4bce457dea63d9484f498110f90ab0dc5b8288e16cc1919b14516dd794f",
+      "line_count": 136
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:b1524bd165a15c39903511534650cc591799715fdc78da4a96895afb42e2ba08",
+      "line_count": 106
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:9ffa979eda1ffff192bea8d0efdc43943f528ad6f0324f65420283929df666b8",
+      "line_count": 95
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:52ba11419bf1eae637230785f6bd1780d843bd2a11dd3fb8ea28da0bc6b0dd36",
+      "line_count": 580
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:2d5710582cc9bd67a4f91ab5f118cd9ea6a230610147474ae591eb0031992c9d",
+      "line_count": 234
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:a8c332752e64e2d1075935abd247d61c124f2f54e3f90fa957da48b3a05b0772",
+      "line_count": 138
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:2b61f148e8830a5a1aa701d259acf08e9793edc04a7db4942a5d22d7ea316c25",
+      "line_count": 133
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:eeaa0d6319a80a6dc72a9b2a41244b91b39a206a50116ba607f0aef6d196d518",
+      "line_count": 125
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:9ab9d813303ce63b2bf8865ceade867a26332b14558fa8cbafe461f493268526",
+      "line_count": 130
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:3e7062755760e4e323a5414a02ebad2afd99e1ebc4ef4056814e11bded388372",
+      "line_count": 600
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:79ec715bed47cb5f0539fb91f44c8c34a4825d35054f498d175982a80141653f",
+      "line_count": 134
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:99855b0f94197199d5a01b4204d272057ab9cd3b5210ca6c44c1bfc4f8ac8804",
+      "line_count": 135
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/review-request-network_runtime.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:fb358d6feb05297de6412c55c8429a34f823ebc430ae5e4751591aee25c9b97b",
+      "line_count": 135
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:369e1006ab4a540d31b94e58bc05e2e5ea4fdf8b03ae0be58af723d5778c14b2",
+      "line_count": 112
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/review-result-network_runtime.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:f4e49ee034419d89f0d4bf2e4402ce1740a255ff0673dbc8eb255dc870159341",
+      "line_count": 96
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:f67c7b4cb730cf093d3a760070ec625d6c78996dc1c8df110460a50badf774cb",
+      "line_count": 437
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:77c8373b9a13f4e7d7df6e66d055f1182fd504c351e89ea5fef0c322ebdaa62b",
+      "line_count": 184
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/review-request-e2e_ux.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:1ea0b6a77b499a615922dcfff6bd1f3f24f000c2f9733823aab7059c6833f30f",
+      "line_count": 135
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/review-request-gate_coverage.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:19bdc5d602fa856d237291554be80a29ebf86cd9dceef22ffaefb4760a1a1ff5",
+      "line_count": 135
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/review-result-e2e_ux.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:ddd28364000ade0a817943898c5c48cf7b1a9d5080845f18ee0be333e9237828",
+      "line_count": 114
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/review-result-gate_coverage.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:ad6044b0508c5f7a93d8cfb5728bb3cd653312c82f3d254f937a749070bee46e",
+      "line_count": 134
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-responsibility-authority-registry/test_plan/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-responsibility-authority-registry/audit-replay-bundle.json.gz",
+      "digest": "sha256:de6db8be2beb0c4ab70ae7337fcb786719de7453980b652f0641dd0e795df641",
+      "line_count": 521
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
