@@ -440,7 +440,10 @@ export async function replayCanonicalAuditBundle(repoRoot, { storyId } = {}) {
   }
 
   const compressedHash = `sha256:${sha256Hex(compressed)}`;
-  if (replayBundle.compressed_hash && replayBundle.compressed_hash !== compressedHash) {
+  if (!replayBundle.compressed_hash) {
+    return replayBlocked(storyId, replayBundle, 'compressed_hash_missing');
+  }
+  if (replayBundle.compressed_hash !== compressedHash) {
     return replayBlocked(storyId, replayBundle, 'compressed_hash_mismatch', {
       expected: replayBundle.compressed_hash,
       actual: compressedHash
@@ -454,7 +457,10 @@ export async function replayCanonicalAuditBundle(repoRoot, { storyId } = {}) {
   }
 
   const contentHash = `sha256:${sha256Hex(expandedText)}`;
-  if (replayBundle.content_hash && replayBundle.content_hash !== contentHash) {
+  if (!replayBundle.content_hash) {
+    return replayBlocked(storyId, replayBundle, 'content_hash_missing');
+  }
+  if (replayBundle.content_hash !== contentHash) {
     return replayBlocked(storyId, replayBundle, 'content_hash_mismatch', {
       expected: replayBundle.content_hash,
       actual: contentHash

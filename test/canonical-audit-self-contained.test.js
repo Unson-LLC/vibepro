@@ -191,6 +191,44 @@ test('compressed canonical audit replay blocks when the bundle is corrupted', as
   assert.equal(replay.reason, 'compressed_hash_mismatch');
 });
 
+test('compressed canonical audit replay blocks when hash metadata is missing', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-replay-missing-hash-'));
+  const storyId = 'story-missing-replay-hash';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    gate_status: { overall_status: 'ready_for_review' },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({ id: `gate-${index}` }))
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  const auditIndexPath = path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json');
+  const auditBundlePath = path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-bundle.json');
+  const auditIndex = await readJson(auditIndexPath);
+  const auditBundle = await readJson(auditBundlePath);
+
+  delete auditIndex.replay_bundle.compressed_hash;
+  delete auditBundle.replay_bundle.compressed_hash;
+  delete auditBundle.decision_index.replay_bundle.compressed_hash;
+  await writeJson(auditIndexPath, auditIndex);
+  await writeJson(auditBundlePath, auditBundle);
+  const missingCompressedHash = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(missingCompressedHash.status, 'blocked');
+  assert.equal(missingCompressedHash.reason, 'compressed_hash_missing');
+
+  auditIndex.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  auditBundle.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  auditBundle.decision_index.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  delete auditIndex.replay_bundle.content_hash;
+  delete auditBundle.replay_bundle.content_hash;
+  delete auditBundle.decision_index.replay_bundle.content_hash;
+  await writeJson(auditIndexPath, auditIndex);
+  await writeJson(auditBundlePath, auditBundle);
+  const missingContentHash = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(missingContentHash.status, 'blocked');
+  assert.equal(missingContentHash.reason, 'content_hash_missing');
+});
+
 test('canonical audit bundle stores diff stats provenance and bucketed changed lines', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-diff-stats-'));
   const storyId = 'story-diff-stats';
