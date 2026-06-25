@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -13,6 +14,7 @@ import {
 } from '../src/responsibility-authority.js';
 
 const execFileAsync = promisify(execFile);
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 test('resolver matches cleanup responsibility contract and blocks without current evidence', async () => {
   const repo = await makeFixtureRepo();
@@ -210,6 +212,81 @@ test('resolver fails closed on malformed responsibility registry JSON', async ()
     }),
     SyntaxError
   );
+});
+
+test('root registry resolves VibePro core responsibility authorities with contract-bound evidence', async () => {
+  const cases = [
+    {
+      id: 'vibepro.pr_lifecycle.execution',
+      changedPath: 'src/merge-manager.js',
+      evidence: 'pr_lifecycle_regression',
+      clause: 'VIBE-CORE-PR-001'
+    },
+    {
+      id: 'vibepro.agent_review.lifecycle',
+      changedPath: 'src/agent-review.js',
+      evidence: 'agent_review_lifecycle_regression',
+      clause: 'VIBE-CORE-AR-001'
+    },
+    {
+      id: 'vibepro.verification.evidence_lifecycle',
+      changedPath: 'src/verification-evidence.js',
+      evidence: 'evidence_lifecycle_regression',
+      clause: 'VIBE-CORE-EV-001'
+    },
+    {
+      id: 'vibepro.story_source.integrity',
+      changedPath: 'src/story-manager.js',
+      evidence: 'story_source_integrity_regression',
+      clause: 'VIBE-CORE-STORY-001'
+    },
+    {
+      id: 'vibepro.engineering_judgment.route_axes',
+      changedPath: 'src/change-risk-classifier.js',
+      evidence: 'engineering_judgment_regression',
+      clause: 'VIBE-CORE-JUDGE-001'
+    },
+    {
+      id: 'vibepro.managed_worktree.execution_locality',
+      changedPath: 'src/managed-worktree-gate.js',
+      evidence: 'managed_worktree_regression',
+      clause: 'VIBE-CORE-WT-001'
+    }
+  ];
+
+  for (const item of cases) {
+    const result = await resolveResponsibilityAuthority(REPO_ROOT, {
+      git: { changed_files: [item.changedPath] },
+      fileGroups: { source: { files: [item.changedPath] } },
+      changeClassification: { risk_surfaces: [] },
+      storySource: {
+        content: `${item.id} ${item.clause}`,
+        acceptance_criteria: []
+      },
+      verificationEvidence: {
+        commands: [
+          {
+            kind: 'unit',
+            status: 'pass',
+            command: `node --test test/responsibility-authority.test.js -- ${item.evidence}`,
+            summary: `${item.evidence} covers ${item.clause}`,
+            binding: { status: 'current' },
+            observation: {
+              targets: [item.changedPath, item.clause],
+              scenarios: [item.evidence]
+            }
+          }
+        ]
+      }
+    });
+
+    const matched = result.matched_responsibilities.find((responsibility) => responsibility.id === item.id);
+    assert.ok(matched, `${item.id} should match ${item.changedPath}`);
+    assert.equal(matched.evidence_status, 'passed');
+    assert.deepEqual(matched.missing_evidence, []);
+    assert.equal(matched.contract_clauses.some((clause) => clause.ref.endsWith(`#${item.clause}`)), true);
+    assert.equal(matched.matched_evidence.some((evidence) => evidence.evidence === item.evidence), true);
+  }
 });
 
 test('pr prepare projects responsibility authority into Gate DAG before Requirement Gate', async () => {

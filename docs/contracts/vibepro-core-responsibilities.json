@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "domain": "vibepro-core-responsibilities",
+  "clauses": [
+    {
+      "id": "VIBE-CORE-PR-001",
+      "statement": "PR lifecycle execution must use VibePro readiness artifacts as the authority for pr create and execute merge, and must not treat raw GitHub PR state as sufficient without current Gate DAG evidence.",
+      "applies_to": {
+        "responsibility": "vibepro.pr_lifecycle.execution",
+        "paths": [
+          "src/merge-manager.js",
+          "src/task-manager.js",
+          "src/usage-report.js"
+        ],
+        "symbols": [
+          "ready_for_pr_create",
+          "pr_create_allowed",
+          "execute merge",
+          "pr_merge"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "evidence_requirements": [
+        "pr_lifecycle_regression"
+      ]
+    },
+    {
+      "id": "VIBE-CORE-AR-001",
+      "statement": "Required Agent Review must preserve staged dispatch, parallel subagent provenance, lifecycle closure, and current-head binding before it can satisfy PR-final gates.",
+      "applies_to": {
+        "responsibility": "vibepro.agent_review.lifecycle",
+        "paths": [
+          "src/agent-review.js",
+          "src/review-repair.js"
+        ],
+        "symbols": [
+          "gate:agent_review",
+          "review:preflight",
+          "review:record",
+          "review:join",
+          "parallel_subagent"
+        ],
+        "risk_surfaces": [
+          "review_lifecycle",
+          "gate_orchestration"
+        ]
+      },
+      "evidence_requirements": [
+        "agent_review_lifecycle_regression"
+      ]
+    },
+    {
+      "id": "VIBE-CORE-EV-001",
+      "statement": "Verification and review evidence must remain bound to the current git head and status fingerprint; reused evidence must be labeled as reused and must not be reported as current.",
+      "applies_to": {
+        "responsibility": "vibepro.verification.evidence_lifecycle",
+        "paths": [
+          "src/verification-evidence.js",
+          "src/evidence-reuse.js",
+          "src/traceability.js",
+          "src/git-fingerprint.js",
+          "src/canonical-audit.js"
+        ],
+        "symbols": [
+          "gate:artifact_consistency",
+          "verification_evidence",
+          "evidence_reuse",
+          "binding_status",
+          "reused_merge_delta"
+        ],
+        "risk_surfaces": [
+          "verification_evidence",
+          "core_workflow_state"
+        ]
+      },
+      "evidence_requirements": [
+        "evidence_lifecycle_regression"
+      ]
+    },
+    {
+      "id": "VIBE-CORE-STORY-001",
+      "statement": "Selected Story source must match changed Story documents and support requirement consistency; Story-local SSOT must not be silently substituted by an unrelated changed Story.",
+      "applies_to": {
+        "responsibility": "vibepro.story_source.integrity",
+        "paths": [
+          "src/story-manager.js",
+          "src/requirement-consistency.js"
+        ],
+        "symbols": [
+          "gate:story_source_integrity",
+          "story_source_mismatch",
+          "selected_story_id"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration"
+        ]
+      },
+      "evidence_requirements": [
+        "story_source_integrity_regression"
+      ]
+    },
+    {
+      "id": "VIBE-CORE-JUDGE-001",
+      "statement": "Engineering Judgment route and axes must expose risk reasoning without converting weak or unrelated signals into blocking authority or false readiness.",
+      "applies_to": {
+        "responsibility": "vibepro.engineering_judgment.route_axes",
+        "paths": [
+          "src/change-risk-classifier.js",
+          "src/authorization-scoring.js",
+          "src/evidence-depth-planner.js"
+        ],
+        "symbols": [
+          "gate:engineering_judgment_route",
+          "judgment_axes",
+          "active_accepted_followup",
+          "risk_surfaces"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "evidence_requirements": [
+        "engineering_judgment_regression"
+      ]
+    },
+    {
+      "id": "VIBE-CORE-WT-001",
+      "statement": "Managed worktree execution must preserve locality, branch binding, and expected-head checks for protected commands; bypasses must remain explicit decision records.",
+      "applies_to": {
+        "responsibility": "vibepro.managed_worktree.execution_locality",
+        "paths": [
+          "src/managed-worktree.js",
+          "src/managed-worktree-gate.js",
+          "src/execution-state.js"
+        ],
+        "symbols": [
+          "gate:managed_worktree",
+          "managed_worktree",
+          "managed worktree locality",
+          "expected_head_sha"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "gate_orchestration"
+        ]
+      },
+      "evidence_requirements": [
+        "managed_worktree_regression"
+      ]
+    }
+  ]
+}

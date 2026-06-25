@@ -13938,10 +13938,16 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(docsPrepare.exitCode, 0);
   const docsSpine = docsPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   const docsReality = docsSpine.subchecks.find((check) => check.id === 'current_reality');
+  const docsFailureModes = docsSpine.subchecks.find((check) => check.id === 'failure_modes');
+  const docsDoneEvidence = docsSpine.subchecks.find((check) => check.id === 'done_evidence');
   assert.equal(docsSpine.status, 'passed');
   assert.equal(docsReality.surface, 'docs_only');
   assert.deepEqual(docsReality.required_evidence_kind, ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained']);
   assert.equal(docsReality.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
+  assert.equal(docsFailureModes.status, 'passed');
+  assert.equal(docsFailureModes.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
+  assert.equal(docsDoneEvidence.status, 'passed');
+  assert.equal(docsDoneEvidence.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
 });
 
 test('evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts', async () => {
