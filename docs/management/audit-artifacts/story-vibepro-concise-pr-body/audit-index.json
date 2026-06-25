@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-concise-pr-body",
   "source": "execute_merge",
-  "generated_at": "2026-06-25T14:06:37.461Z",
+  "generated_at": "2026-06-25T14:06:42.148Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-25T14:06:33.725Z",
     "diff_stats_reason": null,
-    "artifact_lines": 18890,
+    "artifact_lines": 18980,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 718,
@@ -95,7 +95,7 @@
     "product_changed_lines": 718,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 26.309,
+    "artifact_code_ratio": 26.435,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -118,9 +118,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 97170,
-      "expanded_bytes": 959287,
-      "expanded_line_count": 19198
+      "compressed_bytes": 98066,
+      "expanded_bytes": 964581,
+      "expanded_line_count": 19288
     }
   },
   "pr_prepare": {
@@ -227,11 +227,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-concise-pr-body/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:0a25a0734531e93b3bb1945e698a2b87b091225b4d5f3128bfa87a35e7cd313a",
-    "compressed_hash": "sha256:c1e61e7323db6153859a45bcdd951d6f9d48a4b5fe029607a81797b424ace643",
-    "expanded_bytes": 959287,
-    "compressed_bytes": 97170,
-    "expanded_line_count": 19198,
+    "content_hash": "sha256:84cdbd525d0b072e29dfc9d12706a212da06eedda19251d1e9b98f4f262530b1",
+    "compressed_hash": "sha256:bbbcbc61c8d9ffa118932e89c4767dcb4a507182473ff2a18d102524af6be69f",
+    "expanded_bytes": 964581,
+    "compressed_bytes": 98066,
+    "expanded_line_count": 19288,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -247,9 +247,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-concise-pr-body",
     "cost": {
-      "compressed_bytes": 97170,
-      "expanded_bytes": 959287,
-      "expanded_line_count": 19198
+      "compressed_bytes": 98066,
+      "expanded_bytes": 964581,
+      "expanded_line_count": 19288
     }
   }
 }

@@ -3,9 +3,9 @@
 - story: story-vibepro-concise-pr-body
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 18890
+- artifact_lines: 18980
 - product_changed_lines: 718
-- artifact_code_ratio: 26.309
+- artifact_code_ratio: 26.435
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_241acdb958074d0f151b01809db61e15 verification_updated_at=2026-06-25T14:06:09.387Z verification_fingerprint=sha256:f1c6102fb06db7f805ec45c5639e149c183a7579ec6cf83743fbdc79d5779bf9
