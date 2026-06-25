@@ -103,6 +103,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     story.evidence_cost.canonical_audit = artifact.data?.cost_summary ?? story.evidence_cost.canonical_audit;
     story.evidence_cost.evidence_depth = artifact.data?.evidence_depth ?? story.evidence_cost.evidence_depth;
     story.evidence_cost.budget_status = artifact.data?.cost_summary?.budget_status ?? story.evidence_cost.budget_status;
+    story.evidence_cost.replay_bundle = artifact.data?.replay_bundle
+      ?? artifact.data?.decision_index?.replay_bundle
+      ?? story.evidence_cost.replay_bundle;
     story.handoff_replay_status = artifact.data?.handoff_replay_status
       ?? artifact.data?.handoff_replay?.status
       ?? story.handoff_replay_status;
@@ -1127,6 +1130,12 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
         artifact_code_ratio: story.evidence_cost.canonical_audit.artifact_code_ratio,
         diff_stats_status: story.evidence_cost.canonical_audit.diff_stats_status ?? null,
         changed_lines: story.evidence_cost.canonical_audit.changed_lines ?? null,
+        replay_bundle: story.evidence_cost.replay_bundle ? {
+          compression: story.evidence_cost.replay_bundle.compression ?? null,
+          compressed_bytes: story.evidence_cost.replay_bundle.compressed_bytes ?? null,
+          expanded_bytes: story.evidence_cost.replay_bundle.expanded_bytes ?? null,
+          expanded_line_count: story.evidence_cost.replay_bundle.expanded_line_count ?? null
+        } : null,
         tokens: story.evidence_cost.canonical_audit.token_accounting?.total_tokens ?? null,
         elapsed_ms: story.evidence_cost.canonical_audit.elapsed_time_accounting?.elapsed_ms ?? null
       }))
@@ -1150,10 +1159,15 @@ function renderEvidenceCostRows(report) {
   ];
   const storyRows = cost.by_story?.length
     ? cost.by_story.map((story) => (
-        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} ${renderReplayBundleCost(story.replay_bundle, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
+}
+
+function renderReplayBundleCost(replayBundle, unknown) {
+  if (!replayBundle) return `replay_bundle=${unknown}`;
+  return `replay_bundle=${replayBundle.compression ?? unknown}:compressed_bytes=${replayBundle.compressed_bytes ?? unknown}:expanded_lines=${replayBundle.expanded_line_count ?? unknown}`;
 }
 
 function renderEvidenceReuseRows(report) {

@@ -70,6 +70,7 @@ const SMOKE = {
   checkpoint: { setup: 'story', args: (r) => ['checkpoint', r] },
   spec: { setup: 'story', args: (r) => ['spec', r] },
   report: { setup: 'story', args: (r) => ['report', r] },
+  audit: { setup: 'story', args: (r) => ['audit', 'replay', r, '--story-id', 'story-x', '--json'] },
   'design-modernize': { setup: 'story', args: (r) => ['design-modernize', r] },
   'design-system': { setup: 'story', args: (r) => ['design-system', r] },
   explore: { setup: 'story', args: (r) => ['explore', r] },
