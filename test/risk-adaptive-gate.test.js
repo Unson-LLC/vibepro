@@ -230,6 +230,35 @@ test('change classifier avoids workflow_heavy for narrow changes', () => {
   }).profile, 'ui_interaction');
 });
 
+test('change classifier does not treat design authority files as auth boundary', () => {
+  const authorityRegistry = classifyChangeRisk({
+    fileGroups: {
+      source: { files: ['src/responsibility-authority.js', 'src/pr-manager.js'] },
+      tests: { files: [] },
+      repo_control: { files: [] },
+      story_docs: { files: [] },
+      specifications: { files: [] }
+    },
+    storySource: {
+      title: 'Responsibility Authority Registry',
+      background: 'Resolve design authority for workflow gate contracts.'
+    }
+  });
+  assert.equal(authorityRegistry.risk_surfaces.includes('auth_boundary'), false);
+  assert.equal(authorityRegistry.risk_surfaces.includes('gate_orchestration'), true);
+
+  const authRuntime = classifyChangeRisk({
+    fileGroups: {
+      source: { files: ['src/auth.js', 'src/authorization-scoring.js'] },
+      tests: { files: [] },
+      repo_control: { files: [] },
+      story_docs: { files: [] },
+      specifications: { files: [] }
+    }
+  });
+  assert.equal(authRuntime.risk_surfaces.includes('auth_boundary'), true);
+});
+
 test('change classifier recognizes monorepo app runtime API source paths', () => {
   const result = classifyChangeRisk({
     fileGroups: {

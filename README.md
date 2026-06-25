@@ -18,6 +18,7 @@ VibePro is designed to make that final stretch explicit:
 - Story: what user value must be delivered.
 - Architecture: which boundaries and responsibilities must be preserved.
 - Spec: which behaviors and invariants must hold.
+- Responsibility Authority: which repo/domain contract is authoritative for cross-story state, worker, permission, billing, or side-effect responsibilities.
 - Code: what actually changed.
 - Gates: which unit, integration, E2E, performance, security, and review evidence is still missing.
 - Risk profile: whether the change is light, API contract, UI interaction, or workflow-heavy.
@@ -26,7 +27,7 @@ VibePro is designed to make that final stretch explicit:
 The intended workflow is:
 
 ```text
-Story -> Architecture -> Spec -> Code -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
+Story -> Architecture -> Spec -> Code -> Responsibility Authority -> Risk-Adaptive Gates -> PR Evidence -> VibePro PR Create
 ```
 
 Once the story and architecture are clear, implementation can be handed to AI agents with much less ambiguity. When the change touches workflow state, runtime contracts, verification evidence, or review orchestration, VibePro expands the Gate DAG automatically instead of treating the PR like a narrow code change.
@@ -34,6 +35,7 @@ Once the story and architecture are clear, implementation can be handed to AI ag
 ## Features
 
 - Story, architecture, and spec aware PR preparation
+- Responsibility Authority Registry checks for cross-story domain contracts
 - Requirement consistency checks against changed code
 - Risk-adaptive Gate DAGs for completion dependencies and workflow-heavy release checks
 - PR split planning for large or risky changes
@@ -138,7 +140,7 @@ Open in this order:
 
 `<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`.
 
-`pr prepare` classifies the change before building the Gate DAG. A narrow docs or UI change may stay light. A cross-surface workflow change becomes `workflow_heavy` and requires extra release evidence such as workflow replay, production path coverage, release confidence, and broader Agent Review roles. While required gates are unresolved, VibePro's `next_commands` point back to review or verification steps instead of PR creation.
+`pr prepare` classifies the change before building the Gate DAG. A narrow docs or UI change may stay light. A cross-surface workflow change becomes `workflow_heavy` and requires extra release evidence such as workflow replay, production path coverage, release confidence, and broader Agent Review roles. For cross-story responsibilities, VibePro resolves `responsibility-authority.json` / `docs/responsibility-authority/*.json` and `contracts/*.json` / `docs/contracts/*.json` before Requirement Gate; missing authority is reported as `no_registered_authority`, and matched contracts need current-head verification evidence. While required gates are unresolved, VibePro's `next_commands` point back to review or verification steps instead of PR creation.
 
 ## Quick Start
 

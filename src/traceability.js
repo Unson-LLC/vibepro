@@ -35,7 +35,12 @@ export function buildTraceability(existing, {
 }) {
   const timestamp = now ?? new Date().toISOString();
   const baseEvidence = Array.isArray(existing?.evidence) ? existing.evidence : [];
-  const mergedEvidence = [...baseEvidence];
+  const replaceTypes = new Set(
+    evidence
+      .filter((item) => ['pr_artifact', 'verification_evidence'].includes(item?.type))
+      .map((item) => item.type)
+  );
+  const mergedEvidence = baseEvidence.filter((item) => !replaceTypes.has(item?.type));
   for (const item of evidence) {
     const existingIndex = mergedEvidence.findIndex((entry) => entry.type === item.type && entry.ref === item.ref);
     if (existingIndex >= 0) {

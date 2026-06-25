@@ -590,6 +590,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'decision_record_gate',
       'verification_gate',
       'requirement_gate',
+      'responsibility_authority_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
       'review_inspection_required_gate',
@@ -705,6 +706,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:visual_qa' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:design_quality' && gate.status !== 'ready_for_review') return true;
   if (gate.id === 'gate:requirement' && ['needs_review', 'contradicted'].includes(gate.status)) return true;
+  if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:network_contract' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_route_classification' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_body_contract' && gate.status !== 'passed') return true;

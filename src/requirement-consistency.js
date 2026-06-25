@@ -18,7 +18,13 @@ const REQUIREMENT_SOURCE_DIRS = [
   { kind: 'architecture', dir: path.join('docs', 'management', 'architecture') },
   { kind: 'policy', dir: path.join('docs', 'management', 'policies') },
   { kind: 'policy', dir: path.join('docs', 'frames') },
-  { kind: 'policy', dir: path.join('docs', '00-glossary') }
+  { kind: 'policy', dir: path.join('docs', '00-glossary') },
+  { kind: 'domain_contract', dir: path.join('contracts') },
+  { kind: 'domain_contract', dir: path.join('docs', 'contracts') },
+  { kind: 'domain_contract', dir: path.join('docs', 'domain-contracts') },
+  { kind: 'responsibility_authority', dir: path.join('responsibility-authority') },
+  { kind: 'responsibility_authority', dir: path.join('docs', 'responsibility-authority') },
+  { kind: 'responsibility_authority', dir: path.join('docs', 'management', 'responsibility-authority') }
 ];
 export const INVARIANT_PATTERNS = [
   /\bmust\b/i,
@@ -108,6 +114,7 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
     codeFiles
   });
   const policyRefs = requirementSources.filter((source) => source.kind === 'policy');
+  const responsibilityAuthority = summarizeResponsibilityAuthority(options.responsibilityAuthority);
   const invariants = options.inferredSpec
     ? extractInvariantsFromInferredSpec(options.inferredSpec, storySource)
     : extractInvariants(storySource, requirementSources);
@@ -143,8 +150,12 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
       requirement_source_count: requirementSources.length,
       spec_ref_count: requirementSources.filter((source) => source.kind === 'spec').length,
       architecture_ref_count: requirementSources.filter((source) => source.kind === 'architecture').length,
-      policy_ref_count: policyRefs.length
+      policy_ref_count: policyRefs.length,
+      domain_contract_ref_count: requirementSources.filter((source) => source.kind === 'domain_contract').length,
+      responsibility_authority_ref_count: responsibilityAuthority.matched_responsibility_count,
+      responsibility_authority_unregistered_count: responsibilityAuthority.unregistered_candidate_count
     },
+    responsibility_authority: responsibilityAuthority,
     invariants,
     scenario_gaps: scenarioGaps,
     contradictions,
@@ -169,6 +180,9 @@ export function renderRequirementConsistencyReport(requirement) {
 | Spec Refs | ${requirement.summary?.spec_ref_count ?? 0} |
 | Architecture Refs | ${requirement.summary?.architecture_ref_count ?? 0} |
 | Policy Refs | ${requirement.summary?.policy_ref_count ?? 0} |
+| Domain Contract Refs | ${requirement.summary?.domain_contract_ref_count ?? 0} |
+| Responsibility Authority Matches | ${requirement.summary?.responsibility_authority_ref_count ?? 0} |
+| Responsibility Authority Unknowns | ${requirement.summary?.responsibility_authority_unregistered_count ?? 0} |
 
 ## Invariants
 
@@ -185,6 +199,10 @@ ${formatItems(requirement.contradictions, (item) => `- ${item.id}: ${item.title}
 ## Requirement Sources
 
 ${formatItems(requirement.requirement_sources, (item) => `- ${item.kind}: ${item.path}: ${item.title ?? '-'}`)}
+
+## Responsibility Authority
+
+${formatResponsibilityAuthorityReport(requirement.responsibility_authority)}
 `;
 }
 
@@ -193,9 +211,65 @@ export function renderRequirementGateSummary(requirement) {
   const detail = [
     `${requirement.summary?.invariant_count ?? 0} invariants`,
     `${requirement.summary?.scenario_gap_count ?? 0} scenario gaps`,
-    `${requirement.summary?.contradiction_count ?? 0} contradictions`
+    `${requirement.summary?.contradiction_count ?? 0} contradictions`,
+    `${requirement.summary?.responsibility_authority_ref_count ?? 0} responsibility matches`,
+    `${requirement.summary?.responsibility_authority_unregistered_count ?? 0} responsibility unknowns`
   ].join(', ');
   return `- Requirement Gate: ${requirement.status} - ${detail}`;
+}
+
+function summarizeResponsibilityAuthority(authority) {
+  if (!authority) {
+    return {
+      status: 'not_generated',
+      matched_responsibility_count: 0,
+      matched_contract_clause_count: 0,
+      missing_evidence_count: 0,
+      stale_evidence_count: 0,
+      unregistered_candidate_count: 0,
+      matched_responsibilities: [],
+      unregistered_candidates: []
+    };
+  }
+  return {
+    status: authority.status ?? 'unknown',
+    matched_responsibility_count: authority.summary?.matched_responsibility_count ?? authority.matched_responsibilities?.length ?? 0,
+    matched_contract_clause_count: authority.summary?.matched_contract_clause_count ?? 0,
+    missing_evidence_count: authority.summary?.missing_evidence_count ?? 0,
+    stale_evidence_count: authority.summary?.stale_evidence_count ?? 0,
+    unregistered_candidate_count: authority.summary?.unregistered_candidate_count ?? authority.unregistered_candidates?.length ?? 0,
+    matched_responsibilities: (authority.matched_responsibilities ?? []).map((item) => ({
+      id: item.id,
+      evidence_status: item.evidence_status,
+      primary_authority: item.primary_authority,
+      contract_clauses: (item.contract_clauses ?? []).map((clause) => clause.ref ?? clause.id).filter(Boolean),
+      missing_evidence: item.missing_evidence ?? []
+    })),
+    unregistered_candidates: (authority.unregistered_candidates ?? []).map((item) => ({
+      id: item.id,
+      reason: item.reason,
+      paths: item.paths ?? [],
+      risk_surfaces: item.risk_surfaces ?? []
+    }))
+  };
+}
+
+function formatResponsibilityAuthorityReport(summary) {
+  if (!summary) return '- not_generated';
+  const lines = [
+    `- status: ${summary.status}`,
+    `- matched responsibilities: ${summary.matched_responsibility_count}`,
+    `- matched contract clauses: ${summary.matched_contract_clause_count}`,
+    `- missing evidence: ${summary.missing_evidence_count}`,
+    `- stale evidence: ${summary.stale_evidence_count}`,
+    `- unregistered candidates: ${summary.unregistered_candidate_count}`,
+    ...(summary.matched_responsibilities ?? []).slice(0, 6).map((item) => {
+      const authority = item.primary_authority ? `${item.primary_authority.kind}:${item.primary_authority.ref}` : '-';
+      return `- responsibility: ${item.id} (${item.evidence_status}) authority=${authority}`;
+    }),
+    ...(summary.unregistered_candidates ?? []).slice(0, 6).map((item) => `- no_registered_authority: ${item.reason}`)
+  ];
+  return lines.join('\n');
 }
 
 export async function resolveStoryDirs(repoRoot) {

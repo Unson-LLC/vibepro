@@ -10,7 +10,7 @@ const WORKFLOW_KEYWORDS = [
   /resume/i,
   /legacy/i,
   /\bv1\b/i,
-  /auth/i,
+  /\b(?:auth|authn|authz|authentication|authorization)\b/i,
   /認証/,
   /状態/,
   /再開/,
@@ -218,7 +218,7 @@ function detectRiskSurfaces({ sourceFiles, allFiles, storyText, networkContracts
   if (sourceFiles.some((file) => !isUiPath(file) && /retry|poll|status|state/i.test(stripMonorepoPackagePrefix(file)))) {
     surfaces.add('polling_retry');
   }
-  if (sourceFiles.some((file) => /auth|session|permission|middleware/i.test(stripMonorepoPackagePrefix(file)))) {
+  if (sourceFiles.some(isAuthBoundaryPath)) {
     surfaces.add('auth_boundary');
   }
   if (sourceFiles.some((file) => /\/v1\/|legacy/i.test(stripMonorepoPackagePrefix(file)))) surfaces.add('legacy_v1_compatibility');
@@ -278,6 +278,11 @@ function isDatabasePath(file) {
 
 function isQueueWorkerPath(file) {
   return /queue|worker|job|scheduled-task|background-task/i.test(stripMonorepoPackagePrefix(file));
+}
+
+function isAuthBoundaryPath(file) {
+  return /(^|[/_.-])(?:auth|authn|authz|authentication|authorization|session|permission|permissions|middleware)(?=$|[/_.-])/i
+    .test(stripMonorepoPackagePrefix(file));
 }
 
 function isCoreWorkflowPath(file) {

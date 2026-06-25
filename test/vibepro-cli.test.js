@@ -8691,6 +8691,19 @@ test('review status reuses review after merge delta outside inspected inputs', a
   assert.equal(role.merge_delta_reuse.current_head_sha, currentHead);
   assert.deepEqual(role.merge_delta_reuse.impacted_files, []);
   assert.match(role.stale_reason, /reused/);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const artifactGate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(artifactGate.status, 'passed');
+  assert.match(artifactGate.reason, /merge-delta reused/);
+  assert.doesNotMatch(artifactGate.reason, /are bound to the current git state/);
+  const reviewArtifact = artifactGate.artifacts.find((artifact) => artifact.artifact_type === 'agent_review_result' && artifact.role === 'runtime_contract');
+  assert.equal(reviewArtifact.status, 'reused_merge_delta');
+  assert.equal(reviewArtifact.recorded_head_sha, recordedHead);
+  assert.equal(reviewArtifact.reuse_policy.recorded_head_sha, recordedHead);
+  assert.equal(reviewArtifact.reuse_policy.current_head_sha, currentHead);
+  assert.match(reviewArtifact.reason, /merge-delta review reuse accepted/);
 });
 
 test('review status keeps stale review after merge delta touches inspected inputs', async () => {
@@ -11821,6 +11834,14 @@ test('execute state treats route contract gates as PR blockers', async () => {
     status: 'needs_rebase',
     reason: 'PR branch must be rebased before PR creation'
   }, 'rebased');
+  await assertBlocksGate({
+    id: 'gate:responsibility_authority',
+    type: 'responsibility_authority_gate',
+    label: 'Responsibility Authority Gate',
+    required: true,
+    status: 'needs_evidence',
+    reason: 'Responsibility contract requires current-head cleanup recovery evidence'
+  }, 'Responsibility contract requires current-head');
 });
 
 test('execute state preserves waiver-required semantics for noncritical unresolved gates', async () => {
@@ -12087,6 +12108,26 @@ architecture_docs:
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
+
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'merge-delta-note.md'), 'unrelated docs-only merge delta\n');
+  await git(repo, ['add', 'docs/merge-delta-note.md']);
+  await git(repo, ['commit', '-m', 'chore: add unrelated merge delta note']);
+  const reusedResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const reusedDag = reusedResult.result.preparation.pr_context.gate_dag;
+  const reusedArtifactGate = reusedDag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(reusedArtifactGate.status, 'passed');
+  assert.match(reusedArtifactGate.reason, /merge-delta reused/);
+  assert.doesNotMatch(reusedArtifactGate.reason, /are bound to the current git state/);
+  const reusedPreflightNode = reusedDag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+  assert.equal(reusedPreflightNode.preflight_kind, 'dedupe_reused_merge_delta_pass');
+  assert.doesNotMatch(reusedPreflightNode.reason, /current git state|current review/);
+  const reusedRecordNode = reusedDag.nodes.find((node) => node.id === 'review:record:gate:gate_evidence');
+  assert.match(reusedRecordNode.reason, /merge-delta reuse/);
+  assert.doesNotMatch(reusedRecordNode.reason, /current git state/);
+  const reusedJoinNode = reusedDag.nodes.find((node) => node.id === 'review:join:gate');
+  assert.match(reusedJoinNode.reason, /merge-delta reuse/);
+  assert.doesNotMatch(reusedJoinNode.reason, /current git state/);
 
   await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
   const staleResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);

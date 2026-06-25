@@ -56,6 +56,11 @@ import {
   readEvidenceReuseIfExists,
   summarizeEvidenceReuse
 } from './evidence-reuse.js';
+import {
+  buildResponsibilityAuthorityGate,
+  renderResponsibilityAuthorityPrSection,
+  resolveResponsibilityAuthority
+} from './responsibility-authority.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -3620,12 +3625,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, { inferredSpec });
   const specDrift = await readDrift(repoRoot, story.story_id);
-  const requirementConsistency = await buildRequirementConsistency(repoRoot, {
-    story,
-    storySource: primaryStory,
-    fileGroups,
-    inferredSpec
-  });
   const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity });
   const changeClassification = classifyChangeRisk({
     fileGroups,
@@ -3642,6 +3641,21 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   });
   const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const responsibilityAuthority = await resolveResponsibilityAuthority(repoRoot, {
+    storySource: primaryStory,
+    fileGroups,
+    git,
+    inferredSpec,
+    changeClassification,
+    verificationEvidence: boundVerificationEvidence
+  });
+  const requirementConsistency = await buildRequirementConsistency(repoRoot, {
+    story,
+    storySource: primaryStory,
+    fileGroups,
+    inferredSpec,
+    responsibilityAuthority
+  });
   const architectureSources = await readTextSources(repoRoot, fileGroups.architecture_docs.files);
   const managedWorktreeContext = await evaluateManagedWorktreeCommandContext(repoRoot, {
     storyId: story.story_id,
@@ -3693,6 +3707,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     architecture_decision: architectureDecision,
     architecture_sources: architectureSources,
     requirement_consistency: requirementConsistency,
+    responsibility_authority: responsibilityAuthority,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
     graph_context: graphContext,
@@ -3736,6 +3751,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storySourceIntegrity,
     architectureDecision,
     requirementConsistency,
+    responsibilityAuthority,
     fileGroups,
     verificationCommands,
     e2eCommand,
@@ -7559,6 +7575,7 @@ function buildGateDag({
   storySourceIntegrity = null,
   architectureDecision,
   requirementConsistency,
+  responsibilityAuthority = null,
   fileGroups,
   verificationCommands,
   e2eCommand,
@@ -7608,6 +7625,7 @@ function buildGateDag({
     required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0 || fileGroups.policy_docs.count > 0,
     reason: buildRequirementGateReason(requirementConsistency)
   };
+  const responsibilityAuthorityGate = buildResponsibilityAuthorityGate(responsibilityAuthority);
   const storyGate = {
     id: 'story',
     type: 'story',
@@ -7826,6 +7844,7 @@ function buildGateDag({
     networkContractGate,
     pathSurfaceMatrixGate,
     ...(journeyContextGate ? [journeyContextGate] : []),
+    responsibilityAuthorityGate,
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -7937,9 +7956,10 @@ function buildGateDag({
     ...(journeyContextGate
       ? [
         { from: 'gate:path_surface_matrix', to: 'gate:journey_context' },
-        { from: 'gate:journey_context', to: 'gate:requirement' }
+        { from: 'gate:journey_context', to: 'gate:responsibility_authority' }
       ]
-      : [{ from: 'gate:path_surface_matrix', to: 'gate:requirement' }]),
+      : [{ from: 'gate:path_surface_matrix', to: 'gate:responsibility_authority' }]),
+    { from: 'gate:responsibility_authority', to: 'gate:requirement' },
     { from: 'gate:requirement', to: 'gate:failure_mode_coverage' },
     { from: 'gate:failure_mode_coverage', to: 'gate:decision_record' },
     { from: 'gate:decision_record', to: 'gate:unit' },
@@ -8007,6 +8027,7 @@ function buildGateDag({
     networkContractGate,
     pathSurfaceMatrixGate,
     journeyContextGate,
+    responsibilityAuthorityGate,
     requirementGate,
     failureModeCoverageGate,
     decisionRecordGate,
@@ -8052,6 +8073,7 @@ function buildGateDag({
       spec_status: specGate.status,
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       journey_context_status: journeyContextGate?.status ?? null,
+      responsibility_authority_status: responsibilityAuthorityGate.status,
       requirement_status: requirementGate.status,
       failure_mode_coverage_status: failureModeCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
@@ -8228,6 +8250,15 @@ function buildAgentReviewDispatchPreflight(stage, role) {
     };
   }
   if (role.effective_status === 'pass') {
+    if (isAgentReviewMergeDeltaReused(role)) {
+      return {
+        id: preflightId,
+        role: role.role,
+        status: 'passed',
+        kind: 'dedupe_reused_merge_delta_pass',
+        reason: `Recorded ${stage}:${role.role} review is accepted via merge-delta reuse for this head; do not dispatch a duplicate reviewer for the same role`
+      };
+    }
     return {
       id: preflightId,
       role: role.role,
@@ -8285,7 +8316,10 @@ function buildAgentReviewDispatchBatchReason(stage, preflightItems, dispatchPrep
 
 function buildAgentReviewStageJoinReason(stage, status, roles) {
   if (status === 'passed') {
-    return `All parallel ${stage} agent review roles are closed and recorded for the current git state`;
+    const reusedCount = roles.filter((role) => isAgentReviewMergeDeltaReused(role)).length;
+    return reusedCount > 0
+      ? `All parallel ${stage} agent review roles are closed and accepted; ${reusedCount} role(s) use merge-delta reuse for this head`
+      : `All parallel ${stage} agent review roles are closed and recorded for the current git state`;
   }
   if (status === 'failed') {
     return `At least one parallel ${stage} agent review role returned block`;
@@ -8298,6 +8332,9 @@ function buildAgentReviewStageJoinReason(stage, status, roles) {
 
 function buildAgentReviewRecordReason(stage, role) {
   if (role.effective_status === 'pass') {
+    if (isAgentReviewMergeDeltaReused(role)) {
+      return `Recorded ${stage}:${role.role} review is accepted via merge-delta reuse for this head`;
+    }
     return `Recorded ${stage}:${role.role} review for the current git state`;
   }
   if (role.effective_status === 'stale') {
@@ -8404,10 +8441,21 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
     ],
     reason: status === 'passed'
       ? artifacts.length > 0
-        ? `${artifacts.length} recorded verification/review artifact(s) are bound to the current git state`
+        ? buildArtifactConsistencyPassedReason(artifacts)
         : 'No recorded verification/review artifacts are present; no cross-artifact binding conflict was found'
       : `${inconsistent.length} recorded verification/review artifact(s) are not bound to the current git state`
   };
+}
+
+function buildArtifactConsistencyPassedReason(artifacts = []) {
+  const currentCount = artifacts.filter((artifact) => artifact.status === 'current').length;
+  const reusedMergeDeltaCount = artifacts.filter((artifact) => artifact.status === 'reused_merge_delta').length;
+  const reusedLowRiskCount = artifacts.filter((artifact) => artifact.status === 'reused_low_risk').length;
+  const parts = [];
+  if (currentCount > 0) parts.push(`${currentCount} current`);
+  if (reusedMergeDeltaCount > 0) parts.push(`${reusedMergeDeltaCount} merge-delta reused`);
+  if (reusedLowRiskCount > 0) parts.push(`${reusedLowRiskCount} low-risk reused`);
+  return `${artifacts.length} recorded verification/review artifact(s) accepted for artifact consistency (${parts.join(', ')}); reused artifacts are not labeled as current`;
 }
 
 function collectVerificationArtifactBindings(verificationEvidence = null, changeClassification = null) {
@@ -8440,7 +8488,11 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
 }
 
 function isArtifactBindingAccepted(status) {
-  return status === 'current' || status === 'reused_low_risk';
+  return status === 'current' || status === 'reused_low_risk' || status === 'reused_merge_delta';
+}
+
+function isAgentReviewMergeDeltaReused(role) {
+  return role?.binding_status === 'reused_merge_delta' || role?.merge_delta_reuse?.reusable === true;
 }
 
 function collectReviewArtifactBindings(agentReviews = null, changeClassification = null) {
@@ -8451,11 +8503,22 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
       if (!role.artifact) continue;
       const stale = role.effective_status === 'stale';
       const unverified = role.effective_status === 'unverified_agent';
-      const current = !stale && !unverified;
+      const mergeDeltaReused = isAgentReviewMergeDeltaReused(role);
+      const current = !stale && !unverified && !mergeDeltaReused;
       const staleReason = role.stale_reason ?? role.provenance_reason ?? role.summary ?? 'agent review result is missing, stale, or not accepted for the current git state';
       const reusableLowRisk = !current
+        && !mergeDeltaReused
         && stale
         && canReuseLowRiskArtifactBinding({ status: 'pass', binding: { status: 'stale', reason: staleReason } }, changeClassification);
+      const status = current
+        ? 'current'
+        : mergeDeltaReused
+          ? 'reused_merge_delta'
+          : reusableLowRisk
+            ? 'reused_low_risk'
+            : stale
+              ? 'stale'
+              : role.effective_status ?? 'not_current';
       artifacts.push({
         artifact_type: 'agent_review_result',
         stage: stage.stage ?? null,
@@ -8464,13 +8527,15 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         recorded_head_sha: role.git_context?.head_sha ?? role.source_git_context?.head_sha ?? null,
         recorded_status_fingerprint_hash: fullFingerprintHashForContext(role.git_context ?? role.source_git_context),
         recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
-        status: current ? 'current' : reusableLowRisk ? 'reused_low_risk' : stale ? 'stale' : role.effective_status ?? 'not_current',
-        reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
+        status,
+        reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
         reason: current
           ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'
-          : reusableLowRisk
-            ? `low-risk evidence change reused agent review despite dirty fingerprint change: ${staleReason}`
-            : staleReason
+          : mergeDeltaReused
+            ? `merge-delta review reuse accepted for artifact consistency: ${staleReason}`
+            : reusableLowRisk
+              ? `low-risk evidence change reused agent review despite dirty fingerprint change: ${staleReason}`
+              : staleReason
       });
     }
   }
@@ -10265,6 +10330,7 @@ function renderPrGateSummary(gateDag) {
     'gate:vibepro_artifact_policy',
     'gate:split_resolution'
   ].map((id) => gateDag.nodes.find((node) => node.id === id)).filter(Boolean);
+  const responsibilityAuthorityGate = gateDag.nodes.find((node) => node.id === 'gate:responsibility_authority');
   const requirementGate = gateDag.nodes.find((node) => node.id === 'gate:requirement');
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
   const lines = [
@@ -10287,6 +10353,9 @@ function renderPrGateSummary(gateDag) {
       const sections = Array.isArray(gate.required_sections) ? ` sections=${gate.required_sections.join(',')}` : '';
       return `- ${gate.label}: ${gate.status} (${required}) - ${gate.reason ?? '-'}${sections}`;
     }),
+    responsibilityAuthorityGate
+      ? `- ${responsibilityAuthorityGate.label}: ${responsibilityAuthorityGate.status} (${responsibilityAuthorityGate.required ? 'required' : 'optional'}) - ${responsibilityAuthorityGate.reason}`
+      : null,
     requirementGate
       ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
       : null,
@@ -10314,7 +10383,10 @@ function renderRequirementPrSection(requirement, language = 'ja') {
     `- Requirement Sources: ${summary.requirement_source_count ?? 0}`,
     `- Spec Sources: ${summary.spec_ref_count ?? 0}`,
     `- Architecture Sources: ${summary.architecture_ref_count ?? 0}`,
-    `- Policy Sources: ${summary.policy_ref_count ?? 0}`
+    `- Policy Sources: ${summary.policy_ref_count ?? 0}`,
+    `- Domain Contract Sources: ${summary.domain_contract_ref_count ?? 0}`,
+    `- Responsibility Matches: ${summary.responsibility_authority_ref_count ?? 0}`,
+    `- Responsibility Unknowns: ${summary.responsibility_authority_unregistered_count ?? 0}`
   ].join('\n');
   const sourceRefs = (requirement.requirement_sources ?? []).slice(0, 6)
     .map((item) => `- Requirement Source: ${item.kind}:${item.path}${item.title ? ` - ${item.title}` : ''}`)
@@ -10331,6 +10403,9 @@ function renderRequirementPrSection(requirement, language = 'ja') {
   const contradictions = (requirement.contradictions ?? []).slice(0, 5)
     .map((item) => `- Potential Contradiction: ${item.detail}`)
     .join('\n');
+  const responsibilities = (requirement.responsibility_authority?.matched_responsibilities ?? []).slice(0, 5)
+    .map((item) => `- Responsibility Authority: ${item.id} (${item.evidence_status})`)
+    .join('\n');
   return [
     renderRequirementGateSummary(requirement),
     renderRequirementPrHint(requirement, language),
@@ -10338,7 +10413,8 @@ function renderRequirementPrSection(requirement, language = 'ja') {
     sourceRefs,
     invariants,
     gaps,
-    contradictions
+    contradictions,
+    responsibilities
   ].filter(Boolean).join('\n');
 }
 
@@ -10458,6 +10534,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'decision_record_gate',
       'verification_gate',
       'requirement_gate',
+      'responsibility_authority_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
       'journey_context_gate',
@@ -10551,6 +10628,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
+      if (gate.id === 'gate:responsibility_authority') return 'Responsibility Authority Gate requires each matched cross-story responsibility to resolve to registered authority and current-head evidence, or an explicit decision for no_registered_authority.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
@@ -10622,6 +10700,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:pr_scope_judgment' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:common_judgment_spine' && gate.status !== 'passed') return true;
