@@ -111,6 +111,11 @@ test('pr prepare summary depth writes plan/index but skips HTML and standalone G
   assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
   assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
   assert.equal(await exists(path.join(prDir, 'split-plan.html')), false);
+  const prBody = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
+  assert.doesNotMatch(prBody, /story-low-risk\/gate-dag\.json/);
+  assert.doesNotMatch(prBody, /story-low-risk\/review-cockpit\.html/);
+  assert.match(prBody, /Gate DAG: embedded in PR prepare \/ decision index/);
+  assert.match(prBody, /Review cockpit: not generated at this evidence depth/);
 
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   const entry = manifest.pr_preparations['story-low-risk'];

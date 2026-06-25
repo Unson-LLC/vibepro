@@ -243,8 +243,8 @@ async function scanCurrentGitHubPr(repoRoot, workspaceDir, options = {}) {
       gate_effect: 'block',
       story_id: options.storyId ?? null,
       path: currentPr.url ?? null,
-      detail: `GitHub PR ${prLabel} does not look like a VibePro PR body; decision brief, Gate DAG, or Execution Gate sections are missing.`,
-      required_action: 'Regenerate the PR body through `vibepro pr prepare`, then create or update the PR through `vibepro pr create` so Gate evidence is visible.'
+      detail: `GitHub PR ${prLabel} does not look like a VibePro PR body; concise decision brief, verification, or .vibepro evidence references are missing.`,
+      required_action: 'Regenerate the PR body through `vibepro pr prepare`, then create or update the PR through `vibepro pr create` so Gate evidence remains traceable.'
     });
   }
 
@@ -294,8 +294,10 @@ async function readCurrentGitHubPr(repoRoot, options = {}) {
 }
 
 function isVibeProPrBody(body) {
-  const hasDecisionBrief = /(##\s+このPRで決めたいこと|##\s+What this PR needs to decide|このPRで閉じる問い|Review question)/i.test(body);
-  return hasDecisionBrief && /##\s+Gate DAG/i.test(body) && /##\s+Execution Gate/i.test(body);
+  const hasDecisionBrief = /(##\s+What|##\s+このPRで決めたいこと|##\s+What this PR needs to decide|このPRで閉じる問い|Review question)/i.test(body);
+  const hasVerification = /##\s+Verification|##\s+検証/i.test(body);
+  const hasVibeProEvidence = /##\s+VibePro/i.test(body) && /Evidence:\s+\.vibepro\/pr\/|Gate DAG:\s+\.vibepro\/pr\/|Decision index:\s+\.vibepro\/pr\//i.test(body);
+  return hasDecisionBrief && hasVerification && hasVibeProEvidence;
 }
 
 function hasEscapedNewlinePrBody(body) {

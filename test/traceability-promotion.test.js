@@ -85,7 +85,8 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   assert.equal(traceability.coverage_summary.mapped_count, 0);
   assert.equal(gateDag.summary.traceability_clause_coverage.weakly_mapped_count, 1);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:traceability_clause_coverage').status, 'needs_evidence');
-  assert.match(prBody, /weakly_mapped: 1/);
+  assert.match(prBody, /\.vibepro\/pr\/story-test-promo\/gate-dag\.json/);
+  assert.doesNotMatch(prBody, /weakly_mapped: 1/);
 });
 
 test('pr prepare links verification evidence when present and stays idempotent on rerun', async () => {

@@ -61,7 +61,9 @@ This note mentions workflow, review, artifact, and gate wording for human docume
   assert.match(axis.activation_precision.reason, /text-derived candidates/);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /suppressed_candidates: execution_topology\[insufficient_signal\]/);
+  assert.doesNotMatch(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
+  assert.doesNotMatch(prBody, /suppressed=execution_topology\[insufficient_signal\]/);
+  assert.doesNotMatch(prBody, /suppressed_candidates: execution_topology\[insufficient_signal\]/);
   const gateDag = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'), 'utf8'));
   assert.deepEqual(
     gateDag.summary.suppressed_judgment_axes.map((item) => [item.axis, item.precision_status]),
