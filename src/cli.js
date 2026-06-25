@@ -260,6 +260,10 @@ Existing UI modernization:
   then use design-modernize derive-system or plan for screen-level work. Generated
   visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
   remain authoritative.
+  design-modernize plan also resolves top-level Journey context: if no Journey
+  context pack exists, it creates one through the Journey workflow, writes
+  journey-context.json into the plan artifacts, and keeps non-curated handoff
+  evidence visible instead of treating it as an authoritative product Journey.
 
 Usage:
   vibepro help [command]
@@ -436,6 +440,9 @@ base branch:
   .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
   その後に design-modernize derive-system または plan で画面別作業へ進みます。
   生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
+  design-modernize plan は top-level Journey context にも接続します。Journey context pack が
+  未生成ならJourney workflow経由で作成し、plan artifactにjourney-context.jsonを書き、
+  curatedではないhandoff証跡をauthoritative Journeyとして扱わずに表示します。
 
 英語で表示したい場合:
   vibepro init <repo> --language en

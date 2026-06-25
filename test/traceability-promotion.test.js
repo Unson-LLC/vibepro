@@ -110,6 +110,36 @@ test('pr prepare links verification evidence when present and stays idempotent o
   assert.equal(second.created_at, first.created_at, 'created_at must be preserved');
 });
 
+test('pr prepare refreshes stale verification evidence binding on rerun', async () => {
+  const root = await setupPrepareRepo();
+  await runCli([
+    'verify', 'record', root, '--id', 'story-test-promo', '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test test/readme.test.js', '--target', 'README.md', '--observed', 'exit_code=0'
+  ]);
+  const oldHead = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
+  const first = await readJson(traceabilityPath(root, 'story-test-promo'));
+  const firstVerification = first.evidence.find((item) => item.type === 'verification_evidence');
+  assert.equal(firstVerification.binding_status, 'current');
+  assert.equal(firstVerification.current_head_sha, oldHead);
+
+  await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Changed</title>');
+  await git(root, ['add', 'index.html']);
+  await git(root, ['commit', '-m', 'feat: change app shell']);
+  const newHead = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  assert.notEqual(newHead, oldHead);
+
+  await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
+  const second = await readJson(traceabilityPath(root, 'story-test-promo'));
+  const secondVerification = second.evidence.find((item) => item.type === 'verification_evidence');
+  assert.equal(second.evidence.filter((item) => item.type === 'verification_evidence').length, 1, 'rerun must update verification evidence in place');
+  assert.equal(secondVerification.binding_status, 'stale');
+  assert.equal(secondVerification.current_head_sha, oldHead);
+  assert.equal(second.acceptance_criteria[0].mapped_evidence.length, 0);
+  assert.equal(second.coverage_summary.mapped_count, 0);
+  assert.equal(second.coverage_summary.weakly_mapped_count, 1);
+});
+
 test('clause map keeps unmapped AC and scenario clauses visible', () => {
   const storyText = [
     '# Story',
@@ -142,6 +172,20 @@ test('clause map keeps unmapped AC and scenario clauses visible', () => {
   assert.equal(map.acceptance_criteria[0].mapped_evidence[0].current_head_sha, 'abc123');
   assert.equal(map.acceptance_criteria[1].status, 'unmapped');
   assert.equal(map.scenario_clauses[0].status, 'unmapped');
+});
+
+test('clause map accepts Japanese 受け入れ条件 heading', () => {
+  const storyText = [
+    '# Story',
+    '',
+    '## 受け入れ条件',
+    '- Journey contextをDesign Modernize planに表示する',
+    '- curatedではないhandoffをauthoritativeとして扱わない'
+  ].join('\n');
+  const map = buildTraceabilityClauseMap({ storyText });
+  assert.equal(map.acceptance_criteria.length, 2);
+  assert.equal(map.acceptance_criteria[0].id, 'AC-1');
+  assert.match(map.acceptance_criteria[0].source_text, /Journey context/);
 });
 
 test('broad verification command and artifact paths do not map every AC', () => {

@@ -295,7 +295,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     root,
     bodyPath,
     gateDagJsonPath,
-    verificationEvidence
+    verificationEvidence,
+    currentHeadSha: reviewGit.head_sha
   });
   const storyTextForTraceability = prContext.story_source?.path
     ? await readFile(path.join(root, prContext.story_source.path), 'utf8').catch(() => '')
@@ -382,7 +383,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     root,
     bodyPath,
     gateDagJsonPath: writeGateDagDump ? gateDagJsonPath : null,
-    verificationEvidence
+    verificationEvidence,
+    currentHeadSha: reviewGit.head_sha
   });
   const nextCommands = buildNextCommands({
     baseRef: git.base_ref,
@@ -2222,7 +2224,7 @@ ${engineeringReasoning}
 ${decisionGraph}`;
 }
 
-function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificationEvidence }) {
+function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificationEvidence, currentHeadSha = null }) {
   const verificationEvidencePath = path.join(path.dirname(bodyPath), 'verification-evidence.json');
   const evidence = [
     {
@@ -2246,6 +2248,8 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
     });
   }
   for (const command of verificationEvidence?.commands ?? []) {
+    const commandHeadSha = command.git_context?.head_sha ?? command.binding?.current_head_sha ?? null;
+    const bindingStatus = resolveTraceabilityEvidenceBindingStatus(command, currentHeadSha);
     evidence.push({
       type: 'verification_evidence',
       ref: command.artifact ?? command.command ?? toWorkspaceRelative(root, verificationEvidencePath),
@@ -2256,8 +2260,8 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
         ...Object.entries(command.observation?.values ?? {}).map(([key, value]) => `${key}=${value}`)
       ].filter(Boolean).join(' | '),
       strength: isPassingVerificationStatus(command.status) ? 'supporting' : 'weak',
-      binding_status: command.git_context?.head_sha && command.git_context?.dirty === false ? 'current' : command.binding?.status ?? null,
-      current_head_sha: command.git_context?.head_sha ?? null,
+      binding_status: bindingStatus,
+      current_head_sha: commandHeadSha,
       artifact_quality: command.artifact_check?.status ?? null,
       targets: [
         ...(command.observation?.targets ?? []),
@@ -2266,6 +2270,13 @@ function buildTraceabilityEvidence({ root, bodyPath, gateDagJsonPath, verificati
     });
   }
   return evidence;
+}
+
+function resolveTraceabilityEvidenceBindingStatus(command, currentHeadSha) {
+  const commandHeadSha = command.git_context?.head_sha ?? command.binding?.current_head_sha ?? null;
+  if (commandHeadSha && currentHeadSha && commandHeadSha !== currentHeadSha) return 'stale';
+  if (command.git_context?.dirty === false && commandHeadSha) return 'current';
+  return command.binding?.status ?? null;
 }
 
 function buildTraceabilityClauseCoverageGate(summary) {
