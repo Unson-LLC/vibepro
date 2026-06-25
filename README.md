@@ -341,6 +341,13 @@ curated Journey can be stored at `.vibepro/journeys/<journey-id>.json`; until
 that exists, `journey status` reports `needs_curated_journey` rather than
 `available`.
 
+Journey is a top-level product-context layer, not a `design-modernize` subfeature.
+When UI modernization starts, `design-modernize plan` connects to that layer
+automatically: if no Journey context exists, it creates a machine-derived
+context pack and handoff artifact, then records the curation state in the
+modernization plan. A handoff-only context remains `needs_review` and is not
+treated as an authoritative curated Journey.
+
 ### Create A PR Through VibePro
 
 ```bash
@@ -430,7 +437,7 @@ Use this command before redesigning existing UI when the product already has rea
 
 `derive-system` converts the product brief and current UI evidence into a VibePro-derived Design System for a specific modernization story: product semantics, semantic color roles, component responsibilities, composition rules, visual-hypothesis policy, and explicit DS gates. The durable pattern is to build the design decision space before generating screen candidates.
 
-`design-modernize` is for improving real product screens while preserving current routes, information architecture, CTAs, state behavior, and data dependencies. Optional design-system bundles or generated visual hypotheses are reference material; the VibePro-derived Design System, current screenshots, Graphify/Codex evidence, and Gate DAG remain authoritative.
+`design-modernize` is for improving real product screens while preserving current routes, information architecture, CTAs, state behavior, and data dependencies, plus Journey continuity. It resolves top-level Journey context before screen-level planning and writes `.vibepro/design-modernize/<story-id>/journey-context.json` alongside the design artifacts. Optional design-system bundles or generated visual hypotheses are reference material; the VibePro-derived Design System, Journey context, current screenshots, Graphify/Codex evidence, and Gate DAG remain authoritative.
 
 Typical native Design System artifacts are written under `.vibepro/design-system/<ds-id>/`:
 

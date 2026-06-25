@@ -37,8 +37,12 @@ export function buildTraceability(existing, {
   const baseEvidence = Array.isArray(existing?.evidence) ? existing.evidence : [];
   const mergedEvidence = [...baseEvidence];
   for (const item of evidence) {
-    if (mergedEvidence.some((entry) => entry.type === item.type && entry.ref === item.ref)) continue;
-    mergedEvidence.push(item);
+    const existingIndex = mergedEvidence.findIndex((entry) => entry.type === item.type && entry.ref === item.ref);
+    if (existingIndex >= 0) {
+      mergedEvidence[existingIndex] = item;
+    } else {
+      mergedEvidence.push(item);
+    }
   }
   const acceptance_criteria = Array.isArray(acceptanceCriteria)
     ? acceptanceCriteria
@@ -175,6 +179,7 @@ function isStrongClauseEvidence(item) {
   const bindingStatus = item.binding_status ?? item.binding?.status ?? null;
   const artifactQuality = item.artifact_quality ?? item.artifact_check?.status ?? null;
   const strength = item.strength ?? item.evidence_strength ?? null;
+  if (item.type === 'verification_evidence' && bindingStatus && bindingStatus !== 'current') return false;
   return bindingStatus === 'current'
     || artifactQuality === 'verified'
     || ['strong', 'supporting'].includes(strength)
@@ -215,7 +220,7 @@ function extractAcceptanceCriteria(storyText) {
   const criteria = [];
   let inSection = false;
   for (const [index, line] of lines.entries()) {
-    if (/^#{2,}\s*(Acceptance Criteria|受け入れ基準)\s*$/i.test(line.trim())) {
+    if (/^#{2,}\s*(Acceptance Criteria|受け入れ基準|受け入れ条件)\s*$/i.test(line.trim())) {
       inSection = true;
       continue;
     }

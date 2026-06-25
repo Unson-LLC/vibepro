@@ -2,6 +2,8 @@ import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
+import { deriveJourneyMap, getJourneyStatus } from './journey-map.js';
+
 const DEFAULT_SCREEN_ROUTES = ['/'];
 const UI_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
 const IGNORED_DIRS = new Set(['.git', '.next', '.vibepro', 'coverage', 'dist', 'node_modules']);
@@ -12,6 +14,10 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   const product = options.product ?? inferProductName(root);
   const routes = await resolveDesignRoutes(root, options.routes);
   const bundle = await readDesignSystemBundle(root, options.designSystemBundle);
+  const journeyContext = await ensureJourneyContextForDesignModernize(root, {
+    journeyId: options.journeyId,
+    ensure: options.ensureJourneyContext !== false
+  });
   const designSystem = normalizeDesignSystemBundle(bundle, {
     designSystemId: options.designSystemId,
     title: options.designSystemTitle ?? product
@@ -54,6 +60,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
         note: options.optionalReferenceNote ?? null
       }
     },
+    journey_context: journeyContext,
     reference_design_system: designSystem,
     visual_foundations_reference: designSystem.visual_foundations ? {
       source: designSystem.visual_foundations.source,
@@ -66,7 +73,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
     composition_guidelines: derivedDesignSystem.composition_guidelines,
     design_constraint_graph: designConstraintGraph,
     visual_hypothesis: visualHypothesis,
-    design_quality_dag: buildDesignQualityDag({ storyId, product, screens }),
+    design_quality_dag: buildDesignQualityDag({ storyId, product, screens, journeyContext }),
     screens,
     implementation_plan: buildImplementationPlan(screens),
     spec_gate: buildSpecGate(screens),
@@ -78,6 +85,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
       design_system_bundle: '.vibepro/design-modernize/<story-id>/design-system-bundle.json',
       visual_foundations_reference: '.vibepro/design-modernize/<story-id>/visual-foundations-reference.json',
       derived_design_system: '.vibepro/design-modernize/<story-id>/derived-design-system.json',
+      journey_context: '.vibepro/design-modernize/<story-id>/journey-context.json',
       product_semantic_model: '.vibepro/design-modernize/<story-id>/product-semantic-model.json',
       component_role_map: '.vibepro/design-modernize/<story-id>/component-role-map.json',
       composition_guidelines: '.vibepro/design-modernize/<story-id>/composition-guidelines.md',
@@ -95,6 +103,7 @@ export async function createDesignModernizePlan(repoRoot, options = {}) {
   await writeFile(path.join(outDir, 'design-briefs.md'), renderDesignBriefs(plan));
   await writeFile(path.join(outDir, 'implementation-spec.md'), renderImplementationSpec(plan));
   await writeFile(path.join(outDir, 'design-constraint-graph.json'), `${JSON.stringify(designConstraintGraph, null, 2)}\n`);
+  await writeFile(path.join(outDir, 'journey-context.json'), `${JSON.stringify(journeyContext, null, 2)}\n`);
   await writeFile(path.join(outDir, 'visual-hypothesis-prompts.md'), renderVisualHypothesisPrompts(plan));
   await writeDerivedDesignSystemArtifacts(outDir, {
     storyId,
@@ -243,6 +252,89 @@ export async function captureDesignModernizeScreens(repoRoot, options = {}) {
   return { outDir, result };
 }
 
+async function ensureJourneyContextForDesignModernize(root, options = {}) {
+  if (!options.ensure) {
+    return buildDesignModernizeJourneyContext({
+      status: 'skipped',
+      artifact_kind: null,
+      curation_status: 'skipped',
+      curated: false,
+      handoff_available: false,
+      reason: 'Journey context resolution was skipped by caller.',
+      generatedBy: 'caller_disabled'
+    });
+  }
+
+  let status = await getJourneyStatus(root, { journeyId: options.journeyId });
+  let generatedBy = 'existing_journey_context';
+  if (status.status === 'missing') {
+    const derived = await deriveJourneyMap(root, { journeyId: options.journeyId });
+    status = await getJourneyStatus(root, { journeyId: derived.journey.journey_id });
+    generatedBy = 'design-modernize_plan';
+  }
+
+  return buildDesignModernizeJourneyContext({ ...status, generatedBy });
+}
+
+function buildDesignModernizeJourneyContext(status = {}) {
+  const curated = status.curated === true;
+  const available = curated && status.status === 'available';
+  const gateStatus = available
+    ? 'passed'
+    : status.status === 'skipped'
+      ? 'skipped'
+      : status.status === 'missing'
+        ? 'needs_evidence'
+        : 'needs_review';
+  const reason = available
+    ? 'Curated Journey is available for UI modernization decisions.'
+    : status.reason ?? 'Journey context needs review before UI modernization is treated as settled.';
+  return {
+    schema_version: '0.1.0',
+    model: 'vibepro-design-modernize-journey-context-v1',
+    required_for_ui_modernize: true,
+    status: status.status ?? 'unknown',
+    generated_by: status.generatedBy ?? 'unknown',
+    journey_id: status.journey_id ?? status.journey?.journey_id ?? null,
+    artifact_kind: status.artifact_kind ?? null,
+    curation_status: status.curation_status ?? null,
+    curated,
+    curated_journey_path: status.curated_journey_path ?? null,
+    handoff_available: status.handoff_available === true,
+    walking_skeleton_status: status.walking_skeleton_status ?? null,
+    conflict_count: status.conflict_count ?? 0,
+    open_question_count: status.open_question_count ?? 0,
+    authority: curated
+      ? 'curated_journey'
+      : status.artifact_kind === 'journey_context_pack'
+        ? 'handoff_context_only'
+        : 'missing',
+    reason,
+    artifacts: {
+      context_pack: status.context_pack || status.journey ? '.vibepro/journey/latest-journey.json' : null,
+      handoff: status.handoff_available ? '.vibepro/journey/latest-handoff.md' : null,
+      curated_journey: status.curated_journey_path ?? null
+    },
+    gate: {
+      id: 'DM-JOURNEY-CONTEXT',
+      status: gateStatus,
+      required: true,
+      reason,
+      checks: [
+        'journey_context_pack_exists_before_screen_plan',
+        'curated_journey_status_is_visible',
+        'ui_modernize_plan_does_not_treat_machine_handoff_as_authoritative'
+      ]
+    },
+    next_commands: curated
+      ? []
+      : [
+          `vibepro journey handoff <repo>${status.journey_id ? ` --id ${status.journey_id}` : ''}`,
+          `Create or attach .vibepro/journeys/${status.journey_id ?? 'default-product-journey'}.json before treating the Journey as settled`
+        ]
+  };
+}
+
 export function normalizeDesignSystemBundle(bundle, options = {}) {
   const source = bundle && typeof bundle === 'object' ? bundle : {};
   const payload = source.bundle && typeof source.bundle === 'object' ? source.bundle : source;
@@ -278,6 +370,7 @@ export function normalizeDesignSystemBundle(bundle, options = {}) {
 }
 
 export function renderDesignModernizePlan(plan) {
+  const journey = plan.journey_context ?? {};
   return `# Design Modernize Plan
 
 | Item | Value |
@@ -285,19 +378,34 @@ export function renderDesignModernizePlan(plan) {
 | Story | ${plan.story_id} |
 | Product | ${plan.product} |
 | Design Intelligence | ${plan.design_intelligence.model} |
+| Journey Context | ${journey.status ?? 'unknown'} (${journey.artifact_kind ?? '-'}) |
+| Curated Journey | ${journey.curated ? 'yes' : 'no'} |
 | External generator required | ${plan.design_intelligence.external_generator_required} |
 | Reference Design System | ${plan.reference_design_system.title ?? '-'} (${plan.reference_design_system.id ?? '-'}) |
 | Visual Foundations | ${plan.visual_foundations_reference?.source ?? '-'} |
 
+## Journey Context
+
+- Required for UI modernization: ${journey.required_for_ui_modernize ? 'yes' : 'no'}
+- Authority: ${journey.authority ?? '-'}
+- Curation status: ${journey.curation_status ?? '-'}
+- Context pack: ${journey.artifacts?.context_pack ?? '-'}
+- Handoff: ${journey.artifacts?.handoff ?? '-'}
+- Curated Journey: ${journey.curated_journey_path ?? '-'}
+- Gate: ${journey.gate?.status ?? '-'} - ${journey.gate?.reason ?? journey.reason ?? '-'}
+
+${(journey.next_commands ?? []).map((command) => `- Next: \`${command}\``).join('\n') || '- Next: -'}
+
 ## Workflow
 
 1. Graphify/Codex extract routes, components, state, CTA, data dependency, and preserved UX from current code.
-2. Capture current browser screenshots for each route before asking for visual redesign.
-3. Convert optional brand/design-system material into VibePro design constraints.
+2. Resolve Journey context before treating the UI route set as a safe modernization surface.
+3. Capture current browser screenshots for each route before asking for visual redesign.
+4. Convert optional brand/design-system material into VibePro design constraints.
    - Visual foundations are reference material only; current code, graph evidence, implementation mapping, and gates remain authoritative.
-4. Generate one screen-level design brief per route with invariants, allowed visual changes, anti-patterns, rubric, and Codex acceptance criteria.
-5. Use VibePro's Design Quality DAG to review hierarchy, density, CTA priority, state clarity, accessibility, interaction continuity, and implementation fit.
-6. Implement with Codex using this spec, Graphify evidence, current screenshots, and current code as the source of truth.
+5. Generate one screen-level design brief per route with invariants, allowed visual changes, anti-patterns, rubric, and Codex acceptance criteria.
+6. Use VibePro's Design Quality DAG to review Journey continuity, hierarchy, density, CTA priority, state clarity, accessibility, interaction continuity, and implementation fit.
+7. Implement with Codex using this spec, Journey context, Graphify evidence, current screenshots, and current code as the source of truth.
 
 ## Screens
 
@@ -323,7 +431,18 @@ ${screen.design_brief.body}
 
 export function renderImplementationSpec(plan) {
   const clauses = plan.spec_gate.checks.map((check) => `- ${check.id}: ${check.statement}`).join('\n');
+  const journey = plan.journey_context ?? {};
   return `# ${plan.story_id} Implementation Spec
+
+## Journey Context
+
+- Status: ${journey.status ?? 'unknown'}
+- Artifact kind: ${journey.artifact_kind ?? '-'}
+- Curated: ${journey.curated ? 'yes' : 'no'}
+- Curation status: ${journey.curation_status ?? '-'}
+- Authority: ${journey.authority ?? '-'}
+- Gate: ${journey.gate?.status ?? '-'} - ${journey.gate?.reason ?? journey.reason ?? '-'}
+- Next commands: ${(journey.next_commands ?? []).length === 0 ? '-' : journey.next_commands.map((command) => `\`${command}\``).join(', ')}
 
 ## Invariants
 
@@ -1035,7 +1154,7 @@ Return an implementation-ready screen direction with concrete component/layout c
   };
 }
 
-function buildDesignQualityDag({ storyId, product, screens }) {
+function buildDesignQualityDag({ storyId, product, screens, journeyContext = null }) {
   const screenNodes = screens.map((screen) => ({
     id: `design:screen:${routeToKey(screen.route).toLowerCase()}`,
     type: 'design_screen_gate',
@@ -1054,6 +1173,18 @@ function buildDesignQualityDag({ storyId, product, screens }) {
     ]
   }));
   const nodes = [
+    {
+      id: 'design:journey_context',
+      type: 'design_journey_context_gate',
+      label: 'Journey Context',
+      status: journeyContext?.gate?.status ?? 'needs_evidence',
+      required: true,
+      artifact_kind: journeyContext?.artifact_kind ?? null,
+      curated: journeyContext?.curated === true,
+      curation_status: journeyContext?.curation_status ?? null,
+      reason: journeyContext?.gate?.reason ?? journeyContext?.reason ?? null,
+      next_commands: journeyContext?.next_commands ?? []
+    },
     {
       id: 'design:current_ui_evidence',
       type: 'design_evidence_gate',
@@ -1091,6 +1222,7 @@ function buildDesignQualityDag({ storyId, product, screens }) {
     status: nodes.some((node) => node.status === 'needs_evidence') ? 'needs_evidence' : 'ready_for_review',
     nodes,
     edges: [
+      { from: 'design:journey_context', to: 'design:current_ui_evidence' },
       { from: 'design:current_ui_evidence', to: 'design:invariant_lock' },
       ...screenNodes.map((node) => ({ from: 'design:invariant_lock', to: node.id })),
       ...screenNodes.map((node) => ({ from: node.id, to: 'design:implementation_acceptance' }))
@@ -1227,6 +1359,10 @@ function buildSpecGate(screens) {
       {
         id: 'DQ-GLOBAL-1',
         statement: 'Design Quality DAG must preserve information architecture while improving hierarchy, CTA priority, state clarity, density, accessibility, and implementation fit.'
+      },
+      {
+        id: 'JOURNEY-GLOBAL-1',
+        statement: 'Design Modernize plans must resolve top-level Journey context and must not treat machine-derived handoff evidence as a curated product Journey.'
       },
       {
         id: 'V-GLOBAL-1',
