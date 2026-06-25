@@ -3,9 +3,9 @@
 - story: story-vibepro-design-modernize-journey-context
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 16636
+- artifact_lines: 16726
 - product_changed_lines: 387
-- artifact_code_ratio: 42.987
+- artifact_code_ratio: 43.22
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_069770c7900fec15edb1f6569806274f verification_updated_at=2026-06-25T08:44:29.960Z verification_fingerprint=sha256:4e5df25b269939bafd46f276797343f9d4118d3ad62a54e300a363d9eee70f0a
