@@ -282,10 +282,18 @@ test('compact canonical audit index resolves merged story and renders evidence c
     source: 'execute_merge',
     promoted_at: '2026-06-23T00:10:00.000Z',
     evidence_depth: 'standard',
-    handoff_replay_status: 'summary_ready',
+    handoff_replay_status: 'ready',
     cost_summary: costSummary,
+    replay_bundle: {
+      compression: 'gzip',
+      compressed_bytes: 512,
+      expanded_bytes: 4096,
+      expanded_line_count: 120,
+      path: 'docs/management/audit-artifacts/story-compact-audit/audit-replay-bundle.json.gz'
+    },
     artifacts: [
-      { kind: 'audit_index', canonical_path: 'docs/management/audit-artifacts/story-compact-audit/audit-index.json' }
+      { kind: 'audit_index', canonical_path: 'docs/management/audit-artifacts/story-compact-audit/audit-index.json' },
+      { kind: 'compressed_replay_bundle', canonical_path: 'docs/management/audit-artifacts/story-compact-audit/audit-replay-bundle.json.gz' }
     ]
   }, null, 2));
 
@@ -299,9 +307,11 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit_summary');
   assert.equal(report.evidence_cost.budget_exceeded_count, 1);
   assert.equal(report.evidence_cost.total_artifact_lines, 2200);
+  assert.equal(report.evidence_cost.by_story[0].replay_bundle.compressed_bytes, 512);
   assert.match(renderUsageReport(report), /## 証跡コスト/);
   assert.match(renderUsageReport(report), /story-compact-audit: depth=standard budget=exceeded/);
   assert.match(renderUsageReport(report), /diff=available src=8 test=4 docs=6 audit=30 other=2/);
+  assert.match(renderUsageReport(report), /replay_bundle=gzip:compressed_bytes=512:expanded_lines=120/);
   assert.match(renderUsageReport(report), /tokens=未確認/);
 });
 

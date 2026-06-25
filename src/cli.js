@@ -137,6 +137,10 @@ import {
   writeNarrative
 } from './report-store.js';
 import { createUsageReport, renderUsageReport } from './usage-report.js';
+import {
+  renderCanonicalAuditReplay,
+  replayCanonicalAuditBundle
+} from './canonical-audit.js';
 import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
 import { buildReviewRepairPlan, renderReviewRepair } from './review-repair.js';
 import {
@@ -266,6 +270,7 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
+  vibepro audit replay [repo] --story-id <id> [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -446,6 +451,7 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
+  vibepro audit replay [repo] --story-id <id> [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -522,7 +528,7 @@ export const TOP_LEVEL_COMMANDS = [
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
-  'design-modernize', 'design-system', 'explore', 'performance',
+  'audit', 'design-modernize', 'design-system', 'explore', 'performance',
   'nocodb', 'repo-status'
 ];
 
@@ -759,6 +765,26 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown usage command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'audit') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'replay') {
+        const result = await replayCanonicalAuditBundle(repoRoot, {
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderCanonicalAuditReplay(result));
+        return { exitCode: result.status === 'ready' ? 0 : 2, command, subcommand, result };
+      }
+      write(stderr, `Unknown audit command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

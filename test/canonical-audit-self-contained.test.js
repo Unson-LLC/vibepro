@@ -4,7 +4,10 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { promoteCanonicalAuditArtifacts } from '../src/canonical-audit.js';
+import {
+  promoteCanonicalAuditArtifacts,
+  replayCanonicalAuditBundle
+} from '../src/canonical-audit.js';
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
@@ -144,8 +147,14 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(bundle.evidence_depth, 'standard');
   assert.equal(bundle.cost_summary.budget_status, 'exceeded');
   assert.equal(bundle.artifacts.some((item) => item.kind === 'audit_index'), true);
-  assert.equal(bundle.raw_artifacts.some((item) => item.kind === 'pr_prepare' && item.persisted === false), true);
+  assert.equal(bundle.artifacts.some((item) => item.kind === 'compressed_replay_bundle'), true);
+  assert.equal(bundle.handoff_replay_status, 'ready');
+  assert.equal(bundle.raw_artifacts.some((item) => item.kind === 'pr_prepare' && item.persisted === 'compressed'), true);
+  assert.equal(bundle.replay_bundle.compression, 'gzip');
+  assert.equal(bundle.replay_bundle.included_artifact_kinds.includes('pr_prepare'), true);
   const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
+  assert.equal(auditIndex.replay_bundle.path, bundle.replay_bundle.path);
+  assert.equal(auditIndex.replay_bundle.replay_command, `vibepro audit replay . --story-id ${storyId}`);
   assert.equal(auditIndex.pr_prepare.present, true);
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
@@ -158,6 +167,66 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
     () => readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'), 'utf8'),
     /ENOENT/
   );
+  const replay = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(replay.status, 'ready');
+  assert.equal(replay.verdict.pr_prepare, 'ready_for_review');
+  assert.equal(replay.verdict.pr_merge, 'merged');
+  assert.equal(replay.included_artifact_kinds.includes('pr_prepare'), true);
+});
+
+test('compressed canonical audit replay blocks when the bundle is corrupted', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-replay-corrupt-'));
+  const storyId = 'story-corrupt-replay';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    gate_status: { overall_status: 'ready_for_review' },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({ id: `gate-${index}` }))
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  await writeFile(path.join(root, promoted.bundle.replay_bundle.path), 'not gzip\n');
+  const replay = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(replay.status, 'blocked');
+  assert.equal(replay.reason, 'compressed_hash_mismatch');
+});
+
+test('compressed canonical audit replay blocks when hash metadata is missing', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-replay-missing-hash-'));
+  const storyId = 'story-missing-replay-hash';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    gate_status: { overall_status: 'ready_for_review' },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({ id: `gate-${index}` }))
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  const auditIndexPath = path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json');
+  const auditBundlePath = path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-bundle.json');
+  const auditIndex = await readJson(auditIndexPath);
+  const auditBundle = await readJson(auditBundlePath);
+
+  delete auditIndex.replay_bundle.compressed_hash;
+  delete auditBundle.replay_bundle.compressed_hash;
+  delete auditBundle.decision_index.replay_bundle.compressed_hash;
+  await writeJson(auditIndexPath, auditIndex);
+  await writeJson(auditBundlePath, auditBundle);
+  const missingCompressedHash = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(missingCompressedHash.status, 'blocked');
+  assert.equal(missingCompressedHash.reason, 'compressed_hash_missing');
+
+  auditIndex.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  auditBundle.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  auditBundle.decision_index.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
+  delete auditIndex.replay_bundle.content_hash;
+  delete auditBundle.replay_bundle.content_hash;
+  delete auditBundle.decision_index.replay_bundle.content_hash;
+  await writeJson(auditIndexPath, auditIndex);
+  await writeJson(auditBundlePath, auditBundle);
+  const missingContentHash = await replayCanonicalAuditBundle(root, { storyId });
+  assert.equal(missingContentHash.status, 'blocked');
+  assert.equal(missingContentHash.reason, 'content_hash_missing');
 });
 
 test('canonical audit bundle stores diff stats provenance and bucketed changed lines', async () => {

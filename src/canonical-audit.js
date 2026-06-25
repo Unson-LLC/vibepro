@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { gunzipSync, gzipSync } from 'node:zlib';
 
 import {
   buildCanonicalEvidenceCostSummary,
@@ -23,6 +24,7 @@ const REVIEW_AUDIT_FILES = [/^review-summary\.json$/, /^review-result-.+\.json$/
 const REVIEW_HANDOFF_FILES = [/^review-request-.+\.md$/];
 const VIBEPRO_REFERENCE_RE = /\.vibepro\/[A-Za-z0-9_./:@-]+/g;
 const MAX_REFERENCED_ARTIFACT_BYTES = 512 * 1024;
+const COMPRESSED_REPLAY_BUNDLE_FILE = 'audit-replay-bundle.json.gz';
 
 export function getCanonicalAuditDir(repoRoot, storyId) {
   return path.join(path.resolve(repoRoot), CANONICAL_AUDIT_ROOT, storyId);
@@ -180,6 +182,18 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   const indexPath = path.join(canonicalDir, 'audit-index.json');
   const summaryPath = path.join(canonicalDir, 'decision-summary.md');
   await mkdir(canonicalDir, { recursive: true });
+  const replayBundle = await writeCompressedReplayBundle(root, {
+    storyId,
+    source,
+    promotedAt,
+    canonicalDir,
+    decisionIndex,
+    inventory,
+    costSummary,
+    merge
+  });
+  decisionIndex.replay_bundle = replayBundle;
+  costSummary.replay_bundle = replayBundle.cost;
   await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
   await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
   const artifacts = [
@@ -190,6 +204,12 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     {
       kind: 'decision_summary',
       canonical_path: toWorkspaceRelative(root, summaryPath)
+    },
+    {
+      kind: 'compressed_replay_bundle',
+      canonical_path: replayBundle.path,
+      compression: replayBundle.compression,
+      content_hash: replayBundle.content_hash
     }
   ];
   const bundle = {
@@ -217,19 +237,23 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     evidence_depth: costSummary.evidence_depth,
     cost_summary: costSummary,
     decision_index: decisionIndex,
+    replay_bundle: replayBundle,
     merge: decisionIndex.pr_merge.present ? decisionIndex.pr_merge.summary : null,
-    handoff_replay_status: 'summary_ready',
+    handoff_replay_status: 'ready',
     handoff_replay: {
-      status: 'summary_ready',
+      status: 'ready',
       resolved_reference_count: 0,
       copied_reference_count: 0,
-      unresolved_reference_count: 0
+      unresolved_reference_count: 0,
+      replay_bundle: replayBundle.path,
+      replay_command: replayBundle.replay_command
     },
     artifacts,
     raw_artifacts: inventory.artifacts.map((artifact) => ({
       kind: artifact.kind,
       source: toWorkspaceRelative(root, artifact.sourcePath),
-      persisted: false,
+      persisted: 'compressed',
+      compressed_path: replayBundle.path,
       digest: artifact.digest,
       line_count: artifact.line_count
     })),
@@ -244,6 +268,68 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     canonical_dir: canonicalDir,
     bundle_path: bundlePath,
     bundle
+  };
+}
+
+async function writeCompressedReplayBundle(root, {
+  storyId,
+  source,
+  promotedAt,
+  canonicalDir,
+  decisionIndex,
+  inventory,
+  costSummary,
+  merge
+}) {
+  const replayPayload = {
+    schema_version: '0.1.0',
+    artifact_kind: 'canonical_audit_replay_bundle',
+    story_id: storyId,
+    source,
+    promoted_at: promotedAt,
+    decision_index: decisionIndex,
+    cost_summary: costSummary,
+    merge: merge ? {
+      status: merge.status ?? null,
+      pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
+      merge_commit_sha: merge.merge_commit_sha ?? null,
+      merged_at: merge.merged_at ?? null,
+      current_head_sha: merge.current_head_sha ?? null
+    } : null,
+    artifacts: inventory.artifacts.map((artifact) => ({
+      kind: artifact.kind,
+      type: artifact.type,
+      stage: artifact.stage,
+      source: toWorkspaceRelative(root, artifact.sourcePath),
+      digest: artifact.digest,
+      line_count: artifact.line_count,
+      data: artifact.type === 'json' ? artifact.data : null,
+      content: artifact.type === 'text' ? artifact.content : null
+    })),
+    missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts)
+  };
+  const expandedText = `${JSON.stringify(replayPayload, null, 2)}\n`;
+  const compressed = gzipSync(Buffer.from(expandedText, 'utf8'));
+  const bundlePath = path.join(canonicalDir, COMPRESSED_REPLAY_BUNDLE_FILE);
+  await writeFile(bundlePath, compressed);
+  const includedKinds = [...new Set(replayPayload.artifacts.map((artifact) => artifact.kind))].sort();
+  return {
+    schema_version: '0.1.0',
+    path: toWorkspaceRelative(root, bundlePath),
+    compression: 'gzip',
+    media_type: 'application/json',
+    content_hash: `sha256:${sha256Hex(Buffer.from(expandedText, 'utf8'))}`,
+    compressed_hash: `sha256:${sha256Hex(compressed)}`,
+    expanded_bytes: Buffer.byteLength(expandedText, 'utf8'),
+    compressed_bytes: compressed.length,
+    expanded_line_count: countTextLines(expandedText),
+    included_artifact_kinds: includedKinds,
+    replay_command: `vibepro audit replay . --story-id ${storyId}`,
+    cost: {
+      compressed_bytes: compressed.length,
+      expanded_bytes: Buffer.byteLength(expandedText, 'utf8'),
+      expanded_line_count: countTextLines(expandedText)
+    }
   };
 }
 
@@ -314,8 +400,132 @@ async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, typ
     source: toWorkspaceRelative(root, sourcePath),
     canonical_path: toWorkspaceRelative(root, targetPath),
     line_count: countTextLines(text),
-    digest: `sha256:${createHash('sha256').update(text).digest('hex')}`,
-    data: type === 'json' ? JSON.parse(text) : null
+    digest: `sha256:${sha256Hex(text)}`,
+    data: type === 'json' ? JSON.parse(text) : null,
+    content: type === 'text' ? text : null
+  };
+}
+
+export async function replayCanonicalAuditBundle(repoRoot, { storyId } = {}) {
+  if (!storyId) throw new Error('canonical audit replay requires storyId');
+  const root = path.resolve(repoRoot);
+  const canonicalDir = getCanonicalAuditDir(root, storyId);
+  const indexPath = path.join(canonicalDir, 'audit-index.json');
+  const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
+  const index = await readJsonIfExists(indexPath);
+  const bundle = await readJsonIfExists(bundlePath);
+  const replayBundle = index?.replay_bundle ?? bundle?.replay_bundle ?? bundle?.decision_index?.replay_bundle ?? null;
+  if (!replayBundle?.path) {
+    return {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      status: 'blocked',
+      handoff_replay_status: 'blocked',
+      reason: 'compressed_replay_bundle_missing',
+      decision_index_present: Boolean(index ?? bundle?.decision_index)
+    };
+  }
+
+  const replayPath = path.isAbsolute(replayBundle.path)
+    ? replayBundle.path
+    : path.join(root, replayBundle.path);
+  let compressed;
+  let expandedText;
+  let payload;
+  try {
+    compressed = await readFile(replayPath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    return replayBlocked(storyId, replayBundle, 'compressed_replay_bundle_file_missing');
+  }
+
+  const compressedHash = `sha256:${sha256Hex(compressed)}`;
+  if (!replayBundle.compressed_hash) {
+    return replayBlocked(storyId, replayBundle, 'compressed_hash_missing');
+  }
+  if (replayBundle.compressed_hash !== compressedHash) {
+    return replayBlocked(storyId, replayBundle, 'compressed_hash_mismatch', {
+      expected: replayBundle.compressed_hash,
+      actual: compressedHash
+    });
+  }
+
+  try {
+    expandedText = gunzipSync(compressed).toString('utf8');
+  } catch {
+    return replayBlocked(storyId, replayBundle, 'compressed_replay_bundle_expand_failed');
+  }
+
+  const contentHash = `sha256:${sha256Hex(expandedText)}`;
+  if (!replayBundle.content_hash) {
+    return replayBlocked(storyId, replayBundle, 'content_hash_missing');
+  }
+  if (replayBundle.content_hash !== contentHash) {
+    return replayBlocked(storyId, replayBundle, 'content_hash_mismatch', {
+      expected: replayBundle.content_hash,
+      actual: contentHash
+    });
+  }
+
+  try {
+    payload = JSON.parse(expandedText);
+  } catch {
+    return replayBlocked(storyId, replayBundle, 'compressed_replay_bundle_parse_failed');
+  }
+
+  if (payload.schema_version !== '0.1.0' || payload.story_id !== storyId) {
+    return replayBlocked(storyId, replayBundle, 'compressed_replay_bundle_schema_mismatch', {
+      payload_schema_version: payload.schema_version ?? null,
+      payload_story_id: payload.story_id ?? null
+    });
+  }
+
+  const payloadIndex = payload.decision_index ?? index ?? bundle?.decision_index ?? null;
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    status: 'ready',
+    handoff_replay_status: 'ready',
+    replay_bundle: replayBundle,
+    replayed_at: new Date().toISOString(),
+    verdict: {
+      pr_prepare: payloadIndex?.pr_prepare?.gate_status?.overall_status ?? null,
+      pr_merge: payloadIndex?.pr_merge?.summary?.status ?? null,
+      verification: payloadIndex?.verification ?? null,
+      review: payloadIndex?.review ?? null,
+      traceability: payloadIndex?.traceability ?? null
+    },
+    merge: payload.merge ?? payloadIndex?.pr_merge?.summary ?? null,
+    artifact_count: payload.artifacts?.length ?? 0,
+    included_artifact_kinds: [...new Set((payload.artifacts ?? []).map((artifact) => artifact.kind))].sort(),
+    missing_artifacts: payload.missing_artifacts ?? []
+  };
+}
+
+export function renderCanonicalAuditReplay(result) {
+  if (result.status !== 'ready') {
+    return `Audit replay blocked: ${result.story_id} reason=${result.reason ?? 'unknown'}\n`;
+  }
+  return [
+    `Audit replay ready: ${result.story_id}`,
+    `- pr_prepare: ${result.verdict?.pr_prepare ?? 'unknown'}`,
+    `- pr_merge: ${result.verdict?.pr_merge ?? 'unknown'}`,
+    `- verification: commands=${result.verdict?.verification?.command_count ?? 0} pass=${result.verdict?.verification?.pass_count ?? 0} fail=${result.verdict?.verification?.fail_count ?? 0}`,
+    `- review: summaries=${result.verdict?.review?.summary_count ?? 0} results=${result.verdict?.review?.result_count ?? 0} pass=${result.verdict?.review?.pass_count ?? 0} block=${result.verdict?.review?.block_count ?? 0}`,
+    `- artifacts: ${result.artifact_count}`,
+    `- bundle: ${result.replay_bundle?.path ?? 'unknown'}`
+  ].join('\n') + '\n';
+}
+
+function replayBlocked(storyId, replayBundle, reason, extra = {}) {
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    status: 'blocked',
+    handoff_replay_status: 'blocked',
+    reason,
+    replay_bundle: replayBundle,
+    ...extra
   };
 }
 
@@ -699,6 +909,10 @@ function artifactTimestamp(data) {
 function countTextLines(text) {
   if (!text) return 0;
   return String(text).split(/\r\n|\r|\n/).length;
+}
+
+function sha256Hex(value) {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 function dedupeMissingArtifacts(items = []) {

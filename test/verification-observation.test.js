@@ -222,16 +222,17 @@ test('observation text contributes to judgment evidence classification', async (
   await writeFile(path.join(root, 'src-change.js'), 'export const x = 1;\n');
   await git(root, ['add', 'src-change.js']);
   await git(root, ['commit', '-m', 'feat: change']);
-  // bland summary and command, but observation scenarios describe all workflow evidence kinds
+  // bland summary and command, but observation markers describe all workflow evidence kinds
   await runCli([
     'verify', 'record', root, '--id', 'story-test-obs', '--kind', 'e2e', '--status', 'pass',
     '--command', 'node run-check.js',
     '--summary', 'verification done',
     '--artifact', 'observation-evidence.json',
     '--target', 'src-change.js',
-    '--scenario', 'flow_replay: gate review workflow was replayed',
-    '--scenario', 'artifact_replay: generated gate-dag and pr-prepare outputs were replayed',
-    '--scenario', 'scenario_clause_e2e: acceptance clause for gate artifact workflow was exercised'
+    '--scenario', 'flow_replay',
+    '--scenario', 'artifact_replay',
+    '--scenario', 'scenario_clause_e2e',
+    '--observed', 'scenario_clause_e2e=true'
   ]);
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-obs', '--base', 'main', '--json']);
   const gateDag = await readJson(path.join(root, '.vibepro', 'pr', 'story-test-obs', 'gate-dag.json'));

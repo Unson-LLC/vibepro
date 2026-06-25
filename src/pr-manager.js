@@ -6596,7 +6596,7 @@ function classifyVerificationEvidenceItem(item) {
   if (item.kind === 'e2e' && !generic) add('e2e_runtime_path');
   if (!generic && /\b(flow replay|flow_replay|verify flow|journey|replay)\b/.test(text)) add('flow_replay');
   if (!generic && /\b(artifact replay|artifact_replay|gate-dag|pr-prepare|pr-create|stale artifact|stale readiness)\b/.test(text)) add('artifact_replay');
-  if (!generic && item.kind === 'e2e' && /\b(scenario|acceptance|clause|ac:|story-)\b/.test(text)) add('scenario_clause_e2e');
+  if (!generic && item.kind === 'e2e' && (/\b(scenario|acceptance|clause|ac:|story-)\b/.test(text) || /scenario[_ -]?clause[_ -]?e2e/.test(text))) add('scenario_clause_e2e');
   if (!generic && /\b(auth_denied|auth denied|permission denied|forbidden|unauthorized|401|403|拒否|権限)\b/.test(text)) add('auth_denied');
   if (!generic && /\b(permission_denied|permission denied|forbidden|403|権限)\b/.test(text)) add('permission_denied');
   if (!generic && /\b(boundary|edge case|境界|境界条件)\b/.test(text)) add('boundary_condition');
