@@ -3,9 +3,9 @@
 - story: story-vibepro-senior-gap-judgment
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 20769
+- artifact_lines: 20859
 - product_changed_lines: 1010
-- artifact_code_ratio: 20.563
+- artifact_code_ratio: 20.652
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: hit key=evk_3a39301b50fa388cd3a599367ba443e4 verification_updated_at=2026-06-26T14:01:34.174Z verification_fingerprint=sha256:b31ca7e6e01de101f085e01d616040f8a90307f0f9feef49cdc0ee6fa371ab12

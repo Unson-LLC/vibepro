@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-senior-gap-judgment",
   "source": "execute_merge",
-  "generated_at": "2026-06-26T14:10:27.773Z",
+  "generated_at": "2026-06-26T14:10:39.821Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-26T14:10:18.681Z",
     "diff_stats_reason": null,
-    "artifact_lines": 20769,
+    "artifact_lines": 20859,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1010,
@@ -89,7 +89,7 @@
     "product_changed_lines": 1010,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 20.563,
+    "artifact_code_ratio": 20.652,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -112,9 +112,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 106307,
-      "expanded_bytes": 1046748,
-      "expanded_line_count": 21078
+      "compressed_bytes": 107146,
+      "expanded_bytes": 1052144,
+      "expanded_line_count": 21168
     }
   },
   "pr_prepare": {
@@ -229,11 +229,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-senior-gap-judgment/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:48ad45aa86463416cc5d1a08cc4fd0b3fe78dc7d6f135bdc69e694a5224af439",
-    "compressed_hash": "sha256:63ac2710dcb12db66e50f6319b49a9c7d86de0f448f9ad8aae40a2e8960731d4",
-    "expanded_bytes": 1046748,
-    "compressed_bytes": 106307,
-    "expanded_line_count": 21078,
+    "content_hash": "sha256:984bba55132533eb735c6bb1276f0f8aaf0f70618555f400069d6376e9e89846",
+    "compressed_hash": "sha256:d523a30772930e44833633416c430de5560871591236489ff18674283f8dc090",
+    "expanded_bytes": 1052144,
+    "compressed_bytes": 107146,
+    "expanded_line_count": 21168,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -250,9 +250,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-senior-gap-judgment",
     "cost": {
-      "compressed_bytes": 106307,
-      "expanded_bytes": 1046748,
-      "expanded_line_count": 21078
+      "compressed_bytes": 107146,
+      "expanded_bytes": 1052144,
+      "expanded_line_count": 21168
     }
   }
 }
