@@ -43,6 +43,14 @@ import {
   renderNativeDesignSystemSummary,
   validateDesignSystem
 } from './design-system.js';
+import {
+  getDesignSsotStatus,
+  initDesignSsot,
+  linkDesignSsot,
+  reconcileDesignSsot,
+  renderDesignSsotStatus,
+  renderDesignSsotSummary
+} from './design-ssot.js';
 import { assertOutputLanguage, localizedText, normalizeOutputLanguage, resolveHumanOutputLanguage, setOutputLanguage } from './language.js';
 import { listCheckPacks, renderCheckPackSummary, runCheckPack } from './check-packs.js';
 import { renderDoctor, runDoctor } from './doctor.js';
@@ -261,6 +269,15 @@ Existing UI modernization:
   then use design-modernize derive-system or plan for screen-level work. Generated
   visual ideas are hypotheses; current code, Story/Spec, DS gates, and Gate DAG
   remain authoritative.
+  vibepro design-ssot init <repo> --id <root-id> --root-doc <path>
+      Create or update a repo-committed Design SSOT lineage registry root.
+  vibepro design-ssot link <repo> --id <root-id> --kind <kind> --path <child-doc>
+      Link child ADR/Architecture/Story/Spec/UX docs to the design root.
+  vibepro design-ssot status <repo> [--id <root-id>]
+      Show the machine-readable design root / child lineage registry.
+  vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
+      Check root-only changes, missing required children, frontmatter gaps,
+      stale root hash bindings, and deterministic ADR supersession conflicts.
   design-modernize plan also resolves top-level Journey context: if no Journey
   context pack exists, it creates one through the Journey workflow, writes
   journey-context.json into the plan artifacts, and keeps non-curated handoff
@@ -302,6 +319,10 @@ Usage:
   vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
   vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
+  vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
+  vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
+  vibepro design-ssot status [repo] [--id <root-id>] [--json]
+  vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -444,6 +465,15 @@ base branch:
   .vibepro/design-system/<ds-id>/evidence-coverage.json と ds-gate.json を確認し、
   その後に design-modernize derive-system または plan で画面別作業へ進みます。
   生成された見た目案は仮説であり、現行コード、Story/Spec、DS gate、Gate DAGが正です。
+  vibepro design-ssot init <repo> --id <root-id> --root-doc <path>
+      repoにcommitされるDesign SSOT lineage registry rootを作成または更新します。
+  vibepro design-ssot link <repo> --id <root-id> --kind <kind> --path <child-doc>
+      child ADR/Architecture/Story/Spec/UX docsをdesign rootへ紐付けます。
+  vibepro design-ssot status <repo> [--id <root-id>]
+      design root / child lineage registryを機械可読に確認します。
+  vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
+      root-only変更、必須child欠落、frontmatter不足、stale hash、
+      accepted ADR supersession矛盾を確認します。
   design-modernize plan は top-level Journey context にも接続します。Journey context pack が
   未生成ならJourney workflow経由で作成し、plan artifactにjourney-context.jsonを書き、
   curatedではないhandoff証跡をauthoritative Journeyとして扱わずに表示します。
@@ -489,6 +519,10 @@ Usage:
   vibepro design-system lint [repo] --id <ds-id> [--file <file>] [--json]
   vibepro design-system diff [repo] --id <ds-id> --base <base-ref> [--json]
   vibepro design-system validate [repo] --id <ds-id> --story-id <story-id> [--json]
+  vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
+  vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
+  vibepro design-ssot status [repo] [--id <root-id>] [--json]
+  vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
@@ -539,7 +573,7 @@ export const TOP_LEVEL_COMMANDS = [
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
-  'audit', 'design-modernize', 'design-system', 'explore', 'performance',
+  'audit', 'design-modernize', 'design-system', 'design-ssot', 'explore', 'performance',
   'nocodb', 'repo-status'
 ];
 
@@ -984,6 +1018,72 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown design-system command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'design-ssot') {
+      const subcommand = rest[0] ?? 'status';
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (subcommand === 'init') {
+        const result = await initDesignSsot(repoRoot, {
+          id: getOption(rest, '--id'),
+          rootDoc: getOption(rest, '--root-doc') ?? getOption(rest, '--root'),
+          title: getOption(rest, '--title'),
+          owner: getOption(rest, '--owner'),
+          status: getOption(rest, '--status'),
+          registry: getOption(rest, '--registry'),
+          requiredChildKinds: getOption(rest, '--required-child-kinds')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDesignSsotStatus({
+            status: result.status,
+            registry_sources: [result.registry],
+            summary: {
+              design_root_count: 1,
+              child_link_count: result.design_root.child_links.length
+            },
+            design_roots: [result.design_root]
+          }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'link') {
+        const result = await linkDesignSsot(repoRoot, {
+          id: getOption(rest, '--id'),
+          kind: getOption(rest, '--kind'),
+          path: getOption(rest, '--path') ?? getOption(rest, '--child'),
+          relationship: getOption(rest, '--relationship'),
+          registry: getOption(rest, '--registry'),
+          required: !hasFlag(rest, '--optional'),
+          lastReviewedRootHash: getOption(rest, '--last-reviewed-root-hash')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Design SSOT linked: ${result.design_root_id} -> ${result.child.kind}:${result.child.path}\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'status') {
+        const result = await getDesignSsotStatus(repoRoot, {
+          id: getOption(rest, '--id'),
+          registry: getOption(rest, '--registry')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderDesignSsotStatus(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'reconcile') {
+        const result = await reconcileDesignSsot(repoRoot, {
+          id: getOption(rest, '--id'),
+          base: getOption(rest, '--base'),
+          registry: getOption(rest, '--registry')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderDesignSsotSummary(result.result)}Artifacts: ${result.outDir}\n`);
+        return { exitCode: result.result.status === 'block' ? 2 : 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown design-ssot command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 

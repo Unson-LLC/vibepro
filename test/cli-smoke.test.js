@@ -73,6 +73,7 @@ const SMOKE = {
   audit: { setup: 'story', args: (r) => ['audit', 'replay', r, '--story-id', 'story-x', '--json'] },
   'design-modernize': { setup: 'story', args: (r) => ['design-modernize', r] },
   'design-system': { setup: 'story', args: (r) => ['design-system', r] },
+  'design-ssot': { setup: 'story', args: (r) => ['design-ssot', 'status', r] },
   explore: { setup: 'story', args: (r) => ['explore', r] },
   performance: { setup: 'story', args: (r) => ['performance', r] },
   nocodb: { setup: 'none', args: () => ['nocodb'] },
