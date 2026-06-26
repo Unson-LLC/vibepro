@@ -35,6 +35,210 @@
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.pr_lifecycle.execution",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-pr-create-path-enforcement.md",
+        "docs/architecture/vibepro-execute-merge-command.md",
+        "docs/specs/vibepro-pr-ship-command.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/merge-manager.js",
+          "src/task-manager.js",
+          "src/usage-report.js"
+        ],
+        "symbols": [
+          "ready_for_pr_create",
+          "pr_create_allowed",
+          "execute merge",
+          "pr_merge"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "pr_lifecycle_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.agent_review.lifecycle",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-AR-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-agent-review-lifecycle-control.md",
+        "docs/architecture/vibepro-review-inspection-required-gate.md",
+        "docs/specs/vibepro-agent-review-lifecycle-control.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/agent-review.js",
+          "src/review-repair.js"
+        ],
+        "symbols": [
+          "gate:agent_review",
+          "review:preflight",
+          "review:record",
+          "review:join",
+          "parallel_subagent"
+        ],
+        "risk_surfaces": [
+          "review_lifecycle",
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "agent_review_lifecycle_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.verification.evidence_lifecycle",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-gate-artifact-consistency.md",
+        "docs/architecture/vibepro-evidence-summary-reuse.md",
+        "docs/architecture/vibepro-traceability-autobind-backfill.md",
+        "docs/specs/vibepro-gate-artifact-consistency.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/verification-evidence.js",
+          "src/evidence-reuse.js",
+          "src/traceability.js",
+          "src/git-fingerprint.js",
+          "src/canonical-audit.js"
+        ],
+        "symbols": [
+          "gate:artifact_consistency",
+          "verification_evidence",
+          "evidence_reuse",
+          "binding_status",
+          "reused_merge_delta"
+        ],
+        "risk_surfaces": [
+          "verification_evidence",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "evidence_lifecycle_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.story_source.integrity",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STORY-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/ADR-story-source-integrity-gate.md",
+        "docs/specs/story-source-integrity-gate.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/story-manager.js",
+          "src/requirement-consistency.js"
+        ],
+        "symbols": [
+          "gate:story_source_integrity",
+          "story_source_mismatch",
+          "selected_story_id"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "story_source_integrity_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.engineering_judgment.route_axes",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-JUDGE-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-engineering-judgment-dag.md",
+        "docs/architecture/vibepro-engineering-judgment-activation-precision.md",
+        "docs/specs/vibepro-senior-judgment-multi-axis-dag.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/change-risk-classifier.js",
+          "src/authorization-scoring.js",
+          "src/evidence-depth-planner.js"
+        ],
+        "symbols": [
+          "gate:engineering_judgment_route",
+          "judgment_axes",
+          "active_accepted_followup",
+          "risk_surfaces"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "engineering_judgment_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.managed_worktree.execution_locality",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-managed-worktree-gate.md",
+        "docs/architecture/vibepro-managed-worktree-execution-dag.md",
+        "docs/specs/vibepro-managed-worktree-gate.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/managed-worktree.js",
+          "src/managed-worktree-gate.js",
+          "src/execution-state.js"
+        ],
+        "symbols": [
+          "gate:managed_worktree",
+          "managed_worktree",
+          "managed worktree locality",
+          "expected_head_sha"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "managed_worktree_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
     }
   ]
 }

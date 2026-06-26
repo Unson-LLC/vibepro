@@ -6557,14 +6557,21 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
   const currentRequirement = requiredEvidenceForJudgmentSubcheck('current_reality', surfaceProfile);
   const failureRequirement = requiredEvidenceForJudgmentSubcheck('failure_modes', surfaceProfile);
   const doneRequirement = requiredEvidenceForJudgmentSubcheck('done_evidence', surfaceProfile);
+  const docsOnlyEvidence = surfaceProfile?.surface === 'docs_only' ? docs : [];
   return {
     docs,
     current_reality: [
       ...evidence.filter((item) => currentRequirement.includes(item.kind)),
       ...graphImpact
     ],
-    failure_modes: evidence.filter((item) => failureRequirement.includes(item.kind)),
-    done_evidence: evidence.filter((item) => doneRequirement.includes(item.kind)),
+    failure_modes: [
+      ...docsOnlyEvidence,
+      ...evidence.filter((item) => failureRequirement.includes(item.kind))
+    ],
+    done_evidence: [
+      ...docsOnlyEvidence,
+      ...evidence.filter((item) => doneRequirement.includes(item.kind))
+    ],
     graph_impact: graphImpact
   };
 }

@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-responsibility-authority-core-catalog",
+  "status": "pass",
+  "artifact_kind": "responsibility_authority_core_replay",
+  "command": "node --test test/responsibility-authority.test.js",
+  "replayed_contracts": [
+    "VIBE-RAR-001",
+    "VIBE-RAR-002",
+    "VIBE-CORE-PR-001",
+    "VIBE-CORE-AR-001",
+    "VIBE-CORE-EV-001",
+    "VIBE-CORE-STORY-001",
+    "VIBE-CORE-JUDGE-001",
+    "VIBE-CORE-WT-001"
+  ],
+  "observed_scenarios": [
+    "unit_regression",
+    "pr_lifecycle_regression",
+    "agent_review_lifecycle_regression",
+    "evidence_lifecycle_regression",
+    "story_source_integrity_regression",
+    "engineering_judgment_regression",
+    "managed_worktree_regression",
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e"
+  ],
+  "notes": [
+    "The replay asserts that each VibePro core responsibility resolves through the root responsibility-authority.json registry and its Domain Contract clause.",
+    "The replay also keeps generic evidence from satisfying a responsibility contract unless the current evidence names the relevant clause or required evidence token."
+  ]
+}
