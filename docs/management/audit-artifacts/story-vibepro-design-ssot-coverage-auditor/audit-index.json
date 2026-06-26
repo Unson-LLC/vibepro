@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-design-ssot-coverage-auditor",
   "source": "execute_merge",
-  "generated_at": "2026-06-26T15:17:19.093Z",
+  "generated_at": "2026-06-26T15:17:22.705Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-26T15:17:14.511Z",
     "diff_stats_reason": null,
-    "artifact_lines": 20225,
+    "artifact_lines": 20315,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 468,
@@ -86,7 +86,7 @@
     "product_changed_lines": 468,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 43.216,
+    "artifact_code_ratio": 43.408,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -109,9 +109,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 102474,
-      "expanded_bytes": 1002361,
-      "expanded_line_count": 20529
+      "compressed_bytes": 103304,
+      "expanded_bytes": 1007902,
+      "expanded_line_count": 20619
     }
   },
   "pr_prepare": {
@@ -226,11 +226,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-design-ssot-coverage-auditor/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:3a2f18719883488f4420db37325861f7403a42f3681a5474e55a73b33d697c67",
-    "compressed_hash": "sha256:d20d22b1e7a8fc3f03039077070220065324d9450ca1aa2095833bc1b7e2cabe",
-    "expanded_bytes": 1002361,
-    "compressed_bytes": 102474,
-    "expanded_line_count": 20529,
+    "content_hash": "sha256:ad3a8543e9e637b796c492c7878e11ae2a372b7b759adfd9ababc5b2a5e65c0d",
+    "compressed_hash": "sha256:1c3c226f0647d8dce2297db408bdb85b5a6d5639b6a0acd9527ef7519ffd65dd",
+    "expanded_bytes": 1007902,
+    "compressed_bytes": 103304,
+    "expanded_line_count": 20619,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -247,9 +247,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-design-ssot-coverage-auditor",
     "cost": {
-      "compressed_bytes": 102474,
-      "expanded_bytes": 1002361,
-      "expanded_line_count": 20529
+      "compressed_bytes": 103304,
+      "expanded_bytes": 1007902,
+      "expanded_line_count": 20619
     }
   }
 }

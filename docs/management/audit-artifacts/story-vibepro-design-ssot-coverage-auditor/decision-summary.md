@@ -3,9 +3,9 @@
 - story: story-vibepro-design-ssot-coverage-auditor
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 20225
+- artifact_lines: 20315
 - product_changed_lines: 468
-- artifact_code_ratio: 43.216
+- artifact_code_ratio: 43.408
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_d46839bae3e1eb935a448a0e20d7c773 verification_updated_at=2026-06-26T15:09:50.511Z verification_fingerprint=sha256:b09353e53bd8745a71f320b80279634e813a31d54431082395ad9c68935ec4b3
