@@ -1657,6 +1657,8 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro design-system lint \[repo\]/);
   assert.match(output, /vibepro design-system diff \[repo\]/);
   assert.match(output, /vibepro design-system validate \[repo\]/);
+  assert.match(output, /vibepro design-ssot init \[repo\]/);
+  assert.match(output, /vibepro design-ssot reconcile \[repo\]/);
   assert.match(output, /既存UI modernize/);
   assert.match(output, /プロダクトローカルなDesign System正本/);
   assert.match(output, /evidence-coverage\.json と ds-gate\.json/);
@@ -1701,6 +1703,8 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro design-system lint \[repo\]/);
   assert.match(englishOutput, /vibepro design-system diff \[repo\]/);
   assert.match(englishOutput, /vibepro design-system validate \[repo\]/);
+  assert.match(englishOutput, /vibepro design-ssot init \[repo\]/);
+  assert.match(englishOutput, /vibepro design-ssot reconcile \[repo\]/);
   assert.match(englishOutput, /Existing UI modernization/);
   assert.match(englishOutput, /product-local Design System/);
   assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);

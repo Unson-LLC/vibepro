@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-design-ssot-registry-v1",
+  "design_roots": [
+    {
+      "id": "vibepro-design-ssot-reconciliation",
+      "title": "VibePro Design SSOT Reconciliation",
+      "root_doc": "docs/architecture/vibepro-design-ssot-reconciliation.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-design-ssot-reconciliation.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-design-ssot-reconciliation.md"
+        ]
+      }
+    }
+  ]
+}

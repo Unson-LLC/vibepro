@@ -7,13 +7,13 @@ const CHECKPOINTS = {
   story: {
     label: 'Story / Architecture / Spec checkpoint',
     description: 'Blocks implementation until Story, Architecture, and Spec gates are explicit.',
-    gate_ids: ['story', 'architecture', 'spec'],
+    gate_ids: ['story', 'architecture', 'spec', 'gate:design_ssot_reconciliation'],
     review_stages: []
   },
   'implementation-start': {
     label: 'Implementation Start checkpoint',
     description: 'Blocks coding until design gates and planning/spec reviews are complete.',
-    gate_ids: ['story', 'architecture', 'spec', 'gate:requirement'],
+    gate_ids: ['story', 'architecture', 'spec', 'gate:design_ssot_reconciliation', 'gate:requirement'],
     review_stages: ['planning_spec', 'architecture_spec']
   },
   'test-plan': {
@@ -216,6 +216,7 @@ function buildGateAction(gate) {
   if (gate.id === 'story') return 'Create or select an explicit Story before continuing.';
   if (gate.id === 'architecture') return 'Add an ADR or explicit architecture decision before implementation.';
   if (gate.id === 'spec') return 'Write or regenerate the internal Spec before implementation.';
+  if (gate.id === 'gate:design_ssot_reconciliation') return 'Resolve Design SSOT root/child lineage gaps or deterministic design doc conflicts before implementation.';
   if (gate.id === 'gate:requirement') return 'Resolve Requirement Gate gaps or contradictions in Story/Spec/Architecture.';
   if (gate.id === 'gate:unit') return `Record current-head unit evidence: \`vibepro verify record . --kind unit --status pass --command "${gate.command ?? 'npm test'}"\`.`;
   if (gate.id === 'gate:integration') return `Record current-head integration evidence: \`vibepro verify record . --kind integration --status pass --command "${gate.command ?? 'npm run typecheck'}"\`.`;

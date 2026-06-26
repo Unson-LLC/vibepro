@@ -373,6 +373,20 @@ npx vibepro design-system export /path/to/repo \
   --id <ds-id> \
   --format design-md
 
+npx vibepro design-ssot init /path/to/repo \
+  --id <root-id> \
+  --root-doc docs/architecture/central-design.md \
+  --required-child-kinds story,spec
+
+npx vibepro design-ssot link /path/to/repo \
+  --id <root-id> \
+  --kind story \
+  --path docs/management/stories/active/story-example.md
+
+npx vibepro design-ssot reconcile /path/to/repo \
+  --id <root-id> \
+  --base origin/main
+
 npx vibepro design-modernize derive-system /path/to/repo \
   --id <story-id> \
   --product <name> \
@@ -391,6 +405,8 @@ npx vibepro design-modernize plan /path/to/repo \
 `design-modernize` は、既存のルート、情報構造、CTA、状態、データ依存を保ったまま実プロダクト画面を改善するための workflow です。Design System bundle や生成された visual hypothesis は参照材料であり、VibePro が作った派生デザインシステム、現行スクリーンショット、Graphify/Codex evidence、Gate DAG が実装判断の正本です。
 
 `design-system ingest-design-md` は、DESIGN.mdのYAML tokensとMarkdown rationaleをVibePro-native DSへreference evidenceとして取り込みます。`.vibepro/design-system/<ds-id>/DESIGN.md` と `design-md.json` を保存し、token reference、prose intent、Do/Don't、contrast、diff evidenceのDS gateを追加します。DESIGN.mdは現行コード、Story、Spec、Architecture、VibePro gatesを上書きする実装正本ではありません。
+
+`design-ssot` は visual design authority ではなく、設計ドキュメントの親子関係を扱う lineage layer です。正本 registry は `design-ssot.json` や `docs/design-ssot/*.json` のように repo に commit し、`.vibepro/design-ssot/` と `.vibepro/pr/<story-id>/design-ssot-reconciliation.json` は生成証跡として使います。`pr prepare` では `gate:path_surface_matrix` と `gate:responsibility_authority` の間に `gate:design_ssot_reconciliation` を出し、root-only変更、必須child欠落、frontmatter不足、stale root hash、accepted ADR supersession矛盾をPR前に見える化します。
 
 主な成果物は `.vibepro/design-modernize/<story-id>/` 配下に出力されます。
 
