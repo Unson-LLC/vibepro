@@ -16437,6 +16437,8 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
           agent_id: 'agent-roi',
           status: 'closed',
           effective_status: 'closed',
+          started_at: '2026-06-02T00:00:00.000Z',
+          closed_at: '2026-06-02T00:02:00.000Z',
           elapsed_ms: 120000
         }
       }
@@ -16452,6 +16454,8 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
         agent_id: 'agent-roi',
         status: 'closed',
         effective_status: 'closed',
+        started_at: '2026-06-02T00:00:00.000Z',
+        closed_at: '2026-06-02T00:02:00.000Z',
         elapsed_ms: 120000
       }]
     }
@@ -16479,7 +16483,17 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
     inspection: {
       inputs: []
     },
-    judgment_delta: []
+    judgment_delta: [],
+    lifecycle: {
+      latest: {
+        agent_id: 'agent-pass-only',
+        status: 'closed',
+        effective_status: 'closed',
+        started_at: '2026-06-02T00:00:30.000Z',
+        closed_at: '2026-06-02T00:01:30.000Z',
+        elapsed_ms: 60000
+      }
+    }
   });
   await writeJson(path.join(repo, '.vibepro', 'reviews', storyId, 'gate', 'review-result-release_risk.json'), {
     story_id: storyId,
@@ -16582,7 +16596,37 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
   assert.equal(result.result.subagent_roi.summary.false_positive_finding_count, 1);
   assert.equal(result.result.subagent_roi.summary.pass_only_no_judgment_delta_count, 1);
   assert.equal(result.result.subagent_roi.summary.timed_out_review_count, 1);
-  assert.equal(result.result.subagent_roi.summary.total_agent_minutes, 2);
+  assert.equal(result.result.subagent_roi.summary.total_agent_minutes, 3);
+  assert.equal(result.result.subagent_roi.time_efficiency.wall_clock_minutes, 2);
+  assert.equal(result.result.subagent_roi.time_efficiency.agent_consumption_minutes, 3);
+  assert.equal(result.result.subagent_roi.time_efficiency.parallelism_factor, 1.5);
+  assert.equal(result.result.subagent_roi.time_efficiency.interval_observed_review_count, 2);
+  assert.equal(result.result.subagent_roi.time_efficiency.interval_missing_review_count, 1);
+  assert.deepEqual(
+    result.result.subagent_roi.time_efficiency.by_agent_system.map((item) => ({
+      agent_system: item.agent_system,
+      wall_clock_minutes: item.wall_clock_minutes,
+      agent_consumption_minutes: item.agent_consumption_minutes,
+      total_tokens: item.total_tokens,
+      token_missing_review_count: item.token_missing_review_count
+    })),
+    [
+      {
+        agent_system: 'claude_code',
+        wall_clock_minutes: null,
+        agent_consumption_minutes: 0,
+        total_tokens: null,
+        token_missing_review_count: 1
+      },
+      {
+        agent_system: 'codex',
+        wall_clock_minutes: 2,
+        agent_consumption_minutes: 3,
+        total_tokens: 2000,
+        token_missing_review_count: 0
+      }
+    ]
+  );
   assert.equal(result.result.subagent_roi.summary.total_tokens, 2000);
   assert.equal(result.result.subagent_roi.summary.token_observed_review_count, 2);
   assert.equal(result.result.subagent_roi.summary.token_missing_review_count, 1);
@@ -16613,6 +16657,10 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
   assert.match(stdoutOutput, /# VibePro利用状況レポート/);
   assert.match(stdoutOutput, /raw_pr_bypass_suspected=true/);
   assert.match(stdoutOutput, /## Subagent ROI/);
+  assert.match(stdoutOutput, /wall_clock_minutes: 2/);
+  assert.match(stdoutOutput, /agent_consumption_minutes: 3/);
+  assert.match(stdoutOutput, /codex: reviews=2 wall_clock_minutes=2 agent_minutes=3 tokens=2000 missing_tokens=0/);
+  assert.match(stdoutOutput, /claude_code: reviews=1 wall_clock_minutes=unknown agent_minutes=0 tokens=unknown missing_tokens=1/);
 });
 
 test('usage report warns when an empty linked worktree may hide artifacts in another checkout', async () => {

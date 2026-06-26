@@ -1263,7 +1263,8 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
       const dispositions = normalizeReviewDispositions(role.finding_dispositions);
       const dispositionCounts = countDispositions(dispositions);
       const usage = normalizeReviewUsage(role.agent_usage);
-      const elapsedMs = lifecycleEntry?.elapsed_ms ?? role.lifecycle?.latest?.elapsed_ms ?? null;
+      const lifecycleTiming = normalizeLifecycleTiming(lifecycleEntry ?? role.lifecycle?.latest ?? null);
+      const elapsedMs = lifecycleTiming.elapsed_ms ?? role.lifecycle?.latest?.elapsed_ms ?? null;
       const score = scoreSubagentReview({
         role,
         provenance,
@@ -1299,6 +1300,7 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
           total_tokens: usage.total_tokens,
           cost_usd: usage.cost_usd
         },
+        timing: lifecycleTiming,
         findings: {
           total: findingCount,
           accepted: dispositionCounts.accepted,
@@ -1327,6 +1329,7 @@ function buildSubagentRoiMetrics(reviewArtifacts) {
   return {
     schema_version: '0.1.0',
     summary: summarizeSubagentRoiReviews(reviews),
+    time_efficiency: buildSubagentTimeEfficiency(reviews),
     by_story: summarizeSubagentRoiByStory(reviews),
     by_review: reviews
   };
@@ -1380,7 +1383,8 @@ function preferSubagentRoiReview(previous, next) {
       output_tokens: primary.cost.output_tokens ?? fallback.cost.output_tokens,
       total_tokens: primary.cost.total_tokens ?? fallback.cost.total_tokens,
       cost_usd: primary.cost.cost_usd ?? fallback.cost.cost_usd
-    }
+    },
+    timing: primary.timing?.interval_observed ? primary.timing : fallback.timing
   };
 }
 
@@ -1563,6 +1567,82 @@ function summarizeSubagentRoiReviews(reviews) {
   };
 }
 
+function buildSubagentTimeEfficiency(reviews) {
+  const intervals = reviews
+    .map((review) => review.timing)
+    .filter((timing) => timing?.interval_observed)
+    .map((timing) => ({ start_ms: timing.start_ms, end_ms: timing.end_ms }));
+  const totalAgentElapsedMs = sumNumbers(reviews.map((review) => review.cost.elapsed_ms));
+  const wallClockElapsedMs = mergeIntervals(intervals).reduce((sum, interval) => sum + interval.end_ms - interval.start_ms, 0);
+  return {
+    schema_version: '0.1.0',
+    metric_definitions: {
+      wall_clock_elapsed_ms: 'Merged lifecycle intervals. Parallel subagents count once.',
+      agent_consumption_elapsed_ms: 'Sum of per-review elapsed time. Parallel subagents are intentionally counted separately.',
+      parallelism_factor: 'agent_consumption_elapsed_ms / wall_clock_elapsed_ms when lifecycle intervals are available.'
+    },
+    review_count: reviews.length,
+    interval_observed_review_count: intervals.length,
+    interval_missing_review_count: reviews.length - intervals.length,
+    wall_clock_elapsed_ms: intervals.length > 0 ? wallClockElapsedMs : null,
+    wall_clock_minutes: intervals.length > 0 ? Number((wallClockElapsedMs / 60000).toFixed(2)) : null,
+    agent_consumption_elapsed_ms: totalAgentElapsedMs,
+    agent_consumption_minutes: Number((totalAgentElapsedMs / 60000).toFixed(2)),
+    parallelism_factor: intervals.length > 0 && wallClockElapsedMs > 0
+      ? Number((totalAgentElapsedMs / wallClockElapsedMs).toFixed(3))
+      : null,
+    by_agent_system: summarizeTimeEfficiencyByAgentSystem(reviews)
+  };
+}
+
+function summarizeTimeEfficiencyByAgentSystem(reviews) {
+  const bySystem = new Map();
+  for (const review of reviews) {
+    const system = review.agent.system ?? 'unknown';
+    const item = bySystem.get(system) ?? {
+      agent_system: system,
+      review_count: 0,
+      interval_observed_review_count: 0,
+      interval_missing_review_count: 0,
+      agent_consumption_elapsed_ms: 0,
+      agent_consumption_minutes: 0,
+      wall_clock_elapsed_ms: null,
+      wall_clock_minutes: null,
+      token_observed_review_count: 0,
+      token_missing_review_count: 0,
+      total_tokens: 0,
+      _intervals: []
+    };
+    item.review_count += 1;
+    item.agent_consumption_elapsed_ms += review.cost.elapsed_ms ?? 0;
+    item.agent_consumption_minutes = Number((item.agent_consumption_elapsed_ms / 60000).toFixed(2));
+    if (review.timing?.interval_observed) {
+      item.interval_observed_review_count += 1;
+      item._intervals.push({ start_ms: review.timing.start_ms, end_ms: review.timing.end_ms });
+    } else {
+      item.interval_missing_review_count += 1;
+    }
+    if (review.cost.total_tokens === null) {
+      item.token_missing_review_count += 1;
+    } else {
+      item.token_observed_review_count += 1;
+      item.total_tokens += review.cost.total_tokens;
+    }
+    bySystem.set(system, item);
+  }
+  return [...bySystem.values()]
+    .map(({ _intervals, ...item }) => {
+      const wallClockElapsedMs = mergeIntervals(_intervals).reduce((sum, interval) => sum + interval.end_ms - interval.start_ms, 0);
+      return {
+        ...item,
+        wall_clock_elapsed_ms: _intervals.length > 0 ? wallClockElapsedMs : null,
+        wall_clock_minutes: _intervals.length > 0 ? Number((wallClockElapsedMs / 60000).toFixed(2)) : null,
+        total_tokens: item.token_observed_review_count > 0 ? item.total_tokens : null
+      };
+    })
+    .sort((a, b) => a.agent_system.localeCompare(b.agent_system));
+}
+
 function summarizeSubagentRoiByStory(reviews) {
   const byStory = new Map();
   for (const review of reviews) {
@@ -1620,6 +1700,12 @@ function renderSubagentRoiRows(report) {
   const roi = report.subagent_roi;
   if (!roi) return '';
   const summary = roi.summary ?? {};
+  const time = roi.time_efficiency ?? {};
+  const agentSystemRows = time.by_agent_system?.length
+    ? time.by_agent_system.map((item) => (
+        `- ${item.agent_system}: reviews=${item.review_count} wall_clock_minutes=${item.wall_clock_minutes ?? 'unknown'} agent_minutes=${item.agent_consumption_minutes ?? 0} tokens=${item.token_observed_review_count > 0 ? item.total_tokens : 'unknown'} missing_tokens=${item.token_missing_review_count}`
+      )).join('\n')
+    : '- none';
   const reviewRows = roi.by_review?.length
     ? roi.by_review.slice().sort(compareSubagentRoiForOperations).slice(0, 12).map((review) => (
         `- ${review.story_id}:${review.stage}:${review.role}: score=${review.value_score} band=${review.value_band} accepted=${review.findings.accepted} duplicate=${review.findings.duplicate} false_positive=${review.findings.false_positive} minutes=${review.cost.agent_minutes ?? '-'} tokens=${review.cost.total_tokens ?? '-'} waste=${review.waste_signals.join('|') || '-'}`
@@ -1635,8 +1721,15 @@ ${title}
 - accepted/resolved findings: ${summary.accepted_finding_count ?? 0}/${summary.resolved_finding_count ?? 0}
 - duplicate/false_positive findings: ${summary.duplicate_finding_count ?? 0}/${summary.false_positive_finding_count ?? 0}
 - total_agent_minutes: ${summary.total_agent_minutes ?? 0}
+- wall_clock_minutes: ${time.wall_clock_minutes ?? 'unknown'} (observed_reviews=${time.interval_observed_review_count ?? 0}, missing_reviews=${time.interval_missing_review_count ?? 0})
+- agent_consumption_minutes: ${time.agent_consumption_minutes ?? 0}
+- parallelism_factor: ${time.parallelism_factor ?? 'unknown'}
 - total_tokens: ${(summary.token_observed_review_count ?? 0) > 0 ? summary.total_tokens : 'unknown'} (observed_reviews=${summary.token_observed_review_count ?? 0}, missing_reviews=${summary.token_missing_review_count ?? 0})
 - cost_usd: ${(summary.cost_missing_review_count ?? 0) > 0 ? 'partial_or_unknown' : summary.total_cost_usd ?? 0}
+
+### Agent Systems
+
+${agentSystemRows}
 
 ${reviewRows}
 `;
@@ -1660,6 +1753,37 @@ function normalizeNullableNumber(value) {
   if (value === null || value === undefined || value === '') return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeLifecycleTiming(entry = null) {
+  const started = Date.parse(entry?.started_at ?? '');
+  const ended = Date.parse(entry?.closed_at ?? entry?.completed_at ?? '');
+  const intervalObserved = Number.isFinite(started) && Number.isFinite(ended) && ended >= started;
+  const explicitElapsedMs = normalizeNullableNumber(entry?.elapsed_ms);
+  return {
+    started_at: intervalObserved ? new Date(started).toISOString() : null,
+    ended_at: intervalObserved ? new Date(ended).toISOString() : null,
+    start_ms: intervalObserved ? started : null,
+    end_ms: intervalObserved ? ended : null,
+    elapsed_ms: explicitElapsedMs ?? (intervalObserved ? ended - started : null),
+    interval_observed: intervalObserved
+  };
+}
+
+function mergeIntervals(intervals = []) {
+  const sorted = intervals
+    .filter((interval) => Number.isFinite(interval.start_ms) && Number.isFinite(interval.end_ms) && interval.end_ms >= interval.start_ms)
+    .sort((a, b) => a.start_ms - b.start_ms);
+  const merged = [];
+  for (const interval of sorted) {
+    const last = merged.at(-1);
+    if (!last || interval.start_ms > last.end_ms) {
+      merged.push({ ...interval });
+      continue;
+    }
+    last.end_ms = Math.max(last.end_ms, interval.end_ms);
+  }
+  return merged;
 }
 
 function firstFiniteNumber(...values) {
