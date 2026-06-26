@@ -1,0 +1,36 @@
+{
+  "artifact_kind": "reporting_gate_precision_replay",
+  "story_id": "story-vibepro-reporting-gate-precision",
+  "command": "node --test --test-name-pattern \"usage-report metrics changes stay reporting-scoped|common judgment spine requires surface-specific evidence|pr prepare emits Engineering Judgment route|evidence strength distinguishes\" test/vibepro-cli.test.js",
+  "status": "pass",
+  "evidence": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e",
+    "unit_regression",
+    "pr_lifecycle_regression",
+    "agent_review_lifecycle_regression",
+    "evidence_lifecycle_regression",
+    "story_source_integrity_regression",
+    "engineering_judgment_regression",
+    "managed_worktree_regression",
+    "current_head_verification"
+  ],
+  "contract_bindings": [
+    "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001",
+    "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-AR-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STORY-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-JUDGE-001",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001"
+  ],
+  "observations": {
+    "usage_report_only_fixture_route": "reporting",
+    "workflow_flow_replay_gate_created_for_usage_report_fixture": false,
+    "story_level_adr_unnecessary_satisfies_architecture_gate": true,
+    "real_agent_workflow_changes_remain_workflow_gated": true,
+    "durable_artifact_replay": true
+  }
+}
