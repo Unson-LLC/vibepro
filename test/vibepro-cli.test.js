@@ -13950,6 +13950,66 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(docsDoneEvidence.matched_evidence.some((item) => item.kind === 'story_spec_traceability'), true);
 });
 
+test('usage-report metrics changes stay reporting-scoped instead of workflow-gated', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: usage report separates wall-clock and agent-specific runtime metrics
+---
+
+# Story: usage report separates wall-clock and agent-specific runtime metrics
+
+VibePro usage report should expose subagent runtime efficiency without treating telemetry reporting as agent orchestration.
+
+## Acceptance Criteria
+
+- [ ] usage report JSON exposes wall_clock_elapsed_ms from merged lifecycle intervals.
+- [ ] agent consumption remains separate from wall-clock time.
+- [ ] missing token data is explicit null or unknown, not fake zero.
+
+## Architecture Decision
+
+ADR-unnecessary: This stays inside existing usage report aggregation and does not introduce workflow state, scheduled jobs, queues, workers, or runtime orchestration.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'vibepro-agent-runtime-metrics.md'), '# Spec\n\nusage report time_efficiency is additive JSON output.\n');
+  await writeFile(path.join(repo, 'src', 'usage-report.js'), 'export function usageReportMetric() { return "wall_clock_elapsed_ms"; }\n');
+  await writeFile(path.join(repo, 'test', 'traceability-usage-report.test.js'), 'import assert from "node:assert/strict";\nassert.equal("missing_agent_system_total_tokens", "missing_agent_system_total_tokens");\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'docs/specs/vibepro-agent-runtime-metrics.md', 'src/usage-report.js', 'test/traceability-usage-report.test.js']);
+  await git(repo, ['commit', '-m', 'feat: add usage report runtime metrics']);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/traceability-usage-report.test.js',
+    '--summary', 'focused usage report test covers missing token null and unknown telemetry reporting',
+    '--target', 'src/usage-report.js',
+    '--target', 'test/traceability-usage-report.test.js',
+    '--scenario', 'missing telemetry remains null unknown instead of fake zero',
+    '--observed', 'missing_agent_system_total_tokens=null'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.notEqual(prepare.pr_context.engineering_judgment.route_type, 'agent_workflow');
+  const gateDag = prepare.pr_context.gate_dag;
+  const spine = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const currentReality = spine.subchecks.find((check) => check.id === 'current_reality');
+  assert.equal(currentReality.surface, 'reporting');
+  assert.equal(currentReality.status, 'passed');
+  assert.deepEqual(currentReality.required_evidence_kind, ['focused_test', 'runtime_path_evidence']);
+  const blueprintGate = gateDag.nodes.find((node) => node.id === 'gate:architecture_blueprint');
+  assert.equal(!blueprintGate || blueprintGate.status === 'not_required', true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'architecture')?.status, 'satisfied');
+  assert.equal(gateDag.nodes.some((node) => node.id === 'gate:workflow_flow_replay'), false);
+});
+
 test('evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -14027,6 +14087,38 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     strongReality.matched_evidence.filter((item) => ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'].includes(item.kind)).map((item) => [item.kind, item.strength]),
     [['flow_replay', 'strong'], ['artifact_replay', 'strong'], ['scenario_clause_e2e', 'strong']]
   );
+});
+
+test('explicit verification evidence tokens satisfy judgment axis requirements', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function classifyGateState() { return "query semantics unchanged"; }\n');
+  await writeFile(path.join(repo, 'test', 'pr-manager-state.test.js'), 'export const marker = "migration_plan rollback_plan idempotency_test query_semantics_test";\n');
+  await writeFile(path.join(repo, 'artifacts', 'data-state-replay.json'), JSON.stringify({ status: 'pass', replay: true }, null, 2));
+  await git(repo, ['add', 'src/pr-manager.js', 'test/pr-manager-state.test.js', 'artifacts/data-state-replay.json']);
+  await git(repo, ['commit', '-m', 'feat: adjust pr manager state classification']);
+
+  await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/pr-manager-state.test.js',
+    '--summary', 'data state axis has explicit migration rollback idempotency and query semantics evidence',
+    '--artifact', 'artifacts/data-state-replay.json',
+    '--target', 'src/pr-manager.js',
+    '--scenario', 'migration_plan: no persisted schema or migration changes',
+    '--scenario', 'rollback_plan: revert-only rollback for classification behavior',
+    '--scenario', 'idempotency_test: repeated pr prepare classification stays deterministic',
+    '--scenario', 'query_semantics_test: query and cache semantics are unchanged'
+  ]);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const dataStateGate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_data_state');
+  assert.equal(dataStateGate?.status, 'passed');
+  assert.equal(dataStateGate.missing_evidence.length, 0);
 });
 
 test('common judgment spine uses optional Graphify impact evidence when available', async () => {

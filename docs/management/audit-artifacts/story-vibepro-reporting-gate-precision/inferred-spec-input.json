@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-reporting-gate-precision",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "RGP-CONTRACT-001",
+      "type": "contract",
+      "statement": "Source diffs limited to src/usage-report.js must not activate agent_workflow solely because Story or Spec text mentions agent, subagent, review, gate, artifact, Codex, or Claude telemetry.",
+      "rationale": "Prevents read-only reporting changes from being forced through workflow-heavy gates.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "A change limited to src/usage-report.js plus docs/tests is classified as read-only reporting, not agent_workflow."
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "isReadOnlyUsageReportingChange"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "usage-report metrics changes stay reporting-scoped instead of workflow-gated"
+          }
+        ]
+      },
+      "confidence": 0.94
+    },
+    {
+      "id": "RGP-CONTRACT-002",
+      "type": "contract",
+      "statement": "Common Judgment Spine must use surface reporting for read-only usage-report metric changes and require focused test plus runtime-path evidence.",
+      "rationale": "Reporting metrics are runtime-output precision changes, not workflow orchestration changes.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "Common Judgment Spine uses a reporting surface for usage-report metrics and accepts focused test plus runtime-path evidence."
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "requiredEvidenceForJudgmentSubcheck"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "usage-report metrics changes stay reporting-scoped instead of workflow-gated"
+          }
+        ]
+      },
+      "confidence": 0.93
+    },
+    {
+      "id": "RGP-CONTRACT-003",
+      "type": "contract",
+      "statement": "Scheduler blueprint detection must not treat lifecycle metric wording such as interval as scheduled-job infrastructure by itself.",
+      "rationale": "Telemetry language should not trigger scheduler infrastructure gates unless actual scheduling language or paths exist.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "The architecture blueprint scheduler gate is not created from lifecycle interval wording alone."
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "detectBlueprintShapes"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "usage-report metrics changes stay reporting-scoped instead of workflow-gated"
+          }
+        ]
+      },
+      "confidence": 0.92
+    },
+    {
+      "id": "RGP-CONTRACT-004",
+      "type": "contract",
+      "statement": "Story text containing ADR-unnecessary must satisfy Architecture Gate as an explicit no-ADR decision.",
+      "rationale": "The Story is the authoring surface used by operators for this no-new-architecture decision.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "Story-level ADR-unnecessary is honored by Architecture Gate."
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "extractArchitectureDecisionReason"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "usage-report metrics changes stay reporting-scoped instead of workflow-gated"
+          }
+        ]
+      },
+      "confidence": 0.91
+    },
+    {
+      "id": "RGP-S-002",
+      "type": "scenario",
+      "statement": "Given a real agent workflow source path, when pr prepare runs, then the existing workflow evidence requirements still apply.",
+      "rationale": "The exception must not weaken Senior Engineering Judgment for actual orchestration changes.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "Real agent workflow changes still require workflow replay evidence and keep existing agent_workflow route behavior."
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "pr prepare emits Engineering Judgment route, route-specific gates, and DAG connectivity"
+          }
+        ]
+      },
+      "confidence": 0.9
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart TD\n  Diff[\"PR diff\"] --> Classify[\"PR Gate classification\"]\n  Classify --> UsageReport{\"Only src/usage-report.js source?\"}\n  UsageReport -->|yes| Reporting[\"reporting surface\"]\n  UsageReport -->|no| Workflow[\"normal workflow/source surface\"]\n  Reporting --> Evidence[\"focused test plus runtime path evidence\"]\n  Workflow --> WorkflowEvidence[\"workflow replay evidence remains required when applicable\"]\n  Evidence --> GateDag[\"Gate DAG\"]\n  WorkflowEvidence --> GateDag",
+      "rationale": "Flow diagram for the reporting exception and the preserved workflow-heavy path."
+    }
+  ],
+  "open_questions": []
+}

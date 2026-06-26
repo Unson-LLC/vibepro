@@ -4847,7 +4847,9 @@ function parseStoryDoc(file, content) {
     acceptance_criteria: extractAcceptanceCriteria(content),
     architecture_docs: normalizeFrontmatterList(frontmatter.architecture_docs),
     spec_docs: normalizeFrontmatterList(frontmatter.spec_docs),
-    architecture_reason: frontmatter.reason ?? extractFrontmatterBlockReason(content, 'architecture_docs')
+    architecture_reason: frontmatter.reason
+      ?? extractFrontmatterBlockReason(content, 'architecture_docs')
+      ?? extractArchitectureDecisionReason(content)
   };
 }
 
@@ -4973,6 +4975,14 @@ function extractFrontmatterBlockReason(content, blockName) {
     if (match) return match[1].replace(/^['"]|['"]$/g, '');
   }
   return null;
+}
+
+function extractArchitectureDecisionReason(content) {
+  const section = extractRawSection(content, ['Architecture Decision', 'Architecture', 'ADR', 'アーキテクチャ判断']);
+  const text = section ?? content;
+  const match = text.match(/\b(?:ADR[-_ ]?unnecessary|ADR不要)\s*:?\s*([^\n]+)/i);
+  if (!match) return null;
+  return match[1].trim().replace(/^[-:]\s*/, '').slice(0, 500) || 'Story declares ADR-unnecessary';
 }
 
 function pickPrimaryStory(storyDocs, story) {
@@ -5588,6 +5598,7 @@ function buildEngineeringJudgmentClassification({
     ...(storySource?.acceptance_criteria ?? []),
     ...files
   ].filter(Boolean).join('\n').toLowerCase();
+  const readOnlyUsageReportingChange = isReadOnlyUsageReportingChange(fileGroups);
   const route = {
     route_type: 'general_engineering',
     label: 'General Engineering',
@@ -5605,9 +5616,11 @@ function buildEngineeringJudgmentClassification({
 
   const releaseSignal = /\b(release|deploy|publish|appcast|notariz|rollout|rollback)\b|リリース|デプロイ/.test(text)
     || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type);
-  const agentWorkflowSignal = /\b(agent|subagent|review|gate|dag|skill|mcp|codex|claude|graphify)\b|エージェント/.test(text)
+  const agentWorkflowSignal = !readOnlyUsageReportingChange && (
+    /\b(agent|subagent|review|gate|dag|skill|mcp|codex|claude|graphify)\b|エージェント/.test(text)
     || changeClassification?.risk_surfaces?.includes('gate_orchestration')
-    || changeClassification?.risk_surfaces?.includes('review_lifecycle');
+    || changeClassification?.risk_surfaces?.includes('review_lifecycle')
+  );
   if (['release_merge', 'mirror_sync'].includes(prRoute?.route_type) || (releaseSignal && !agentWorkflowSignal)) {
     setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
   } else if (agentWorkflowSignal) {
@@ -5669,6 +5682,13 @@ function buildEngineeringJudgmentClassification({
       'release_or_operation'
     ]
   };
+}
+
+function isReadOnlyUsageReportingChange(fileGroups = {}) {
+  const sourceFiles = fileGroups.source?.files ?? [];
+  if (sourceFiles.length === 0) return false;
+  const usageReportSources = new Set(['src/usage-report.js']);
+  return sourceFiles.every((file) => usageReportSources.has(file));
 }
 
 function buildSeniorJudgmentAxes({
@@ -6484,6 +6504,9 @@ function deriveJudgmentSurfaceProfile({ routeType, prRoute, fileGroups, changeCl
   if ((prRoute?.route_type === 'docs_only' || sourceCount === 0) && docCount > 0) {
     return { surface: 'docs_only', reason: 'docs/spec/story-only change' };
   }
+  if (isReadOnlyUsageReportingChange(fileGroups)) {
+    return { surface: 'reporting', reason: 'read-only usage report metric/reporting change' };
+  }
   if (routeType === 'security_trust'
     || riskSurfaces.has('auth_boundary')
     || riskSurfaces.has('auth')
@@ -6510,6 +6533,11 @@ function deriveJudgmentSurfaceProfile({ routeType, prRoute, fileGroups, changeCl
 function requiredEvidenceForJudgmentSubcheck(id, surfaceProfile) {
   const surface = surfaceProfile?.surface ?? 'runtime';
   if (surface === 'docs_only') return ['story_spec_traceability', 'doc_reference_integrity', 'impact_scope_explained'];
+  if (surface === 'reporting') {
+    if (id === 'current_reality') return ['focused_test', 'runtime_path_evidence'];
+    if (id === 'failure_modes') return ['focused_test', 'runtime_path_evidence'];
+    if (id === 'done_evidence') return ['focused_test', 'runtime_path_evidence'];
+  }
   if (id === 'current_reality') {
     if (surface === 'workflow') return ['flow_replay', 'artifact_replay', 'scenario_clause_e2e'];
     return ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path'];
@@ -6614,7 +6642,8 @@ function classifyVerificationEvidenceItem(item) {
   if (!generic && /\b(auth_denied|auth denied|permission denied|forbidden|unauthorized|401|403|拒否|権限)\b/.test(text)) add('auth_denied');
   if (!generic && /\b(permission_denied|permission denied|forbidden|403|権限)\b/.test(text)) add('permission_denied');
   if (!generic && /\b(boundary|edge case|境界|境界条件)\b/.test(text)) add('boundary_condition');
-  if (!generic && /\b(negative|denied|failure mode|fail path|拒否|失敗)\b/.test(text)) add('negative_path');
+  if (!generic && /\b(negative|denied|failure mode|fail path|missing|unknown|null|unavailable|拒否|失敗|未確認)\b/.test(text)) add('negative_path');
+  for (const kind of explicitEvidenceKindsFromVerificationText(text)) add(kind);
   return matches;
 }
 
@@ -6625,6 +6654,38 @@ function isGenericVerificationCommand(command) {
     || normalized === 'node --test'
     || normalized === 'node --test test/vibepro-cli.test.js'
     || normalized === 'npm run typecheck';
+}
+
+function explicitEvidenceKindsFromVerificationText(text) {
+  const explicitKinds = [
+    'migration_plan',
+    'rollback_plan',
+    'idempotency_test',
+    'query_semantics_test',
+    'feature_gate_disabled_behavior',
+    'upgrade_downgrade_test',
+    'threat_model',
+    'security_review',
+    'topology_diagram',
+    'visual_qa',
+    'accessibility_evidence',
+    'benchmark_delta',
+    'perf_regression_guard',
+    'semantic_invariant_test',
+    'scope_reviewed',
+    'split_plan',
+    'review_owner_map',
+    'release_note',
+    'rollout_plan',
+    'rollback_instruction',
+    'observability_evidence'
+  ];
+  return explicitKinds.filter((kind) => evidenceKindPattern(kind).test(text));
+}
+
+function evidenceKindPattern(kind) {
+  const escaped = escapeRegExp(kind).replaceAll('_', '[_ -]');
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i');
 }
 
 function missingEvidenceKinds(required, matched) {
@@ -7195,7 +7256,7 @@ function storyEvidenceText(storySource) {
 function detectBlueprintShapes(storySource) {
   const text = storyEvidenceText(storySource);
   const shapes = [];
-  if (/(schedul|cron|scheduled job|recurring|every \d|interval|polling|launchd|systemd timer|routine|runner|定期実行|スケジュール|常駐ジョブ)/i.test(text)) {
+  if (/\b(schedul\w*|cron|scheduled job|recurring|every \d+\s+(?:minute|hour|day|week)s?|polling|launchd|systemd timer)\b|定期実行|スケジュール|常駐ジョブ/i.test(text)) {
     shapes.push('workflow_scheduler');
   }
   return shapes;
