@@ -479,3 +479,123 @@ test('malformed manifest does not resolve traceability or crash usage report', a
   assert.match(renderUsageReport(report), /Manifest Parse Failures/);
   assert.match(renderUsageReport(report), /parse_failure: artifact=\.vibepro\/vibepro-manifest\.json/);
 });
+
+test('subagent ROI separates wall-clock time from concurrent agent consumption and agent system metrics', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-agent-runtime-metrics' }
+  ]);
+  const reviewDir = path.join(root, '.vibepro', 'reviews', 'story-agent-runtime-metrics', 'gate');
+  await mkdir(reviewDir, { recursive: true });
+  await writeFile(path.join(reviewDir, 'review-summary.json'), JSON.stringify({
+    story_id: 'story-agent-runtime-metrics',
+    stage: 'gate',
+    roles: [{
+      role: 'gate_evidence',
+      status: 'block',
+      effective_status: 'block',
+      findings: [{ severity: 'high', id: 'risk', detail: 'caught real risk' }],
+      finding_dispositions: [{ finding_id: 'risk', disposition: 'accepted', resolved_by: ['commit abc123'] }],
+      agent_usage: { input_tokens: 1000, output_tokens: 500, total_tokens: 1500 },
+      agent_provenance: {
+        system: 'codex',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'codex-a',
+        evidence_strength: 'strong',
+        lifecycle: { agent_closed: true }
+      },
+      inspection: { inputs: ['src/usage-report.js'] },
+      judgment_delta: ['pass -> block after reading artifacts'],
+      lifecycle: {
+        latest: {
+          agent_id: 'codex-a',
+          status: 'closed',
+          effective_status: 'closed',
+          started_at: '2026-06-02T00:00:00.000Z',
+          closed_at: '2026-06-02T00:02:00.000Z',
+          elapsed_ms: 120000
+        }
+      }
+    }, {
+      role: 'pr_split_scope',
+      status: 'pass',
+      effective_status: 'pass',
+      findings: [],
+      finding_dispositions: [],
+      agent_usage: { input_tokens: 400, output_tokens: 100 },
+      agent_provenance: {
+        system: 'codex',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'codex-b',
+        evidence_strength: 'strong',
+        lifecycle: { agent_closed: true }
+      },
+      inspection: { inputs: ['docs/specs/vibepro-usage-report.md'] },
+      judgment_delta: ['unknown -> pass after checking scope'],
+      lifecycle: {
+        latest: {
+          agent_id: 'codex-b',
+          status: 'closed',
+          effective_status: 'closed',
+          started_at: '2026-06-02T00:00:30.000Z',
+          closed_at: '2026-06-02T00:01:30.000Z',
+          elapsed_ms: 60000
+        }
+      }
+    }, {
+      role: 'release_risk',
+      status: 'needs_changes',
+      effective_status: 'needs_changes',
+      findings: [],
+      finding_dispositions: [],
+      agent_provenance: {
+        system: 'claude_code',
+        execution_mode: 'parallel_subagent',
+        agent_id: 'claude-a',
+        evidence_strength: 'strong',
+        lifecycle: { agent_closed: true }
+      },
+      inspection: { inputs: ['.vibepro/reviews/story-agent-runtime-metrics/gate/review-summary.json'] },
+      judgment_delta: ['pass -> needs_changes after checking release risk'],
+      lifecycle: { latest: { agent_id: 'claude-a', status: 'closed', effective_status: 'closed' } }
+    }],
+    lifecycle: { entries: [] }
+  }, null, 2));
+
+  const report = await createUsageReport(root, { subagentRoi: true });
+  assert.equal(report.subagent_roi.summary.total_agent_minutes, 3);
+  assert.equal(report.subagent_roi.time_efficiency.wall_clock_minutes, 2);
+  assert.equal(report.subagent_roi.time_efficiency.agent_consumption_minutes, 3);
+  assert.equal(report.subagent_roi.time_efficiency.parallelism_factor, 1.5);
+  assert.equal(report.subagent_roi.time_efficiency.interval_observed_review_count, 2);
+  assert.equal(report.subagent_roi.time_efficiency.interval_missing_review_count, 1);
+  assert.deepEqual(
+    report.subagent_roi.time_efficiency.by_agent_system.map((item) => ({
+      agent_system: item.agent_system,
+      wall_clock_minutes: item.wall_clock_minutes,
+      agent_consumption_minutes: item.agent_consumption_minutes,
+      total_tokens: item.total_tokens,
+      token_missing_review_count: item.token_missing_review_count
+    })),
+    [
+      {
+        agent_system: 'claude_code',
+        wall_clock_minutes: null,
+        agent_consumption_minutes: 0,
+        total_tokens: 0,
+        token_missing_review_count: 1
+      },
+      {
+        agent_system: 'codex',
+        wall_clock_minutes: 2,
+        agent_consumption_minutes: 3,
+        total_tokens: 2000,
+        token_missing_review_count: 0
+      }
+    ]
+  );
+  const rendered = renderUsageReport(report);
+  assert.match(rendered, /wall_clock_minutes: 2/);
+  assert.match(rendered, /agent_consumption_minutes: 3/);
+  assert.match(rendered, /codex: reviews=2 wall_clock_minutes=2 agent_minutes=3 tokens=2000 missing_tokens=0/);
+  assert.match(rendered, /claude_code: reviews=1 wall_clock_minutes=unknown agent_minutes=0 tokens=unknown missing_tokens=1/);
+});
