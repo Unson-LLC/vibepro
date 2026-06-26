@@ -379,7 +379,8 @@ status: active
   assert.equal(gate.status, 'needs_evidence');
   assert.equal(gate.journey_status, 'missing');
   assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:path_surface_matrix' && edge.to === 'gate:journey_context'));
-  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:journey_context' && edge.to === 'gate:responsibility_authority'));
+  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:journey_context' && edge.to === 'gate:design_ssot_reconciliation'));
+  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:design_ssot_reconciliation' && edge.to === 'gate:responsibility_authority'));
   assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:responsibility_authority' && edge.to === 'gate:requirement'));
   assert.equal(artifact.gate_status.critical_unresolved_gates.some((item) => item.id === 'gate:journey_context'), true);
 });
@@ -626,6 +627,7 @@ status: active
   assert.equal(prepare.exitCode, 0, prepare.stderr);
   const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-worker', 'pr-prepare.json'), 'utf8'));
   assert.equal(artifact.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:journey_context'), false);
-  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:path_surface_matrix' && edge.to === 'gate:responsibility_authority'));
+  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:path_surface_matrix' && edge.to === 'gate:design_ssot_reconciliation'));
+  assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:design_ssot_reconciliation' && edge.to === 'gate:responsibility_authority'));
   assert.ok(artifact.pr_context.gate_dag.edges.some((edge) => edge.from === 'gate:responsibility_authority' && edge.to === 'gate:requirement'));
 });
