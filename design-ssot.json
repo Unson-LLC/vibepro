@@ -18,6 +18,23 @@
           "docs/specs/vibepro-design-ssot-reconciliation.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-senior-gap-judgment",
+      "title": "VibePro Senior Gap Judgment",
+      "root_doc": "docs/architecture/vibepro-senior-gap-judgment.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-senior-gap-judgment.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-senior-gap-judgment.md"
+        ]
+      }
     }
   ]
 }

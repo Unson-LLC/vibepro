@@ -271,6 +271,14 @@ test('compact canonical audit index resolves merged story and renders evidence c
         merged_at: '2026-06-23T00:08:00.000Z'
       }
     },
+    senior_gap_judgment: {
+      present: true,
+      status: 'passed_with_residual_risk',
+      gap_count: 2,
+      blocking_gap_count: 0,
+      residual_risk_count: 2,
+      followup_count: 1
+    },
     traceability: { present: false },
     verification: { present: false },
     review: { summary_count: 0, result_count: 0, pass_count: 0, block_count: 0 },
@@ -305,9 +313,15 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.equal(missingGaps(story).length, 0);
   assert.equal(story.traceability_resolution.status, 'alternate_source_resolved');
   assert.equal(story.traceability_resolution.artifact_source, 'canonical_audit_summary');
+  assert.equal(story.senior_gap_judgment.present, true);
+  assert.equal(story.senior_gap_judgment.status, 'passed_with_residual_risk');
+  assert.equal(story.senior_gap_judgment.residual_risk_count, 2);
+  assert.equal(story.senior_gap_judgment.followup_count, 1);
   assert.equal(report.evidence_cost.budget_exceeded_count, 1);
   assert.equal(report.evidence_cost.total_artifact_lines, 2200);
   assert.equal(report.evidence_cost.by_story[0].replay_bundle.compressed_bytes, 512);
+  assert.equal(report.value_signals.senior_gap_judgment_story_count, 1);
+  assert.equal(report.value_signals.senior_gap_residual_risk_story_count, 1);
   assert.match(renderUsageReport(report), /## 証跡コスト/);
   assert.match(renderUsageReport(report), /story-compact-audit: depth=standard budget=exceeded/);
   assert.match(renderUsageReport(report), /diff=available src=8 test=4 docs=6 audit=30 other=2/);

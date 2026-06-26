@@ -65,6 +65,10 @@ import {
   buildDesignSsotGate,
   reconcileDesignSsot
 } from './design-ssot.js';
+import {
+  buildSeniorGapJudgment,
+  buildSeniorGapJudgmentGate
+} from './senior-gap-judgment.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -296,6 +300,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const decisionRecordsPath = path.join(prDir, 'decision-records.json');
   const bodyPath = path.join(prDir, 'pr-body.md');
   const designSsotPath = path.join(prDir, 'design-ssot-reconciliation.json');
+  const seniorGapJudgmentPath = path.join(prDir, 'senior-gap-judgment.json');
   const gateDagJsonPath = path.join(prDir, 'gate-dag.json');
   const gateDagReportPath = path.join(prDir, 'gate-dag.html');
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
@@ -389,6 +394,34 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : 'ready_for_review';
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  const seniorGapJudgment = buildSeniorGapJudgment({
+    story,
+    git: reviewGit,
+    fileGroups,
+    scope,
+    prContext,
+    gateStatus,
+    evidencePlan,
+    evidenceReuse: evidenceReuseSummary,
+    createdAt
+  });
+  prContext.senior_gap_judgment = seniorGapJudgment;
+  prContext.gate_dag.nodes.push(buildSeniorGapJudgmentGate(seniorGapJudgment, {
+    artifact: `.vibepro/pr/${story.story_id}/senior-gap-judgment.json`
+  }));
+  prContext.gate_dag.summary.senior_gap_judgment = {
+    status: seniorGapJudgment.decision.status,
+    gap_count: seniorGapJudgment.gaps.length,
+    blocking_gap_count: seniorGapJudgment.decision.blocking_gap_count,
+    residual_risk_count: seniorGapJudgment.residual_risks.length,
+    followup_count: seniorGapJudgment.followups.length
+  };
+  decisionIndex.senior_gap_judgment = prContext.gate_dag.summary.senior_gap_judgment;
+  prContext.gate_dag.overall_status = collectUnresolvedRequiredGates(prContext.gate_dag).length > 0
+    ? 'needs_verification'
+    : 'ready_for_review';
+  prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
+  gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
   const traceabilityEvidence = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -468,6 +501,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(evidencePlanPath, `${JSON.stringify(evidencePlan, null, 2)}\n`, { signal });
     await writeFile(decisionIndexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`, { signal });
     await writeFile(designSsotPath, `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`, { signal });
+    await writeFile(seniorGapJudgmentPath, `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
     if (writeGateDagDump) {
       await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
@@ -544,6 +578,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
         latest_decision_records: toWorkspaceRelative(root, decisionRecordsPath),
         latest_pr_body: toWorkspaceRelative(root, bodyPath),
         latest_gate_dag: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
+        latest_senior_gap_judgment: toWorkspaceRelative(root, seniorGapJudgmentPath),
         latest_gate_dag_report: writeHtmlReports ? toWorkspaceRelative(root, gateDagReportPath) : null,
         latest_split_plan: toWorkspaceRelative(root, splitPlanJsonPath),
         latest_split_plan_report: writeHtmlReports ? toWorkspaceRelative(root, splitPlanReportPath) : null,
@@ -577,6 +612,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       decision_records: decisionRecordsPath,
       pr_body: bodyPath,
       design_ssot_reconciliation: designSsotPath,
+      senior_gap_judgment: seniorGapJudgmentPath,
       gate_dag: writeGateDagDump ? gateDagJsonPath : null,
       gate_dag_report: writeHtmlReports ? gateDagReportPath : null,
       split_plan: splitPlanJsonPath,
@@ -1275,6 +1311,7 @@ ${firstLook}
 - decision_records_json: ${toDisplayPath(result.artifacts.decision_records)}
 - pr_body_markdown: ${toDisplayPath(result.artifacts.pr_body)}
 - design_ssot_reconciliation_json: ${toDisplayPath(result.artifacts.design_ssot_reconciliation)}
+- senior_gap_judgment_json: ${toDisplayPath(result.artifacts.senior_gap_judgment)}
 - gate_dag_json: ${toDisplayPath(result.artifacts.gate_dag)}
 - gate_dag_html: ${toDisplayPath(result.artifacts.gate_dag_report)}
 - split_plan_json: ${toDisplayPath(result.artifacts.split_plan)}
@@ -2153,7 +2190,8 @@ function renderVibeProArtifactReferences({ evidenceDir, evidencePlan }) {
     `- Evidence plan: ${evidenceDir}/evidence-plan.json`,
     `- Decision index: ${evidenceDir}/decision-index.json`,
     `- PR prepare: ${evidenceDir}/pr-prepare.json`,
-    `- Design SSOT: ${evidenceDir}/design-ssot-reconciliation.json`
+    `- Design SSOT: ${evidenceDir}/design-ssot-reconciliation.json`,
+    `- Senior Gap Judgment: ${evidenceDir}/senior-gap-judgment.json`
   ];
 
   if (isGenerated('gate-dag.json')) {
@@ -10628,6 +10666,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'responsibility_authority_gate',
       'design_ssot_reconciliation_gate',
+      'senior_gap_judgment_gate',
       'failure_mode_coverage_gate',
       'path_surface_matrix_gate',
       'journey_context_gate',
@@ -10723,6 +10762,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'story') return 'Story Gate requires a resolvable Story source.';
       if (gate.id === 'gate:responsibility_authority') return 'Responsibility Authority Gate requires each matched cross-story responsibility to resolve to registered authority and current-head evidence, or an explicit decision for no_registered_authority.';
       if (gate.id === 'gate:design_ssot_reconciliation') return 'Design SSOT Reconciliation Gate requires root/child design docs to be linked, current enough, and free of deterministic supersession conflicts; review `.vibepro/pr/<story-id>/design-ssot-reconciliation.json`.';
+      if (gate.id === 'gate:senior_gap_judgment') return 'Senior Gap Judgment Gate requires ideal/current/gap/decision/residual-risk evidence to be explicit; review `.vibepro/pr/<story-id>/senior-gap-judgment.json`.';
       if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';

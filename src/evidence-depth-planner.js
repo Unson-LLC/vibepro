@@ -138,8 +138,8 @@ export function buildEvidencePlan({
     generated_artifacts: artifactPolicy.generated_artifacts,
     skipped_artifacts: artifactPolicy.skipped_artifacts,
     consumers: evidenceDepth === 'summary'
-      ? ['evidence-reuse.json', 'decision-index.json', 'evidence-plan.json', 'pr-body.md']
-      : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json']
+      ? ['evidence-reuse.json', 'decision-index.json', 'senior-gap-judgment.json', 'evidence-plan.json', 'pr-body.md']
+      : ['evidence-reuse.json', 'review-cockpit.html', 'gate-dag.html', 'split-plan.html', 'decision-index.json', 'senior-gap-judgment.json']
   };
 }
 
@@ -220,6 +220,7 @@ function buildArtifactPolicy(evidenceDepth) {
     'evidence-reuse.json',
     'evidence-plan.json',
     'decision-index.json',
+    'senior-gap-judgment.json',
     'pr-prepare.json',
     'pr-body.md',
     'split-plan.json',
