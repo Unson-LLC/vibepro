@@ -94,6 +94,8 @@ export function buildCanonicalEvidenceCostSummary({
   artifactLineCount = 0,
   diffStats = null,
   diffStatsProvenance = null,
+  tokenAccounting = null,
+  elapsedTimeAccounting = null,
   riskProfile = null,
   triggerSignals = [],
   requestedDepth = null,
@@ -154,21 +156,77 @@ export function buildCanonicalEvidenceCostSummary({
       lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
       ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
     ].filter(Boolean),
-    token_accounting: {
-      status: 'unavailable',
-      total_tokens: null,
-      reason: 'session token logs were not provided to canonical audit promotion'
-    },
-    elapsed_time_accounting: {
-      status: 'unavailable',
-      elapsed_ms: null,
-      reason: 'elapsed-time logs were not provided to canonical audit promotion'
-    }
+    token_accounting: normalizeTokenAccounting(tokenAccounting),
+    elapsed_time_accounting: normalizeElapsedTimeAccounting(elapsedTimeAccounting)
   };
 }
 
 export function shouldUseCompactCanonicalEvidence(costSummary) {
   return costSummary?.budget_status === 'exceeded' && costSummary?.evidence_depth !== 'full';
+}
+
+export function normalizeTokenAccounting(input = null) {
+  const totalTokens = normalizeNullableNumber(input?.total_tokens ?? input?.totalTokens);
+  const inputTokens = normalizeNullableNumber(input?.input_tokens ?? input?.inputTokens);
+  const outputTokens = normalizeNullableNumber(input?.output_tokens ?? input?.outputTokens);
+  const cachedInputTokens = normalizeNullableNumber(input?.cached_input_tokens ?? input?.cachedInputTokens);
+  const inferredTotal = totalTokens ?? (
+    inputTokens !== null && outputTokens !== null ? inputTokens + outputTokens : null
+  );
+  const hasPartialTokens = [inputTokens, outputTokens, cachedInputTokens].some((value) => value !== null);
+  const explicitStatus = normalizeAccountingStatus(input?.status);
+  if (inferredTotal !== null || hasPartialTokens) {
+    return {
+      status: explicitStatus === 'unavailable' ? (inferredTotal === null ? 'partial' : 'available') : (explicitStatus ?? (inferredTotal === null ? 'partial' : 'available')),
+      total_tokens: inferredTotal,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      cached_input_tokens: cachedInputTokens,
+      source: input?.source ?? null,
+      window: input?.window ?? null,
+      reason: inferredTotal === null ? (input?.reason ?? 'token total was not provided') : (input?.reason ?? null)
+    };
+  }
+
+  return {
+    status: explicitStatus ?? 'unavailable',
+    total_tokens: null,
+    input_tokens: null,
+    output_tokens: null,
+    cached_input_tokens: null,
+    source: input?.source ?? null,
+    window: input?.window ?? null,
+    reason: input?.reason ?? 'session token logs were not provided to canonical audit promotion'
+  };
+}
+
+export function normalizeElapsedTimeAccounting(input = null) {
+  const explicitElapsedMs = normalizeNullableNumber(input?.elapsed_ms ?? input?.elapsedMs);
+  const startedAt = normalizeIsoTimestamp(input?.started_at ?? input?.startedAt ?? input?.task_started_at ?? input?.taskStartedAt);
+  const finishedAt = normalizeIsoTimestamp(input?.finished_at ?? input?.finishedAt ?? input?.final_answer_at ?? input?.finalAnswerAt);
+  const inferredElapsedMs = explicitElapsedMs ?? inferElapsedMs(startedAt, finishedAt);
+  const explicitStatus = normalizeAccountingStatus(input?.status);
+  if (inferredElapsedMs !== null) {
+    return {
+      status: explicitStatus === 'unavailable' ? 'available' : (explicitStatus ?? 'available'),
+      elapsed_ms: inferredElapsedMs,
+      started_at: startedAt,
+      finished_at: finishedAt,
+      source: input?.source ?? null,
+      window: input?.window ?? null,
+      reason: input?.reason ?? null
+    };
+  }
+
+  return {
+    status: explicitStatus ?? 'unavailable',
+    elapsed_ms: null,
+    started_at: startedAt,
+    finished_at: finishedAt,
+    source: input?.source ?? null,
+    window: input?.window ?? null,
+    reason: input?.reason ?? 'elapsed-time logs were not provided to canonical audit promotion'
+  };
 }
 
 function changedLineCount(stats) {
@@ -206,4 +264,27 @@ function isHighRiskProfile(value) {
   const normalized = String(value ?? '').trim().toLowerCase();
   if (HIGH_RISK_PROFILES.has(normalized)) return true;
   return /security|release|workflow|migration|network|production|high/.test(normalized);
+}
+
+function normalizeNullableNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function normalizeAccountingStatus(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return normalized || null;
+}
+
+function normalizeIsoTimestamp(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function inferElapsedMs(startedAt, finishedAt) {
+  if (!startedAt || !finishedAt) return null;
+  const elapsedMs = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+  return Number.isFinite(elapsedMs) && elapsedMs >= 0 ? elapsedMs : null;
 }

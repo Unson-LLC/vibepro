@@ -41,6 +41,8 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     artifactLineCount: inventory.artifact_line_count,
     diffStats: merge?.git?.diff_line_stats ?? merge?.diff_line_stats ?? merge?.pr_context?.git?.diff_line_stats ?? null,
     diffStatsProvenance: merge?.git?.diff_stats ?? merge?.diff_stats ?? merge?.pr_context?.git?.diff_stats ?? null,
+    tokenAccounting: extractCanonicalTokenAccounting(merge),
+    elapsedTimeAccounting: extractCanonicalElapsedTimeAccounting(merge),
     riskProfile: merge?.gate_dag?.risk_profile ?? merge?.gate_dag?.change_classification?.profile ?? null,
     triggerSignals: collectCanonicalAuditTriggerSignals({ merge, missingArtifacts: inventory.missing_artifacts })
   });
@@ -661,6 +663,8 @@ function renderDecisionSummary(index) {
 - product_changed_lines: ${index.cost_summary.product_changed_lines ?? 'unknown'}
 - artifact_code_ratio: ${index.cost_summary.artifact_code_ratio ?? 'unknown'}
 - diff_stats: ${index.cost_summary.diff_stats_status ?? 'unknown'}
+- token_accounting: ${index.cost_summary.token_accounting?.status ?? 'unknown'} total=${index.cost_summary.token_accounting?.total_tokens ?? 'unknown'} source=${index.cost_summary.token_accounting?.source ?? 'unknown'}
+- elapsed_time_accounting: ${index.cost_summary.elapsed_time_accounting?.status ?? 'unknown'} elapsed_ms=${index.cost_summary.elapsed_time_accounting?.elapsed_ms ?? 'unknown'} source=${index.cost_summary.elapsed_time_accounting?.source ?? 'unknown'}
 - pr_prepare: ${index.pr_prepare.present ? index.pr_prepare.gate_status?.overall_status ?? 'present' : 'missing'}
 - evidence_reuse: ${index.evidence_reuse.present ? `${index.evidence_reuse.status ?? 'present'} key=${index.evidence_reuse.evidence_key ?? 'unknown'} verification_updated_at=${index.evidence_reuse.verification_evidence_updated_at ?? 'unknown'} verification_fingerprint=${index.evidence_reuse.verification_summary_fingerprint ?? 'unknown'}` : 'missing'}
 - senior_gap_judgment: ${index.senior_gap_judgment.present ? `${index.senior_gap_judgment.status ?? 'present'} gaps=${index.senior_gap_judgment.gap_count} blocking=${index.senior_gap_judgment.blocking_gap_count} residual=${index.senior_gap_judgment.residual_risk_count}` : 'missing'}
@@ -951,6 +955,24 @@ function collectCanonicalAuditTriggerSignals({ merge = null, missingArtifacts = 
     if (node?.status === 'bypassed') signals.push(`gate:${node.id ?? 'unknown'}:waiver`);
   }
   return signals;
+}
+
+function extractCanonicalTokenAccounting(merge = null) {
+  return merge?.cost_accounting?.token_accounting
+    ?? merge?.token_accounting
+    ?? merge?.usage?.token_accounting
+    ?? merge?.usage?.tokens
+    ?? merge?.session?.token_accounting
+    ?? null;
+}
+
+function extractCanonicalElapsedTimeAccounting(merge = null) {
+  return merge?.cost_accounting?.elapsed_time_accounting
+    ?? merge?.elapsed_time_accounting
+    ?? merge?.usage?.elapsed_time_accounting
+    ?? merge?.usage?.elapsed_time
+    ?? merge?.session?.elapsed_time_accounting
+    ?? null;
 }
 
 function buildDecisionIndexPrArtifacts({ root, storyId, index, indexPath, bundlePath }) {

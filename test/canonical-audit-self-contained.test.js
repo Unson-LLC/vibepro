@@ -3,11 +3,13 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { gunzipSync } from 'node:zlib';
 
 import {
   promoteCanonicalAuditArtifacts,
   replayCanonicalAuditBundle
 } from '../src/canonical-audit.js';
+import { buildCanonicalEvidenceCostSummary } from '../src/evidence-cost-budget.js';
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
@@ -283,4 +285,105 @@ test('canonical audit bundle stores diff stats provenance and bucketed changed l
   assert.equal(cost.changed_lines.buckets.audit_artifacts.changed_lines, 50);
   assert.equal(cost.product_changed_lines, 31);
   assert.equal(cost.artifact_code_ratio !== null, true);
+});
+
+test('canonical evidence cost summary preserves available and unavailable token/time accounting', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 10,
+    tokenAccounting: {
+      input_tokens: 1000,
+      output_tokens: 250,
+      cached_input_tokens: 50,
+      source: 'session-jsonl',
+      window: { session_id: 'session-1' }
+    },
+    elapsedTimeAccounting: {
+      started_at: '2026-06-27T00:00:00.000Z',
+      finished_at: '2026-06-27T00:02:30.000Z',
+      source: 'session-jsonl'
+    }
+  });
+
+  assert.equal(cost.token_accounting.status, 'available');
+  assert.equal(cost.token_accounting.total_tokens, 1250);
+  assert.equal(cost.token_accounting.input_tokens, 1000);
+  assert.equal(cost.token_accounting.output_tokens, 250);
+  assert.equal(cost.token_accounting.cached_input_tokens, 50);
+  assert.equal(cost.token_accounting.source, 'session-jsonl');
+  assert.deepEqual(cost.token_accounting.window, { session_id: 'session-1' });
+  assert.equal(cost.elapsed_time_accounting.status, 'available');
+  assert.equal(cost.elapsed_time_accounting.elapsed_ms, 150000);
+  assert.equal(cost.elapsed_time_accounting.started_at, '2026-06-27T00:00:00.000Z');
+  assert.equal(cost.elapsed_time_accounting.finished_at, '2026-06-27T00:02:30.000Z');
+
+  const unavailable = buildCanonicalEvidenceCostSummary();
+  assert.equal(unavailable.token_accounting.status, 'unavailable');
+  assert.equal(unavailable.token_accounting.total_tokens, null);
+  assert.equal(unavailable.token_accounting.reason, 'session token logs were not provided to canonical audit promotion');
+  assert.equal(unavailable.elapsed_time_accounting.status, 'unavailable');
+  assert.equal(unavailable.elapsed_time_accounting.elapsed_ms, null);
+  assert.equal(unavailable.elapsed_time_accounting.reason, 'elapsed-time logs were not provided to canonical audit promotion');
+});
+
+test('canonical audit promotion persists merge cost accounting in compact artifacts', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-cost-accounting-'));
+  const storyId = 'story-cost-accounting';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-27T00:00:00.000Z',
+    story: { story_id: storyId },
+    gate_status: {
+      ready_for_pr_create: true,
+      overall_status: 'ready_for_review',
+      critical_unresolved_gates: []
+    },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({
+      id: `gate-${index}`,
+      status: 'passed'
+    }))
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge: {
+      status: 'merged',
+      merged_at: '2026-06-27T00:05:00.000Z',
+      merge_commit_sha: 'abc123',
+      pr: { url: 'https://github.com/example/repo/pull/2' },
+      cost_accounting: {
+        token_accounting: {
+          status: 'available',
+          total_tokens: 3456,
+          input_tokens: 3000,
+          output_tokens: 456,
+          source: 'codex-session-jsonl',
+          window: { session_id: '019-cost' }
+        },
+        elapsed_time_accounting: {
+          started_at: '2026-06-27T00:00:00.000Z',
+          finished_at: '2026-06-27T00:12:00.000Z',
+          source: 'codex-session-jsonl'
+        }
+      }
+    }
+  });
+
+  assert.equal(promoted.bundle.artifact_policy.compacted, true);
+  assert.equal(promoted.bundle.cost_summary.token_accounting.status, 'available');
+  assert.equal(promoted.bundle.cost_summary.token_accounting.total_tokens, 3456);
+  assert.equal(promoted.bundle.cost_summary.elapsed_time_accounting.status, 'available');
+  assert.equal(promoted.bundle.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+
+  const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
+  assert.equal(auditIndex.cost_summary.token_accounting.total_tokens, 3456);
+  assert.equal(auditIndex.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+
+  const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
+  assert.match(decisionSummary, /token_accounting: available total=3456 source=codex-session-jsonl/);
+  assert.match(decisionSummary, /elapsed_time_accounting: available elapsed_ms=720000 source=codex-session-jsonl/);
+
+  const replayText = gunzipSync(await readFile(path.join(root, promoted.bundle.replay_bundle.path))).toString('utf8');
+  const replayPayload = JSON.parse(replayText);
+  assert.equal(replayPayload.cost_summary.token_accounting.total_tokens, 3456);
+  assert.equal(replayPayload.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
 });

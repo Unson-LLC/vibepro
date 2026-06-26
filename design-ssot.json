@@ -52,6 +52,23 @@
           "docs/specs/vibepro-design-ssot-coverage-auditor.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-canonical-audit-cost-accounting",
+      "title": "VibePro Canonical Audit Cost Accounting",
+      "root_doc": "docs/architecture/vibepro-canonical-audit-cost-accounting.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-canonical-audit-cost-accounting.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-canonical-audit-cost-accounting.md"
+        ]
+      }
     }
   ]
 }
