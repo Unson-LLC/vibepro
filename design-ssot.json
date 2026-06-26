@@ -35,6 +35,23 @@
           "docs/specs/vibepro-senior-gap-judgment.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-design-ssot-coverage-auditor",
+      "title": "VibePro Design SSOT Coverage Auditor",
+      "root_doc": "docs/architecture/vibepro-design-ssot-coverage-auditor.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-design-ssot-coverage-auditor.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-design-ssot-coverage-auditor.md"
+        ]
+      }
     }
   ]
 }
