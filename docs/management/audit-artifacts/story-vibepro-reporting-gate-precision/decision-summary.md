@@ -3,9 +3,9 @@
 - story: story-vibepro-reporting-gate-precision
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 18342
+- artifact_lines: 18432
 - product_changed_lines: 262
-- artifact_code_ratio: 70.008
+- artifact_code_ratio: 70.351
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: hit key=evk_40b49ba12bffc67db19f4284b9704fa4 verification_updated_at=2026-06-26T07:42:22.015Z verification_fingerprint=sha256:bd626a622acc2ba5a43891d5e7d89a8c784c9e5c4f7f376b2310007f863633c4

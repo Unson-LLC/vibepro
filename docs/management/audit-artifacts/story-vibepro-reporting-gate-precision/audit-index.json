@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-reporting-gate-precision",
   "source": "execute_merge",
-  "generated_at": "2026-06-26T07:45:14.626Z",
+  "generated_at": "2026-06-26T07:45:18.328Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-26T07:45:11.284Z",
     "diff_stats_reason": null,
-    "artifact_lines": 18342,
+    "artifact_lines": 18432,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 450,
@@ -85,7 +85,7 @@
     "product_changed_lines": 262,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 70.008,
+    "artifact_code_ratio": 70.351,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -108,9 +108,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 89902,
-      "expanded_bytes": 1045178,
-      "expanded_line_count": 18629
+      "compressed_bytes": 90844,
+      "expanded_bytes": 1050657,
+      "expanded_line_count": 18719
     }
   },
   "pr_prepare": {
@@ -217,11 +217,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-reporting-gate-precision/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:0ebc02a93a6c4c2d49ff9139476e7b76f2c18024f876f83fb9048f832d9ba468",
-    "compressed_hash": "sha256:dc20ec61cf56d265cb348b90d8915d04975a551768747c20e28fcc482aa22bb0",
-    "expanded_bytes": 1045178,
-    "compressed_bytes": 89902,
-    "expanded_line_count": 18629,
+    "content_hash": "sha256:d1f9f9042304d24855b03264905d77c1e076dbf24403cdc681ba8095fdc1461e",
+    "compressed_hash": "sha256:3eb55d4a424ce5fd63f9e2588c973f9c4f4c0097e7c543f367ece5cdf0d3bf04",
+    "expanded_bytes": 1050657,
+    "compressed_bytes": 90844,
+    "expanded_line_count": 18719,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -237,9 +237,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-reporting-gate-precision",
     "cost": {
-      "compressed_bytes": 89902,
-      "expanded_bytes": 1045178,
-      "expanded_line_count": 18629
+      "compressed_bytes": 90844,
+      "expanded_bytes": 1050657,
+      "expanded_line_count": 18719
     }
   }
 }
