@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-canonical-audit-cost-accounting",
   "source": "execute_merge",
-  "generated_at": "2026-06-26T16:12:44.941Z",
+  "generated_at": "2026-06-26T16:12:48.977Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-26T16:12:40.166Z",
     "diff_stats_reason": null,
-    "artifact_lines": 21655,
+    "artifact_lines": 21745,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 412,
@@ -86,7 +86,7 @@
     "product_changed_lines": 412,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 52.561,
+    "artifact_code_ratio": 52.779,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -118,9 +118,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 105353,
-      "expanded_bytes": 1099640,
-      "expanded_line_count": 21977
+      "compressed_bytes": 106148,
+      "expanded_bytes": 1105245,
+      "expanded_line_count": 22067
     }
   },
   "pr_prepare": {
@@ -235,11 +235,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-canonical-audit-cost-accounting/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:9c49e06838054af8ada7fbc267066579c6d89ec079ad9822931732b9acd79a14",
-    "compressed_hash": "sha256:9d1e341a66b25b0a758931f319f926e9da9e08455fcd33429dedea21ea7e378e",
-    "expanded_bytes": 1099640,
-    "compressed_bytes": 105353,
-    "expanded_line_count": 21977,
+    "content_hash": "sha256:2881e7868bc4efe09b6fb63112b6f4232811e2e872e50fa2b5e7b802d74a8831",
+    "compressed_hash": "sha256:080cc0b0b0d971ecdb454de8a8edb60863315d534d49ce353c6324a197a7463d",
+    "expanded_bytes": 1105245,
+    "compressed_bytes": 106148,
+    "expanded_line_count": 22067,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -256,9 +256,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-canonical-audit-cost-accounting",
     "cost": {
-      "compressed_bytes": 105353,
-      "expanded_bytes": 1099640,
-      "expanded_line_count": 21977
+      "compressed_bytes": 106148,
+      "expanded_bytes": 1105245,
+      "expanded_line_count": 22067
     }
   }
 }
