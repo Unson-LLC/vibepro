@@ -1,0 +1,255 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-ssot-coverage-auditor",
+  "source": "execute_merge",
+  "generated_at": "2026-06-26T15:17:19.093Z",
+  "evidence_depth": "standard",
+  "budget_status": "exceeded",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "merge_warning",
+      "gate:gate:managed_worktree:needs_review"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...3247dbd08c671e9f69eb3a721a249091c11a758c",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "3247dbd08c671e9f69eb3a721a249091c11a758c",
+      "base_sha": "c851f7b7a28d82fdb5787c6b005e00e38124b3ae",
+      "head_sha": "3247dbd08c671e9f69eb3a721a249091c11a758c",
+      "merge_commit_sha": "b8787521569ca1750761829b6af40fcd95ead1e2"
+    },
+    "diff_stats_collected_at": "2026-06-26T15:17:14.511Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 20225,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 468,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 2,
+          "changed_lines": 236,
+          "unknown_files": 0,
+          "paths": [
+            "src/cli.js",
+            "src/design-ssot.js"
+          ]
+        },
+        "test": {
+          "files": 1,
+          "changed_lines": 63,
+          "unknown_files": 0,
+          "paths": [
+            "test/design-ssot.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 152,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-design-ssot-coverage-auditor.md",
+            "docs/management/stories/active/story-vibepro-design-ssot-coverage-auditor.md",
+            "docs/specs/vibepro-design-ssot-coverage-auditor.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 1,
+          "changed_lines": 17,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...3247dbd08c671e9f69eb3a721a249091c11a758c",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "3247dbd08c671e9f69eb3a721a249091c11a758c",
+        "base_sha": "c851f7b7a28d82fdb5787c6b005e00e38124b3ae",
+        "head_sha": "3247dbd08c671e9f69eb3a721a249091c11a758c",
+        "merge_commit_sha": "b8787521569ca1750761829b6af40fcd95ead1e2"
+      },
+      "collected_at": "2026-06-26T15:17:14.511Z",
+      "reason": null
+    },
+    "product_changed_lines": 468,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 43.216,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 102474,
+      "expanded_bytes": 1002361,
+      "expanded_line_count": 20529
+    }
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-06-26T15:14:45.229Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-06-26T15:14:45.229Z",
+    "status": "stale",
+    "evidence_key": "evk_d46839bae3e1eb935a448a0e20d7c773",
+    "verification_summary_fingerprint": "sha256:b09353e53bd8745a71f320b80279634e813a31d54431082395ad9c68935ec4b3",
+    "verification_evidence_updated_at": "2026-06-26T15:09:50.511Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "unit",
+        "executed_at": "2026-06-26T15:09:50.511Z",
+        "git_recorded_at": "2026-06-26T15:09:50.510Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-06-26T15:08:41.292Z",
+        "git_recorded_at": "2026-06-26T15:08:41.291Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-06-26T15:06:16.780Z",
+        "git_recorded_at": "2026-06-26T15:06:16.739Z"
+      },
+      {
+        "kind": "integration",
+        "executed_at": "2026-06-26T15:06:16.746Z",
+        "git_recorded_at": "2026-06-26T15:06:16.745Z"
+      }
+    ],
+    "stale_reason_count": 1,
+    "full_evidence_status": "generated",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 6
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-06-26T15:14:45.240Z",
+    "status": null,
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/236",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/236",
+      "merge_commit_sha": "b8787521569ca1750761829b6af40fcd95ead1e2",
+      "merged_at": "2026-06-26T15:17:16Z",
+      "current_head_sha": "3247dbd08c671e9f69eb3a721a249091c11a758c",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...3247dbd08c671e9f69eb3a721a249091c11a758c"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 52,
+    "blocking_count": 1
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": "passed_with_residual_risk",
+    "gap_count": 2,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 2,
+    "followup_count": 2
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 6,
+      "acceptance_criteria_count": 6,
+      "scenario_clause_count": 0,
+      "mapped_count": 6,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 4,
+    "pass_count": 4,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-design-ssot-coverage-auditor/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:3a2f18719883488f4420db37325861f7403a42f3681a5474e55a73b33d697c67",
+    "compressed_hash": "sha256:d20d22b1e7a8fc3f03039077070220065324d9450ca1aa2095833bc1b7e2cabe",
+    "expanded_bytes": 1002361,
+    "compressed_bytes": 102474,
+    "expanded_line_count": 20529,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-design-ssot-coverage-auditor",
+    "cost": {
+      "compressed_bytes": 102474,
+      "expanded_bytes": 1002361,
+      "expanded_line_count": 20529
+    }
+  }
+}
