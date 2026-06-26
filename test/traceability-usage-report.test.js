@@ -581,7 +581,7 @@ test('subagent ROI separates wall-clock time from concurrent agent consumption a
         agent_system: 'claude_code',
         wall_clock_minutes: null,
         agent_consumption_minutes: 0,
-        total_tokens: 0,
+        total_tokens: null,
         token_missing_review_count: 1
       },
       {

@@ -16615,7 +16615,7 @@ test('SRA-SC-1 SRA-CON-4 SRA-SC-2 SRA-SC-3 SRA-INV-3 SRA-AP-2 SRA-SC-4 usage rep
         agent_system: 'claude_code',
         wall_clock_minutes: null,
         agent_consumption_minutes: 0,
-        total_tokens: 0,
+        total_tokens: null,
         token_missing_review_count: 1
       },
       {

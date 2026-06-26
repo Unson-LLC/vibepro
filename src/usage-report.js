@@ -1636,7 +1636,8 @@ function summarizeTimeEfficiencyByAgentSystem(reviews) {
       return {
         ...item,
         wall_clock_elapsed_ms: _intervals.length > 0 ? wallClockElapsedMs : null,
-        wall_clock_minutes: _intervals.length > 0 ? Number((wallClockElapsedMs / 60000).toFixed(2)) : null
+        wall_clock_minutes: _intervals.length > 0 ? Number((wallClockElapsedMs / 60000).toFixed(2)) : null,
+        total_tokens: item.token_observed_review_count > 0 ? item.total_tokens : null
       };
     })
     .sort((a, b) => a.agent_system.localeCompare(b.agent_system));
