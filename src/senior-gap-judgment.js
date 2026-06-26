@@ -156,7 +156,7 @@ function buildCurrentState({ git, fileGroups, scope, prContext, gateStatus, evid
     design_ssot_reconciliation_status: prContext?.design_ssot_reconciliation?.status ?? null,
     responsibility_authority_status: prContext?.responsibility_authority?.status ?? null,
     requirement_status: prContext?.requirement_consistency?.status ?? null,
-    traceability_clause_coverage: prContext?.traceability_clause_coverage?.coverage_summary ?? null,
+    traceability_clause_coverage: normalizeTraceabilityCoverage(prContext?.traceability_clause_coverage),
     evidence_depth: evidencePlan?.evidence_depth ?? null,
     evidence_reuse_status: evidenceReuse?.status ?? prContext?.evidence_reuse?.status ?? null
   };
@@ -241,7 +241,7 @@ function gapsFromResponsibilityAuthority(authority) {
 }
 
 function gapsFromTraceability(traceability) {
-  const summary = traceability?.coverage_summary ?? traceability ?? {};
+  const summary = normalizeTraceabilityCoverage(traceability) ?? {};
   const unmapped = Number(summary.unmapped_count ?? 0);
   const weak = Number(summary.weakly_mapped_count ?? 0);
   const gaps = [];
@@ -274,6 +274,12 @@ function gapsFromTraceability(traceability) {
     });
   }
   return gaps;
+}
+
+function normalizeTraceabilityCoverage(traceability) {
+  const summary = traceability?.coverage_summary ?? traceability ?? null;
+  if (!summary || typeof summary !== 'object' || Array.isArray(summary)) return null;
+  return summary;
 }
 
 function gapsFromJudgmentAxes(engineeringJudgment) {

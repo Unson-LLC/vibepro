@@ -32,7 +32,10 @@ test('SGJ-S-001 senior gap judgment preserves missing cost telemetry as residual
         nodes: [{ id: 'story', type: 'story', required: true, status: 'present' }]
       },
       traceability_clause_coverage: {
-        coverage_summary: { weakly_mapped_count: 0, unmapped_count: 0 }
+        clause_count: 1,
+        mapped_count: 1,
+        weakly_mapped_count: 0,
+        unmapped_count: 0
       }
     },
     gateStatus: {
@@ -59,6 +62,7 @@ test('SGJ-S-001 senior gap judgment preserves missing cost telemetry as residual
   assert.equal(judgment.cost_context.evidence_reuse.full_evidence_cumulative_generation_count, 5);
   assert.equal(judgment.cost_context.token_accounting.status, 'not_collected_in_pr_prepare');
   assert.equal(judgment.cost_context.elapsed_time_accounting.status, 'not_collected_in_pr_prepare');
+  assert.equal(judgment.current_state.traceability_clause_coverage.clause_count, 1);
   const gate = buildSeniorGapJudgmentGate(judgment, { artifact: '.vibepro/pr/story-sgj/senior-gap-judgment.json' });
   assert.equal(gate.status, 'passed');
   assert.equal(gate.residual_risk_count, 1);
@@ -148,6 +152,7 @@ test('SGJ-S-004 pr prepare writes senior gap judgment artifact and gate', async 
   assert.ok(Array.isArray(artifact.residual_risks));
   assert.ok(Array.isArray(artifact.followups));
   assert.equal(artifact.cost_context.token_accounting.status, 'not_collected_in_pr_prepare');
+  assert.equal(typeof artifact.current_state.traceability_clause_coverage?.clause_count, 'number');
   assert.equal(result.artifacts.senior_gap_judgment, artifactPath);
   const gate = result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:senior_gap_judgment');
   assert.ok(gate);
