@@ -16,6 +16,7 @@ const PR_AUDIT_FILES = [
   ['pr-prepare.json', 'pr_prepare'],
   ['pr-create.json', 'pr_create'],
   ['gate-dag.json', 'gate_dag'],
+  ['senior-gap-judgment.json', 'senior_gap_judgment'],
   ['pr-merge.json', 'pr_merge'],
   ['traceability.json', 'traceability'],
   ['verification-evidence.json', 'verification_evidence']
@@ -541,6 +542,9 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
   const prCreate = latestData(byKind.get('pr_create'));
   const prMerge = latestData(byKind.get('pr_merge')) ?? merge;
   const gateDag = latestData(byKind.get('gate_dag'));
+  const seniorGapJudgment = latestData(byKind.get('senior_gap_judgment'))
+    ?? prPrepare?.pr_context?.senior_gap_judgment
+    ?? null;
   const traceability = latestData(byKind.get('traceability'));
   const verification = latestData(byKind.get('verification_evidence'));
   const reviewSummaries = (byKind.get('review_summary') ?? []).map((artifact) => artifact.data);
@@ -616,6 +620,14 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         ? gateDag.nodes.filter((node) => ['block', 'needs_evidence', 'needs_review', 'failed'].includes(node.status)).length
         : 0
     },
+    senior_gap_judgment: {
+      present: Boolean(seniorGapJudgment),
+      status: seniorGapJudgment?.decision?.status ?? null,
+      gap_count: seniorGapJudgment?.gaps?.length ?? 0,
+      blocking_gap_count: seniorGapJudgment?.decision?.blocking_gap_count ?? 0,
+      residual_risk_count: seniorGapJudgment?.residual_risks?.length ?? 0,
+      followup_count: seniorGapJudgment?.followups?.length ?? 0
+    },
     traceability: {
       present: Boolean(traceability),
       lifecycle: traceability?.lifecycle ?? null,
@@ -651,6 +663,7 @@ function renderDecisionSummary(index) {
 - diff_stats: ${index.cost_summary.diff_stats_status ?? 'unknown'}
 - pr_prepare: ${index.pr_prepare.present ? index.pr_prepare.gate_status?.overall_status ?? 'present' : 'missing'}
 - evidence_reuse: ${index.evidence_reuse.present ? `${index.evidence_reuse.status ?? 'present'} key=${index.evidence_reuse.evidence_key ?? 'unknown'} verification_updated_at=${index.evidence_reuse.verification_evidence_updated_at ?? 'unknown'} verification_fingerprint=${index.evidence_reuse.verification_summary_fingerprint ?? 'unknown'}` : 'missing'}
+- senior_gap_judgment: ${index.senior_gap_judgment.present ? `${index.senior_gap_judgment.status ?? 'present'} gaps=${index.senior_gap_judgment.gap_count} blocking=${index.senior_gap_judgment.blocking_gap_count} residual=${index.senior_gap_judgment.residual_risk_count}` : 'missing'}
 - pr_create: ${index.pr_create.present ? index.pr_create.status ?? index.pr_create.pr_url ?? 'present' : 'missing'}
 - pr_merge: ${index.pr_merge.present ? index.pr_merge.summary?.status ?? 'present' : 'missing'}
 - verification: commands=${index.verification.command_count} pass=${index.verification.pass_count} fail=${index.verification.fail_count}
@@ -990,6 +1003,40 @@ function buildDecisionIndexPrArtifacts({ root, storyId, index, indexPath, bundle
             ?? index.evidence_reuse.full_evidence_generation_count
             ?? null
         }
+      }
+    });
+  }
+  if (index.senior_gap_judgment?.present) {
+    const summary = index.senior_gap_judgment;
+    artifacts.push({
+      kind: 'senior_gap_judgment',
+      story_id: storyId,
+      path: pathForArtifact,
+      source: 'canonical_audit_summary',
+      data: {
+        schema_version: '0.1.0',
+        model: 'vibepro-senior-gap-judgment-summary-v1',
+        story_id: storyId,
+        generated_at: index.generated_at,
+        decision: {
+          status: summary.status ?? null,
+          blocking_gap_count: summary.blocking_gap_count ?? 0,
+          reason: 'Compact canonical audit index preserved senior gap judgment summary'
+        },
+        gaps: Array.from({ length: summary.gap_count ?? 0 }, (_, index) => ({
+          id: `compact-summary-gap-${index + 1}`,
+          kind: 'compact_summary_gap',
+          safe_to_defer: index >= (summary.blocking_gap_count ?? 0)
+        })),
+        residual_risks: Array.from({ length: summary.residual_risk_count ?? 0 }, (_, index) => ({
+          id: `compact-summary-residual-risk-${index + 1}`,
+          kind: 'compact_summary_residual_risk'
+        })),
+        followups: Array.from({ length: summary.followup_count ?? 0 }, (_, index) => ({
+          id: `compact-summary-followup-${index + 1}`,
+          kind: 'compact_summary_followup'
+        })),
+        summary
       }
     });
   }

@@ -53,6 +53,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     if (artifact.kind === 'evidence_reuse') {
       recordEvidenceReuse(story, artifact.data);
     }
+    if (artifact.kind === 'senior_gap_judgment') {
+      recordSeniorGapJudgment(story, artifact.data, artifact.path);
+    }
     if (artifact.kind === 'pr_create') {
       story.pr_create_count += 1;
       story.pr_created ||= Boolean(artifact.data?.pr_url) || artifact.data?.status === 'created';
@@ -106,6 +109,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     story.evidence_cost.replay_bundle = artifact.data?.replay_bundle
       ?? artifact.data?.decision_index?.replay_bundle
       ?? story.evidence_cost.replay_bundle;
+    if (artifact.data?.decision_index?.senior_gap_judgment) {
+      recordSeniorGapJudgment(story, artifact.data.decision_index.senior_gap_judgment, artifact.path);
+    }
     story.handoff_replay_status = artifact.data?.handoff_replay_status
       ?? artifact.data?.handoff_replay?.status
       ?? story.handoff_replay_status;
@@ -359,6 +365,15 @@ function ensureStoryUsage(storyMap, storyId) {
         same_key_full_evidence_generation_count: 0,
         cumulative_full_evidence_generation_count: 0
       },
+      senior_gap_judgment: {
+        present: false,
+        status: null,
+        gap_count: 0,
+        blocking_gap_count: 0,
+        residual_risk_count: 0,
+        followup_count: 0,
+        artifact: null
+      },
       artifact_sources: [],
       traceability_resolution: {
         status: 'unknown',
@@ -396,7 +411,7 @@ async function collectPrArtifacts(root, workspaceDir, since) {
   const artifacts = [];
   for (const storyId of storyDirs) {
     const storyDir = path.join(prDir, storyId);
-    for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
+    for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['senior-gap-judgment.json', 'senior_gap_judgment'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
       const filePath = path.join(storyDir, file);
       const data = await readJsonIfExists(filePath);
       if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
@@ -1062,6 +1077,30 @@ function recordEvidenceReuse(story, evidenceReuse) {
   }
 }
 
+function recordSeniorGapJudgment(story, judgment, artifactPath = null) {
+  if (!judgment || typeof judgment !== 'object') return;
+  const summary = judgment.decision ? {
+    status: judgment.decision.status ?? null,
+    gap_count: Array.isArray(judgment.gaps) ? judgment.gaps.length : 0,
+    blocking_gap_count: judgment.decision.blocking_gap_count ?? 0,
+    residual_risk_count: Array.isArray(judgment.residual_risks) ? judgment.residual_risks.length : 0,
+    followup_count: Array.isArray(judgment.followups) ? judgment.followups.length : 0
+  } : {
+    status: judgment.status ?? null,
+    gap_count: judgment.gap_count ?? 0,
+    blocking_gap_count: judgment.blocking_gap_count ?? 0,
+    residual_risk_count: judgment.residual_risk_count ?? 0,
+    followup_count: judgment.followup_count ?? 0
+  };
+  story.senior_gap_judgment.present = true;
+  story.senior_gap_judgment.status = summary.status ?? story.senior_gap_judgment.status;
+  story.senior_gap_judgment.gap_count = Math.max(story.senior_gap_judgment.gap_count, summary.gap_count ?? 0);
+  story.senior_gap_judgment.blocking_gap_count = Math.max(story.senior_gap_judgment.blocking_gap_count, summary.blocking_gap_count ?? 0);
+  story.senior_gap_judgment.residual_risk_count = Math.max(story.senior_gap_judgment.residual_risk_count, summary.residual_risk_count ?? 0);
+  story.senior_gap_judgment.followup_count = Math.max(story.senior_gap_judgment.followup_count, summary.followup_count ?? 0);
+  story.senior_gap_judgment.artifact = artifactPath ?? story.senior_gap_judgment.artifact;
+}
+
 function buildEvidenceReuseMetrics(stories) {
   const observedStories = stories.filter((story) => story.evidence_reuse?.latest_status);
   const hitCount = sumNumbers(observedStories.map((story) => story.evidence_reuse.hit_count));
@@ -1224,6 +1263,9 @@ function buildValueSignals(stories) {
   const mergedWithoutEvidenceCount = stories.filter((story) => story.merged_without_vibepro_evidence).length;
   const evidenceInOtherWorktreeCount = stories.filter((story) => story.evidence_in_other_worktree).length;
   const canonicalHandoffReplayBlockedCount = stories.filter((story) => story.handoff_replay_status === 'blocked').length;
+  const seniorGapJudgmentStoryCount = stories.filter((story) => story.senior_gap_judgment.present).length;
+  const seniorGapBlockingStoryCount = stories.filter((story) => story.senior_gap_judgment.blocking_gap_count > 0).length;
+  const seniorGapResidualRiskStoryCount = stories.filter((story) => story.senior_gap_judgment.residual_risk_count > 0).length;
   const traceabilityClauseMappingIncompleteCount = stories.filter((story) => (
     (story.traceability_clause_coverage?.weakly_mapped_count ?? 0) > 0
     || (story.traceability_clause_coverage?.unmapped_count ?? 0) > 0
@@ -1242,12 +1284,16 @@ function buildValueSignals(stories) {
     merged_without_vibepro_evidence_story_count: mergedWithoutEvidenceCount,
     evidence_in_other_worktree_story_count: evidenceInOtherWorktreeCount,
     canonical_handoff_replay_blocked_count: canonicalHandoffReplayBlockedCount,
+    senior_gap_judgment_story_count: seniorGapJudgmentStoryCount,
+    senior_gap_blocking_story_count: seniorGapBlockingStoryCount,
+    senior_gap_residual_risk_story_count: seniorGapResidualRiskStoryCount,
     traceability_clause_mapping_incomplete_count: traceabilityClauseMappingIncompleteCount,
     traceability_gaps: traceabilityGaps,
     waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
     stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),
     story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount),
-    traceability_gap_rate: calculateRate(traceabilityGapStoryCount, storyCount)
+    traceability_gap_rate: calculateRate(traceabilityGapStoryCount, storyCount),
+    senior_gap_judgment_rate: calculateRate(seniorGapJudgmentStoryCount, storyCount)
   };
 }
 
