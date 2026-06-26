@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-design-ssot-reconciliation",
   "source": "execute_merge",
-  "generated_at": "2026-06-26T09:49:26.235Z",
+  "generated_at": "2026-06-26T09:49:30.015Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-26T09:49:22.872Z",
     "diff_stats_reason": null,
-    "artifact_lines": 19300,
+    "artifact_lines": 19390,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1438,
@@ -93,7 +93,7 @@
     "product_changed_lines": 1438,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 13.421,
+    "artifact_code_ratio": 13.484,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -116,9 +116,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 102254,
-      "expanded_bytes": 1014616,
-      "expanded_line_count": 19615
+      "compressed_bytes": 103136,
+      "expanded_bytes": 1020122,
+      "expanded_line_count": 19705
     }
   },
   "pr_prepare": {
@@ -240,11 +240,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-design-ssot-reconciliation/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:57d855d10dcd08c91bc56ba95e55a2a9cd8aed4c992e53d9a001b1e8218c53f7",
-    "compressed_hash": "sha256:c4bf3d71246d2e4bf08ab32b3fd01f56140fbe908590ba8fda835f4298f7f7c3",
-    "expanded_bytes": 1014616,
-    "compressed_bytes": 102254,
-    "expanded_line_count": 19615,
+    "content_hash": "sha256:d03f3e7d2dacb50d273386fa5dd734d796b4b35e2a6a50f634b08e2e184b38b7",
+    "compressed_hash": "sha256:ab6ed0379f59d5eac5a8c8b193473bef9991456f1dc27d79a4663a40f042476a",
+    "expanded_bytes": 1020122,
+    "compressed_bytes": 103136,
+    "expanded_line_count": 19705,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -260,9 +260,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-design-ssot-reconciliation",
     "cost": {
-      "compressed_bytes": 102254,
-      "expanded_bytes": 1014616,
-      "expanded_line_count": 19615
+      "compressed_bytes": 103136,
+      "expanded_bytes": 1020122,
+      "expanded_line_count": 19705
     }
   }
 }

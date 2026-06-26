@@ -3,9 +3,9 @@
 - story: story-vibepro-design-ssot-reconciliation
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 19300
+- artifact_lines: 19390
 - product_changed_lines: 1438
-- artifact_code_ratio: 13.421
+- artifact_code_ratio: 13.484
 - diff_stats: available
 - pr_prepare: ready_for_review
 - evidence_reuse: stale key=evk_7501693c8c0523445f77d4b763f011df verification_updated_at=2026-06-26T09:34:12.408Z verification_fingerprint=sha256:32b9a53b3f60683d4ad30c92f5af095dff9f18221d91ad24a826590cfcff630d
