@@ -123,6 +123,64 @@ The owner boundary changed without touching the child docs.
   assert.equal(reconcile.result.result.action_items.some((item) => item.kind === 'root_only_change'), true);
 });
 
+test('design-ssot coverage reports registered and unregistered design docs without blocking old debt', async () => {
+  const repo = await makeRepo();
+  await writeDesignDocs(repo);
+  await writeDesignSsotRegistry(repo);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'unregistered-legacy.md'), `---
+title: Unregistered Legacy Design
+status: active
+---
+
+# Legacy
+`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'docs: add design baseline with legacy debt']);
+  await git(repo, ['switch', '-c', 'feature/readme-only']);
+  await writeFile(path.join(repo, 'README.md'), '# Fixture updated\n');
+  await git(repo, ['add', 'README.md']);
+  await git(repo, ['commit', '-m', 'docs: update readme only']);
+
+  const coverage = await runCli(['design-ssot', 'coverage', repo, '--base', 'main', '--json']);
+  assert.equal(coverage.exitCode, 0);
+  assert.equal(coverage.result.result.status, 'passed');
+  assert.equal(coverage.result.result.summary.registered_doc_count, 3);
+  assert.equal(coverage.result.result.summary.unregistered_doc_count, 1);
+  assert.equal(coverage.result.result.summary.changed_unregistered_design_doc_count, 0);
+});
+
+test('design-ssot reconcile flags changed unregistered design docs as review action items', async () => {
+  const repo = await makeRepo();
+  await writeDesignDocs(repo);
+  await writeDesignSsotRegistry(repo);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'docs: add design ssot baseline']);
+  await git(repo, ['switch', '-c', 'feature/unregistered-design-doc']);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'unregistered-control-plane.md'), `---
+title: Unregistered Control Plane
+status: active
+---
+
+# Unregistered Control Plane
+`);
+  await git(repo, ['add', 'docs/architecture/unregistered-control-plane.md']);
+  await git(repo, ['commit', '-m', 'docs: add unregistered design doc']);
+
+  const reconcile = await runCli([
+    'design-ssot',
+    'reconcile',
+    repo,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(reconcile.exitCode, 0);
+  assert.equal(reconcile.result.result.status, 'needs_review');
+  assert.equal(reconcile.result.result.summary.coverage_gap_count, 1);
+  assert.equal(reconcile.result.result.coverage.summary.changed_unregistered_design_doc_count, 1);
+  assert.equal(reconcile.result.result.action_items.some((item) => item.kind === 'unregistered_changed_design_doc'), true);
+});
+
 test('design-ssot reconcile blocks when required child links are missing', async () => {
   const repo = await makeRepo();
   await writeDesignDocs(repo);
@@ -215,10 +273,13 @@ test('pr prepare projects design ssot reconciliation between path surface and re
   assert.equal(gate.type, 'design_ssot_reconciliation_gate');
   assert.equal(gate.status, 'passed');
   assert.equal(gate.required, true);
+  assert.equal(gate.summary.coverage_gap_count, 0);
   assert.equal(gateDag.summary.design_ssot_reconciliation_status, 'passed');
   assert.ok(gateDag.edges.some((edge) => edge.from === 'gate:path_surface_matrix' && edge.to === 'gate:design_ssot_reconciliation'));
   assert.ok(gateDag.edges.some((edge) => edge.from === 'gate:design_ssot_reconciliation' && edge.to === 'gate:responsibility_authority'));
-  assert.ok(await readJson(result.artifacts.design_ssot_reconciliation));
+  const designSsotArtifact = await readJson(result.artifacts.design_ssot_reconciliation);
+  assert.equal(designSsotArtifact.coverage.summary.changed_unregistered_design_doc_count, 0);
+  assert.equal(designSsotArtifact.coverage.summary.registered_doc_count, 3);
 });
 
 async function makeRepo() {

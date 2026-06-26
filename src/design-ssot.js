@@ -133,11 +133,69 @@ export async function getDesignSsotStatus(repoRoot, options = {}) {
   };
 }
 
+export async function auditDesignSsotCoverage(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const registry = await readDesignSsotRegistry(root, options);
+  const roots = filterDesignRoots(registry.design_roots, options.id);
+  const changedPaths = options.changedPaths ?? await resolveChangedPaths(root, options);
+  const designDocs = await discoverDesignDocCandidates(root);
+  const registeredDocs = buildRegisteredDesignDocIndex(roots);
+  const coveredDocs = designDocs.map((doc) => {
+    const registration = registeredDocs.get(doc.path) ?? null;
+    return {
+      ...doc,
+      registered: Boolean(registration),
+      registration
+    };
+  });
+  const changedSet = new Set(changedPaths);
+  const changedDocs = coveredDocs.filter((doc) => changedSet.has(doc.path));
+  const unregisteredDocs = coveredDocs.filter((doc) => !doc.registered);
+  const unregisteredChangedDocs = changedDocs.filter((doc) => !doc.registered);
+  const result = {
+    schema_version: '0.1.0',
+    model: 'vibepro-design-ssot-coverage-v1',
+    workflow: 'design-ssot-coverage',
+    status: roots.length === 0 ? 'not_applicable' : unregisteredChangedDocs.length > 0 ? 'needs_review' : 'passed',
+    generated_at: new Date().toISOString(),
+    registry_sources: registry.sources,
+    changed_paths: changedPaths,
+    summary: {
+      registry_source_count: registry.sources.length,
+      design_root_count: roots.length,
+      total_design_doc_count: coveredDocs.length,
+      registered_root_count: coveredDocs.filter((doc) => doc.registration?.role === 'root').length,
+      registered_child_count: coveredDocs.filter((doc) => doc.registration?.role === 'child').length,
+      registered_doc_count: coveredDocs.filter((doc) => doc.registered).length,
+      unregistered_doc_count: unregisteredDocs.length,
+      changed_design_doc_count: changedDocs.length,
+      changed_unregistered_design_doc_count: unregisteredChangedDocs.length,
+      parent_design_declared_count: coveredDocs.filter((doc) => doc.parent_design.length > 0).length
+    },
+    registered_docs: coveredDocs.filter((doc) => doc.registered),
+    unregistered_docs: unregisteredDocs,
+    changed_docs: changedDocs,
+    unregistered_changed_docs: unregisteredChangedDocs
+  };
+  if (options.writeArtifacts === false) {
+    return { outDir: null, result };
+  }
+  const artifactId = options.id ? sanitizeId(options.id) : 'all';
+  const artifacts = await writeDesignSsotCoverage(root, artifactId, result);
+  return { outDir: path.dirname(path.join(root, artifacts.json)), result: { ...result, artifacts } };
+}
+
 export async function reconcileDesignSsot(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const registry = await readDesignSsotRegistry(root, options);
   const roots = filterDesignRoots(registry.design_roots, options.id);
   const changedPaths = options.changedPaths ?? await resolveChangedPaths(root, options);
+  const coverage = await auditDesignSsotCoverage(root, {
+    ...options,
+    id: options.id,
+    changedPaths,
+    writeArtifacts: false
+  });
   const reconciledRoots = [];
   for (const designRoot of roots) {
     reconciledRoots.push(await reconcileDesignRoot(root, designRoot, {
@@ -145,13 +203,18 @@ export async function reconcileDesignSsot(repoRoot, options = {}) {
       registrySources: registry.sources
     }));
   }
-  const actions = reconciledRoots.flatMap((item) => item.action_items);
+  const coverageActions = buildCoverageActionItems(coverage.result);
+  const actions = [
+    ...reconciledRoots.flatMap((item) => item.action_items),
+    ...coverageActions
+  ];
   const status = resolveReconciliationStatus(reconciledRoots, registry.sources, changedPaths);
+  const finalStatus = mergeReconciliationAndCoverageStatus(status, coverage.result.status);
   const result = {
     schema_version: '0.1.0',
     model: 'vibepro-design-ssot-reconciliation-v1',
     workflow: 'design-ssot-reconcile',
-    status,
+    status: finalStatus,
     generated_at: new Date().toISOString(),
     registry_sources: registry.sources,
     changed_paths: changedPaths,
@@ -163,9 +226,11 @@ export async function reconcileDesignSsot(repoRoot, options = {}) {
       missing_required_child_count: actions.filter((item) => item.kind === 'missing_required_child').length,
       stale_child_count: actions.filter((item) => item.kind === 'stale_child_review').length,
       frontmatter_gap_count: actions.filter((item) => item.kind === 'frontmatter_gap').length,
+      coverage_gap_count: actions.filter((item) => item.kind === 'unregistered_changed_design_doc').length,
       contradiction_count: actions.filter((item) => item.severity === 'block').length,
       action_item_count: actions.length
     },
+    coverage: coverage.result,
     design_roots: reconciledRoots,
     action_items: actions
   };
@@ -197,16 +262,40 @@ export function buildDesignSsotGate(reconciliation, options = {}) {
 
 export function renderDesignSsotSummary(result) {
   const summary = result.summary ?? {};
+  const coverage = result.coverage?.summary ?? {};
   const lines = [
     '# Design SSOT',
     '',
     `- status: ${result.status}`,
     `- registry_sources: ${summary.registry_source_count ?? result.registry_sources?.length ?? 0}`,
     `- design_roots: ${summary.design_root_count ?? result.design_roots?.length ?? 0}`,
+    `- coverage_registered_docs: ${coverage.registered_doc_count ?? '-'}`,
+    `- coverage_unregistered_docs: ${coverage.unregistered_doc_count ?? '-'}`,
+    `- coverage_changed_unregistered_docs: ${coverage.changed_unregistered_design_doc_count ?? '-'}`,
     `- action_items: ${summary.action_item_count ?? result.action_items?.length ?? 0}`
   ];
   for (const action of (result.action_items ?? []).slice(0, 10)) {
     lines.push(`- ${action.severity}: ${action.kind} ${action.root_id ?? ''} ${action.path ?? action.root_doc ?? ''} - ${action.message}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+export function renderDesignSsotCoverageSummary(result) {
+  const summary = result.summary ?? {};
+  const lines = [
+    '# Design SSOT Coverage',
+    '',
+    `- status: ${result.status}`,
+    `- registry_sources: ${summary.registry_source_count ?? result.registry_sources?.length ?? 0}`,
+    `- design_roots: ${summary.design_root_count ?? 0}`,
+    `- total_design_docs: ${summary.total_design_doc_count ?? 0}`,
+    `- registered_docs: ${summary.registered_doc_count ?? 0}`,
+    `- unregistered_docs: ${summary.unregistered_doc_count ?? 0}`,
+    `- changed_design_docs: ${summary.changed_design_doc_count ?? 0}`,
+    `- changed_unregistered_docs: ${summary.changed_unregistered_design_doc_count ?? 0}`
+  ];
+  for (const doc of (result.unregistered_changed_docs ?? []).slice(0, 10)) {
+    lines.push(`- needs_review: unregistered_changed_design_doc ${doc.path} (${doc.kind})`);
   }
   return `${lines.join('\n')}\n`;
 }
@@ -224,6 +313,105 @@ export function renderDesignSsotStatus(result) {
     lines.push(`- ${root.id}: ${root.root_doc} (${root.child_links.length} children)`);
   }
   return `${lines.join('\n')}\n`;
+}
+
+function buildCoverageActionItems(coverage) {
+  if (coverage?.status === 'not_applicable') return [];
+  return (coverage?.unregistered_changed_docs ?? []).map((doc) => ({
+    severity: 'needs_review',
+    kind: 'unregistered_changed_design_doc',
+    path: doc.path,
+    child_kind: doc.kind,
+    message: `Changed design doc is not registered in Design SSOT: ${doc.path}`
+  }));
+}
+
+function mergeReconciliationAndCoverageStatus(reconciliationStatus, coverageStatus) {
+  if (reconciliationStatus === 'block') return 'block';
+  if (coverageStatus === 'needs_review') return 'needs_review';
+  return reconciliationStatus;
+}
+
+function buildRegisteredDesignDocIndex(roots) {
+  const index = new Map();
+  for (const root of roots) {
+    index.set(root.root_doc, {
+      role: 'root',
+      root_id: root.id,
+      kind: 'architecture',
+      source: root.source
+    });
+    for (const child of root.child_links) {
+      index.set(child.path, {
+        role: 'child',
+        root_id: root.id,
+        kind: child.kind,
+        relationship: child.relationship,
+        required: child.required,
+        source: root.source
+      });
+    }
+  }
+  return index;
+}
+
+async function discoverDesignDocCandidates(root) {
+  const markdownFiles = await listMarkdownFiles(path.join(root, 'docs'));
+  const candidates = [];
+  for (const absolutePath of markdownFiles) {
+    const relativePath = toPosix(path.relative(root, absolutePath));
+    const content = await readTextIfExists(absolutePath);
+    const frontmatter = parseFrontmatter(content ?? '');
+    const kind = inferDesignDocKind(relativePath, frontmatter);
+    if (!kind) continue;
+    candidates.push({
+      path: relativePath,
+      kind,
+      title: String(frontmatter.title ?? ''),
+      status: frontmatter.status ?? null,
+      parent_design: normalizeStringList(frontmatter.parent_design ?? frontmatter.design_root ?? frontmatter.design_roots)
+    });
+  }
+  return candidates.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+async function listMarkdownFiles(dir) {
+  const result = [];
+  async function visit(current) {
+    let entries;
+    try {
+      entries = await readdir(current, { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return;
+      throw error;
+    }
+    for (const entry of entries) {
+      const absolutePath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.vibepro') continue;
+        await visit(absolutePath);
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        result.push(absolutePath);
+      }
+    }
+  }
+  await visit(dir);
+  return result;
+}
+
+function inferDesignDocKind(relativePath, frontmatter = {}) {
+  const file = toPosix(relativePath);
+  if (/^docs\/architecture\/.*\.md$/.test(file)) {
+    if (/(^|\/)(adr|ADR)[-_]?\d*|\/ADR[-_]/.test(file) || String(frontmatter.status ?? '').toLowerCase() === 'accepted') return 'adr';
+    return 'architecture';
+  }
+  if (/^docs\/management\/stories\/.*\.md$/.test(file) || /^docs\/stories\/.*\.md$/.test(file)) return 'story';
+  if (/^docs\/specs\/.*\.md$/.test(file)) return 'spec';
+  if (/^docs\/design\/.*\.md$/.test(file)) return 'ux';
+  if (/^docs\/workflows\/.*\.md$/.test(file)) return 'workflow';
+  if (/^docs\/data-models\/.*\.md$/.test(file)) return 'data_model';
+  if (frontmatter.parent_design || frontmatter.design_root || frontmatter.design_roots) return 'architecture';
+  return null;
 }
 
 async function readDesignSsotRegistry(root, options = {}) {
@@ -549,10 +737,10 @@ function filterDesignRoots(roots, id) {
 
 async function resolveChangedPaths(root, options) {
   if (Array.isArray(options.git?.changed_files)) {
-    return options.git.changed_files.map((file) => toPosix(file.path ?? file)).filter(Boolean);
+    return filterGeneratedVibeproPaths(options.git.changed_files.map((file) => toPosix(file.path ?? file)).filter(Boolean));
   }
   if (Array.isArray(options.changedFiles)) {
-    return options.changedFiles.map((file) => toPosix(file.path ?? file)).filter(Boolean);
+    return filterGeneratedVibeproPaths(options.changedFiles.map((file) => toPosix(file.path ?? file)).filter(Boolean));
   }
   if (!options.base) return [];
   try {
@@ -563,10 +751,10 @@ async function resolveChangedPaths(root, options) {
       execFileAsync('git', ['diff', '--name-only', `${options.base}...HEAD`], { cwd: root, encoding: 'utf8' }),
       execFileAsync('git', ['status', '--porcelain', '-uall'], { cwd: root, encoding: 'utf8' })
     ]);
-    return uniqueStrings([
+    return filterGeneratedVibeproPaths(uniqueStrings([
       ...committed.split('\n').map((line) => toPosix(line.trim())).filter(Boolean),
       ...parseGitStatusPaths(dirty)
-    ]);
+    ]));
   } catch {
     return [];
   }
@@ -595,6 +783,19 @@ async function writeDesignSsotReconciliation(root, id, result) {
   const markdownPath = path.join(outDir, 'reconciliation.md');
   await writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`);
   await writeFile(markdownPath, renderDesignSsotSummary(result));
+  return {
+    json: toPosix(path.relative(root, jsonPath)),
+    markdown: toPosix(path.relative(root, markdownPath))
+  };
+}
+
+async function writeDesignSsotCoverage(root, id, result) {
+  const outDir = path.join(root, '.vibepro', 'design-ssot', id);
+  await mkdir(outDir, { recursive: true });
+  const jsonPath = path.join(outDir, 'coverage.json');
+  const markdownPath = path.join(outDir, 'coverage.md');
+  await writeFile(jsonPath, `${JSON.stringify(result, null, 2)}\n`);
+  await writeFile(markdownPath, renderDesignSsotCoverageSummary(result));
   return {
     json: toPosix(path.relative(root, jsonPath)),
     markdown: toPosix(path.relative(root, markdownPath))
@@ -695,6 +896,10 @@ function parseGitStatusPaths(output) {
 
 function uniqueStrings(items) {
   return [...new Set(items.filter(Boolean))];
+}
+
+function filterGeneratedVibeproPaths(items) {
+  return items.filter((item) => item && !item.startsWith('.vibepro/'));
 }
 
 function normalizeChildKind(value) {

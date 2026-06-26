@@ -44,10 +44,12 @@ import {
   validateDesignSystem
 } from './design-system.js';
 import {
+  auditDesignSsotCoverage,
   getDesignSsotStatus,
   initDesignSsot,
   linkDesignSsot,
   reconcileDesignSsot,
+  renderDesignSsotCoverageSummary,
   renderDesignSsotStatus,
   renderDesignSsotSummary
 } from './design-ssot.js';
@@ -275,6 +277,8 @@ Existing UI modernization:
       Link child ADR/Architecture/Story/Spec/UX docs to the design root.
   vibepro design-ssot status <repo> [--id <root-id>]
       Show the machine-readable design root / child lineage registry.
+  vibepro design-ssot coverage <repo> [--id <root-id>] [--base <ref>]
+      Audit registry coverage and changed unregistered design docs.
   vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
       Check root-only changes, missing required children, frontmatter gaps,
       stale root hash bindings, and deterministic ADR supersession conflicts.
@@ -322,6 +326,7 @@ Usage:
   vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
   vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
   vibepro design-ssot status [repo] [--id <root-id>] [--json]
+  vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -471,6 +476,8 @@ base branch:
       child ADR/Architecture/Story/Spec/UX docsをdesign rootへ紐付けます。
   vibepro design-ssot status <repo> [--id <root-id>]
       design root / child lineage registryを機械可読に確認します。
+  vibepro design-ssot coverage <repo> [--id <root-id>] [--base <ref>]
+      registry coverageと変更された未登録design docを監査します。
   vibepro design-ssot reconcile <repo> [--id <root-id>] [--base <ref>]
       root-only変更、必須child欠落、frontmatter不足、stale hash、
       accepted ADR supersession矛盾を確認します。
@@ -522,6 +529,7 @@ Usage:
   vibepro design-ssot init [repo] --id <root-id> --root-doc <path> [--title <title>] [--owner <owner>] [--required-child-kinds <csv>] [--json]
   vibepro design-ssot link [repo] --id <root-id> --kind <kind> --path <child-doc> [--relationship <type>] [--optional] [--json]
   vibepro design-ssot status [repo] [--id <root-id>] [--json]
+  vibepro design-ssot coverage [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-ssot reconcile [repo] [--id <root-id>] [--base <base-ref>] [--json]
   vibepro design-modernize derive-system [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--design-system-bundle <file>] [--json]
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
@@ -1070,6 +1078,17 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderDesignSsotStatus(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'coverage') {
+        const result = await auditDesignSsotCoverage(repoRoot, {
+          id: getOption(rest, '--id'),
+          base: getOption(rest, '--base'),
+          registry: getOption(rest, '--registry')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.result, null, 2)}\n`
+          : `${renderDesignSsotCoverageSummary(result.result)}Artifacts: ${result.outDir}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'reconcile') {
