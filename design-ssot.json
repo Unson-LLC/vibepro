@@ -69,6 +69,23 @@
           "docs/specs/vibepro-canonical-audit-cost-accounting.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-audit-replay-command-surface",
+      "title": "VibePro Audit Replay Command Surface",
+      "root_doc": "docs/architecture/vibepro-audit-replay-command-surface.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-audit-replay-command-surface.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-audit-replay-command-surface.md"
+        ]
+      }
     }
   ]
 }

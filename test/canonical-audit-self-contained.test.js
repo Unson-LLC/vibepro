@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import { gunzipSync } from 'node:zlib';
 
 import {
@@ -11,6 +14,9 @@ import {
 } from '../src/canonical-audit.js';
 import { buildCanonicalEvidenceCostSummary } from '../src/evidence-cost-budget.js';
 
+const execFileAsync = promisify(execFile);
+const CLI_BIN = fileURLToPath(new URL('../bin/vibepro.js', import.meta.url));
+
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
@@ -18,6 +24,11 @@ async function readJson(filePath) {
 async function writeJson(filePath, value) {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function argvFromReplayCommand(command) {
+  assert.match(command, /^vibepro audit replay \. --story-id [A-Za-z0-9._-]+$/);
+  return command.split(/\s+/).slice(1);
 }
 
 test('canonical audit bundle copies handoff references and reports unresolved references', async () => {
@@ -174,6 +185,18 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replay.verdict.pr_prepare, 'ready_for_review');
   assert.equal(replay.verdict.pr_merge, 'merged');
   assert.equal(replay.included_artifact_kinds.includes('pr_prepare'), true);
+
+  const declaredReplayArgv = argvFromReplayCommand(auditIndex.replay_bundle.replay_command);
+  const cliReplay = await execFileAsync(
+    process.execPath,
+    [CLI_BIN, ...declaredReplayArgv, '--json'],
+    { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 }
+  );
+  const cliReplayResult = JSON.parse(cliReplay.stdout);
+  assert.equal(cliReplayResult.status, 'ready');
+  assert.equal(cliReplayResult.handoff_replay_status, 'ready');
+  assert.equal(cliReplayResult.verdict.pr_prepare, 'ready_for_review');
+  assert.equal(cliReplayResult.verdict.pr_merge, 'merged');
 });
 
 test('compressed canonical audit replay blocks when the bundle is corrupted', async () => {
