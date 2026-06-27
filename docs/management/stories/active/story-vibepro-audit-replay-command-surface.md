@@ -27,6 +27,13 @@ not executable.
 VibePro should lock the artifact replay contract to the shipped CLI binary, not only to internal module
 functions or permissive smoke tests.
 
+## Engineering Judgment Spine
+
+- current_reality: `origin/main` can currently replay canonical audit bundles, but a stale local CLI branch can still return `Unknown command: audit`, and existing smoke coverage would not necessarily fail on that clean non-zero path.
+- failure_modes: The highest-risk failure is fake handoff readiness: artifacts declare `vibepro audit replay . --story-id <id>`, while the shipped binary cannot dispatch `audit replay`. A second failure mode is module-only replay coverage passing while the public CLI binary surface is disconnected.
+- done_evidence: `test/canonical-audit-self-contained.test.js` now executes the `audit-index.json` replay command through `bin/vibepro.js`, with `.` resolved from the artifact checkout, and asserts `status=ready` plus `handoff_replay_status=ready`.
+- authoritative_signal_source: Public replay readiness is the combination of `audit-index.json.replay_bundle.replay_command`, `bin/vibepro.js` dispatch, and current-head verification evidence. Internal helper success alone is not authoritative.
+
 ## Acceptance Criteria
 
 - [ ] `ARCS-AC-001`: Canonical audit replay artifacts continue to declare `vibepro audit replay . --story-id <id>`.

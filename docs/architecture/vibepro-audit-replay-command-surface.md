@@ -20,6 +20,16 @@ shipped binary with the checkout root as `cwd`. This covers binary import, top-l
 subcommand dispatch, option parsing, bundle lookup relative to `.`, hash verification, and verdict
 rendering in one contract.
 
+## Data State
+
+This change introduces no product persistence, database migration, cache mutation, or runtime data
+state. It only adds documentation, a Design SSOT registry entry, and a test assertion. Replay remains
+read-only: it reads `audit-index.json` and `audit-replay-bundle.json.gz`, verifies hashes in memory,
+and renders a verdict.
+
+Rollback is a normal commit revert. Existing canonical audit artifacts are not rewritten and remain
+readable by the existing replay implementation.
+
 ## Decision
 
 Keep `vibepro audit replay . --story-id <id>` as the public replay command and add binary-level

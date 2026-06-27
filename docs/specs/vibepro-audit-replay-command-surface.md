@@ -30,6 +30,25 @@ diagrams:
 - `ARCS-SCENARIO-002`: Given the top-level `audit` command is removed from the CLI, when the same regression runs, then `Unknown command: audit` causes the test to fail.
 - `ARCS-SCENARIO-003`: Given internal replay helpers still work but the binary command surface is disconnected, when replay is verified, then the public command regression fails.
 
+## Diagrams
+
+```mermaid
+flowchart TD
+  Index["audit-index.json replay_command"] --> Binary["bin/vibepro.js"]
+  Binary --> Dispatch["audit replay handler"]
+  Dispatch --> Bundle["audit-replay-bundle.json.gz"]
+  Bundle --> Verdict["status=ready replay verdict"]
+  Binary --> Missing["Unknown command regression"]
+  Missing --> TestFail["regression test fails"]
+```
+
+## Data State Contract
+
+- `migration_plan`: No product data, database schema, cache key, or persisted runtime state migration is introduced. The only committed state is Story/Spec/Architecture documentation, the Design SSOT registry entry, and a regression test.
+- `rollback_plan`: Reverting this commit removes the binary-level replay command regression and the related Story/Spec/Architecture docs. Existing canonical audit artifacts and compressed bundles remain unchanged.
+- `idempotency_test`: `test/canonical-audit-self-contained.test.js` creates a temporary canonical audit bundle and replays it from the checkout root without mutating the bundle or requiring session `.vibepro/`.
+- `query_semantics_test`: The regression executes `vibepro audit replay . --story-id <id>` through `bin/vibepro.js`, which resolves the bundle path from `audit-index.json` relative to the supplied repo root and verifies hashes before returning a verdict.
+
 ## Verification
 
 - `ARCS-VERIFY-001`: `test/canonical-audit-self-contained.test.js` runs the replay command declared by `audit-index.json` through `bin/vibepro.js`.
