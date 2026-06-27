@@ -3,9 +3,9 @@
 - story: story-vibepro-audit-replay-command-surface
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 20446
+- artifact_lines: 20536
 - product_changed_lines: 186
-- artifact_code_ratio: 109.925
+- artifact_code_ratio: 110.409
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
