@@ -1,0 +1,270 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-residual-risk-closure",
+  "source": "execute_merge",
+  "generated_at": "2026-06-27T17:55:36.644Z",
+  "evidence_depth": "standard",
+  "budget_status": "exceeded",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "gate:gate:managed_worktree:needs_review"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+      "base_sha": "18c7f59e09e6c958b15d9d60d577288a6defa96c",
+      "head_sha": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+      "merge_commit_sha": "0005976ef1b6462769821195c2a5d875d21710c4"
+    },
+    "diff_stats_collected_at": "2026-06-27T17:55:31.881Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 23519,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 534,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 4,
+          "changed_lines": 153,
+          "unknown_files": 0,
+          "paths": [
+            "src/evidence-depth-planner.js",
+            "src/pr-manager.js",
+            "src/requirement-consistency.js",
+            "src/senior-gap-judgment.js"
+          ]
+        },
+        "test": {
+          "files": 3,
+          "changed_lines": 217,
+          "unknown_files": 0,
+          "paths": [
+            "test/senior-gap-judgment.test.js",
+            "test/story-discovery.test.js",
+            "test/vibepro-cli.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 6,
+          "changed_lines": 144,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-residual-risk-closure.md",
+            "docs/management/stories/active/story-vibepro-cost-telemetry-residual-closure.md",
+            "docs/management/stories/active/story-vibepro-public-contract-followup-closure.md",
+            "docs/management/stories/active/story-vibepro-residual-risk-closure.md",
+            "docs/management/stories/active/story-vibepro-scope-reviewability-followup-closure.md",
+            "docs/specs/vibepro-residual-risk-closure.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 1,
+          "changed_lines": 20,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+        "base_sha": "18c7f59e09e6c958b15d9d60d577288a6defa96c",
+        "head_sha": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+        "merge_commit_sha": "0005976ef1b6462769821195c2a5d875d21710c4"
+      },
+      "collected_at": "2026-06-27T17:55:31.881Z",
+      "reason": null
+    },
+    "product_changed_lines": 534,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 44.043,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cached_input_tokens": null,
+      "source": null,
+      "window": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "started_at": null,
+      "finished_at": null,
+      "source": null,
+      "window": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 117251,
+      "expanded_bytes": 1199705,
+      "expanded_line_count": 23857
+    }
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-06-27T17:54:48.459Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-06-27T17:54:48.459Z",
+    "status": "hit",
+    "evidence_key": "evk_989947ad0344480bcc3e6df52011fbca",
+    "verification_summary_fingerprint": "sha256:4095ceb01c90c4e951fb4b74ad27227dcf9f0342c7b7850cd9c696ec0a9102c2",
+    "verification_evidence_updated_at": "2026-06-27T17:37:46.445Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-06-27T17:37:46.445Z",
+        "git_recorded_at": "2026-06-27T17:37:46.439Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-06-27T17:29:00.712Z",
+        "git_recorded_at": "2026-06-27T17:29:00.710Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-06-27T17:28:57.538Z",
+        "git_recorded_at": "2026-06-27T17:28:57.535Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-06-27T17:28:52.981Z",
+        "git_recorded_at": "2026-06-27T17:28:52.974Z"
+      }
+    ],
+    "stale_reason_count": 0,
+    "full_evidence_status": "reused",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 18
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-06-27T17:54:49.089Z",
+    "status": "updated_existing_pr",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/242",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/242",
+      "merge_commit_sha": "0005976ef1b6462769821195c2a5d875d21710c4",
+      "merged_at": "2026-06-27T17:55:35Z",
+      "current_head_sha": "7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...7ea90ab171fae0e3d47db8fb1c443a0610f2f9d7"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 49,
+    "blocking_count": 1
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": "passed",
+    "gap_count": 0,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 3,
+      "acceptance_criteria_count": 3,
+      "scenario_clause_count": 0,
+      "mapped_count": 3,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 4,
+    "pass_count": 4,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-residual-risk-closure/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:8be005c1aa53a374297ee3eab0a08b80f0f57db40ef2398bc22c5afcd7a4c6d5",
+    "compressed_hash": "sha256:3c35f5fe4936c6a79a9fb837866df6b0c0bec22bf248958ca4b601536cf5485f",
+    "expanded_bytes": 1199705,
+    "compressed_bytes": 117251,
+    "expanded_line_count": 23857,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-residual-risk-closure",
+    "cost": {
+      "compressed_bytes": 117251,
+      "expanded_bytes": 1199705,
+      "expanded_line_count": 23857
+    }
+  }
+}
