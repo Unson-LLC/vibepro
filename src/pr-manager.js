@@ -2896,12 +2896,16 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     .map((gate) => {
       const checked = ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
       const evidence = gate.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
-      return `- [${checked}] ${gate.label ?? gate.id} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
+      const label = gate.command ? `\`${gate.command}\`` : (gate.label ?? gate.id);
+      return `- [${checked}] ${label} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
     });
   return [...commandItems, ...evidenceOnlyItems].join('\n');
 }
 
 function formatVerificationChecklistLabel(item) {
+  if (item.command) {
+    return `\`${item.command}\``;
+  }
   const kind = item.kind ?? item.type ?? 'verification';
   return `verification:${kind}`;
 }

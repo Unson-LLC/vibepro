@@ -4,3 +4,4 @@
 .vibepro/**/*.log
 .vibepro/
 .worktrees/vibepro/
+docs/.vitepress/dist/
