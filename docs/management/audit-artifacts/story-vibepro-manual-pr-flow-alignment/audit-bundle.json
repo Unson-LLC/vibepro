@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-manual-pr-flow-alignment",
   "source": "execute_merge",
-  "promoted_at": "2026-06-27T14:15:03.643Z",
+  "promoted_at": "2026-06-27T14:15:18.376Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-manual-pr-flow-alignment",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -42,7 +42,7 @@
     },
     "diff_stats_collected_at": "2026-06-27T14:15:00.143Z",
     "diff_stats_reason": null,
-    "artifact_lines": 28905,
+    "artifact_lines": 28995,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 448,
@@ -110,7 +110,7 @@
     "product_changed_lines": 448,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 64.52,
+    "artifact_code_ratio": 64.721,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -142,16 +142,16 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 156074,
-      "expanded_bytes": 1874005,
-      "expanded_line_count": 29236
+      "compressed_bytes": 157637,
+      "expanded_bytes": 1880888,
+      "expanded_line_count": 29326
     }
   },
   "decision_index": {
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-manual-pr-flow-alignment",
     "source": "execute_merge",
-    "generated_at": "2026-06-27T14:15:03.643Z",
+    "generated_at": "2026-06-27T14:15:18.376Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -172,7 +172,7 @@
       },
       "diff_stats_collected_at": "2026-06-27T14:15:00.143Z",
       "diff_stats_reason": null,
-      "artifact_lines": 28905,
+      "artifact_lines": 28995,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 448,
@@ -240,7 +240,7 @@
       "product_changed_lines": 448,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 64.52,
+      "artifact_code_ratio": 64.721,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "high",
@@ -272,9 +272,9 @@
         "reason": "elapsed-time logs were not provided to canonical audit promotion"
       },
       "replay_bundle": {
-        "compressed_bytes": 156074,
-        "expanded_bytes": 1874005,
-        "expanded_line_count": 29236
+        "compressed_bytes": 157637,
+        "expanded_bytes": 1880888,
+        "expanded_line_count": 29326
       }
     },
     "pr_prepare": {
@@ -389,11 +389,11 @@
       "path": "docs/management/audit-artifacts/story-vibepro-manual-pr-flow-alignment/audit-replay-bundle.json.gz",
       "compression": "gzip",
       "media_type": "application/json",
-      "content_hash": "sha256:c118400fd83728eb33494e96a6e42c8c268a7d216b22dd2e8e85721514027beb",
-      "compressed_hash": "sha256:83900e0633b5b64e0701e748419f05507820374bb40e551fbef2526d34af31f1",
-      "expanded_bytes": 1874005,
-      "compressed_bytes": 156074,
-      "expanded_line_count": 29236,
+      "content_hash": "sha256:64d92ea7593b5637c55777058cb7113c032718b3eb177cc468cbc23c59101870",
+      "compressed_hash": "sha256:169640ec0fe9d4e3185bb1275f50bccaa92ada9218e6f901d26eaeb89ac2cd90",
+      "expanded_bytes": 1880888,
+      "compressed_bytes": 157637,
+      "expanded_line_count": 29326,
       "included_artifact_kinds": [
         "evidence_reuse",
         "gate_dag",
@@ -410,9 +410,9 @@
       ],
       "replay_command": "vibepro audit replay . --story-id story-vibepro-manual-pr-flow-alignment",
       "cost": {
-        "compressed_bytes": 156074,
-        "expanded_bytes": 1874005,
-        "expanded_line_count": 29236
+        "compressed_bytes": 157637,
+        "expanded_bytes": 1880888,
+        "expanded_line_count": 29326
       }
     }
   },
@@ -421,11 +421,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-manual-pr-flow-alignment/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:c118400fd83728eb33494e96a6e42c8c268a7d216b22dd2e8e85721514027beb",
-    "compressed_hash": "sha256:83900e0633b5b64e0701e748419f05507820374bb40e551fbef2526d34af31f1",
-    "expanded_bytes": 1874005,
-    "compressed_bytes": 156074,
-    "expanded_line_count": 29236,
+    "content_hash": "sha256:64d92ea7593b5637c55777058cb7113c032718b3eb177cc468cbc23c59101870",
+    "compressed_hash": "sha256:169640ec0fe9d4e3185bb1275f50bccaa92ada9218e6f901d26eaeb89ac2cd90",
+    "expanded_bytes": 1880888,
+    "compressed_bytes": 157637,
+    "expanded_line_count": 29326,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -442,9 +442,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-manual-pr-flow-alignment",
     "cost": {
-      "compressed_bytes": 156074,
-      "expanded_bytes": 1874005,
-      "expanded_line_count": 29236
+      "compressed_bytes": 157637,
+      "expanded_bytes": 1880888,
+      "expanded_line_count": 29326
     }
   },
   "merge": {
@@ -478,7 +478,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-manual-pr-flow-alignment/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:c118400fd83728eb33494e96a6e42c8c268a7d216b22dd2e8e85721514027beb"
+      "content_hash": "sha256:64d92ea7593b5637c55777058cb7113c032718b3eb177cc468cbc23c59101870"
     }
   ],
   "raw_artifacts": [
@@ -527,8 +527,8 @@
       "source": ".vibepro/pr/story-vibepro-manual-pr-flow-alignment/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-manual-pr-flow-alignment/audit-replay-bundle.json.gz",
-      "digest": "sha256:4f68487411e2a04fd14be74c0958d00321ad5c047c5029e40e678f4c3e170dbc",
-      "line_count": 3477
+      "digest": "sha256:0e3a9ab0b1ce69fb05c2f020a8850d46ea4c52adf60e32decc1524e647dfacae",
+      "line_count": 3567
     },
     {
       "kind": "traceability",

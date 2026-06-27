@@ -3,9 +3,9 @@
 - story: story-vibepro-manual-pr-flow-alignment
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 28905
+- artifact_lines: 28995
 - product_changed_lines: 448
-- artifact_code_ratio: 64.52
+- artifact_code_ratio: 64.721
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
