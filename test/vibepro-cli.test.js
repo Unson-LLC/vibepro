@@ -95,7 +95,11 @@ if (args[0] !== 'cli' || args[1] !== 'detect_changes') {
   process.stderr.write('unexpected codebase-memory-mcp command: ' + args.join(' '));
   process.exit(1);
 }
-JSON.parse(args[2]);
+const input = JSON.parse(args[2]);
+if (!input.project) {
+  process.stderr.write('missing project in codebase-memory-mcp input');
+  process.exit(1);
+}
 console.log(${JSON.stringify(JSON.stringify(payload))});
 `);
   await chmod(binPath, 0o755);
@@ -14211,16 +14215,12 @@ test('CTJ-S-2 code topology evidence activates DAG axes and stays optional in th
   await git(repo, ['add', 'src/runner.js']);
   await git(repo, ['commit', '-m', 'feat: add runner']);
   const binDir = await makeFakeCodebaseMemoryMcp({
-    changed_files: [
-      {
-        path: 'src/runner.js',
-        symbols: ['run'],
-        related_files: ['src/agent-workflow.js'],
-        routes: ['/api/run'],
-        call_paths: [['src/app/api/run/route.ts', 'src/runner.js', 'src/agent-workflow.js']],
-        risks: ['workflow orchestration queue']
-      }
-    ]
+    changed_files: ['src/runner.js'],
+    impacted_symbols: [{ name: 'run', file: 'src/runner.js' }],
+    related_files: ['src/agent-workflow.js'],
+    routes: ['/api/run'],
+    call_paths: [['src/app/api/run/route.ts', 'src/runner.js', 'src/agent-workflow.js']],
+    risks: ['workflow orchestration queue']
   });
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'], {

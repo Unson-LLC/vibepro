@@ -72,7 +72,10 @@ function emptyContext({ reason, changedFiles = [], headSha = null, command = nul
 }
 
 async function runProvider(repoRoot, { env, timeoutMs }) {
-  const input = JSON.stringify({ repo_path: repoRoot });
+  const input = JSON.stringify({
+    repo_path: repoRoot,
+    project: projectNameFromRepoRoot(repoRoot)
+  });
   const args = ['cli', 'detect_changes', input];
   const command = `${PROVIDER} ${args.join(' ')}`;
   const result = await runProcess(PROVIDER, args, {
@@ -84,6 +87,15 @@ async function runProvider(repoRoot, { env, timeoutMs }) {
     throw new Error(`exit code ${result.exitCode}: ${result.stderr.trim() || 'no stderr'}`);
   }
   return { ...result, command };
+}
+
+function projectNameFromRepoRoot(repoRoot) {
+  return String(repoRoot)
+    .replace(/^[A-Za-z]:[\\/]/, '')
+    .replace(/^\/+/, '')
+    .replace(/[\\/]+/g, '-')
+    .replace(/[^A-Za-z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function runProcess(command, args, options) {
@@ -143,7 +155,10 @@ function normalizeProviderPayload(payload, { changedFiles, headSha, command }) {
     if (!file || !changedSet.has(file)) continue;
 
     const entryRelated = collectStrings(entry.related_files, entry.relatedFiles, entry.affected_files, entry.impacted_files);
-    const entrySymbols = collectStrings(entry.symbols, entry.affected_symbols, entry.impacted_symbols, entry.functions, entry.classes);
+    const entrySymbols = [
+      ...collectStrings(entry.symbols, entry.affected_symbols, entry.impacted_symbols, entry.functions, entry.classes),
+      ...collectSymbolsForFile(payload, file)
+    ];
     const entryRoutes = collectStrings(entry.routes, entry.http_routes, entry.endpoints);
     const entryCallPaths = collectArrayItems(entry.call_paths, entry.callPaths, entry.traces);
     const entryRisks = collectArrayItems(entry.risks, entry.risk_hints, entry.risk, entry.classification);
@@ -206,7 +221,9 @@ function collectImpactEntries(payload) {
     payload?.changes
   ];
   for (const candidate of candidates) {
-    if (Array.isArray(candidate)) return candidate;
+    if (Array.isArray(candidate)) {
+      return candidate.map((item) => typeof item === 'string' ? { path: item } : item);
+    }
   }
   if (payload && typeof payload === 'object') {
     return Object.entries(payload)
@@ -214,6 +231,15 @@ function collectImpactEntries(payload) {
       .map(([key, value]) => ({ path: key, ...value }));
   }
   return [];
+}
+
+function collectSymbolsForFile(payload, file) {
+  return collectArrayItems(payload.impacted_symbols, payload.affected_symbols, payload.symbols)
+    .filter((item) => item && typeof item === 'object')
+    .filter((item) => normalizePath(item.file ?? item.path ?? item.file_path) === file)
+    .map((item) => item.name ?? item.qualified_name ?? item.id)
+    .filter(Boolean)
+    .map(String);
 }
 
 function buildSignals({ relatedFiles, routes, callPaths, risks, impactByFile }) {
