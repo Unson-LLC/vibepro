@@ -12640,8 +12640,8 @@ title: PR準備
   assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience: failed')), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /- \[ \] `npm test -- tests\/feature\.test\.js`/);
-  assert.match(prBody, /- \[x\] `node --test tests\/feature\.test\.js`/);
-  assert.match(prBody, /- \[x\] `npm run typecheck`/);
+  assert.match(prBody, /- \[x\] Unit Gate - unit passed/);
+  assert.match(prBody, /- \[x\] verification:typecheck\b/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run test:e2e`/);
   assert.doesNotMatch(prBody, /gate: failed/);
 });
@@ -12676,7 +12676,7 @@ test('pr body verification checklist checks exact current evidence even when the
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main']);
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- \[x\] `npm run typecheck`/);
+  assert.match(prBody, /- \[x\] verification:typecheck\b/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run typecheck`.*gate: passed via `node --test test\/risk-adaptive-gate\.test\.js`/);
   assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
 });

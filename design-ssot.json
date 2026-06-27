@@ -130,6 +130,26 @@
           "docs/specs/vibepro-cli-graphify-spec.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-residual-risk-closure",
+      "title": "VibePro Residual Risk Closure",
+      "root_doc": "docs/architecture/vibepro-residual-risk-closure.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-residual-risk-closure.md",
+          "docs/management/stories/active/story-vibepro-public-contract-followup-closure.md",
+          "docs/management/stories/active/story-vibepro-scope-reviewability-followup-closure.md",
+          "docs/management/stories/active/story-vibepro-cost-telemetry-residual-closure.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-residual-risk-closure.md"
+        ]
+      }
     }
   ]
 }

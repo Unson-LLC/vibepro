@@ -326,6 +326,7 @@ export async function findStorySource(repoRoot, story) {
 }
 
 async function findCandidateByFrontmatter(repoRoot, candidates, storyId) {
+  const parsedCandidates = [];
   for (const file of candidates) {
     let content;
     try {
@@ -334,8 +335,13 @@ async function findCandidateByFrontmatter(repoRoot, candidates, storyId) {
       continue;
     }
     const frontmatter = parseFrontmatter(content);
+    parsedCandidates.push({ file, frontmatter });
+  }
+  for (const { file, frontmatter } of parsedCandidates) {
+    if (String(frontmatter.story_id ?? '') === storyId) return file;
+  }
+  for (const { file, frontmatter } of parsedCandidates) {
     const candidateIds = [
-      frontmatter.story_id,
       frontmatter.vibepro_story_id,
       frontmatter.story_ref,
       frontmatter.story,

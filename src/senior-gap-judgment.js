@@ -1,3 +1,8 @@
+import {
+  normalizeElapsedTimeAccounting,
+  normalizeTokenAccounting
+} from './evidence-cost-budget.js';
+
 const BLOCKING_STATUSES = new Set(['block', 'failed', 'contradicted', 'active_blocked']);
 const UNRESOLVED_STATUSES = new Set([
   'candidate',
@@ -37,7 +42,8 @@ export function buildSeniorGapJudgment({
 } = {}) {
   const idealState = buildIdealState({ story, prContext });
   const currentState = buildCurrentState({ git, fileGroups, scope, prContext, gateStatus, evidencePlan, evidenceReuse });
-  const gaps = buildGaps({ prContext, gateStatus, evidenceReuse });
+  const costContext = buildCostContext({ prContext, evidencePlan, evidenceReuse });
+  const gaps = buildGaps({ prContext, gateStatus, evidenceReuse, costContext });
   const residualRisks = gaps.filter((gap) => gap.safe_to_defer);
   const blockingGaps = gaps.filter((gap) => !gap.safe_to_defer);
   const criticalBlockingGaps = blockingGaps.filter((gap) => ['critical', 'block'].includes(gap.severity));
@@ -54,7 +60,7 @@ export function buildSeniorGapJudgment({
     decision,
     residual_risks: residualRisks,
     followups,
-    cost_context: buildCostContext({ evidencePlan, evidenceReuse })
+    cost_context: costContext
   };
 }
 
@@ -162,7 +168,7 @@ function buildCurrentState({ git, fileGroups, scope, prContext, gateStatus, evid
   };
 }
 
-function buildGaps({ prContext, gateStatus, evidenceReuse }) {
+function buildGaps({ prContext, gateStatus, evidenceReuse, costContext }) {
   return [
     ...gapsFromGateStatus(gateStatus),
     ...gapsFromDesignSsot(prContext?.design_ssot_reconciliation),
@@ -170,7 +176,7 @@ function buildGaps({ prContext, gateStatus, evidenceReuse }) {
     ...gapsFromTraceability(prContext?.traceability_clause_coverage),
     ...gapsFromJudgmentAxes(prContext?.engineering_judgment),
     ...gapsFromEvidenceReuse(evidenceReuse ?? prContext?.evidence_reuse),
-    buildTelemetryUnknownGap()
+    buildTelemetryUnknownGap(costContext)
   ].filter(Boolean);
 }
 
@@ -332,7 +338,9 @@ function gapsFromEvidenceReuse(evidenceReuse) {
   }];
 }
 
-function buildTelemetryUnknownGap() {
+function buildTelemetryUnknownGap(costContext) {
+  if (costContext?.telemetry_unavailability?.status === 'bounded_by_artifact_policy') return null;
+  if (hasUsableAccounting(costContext?.token_accounting) && hasUsableAccounting(costContext?.elapsed_time_accounting)) return null;
   return {
     id: 'gap:cost_telemetry:pr_prepare_unavailable',
     kind: 'cost_telemetry_unavailable',
@@ -344,8 +352,9 @@ function buildTelemetryUnknownGap() {
     evidence_refs: ['.vibepro/pr/<story-id>/senior-gap-judgment.json'],
     summary: 'PR prepare does not observe canonical token/time accounting; do not treat missing cost telemetry as zero cost.',
     details: {
-      token_accounting_status: 'not_collected_in_pr_prepare',
-      elapsed_time_accounting_status: 'not_collected_in_pr_prepare'
+      token_accounting_status: costContext?.token_accounting?.status ?? 'not_collected_in_pr_prepare',
+      elapsed_time_accounting_status: costContext?.elapsed_time_accounting?.status ?? 'not_collected_in_pr_prepare',
+      reason: costContext?.telemetry_unavailability?.reason ?? null
     }
   };
 }
@@ -411,7 +420,15 @@ function buildFollowups({ prContext, gaps }) {
   return [...axisFollowups, ...residualFollowups];
 }
 
-function buildCostContext({ evidencePlan, evidenceReuse }) {
+function buildCostContext({ prContext, evidencePlan, evidenceReuse }) {
+  const explicitCostContext = resolveExplicitCostContext({ prContext, evidencePlan });
+  const tokenAccounting = normalizePrPrepareTokenAccounting(explicitCostContext?.token_accounting);
+  const elapsedTimeAccounting = normalizePrPrepareElapsedTimeAccounting(explicitCostContext?.elapsed_time_accounting);
+  const telemetryUnavailable = buildTelemetryUnavailability({
+    tokenAccounting,
+    elapsedTimeAccounting,
+    evidencePlan
+  });
   return {
     evidence_depth: evidencePlan?.evidence_depth ?? null,
     artifact_policy: evidencePlan?.artifact_policy ?? null,
@@ -426,15 +443,84 @@ function buildCostContext({ evidencePlan, evidenceReuse }) {
         ?? evidenceReuse.full_evidence_cumulative_count
         ?? null
     } : null,
-    token_accounting: {
-      status: 'not_collected_in_pr_prepare',
-      total_tokens: null
-    },
-    elapsed_time_accounting: {
-      status: 'not_collected_in_pr_prepare',
-      elapsed_ms: null
-    }
+    token_accounting: tokenAccounting,
+    elapsed_time_accounting: elapsedTimeAccounting,
+    telemetry_unavailability: telemetryUnavailable
   };
+}
+
+function resolveExplicitCostContext({ prContext, evidencePlan }) {
+  return evidencePlan?.cost_context
+    ?? evidencePlan?.cost_accounting
+    ?? prContext?.cost_context
+    ?? prContext?.cost_accounting
+    ?? prContext?.canonical_audit_cost_context
+    ?? null;
+}
+
+function normalizePrPrepareTokenAccounting(input) {
+  if (!input) {
+    return {
+      status: 'not_collected_in_pr_prepare',
+      total_tokens: null,
+      input_tokens: null,
+      output_tokens: null,
+      cached_input_tokens: null,
+      source: null,
+      window: null,
+      reason: 'PR prepare did not receive session token accounting'
+    };
+  }
+  return normalizeTokenAccounting(input);
+}
+
+function normalizePrPrepareElapsedTimeAccounting(input) {
+  if (!input) {
+    return {
+      status: 'not_collected_in_pr_prepare',
+      elapsed_ms: null,
+      started_at: null,
+      finished_at: null,
+      source: null,
+      window: null,
+      reason: 'PR prepare did not receive elapsed-time accounting'
+    };
+  }
+  return normalizeElapsedTimeAccounting(input);
+}
+
+function buildTelemetryUnavailability({ tokenAccounting, elapsedTimeAccounting, evidencePlan }) {
+  if (hasUsableAccounting(tokenAccounting) && hasUsableAccounting(elapsedTimeAccounting)) {
+    return {
+      status: 'not_applicable',
+      reason: 'token and elapsed-time accounting are available'
+    };
+  }
+  if (hasBoundedArtifactPolicy(evidencePlan)) {
+    return {
+      status: 'bounded_by_artifact_policy',
+      reason: 'PR prepare keeps unavailable session telemetry explicit while the artifact policy limits PR-body token exposure to concise links'
+    };
+  }
+  return {
+    status: 'residual_risk',
+    reason: 'PR prepare lacks both usable accounting and a bounded artifact policy'
+  };
+}
+
+function hasUsableAccounting(accounting) {
+  return ['available', 'partial'].includes(accounting?.status);
+}
+
+function hasBoundedArtifactPolicy(evidencePlan) {
+  const artifactPolicy = evidencePlan?.artifact_policy;
+  if (!artifactPolicy || typeof artifactPolicy !== 'object') return false;
+  const policy = artifactPolicy.pr_body_token_policy;
+  if (policy && typeof policy === 'object') {
+    return policy.status === 'bounded_by_artifact_links'
+      && policy.duplicates_canonical_artifacts === false;
+  }
+  return policy === 'bounded_by_artifact_links';
 }
 
 function mapAxisStatus(status) {

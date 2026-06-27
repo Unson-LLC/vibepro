@@ -243,6 +243,11 @@ function buildArtifactPolicy(evidenceDepth) {
     write_full_gate_dag_dump: !summary,
     write_full_review_lifecycle_dump: evidenceDepth === 'full',
     write_raw_logs: false,
+    pr_body_token_policy: {
+      status: 'bounded_by_artifact_links',
+      duplicates_canonical_artifacts: false,
+      reason: 'PR body stays concise and links canonical VibePro artifacts instead of embedding full diagnostics'
+    },
     generated_artifacts: generatedArtifacts,
     skipped_artifacts: summary ? SUMMARY_SKIPPED_ARTIFACTS : []
   };
