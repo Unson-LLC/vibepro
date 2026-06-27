@@ -197,7 +197,7 @@ export async function getJourneyStatus(repoRoot, options = {}) {
       handoff_available: false,
       artifact_kind: null,
       curation_status: 'missing',
-      reason: 'Journey context is not generated. Run `vibepro journey handoff <repo>`.',
+      reason: 'Journey context is not generated.',
       journey: null
     };
   }
@@ -236,7 +236,7 @@ export function summarizeJourneyForPr(journey, storyId = null, { curatedJourney 
       curated: false,
       handoff_available: false,
       curation_status: 'missing',
-      reason: 'Journey context is not generated. Run `vibepro journey handoff <repo>` to surface latest user Journey context.',
+      reason: 'Journey context is not generated.',
       current_story: null
     };
   }
@@ -301,7 +301,7 @@ export function renderJourneyPrSection(summary) {
   if (!summary || summary.status === 'missing') {
     return `## Journey Map
 - Status: missing
-- Action: ${summary?.reason ?? 'Run `vibepro journey derive <repo>` to generate latest Journey context.'}`;
+- Detail: ${summary?.reason ?? 'Journey context is not generated.'}`;
   }
   const current = summary.current_story;
   const slices = summary.affected_release_slices.length > 0

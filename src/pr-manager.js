@@ -2471,10 +2471,10 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
         : '';
       const missing = axis.missing_evidence?.length > 0 ? ` / missing=${axis.missing_evidence.join('|')}` : '';
       const matched = axis.matched_evidence?.length > 0
-        ? ` / matched=${axis.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
+        ? ` / matched=${axis.matched_evidence.length}${formatEvidenceArtifactSuffix(axis.matched_evidence)}`
         : '';
       const optional = axis.optional_evidence?.length > 0
-        ? ` / optional=${axis.optional_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
+        ? ` / optional=${axis.optional_evidence.length}${formatEvidenceArtifactSuffix(axis.optional_evidence)}`
         : '';
       const blockers = axis.matched_blockers?.length > 0
         ? ` / blockers=${axis.matched_blockers.map((item) => `${item.id}:${item.criterion}`).join(', ')}`
@@ -2509,21 +2509,26 @@ function buildCommonSpineReasoning(gateDag) {
   }
   return spineGate.subchecks
     .map((check) => {
-      const evidence = check.evidence ?? 'evidenceなし';
+      const evidence = check.evidence ? 'recorded' : 'none';
       const reason = check.reason ?? '理由なし';
       const surface = check.surface ? ` / surface=${check.surface}` : '';
       const required = Array.isArray(check.required_evidence_kind) && check.required_evidence_kind.length > 0
         ? ` / required=${check.required_evidence_kind.join('|')}`
         : '';
       const matched = Array.isArray(check.matched_evidence) && check.matched_evidence.length > 0
-        ? ` / matched=${check.matched_evidence.map(formatEvidenceReferenceForHuman).join(', ')}`
+        ? ` / matched=${check.matched_evidence.length}${formatEvidenceArtifactSuffix(check.matched_evidence)}`
         : '';
       const missing = Array.isArray(check.missing_evidence) && check.missing_evidence.length > 0
         ? ` / missing=${check.missing_evidence.join('|')}`
         : '';
-      return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${reason}`;
+      return `- ${check.id}: ${check.status}${surface}${required} / evidence=${evidence}${matched}${missing} / ${summarizePrGateReason(reason) ?? reason}`;
     })
     .join('\n');
+}
+
+function formatEvidenceArtifactSuffix(items = []) {
+  const artifacts = [...new Set(items.map((item) => item.artifact).filter(Boolean))];
+  return artifacts.length > 0 ? ` / artifacts=${artifacts.slice(0, 3).join(',')}${artifacts.length > 3 ? `(+${artifacts.length - 3})` : ''}` : '';
 }
 
 function formatEvidenceReferenceForHuman(item) {
@@ -2878,12 +2883,12 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const commandMatchesEvidence = recordedEvidencePassed || !gate?.command || gate.command === item.command;
     const checked = recordedEvidencePassed || (passed && commandMatchesEvidence) ? 'x' : ' ';
     const status = gate?.status
-      ? ` / gate: ${gate.status}${passed && !commandMatchesEvidence ? ` via \`${gate.command}\`` : ''}`
+      ? ` / gate: ${gate.status}`
       : '';
     const evidenceArtifact = recordedEvidence?.artifact
       ?? (gate?.command && gate.command === item.command ? gate.evidence?.artifact : null);
     const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
-    return `- [${checked}] \`${item.command}\` - ${item.reason}${status}${evidence}`;
+    return `- [${checked}] ${formatVerificationChecklistLabel(item)} - ${item.reason}${status}${evidence}`;
   });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])
     .filter((gate) => gate.type === 'verification_gate')
@@ -2891,9 +2896,14 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     .map((gate) => {
       const checked = ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
       const evidence = gate.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
-      return `- [${checked}] \`${gate.command}\` - ${gate.reason ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
+      return `- [${checked}] ${gate.label ?? gate.id} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
     });
   return [...commandItems, ...evidenceOnlyItems].join('\n');
+}
+
+function formatVerificationChecklistLabel(item) {
+  const kind = item.kind ?? item.type ?? 'verification';
+  return `verification:${kind}`;
 }
 
 function findVerificationEvidenceForCommand(command, verificationEvidence) {
@@ -2921,36 +2931,35 @@ function renderPrExecutionGate(executionGate) {
   if (!executionGate) {
     return `## Execution Gate
 - status: unknown
-- pr_create_allowed: false`;
+- pr_create_allowed: false
+- required_action_count: 0
+- required_action_detail: see review-cockpit.html and gate-dag.json`;
   }
-  const actions = executionGate.required_actions?.length > 0
-    ? executionGate.required_actions.map((item) => `- required: ${item}`).join('\n')
-    : '- required: none';
+  const requiredActionCount = executionGate.required_actions?.length ?? 0;
   return `## Execution Gate
 - status: ${executionGate.status}
 - pr_create_allowed: ${executionGate.pr_create_allowed}
 - blocking_gate_count: ${executionGate.blocking_gate_count}
-${actions}`;
+- required_action_count: ${requiredActionCount}
+- required_action_detail: see review-cockpit.html and gate-dag.json`;
 }
 
 function renderPrAgentHandoff({ prContext, splitPlan, language = 'ja' }) {
   const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
   const warnings = collectReleaseDecisionWarningGates(prContext.gate_dag);
   return localizedText(language, {
-    ja: `## AI Agent Handoff
-- 目的: Story / Spec / Gate DAG に沿って実装し、未解決Gateを解消する
-- 最初に見る: このPR本文、review-cockpit.html、gate-dag.html、split-plan.html
+    ja: `## VibePro Artifact Index
+- PR本文の役割: レビュー用サマリー
+- 詳細artifact: review-cockpit.html, gate-dag.html, split-plan.html
 - 未解決Gate: ${formatUnresolvedGateList(unresolved)}
 - リリース判断Warning: ${formatUnresolvedGateList(warnings)}
-- PR分割方針: ${splitPlan?.recommended_strategy ?? '-'}
-- 注意: scope.status=reviewable は完了承認ではありません。Execution Gateがreadyになるまで証跡を追加してください。`,
-    en: `## AI Agent Handoff
-- Goal: implement against Story / Spec / Gate DAG and resolve unresolved gates
-- Read first: this PR body, review-cockpit.html, gate-dag.html, split-plan.html
+- PR分割方針: ${splitPlan?.recommended_strategy ?? '-'}`,
+    en: `## VibePro Artifact Index
+- PR body role: review summary
+- Detail artifacts: review-cockpit.html, gate-dag.html, split-plan.html
 - Unresolved gates: ${formatUnresolvedGateList(unresolved)}
 - Release decision warnings: ${formatUnresolvedGateList(warnings)}
-- PR split strategy: ${splitPlan?.recommended_strategy ?? '-'}
-- Note: scope.status=reviewable is not completion approval. Add evidence until Execution Gate is ready.`
+- PR split strategy: ${splitPlan?.recommended_strategy ?? '-'}`
   });
 }
 
@@ -3043,7 +3052,8 @@ ${remaining.join('\n') || '- なし'}`;
 function renderPrFlowVerification(flowVerification) {
   if (!flowVerification) {
     return `## Flow Verification Evidence
-- 未実行: \`vibepro verify flow . --base-url <url>\` で動線証跡を作成する`;
+- status: not_recorded
+- evidence: no flow verification artifact recorded`;
   }
   const verification = flowVerification.verification ?? flowVerification;
   const artifacts = flowVerification.artifacts ?? {};
@@ -3112,16 +3122,15 @@ function renderPrCompletionQuality(completionQuality) {
 - required evidence: Gate DAGを生成してから確認する`;
   }
   const metrics = completionQuality.metrics ?? {};
-  const evidence = completionQuality.required_evidence?.length > 0
-    ? completionQuality.required_evidence.map((item) => `- required: ${item}`).join('\n')
-    : '- required: none';
+  const requiredEvidenceCount = completionQuality.required_evidence?.length ?? 0;
   return `## Completion Quality
 - status: ${completionQuality.status}
 - e2e_experience_reach_rate: ${formatNullableRate(metrics.e2e_experience_reach_rate)}
 - final_20_auto_closure_rate: ${formatNullableRate(metrics.final_20_auto_closure_rate)}
 - visual_qa_pass_rate: ${formatNullableRate(metrics.visual_qa_pass_rate)}
 - human_usable_quality_rate: ${formatNullableRate(metrics.human_usable_quality_rate)}
-${evidence}`;
+- required_evidence_count: ${requiredEvidenceCount}
+- required_evidence_detail: see review-cockpit.html and gate-dag.json`;
 }
 
 function formatNullableRate(value) {
@@ -3672,7 +3681,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
   });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
-  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, { inferredSpec });
+  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
+    inferredSpec,
+    verificationEvidence: boundVerificationEvidence
+  });
   const specDrift = await readDrift(repoRoot, story.story_id);
   const regressionRisk = await scanRegressionRisk(repoRoot, { top: Infinity });
   const changeClassification = classifyChangeRisk({
@@ -3694,7 +3707,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headSha: git.head_sha,
     env
   });
-  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const designSsotReconciliation = await reconcileDesignSsot(repoRoot, {
     git,
     base: git.base_ref,
@@ -4286,18 +4298,31 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {})
       });
     }
   }
+  const verificationAcceptanceCoverage = buildVerificationE2eAcceptanceCoverage({
+    verificationEvidence: options.verificationEvidence,
+    acceptanceCriteria,
+    candidates
+  });
   const covered = acceptanceCriteria.map((criterion, index) => {
     const id = `ac:${index + 1}`;
     const analyses = candidates.map((candidate) => analyzeE2eAcceptanceCandidate(candidate, story.story_id, criterion, index));
-    const files = analyses
+    const files = new Set(analyses
       .filter((analysis) => analysis.covered)
-      .map((analysis) => analysis.path);
+      .map((analysis) => analysis.path));
+    const evidenceCoverage = verificationAcceptanceCoverage.byId.get(id);
+    if (evidenceCoverage) {
+      for (const file of evidenceCoverage.files) {
+        files.add(file);
+      }
+    }
+    const fileList = [...files];
     return {
       id,
       criterion,
-      covered: files.length > 0,
-      files,
-      candidate_diagnostics: files.length > 0 ? [] : analyses.map(summarizeE2eCandidateDiagnostic)
+      covered: fileList.length > 0,
+      files: fileList,
+      verification_evidence_refs: evidenceCoverage?.refs ?? [],
+      candidate_diagnostics: fileList.length > 0 ? [] : analyses.map(summarizeE2eCandidateDiagnostic)
     };
   });
   const missing = covered.filter((item) => !item.covered);
@@ -4327,6 +4352,7 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {})
     expected_file_patterns: expectedFilePatterns,
     matched_files: candidates.map((candidate) => candidate.path),
     executable_matched_files: candidates.filter((candidate) => candidate.executable).map((candidate) => candidate.path),
+    verification_evidence_coverage: verificationAcceptanceCoverage.summary,
     acceptance_criteria_count: acceptanceCriteria.length,
     covered_acceptance_criteria_count: covered.length - missing.length,
     covered_acceptance_criteria: covered.filter((item) => item.covered),
@@ -4361,6 +4387,80 @@ async function buildStoryE2eCoverage(repoRoot, story, storySource, options = {})
       missing_scenario_clauses: missingScenarios
     }
   };
+}
+
+function buildVerificationE2eAcceptanceCoverage({ verificationEvidence, acceptanceCriteria, candidates }) {
+  const byId = new Map();
+  const summary = {
+    status: 'not_applicable',
+    covered_acceptance_criteria: [],
+    evidence_refs: []
+  };
+  if (!acceptanceCriteria.length) return { byId, summary };
+  const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
+  const e2eCommands = commands.filter((item) => {
+    const kind = item.kind === 'flow' ? 'e2e' : item.kind;
+    return kind === 'e2e'
+      && item.binding?.status === 'current'
+      && ['pass', 'passed', 'success', 'ok'].includes(item.status)
+      && item.observation_check?.status !== 'missing';
+  });
+  if (e2eCommands.length === 0) return { byId, summary: { ...summary, status: 'missing_current_e2e_evidence' } };
+
+  const candidateFiles = candidates.map((candidate) => candidate.path);
+  for (const item of e2eCommands) {
+    const scenarios = Array.isArray(item.observation?.scenarios) ? item.observation.scenarios : [];
+    const values = item.observation?.values && typeof item.observation.values === 'object'
+      ? Object.entries(item.observation.values).map(([key, value]) => `${key}=${value}`)
+      : [];
+    const text = [
+      item.summary,
+      item.command,
+      item.artifact,
+      ...scenarios,
+      ...values
+    ].filter(Boolean).join('\n');
+    if (!/\bscenario_clause_e2e\b/i.test(text)) continue;
+    const targets = Array.isArray(item.observation?.targets)
+      ? item.observation.targets.filter(Boolean)
+      : [];
+    const files = targets.length > 0 ? targets : candidateFiles;
+    const refs = [
+      item.artifact,
+      ...files
+    ].filter(Boolean);
+    for (let index = 0; index < acceptanceCriteria.length; index += 1) {
+      const id = `ac:${index + 1}`;
+      if (!e2eObservationMentionsAcceptanceId(text, index + 1)) continue;
+      const existing = byId.get(id) ?? { files: new Set(), refs: new Set() };
+      for (const file of files) existing.files.add(file);
+      for (const ref of refs) existing.refs.add(ref);
+      byId.set(id, existing);
+    }
+  }
+
+  const normalized = new Map([...byId.entries()].map(([id, value]) => [
+    id,
+    {
+      files: [...value.files],
+      refs: [...value.refs]
+    }
+  ]));
+  return {
+    byId: normalized,
+    summary: {
+      status: normalized.size === acceptanceCriteria.length ? 'covered' : 'partial',
+      covered_acceptance_criteria: [...normalized.keys()],
+      evidence_refs: [...new Set([...normalized.values()].flatMap((value) => value.refs))].slice(0, 12)
+    }
+  };
+}
+
+function e2eObservationMentionsAcceptanceId(text, index) {
+  const escaped = String(index).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\bAC[-_:\\s]?${escaped}\\b`, 'i').test(text)
+    || new RegExp(`\\bac[-_:\\s]?${escaped}\\b`, 'i').test(text)
+    || new RegExp(`\\bacceptance[-_:\\s]?${escaped}\\b`, 'i').test(text);
 }
 
 function extractScenarioCoverageClauses(inferredSpec) {
@@ -5017,8 +5117,7 @@ function extractAcceptanceCriteria(content) {
     .map((line) => line.trim())
     .filter((line) => /^-\s+(?:\[[ xX]\]\s+)?\S/.test(line))
     .map((line) => line.replace(/^-\s+(?:\[[ xX]\]\s+)?/, '').trim())
-    .filter(Boolean)
-    .slice(0, 12);
+    .filter(Boolean);
 }
 
 function extractRawSection(content, headings) {
@@ -10504,9 +10603,19 @@ function buildRisks({ git, fileGroups, latestStoryRun, gateDag, taskContext = nu
   }
   const agentReviewGate = gateDag?.nodes?.find((node) => node.id === 'gate:agent_review');
   if (agentReviewGate?.required && isUnresolvedGateStatus(agentReviewGate.status)) {
-    risks.push(`Agent Review Gateが ${agentReviewGate.status}: ${agentReviewGate.reason}`);
+    risks.push(`Agent Review Gateが ${agentReviewGate.status}: required review roleが未解決`);
   }
   return risks;
+}
+
+function summarizePrGateReason(reason) {
+  if (!reason) return null;
+  return String(reason)
+    .replace(/;\s*run the listed checkpoint\/review commands and record their provenance\.?/gi, '')
+    .replace(/\brun the listed checkpoint\/review commands and record their provenance\.?/gi, 'review provenance is incomplete')
+    .replace(/`[^`]*vibepro[^`]*`/gi, 'VibePro artifact workflow')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function renderPrGateSummary(gateDag) {
@@ -10552,11 +10661,13 @@ function renderPrGateSummary(gateDag) {
       ? `- ${requirementGate.label}: ${requirementGate.status} (${requirementGate.required ? 'required' : 'optional'}) - ${requirementGate.reason}`
       : null,
     agentReviewGate
-      ? `- ${agentReviewGate.label}: ${agentReviewGate.status} (${agentReviewGate.required ? 'required' : 'optional'}) - ${agentReviewGate.reason}`
+      ? `- ${agentReviewGate.label}: ${agentReviewGate.status} (${agentReviewGate.required ? 'required' : 'optional'}) - required review role status is incomplete`
       : null,
     ...gates.map((gate) => {
       const required = gate.required ? 'required' : 'optional';
-      const detail = gate.command ? `\`${gate.command}\`` : (gate.reason ?? '-');
+      const detail = gate.evidence?.artifact
+        ? `evidence: ${gate.evidence.artifact}`
+        : (summarizePrGateReason(gate.reason) ?? '-');
       return `- ${gate.label}: ${gate.status} (${required}) - ${detail}`;
     })
   ].filter(Boolean);
@@ -10657,8 +10768,8 @@ function renderPrGateEnforcement(gateDag) {
     '- completion: 未完了Gateが残っているため、このPRはVibePro上の完了扱い不可',
     `- unresolved: ${formatUnresolvedGateList(unresolved)}`,
     ...warningLines,
-    '- required action: critical Gateは証跡で解消する。非critical Gateのみ `vibepro pr create --allow-needs-verification --verification-waiver <reason>` で理由付きwaiverを記録できる',
-    '- guardrail: 生の `gh pr create` はVibePro Gateを通らないため、PR作成経路として使わない'
+    '- gate detail: see review-cockpit.html and gate-dag.json',
+    '- guardrail: raw GitHub PR creation is not gate-preserving'
   ].join('\n');
 }
 

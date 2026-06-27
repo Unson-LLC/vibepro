@@ -1995,7 +1995,7 @@ function resolveRequiredStageStatus(summary, requiredRoles) {
 function renderParallelDispatchPrRows(parallelDispatch) {
   if (!parallelDispatch?.required) return '- parallel dispatch: not required';
   const rows = parallelDispatch.required_stages.map((stage) => (
-    `- parallel dispatch: ${stage.serial_index ?? '-'} ${stage.stage} (${stage.dispatch_state ?? stage.status}) - ${stage.prepare_command} -> ${stage.dispatch_artifact}`
+    `- parallel dispatch: ${stage.serial_index ?? '-'} ${stage.stage} (${stage.dispatch_state ?? stage.status}) - roles=${(stage.roles ?? []).join(',') || '-'} / artifact=${stage.dispatch_artifact ?? '-'}`
   ));
   return rows.join('\n');
 }
