@@ -121,6 +121,40 @@ title: 管理画面：お問い合わせ詳細APIで権限エラー
   assert.deepEqual(source.acceptance_criteria, []);
 });
 
+test('findStorySource prefers exact story_id over child vibepro_story_id bindings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-parent-fs-story-'));
+  await runCli(['init', repo]);
+  const dir = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, 'story-child-a.md'), `---
+story_id: story-child-a
+vibepro_story_id: story-parent
+title: Child A
+---
+# Child A
+
+## Acceptance Criteria
+- Child A criterion
+`);
+  await writeFile(path.join(dir, 'story-parent.md'), `---
+story_id: story-parent
+vibepro_story_id: story-parent
+title: Parent Story
+---
+# Parent Story
+
+## Acceptance Criteria
+- Parent criterion
+`);
+
+  const source = await findStorySource(repo, { story_id: 'story-parent', title: 'Parent Story' });
+
+  assert.match(source.path, /story-parent\.md$/);
+  assert.equal(source.title, 'Parent Story');
+  assert.ok(source.acceptance_criteria.some((item) => item.includes('Parent criterion')));
+  assert.equal(source.acceptance_criteria.some((item) => item.includes('Child A criterion')), false);
+});
+
 test('pr prepare does not attach a mismatched story source for an explicit story_id', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-no-wrong-story-'));
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -199,4 +233,54 @@ serializerと再構成器の境界を明示し、ADRと整合させる。
   );
   assert.doesNotMatch(body, /Story本文に明記されたAcceptance Criteria/, 'pr-body must keep acceptance criteria in artifacts instead of expanding details');
   assert.doesNotMatch(body, /Story文書から抽出できませんでした/, 'fallback discovery should prevent the missing-story banner');
+});
+
+test('pr prepare prefers exact parent story_id over child vibepro_story_id bindings', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-parent-story-source-'));
+  const storyDir = path.join(repo, 'docs', 'management', 'stories', 'active');
+  await mkdir(storyDir, { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(storyDir, 'story-child-a.md'), `---
+story_id: story-child-a
+vibepro_story_id: story-parent
+title: Child A
+---
+# Child A
+
+## Acceptance Criteria
+- Child A criterion
+`);
+  await writeFile(path.join(storyDir, 'story-parent.md'), `---
+story_id: story-parent
+vibepro_story_id: story-parent
+title: Parent Story
+---
+# Parent Story
+
+## Background
+Parent story binds child stories into one PR execution.
+
+## Acceptance Criteria
+- Parent criterion must be used in PR artifacts
+`);
+  await writeFile(path.join(repo, 'src', 'index.ts'), 'export const value = 1;\n');
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-parent', '--title', 'Parent Story']);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: bootstrap parent story']);
+  await git(repo, ['switch', '-c', 'feature/parent-story']);
+  await writeFile(path.join(repo, 'src', 'index.ts'), 'export const value = 2;\n');
+  await git(repo, ['add', 'src/index.ts']);
+  await git(repo, ['commit', '-m', 'feat: update source']);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-parent', '--allow-extra-files', '--json']);
+
+  assert.equal(prepare.exitCode, 0, `pr prepare failed: ${prepare.stderr}`);
+  const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-parent', 'pr-prepare.json'), 'utf8'));
+  assert.match(artifact.pr_context.story_source.path, /story-parent\.md$/);
+  assert.equal(artifact.pr_context.story_source.title, 'Parent Story');
+  assert.ok(artifact.pr_context.story_source.acceptance_criteria.some((item) => item.includes('Parent criterion')));
+  assert.equal(artifact.pr_context.story_source.acceptance_criteria.some((item) => item.includes('Child A criterion')), false);
 });

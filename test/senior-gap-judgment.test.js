@@ -68,6 +68,133 @@ test('SGJ-S-001 senior gap judgment preserves missing cost telemetry as residual
   assert.equal(gate.residual_risk_count, 1);
 });
 
+test('SGJ-S-001b senior gap judgment closes cost telemetry residual when artifact policy bounds PR-body exposure', () => {
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-cost-bounded', title: 'Bounded cost context' },
+    prContext: {
+      story_source: {
+        story_id: 'story-sgj-cost-bounded',
+        title: 'Bounded cost context',
+        acceptance_criteria: ['SGJ-AC-006 unavailable telemetry is bounded by artifact policy']
+      },
+      engineering_judgment: {
+        route_type: 'agent_workflow',
+        active_axes: [],
+        judgment_axes: []
+      },
+      gate_dag: { nodes: [] },
+      traceability_clause_coverage: {
+        clause_count: 1,
+        mapped_count: 1,
+        weakly_mapped_count: 0,
+        unmapped_count: 0
+      }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
+    evidencePlan: {
+      evidence_depth: 'standard',
+      consumers: ['evidence-reuse.json', 'decision-index.json', 'senior-gap-judgment.json', 'pr-body.md'],
+      artifact_policy: {
+        pr_body_token_policy: {
+          status: 'bounded_by_artifact_links',
+          duplicates_canonical_artifacts: false
+        },
+        generated_artifacts: ['pr-body.md', 'gate-dag.json']
+      }
+    },
+    evidenceReuse: { status: 'hit', evidence_key: 'evk_cost_bounded' },
+    createdAt: '2026-06-26T00:00:00.000Z'
+  });
+
+  assert.equal(judgment.cost_context.token_accounting.status, 'not_collected_in_pr_prepare');
+  assert.equal(judgment.cost_context.elapsed_time_accounting.status, 'not_collected_in_pr_prepare');
+  assert.equal(judgment.cost_context.telemetry_unavailability.status, 'bounded_by_artifact_policy');
+  assert.equal(judgment.gaps.some((gap) => gap.kind === 'cost_telemetry_unavailable'), false);
+  assert.equal(judgment.decision.status, 'passed');
+  assert.equal(buildSeniorGapJudgmentGate(judgment).residual_risk_count, 0);
+});
+
+test('SGJ-S-001b2 senior gap judgment does not infer bounded cost policy from PR body generation alone', () => {
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-cost-unbounded', title: 'Unbounded cost context' },
+    prContext: {
+      story_source: {
+        story_id: 'story-sgj-cost-unbounded',
+        title: 'Unbounded cost context',
+        acceptance_criteria: ['SGJ-AC-006 unavailable telemetry needs explicit artifact policy']
+      },
+      engineering_judgment: {
+        route_type: 'agent_workflow',
+        active_axes: [],
+        judgment_axes: []
+      },
+      gate_dag: { nodes: [] },
+      traceability_clause_coverage: {
+        clause_count: 1,
+        mapped_count: 1,
+        weakly_mapped_count: 0,
+        unmapped_count: 0
+      }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
+    evidencePlan: {
+      evidence_depth: 'standard',
+      consumers: ['pr-body.md'],
+      artifact_policy: {
+        generated_artifacts: ['pr-body.md', 'gate-dag.json']
+      }
+    },
+    evidenceReuse: { status: 'hit', evidence_key: 'evk_cost_unbounded' },
+    createdAt: '2026-06-26T00:00:00.000Z'
+  });
+
+  assert.equal(judgment.cost_context.telemetry_unavailability.status, 'residual_risk');
+  assert.equal(judgment.gaps.some((gap) => gap.kind === 'cost_telemetry_unavailable'), true);
+  assert.equal(judgment.decision.status, 'passed_with_residual_risk');
+});
+
+test('SGJ-S-001c senior gap judgment accepts explicit token and elapsed-time accounting', () => {
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-cost-available', title: 'Available cost context' },
+    prContext: {
+      story_source: { story_id: 'story-sgj-cost-available', acceptance_criteria: [] },
+      engineering_judgment: { judgment_axes: [] },
+      gate_dag: { nodes: [] },
+      cost_context: {
+        token_accounting: {
+          total_tokens: 1234,
+          input_tokens: 1000,
+          output_tokens: 234,
+          source: 'fixture'
+        },
+        elapsed_time_accounting: {
+          elapsed_ms: 5678,
+          source: 'fixture'
+        }
+      }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    }
+  });
+
+  assert.equal(judgment.cost_context.token_accounting.status, 'available');
+  assert.equal(judgment.cost_context.elapsed_time_accounting.status, 'available');
+  assert.equal(judgment.cost_context.telemetry_unavailability.status, 'not_applicable');
+  assert.equal(judgment.gaps.some((gap) => gap.kind === 'cost_telemetry_unavailable'), false);
+  assert.equal(judgment.decision.status, 'passed');
+});
+
 test('SGJ-S-002 senior gap judgment turns unresolved gates into non-deferrable gaps', () => {
   const judgment = buildSeniorGapJudgment({
     story: { story_id: 'story-sgj-blocked', title: 'Blocked senior gap judgment' },

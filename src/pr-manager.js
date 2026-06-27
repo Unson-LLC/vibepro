@@ -2888,7 +2888,7 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const evidenceArtifact = recordedEvidence?.artifact
       ?? (gate?.command && gate.command === item.command ? gate.evidence?.artifact : null);
     const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
-    return `- [${checked}] ${formatVerificationChecklistLabel(item)} - ${item.reason}${status}${evidence}`;
+    return `- [${checked}] ${formatVerificationChecklistLabel(item, gate)} - ${item.reason}${status}${evidence}`;
   });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])
     .filter((gate) => gate.type === 'verification_gate')
@@ -2896,17 +2896,17 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     .map((gate) => {
       const checked = ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
       const evidence = gate.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
-      const label = gate.command ? `\`${gate.command}\`` : (gate.label ?? gate.id);
+      const label = gate.label ?? gate.id;
       return `- [${checked}] ${label} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
     });
   return [...commandItems, ...evidenceOnlyItems].join('\n');
 }
 
-function formatVerificationChecklistLabel(item) {
-  if (item.command) {
-    return `\`${item.command}\``;
-  }
+function formatVerificationChecklistLabel(item, gate = null) {
   const kind = item.kind ?? item.type ?? 'verification';
+  if (kind === 'typecheck') return 'verification:typecheck';
+  if (kind === 'build') return 'verification:build';
+  if (['unit', 'test', 'integration', 'e2e'].includes(kind) && gate?.label) return gate.label;
   return `verification:${kind}`;
 }
 
@@ -5153,7 +5153,8 @@ function extractArchitectureDecisionReason(content) {
 }
 
 function pickPrimaryStory(storyDocs, story) {
-  return storyDocs.find((doc) => doc.story_id === story.story_id || doc.vibepro_story_id === story.story_id)
+  return storyDocs.find((doc) => doc.story_id === story.story_id)
+    ?? storyDocs.find((doc) => doc.vibepro_story_id === story.story_id)
     ?? storyDocs.find((doc) => doc.path.includes(story.story_id))
     ?? storyDocs.find((doc) => doc.title === story.title || doc.requirement_title === story.title)
     ?? storyDocs[0]
@@ -6213,6 +6214,12 @@ function classifySeniorAxisEvidence({
     binding_status: 'derived',
     artifact_quality: 'scope_classification'
   });
+  if (scope?.status === 'reviewable') add('split_plan', 'scope.status=reviewable', {
+    strength: 'supporting',
+    strength_reason: 'scope classification evaluated the split plan and found the current diff reviewable as one PR',
+    binding_status: 'derived',
+    artifact_quality: 'scope_classification'
+  });
   if (scope?.status && scope.status !== 'reviewable') add('split_plan', scope.recommended_strategy ?? scope.status, {
     strength: 'supporting',
     strength_reason: 'scope classification recommends split planning',
@@ -6891,6 +6898,7 @@ function explicitEvidenceKindsFromVerificationText(text) {
     'semantic_invariant_test',
     'scope_reviewed',
     'split_plan',
+    'graph_impact_scope',
     'review_owner_map',
     'release_note',
     'rollout_plan',
@@ -7105,10 +7113,10 @@ function buildPrScopeJudgmentGate({ scope = null, fileGroups = null, git = null,
       'Regenerate `vibepro pr prepare` after the PR scope is reduced or an auditable split decision is recorded'
     ],
     reason: acceptedDecision
-      ? `PR scope split risk accepted by decision record: ${acceptedDecision.summary ?? acceptedDecision.source}`
+      ? `PR scope decision is recorded: ${acceptedDecision.summary ?? acceptedDecision.source}`
       : status === 'passed'
         ? `PR scope is ${classification}; ${changedFileCount} changed file(s) are reviewable as one Story PR`
-      : `PR scope is not reviewable as one PR: ${(scope?.reasons ?? splitSuggestions).join('; ') || classification}`
+      : 'PR scope requires a split decision or explicit bundled-scope justification before PR creation'
   };
 }
 
