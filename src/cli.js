@@ -151,6 +151,10 @@ import {
   renderCanonicalAuditReplay,
   replayCanonicalAuditBundle
 } from './canonical-audit.js';
+import {
+  collectSessionEfficiencyAudit,
+  renderSessionEfficiencyAudit
+} from './session-efficiency-audit.js';
 import { backfillTraceability, declareTraceability, renderTraceabilityBackfill } from './traceability.js';
 import { buildReviewRepairPlan, renderReviewRepair } from './review-repair.js';
 import {
@@ -297,6 +301,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
+  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -500,6 +505,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
+  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -836,6 +842,23 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderCanonicalAuditReplay(result));
         return { exitCode: result.status === 'ready' ? 0 : 2, command, subcommand, result };
+      }
+      if (subcommand === 'session-cost') {
+        const result = await collectSessionEfficiencyAudit(repoRoot, {
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+          sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id'),
+          codexHome: getOption(rest, '--codex-home'),
+          windowStart: getOption(rest, '--window-start'),
+          windowEnd: getOption(rest, '--window-end'),
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head') ?? 'HEAD',
+          includeWorktreeDiff: !hasFlag(rest, '--no-worktree-diff'),
+          now: getOption(rest, '--now')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderSessionEfficiencyAudit(result));
+        return { exitCode: result.audit_readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
       }
       write(stderr, `Unknown audit command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
