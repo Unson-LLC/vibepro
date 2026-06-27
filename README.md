@@ -87,6 +87,12 @@ uv tool install graphifyy
 
 Install and use Graphify under Graphify's own license. You can still use most Story, diagnosis, checkpoint, and PR gate workflows without Graphify. Impact discovery will simply be less complete.
 
+## Optional Integration: codebase-memory-mcp
+
+codebase-memory-mcp is optional code topology evidence for Engineering Judgment. VibePro does not bundle or install it. When `codebase-memory-mcp` is available on `PATH`, `pr prepare` runs a best-effort read-only `detect_changes` query and records the normalized result as `pr_context.code_topology_context`.
+
+Missing or failing codebase-memory-mcp never blocks PR readiness by itself. When available, its related files, symbols, routes, call paths, and risk hints can activate Senior first-scan axes and appear as optional `code_topology_impact_scope` evidence. That evidence narrows investigation scope, but it does not replace focused tests, flow replay, artifact replay, or other current verification evidence.
+
 The examples below use `vibepro`. If you are running from a local clone instead of a global install, replace `vibepro` with `node /path/to/vibepro/bin/vibepro.js`.
 
 ## First Run: Choose Your Path

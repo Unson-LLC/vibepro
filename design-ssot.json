@@ -20,6 +20,27 @@
       }
     },
     {
+      "id": "vibepro-code-topology-judgment-evidence",
+      "title": "VibePro Code Topology Judgment Evidence",
+      "root_doc": "docs/architecture/vibepro-code-topology-judgment-evidence.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-code-topology-judgment-evidence.md"
+        ],
+        "architecture": [
+          "docs/architecture/vibepro-senior-judgment-multi-axis-dag.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-code-topology-judgment-evidence.md",
+          "docs/specs/vibepro-senior-judgment-multi-axis-dag.md"
+        ]
+      }
+    },
+    {
       "id": "vibepro-senior-gap-judgment",
       "title": "VibePro Senior Gap Judgment",
       "root_doc": "docs/architecture/vibepro-senior-gap-judgment.md",

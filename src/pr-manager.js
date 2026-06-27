@@ -69,6 +69,7 @@ import {
   buildSeniorGapJudgment,
   buildSeniorGapJudgmentGate
 } from './senior-gap-judgment.js';
+import { buildCodeTopologyContext } from './code-topology-provider.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -266,7 +267,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun,
     verificationEvidence,
     decisionRecords,
-    managedWorktreeGate
+    managedWorktreeGate,
+    env: options.env ?? process.env
   }));
   prContext.toolchain = toolchain;
   const suggestedBranch = options.branchName ?? buildBranchName(story);
@@ -3634,7 +3636,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
@@ -3687,6 +3689,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     changeClassification
   });
   const graphContext = await buildGraphImpactContext(repoRoot, git.changed_files);
+  const codeTopologyContext = await buildCodeTopologyContext(repoRoot, {
+    changedFiles: git.changed_files,
+    headSha: git.head_sha,
+    env
+  });
   const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const designSsotReconciliation = await reconcileDesignSsot(repoRoot, {
     git,
@@ -3742,6 +3749,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     networkContracts,
     scope,
     graphContext,
+    codeTopologyContext,
     verificationEvidence: boundVerificationEvidence,
     decisionRecords,
     inferredSpec,
@@ -3764,6 +3772,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
     graph_context: graphContext,
+    code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
     change_classification: changeClassification,
     inferred_spec: inferredSpec,
@@ -3828,6 +3837,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     scope,
     prRoute,
     graphContext,
+    codeTopologyContext,
     designSsotReconciliation: context.design_ssot_reconciliation,
     journeyMap,
     managedWorktreeContext,
@@ -5638,6 +5648,7 @@ function buildEngineeringJudgmentClassification({
   networkContracts = null,
   scope = null,
   graphContext = null,
+  codeTopologyContext = null,
   verificationEvidence = null,
   decisionRecords = null,
   inferredSpec = null,
@@ -5709,6 +5720,7 @@ function buildEngineeringJudgmentClassification({
     networkContracts,
     scope,
     graphContext,
+    codeTopologyContext,
     verificationEvidence,
     decisionRecords,
     inferredSpec,
@@ -5754,6 +5766,7 @@ function buildSeniorJudgmentAxes({
   networkContracts = null,
   scope = null,
   graphContext = null,
+  codeTopologyContext = null,
   verificationEvidence = null,
   decisionRecords = null,
   inferredSpec = null,
@@ -5781,6 +5794,7 @@ function buildSeniorJudgmentAxes({
   const changedFileCount = scope?.changed_file_count ?? files.length;
 
   if ((networkContracts?.introduced_api_client_call_count ?? 0) > 0) addSignal('public_contract', 'network_contract:introduced_api_client_call');
+  if (codeTopologyContext?.signals?.includes('code_topology:routes')) addSignal('public_contract', 'code_topology:routes');
   if (['runtime_change', 'design_or_ui_change', 'docs_only', 'config_or_agent_policy', 'test_only'].includes(prRoute?.route_type)) addSignal('public_contract', `pr_route:${prRoute.route_type}`);
   if (contractDocCount > 0) addSignal('public_contract', 'file_group:contract_docs');
   if (/\b(api|cli|config|schema|output|format|contract|compat|default|docs?|readme|pr body|public)\b|互換|契約|仕様|出力/.test(text)) addSignal('public_contract', 'text:public_contract');
@@ -5791,12 +5805,15 @@ function buildSeniorJudgmentAxes({
     || riskSurfaces.has('deploy')) addSignal('rollback_sensitive', 'changed_surface:rollback_or_rollout');
 
   if (route?.route_type === 'security_trust' || riskSurfaces.has('auth_boundary') || riskSurfaces.has('security') || riskSurfaces.has('auth')) addSignal('security_boundary', 'surface:security_or_auth');
+  if (codeTopologyContext?.signals?.includes('code_topology:security')) addSignal('security_boundary', 'code_topology:security');
   if (/\b(auth|permission|security|secret|token|sandbox|namespace|rbac|acl|middleware)\b/.test(fileText)) addSignal('security_boundary', 'changed_path:security_boundary');
 
   if (route?.route_type === 'data_pipeline' || riskSurfaces.has('database_state') || riskSurfaces.has('persistence')) addSignal('data_state', 'surface:data_state');
+  if (codeTopologyContext?.signals?.includes('code_topology:data_state')) addSignal('data_state', 'code_topology:data_state');
   if (/\b(database|db|migration|schema|cache|idempot|replay|query|orm|backfill|model|repository)\b/.test(fileText)) addSignal('data_state', 'changed_path:data_state');
 
   if (route?.route_type === 'agent_workflow' || riskSurfaces.has('gate_orchestration') || riskSurfaces.has('review_lifecycle') || riskSurfaces.has('core_workflow_state') || riskSurfaces.has('queue_worker')) addSignal('execution_topology', 'surface:workflow_or_agent');
+  if (codeTopologyContext?.signals?.includes('code_topology:call_paths')) addSignal('execution_topology', 'code_topology:call_paths');
   if (/\b(workflow|agent|review|gate|queue|worker|retry)\b/.test((fileGroups.source?.files ?? []).join('\n').toLowerCase())) addSignal('execution_topology', 'changed_path:execution_topology');
   if (/\b(process|thread|worker|queue|agent|subagent|retry|deadlock|artifact lifecycle|orchestration|workflow|gate|dag|graphify)\b|エージェント|ワーカー|再試行|証跡/.test(text)) addSignal('execution_topology', 'text:execution_topology');
 
@@ -5810,6 +5827,7 @@ function buildSeniorJudgmentAxes({
   if (changedFileCount > Math.max(12, Math.ceil((scope?.reviewable_file_limit ?? DEFAULT_MAX_REVIEWABLE_FILES) / 2))) addSignal('scope_reviewability', `changed_files:${changedFileCount}`);
   if ((fileGroups.repo_control?.count ?? 0) > 0 && sourceCount + contractDocCount + testCount > 0) addSignal('scope_reviewability', 'mixed_surface:repo_control_with_product_change');
   if (graphContext?.available && (graphContext.related_file_count ?? 0) > 0) addSignal('scope_reviewability', 'graphify:related_files');
+  if (codeTopologyContext?.signals?.includes('code_topology:related_files')) addSignal('scope_reviewability', 'code_topology:related_files');
 
   if (route?.route_type === 'release_engineering' || ['release_merge', 'mirror_sync'].includes(prRoute?.route_type)) addSignal('release_ops', 'route:release_engineering');
   if (/\b(release|deploy|rollout|rollback|observability|operator|runbook|alert|ci|workflow)\b/.test(fileText)) addSignal('release_ops', 'changed_path:release_ops');
@@ -5825,6 +5843,7 @@ function buildSeniorJudgmentAxes({
       verificationEvidence,
       decisionRecords,
       graphContext,
+      codeTopologyContext,
       scope,
       agentReviews
     });
@@ -5836,6 +5855,7 @@ function buildSeniorJudgmentAxes({
         prRoute,
         route,
         graphContext,
+        codeTopologyContext,
         scope,
         storySource,
         verificationEvidence,
@@ -5891,7 +5911,7 @@ function classifyAxisActivationPrecision(axis, candidates = []) {
   if (uniqueCandidates.length === 0) {
     return {
       status: 'no_signal',
-      reason: `No ${axis} signal detected in Story, diff, PR route, risk surfaces, or optional Graphify context`,
+      reason: `No ${axis} signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context`,
       active_signals: [],
       non_text_signal_count: 0
     };
@@ -5906,7 +5926,7 @@ function classifyAxisActivationPrecision(axis, candidates = []) {
     };
   }
   if (axis === 'public_contract') {
-    const corroboratingSignals = nonTextSignals.filter((signal) => /^(pr_route|file_group|network_contract|changed_path):/.test(String(signal)));
+    const corroboratingSignals = nonTextSignals.filter((signal) => /^(pr_route|file_group|network_contract|changed_path|code_topology):/.test(String(signal)));
     if (corroboratingSignals.length === 0) {
       return {
         status: 'insufficient_signal',
@@ -5993,7 +6013,7 @@ const JUDGMENT_AXIS_DEFINITIONS = [
     axis: 'scope_reviewability',
     confidence: 0.74,
     decision_question: 'このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。',
-    required_evidence: ['scope_reviewed', 'split_plan', 'review_owner_map', 'graph_impact_scope', 'decision_record'],
+    required_evidence: ['scope_reviewed', 'split_plan', 'review_owner_map', 'related_file_blast_radius', 'decision_record'],
     blocking_criteria: ['multiple unrelated decisions are bundled without split rationale', 'ownership or blast radius is unclear'],
     acceptable_followup: 'Current PR is coherent; separate cleanup is tracked without hiding required review ownership.'
   },
@@ -6013,6 +6033,7 @@ function classifySeniorAxisEvidence({
   verificationEvidence = null,
   decisionRecords = null,
   graphContext = null,
+  codeTopologyContext = null,
   scope = null,
   agentReviews = null
 } = {}) {
@@ -6020,7 +6041,10 @@ function classifySeniorAxisEvidence({
     .filter((command) => command.binding?.status === 'current');
   const verificationMatches = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
   const matched = [];
-  const optional = classifyGraphImpactEvidence(graphContext);
+  const optional = [
+    ...classifyGraphImpactEvidence(graphContext),
+    ...classifyCodeTopologyImpactEvidence(codeTopologyContext)
+  ];
   const add = (kind, ref, extra = {}) => {
     if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
       matched.push(buildEvidenceItem(kind, ref, extra));
@@ -6092,7 +6116,16 @@ function classifySeniorAxisEvidence({
     binding_status: 'derived',
     artifact_quality: 'scope_classification'
   });
-  if (optional.length > 0) add('graph_impact_scope', optional[0].ref);
+  for (const item of optional) {
+    add(item.kind, item.ref, item);
+    if (axis === 'scope_reviewability' && ['graph_impact_scope', 'code_topology_impact_scope'].includes(item.kind)) {
+      add('related_file_blast_radius', item.ref, {
+        ...item,
+        kind: 'related_file_blast_radius',
+        strength_reason: `${item.kind} provides related-file blast radius for scope review`
+      });
+    }
+  }
   if (axis === 'execution_topology' && hasAgentEvidenceLifecycle({ agentReviews, decisionRecords })) {
     add('agent_review', 'agent review summaries passed for required roles', {
       strength: 'strong',
@@ -6372,7 +6405,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
   agentReviews = null,
   decisionRecords = null,
   prRoute = null,
-  graphContext = null
+  graphContext = null,
+  codeTopologyContext = null
 } = {}) {
   const acceptanceCount = storySource?.acceptance_criteria?.length ?? 0;
   const storyHasIntent = Boolean(storySource?.title || storySource?.requirement_title || storySource?.background || acceptanceCount > 0);
@@ -6405,7 +6439,8 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     fileGroups,
     storySource,
     inferredSpec,
-    graphContext
+    graphContext,
+    codeTopologyContext
   });
   const highRisk = !documentationOnlyRoute && (
     changeClassification?.profile === 'workflow_heavy'
@@ -6453,7 +6488,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       evidence: firstEvidenceRef(currentRealityMatches)
         ?? `${changedFileCount} changed file(s) classified`,
       surface: surfaceProfile.surface,
-      optional_evidence_kind: ['graph_impact_scope'],
+      optional_evidence_kind: ['graph_impact_scope', 'code_topology_impact_scope'],
       required_evidence_kind: surfaceProfile.surface === 'docs_only' ? docsRequirement : currentRealityRequirement,
       minimum_strength: surfaceProfile.surface === 'docs_only' ? buildMinimumStrengthMap(docsRequirement) : currentRealityMinimums,
       matched_evidence: currentRealityMatches,
@@ -6475,7 +6510,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
             ? 'test files in diff'
             : null,
       surface: surfaceProfile.surface,
-      optional_evidence_kind: ['graph_impact_scope'],
+      optional_evidence_kind: ['graph_impact_scope', 'code_topology_impact_scope'],
       required_evidence_kind: highRisk ? ['spec_clause', 'architecture_doc', 'test_contract'] : ['story_or_diff_scope'],
       matched_evidence: [
         ...buildInvariantEvidence({ specClauseCount, hasExplicitSpecOrArchitecture, hasTests, storySource }),
@@ -6495,7 +6530,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
         ? 'explicit spec/architecture docs'
         : acceptedDecisions[0]?.decision_id ?? currentVerification[0]?.command ?? null,
       surface: surfaceProfile.surface,
-      optional_evidence_kind: ['graph_impact_scope'],
+      optional_evidence_kind: ['graph_impact_scope', 'code_topology_impact_scope'],
       required_evidence_kind: boundarySensitive ? ['architecture_doc', 'decision_record', 'current_verification'] : ['not_applicable'],
       minimum_strength: boundarySensitive ? buildMinimumStrengthMap(['architecture_doc', 'decision_record', 'current_verification']) : {},
       matched_evidence: [
@@ -6608,9 +6643,10 @@ function requiredEvidenceForJudgmentSubcheck(id, surfaceProfile) {
   return ['current_evidence'];
 }
 
-function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGroups, storySource, inferredSpec, graphContext = null }) {
+function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGroups, storySource, inferredSpec, graphContext = null, codeTopologyContext = null }) {
   const evidence = currentVerification.flatMap((item) => classifyVerificationEvidenceItem(item));
   const graphImpact = classifyGraphImpactEvidence(graphContext);
+  const topologyImpact = classifyCodeTopologyImpactEvidence(codeTopologyContext);
   const docs = [];
   if (storySource?.path || storySource?.story_id) {
     docs.push(buildEvidenceItem('story_spec_traceability', storySource.path ?? storySource.story_id, {
@@ -6644,7 +6680,8 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
     docs,
     current_reality: [
       ...evidence.filter((item) => currentRequirement.includes(item.kind)),
-      ...graphImpact
+      ...graphImpact,
+      ...topologyImpact
     ],
     failure_modes: [
       ...docsOnlyEvidence,
@@ -6654,7 +6691,8 @@ function classifyJudgmentEvidence({ currentVerification, surfaceProfile, fileGro
       ...docsOnlyEvidence,
       ...evidence.filter((item) => doneRequirement.includes(item.kind))
     ],
-    graph_impact: graphImpact
+    graph_impact: graphImpact,
+    code_topology_impact: topologyImpact
   };
 }
 
@@ -6673,6 +6711,28 @@ function classifyGraphImpactEvidence(graphContext) {
     strength_reason: 'Graphify narrows impact scope but does not prove runtime correctness',
     binding_status: 'derived',
     artifact_quality: 'graph_context'
+  })];
+}
+
+function classifyCodeTopologyImpactEvidence(codeTopologyContext) {
+  if (!codeTopologyContext?.available) return [];
+  const matched = codeTopologyContext.matched_file_count ?? 0;
+  if (matched <= 0) return [];
+  const related = codeTopologyContext.related_file_count ?? 0;
+  return [buildEvidenceItem('code_topology_impact_scope', `${codeTopologyContext.provider ?? 'code topology'} (${matched} changed / ${related} related)`, {
+    optional: true,
+    provider: codeTopologyContext.provider ?? null,
+    matched_file_count: matched,
+    related_file_count: related,
+    symbol_count: codeTopologyContext.symbol_count ?? 0,
+    route_count: codeTopologyContext.route_count ?? 0,
+    call_path_count: codeTopologyContext.call_path_count ?? 0,
+    risk_count: codeTopologyContext.risk_count ?? 0,
+    investigation_files: (codeTopologyContext.investigation_files ?? []).slice(0, 12),
+    strength: 'supporting',
+    strength_reason: 'Code topology narrows impact scope but does not prove runtime correctness',
+    binding_status: 'derived',
+    artifact_quality: 'code_topology_context'
   })];
 }
 
@@ -7722,6 +7782,7 @@ function buildGateDag({
   scope = null,
   prRoute = null,
   graphContext = null,
+  codeTopologyContext = null,
   journeyMap = null,
   managedWorktreeContext = null,
   managedWorktreeGate = null
@@ -7796,7 +7857,8 @@ function buildGateDag({
     agentReviews,
     decisionRecords,
     prRoute,
-    graphContext
+    graphContext,
+    codeTopologyContext
   });
   const prScopeJudgmentGate = buildPrScopeJudgmentGate({ scope, fileGroups, git, prRoute, decisionRecords });
   const bugPhysicsTriageGate = buildBugPhysicsTriageGate(bugPhysicsTriage);

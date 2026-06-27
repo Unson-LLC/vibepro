@@ -86,6 +86,22 @@ console.log(${JSON.stringify(JSON.stringify(pr))});
   return binDir;
 }
 
+async function makeFakeCodebaseMemoryMcp(payload) {
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-cbm-bin-'));
+  const binPath = path.join(binDir, 'codebase-memory-mcp');
+  await writeFile(binPath, `#!/usr/bin/env node
+const args = process.argv.slice(2);
+if (args[0] !== 'cli' || args[1] !== 'detect_changes') {
+  process.stderr.write('unexpected codebase-memory-mcp command: ' + args.join(' '));
+  process.exit(1);
+}
+JSON.parse(args[2]);
+console.log(${JSON.stringify(JSON.stringify(payload))});
+`);
+  await chmod(binPath, 0o755);
+  return binDir;
+}
+
 async function makeFakeGhMerge(state) {
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-merge-bin-'));
   const ghPath = path.join(binDir, 'gh');
@@ -13841,7 +13857,7 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.equal(runtimeReality.status, 'needs_evidence');
   assert.deepEqual(runtimeReality.required_evidence_kind, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
   assert.deepEqual(runtimeReality.matched_evidence, []);
-  assert.deepEqual(runtimeReality.optional_evidence_kind, ['graph_impact_scope']);
+  assert.deepEqual(runtimeReality.optional_evidence_kind, ['graph_impact_scope', 'code_topology_impact_scope']);
 
   const workflowRepo = await makeGitRepoWithStory();
   await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
@@ -14164,6 +14180,87 @@ test('common judgment spine uses optional Graphify impact evidence when availabl
   assert.equal(graphEvidence.matched_file_count, 1);
   assert.equal(graphEvidence.related_file_count, 1);
   assert.deepEqual(graphEvidence.investigation_files, ['src/shared-runtime.js']);
+});
+
+test('CTJ-S-1 pr prepare exposes unavailable code topology context without blocking', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'runtime-feature.js'), 'export function runtimeFeature() { return "runtime"; }\n');
+  await git(repo, ['add', 'src/runtime-feature.js']);
+  await git(repo, ['commit', '-m', 'feat: add runtime feature']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'], {
+    env: {
+      ...process.env,
+      PATH: await mkdtemp(path.join(os.tmpdir(), 'vibepro-empty-path-'))
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const context = result.result.preparation.pr_context.code_topology_context;
+  assert.equal(context.available, false);
+  assert.equal(context.provider, 'codebase-memory-mcp');
+  assert.match(context.reason, /not found on PATH/);
+  assert.equal(result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:dag_connectivity')?.status, 'passed');
+});
+
+test('CTJ-S-2 code topology evidence activates DAG axes and stays optional in the spine', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'runner.js'), 'export function run() { return "ok"; }\n');
+  await git(repo, ['add', 'src/runner.js']);
+  await git(repo, ['commit', '-m', 'feat: add runner']);
+  const binDir = await makeFakeCodebaseMemoryMcp({
+    changed_files: [
+      {
+        path: 'src/runner.js',
+        symbols: ['run'],
+        related_files: ['src/agent-workflow.js'],
+        routes: ['/api/run'],
+        call_paths: [['src/app/api/run/route.ts', 'src/runner.js', 'src/agent-workflow.js']],
+        risks: ['workflow orchestration queue']
+      }
+    ]
+  });
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ''}`
+    }
+  });
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const context = prepare.pr_context.code_topology_context;
+  assert.equal(context.available, true);
+  assert.equal(context.matched_file_count, 1);
+  assert.equal(context.related_file_count, 1);
+  assert.equal(context.route_count, 1);
+  assert.equal(context.call_path_count, 1);
+  assert.equal(context.signals.includes('code_topology:related_files'), true);
+  assert.equal(context.signals.includes('code_topology:routes'), true);
+  assert.equal(context.signals.includes('code_topology:call_paths'), true);
+  assert.deepEqual(context.investigation_files, ['src/agent-workflow.js']);
+
+  const axes = prepare.pr_context.engineering_judgment.judgment_axes;
+  const executionTopology = axes.find((axis) => axis.axis === 'execution_topology');
+  assert.notEqual(executionTopology.status, 'inactive');
+  assert.equal(executionTopology.activation_signals.includes('code_topology:call_paths'), true);
+  const scopeAxis = axes.find((axis) => axis.axis === 'scope_reviewability');
+  assert.notEqual(scopeAxis.status, 'inactive');
+  assert.equal(scopeAxis.activation_signals.includes('code_topology:related_files'), true);
+  assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'code_topology_impact_scope'), true);
+  assert.equal(scopeAxis.matched_evidence.some((item) => item.kind === 'related_file_blast_radius'), true);
+
+  const spineGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const currentReality = spineGate.subchecks.find((check) => check.id === 'current_reality');
+  const topologyEvidence = currentReality.matched_evidence.find((item) => item.kind === 'code_topology_impact_scope');
+  assert.equal(currentReality.status, 'needs_evidence');
+  assert.deepEqual(currentReality.missing_evidence, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
+  assert.equal(topologyEvidence.optional, true);
+  assert.equal(topologyEvidence.route_count, 1);
+  assert.equal(topologyEvidence.call_path_count, 1);
 });
 
 test('pr prepare emits Senior first scan multi-axis DAG with optional Graphify scope', async () => {

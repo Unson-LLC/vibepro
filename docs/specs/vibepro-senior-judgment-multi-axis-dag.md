@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-senior-judgment-multi-axis-dag
 title: Senior Judgment Multi-Axis DAG Spec
+parent_design: vibepro-code-topology-judgment-evidence
 ---
 
 # Spec
@@ -20,6 +21,9 @@ title: Senior Judgment Multi-Axis DAG Spec
 - `SJ-AXES-011`: Graphify context MUST be optional. Missing `.vibepro/graphify/graph.json` MUST NOT block PR readiness by itself.
 - `SJ-AXES-012`: When Graphify is available and matches changed files, the graph impact MUST be available to first scan, scope/reviewability, review ownership, and verification matrix as optional `graph_impact_scope`.
 - `SJ-AXES-013`: `graph_impact_scope` MUST NOT satisfy required evidence for runtime correctness, security correctness, rollback safety, UX correctness, or release readiness by itself.
+- `SJ-AXES-018`: Code topology context MUST be optional. Missing or failing codebase-memory-mcp MUST NOT block PR readiness by itself.
+- `SJ-AXES-019`: When code topology is available and maps changed files to related files, routes, symbols, call paths, or risk hints, those signals MAY activate Senior first-scan axes as non-text corroboration and MUST be exposed as optional `code_topology_impact_scope`.
+- `SJ-AXES-020`: `code_topology_impact_scope` MUST NOT satisfy required evidence for runtime correctness, security correctness, rollback safety, UX correctness, or release readiness by itself.
 - `SJ-AXES-014`: Architecture decision quality MUST evaluate active axes and report missing `alternatives_considered`, `compatibility_impact`, `rollback_plan`, `boundary`, or `accepted_followups` when relevant.
 - `SJ-AXES-015`: Route-specific gates created from active axes MUST NOT default to `passed` solely because the axis exists. They MUST evaluate evidence or explicitly mark the axis as advisory/inactive.
 - `SJ-AXES-016`: `acceptable_followup` MUST require a bounded summary, reason why current behavior is safe without it, and a link or artifact reference. Otherwise the missing work MUST be represented as block or waiver.
@@ -60,6 +64,7 @@ flowchart TD
 ## Non Goals
 
 - Making Graphify mandatory.
+- Making codebase-memory-mcp mandatory.
 - Replacing all existing route logic in one PR.
 - Requiring every axis for every PR.
 - Solving every route-specific evidence gate in the first implementation.
