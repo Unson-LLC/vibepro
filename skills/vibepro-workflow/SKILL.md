@@ -51,7 +51,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 11. Plan work from VibePro evidence: `vibepro story plan <repo>`.
 12. Create task context before implementation: `vibepro task create <repo> --from-plan --id <story-id>`.
 13. After code changes, run `vibepro pr prepare <repo> --story-id <story-id>`.
-14. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready.
+14. Read `.vibepro/pr/<story-id>/pr-prepare.json` `gate_status` before treating work as PR-ready. Also inspect `decision-index.json` and `evidence-plan.json` when present so skipped or depth-limited artifacts are not mistaken for missing evidence.
 15. If `gate_status.agent_review_instruction` is present, Agent Review is mandatory. Treat the generated review plan as an instruction to dispatch Codex/Claude Code subagents when the coordinator runtime provides subagent capability. Do not convert it into a user-permission wait or silently skip it.
 16. Run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
@@ -63,8 +63,11 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
      - Claude Code: `--agent-system claude_code --execution-mode parallel_subagent --agent-id <task-or-subagent-id> --agent-closed` plus `--agent-session-id` or `--agent-transcript` when available.
    - Rerun `vibepro pr prepare` and continue only after `gate:agent_review` passes.
    - If the runtime cannot spawn subagents, block or record a human waiver decision; manual review records do not satisfy required Agent Review Gate.
-17. Open `review-cockpit.html` first, then deep-dive into `gate-dag.html`, `split-plan.html`, and `pr-body.md`.
-18. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+17. Read `pr-body.md` as the concise GitHub decision brief only. Do not treat it as the audit log or as the full Gate record.
+18. Open `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` only when the evidence-depth policy generated them. When they are skipped, use their JSON sidecars or the embedded summaries in `pr-prepare.json` / `decision-index.json`.
+19. Use `vibepro pr create`; do not bypass VibePro with raw `gh pr create`.
+20. After the PR exists, wait for remote checks, import CI evidence, rerun `vibepro pr prepare`, and rerun `vibepro pr create` so an existing PR body and `pr-create.json` are refreshed for the current head.
+21. Merge through `vibepro execute merge`; do not use raw GitHub merge as the normal VibePro completion path. `execute merge` writes `pr-merge.json` and persists canonical audit artifacts under `docs/management/audit-artifacts/<story-id>/`.
 
 ## Human Artifact Language
 
@@ -90,7 +93,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 - Do not waive critical unresolved Gates with a reason alone. Critical Gates require evidence closure or a split/block decision.
 - Do not treat Agent Review Gate as optional. When it is unresolved, the coordinator must prepare, dispatch, record, and rerun the VibePro review flow before calling the work complete.
 - Do not record a passing Agent Review result without Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`). Manual `pass` records are audit notes, not enough to satisfy `gate:agent_review`.
-- Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane.
+- Keep JSON artifacts as the machine-readable source of truth. HTML is the human control plane when generated. The GitHub PR body is a concise decision brief, not an audit store.
 - Do not claim user-perceived performance improvement from server logs alone. Use a separate `user_perceived` metric backed by `browser_e2e`, `client_marker`, or `manual_observation`.
 - Do not mix server readiness, API completion, DOM visibility, snapshot visibility, and interactive readiness as the same completion condition. Define them as separate metrics.
 - Do not treat type-check or a superficially rendered UI as enough when UI code introduces `/api/...` calls. Network Contract Gate requires matching Next.js routes and network-aware flow evidence for API 4xx/5xx.
@@ -127,7 +130,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 - "The change is small, so no Story or evidence is needed." Small changes can still affect contracts, generated artifacts, and review gates.
 - "Tests passed once, so PR readiness is proven." Tests must be current-head evidence and still need the relevant VibePro gates to close.
 - "Manual review is enough for Agent Review Gate." Required Agent Review needs Codex/Claude Code parallel subagent provenance and closed lifecycle evidence unless a waiver is explicitly recorded outside the gate.
-- "The PR body says it is verified." PR body text is not the source of truth; inspect `pr-prepare.json`, Gate DAG, and evidence artifacts.
+- "The PR body says it is verified." PR body text is not the source of truth; inspect `pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, Gate DAG evidence, and verification artifacts.
 
 ## Red Flags
 
@@ -147,10 +150,16 @@ Before saying VibePro confirmed the work, name the exact VibePro command or arti
 - `.vibepro/stories/story-map.md`: repo Story map for human review.
 - `.vibepro/stories/story-plan.md`: candidate work items.
 - `.vibepro/pr/<story-id>/pr-prepare.json`: PR readiness source of truth; check `gate_status`.
-- `.vibepro/pr/<story-id>/review-cockpit.html`: first screen for human decision.
+- `.vibepro/pr/<story-id>/decision-index.json`: compact index of Story, decisions, review path, and evidence references.
+- `.vibepro/pr/<story-id>/evidence-plan.json`: evidence-depth policy, generated artifacts, skipped artifacts, and required follow-up evidence.
+- `.vibepro/pr/<story-id>/verification-evidence.json`: current-head verification commands and imported CI evidence.
+- `.vibepro/pr/<story-id>/pr-body.md`: concise GitHub decision brief; not the full audit log.
+- `.vibepro/pr/<story-id>/review-cockpit.html`: first screen for human decision when generated.
 - `.vibepro/pr/<story-id>/human-review.json`: machine-readable human decision template.
-- `.vibepro/pr/<story-id>/gate-dag.html`: Gate dependency view.
-- `.vibepro/pr/<story-id>/split-plan.html`: split lanes and Graphify investigation scope.
+- `.vibepro/pr/<story-id>/gate-dag.json`: Gate dependency evidence. `gate-dag.html` is an optional view.
+- `.vibepro/pr/<story-id>/split-plan.json`: split lanes and Graphify investigation scope. `split-plan.html` is an optional view.
+- `.vibepro/pr/<story-id>/pr-create.json`: PR create or existing-PR refresh lifecycle evidence.
+- `.vibepro/pr/<story-id>/pr-merge.json`: merge lifecycle evidence from `vibepro execute merge`.
 - `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`: required parallel subagent dispatch instructions when Agent Review Gate is unresolved.
 - `.vibepro/checks/<pack>/<run-id>/check.json`: purpose-level diagnosis package evidence.
 - `.vibepro/checks/<pack>/<run-id>/check.md`: human-readable diagnosis package report.

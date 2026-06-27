@@ -410,8 +410,8 @@ function renderPrPrepareGuide({ preparation, bodyPath, gateDagPath, splitPlanPat
         <article class="card info">
           <h3>${escapeHtml(localizedText(language, { ja: '2. AIエージェントへの渡し方', en: '2. Agent handoff' }))}</h3>
           <p>${escapeHtml(localizedText(language, {
-            ja: `実装エージェントには ${agentHandoff} を渡してください。pr-body.mdが要約、gate-dagが完了条件、split-planがPR分割方針です。`,
-            en: `Hand ${agentHandoff} to the coding agent. pr-body.md is the summary, gate-dag is the completion contract, and split-plan is the PR split guide.`
+            ja: `実装エージェントには ${agentHandoff} を渡してください。pr-prepare.json / decision-index.json / evidence-plan.json が正本で、pr-body.md はGitHub向けの短い判断ブリーフです。Gate DAGやsplit-planは生成されている場合に詳細確認へ使います。`,
+            en: `Hand ${agentHandoff} to the coding agent. pr-prepare.json, decision-index.json, and evidence-plan.json are the source of truth; pr-body.md is the concise GitHub decision brief. Use Gate DAG and split-plan artifacts for detail when generated.`
           }))}</p>
         </article>
         <article class="card ${escapeAttr(requirementHint.tone)}">

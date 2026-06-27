@@ -24,13 +24,14 @@ Use this Skill when deciding whether a VibePro-prepared change should proceed, s
    - recorded each result with `vibepro review record` including Codex/Claude Code subagent provenance and `--agent-closed`,
    - rerun `vibepro pr prepare` and cleared `gate:agent_review`.
    If the coordinator runtime cannot spawn subagents, treat that as a blocker or require a human waiver decision. Do not accept manual review records as a substitute for required Codex/Claude Code subagent provenance.
-4. Open `.vibepro/pr/<story-id>/review-cockpit.html`.
-5. Read the recommended decision and reason.
-6. Check split lanes and Graphify investigation scope.
-7. For UI modernization PRs, read `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json`. Confirm that current routes, information architecture, CTA priority, state behavior, and data dependencies are preserved unless the Story/Spec explicitly changes them.
-8. For performance-sensitive PRs, read the `Performance Evidence` section in `pr-body.md` and the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
-9. Review next commands and confirm they use `vibepro pr create`.
-10. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
+4. Read `.vibepro/pr/<story-id>/decision-index.json` and `.vibepro/pr/<story-id>/evidence-plan.json` when present, especially generated/skipped artifacts and review path references.
+5. Open `.vibepro/pr/<story-id>/review-cockpit.html` when it was generated for the selected evidence depth.
+6. Read the recommended decision and reason from the cockpit or the JSON readiness summary.
+7. Check split lanes and Graphify investigation scope from `split-plan.json` / `split-plan.html` when present.
+8. For UI modernization PRs, read `.vibepro/design-modernize/<story-id>/derived-design-system.json`, `design-modernize.json`, and `ds-gate.json`. Confirm that current routes, information architecture, CTA priority, state behavior, and data dependencies are preserved unless the Story/Spec explicitly changes them.
+9. For performance-sensitive PRs, read the concise `Performance Evidence` summary in `pr-body.md` if present, then verify the JSON runs under `.vibepro/pr/<story-id>/performance-runs/`.
+10. Review next commands and confirm they use `vibepro pr create` before PR creation and `vibepro execute merge` before merge.
+11. Copy `human-review.json`, fill the review record, and keep it as the human decision artifact.
 
 ## Decision Rules
 
@@ -52,9 +53,9 @@ Fill these fields in `human-review.json`:
 
 ## Guardrails
 
-- Do not treat `review-cockpit.html` as machine-readable truth; use the JSON sidecar.
+- Do not treat `review-cockpit.html` as machine-readable truth; use the JSON sidecars.
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
-- Do not approve a PR only from the PR body. The cockpit and Gate DAG are the review control plane.
+- Do not approve a PR only from the PR body. The PR body is a concise GitHub decision brief; `pr-prepare.json`, decision/evidence indexes, Gate DAG evidence, and verification artifacts are the review control plane.
 - Do not use raw `gh pr create`; it bypasses VibePro Gate enforcement and waiver recording.
 - Do not approve with unresolved Agent Review Gate. Missing, stale, or blocking required roles mean the parallel subagent review workflow has not completed for the current git state.
 - Do not approve a `pass` review result that lacks Codex/Claude Code parallel subagent provenance and closed lifecycle evidence (`--agent-closed`) when `gate:agent_review` is required. It is a coordinator note, not verified subagent review evidence.
@@ -68,7 +69,7 @@ Fill these fields in `human-review.json`:
 ## Common Rationalizations
 
 - "The PR scope is reviewable, so it can proceed." Scope reviewability is not completion approval.
-- "The PR body summarizes the gates, so the JSON is unnecessary." `pr-prepare.json` and Gate DAG are the machine-readable truth.
+- "The PR body summarizes the gates, so the JSON is unnecessary." `pr-prepare.json`, decision/evidence indexes, Gate DAG evidence, and verification artifacts are the machine-readable truth.
 - "A human looked at it, so Agent Review is satisfied." Required Agent Review needs the required subagent provenance and lifecycle closure unless waived outside the gate.
 - "Only non-critical gates remain, so no reason is needed." Waivers must name the exact reason and cannot cover critical gates.
 - "The UI looks better, so modernization is acceptable." Preservation of workflow, DS constraints, and regression evidence still matter.
@@ -80,11 +81,11 @@ Fill these fields in `human-review.json`:
 - Agent Review records are stale, manual-only, missing provenance, or missing `--agent-closed`.
 - Performance evidence says `not_comparable` or `改善率不明` while the PR claims improvement.
 - UI modernization lacks DS gate or current workflow preservation evidence.
-- The reviewer only opened HTML and did not inspect JSON sidecars.
+- The reviewer only opened the PR body or HTML and did not inspect JSON sidecars.
 
 ## Verification
 
-Record the final decision from current `pr-prepare.json`, `gate-dag`, `review-cockpit.html`, and `human-review.json`. If the decision is proceed, confirm `gate_status.ready_for_pr_create=true`, `overall_status=ready_for_review`, no critical unresolved gates, and no split requirement. If the decision is waive, record the exact waiver reason and affected gates.
+Record the final decision from current `pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, Gate DAG evidence, generated review surfaces, and `human-review.json`. If the decision is proceed, confirm `gate_status.ready_for_pr_create=true`, `overall_status=ready_for_review`, no critical unresolved gates, and no split requirement. If the decision is waive, record the exact waiver reason and affected gates.
 
 ## Performance Evidence Review
 

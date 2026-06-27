@@ -1,37 +1,45 @@
 ---
 story_id: story-vibepro-human-reviewable-pr-body
 title: Human-reviewable PR body architecture
+parent_design: vibepro-manual-pr-flow-alignment
 ---
 
 # Human-reviewable PR body architecture
 
+## Status
+
+Superseded for GitHub PR body rendering by `docs/architecture/vibepro-concise-pr-body.md` and `docs/specs/vibepro-concise-pr-body.md`.
+
+This document remains useful as historical context for why reviewers need a human decision layer. It no longer defines the shape of the GitHub PR body.
+
 ## Decision
 
-VibePro keeps the machine evidence sections in `pr-body.md`, but adds a human decision layer before them.
+VibePro keeps machine evidence in `.vibepro/pr/<story-id>/` artifacts and uses `pr-body.md` as a concise GitHub-facing decision brief.
 
-The PR body is organized as:
+The current GitHub PR body is organized as:
 
-1. Decision brief: what this PR asks the reviewer to decide.
-2. Decision graph: a compressed human-readable graph of purpose, source of truth, changed surfaces, gate evidence, and split decision. File references link to the PR head on GitHub when the target repo has a supported GitHub remote.
-3. Change and rationale summary: what changed and why.
-4. Human review map: focused reviewer questions and Runtime / Contract Docs / Capability Map / Tests / Repo Control classification.
-5. Verification checklist: commands with `[x]` only when bound Gate evidence has passed.
-6. Risks and explicit non-goals: what the PR does not claim to change or verify.
-7. Audit log: Gate DAG, Agent Review, split plan, runtime metadata, and detailed evidence.
+1. `What`: changed surface and review scope.
+2. `Why`: Story and requirement reason.
+3. `How to review`: reviewer entry points and risk focus.
+4. `Verification`: concise current-head verification summary.
+5. `VibePro`: Gate, Execution, Scope, and artifact references.
+
+The full decision graph, Gate DAG, Agent Review, split plan, runtime metadata, verification evidence, PR create evidence, and merge evidence live in `.vibepro/pr/<story-id>/` and canonical audit artifacts.
 
 ## Rationale
 
-Gate artifacts are necessary for auditability, but they should not be the first thing a human has to parse. The reviewer needs a narrow mental model first, then the evidence trail.
+Gate artifacts are necessary for auditability, but they should not be copied into the GitHub body. The reviewer needs a narrow mental model first, then links to the evidence trail.
 
 Raw machine states such as `needs_clean_branch` are still preserved in audit details, but the first screen translates them into the human decision they imply: split the PR, explain the scope, or waive a non-critical warning with reason.
 
-The top section should answer the reviewer question directly: whether the changed surfaces should be accepted for the Story. The decision graph is not a full Gate DAG dump; it is a human-sized projection of the Story / Spec / Gate DAG evidence.
+The concise body should answer the reviewer question directly: whether the changed surfaces should be accepted for the Story and where the authoritative evidence lives.
 
-File links belong in the decision graph because the reviewer should be able to open the authoritative Story, Spec, Architecture, runtime, and test files from the first screen. Link rendering is best-effort: GitHub remotes produce `blob/<head-ref>/<path>` links, while non-GitHub or missing remotes keep repository-relative paths so the PR body never emits misleading URLs.
+File and artifact references belong in the concise body because the reviewer should be able to open the authoritative Story, Spec, Architecture, runtime, test, and evidence files from the first screen. Link rendering is best-effort: GitHub remotes produce `blob/<head-ref>/<path>` links for source files, while artifact references remain repository-relative so the PR body never emits misleading URLs.
 
 ## Boundaries
 
-- This does not remove Gate DAG, Agent Review, split plan, or evidence sections.
+- This does not remove Gate DAG, Agent Review, split plan, or evidence artifacts.
+- This does not place full audit sections in the GitHub body.
 - This does not make `scope.status=reviewable` a completion approval.
 - This does not infer unchecked verification as completed.
 - Domain-specific context may still be supplied through Story / Spec / narrative slots, but the default PR body remains generic.

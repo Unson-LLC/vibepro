@@ -86,6 +86,29 @@
           "docs/specs/vibepro-audit-replay-command-surface.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-manual-pr-flow-alignment",
+      "title": "VibePro Manual PR Flow Alignment",
+      "root_doc": "docs/architecture/vibepro-manual-pr-flow-alignment.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-manual-pr-flow-alignment.md"
+        ],
+        "architecture": [
+          "docs/architecture/vibepro-human-reviewable-pr-body.md",
+          "docs/architecture/vibepro-oss-engineering-judgment-pr-message.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-manual-pr-flow-alignment.md",
+          "docs/specs/vibepro-human-reviewable-pr-body.md",
+          "docs/specs/vibepro-cli-graphify-spec.md"
+        ]
+      }
     }
   ]
 }
