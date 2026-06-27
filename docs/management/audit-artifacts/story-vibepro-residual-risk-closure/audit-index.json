@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-residual-risk-closure",
   "source": "execute_merge",
-  "generated_at": "2026-06-27T17:55:36.644Z",
+  "generated_at": "2026-06-27T17:56:02.262Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-06-27T17:55:31.881Z",
     "diff_stats_reason": null,
-    "artifact_lines": 23519,
+    "artifact_lines": 23609,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 534,
@@ -92,7 +92,7 @@
     "product_changed_lines": 534,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 44.043,
+    "artifact_code_ratio": 44.212,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -124,9 +124,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 117251,
-      "expanded_bytes": 1199705,
-      "expanded_line_count": 23857
+      "compressed_bytes": 118801,
+      "expanded_bytes": 1207421,
+      "expanded_line_count": 23947
     }
   },
   "pr_prepare": {
@@ -241,11 +241,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-residual-risk-closure/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:8be005c1aa53a374297ee3eab0a08b80f0f57db40ef2398bc22c5afcd7a4c6d5",
-    "compressed_hash": "sha256:3c35f5fe4936c6a79a9fb837866df6b0c0bec22bf248958ca4b601536cf5485f",
-    "expanded_bytes": 1199705,
-    "compressed_bytes": 117251,
-    "expanded_line_count": 23857,
+    "content_hash": "sha256:b098e8b63ae5e99e7fc05cfe6e80b1ac8d465d069b04b59e57d45a751e9d256d",
+    "compressed_hash": "sha256:98fb9a0bb273dee1d96cfff6eb87875c94c5d88288903b92f596ae92dc958945",
+    "expanded_bytes": 1207421,
+    "compressed_bytes": 118801,
+    "expanded_line_count": 23947,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -262,9 +262,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-residual-risk-closure",
     "cost": {
-      "compressed_bytes": 117251,
-      "expanded_bytes": 1199705,
-      "expanded_line_count": 23857
+      "compressed_bytes": 118801,
+      "expanded_bytes": 1207421,
+      "expanded_line_count": 23947
     }
   }
 }

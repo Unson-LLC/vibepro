@@ -3,9 +3,9 @@
 - story: story-vibepro-residual-risk-closure
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 23519
+- artifact_lines: 23609
 - product_changed_lines: 534
-- artifact_code_ratio: 44.043
+- artifact_code_ratio: 44.212
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
