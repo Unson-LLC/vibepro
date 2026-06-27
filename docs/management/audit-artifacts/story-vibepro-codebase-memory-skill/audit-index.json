@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-codebase-memory-skill",
   "source": "execute_merge",
-  "generated_at": "2026-06-27T19:12:37.307Z",
+  "generated_at": "2026-06-27T19:12:41.838Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -21,7 +21,7 @@
     },
     "diff_stats_collected_at": "2026-06-27T19:12:34.218Z",
     "diff_stats_reason": null,
-    "artifact_lines": 28183,
+    "artifact_lines": 28273,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 258,
@@ -88,7 +88,7 @@
     "product_changed_lines": 258,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 109.236,
+    "artifact_code_ratio": 109.585,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "normal",
@@ -120,9 +120,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 123604,
-      "expanded_bytes": 1402576,
-      "expanded_line_count": 28610
+      "compressed_bytes": 124587,
+      "expanded_bytes": 1407985,
+      "expanded_line_count": 28700
     }
   },
   "pr_prepare": {
@@ -237,11 +237,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:a4870def758eaa37cc63de29e4c404da146d6a5aa854a81ecad4ba29c207674e",
-    "compressed_hash": "sha256:fd69ec99a0a08800054296a72279ac1e60f6adfea1dde89541ea0f747abaf2de",
-    "expanded_bytes": 1402576,
-    "compressed_bytes": 123604,
-    "expanded_line_count": 28610,
+    "content_hash": "sha256:0d41391148fbeb9ad48500528996dcbcdf3a51b48f329576c6409cec07e2fe02",
+    "compressed_hash": "sha256:977ecc6c28c7dacdfcd5ecd4b938b8cc369fb0480454bed042bedc6efe321543",
+    "expanded_bytes": 1407985,
+    "compressed_bytes": 124587,
+    "expanded_line_count": 28700,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -254,9 +254,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-codebase-memory-skill",
     "cost": {
-      "compressed_bytes": 123604,
-      "expanded_bytes": 1402576,
-      "expanded_line_count": 28610
+      "compressed_bytes": 124587,
+      "expanded_bytes": 1407985,
+      "expanded_line_count": 28700
     }
   }
 }

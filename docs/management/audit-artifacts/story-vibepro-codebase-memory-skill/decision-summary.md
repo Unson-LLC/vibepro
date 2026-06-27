@@ -3,9 +3,9 @@
 - story: story-vibepro-codebase-memory-skill
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 28183
+- artifact_lines: 28273
 - product_changed_lines: 258
-- artifact_code_ratio: 109.236
+- artifact_code_ratio: 109.585
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
