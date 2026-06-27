@@ -2098,7 +2098,8 @@ export async function runCli(argv, io = {}) {
           progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           strict: hasFlag(rest, '--strict'),
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
-          language: getOption(rest, '--language')
+          language: getOption(rest, '--language'),
+          env: io.env ?? process.env
         });
         write(stdout, jsonOutput
           ? `${JSON.stringify(result.preparation, null, 2)}\n`

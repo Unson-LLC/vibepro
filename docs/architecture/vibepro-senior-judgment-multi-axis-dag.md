@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-senior-judgment-multi-axis-dag
 title: Senior Judgment Multi-Axis DAG Architecture
+parent_design: vibepro-code-topology-judgment-evidence
 ---
 
 # Architecture
@@ -16,7 +17,7 @@ Engineering Judgmentを、単一`route_type`選択ではなく、`Senior first s
 - Alternatives considered: 既存の単一`route_type`だけを強化する案、route-specific gateだけを増やす案、multi-axis DAGを追加する案を比較する。単一route案は複合PRの判断を落とし、route gate増殖案は分岐理由が再構成しにくいため、互換性を保ったmulti-axis追加を選ぶ。
 - Compatibility impact: `route_type`、`route_dag`、既存Gate DAG nodeは残す。新規に`judgment_axes[]`と`gate:judgment_axis_*`を足し、既存PR body consumerは従来フィールドを読み続けられる。
 - Rollback plan: 問題が出た場合は`judgment_axes[]`生成とaxis gate挿入を無効化しても、既存`route_type`ベースのDAGへ戻せる。Graphify不在時も従来通りPR prepareは継続する。
-- Boundary: Graphifyはoptional impact lensであり、runtime/security/rollback/UX correctnessの証明境界には入れない。証明は各axisのrequired evidenceで行う。
+- Boundary: Graphifyとcode topology providerはoptional impact lensであり、runtime/security/rollback/UX correctnessの証明境界には入れない。証明は各axisのrequired evidenceで行う。
 - Accepted followups: 最初の実装では全axisを完璧にenforceせず、axis artifactとPR body再構成性を先に固定する。各axisの厳格化は、現在安全性を損なわない範囲で後続Storyに分ける。
 
 ## Model
@@ -25,8 +26,10 @@ Engineering Judgmentを、単一`route_type`選択ではなく、`Senior first s
 flowchart TD
   A["Story / PR diff"] --> B["Changed files"]
   B --> G["Graphify impact lens\noptional"]
+  B --> CT["Code topology lens\noptional"]
   B --> S["Senior first scan"]
   G --> S
+  CT --> S
 
   S --> AX["judgment_axes[]\nmulti-label"]
 
@@ -82,15 +85,17 @@ The first scan may activate any combination of these axes:
 - `scope_reviewability`: PR combines multiple decisions, multiple public surfaces, or too many reviewer ownership areas.
 - `release_ops`: operator/user action, release note, rollout/rollback instruction, observability, or support path is required.
 
-## Graphify Placement
+## Optional Topology Placement
 
 Graphify is an optional impact lens, not a correctness gate.
+codebase-memory-mcp backed code topology is also an optional impact lens, not a correctness gate.
 
 Use Graphify for:
 
 - first scan axis hints,
 - scope and split suggestions,
 - related-file blast radius,
+- route, symbol, and call-path hints,
 - reviewer/subagent ownership hints,
 - focused verification candidate discovery.
 
@@ -103,6 +108,7 @@ Do not use Graphify as proof of:
 - release readiness.
 
 When `.vibepro/graphify/graph.json` is missing, the DAG records `graph_context.available=false` and continues.
+When `codebase-memory-mcp` is missing or fails, the DAG records `code_topology_context.available=false` and continues.
 
 ## Evidence Flow
 
