@@ -1,0 +1,540 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codebase-memory-skill",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-27T19:12:37.307Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill",
+  "source_workspace_dir": ".vibepro",
+  "artifact_policy": {
+    "scope": "decision_index_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "normal",
+    "trigger_signals": [],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "df5dfaca27821307b8598a75c1ca01224371be9b",
+      "base_sha": "5af1aeed9eb192ef522a15c8c3741a6948c9aa7d",
+      "head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+      "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca"
+    },
+    "diff_stats_collected_at": "2026-06-27T19:12:34.218Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 28183,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 258,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "test": {
+          "files": 1,
+          "changed_lines": 6,
+          "unknown_files": 0,
+          "paths": [
+            "test/vibepro-cli.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 138,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-codebase-memory-skill.md",
+            "docs/management/stories/active/story-vibepro-codebase-memory-skill.md",
+            "docs/specs/vibepro-codebase-memory-skill.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 9,
+          "changed_lines": 114,
+          "unknown_files": 0,
+          "paths": [
+            "README.ja.md",
+            "README.md",
+            "design-ssot.json",
+            "docs/guide/graphify-impact.md",
+            "docs/ja/guide/graphify-impact.md",
+            "docs/ja/reference/version-history.md",
+            "docs/reference/version-history.md",
+            "skills/vibepro-codebase-memory/SKILL.md",
+            "skills/vibepro-workflow/SKILL.md"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "df5dfaca27821307b8598a75c1ca01224371be9b",
+        "base_sha": "5af1aeed9eb192ef522a15c8c3741a6948c9aa7d",
+        "head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+        "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca"
+      },
+      "collected_at": "2026-06-27T19:12:34.218Z",
+      "reason": null
+    },
+    "product_changed_lines": 258,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 109.236,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "normal",
+      "canonical_artifact_lines": 500,
+      "artifact_code_ratio": 1
+    },
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cached_input_tokens": null,
+      "source": null,
+      "window": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "started_at": null,
+      "finished_at": null,
+      "source": null,
+      "window": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 123604,
+      "expanded_bytes": 1402576,
+      "expanded_line_count": 28610
+    }
+  },
+  "decision_index": {
+    "schema_version": "0.1.0",
+    "story_id": "story-vibepro-codebase-memory-skill",
+    "source": "execute_merge",
+    "generated_at": "2026-06-27T19:12:37.307Z",
+    "evidence_depth": "standard",
+    "budget_status": "exceeded",
+    "cost_summary": {
+      "schema_version": "0.1.0",
+      "evidence_depth": "standard",
+      "risk_profile": "normal",
+      "trigger_signals": [],
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b",
+      "diff_stats_refs": {
+        "base_ref": "origin/main",
+        "head_ref": "df5dfaca27821307b8598a75c1ca01224371be9b",
+        "base_sha": "5af1aeed9eb192ef522a15c8c3741a6948c9aa7d",
+        "head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+        "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca"
+      },
+      "diff_stats_collected_at": "2026-06-27T19:12:34.218Z",
+      "diff_stats_reason": null,
+      "artifact_lines": 28183,
+      "changed_lines": {
+        "status": "available",
+        "total_changed_lines": 258,
+        "unknown_file_count": 0,
+        "buckets": {
+          "src": {
+            "files": 0,
+            "changed_lines": 0,
+            "unknown_files": 0,
+            "paths": []
+          },
+          "test": {
+            "files": 1,
+            "changed_lines": 6,
+            "unknown_files": 0,
+            "paths": [
+              "test/vibepro-cli.test.js"
+            ]
+          },
+          "story_spec_architecture_docs": {
+            "files": 3,
+            "changed_lines": 138,
+            "unknown_files": 0,
+            "paths": [
+              "docs/architecture/vibepro-codebase-memory-skill.md",
+              "docs/management/stories/active/story-vibepro-codebase-memory-skill.md",
+              "docs/specs/vibepro-codebase-memory-skill.md"
+            ]
+          },
+          "audit_artifacts": {
+            "files": 0,
+            "changed_lines": 0,
+            "unknown_files": 0,
+            "paths": []
+          },
+          "other": {
+            "files": 9,
+            "changed_lines": 114,
+            "unknown_files": 0,
+            "paths": [
+              "README.ja.md",
+              "README.md",
+              "design-ssot.json",
+              "docs/guide/graphify-impact.md",
+              "docs/ja/guide/graphify-impact.md",
+              "docs/ja/reference/version-history.md",
+              "docs/reference/version-history.md",
+              "skills/vibepro-codebase-memory/SKILL.md",
+              "skills/vibepro-workflow/SKILL.md"
+            ]
+          }
+        },
+        "source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b",
+        "refs": {
+          "base_ref": "origin/main",
+          "head_ref": "df5dfaca27821307b8598a75c1ca01224371be9b",
+          "base_sha": "5af1aeed9eb192ef522a15c8c3741a6948c9aa7d",
+          "head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+          "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca"
+        },
+        "collected_at": "2026-06-27T19:12:34.218Z",
+        "reason": null
+      },
+      "product_changed_lines": 258,
+      "product_changed_lines_status": "available",
+      "product_changed_lines_reason": null,
+      "artifact_code_ratio": 109.236,
+      "artifact_code_ratio_reason": null,
+      "budget": {
+        "profile": "normal",
+        "canonical_artifact_lines": 500,
+        "artifact_code_ratio": 1
+      },
+      "budget_status": "exceeded",
+      "budget_exceeded_reasons": [
+        "canonical_artifact_lines_exceeded",
+        "artifact_code_ratio_exceeded"
+      ],
+      "token_accounting": {
+        "status": "unavailable",
+        "total_tokens": null,
+        "input_tokens": null,
+        "output_tokens": null,
+        "cached_input_tokens": null,
+        "source": null,
+        "window": null,
+        "reason": "session token logs were not provided to canonical audit promotion"
+      },
+      "elapsed_time_accounting": {
+        "status": "unavailable",
+        "elapsed_ms": null,
+        "started_at": null,
+        "finished_at": null,
+        "source": null,
+        "window": null,
+        "reason": "elapsed-time logs were not provided to canonical audit promotion"
+      },
+      "replay_bundle": {
+        "compressed_bytes": 123604,
+        "expanded_bytes": 1402576,
+        "expanded_line_count": 28610
+      }
+    },
+    "pr_prepare": {
+      "present": true,
+      "created_at": "2026-06-27T19:12:21.752Z",
+      "gate_status": {
+        "ready_for_pr_create": true,
+        "overall_status": "ready_for_review",
+        "fast_lane": false,
+        "critical_unresolved_gate_count": 0
+      }
+    },
+    "evidence_reuse": {
+      "present": true,
+      "created_at": "2026-06-27T19:12:21.752Z",
+      "status": "hit",
+      "evidence_key": "evk_060bfcc0a0dbb0d50cb8de25f0369351",
+      "verification_summary_fingerprint": "sha256:17773402e4543e696012595b1cddc55112aea5295f06c4dbe2d8d6589b74aba6",
+      "verification_evidence_updated_at": "2026-06-27T19:12:04.015Z",
+      "verification_command_timestamps": [
+        {
+          "kind": "integration",
+          "executed_at": "2026-06-27T19:12:04.015Z",
+          "git_recorded_at": "2026-06-27T19:12:04.014Z"
+        },
+        {
+          "kind": "unit",
+          "executed_at": "2026-06-27T19:12:03.385Z",
+          "git_recorded_at": "2026-06-27T19:12:03.382Z"
+        },
+        {
+          "kind": "build",
+          "executed_at": "2026-06-27T19:07:59.034Z",
+          "git_recorded_at": "2026-06-27T19:07:59.032Z"
+        },
+        {
+          "kind": "typecheck",
+          "executed_at": "2026-06-27T19:02:13.114Z",
+          "git_recorded_at": "2026-06-27T19:02:13.113Z"
+        }
+      ],
+      "stale_reason_count": 0,
+      "full_evidence_status": "reused",
+      "full_evidence_generation_count": 1,
+      "full_evidence_generation_count_scope": "same_evidence_key",
+      "full_evidence_same_key_generation_count": 1,
+      "full_evidence_cumulative_generation_count": 14
+    },
+    "pr_create": {
+      "present": true,
+      "created_at": "2026-06-27T19:12:21.767Z",
+      "status": "updated_existing_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/244",
+      "gate_override_allowed": false
+    },
+    "pr_merge": {
+      "present": true,
+      "summary": {
+        "status": "merged",
+        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/244",
+        "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca",
+        "merged_at": "2026-06-27T19:12:36Z",
+        "current_head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+        "diff_stats_status": "available",
+        "diff_stats_source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b"
+      }
+    },
+    "gate_dag": {
+      "present": true,
+      "overall_status": "ready_for_review",
+      "node_count": 50,
+      "blocking_count": 0
+    },
+    "senior_gap_judgment": {
+      "present": true,
+      "status": "passed_with_residual_risk",
+      "gap_count": 3,
+      "blocking_gap_count": 0,
+      "residual_risk_count": 3,
+      "followup_count": 3
+    },
+    "traceability": {
+      "present": true,
+      "lifecycle": "merged",
+      "coverage_summary": {
+        "clause_count": 6,
+        "acceptance_criteria_count": 6,
+        "scenario_clause_count": 0,
+        "mapped_count": 6,
+        "weakly_mapped_count": 0,
+        "unmapped_count": 0,
+        "examples": []
+      }
+    },
+    "verification": {
+      "present": true,
+      "command_count": 4,
+      "pass_count": 4,
+      "fail_count": 0
+    },
+    "review": {
+      "summary_count": 0,
+      "result_count": 0,
+      "pass_count": 0,
+      "block_count": 0,
+      "stale_count": 0
+    },
+    "missing_artifacts": [],
+    "raw_artifact_count": 8,
+    "replay_bundle": {
+      "schema_version": "0.1.0",
+      "path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "media_type": "application/json",
+      "content_hash": "sha256:a4870def758eaa37cc63de29e4c404da146d6a5aa854a81ecad4ba29c207674e",
+      "compressed_hash": "sha256:fd69ec99a0a08800054296a72279ac1e60f6adfea1dde89541ea0f747abaf2de",
+      "expanded_bytes": 1402576,
+      "compressed_bytes": 123604,
+      "expanded_line_count": 28610,
+      "included_artifact_kinds": [
+        "evidence_reuse",
+        "gate_dag",
+        "pr_create",
+        "pr_merge",
+        "pr_prepare",
+        "senior_gap_judgment",
+        "traceability",
+        "verification_evidence"
+      ],
+      "replay_command": "vibepro audit replay . --story-id story-vibepro-codebase-memory-skill",
+      "cost": {
+        "compressed_bytes": 123604,
+        "expanded_bytes": 1402576,
+        "expanded_line_count": 28610
+      }
+    }
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:a4870def758eaa37cc63de29e4c404da146d6a5aa854a81ecad4ba29c207674e",
+    "compressed_hash": "sha256:fd69ec99a0a08800054296a72279ac1e60f6adfea1dde89541ea0f747abaf2de",
+    "expanded_bytes": 1402576,
+    "compressed_bytes": 123604,
+    "expanded_line_count": 28610,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-codebase-memory-skill",
+    "cost": {
+      "compressed_bytes": 123604,
+      "expanded_bytes": 1402576,
+      "expanded_line_count": 28610
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/244",
+    "merge_commit_sha": "02be6727a875720be190a87a5218aea9626c3aca",
+    "merged_at": "2026-06-27T19:12:36Z",
+    "current_head_sha": "df5dfaca27821307b8598a75c1ca01224371be9b",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...df5dfaca27821307b8598a75c1ca01224371be9b"
+  },
+  "handoff_replay_status": "ready",
+  "handoff_replay": {
+    "status": "ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-codebase-memory-skill"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:a4870def758eaa37cc63de29e4c404da146d6a5aa854a81ecad4ba29c207674e"
+    }
+  ],
+  "raw_artifacts": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:f578212432308d71e26fbe3fdc00790d1361b58205d2c14424fc7d13875b64ac",
+      "line_count": 86
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:0c3051d072262914ec39fa25b93f04feac68281dfb23db55b10f83ac40443b09",
+      "line_count": 15555
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:de554b4677129e55b96799855bf492325eabc4af30e352b4e424d52cdc45eb56",
+      "line_count": 3664
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:8220803a98a60408ec3552ba4a111f27bf0b28678d6e4b502ac8f4cfe6d270a7",
+      "line_count": 3519
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:cad197573f7404c7b7700963630dbf9c5766e36ff17309b0cc550c1af4f7073f",
+      "line_count": 839
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:8e6fafb1b2ca79f9b6a9ce266a3be586575efa7aafaf1158efcc92557af9ada0",
+      "line_count": 3760
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:645b592d48ada2f24391b976c4c3073feb426ee7b62065323de7fcde98c34865",
+      "line_count": 504
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-codebase-memory-skill/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codebase-memory-skill/audit-replay-bundle.json.gz",
+      "digest": "sha256:58aec9009b11689e759687bd59023b35a4ec65769da88c7d0b48633d02598d8c",
+      "line_count": 256
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
