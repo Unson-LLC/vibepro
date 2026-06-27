@@ -38,9 +38,15 @@
     "README.ja.md"
   ],
   "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "test": "node --test",
     "typecheck": "node --check bin/vibepro.js && node --check src/*.js",
     "pack:dry-run": "npm pack --dry-run"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
   },
   "engines": {
     "node": ">=20"
