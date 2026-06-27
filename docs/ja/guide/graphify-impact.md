@@ -37,4 +37,12 @@ VibeProは現在の `codebase-memory-mcp` CLI挙動に合わせて、providerに
 
 正規化されたcontextには、availability、reason、matched files、related files、symbols、routes、call paths、risk hints、investigation files、`code_topology:*` signals が入ります。一致ファイルがある場合、VibeProはcommon judgment spineに `code_topology_impact_scope` を任意のmatched evidenceとして表示できます。
 
+エージェントにこの文脈を一貫して使わせたい場合は、VibePro同梱skillsを導入します。
+
+```bash
+vibepro skills install .
+```
+
+`vibepro-codebase-memory` skill は、`list_projects`、`index_repository`、`detect_changes`、`search_graph`、`trace_path`、`get_code_snippet` をいつ使い、結果をVibePro Gate evidenceへどう戻すかを説明します。
+
 どちらのレンズも「変更が正しく動くこと」の証明には使いません。読むべきファイル、経路、テスト、reviewerを決める材料として使います。

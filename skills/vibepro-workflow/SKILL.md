@@ -21,7 +21,9 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 2. Initialize only when needed: `vibepro init <repo> --language ja`.
 3. Before manually adding or editing human-facing VibePro artifacts, resolve the output language from `.vibepro/config.json` `output.language` or the explicit CLI `--language` override.
 4. Select or create the Story before diagnosing or changing code.
-5. Import Graphify context before impact-sensitive work: `vibepro graph <repo> --run-graphify`.
+5. Import impact context before impact-sensitive work:
+   - Run Graphify when artifact-level graph context is useful: `vibepro graph <repo> --run-graphify`.
+   - Use `vibepro-codebase-memory` when `codebase-memory-mcp` is available and changed-file topology, symbols, routes, call paths, or risk hints would affect implementation, tests, review roles, or split boundaries.
 6. Diagnose and derive the repo context:
    - `vibepro story diagnose <repo> --id <story-id> --run-graphify`
    - `vibepro story derive <repo> --run-graphify`
@@ -87,6 +89,7 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 
 - Do not treat VibePro diagnosis as truth by itself. Verify with code, tests, runtime logs, or product behavior.
 - Do not patch graph-sensitive runtime, auth, data, or UI state-machine code before checking Graphify impact.
+- Do not skip `codebase-memory-mcp` impact context for broad VibePro core, Gate DAG, Agent Review, auth/security, data/state, route, or workflow changes when the provider is installed and indexed.
 - Do not skip Story -> Architecture -> Spec ordering when the task is a refactor.
 - Do not treat `scope.status=reviewable` as completion approval. It is PR size/scope guidance only.
 - Do not ignore unresolved Gates. Add evidence, split the PR, block, or record a waiver reason.

@@ -150,6 +150,23 @@
           "docs/specs/vibepro-residual-risk-closure.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-codebase-memory-skill",
+      "title": "VibePro Codebase Memory Skill",
+      "root_doc": "docs/architecture/vibepro-codebase-memory-skill.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-codebase-memory-skill.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-codebase-memory-skill.md"
+        ]
+      }
     }
   ]
 }

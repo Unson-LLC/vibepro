@@ -15,6 +15,7 @@
 - `vibepro pr prepare` の任意 `codebase-memory-mcp` topology supportを明記
 - Graphifyとcode topologyは任意のimpact lensであり、correctness gateではないことを明記
 - `pr_context.code_topology_context` と `code_topology_impact_scope` を生成物対応表に追加
+- VibePro作業中にcode topology contextを一貫して使うため、同梱skill `vibepro-codebase-memory` を追加
 
 ## 初期公開準備
 
