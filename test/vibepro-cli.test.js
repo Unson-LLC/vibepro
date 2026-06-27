@@ -3323,8 +3323,9 @@ test('skills commands list install and verify bundled VibePro skills', async () 
 
   const listResult = await runCli(['skills', 'list']);
   assert.equal(listResult.exitCode, 0);
-  assert.equal(listResult.result.skills.length, 4);
+  assert.equal(listResult.result.skills.length, 5);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-workflow'), true);
+  assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-codebase-memory'), true);
   assert.equal(listResult.result.skills.some((skill) => skill.name === 'vibepro-diagnosis-packages'), true);
 
   const lint = await runCli(['skills', 'lint', repo, '--json']);
@@ -3345,10 +3346,13 @@ test('skills commands list install and verify bundled VibePro skills', async () 
   assert.equal(install.exitCode, 0);
   assert.equal(install.result.skills.every((skill) => skill.status === 'installed'), true);
   const workflowSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-workflow', 'SKILL.md');
+  const codebaseMemorySkillPath = path.join(repo, '.claude', 'skills', 'vibepro-codebase-memory', 'SKILL.md');
   const reviewSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-human-review', 'SKILL.md');
   const diagnosisSkillPath = path.join(repo, '.claude', 'skills', 'vibepro-diagnosis-packages', 'SKILL.md');
   assert.match(await readFile(workflowSkillPath, 'utf8'), /name: vibepro-workflow/);
   assert.match(await readFile(workflowSkillPath, 'utf8'), /vibepro check performance/);
+  assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /name: vibepro-codebase-memory/);
+  assert.match(await readFile(codebaseMemorySkillPath, 'utf8'), /codebase-memory-mcp cli detect_changes/);
   assert.match(await readFile(reviewSkillPath, 'utf8'), /review-cockpit\.html/);
   assert.match(await readFile(diagnosisSkillPath, 'utf8'), /vibepro performance compare/);
 

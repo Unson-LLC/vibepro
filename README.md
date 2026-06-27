@@ -566,6 +566,7 @@ Bundled skills follow the VibePro Agent Skill Contract: frontmatter, usage trigg
 Bundled skills:
 
 - `vibepro-workflow`: Story / Architecture / Spec / Graphify / Gate operating order, including design-modernize and Agent Review flow.
+- `vibepro-codebase-memory`: how to use optional `codebase-memory-mcp` impact context in VibePro without treating topology as correctness evidence.
 - `vibepro-story-refactor`: refactor workflow that keeps Story, Architecture, Spec, task, code, and Gate evidence aligned.
 - `vibepro-diagnosis-packages`: purpose-level UI, security, performance, architecture, PR, and launch readiness checks.
 - `vibepro-human-review`: how to read PR readiness artifacts, split plans, review cockpit, and waiver decisions.

@@ -37,4 +37,12 @@ VibePro passes both `repo_path` and the derived project name to the provider for
 
 The normalized context includes availability, reason, matched files, related files, symbols, routes, call paths, risk hints, investigation files, and `code_topology:*` signals. When matched files exist, VibePro may render `code_topology_impact_scope` as optional matched evidence in the common judgment spine.
 
+Install bundled VibePro skills if agents should use this context consistently:
+
+```bash
+vibepro skills install .
+```
+
+The `vibepro-codebase-memory` skill explains when to use `list_projects`, `index_repository`, `detect_changes`, `search_graph`, `trace_path`, and `get_code_snippet`, and how to map results back to VibePro Gate evidence.
+
 Do not use either lens as proof that the change works. Use them to decide which files, paths, tests, and reviewers matter.

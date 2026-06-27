@@ -480,6 +480,7 @@ npx vibepro skills verify /path/to/repo
 同梱 Skills:
 
 - `vibepro-workflow`: Story / Architecture / Spec / Graphify / Gate の実行順。design-modernize と Agent Review flow も含む。
+- `vibepro-codebase-memory`: 任意の `codebase-memory-mcp` impact context をVibeProで使い、topologyを正しさの証明として扱わないための手順。
 - `vibepro-story-refactor`: Story、Architecture、Spec、Task、Code、Gate evidence を揃えながら進める refactor workflow。
 - `vibepro-diagnosis-packages`: UI、security、performance、architecture、PR、launch readiness の目的別check。
 - `vibepro-human-review`: PR readiness artifact、split plan、review cockpit、waiver 判断の読み方。
