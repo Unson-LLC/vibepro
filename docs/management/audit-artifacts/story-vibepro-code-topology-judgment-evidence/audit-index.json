@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-code-topology-judgment-evidence",
   "source": "execute_merge",
-  "generated_at": "2026-06-27T15:39:48.972Z",
+  "generated_at": "2026-06-27T15:39:56.161Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -24,7 +24,7 @@
     },
     "diff_stats_collected_at": "2026-06-27T15:39:43.439Z",
     "diff_stats_reason": null,
-    "artifact_lines": 23232,
+    "artifact_lines": 23322,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 628,
@@ -90,7 +90,7 @@
     "product_changed_lines": 628,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 36.994,
+    "artifact_code_ratio": 37.137,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -122,9 +122,9 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 119063,
-      "expanded_bytes": 1164828,
-      "expanded_line_count": 23564
+      "compressed_bytes": 120021,
+      "expanded_bytes": 1170429,
+      "expanded_line_count": 23654
     }
   },
   "pr_prepare": {
@@ -239,11 +239,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-code-topology-judgment-evidence/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ed5c167059d34cc8fcdaf4523cafd6d0372378d9f22ee1df6d8d89f113ab3673",
-    "compressed_hash": "sha256:6d10194f27c6ce0074862b55925e7ed4789d24f3517590c88c28aa2a5abbe172",
-    "expanded_bytes": 1164828,
-    "compressed_bytes": 119063,
-    "expanded_line_count": 23564,
+    "content_hash": "sha256:50db17eaad01f6e99c590c6acd8035d7c0ae9558751ae87095281f2a674c33eb",
+    "compressed_hash": "sha256:dddaee4fbb2a4aa4fc846bdb80a7f9ec9162a02969092e184cd7e2a9b93ab063",
+    "expanded_bytes": 1170429,
+    "compressed_bytes": 120021,
+    "expanded_line_count": 23654,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -260,9 +260,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-code-topology-judgment-evidence",
     "cost": {
-      "compressed_bytes": 119063,
-      "expanded_bytes": 1164828,
-      "expanded_line_count": 23564
+      "compressed_bytes": 120021,
+      "expanded_bytes": 1170429,
+      "expanded_line_count": 23654
     }
   }
 }

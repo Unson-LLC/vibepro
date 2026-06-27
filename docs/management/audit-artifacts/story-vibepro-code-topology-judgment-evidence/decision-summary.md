@@ -3,9 +3,9 @@
 - story: story-vibepro-code-topology-judgment-evidence
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 23232
+- artifact_lines: 23322
 - product_changed_lines: 628
-- artifact_code_ratio: 36.994
+- artifact_code_ratio: 37.137
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
