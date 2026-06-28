@@ -195,7 +195,7 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   const indexPath = path.join(canonicalDir, 'audit-index.json');
   const summaryPath = path.join(canonicalDir, 'decision-summary.md');
   await mkdir(canonicalDir, { recursive: true });
-  const replayBundle = await writeCompressedReplayBundle(root, {
+  let replayBundle = await writeCompressedReplayBundle(root, {
     storyId,
     source,
     promotedAt,
@@ -207,6 +207,12 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   });
   decisionIndex.replay_bundle = replayBundle;
   costSummary.replay_bundle = replayBundle.cost;
+  const compressedReplayArtifact = {
+    kind: 'compressed_replay_bundle',
+    canonical_path: replayBundle.path,
+    compression: replayBundle.compression,
+    content_hash: replayBundle.content_hash
+  };
   const artifacts = [
     {
       kind: 'audit_index',
@@ -216,12 +222,7 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       kind: 'decision_summary',
       canonical_path: toWorkspaceRelative(root, summaryPath)
     },
-    {
-      kind: 'compressed_replay_bundle',
-      canonical_path: replayBundle.path,
-      compression: replayBundle.compression,
-      content_hash: replayBundle.content_hash
-    }
+    compressedReplayArtifact
   ];
   const rawArtifacts = inventory.artifacts.map((artifact) => ({
     kind: artifact.kind,
@@ -279,12 +280,46 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     copied_references: [],
     unresolved_references: []
   };
-  applyCompactCanonicalLineAccounting(costSummary, {
-    rawSourceArtifactLines: inventory.artifact_line_count,
-    replayBundle,
-    decisionIndex,
-    bundle
-  });
+  let previousAccountingSignature = null;
+  for (let index = 0; index < 5; index += 1) {
+    syncReplayBundleReferences({
+      replayBundle,
+      decisionIndex,
+      costSummary,
+      bundle,
+      compressedReplayArtifact
+    });
+    applyCompactCanonicalLineAccounting(costSummary, {
+      rawSourceArtifactLines: inventory.artifact_line_count,
+      replayBundle,
+      decisionIndex,
+      bundle
+    });
+    const currentAccountingSignature = JSON.stringify({
+      artifact_lines: costSummary.artifact_lines,
+      artifact_code_ratio: costSummary.artifact_code_ratio,
+      budget_status: costSummary.budget_status,
+      budget_exceeded_reasons: costSummary.budget_exceeded_reasons,
+      replay_expanded_line_count: replayBundle.expanded_line_count
+    });
+    if (currentAccountingSignature === previousAccountingSignature) {
+      break;
+    }
+    if (index === 4) {
+      break;
+    }
+    previousAccountingSignature = currentAccountingSignature;
+    replayBundle = await writeCompressedReplayBundle(root, {
+      storyId,
+      source,
+      promotedAt,
+      canonicalDir,
+      decisionIndex,
+      inventory,
+      costSummary,
+      merge
+    });
+  }
   await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
   await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
@@ -294,6 +329,23 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     bundle_path: bundlePath,
     bundle
   };
+}
+
+function syncReplayBundleReferences({
+  replayBundle,
+  decisionIndex,
+  costSummary,
+  bundle,
+  compressedReplayArtifact
+}) {
+  decisionIndex.replay_bundle = replayBundle;
+  costSummary.replay_bundle = replayBundle.cost;
+  bundle.replay_bundle = replayBundle;
+  bundle.handoff_replay.replay_bundle = replayBundle.path;
+  bundle.handoff_replay.replay_command = replayBundle.replay_command;
+  compressedReplayArtifact.canonical_path = replayBundle.path;
+  compressedReplayArtifact.compression = replayBundle.compression;
+  compressedReplayArtifact.content_hash = replayBundle.content_hash;
 }
 
 function applyCompactCanonicalLineAccounting(costSummary, {

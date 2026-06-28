@@ -209,6 +209,9 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replay.included_artifact_kinds.includes('pr_prepare'), true);
   const replayText = gunzipSync(await readFile(path.join(root, bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);
+  assert.equal(replayPayload.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
+  assert.equal(replayPayload.decision_index.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
+  assert.equal(replayPayload.cost_summary.raw_source_artifact_lines > replayPayload.cost_summary.artifact_lines, true);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
   assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);
@@ -629,7 +632,9 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
 
   const replayText = gunzipSync(await readFile(path.join(root, promoted.bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);
+  assert.equal(replayPayload.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
   assert.equal(replayPayload.cost_summary.token_accounting.total_tokens, 3456);
   assert.equal(replayPayload.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+  assert.equal(replayPayload.decision_index.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
   assert.equal(replayPayload.decision_index.automation_value_audit.session_cost.total_tokens, 3456);
 });
