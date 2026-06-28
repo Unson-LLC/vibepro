@@ -1003,13 +1003,44 @@ function scopedPrPrepare(data, excluded) {
 
 function scopedPrLifecycle(data, artifactKind, excluded) {
   excluded.push('pr_lifecycle.full_gate_dag', 'pr_lifecycle.raw_command_output');
-  const { gate_dag: gateDag, results, commands, ...rest } = data ?? {};
+  const gateDag = data?.gate_dag;
+  const results = data?.results;
   return compactObject({
-    ...rest,
+    schema_version: data?.schema_version,
     artifact_kind: artifactKind,
     audit_scope: CANONICAL_AUDIT_SCOPE,
+    created_at: data?.created_at,
+    story: data?.story,
+    mode: data?.mode,
+    dry_run: data?.dry_run,
+    status: data?.status,
+    output: data?.output,
+    pr_url: data?.pr_url,
+    pr: data?.pr,
+    title: data?.title,
+    base: data?.base,
+    head: data?.head,
+    body_file: data?.body_file,
+    current_branch: data?.current_branch,
+    current_head_sha: data?.current_head_sha,
+    workspace_initialized: data?.workspace_initialized,
+    repository_slug: data?.repository_slug,
+    strategy: data?.strategy,
+    branch_cleanup: data?.branch_cleanup,
+    delete_branch: data?.delete_branch,
+    preconditions: data?.preconditions,
+    merged_at: data?.merged_at,
+    merge_commit_sha: data?.merge_commit_sha,
+    stop_reason: data?.stop_reason,
+    canonical_audit: data?.canonical_audit,
+    prepare_artifacts: data?.prepare_artifacts,
+    gate_override: data?.gate_override,
+    execution_gate: data?.execution_gate,
+    artifact_freshness: data?.artifact_freshness,
+    warnings: data?.warnings,
+    toolchain: data?.toolchain,
     gate_dag_summary: scopedGateDag(gateDag, excluded),
-    commands,
+    commands: data?.commands,
     results: Array.isArray(results)
       ? results.map((result) => ({
           command: result.command,
@@ -1218,7 +1249,17 @@ function scopedVerificationEvidence(data, excluded) {
   if (!data || typeof data !== 'object') return data ?? null;
   excluded.push('verification.raw_command_output');
   return compactObject({
-    ...data,
+    schema_version: data.schema_version,
+    story_id: data.story_id,
+    updated_at: data.updated_at,
+    generated_at: data.generated_at,
+    evidence_key: data.evidence_key,
+    command_count: data.command_count,
+    pass_count: data.pass_count,
+    fail_count: data.fail_count,
+    status: data.status,
+    summary: data.summary,
+    warnings: data.warnings,
     commands: Array.isArray(data.commands)
       ? data.commands.map((command) => compactObject({
           id: command.id,

@@ -310,6 +310,47 @@ test('canonical audit scope prunes debug inventory and duplicate full gate conte
     }],
     edges: []
   });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-28T00:01:00.000Z',
+    story: { story_id: storyId },
+    pr_url: 'https://github.com/example/repo/pull/1',
+    raw_command_output: 'raw lifecycle output that must not become canonical',
+    verbose_debug_payload: 'lifecycle-debug'.repeat(100),
+    gate_dag: {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      overall_status: 'ready_for_review',
+      nodes: [{
+        id: 'gate:lifecycle',
+        status: 'passed',
+        matched_evidence: [{ ref: 'debug', verbose_debug_payload: 'node-debug'.repeat(100) }]
+      }]
+    },
+    results: [{
+      command: 'gh pr create',
+      exit_code: 0,
+      stdout: 'created'.repeat(100),
+      stderr: 'warning'.repeat(100),
+      raw_command_output: 'nested raw lifecycle output'
+    }]
+  });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    updated_at: '2026-06-28T00:02:00.000Z',
+    raw_command_output: 'raw verification output that must not become canonical',
+    verbose_debug_payload: 'verification-debug'.repeat(100),
+    commands: [{
+      kind: 'unit',
+      status: 'pass',
+      command: 'node --test',
+      stdout: 'ok'.repeat(100),
+      stderr: 'warn'.repeat(100),
+      raw_command_output: 'nested raw verification output',
+      verbose_debug_payload: 'command-debug'.repeat(100)
+    }]
+  });
   await writeJson(path.join(root, '.vibepro', 'manual-verification', storyId, 'unit-result.json'), {
     status: 'pass'
   });
@@ -317,7 +358,11 @@ test('canonical audit scope prunes debug inventory and duplicate full gate conte
   const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
   const prPrepareRaw = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), 'utf8');
   const prPrepareCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'));
+  const prCreateCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-create.json'));
+  const verificationCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'verification-evidence.json'));
   const canonicalText = JSON.stringify(prPrepareCanonical);
+  const lifecycleText = JSON.stringify(prCreateCanonical);
+  const verificationText = JSON.stringify(verificationCanonical);
 
   assert.equal(prPrepareCanonical.artifact_kind, 'canonical_pr_prepare_audit_summary');
   assert.equal(
@@ -331,6 +376,13 @@ test('canonical audit scope prunes debug inventory and duplicate full gate conte
   assert.equal(prPrepareCanonical.pr_context.engineering_judgment.inactive_axis_count, 1);
   assert.equal(prPrepareCanonical.pr_context.engineering_judgment.judgment_axes.length, 1);
   assert.equal(canonicalText.includes('verbose_debug_payload'), false);
+  assert.equal(prCreateCanonical.artifact_kind, 'canonical_pr_create_audit_summary');
+  assert.equal(lifecycleText.includes('raw_command_output'), false);
+  assert.equal(lifecycleText.includes('verbose_debug_payload'), false);
+  assert.equal(typeof prCreateCanonical.results[0].stdout_bytes, 'number');
+  assert.equal(verificationText.includes('raw_command_output'), false);
+  assert.equal(verificationText.includes('verbose_debug_payload'), false);
+  assert.equal(typeof verificationCanonical.commands[0].stdout_bytes, 'number');
   assert.equal(Buffer.byteLength(canonicalText) < Buffer.byteLength(prPrepareRaw), true);
   assert.equal(promoted.bundle.resolved_references.some((item) => item.source.endsWith('unit-result.json')), true);
 });
