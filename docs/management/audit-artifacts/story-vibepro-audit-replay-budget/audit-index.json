@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-audit-replay-budget",
   "source": "execute_merge",
-  "generated_at": "2026-06-28T14:13:29.621Z",
+  "generated_at": "2026-06-28T14:13:33.926Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -125,12 +125,12 @@
       "reason": null
     },
     "replay_bundle": {
-      "compressed_bytes": 5431,
+      "compressed_bytes": 5434,
       "expanded_bytes": 29126,
       "expanded_line_count": 813
     },
-    "raw_source_artifact_lines": 11878,
-    "raw_source_artifact_code_ratio": 28.622,
+    "raw_source_artifact_lines": 11968,
+    "raw_source_artifact_code_ratio": 28.839,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -244,7 +244,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-audit-replay-budget",
-    "generated_at": "2026-06-28T14:13:29.621Z",
+    "generated_at": "2026-06-28T14:13:33.926Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -359,10 +359,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:6bf2c004605e96a4a2061e6292337343bd128d10a19b279c2e383ce861dc25d7",
-    "compressed_hash": "sha256:fafd5422d5e5c821d5e124262fb2e075ab6cd8d09f18cf4383b1927a99590251",
+    "content_hash": "sha256:47d5c67c77f94e5ce05bc63527d2463988e44edccfeca939bcc92105a0d7586a",
+    "compressed_hash": "sha256:153f920e2acc57ddfad812d8424e0440904d9fbb171212996f6cb3507dd53597",
     "expanded_bytes": 29126,
-    "compressed_bytes": 5431,
+    "compressed_bytes": 5434,
     "expanded_line_count": 813,
     "included_artifact_kinds": [
       "evidence_reuse",
@@ -380,7 +380,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-audit-replay-budget",
     "cost": {
-      "compressed_bytes": 5431,
+      "compressed_bytes": 5434,
       "expanded_bytes": 29126,
       "expanded_line_count": 813
     }

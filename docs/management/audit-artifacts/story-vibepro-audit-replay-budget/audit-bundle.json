@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-audit-replay-budget",
   "source": "execute_merge",
-  "promoted_at": "2026-06-28T14:13:29.621Z",
+  "promoted_at": "2026-06-28T14:13:33.926Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -144,19 +144,19 @@
       "reason": null
     },
     "replay_bundle": {
-      "compressed_bytes": 5431,
+      "compressed_bytes": 5434,
       "expanded_bytes": 29126,
       "expanded_line_count": 813
     },
-    "raw_source_artifact_lines": 11878,
-    "raw_source_artifact_code_ratio": 28.622,
+    "raw_source_artifact_lines": 11968,
+    "raw_source_artifact_code_ratio": 28.839,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-audit-replay-budget",
-    "generated_at": "2026-06-28T14:13:29.621Z",
+    "generated_at": "2026-06-28T14:13:33.926Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -270,7 +270,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-audit-replay-budget",
     "source": "execute_merge",
-    "generated_at": "2026-06-28T14:13:29.621Z",
+    "generated_at": "2026-06-28T14:13:33.926Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -393,12 +393,12 @@
         "reason": null
       },
       "replay_bundle": {
-        "compressed_bytes": 5431,
+        "compressed_bytes": 5434,
         "expanded_bytes": 29126,
         "expanded_line_count": 813
       },
-      "raw_source_artifact_lines": 11878,
-      "raw_source_artifact_code_ratio": 28.622,
+      "raw_source_artifact_lines": 11968,
+      "raw_source_artifact_code_ratio": 28.839,
       "artifact_lines_source": "persisted_canonical_compact"
     },
     "pr_prepare": {
@@ -512,7 +512,7 @@
       "schema_version": "0.1.0",
       "artifact_kind": "vibepro_automation_value_audit",
       "story_id": "story-vibepro-audit-replay-budget",
-      "generated_at": "2026-06-28T14:13:29.621Z",
+      "generated_at": "2026-06-28T14:13:33.926Z",
       "status": "partial",
       "purpose": "daily_automation_input",
       "sources": {
@@ -627,10 +627,10 @@
       "path": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget/audit-replay-bundle.json.gz",
       "compression": "gzip",
       "media_type": "application/json",
-      "content_hash": "sha256:6bf2c004605e96a4a2061e6292337343bd128d10a19b279c2e383ce861dc25d7",
-      "compressed_hash": "sha256:fafd5422d5e5c821d5e124262fb2e075ab6cd8d09f18cf4383b1927a99590251",
+      "content_hash": "sha256:47d5c67c77f94e5ce05bc63527d2463988e44edccfeca939bcc92105a0d7586a",
+      "compressed_hash": "sha256:153f920e2acc57ddfad812d8424e0440904d9fbb171212996f6cb3507dd53597",
       "expanded_bytes": 29126,
-      "compressed_bytes": 5431,
+      "compressed_bytes": 5434,
       "expanded_line_count": 813,
       "included_artifact_kinds": [
         "evidence_reuse",
@@ -648,7 +648,7 @@
       ],
       "replay_command": "vibepro audit replay . --story-id story-vibepro-audit-replay-budget",
       "cost": {
-        "compressed_bytes": 5431,
+        "compressed_bytes": 5434,
         "expanded_bytes": 29126,
         "expanded_line_count": 813
       }
@@ -659,10 +659,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:6bf2c004605e96a4a2061e6292337343bd128d10a19b279c2e383ce861dc25d7",
-    "compressed_hash": "sha256:fafd5422d5e5c821d5e124262fb2e075ab6cd8d09f18cf4383b1927a99590251",
+    "content_hash": "sha256:47d5c67c77f94e5ce05bc63527d2463988e44edccfeca939bcc92105a0d7586a",
+    "compressed_hash": "sha256:153f920e2acc57ddfad812d8424e0440904d9fbb171212996f6cb3507dd53597",
     "expanded_bytes": 29126,
-    "compressed_bytes": 5431,
+    "compressed_bytes": 5434,
     "expanded_line_count": 813,
     "included_artifact_kinds": [
       "evidence_reuse",
@@ -680,7 +680,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-audit-replay-budget",
     "cost": {
-      "compressed_bytes": 5431,
+      "compressed_bytes": 5434,
       "expanded_bytes": 29126,
       "expanded_line_count": 813
     }
@@ -716,7 +716,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:6bf2c004605e96a4a2061e6292337343bd128d10a19b279c2e383ce861dc25d7"
+      "content_hash": "sha256:47d5c67c77f94e5ce05bc63527d2463988e44edccfeca939bcc92105a0d7586a"
     }
   ],
   "raw_artifacts": [
@@ -808,10 +808,10 @@
       "source": ".vibepro/pr/story-vibepro-audit-replay-budget/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-audit-replay-budget/audit-replay-bundle.json.gz",
-      "digest": "sha256:34707c2aed2b3e48fb84ed02f2a911c4a77ff6c98d226e44b10d413a3d9f1a84",
-      "audit_digest": "sha256:a700162a3ba56ed20b7c1d09e4e928e83e5ac7256e52d17d10b55e1320767150",
-      "line_count": 2308,
-      "raw_line_count": 4106,
+      "digest": "sha256:fe7002c4944a191bdc61d1ce4d9510616e13dcd1da8d621911071695a8304167",
+      "audit_digest": "sha256:f019ac7db7d8794ac03f1655fd1c1ebb74128f708e8b517fae3235ef5196bff7",
+      "line_count": 2398,
+      "raw_line_count": 4196,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
