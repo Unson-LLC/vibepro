@@ -20,6 +20,7 @@ const ARTIFACT_TEXT_EXTENSIONS = new Set([
 export async function collectSessionEfficiencyAudit(repoRoot, {
   storyId,
   sessionId,
+  inferSession = false,
   codexHome = null,
   automationMemoryPath = null,
   windowStart = null,
@@ -30,18 +31,34 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   now = null
 } = {}) {
   if (!storyId) throw new Error('audit session-cost requires --story-id <id>');
-  if (!sessionId) throw new Error('audit session-cost requires --session-id <id>');
 
   const root = path.resolve(repoRoot);
   const resolvedCodexHome = path.resolve(codexHome ?? process.env.CODEX_HOME ?? path.join(os.homedir(), '.codex'));
   const automationMemory = await resolveAutomationMemoryWindow(automationMemoryPath, { now });
   const effectiveWindowStart = windowStart ?? automationMemory.window_start ?? null;
   const effectiveWindowEnd = windowEnd ?? automationMemory.window_end ?? null;
-  const processMetadata = await readProcessMetadata(resolvedCodexHome, sessionId);
-  const sessionFile = await findCodexSessionFile(resolvedCodexHome, sessionId);
-  const session = sessionFile
-    ? await parseCodexSessionJsonl(sessionFile, { sessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
-    : missingSessionAccounting(sessionId, effectiveWindowStart, effectiveWindowEnd);
+  const sessionSelection = await resolveSessionSelection(resolvedCodexHome, {
+    requestedSessionId: sessionId,
+    inferSession,
+    repoRoot: root,
+    storyId,
+    windowStart: effectiveWindowStart,
+    windowEnd: effectiveWindowEnd
+  });
+  if (!sessionSelection.session_id && !inferSession && sessionId !== 'auto') {
+    throw new Error('audit session-cost requires --session-id <id> or --infer-session');
+  }
+
+  const selectedSessionId = sessionSelection.session_id;
+  const processMetadata = selectedSessionId
+    ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
+    : null;
+  const sessionFile = selectedSessionId
+    ? sessionSelection.source_path ?? await findCodexSessionFile(resolvedCodexHome, selectedSessionId)
+    : null;
+  const session = selectedSessionId && sessionFile
+    ? await parseCodexSessionJsonl(sessionFile, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+    : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
@@ -60,10 +77,11 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     schema_version: '0.1.0',
     artifact_kind: 'vibepro_session_efficiency_audit',
     story_id: storyId,
-    session_id: sessionId,
+    session_id: selectedSessionId,
     generated_at: now ?? new Date().toISOString(),
     codex_home: resolvedCodexHome,
     automation_memory: automationMemory,
+    session_selection: sessionSelection,
     repo_root: root,
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
@@ -131,6 +149,242 @@ async function findCodexSessionFile(codexHome, sessionId) {
   const direct = await findFileByNameFragment(sessionsRoot, sessionId, 7);
   if (direct) return direct;
   return null;
+}
+
+async function resolveSessionSelection(codexHome, {
+  requestedSessionId,
+  inferSession,
+  repoRoot,
+  storyId,
+  windowStart,
+  windowEnd
+} = {}) {
+  const normalizedRequested = normalizeRequestedSessionId(requestedSessionId);
+  if (normalizedRequested) {
+    return {
+      status: 'explicit',
+      session_id: normalizedRequested,
+      source: 'cli',
+      source_path: null,
+      confidence: 'explicit',
+      candidates_considered: 0,
+      reason: null
+    };
+  }
+  if (!inferSession && requestedSessionId !== 'auto') {
+    return {
+      status: 'not_requested',
+      session_id: null,
+      source: null,
+      source_path: null,
+      confidence: 'none',
+      candidates_considered: 0,
+      reason: 'session inference was not requested'
+    };
+  }
+
+  const candidates = await findCodexSessionCandidates(codexHome, {
+    repoRoot,
+    storyId,
+    windowStart,
+    windowEnd
+  });
+  candidates.sort((a, b) => b.score - a.score || String(b.last_event_at ?? '').localeCompare(String(a.last_event_at ?? '')));
+  const best = candidates[0] ?? null;
+  const tied = best ? candidates.filter((candidate) => candidate.score === best.score) : [];
+  if (!best) {
+    return {
+      status: 'unavailable',
+      session_id: null,
+      source: 'codex-session-jsonl',
+      source_path: null,
+      confidence: 'none',
+      candidates_considered: 0,
+      candidates: [],
+      reason: 'no Codex session overlapped the requested repo/window'
+    };
+  }
+  if (tied.length > 1 || best.score < 50) {
+    return {
+      status: 'ambiguous',
+      session_id: null,
+      source: 'codex-session-jsonl',
+      source_path: null,
+      confidence: best.score < 50 ? 'low' : 'ambiguous',
+      candidates_considered: candidates.length,
+      candidates: candidates.slice(0, 5).map(renderSessionCandidate),
+      reason: best.score < 50
+        ? 'best session candidate did not meet the confidence threshold'
+        : 'multiple session candidates had the same top score'
+    };
+  }
+  return {
+    status: 'inferred',
+    session_id: best.session_id,
+    source: 'codex-session-jsonl',
+    source_path: best.source_path,
+    confidence: best.score >= 85 ? 'high' : 'medium',
+    score: best.score,
+    candidates_considered: candidates.length,
+    candidates: candidates.slice(0, 5).map(renderSessionCandidate),
+    reason: null
+  };
+}
+
+function normalizeRequestedSessionId(value) {
+  const normalized = String(value ?? '').trim();
+  if (!normalized || normalized === 'auto') return null;
+  return normalized;
+}
+
+async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, windowStart, windowEnd } = {}) {
+  const sessionsRoot = path.join(codexHome, 'sessions');
+  const files = await collectSessionJsonlFiles(sessionsRoot, 7);
+  const processEntries = await readProcessEntries(codexHome);
+  const candidates = [];
+  for (const filePath of files) {
+    const candidate = await summarizeSessionCandidate(filePath, {
+      repoRoot,
+      storyId,
+      windowStart,
+      windowEnd,
+      processEntries
+    });
+    if (!candidate) continue;
+    if (!candidate.window_overlap && !candidate.cwd_matches_repo && !candidate.story_ref_found) continue;
+    candidates.push(candidate);
+  }
+  return candidates;
+}
+
+async function collectSessionJsonlFiles(root, maxDepth, depth = 0) {
+  let entries;
+  try {
+    entries = await readdir(root, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const files = [];
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+  for (const entry of entries) {
+    const fullPath = path.join(root, entry.name);
+    if (entry.isFile() && SESSION_FILE_RE.test(entry.name)) {
+      files.push(fullPath);
+      continue;
+    }
+    if (depth < maxDepth && (entry.isDirectory() || entry.isSymbolicLink())) {
+      files.push(...await collectSessionJsonlFiles(fullPath, maxDepth, depth + 1));
+    }
+  }
+  return files;
+}
+
+async function readProcessEntries(codexHome) {
+  const filePath = path.join(codexHome, 'process_manager', 'chat_processes.json');
+  try {
+    const entries = JSON.parse(await readFile(filePath, 'utf8'));
+    return Array.isArray(entries) ? entries : [];
+  } catch {
+    return [];
+  }
+}
+
+async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowStart, windowEnd, processEntries = [] } = {}) {
+  let text;
+  try {
+    text = await readFile(filePath, 'utf8');
+  } catch {
+    return null;
+  }
+  const lines = text.split('\n').filter(Boolean);
+  let sessionId = inferSessionIdFromFile(filePath);
+  let cwd = null;
+  let firstEventMs = null;
+  let lastEventMs = null;
+  let tokenEventCount = 0;
+  let finalAnswerCount = 0;
+  const storyRefFound = storyId ? text.includes(storyId) : false;
+
+  for (const line of lines) {
+    let entry;
+    try {
+      entry = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const eventAt = normalizeTimeMs(entry.timestamp);
+    if (eventAt !== null) {
+      firstEventMs ??= eventAt;
+      lastEventMs = eventAt;
+    }
+    if (entry.type === 'session_meta') {
+      sessionId = entry.payload?.session_id ?? entry.payload?.id ?? sessionId;
+      cwd = entry.payload?.cwd ?? cwd;
+    }
+    if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') tokenEventCount += 1;
+    if (entry.type === 'event_msg' && entry.payload?.type === 'final_answer') finalAnswerCount += 1;
+  }
+  if (!sessionId) return null;
+  const processEntry = processEntries.find((entry) => entry?.conversationId === sessionId) ?? null;
+  const processCwd = processEntry?.cwd ?? null;
+  const effectiveCwd = processCwd ?? cwd;
+  const cwdMatchesRepo = effectiveCwd ? samePath(effectiveCwd, repoRoot) : false;
+  const windowOverlap = overlapsWindow(firstEventMs, lastEventMs, normalizeTimeMs(windowStart), normalizeTimeMs(windowEnd));
+  const score = [
+    cwdMatchesRepo ? 45 : 0,
+    storyRefFound ? 30 : 0,
+    windowOverlap ? 20 : 0,
+    processCwd ? 10 : 0,
+    tokenEventCount > 0 ? 5 : 0,
+    finalAnswerCount > 0 ? 5 : 0
+  ].reduce((sum, value) => sum + value, 0);
+
+  return {
+    session_id: sessionId,
+    source_path: filePath,
+    cwd: effectiveCwd,
+    cwd_matches_repo: cwdMatchesRepo,
+    story_ref_found: storyRefFound,
+    window_overlap: windowOverlap,
+    first_event_at: firstEventMs === null ? null : new Date(firstEventMs).toISOString(),
+    last_event_at: lastEventMs === null ? null : new Date(lastEventMs).toISOString(),
+    token_event_count: tokenEventCount,
+    final_answer_count: finalAnswerCount,
+    score
+  };
+}
+
+function inferSessionIdFromFile(filePath) {
+  const match = path.basename(filePath).match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  return match?.[0] ?? null;
+}
+
+function samePath(a, b) {
+  return path.resolve(a) === path.resolve(b);
+}
+
+function overlapsWindow(firstMs, lastMs, startMs, endMs) {
+  if (firstMs === null && lastMs === null) return false;
+  const first = firstMs ?? lastMs;
+  const last = lastMs ?? firstMs;
+  if (startMs !== null && last < startMs) return false;
+  if (endMs !== null && first > endMs) return false;
+  return true;
+}
+
+function renderSessionCandidate(candidate) {
+  return {
+    session_id: candidate.session_id,
+    score: candidate.score,
+    source_path: candidate.source_path,
+    cwd: candidate.cwd,
+    cwd_matches_repo: candidate.cwd_matches_repo,
+    story_ref_found: candidate.story_ref_found,
+    window_overlap: candidate.window_overlap,
+    first_event_at: candidate.first_event_at,
+    last_event_at: candidate.last_event_at,
+    token_event_count: candidate.token_event_count
+  };
 }
 
 async function findFileByNameFragment(root, fragment, maxDepth, depth = 0) {

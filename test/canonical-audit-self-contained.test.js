@@ -312,6 +312,11 @@ test('canonical audit bundle stores diff stats provenance and bucketed changed l
   assert.equal(promoted.bundle.automation_value_audit.allocation.implementation_changed_lines, 15);
   assert.equal(promoted.bundle.automation_value_audit.allocation.audit_evidence_changed_lines, 66);
   assert.equal(promoted.bundle.automation_value_audit.ratios.automation_evidence_to_src, 4.4);
+  assert.equal(promoted.bundle.automation_value_audit.cost_controls.status, 'action_required');
+  assert.equal(
+    promoted.bundle.automation_value_audit.cost_controls.recommendations.some((item) => item.id === 'split_or_shrink_evidence_heavy_story'),
+    true
+  );
   assert.equal(
     promoted.bundle.automation_value_audit.findings.some((finding) => finding.id === 'evidence_heavy_relative_to_src'),
     true
@@ -420,6 +425,7 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
   assert.match(decisionSummary, /token_accounting: available total=3456 source=codex-session-jsonl/);
   assert.match(decisionSummary, /elapsed_time_accounting: available elapsed_ms=720000 source=codex-session-jsonl/);
   assert.match(decisionSummary, /automation_value_audit: needs_evidence/);
+  assert.match(decisionSummary, /cost_controls: action_required/);
 
   const replayText = gunzipSync(await readFile(path.join(root, promoted.bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);

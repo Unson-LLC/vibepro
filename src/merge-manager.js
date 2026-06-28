@@ -478,37 +478,64 @@ async function collectExecuteMergeCostAccounting(root, { storyId, options = {}, 
     }
   }
 
-  if (options.sessionId) {
-    const sessionAudit = await collectSessionEfficiencyAudit(root, {
-      storyId,
-      sessionId: options.sessionId,
-      codexHome: options.codexHome,
-      automationMemoryPath: options.automationMemoryPath,
-      windowStart: options.windowStart,
-      windowEnd: options.windowEnd,
-      baseRef: `origin/${baseBranch}`,
-      headRef: currentHeadSha ?? 'HEAD',
-      includeWorktreeDiff: false,
-      now: collectedAt
-    });
-    return {
-      cost_accounting: normalizeExecuteMergeCostAccounting(sessionAudit, {
-        source: 'audit-session-cost',
+  if (options.sessionId || options.inferSession) {
+    try {
+      const sessionAudit = await collectSessionEfficiencyAudit(root, {
         storyId,
-        collectedAt
-      }),
-      collection: {
-        status: sessionAudit.audit_readiness?.status ?? 'partial',
-        source: 'audit-session-cost',
-        session_id: options.sessionId,
-        automation_memory: sessionAudit.automation_memory ?? null,
-        observed_worktree: sessionAudit.observed_worktree ?? null,
-        observed_worktree_source: sessionAudit.observed_worktree_source ?? null,
-        audit_readiness: sessionAudit.audit_readiness ?? null,
-        collected_at: collectedAt
-      },
-      warnings
-    };
+        sessionId: options.sessionId,
+        inferSession: options.inferSession === true || options.sessionId === 'auto',
+        codexHome: options.codexHome,
+        automationMemoryPath: options.automationMemoryPath,
+        windowStart: options.windowStart,
+        windowEnd: options.windowEnd,
+        baseRef: `origin/${baseBranch}`,
+        headRef: currentHeadSha ?? 'HEAD',
+        includeWorktreeDiff: false,
+        now: collectedAt
+      });
+      return {
+        cost_accounting: normalizeExecuteMergeCostAccounting(sessionAudit, {
+          source: 'audit-session-cost',
+          storyId,
+          collectedAt
+        }),
+        collection: {
+          status: sessionAudit.audit_readiness?.status ?? 'partial',
+          source: 'audit-session-cost',
+          session_id: sessionAudit.session_id ?? options.sessionId ?? null,
+          session_selection: sessionAudit.session_selection ?? null,
+          automation_memory: sessionAudit.automation_memory ?? null,
+          observed_worktree: sessionAudit.observed_worktree ?? null,
+          observed_worktree_source: sessionAudit.observed_worktree_source ?? null,
+          audit_readiness: sessionAudit.audit_readiness ?? null,
+          collected_at: collectedAt
+        },
+        warnings
+      };
+    } catch (error) {
+      warnings.push(`Session cost accounting could not be collected: ${error.message}`);
+      return {
+        cost_accounting: unavailableExecuteMergeCostAccounting({
+          source: 'audit-session-cost',
+          reason: error.message,
+          storyId,
+          collectedAt
+        }),
+        collection: {
+          status: 'unavailable',
+          source: 'audit-session-cost',
+          session_id: options.sessionId ?? null,
+          session_selection: {
+            status: 'unavailable',
+            reason: error.message
+          },
+          automation_memory_path: options.automationMemoryPath ?? null,
+          reason: error.message,
+          collected_at: collectedAt
+        },
+        warnings
+      };
+    }
   }
 
   return {
