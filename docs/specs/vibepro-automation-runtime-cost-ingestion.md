@@ -33,6 +33,8 @@ diagrams:
 - `AUTCOST-CONTRACT-007`: If automation memory only contains `Last run`, the collector MAY use that
   timestamp as the start and current `now` as the end, but the automation-memory status MUST be
   `partial`.
+- `AUTCOST-CONTRACT-008`: Codex JSONL `session_meta` events are a supported source for elapsed-time
+  accounting inside the selected cost window.
 
 ## Scenarios
 
@@ -45,6 +47,8 @@ diagrams:
   reason instead of zero values.
 - `AUTCOST-SCENARIO-005`: Given automation memory with only `Last run`, the collector records partial
   provenance instead of treating the fallback as a fully reliable daily window.
+- `AUTCOST-SCENARIO-006`: Given Codex JSONL contains `session_meta`, the collector uses it to compute
+  bounded elapsed-time deltas for the audit window.
 
 ## Verification
 

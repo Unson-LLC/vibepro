@@ -41,6 +41,8 @@ produce bounded token/time evidence from the same audit window.
   command surface instead of local conventions.
 - [x] `AUTCOST-AC-006`: If automation memory only exposes `Last run`, VibePro may use it as a
   fallback window start, but the evidence must remain `partial` rather than fully trusted.
+- [x] `AUTCOST-AC-007`: Codex JSONL `session_meta` events are in scope for elapsed-time accounting
+  so bounded audit windows can calculate runtime duration without relying only on token usage rows.
 
 ## Non Goals
 
