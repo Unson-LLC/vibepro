@@ -103,12 +103,16 @@ export async function createUsageReport(repoRoot, options = {}) {
     const story = ensureStoryUsage(storyMap, artifact.story_id);
     story.artifacts.push(artifact.path);
     story.canonical_audit_bundle_count += 1;
-    story.evidence_cost.canonical_audit = artifact.data?.cost_summary ?? story.evidence_cost.canonical_audit;
+    story.evidence_cost.canonical_audit = artifact.data?.cost_summary
+      ?? artifact.data?.decision_index?.cost_summary
+      ?? story.evidence_cost.canonical_audit;
     story.evidence_cost.automation_value_audit = artifact.data?.automation_value_audit
       ?? artifact.data?.decision_index?.automation_value_audit
       ?? story.evidence_cost.automation_value_audit;
     story.evidence_cost.evidence_depth = artifact.data?.evidence_depth ?? story.evidence_cost.evidence_depth;
-    story.evidence_cost.budget_status = artifact.data?.cost_summary?.budget_status ?? story.evidence_cost.budget_status;
+    story.evidence_cost.budget_status = artifact.data?.cost_summary?.budget_status
+      ?? artifact.data?.decision_index?.cost_summary?.budget_status
+      ?? story.evidence_cost.budget_status;
     story.evidence_cost.replay_bundle = artifact.data?.replay_bundle
       ?? artifact.data?.decision_index?.replay_bundle
       ?? story.evidence_cost.replay_bundle;
@@ -1139,7 +1143,7 @@ function buildEvidenceReuseMetrics(stories) {
 
 function buildEvidenceCostMetrics(stories, bundleArtifacts) {
   const summaries = bundleArtifacts
-    .map((artifact) => artifact.data?.cost_summary)
+    .map((artifact) => artifact.data?.cost_summary ?? artifact.data?.decision_index?.cost_summary)
     .filter(Boolean);
   const totalArtifactLines = sumNumbers(summaries.map((summary) => summary.artifact_lines));
   const productChangedValues = summaries

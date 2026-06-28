@@ -26,6 +26,7 @@ const REVIEW_HANDOFF_FILES = [/^review-request-.+\.md$/];
 const VIBEPRO_REFERENCE_RE = /\.vibepro\/[A-Za-z0-9_./:@-]+/g;
 const MAX_REFERENCED_ARTIFACT_BYTES = 512 * 1024;
 const COMPRESSED_REPLAY_BUNDLE_FILE = 'audit-replay-bundle.json.gz';
+const COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT = 1;
 const CANONICAL_AUDIT_SCOPE = 'judgment_evidence_v1';
 
 export function getCanonicalAuditDir(repoRoot, storyId) {
@@ -243,13 +244,17 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     promoted_at: promotedAt,
     canonical_dir: toWorkspaceRelative(root, canonicalDir),
     source_workspace_dir: toWorkspaceRelative(root, getWorkspaceDir(root)),
+    audit_index_path: toWorkspaceRelative(root, indexPath),
+    decision_summary_path: toWorkspaceRelative(root, summaryPath),
     artifact_policy: {
-      scope: 'decision_index_only',
+      scope: 'compact_manifest_only',
       evidence_depth: costSummary.evidence_depth,
       compacted: true,
       persisted_for_main_audit: true,
       why_compacted: costSummary.budget_exceeded_reasons,
       excludes: [
+        'duplicated decision index body',
+        'duplicated cost summary body',
         'full PR lifecycle JSON',
         'full review lifecycle JSON',
         'HTML reports',
@@ -259,9 +264,14 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       ]
     },
     evidence_depth: costSummary.evidence_depth,
-    cost_summary: costSummary,
-    automation_value_audit: decisionIndex.automation_value_audit,
-    decision_index: decisionIndex,
+    cost_summary_ref: {
+      source: toWorkspaceRelative(root, indexPath),
+      pointer: '/cost_summary'
+    },
+    automation_value_audit_ref: {
+      source: toWorkspaceRelative(root, indexPath),
+      pointer: '/automation_value_audit'
+    },
     replay_bundle: replayBundle,
     merge: decisionIndex.pr_merge.present ? decisionIndex.pr_merge.summary : null,
     handoff_replay_status: 'ready',
@@ -274,7 +284,7 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       replay_command: replayBundle.replay_command
     },
     artifacts,
-    raw_artifacts: rawArtifacts,
+    raw_artifact_manifest: rawArtifacts,
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
     resolved_references: [],
     copied_references: [],
@@ -365,8 +375,8 @@ function applyCompactCanonicalLineAccounting(costSummary, {
     const persistedLines = (
       countJsonLines(decisionIndex)
       + countTextLines(summaryText)
-      + countJsonLines(bundle)
-      + (replayBundle.expanded_line_count ?? 0)
+      + countCanonicalBundleManifestLines(bundle)
+      + (replayBundle.persisted_line_count ?? COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT)
     );
     const persistedRatio = ratioOrNull(persistedLines, costSummary.product_changed_lines);
     const lineBudgetExceeded = persistedLines > (costSummary.budget?.canonical_artifact_lines ?? Number.POSITIVE_INFINITY);
@@ -384,8 +394,39 @@ function applyCompactCanonicalLineAccounting(costSummary, {
     ].filter(Boolean);
     decisionIndex.budget_status = costSummary.budget_status;
     decisionIndex.automation_value_audit = buildAutomationValueAuditContract(decisionIndex);
-    bundle.automation_value_audit = decisionIndex.automation_value_audit;
+    bundle.artifact_policy.why_compacted = costSummary.budget_exceeded_reasons;
   }
+}
+
+function countCanonicalBundleManifestLines(bundle) {
+  return countJsonLines(buildCanonicalBundleManifest(bundle));
+}
+
+function buildCanonicalBundleManifest(bundle) {
+  return {
+    schema_version: bundle.schema_version,
+    story_id: bundle.story_id,
+    source: bundle.source,
+    promoted_at: bundle.promoted_at,
+    canonical_dir: bundle.canonical_dir,
+    source_workspace_dir: bundle.source_workspace_dir,
+    audit_index_path: bundle.audit_index_path,
+    decision_summary_path: bundle.decision_summary_path,
+    artifact_policy: bundle.artifact_policy,
+    evidence_depth: bundle.evidence_depth,
+    cost_summary_ref: bundle.cost_summary_ref,
+    automation_value_audit_ref: bundle.automation_value_audit_ref,
+    replay_bundle: bundle.replay_bundle,
+    merge: bundle.merge,
+    handoff_replay_status: bundle.handoff_replay_status,
+    handoff_replay: bundle.handoff_replay,
+    artifacts: bundle.artifacts,
+    raw_artifact_manifest: bundle.raw_artifact_manifest,
+    missing_artifacts: bundle.missing_artifacts,
+    resolved_references: bundle.resolved_references,
+    copied_references: bundle.copied_references,
+    unresolved_references: bundle.unresolved_references
+  };
 }
 
 async function writeCompressedReplayBundle(root, {
@@ -404,8 +445,14 @@ async function writeCompressedReplayBundle(root, {
     story_id: storyId,
     source,
     promoted_at: promotedAt,
-    decision_index: decisionIndex,
-    cost_summary: costSummary,
+    decision_index_ref: {
+      source: toWorkspaceRelative(root, path.join(canonicalDir, 'audit-index.json'))
+    },
+    cost_summary_ref: {
+      source: toWorkspaceRelative(root, path.join(canonicalDir, 'audit-index.json')),
+      pointer: '/cost_summary'
+    },
+    verdict: buildReplayVerdict(decisionIndex),
     merge: merge ? {
       status: merge.status ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
@@ -431,13 +478,25 @@ async function writeCompressedReplayBundle(root, {
     expanded_bytes: Buffer.byteLength(expandedText, 'utf8'),
     compressed_bytes: compressed.length,
     expanded_line_count: countTextLines(expandedText),
+    persisted_line_count: COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT,
     included_artifact_kinds: includedKinds,
     replay_command: `vibepro audit replay . --story-id ${storyId}`,
     cost: {
       compressed_bytes: compressed.length,
       expanded_bytes: Buffer.byteLength(expandedText, 'utf8'),
-      expanded_line_count: countTextLines(expandedText)
+      expanded_line_count: countTextLines(expandedText),
+      persisted_line_count: COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT
     }
+  };
+}
+
+function buildReplayVerdict(index) {
+  return {
+    pr_prepare: index?.pr_prepare?.gate_status?.overall_status ?? null,
+    pr_merge: index?.pr_merge?.summary?.status ?? null,
+    verification: index?.verification ?? null,
+    review: index?.review ?? null,
+    traceability: index?.traceability ?? null
   };
 }
 
@@ -738,6 +797,7 @@ export async function replayCanonicalAuditBundle(repoRoot, { storyId } = {}) {
   }
 
   const payloadIndex = payload.decision_index ?? index ?? bundle?.decision_index ?? null;
+  const payloadVerdict = payload.verdict ?? buildReplayVerdict(payloadIndex);
   return {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -745,13 +805,7 @@ export async function replayCanonicalAuditBundle(repoRoot, { storyId } = {}) {
     handoff_replay_status: 'ready',
     replay_bundle: replayBundle,
     replayed_at: new Date().toISOString(),
-    verdict: {
-      pr_prepare: payloadIndex?.pr_prepare?.gate_status?.overall_status ?? null,
-      pr_merge: payloadIndex?.pr_merge?.summary?.status ?? null,
-      verification: payloadIndex?.verification ?? null,
-      review: payloadIndex?.review ?? null,
-      traceability: payloadIndex?.traceability ?? null
-    },
+    verdict: payloadVerdict,
     merge: payload.merge ?? payloadIndex?.pr_merge?.summary ?? null,
     artifact_count: payload.artifacts?.length ?? 0,
     included_artifact_kinds: [...new Set((payload.artifacts ?? []).map((artifact) => artifact.kind))].sort(),
@@ -1144,7 +1198,7 @@ function renderDecisionSummary(index) {
 - review: summaries=${index.review.summary_count} results=${index.review.result_count} pass=${index.review.pass_count} block=${index.review.block_count}
 - missing_artifacts: ${index.missing_artifacts.length}
 
-Full audit artifacts were not copied into canonical history because the evidence cost budget was exceeded. Use the raw artifact digests and source workspace references in audit-index.json when deeper replay is required.
+Full audit artifacts were compacted before canonical persistence. Use the raw artifact digests and source workspace references in audit-index.json when deeper replay is required.
 `;
 }
 
@@ -1642,13 +1696,13 @@ export async function collectCanonicalAuditArtifacts(repoRoot, since = null) {
     const bundlePath = path.join(storyDir, 'audit-bundle.json');
     const bundle = await readJsonIfExists(bundlePath);
     if (bundle && isWithinSince(bundle.promoted_at ?? bundle.updated_at ?? bundle.created_at, since)) {
+      const decisionIndex = await readJsonIfExists(path.join(storyDir, 'audit-index.json')) ?? bundle.decision_index ?? null;
       bundleArtifacts.push({
         kind: 'canonical_audit_bundle',
         story_id: bundle.story_id ?? storyId,
         path: toWorkspaceRelative(root, bundlePath),
-        data: bundle
+        data: decisionIndex ? { ...bundle, decision_index: decisionIndex } : bundle
       });
-      const decisionIndex = await readJsonIfExists(path.join(storyDir, 'audit-index.json')) ?? bundle.decision_index ?? null;
       for (const artifact of buildDecisionIndexPrArtifacts({
         root,
         storyId: bundle.story_id ?? storyId,
