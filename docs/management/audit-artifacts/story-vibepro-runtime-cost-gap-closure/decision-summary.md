@@ -3,9 +3,9 @@
 - story: story-vibepro-runtime-cost-gap-closure
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 30915
+- artifact_lines: 31005
 - product_changed_lines: 1062
-- artifact_code_ratio: 29.11
+- artifact_code_ratio: 29.195
 - diff_stats: available
 - token_accounting: available total=456571 source=codex-session-jsonl
 - elapsed_time_accounting: available elapsed_ms=86480851 source=codex-session-jsonl

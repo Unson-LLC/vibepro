@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-runtime-cost-gap-closure",
   "source": "execute_merge",
-  "promoted_at": "2026-06-28T07:33:12.008Z",
+  "promoted_at": "2026-06-28T07:33:15.955Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-runtime-cost-gap-closure",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -42,7 +42,7 @@
     },
     "diff_stats_collected_at": "2026-06-28T07:33:09.319Z",
     "diff_stats_reason": null,
-    "artifact_lines": 30915,
+    "artifact_lines": 31005,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1062,
@@ -117,7 +117,7 @@
     "product_changed_lines": 1062,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 29.11,
+    "artifact_code_ratio": 29.195,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -158,16 +158,16 @@
       "reason": null
     },
     "replay_bundle": {
-      "compressed_bytes": 141292,
-      "expanded_bytes": 1536695,
-      "expanded_line_count": 31403
+      "compressed_bytes": 142105,
+      "expanded_bytes": 1542193,
+      "expanded_line_count": 31493
     }
   },
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-runtime-cost-gap-closure",
-    "generated_at": "2026-06-28T07:33:12.008Z",
+    "generated_at": "2026-06-28T07:33:15.955Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -203,7 +203,7 @@
       "story_spec_architecture_to_src": 1.083,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 1.456,
-      "artifact_lines_to_product_changed_lines": 29.11
+      "artifact_lines_to_product_changed_lines": 29.195
     },
     "session_cost": {
       "token_status": "available",
@@ -246,13 +246,13 @@
     "cost_controls": {
       "status": "action_required",
       "budget_status": "exceeded",
-      "artifact_code_ratio": 29.11,
+      "artifact_code_ratio": 29.195,
       "automation_evidence_to_src": 1.456,
       "budget_exceeded_reasons": [
         "canonical_artifact_lines_exceeded",
         "artifact_code_ratio_exceeded"
       ],
-      "canonical_artifact_lines": 30915,
+      "canonical_artifact_lines": 31005,
       "product_changed_lines": 1062,
       "evidence_depth": "standard",
       "recommended_evidence_depth": "summary",
@@ -273,7 +273,7 @@
           "canonical_artifact_lines_exceeded",
           "artifact_code_ratio_exceeded"
         ],
-        "artifact_code_ratio": 29.11
+        "artifact_code_ratio": 29.195
       },
       {
         "id": "senior_gap_residual_risk",
@@ -287,7 +287,7 @@
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-runtime-cost-gap-closure",
     "source": "execute_merge",
-    "generated_at": "2026-06-28T07:33:12.008Z",
+    "generated_at": "2026-06-28T07:33:15.955Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -308,7 +308,7 @@
       },
       "diff_stats_collected_at": "2026-06-28T07:33:09.319Z",
       "diff_stats_reason": null,
-      "artifact_lines": 30915,
+      "artifact_lines": 31005,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 1062,
@@ -383,7 +383,7 @@
       "product_changed_lines": 1062,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 29.11,
+      "artifact_code_ratio": 29.195,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "high",
@@ -424,9 +424,9 @@
         "reason": null
       },
       "replay_bundle": {
-        "compressed_bytes": 141292,
-        "expanded_bytes": 1536695,
-        "expanded_line_count": 31403
+        "compressed_bytes": 142105,
+        "expanded_bytes": 1542193,
+        "expanded_line_count": 31493
       }
     },
     "pr_prepare": {
@@ -545,7 +545,7 @@
       "schema_version": "0.1.0",
       "artifact_kind": "vibepro_automation_value_audit",
       "story_id": "story-vibepro-runtime-cost-gap-closure",
-      "generated_at": "2026-06-28T07:33:12.008Z",
+      "generated_at": "2026-06-28T07:33:15.955Z",
       "status": "partial",
       "purpose": "daily_automation_input",
       "sources": {
@@ -581,7 +581,7 @@
         "story_spec_architecture_to_src": 1.083,
         "audit_artifacts_to_src": 0,
         "automation_evidence_to_src": 1.456,
-        "artifact_lines_to_product_changed_lines": 29.11
+        "artifact_lines_to_product_changed_lines": 29.195
       },
       "session_cost": {
         "token_status": "available",
@@ -624,13 +624,13 @@
       "cost_controls": {
         "status": "action_required",
         "budget_status": "exceeded",
-        "artifact_code_ratio": 29.11,
+        "artifact_code_ratio": 29.195,
         "automation_evidence_to_src": 1.456,
         "budget_exceeded_reasons": [
           "canonical_artifact_lines_exceeded",
           "artifact_code_ratio_exceeded"
         ],
-        "canonical_artifact_lines": 30915,
+        "canonical_artifact_lines": 31005,
         "product_changed_lines": 1062,
         "evidence_depth": "standard",
         "recommended_evidence_depth": "summary",
@@ -651,7 +651,7 @@
             "canonical_artifact_lines_exceeded",
             "artifact_code_ratio_exceeded"
           ],
-          "artifact_code_ratio": 29.11
+          "artifact_code_ratio": 29.195
         },
         {
           "id": "senior_gap_residual_risk",
@@ -666,11 +666,11 @@
       "path": "docs/management/audit-artifacts/story-vibepro-runtime-cost-gap-closure/audit-replay-bundle.json.gz",
       "compression": "gzip",
       "media_type": "application/json",
-      "content_hash": "sha256:f0a9d4626f539059644daaebd30eb6bc2a9d3eaf440838cb353778fa12465688",
-      "compressed_hash": "sha256:86c19f35f4e2b23a8b03b8e1f626590fd65bcb03ffc5dcbf39b2b85b717cb7e0",
-      "expanded_bytes": 1536695,
-      "compressed_bytes": 141292,
-      "expanded_line_count": 31403,
+      "content_hash": "sha256:314fa9638b244b401c474d6879389daa3eead6e08fa8035a8fbe7d433491502f",
+      "compressed_hash": "sha256:2698f79544d05afc572ad4e286e8c47e28187274defb8fc62b8dd20afa7600ae",
+      "expanded_bytes": 1542193,
+      "compressed_bytes": 142105,
+      "expanded_line_count": 31493,
       "included_artifact_kinds": [
         "evidence_reuse",
         "gate_dag",
@@ -687,9 +687,9 @@
       ],
       "replay_command": "vibepro audit replay . --story-id story-vibepro-runtime-cost-gap-closure",
       "cost": {
-        "compressed_bytes": 141292,
-        "expanded_bytes": 1536695,
-        "expanded_line_count": 31403
+        "compressed_bytes": 142105,
+        "expanded_bytes": 1542193,
+        "expanded_line_count": 31493
       }
     }
   },
@@ -698,11 +698,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-runtime-cost-gap-closure/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:f0a9d4626f539059644daaebd30eb6bc2a9d3eaf440838cb353778fa12465688",
-    "compressed_hash": "sha256:86c19f35f4e2b23a8b03b8e1f626590fd65bcb03ffc5dcbf39b2b85b717cb7e0",
-    "expanded_bytes": 1536695,
-    "compressed_bytes": 141292,
-    "expanded_line_count": 31403,
+    "content_hash": "sha256:314fa9638b244b401c474d6879389daa3eead6e08fa8035a8fbe7d433491502f",
+    "compressed_hash": "sha256:2698f79544d05afc572ad4e286e8c47e28187274defb8fc62b8dd20afa7600ae",
+    "expanded_bytes": 1542193,
+    "compressed_bytes": 142105,
+    "expanded_line_count": 31493,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -719,9 +719,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-runtime-cost-gap-closure",
     "cost": {
-      "compressed_bytes": 141292,
-      "expanded_bytes": 1536695,
-      "expanded_line_count": 31403
+      "compressed_bytes": 142105,
+      "expanded_bytes": 1542193,
+      "expanded_line_count": 31493
     }
   },
   "merge": {
@@ -755,7 +755,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-runtime-cost-gap-closure/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:f0a9d4626f539059644daaebd30eb6bc2a9d3eaf440838cb353778fa12465688"
+      "content_hash": "sha256:314fa9638b244b401c474d6879389daa3eead6e08fa8035a8fbe7d433491502f"
     }
   ],
   "raw_artifacts": [
@@ -804,8 +804,8 @@
       "source": ".vibepro/pr/story-vibepro-runtime-cost-gap-closure/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-runtime-cost-gap-closure/audit-replay-bundle.json.gz",
-      "digest": "sha256:cd8bf1fe6ba57b41aa2e6812309d61481343ec010aad15febdef2fb66884c9a6",
-      "line_count": 3540
+      "digest": "sha256:bfccc1c2d8b6e09da339f572be35657794d9f20a87847381ebda9af288974db0",
+      "line_count": 3630
     },
     {
       "kind": "traceability",
