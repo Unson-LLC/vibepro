@@ -11010,6 +11010,27 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     toolchain: { source_git: { commit: headSha } },
     results: []
   });
+  const costAccountingPath = path.join(prDir, 'merge-cost-accounting.json');
+  await writeJson(costAccountingPath, {
+    schema_version: '0.1.0',
+    token_accounting: {
+      status: 'available',
+      total_tokens: 4321,
+      input_tokens: 4000,
+      output_tokens: 321,
+      cached_input_tokens: 120,
+      source: 'codex-session-jsonl',
+      window: { session_id: 'session-merge-cost', scope: 'bounded' }
+    },
+    elapsed_time_accounting: {
+      status: 'available',
+      elapsed_ms: 600000,
+      started_at: '2026-06-07T00:20:00.000Z',
+      finished_at: '2026-06-07T00:30:00.000Z',
+      source: 'codex-session-jsonl',
+      window: { session_id: 'session-merge-cost', scope: 'bounded' }
+    }
+  });
   await runCli(['execute', 'reconcile', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
   const next = await runCli(['execute', 'next', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(next.exitCode, 0);
@@ -11039,6 +11060,8 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     'story-pr-prepare',
     '--base',
     'main',
+    '--cost-accounting',
+    costAccountingPath,
     '--json'
   ], {
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
@@ -11053,11 +11076,14 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(result.result.merge.canonical_audit.persistence.status, 'pushed');
   assert.equal(result.result.merge.canonical_audit.persistence.pushed, true);
   assert.match(result.result.merge.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
+  assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 4321);
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 600000);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
   assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
   assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
   assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
+  assert.equal(prMergeArtifact.cost_accounting_collection.status, 'available');
 
   const auditDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare');
   const auditBundle = await readJson(path.join(auditDir, 'audit-bundle.json'));
@@ -11068,7 +11094,19 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(auditBundle.cost_summary.changed_lines.buckets.src.changed_lines > 0, true);
   assert.equal(auditBundle.cost_summary.changed_lines.buckets.test.changed_lines > 0, true);
   assert.equal(auditBundle.cost_summary.product_changed_lines > 0, true);
+  assert.equal(auditBundle.cost_summary.token_accounting.status, 'available');
+  assert.equal(auditBundle.cost_summary.token_accounting.total_tokens, 4321);
+  assert.equal(auditBundle.cost_summary.elapsed_time_accounting.status, 'available');
+  assert.equal(auditBundle.cost_summary.elapsed_time_accounting.elapsed_ms, 600000);
   assert.equal(auditBundle.artifacts.some((artifact) => artifact.kind === 'pr_merge'), true);
+  if (await pathExists(path.join(auditDir, 'audit-index.json'))) {
+    const auditIndex = await readJson(path.join(auditDir, 'audit-index.json'));
+    assert.equal(auditIndex.cost_summary.token_accounting.total_tokens, 4321);
+    assert.equal(auditIndex.cost_summary.elapsed_time_accounting.elapsed_ms, 600000);
+    const decisionSummary = await readFile(path.join(auditDir, 'decision-summary.md'), 'utf8');
+    assert.match(decisionSummary, /token_accounting: available total=4321 source=codex-session-jsonl/);
+    assert.match(decisionSummary, /elapsed_time_accounting: available elapsed_ms=600000 source=codex-session-jsonl/);
+  }
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'pr-merge.json')), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'gate-dag.json')), true);
   const canonicalPrMergeArtifact = await readJson(path.join(auditDir, 'pr', 'pr-merge.json'));
@@ -11100,6 +11138,7 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   ])).stdout);
   assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.status, 'pushed');
   assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.pushed, true);
+  assert.equal(remoteCanonicalPrMergeArtifact.cost_accounting.token_accounting.total_tokens, 4321);
   assert.equal(
     remoteCanonicalPrMergeArtifact.canonical_audit.persistence.commit_sha,
     result.result.merge.canonical_audit.persistence.commit_sha

@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
 import { parseNumstat } from './evidence-cost-budget.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import { bindStoryTraceability } from './traceability.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 
@@ -39,6 +40,13 @@ export async function executeMerge(repoRoot, options = {}) {
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });
   const createdAt = new Date().toISOString();
+  const costAccountingResult = await collectExecuteMergeCostAccounting(root, {
+    storyId,
+    options,
+    baseBranch,
+    currentHeadSha,
+    collectedAt: createdAt
+  });
   const merge = {
     schema_version: '0.1.0',
     created_at: createdAt,
@@ -138,8 +146,11 @@ export async function executeMerge(repoRoot, options = {}) {
     status: 'blocked',
     stop_reason: null,
     merge_commit_sha: null,
-    merged_at: null
+    merged_at: null,
+    cost_accounting: costAccountingResult.cost_accounting,
+    cost_accounting_collection: costAccountingResult.collection
   };
+  merge.warnings.push(...costAccountingResult.warnings);
 
   if (!prSelector) {
     merge.stop_reason = 'pr_selector_missing';
@@ -421,6 +432,180 @@ export async function executeMerge(repoRoot, options = {}) {
   artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
   artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
   return { merge, artifacts };
+}
+
+async function collectExecuteMergeCostAccounting(root, { storyId, options = {}, baseBranch, currentHeadSha, collectedAt } = {}) {
+  const warnings = [];
+  if (options.costAccountingPath) {
+    try {
+      const filePath = path.isAbsolute(options.costAccountingPath)
+        ? options.costAccountingPath
+        : path.resolve(root, options.costAccountingPath);
+      const payload = JSON.parse(await readFile(filePath, 'utf8'));
+      return {
+        cost_accounting: normalizeExecuteMergeCostAccounting(payload, {
+          source: 'cost-accounting-file',
+          sourcePath: toWorkspaceRelative(root, filePath),
+          storyId,
+          collectedAt
+        }),
+        collection: {
+          status: 'available',
+          source: 'cost-accounting-file',
+          source_path: toWorkspaceRelative(root, filePath),
+          collected_at: collectedAt
+        },
+        warnings
+      };
+    } catch (error) {
+      warnings.push(`Cost accounting file could not be read: ${error.message}`);
+      return {
+        cost_accounting: unavailableExecuteMergeCostAccounting({
+          source: 'cost-accounting-file',
+          reason: error.message,
+          storyId,
+          collectedAt
+        }),
+        collection: {
+          status: 'unavailable',
+          source: 'cost-accounting-file',
+          source_path: options.costAccountingPath,
+          reason: error.message,
+          collected_at: collectedAt
+        },
+        warnings
+      };
+    }
+  }
+
+  if (options.sessionId) {
+    const sessionAudit = await collectSessionEfficiencyAudit(root, {
+      storyId,
+      sessionId: options.sessionId,
+      codexHome: options.codexHome,
+      windowStart: options.windowStart,
+      windowEnd: options.windowEnd,
+      baseRef: `origin/${baseBranch}`,
+      headRef: currentHeadSha ?? 'HEAD',
+      includeWorktreeDiff: false,
+      now: collectedAt
+    });
+    return {
+      cost_accounting: normalizeExecuteMergeCostAccounting(sessionAudit, {
+        source: 'audit-session-cost',
+        storyId,
+        collectedAt
+      }),
+      collection: {
+        status: sessionAudit.audit_readiness?.status ?? 'partial',
+        source: 'audit-session-cost',
+        session_id: options.sessionId,
+        observed_worktree: sessionAudit.observed_worktree ?? null,
+        observed_worktree_source: sessionAudit.observed_worktree_source ?? null,
+        audit_readiness: sessionAudit.audit_readiness ?? null,
+        collected_at: collectedAt
+      },
+      warnings
+    };
+  }
+
+  return {
+    cost_accounting: undefined,
+    collection: {
+      status: 'not_requested',
+      source: null,
+      reason: 'execute merge did not receive --cost-accounting or --session-id',
+      collected_at: collectedAt
+    },
+    warnings
+  };
+}
+
+function normalizeExecuteMergeCostAccounting(input, { source, sourcePath = null, storyId, collectedAt } = {}) {
+  const cost = input?.cost_accounting ?? input;
+  const session = input?.session ?? cost?.session ?? null;
+  const token = cost?.token_accounting
+    ?? cost?.tokens
+    ?? session?.token_accounting
+    ?? input?.token_accounting
+    ?? null;
+  const elapsed = cost?.elapsed_time_accounting
+    ?? cost?.elapsed_time
+    ?? session?.elapsed_time_accounting
+    ?? input?.elapsed_time_accounting
+    ?? null;
+  const normalized = {
+    schema_version: '0.1.0',
+    status: hasUsableAccounting(token) || hasUsableAccounting(elapsed) ? 'available' : 'partial',
+    source,
+    source_path: sourcePath,
+    story_id: input?.story_id ?? storyId ?? null,
+    session_id: input?.session_id ?? session?.window?.session_id ?? token?.window?.session_id ?? elapsed?.window?.session_id ?? null,
+    collected_at: collectedAt ?? null,
+    token_accounting: token ?? unavailableTokenAccounting(source, storyId, 'token accounting was not present in execute merge cost input'),
+    elapsed_time_accounting: elapsed ?? unavailableElapsedTimeAccounting(source, storyId, 'elapsed-time accounting was not present in execute merge cost input')
+  };
+  if (input?.artifact_kind === 'vibepro_session_efficiency_audit') {
+    normalized.session_efficiency_audit = {
+      artifact_kind: input.artifact_kind,
+      audit_readiness: input.audit_readiness ?? null,
+      observed_worktree: input.observed_worktree ?? null,
+      observed_worktree_source: input.observed_worktree_source ?? null,
+      cost_breakdown: input.cost_breakdown ?? null
+    };
+  }
+  return normalized;
+}
+
+function unavailableExecuteMergeCostAccounting({ source, reason, storyId, collectedAt }) {
+  return {
+    schema_version: '0.1.0',
+    status: 'unavailable',
+    source,
+    source_path: null,
+    story_id: storyId ?? null,
+    session_id: null,
+    collected_at: collectedAt ?? null,
+    token_accounting: unavailableTokenAccounting(source, storyId, reason),
+    elapsed_time_accounting: unavailableElapsedTimeAccounting(source, storyId, reason)
+  };
+}
+
+function unavailableTokenAccounting(source, storyId, reason) {
+  return {
+    status: 'unavailable',
+    total_tokens: null,
+    input_tokens: null,
+    output_tokens: null,
+    cached_input_tokens: null,
+    source,
+    window: storyId ? { story_id: storyId } : null,
+    reason
+  };
+}
+
+function unavailableElapsedTimeAccounting(source, storyId, reason) {
+  return {
+    status: 'unavailable',
+    elapsed_ms: null,
+    started_at: null,
+    finished_at: null,
+    source,
+    window: storyId ? { story_id: storyId } : null,
+    reason
+  };
+}
+
+function hasUsableAccounting(input) {
+  if (!input || input.status === 'unavailable') return false;
+  return [
+    input.total_tokens,
+    input.input_tokens,
+    input.output_tokens,
+    input.elapsed_ms,
+    input.started_at,
+    input.finished_at
+  ].some((value) => value !== null && value !== undefined && value !== '');
 }
 
 export function renderPrMergeSummary(result) {
