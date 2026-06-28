@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-execute-merge-cost-accounting",
   "source": "execute_merge",
-  "promoted_at": "2026-06-28T01:20:21.010Z",
+  "promoted_at": "2026-06-28T01:20:24.709Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-execute-merge-cost-accounting",
   "source_workspace_dir": ".vibepro",
   "artifact_policy": {
@@ -43,7 +43,7 @@
     },
     "diff_stats_collected_at": "2026-06-28T01:20:16.641Z",
     "diff_stats_reason": null,
-    "artifact_lines": 28336,
+    "artifact_lines": 28426,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 634,
@@ -106,7 +106,7 @@
     "product_changed_lines": 634,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 44.694,
+    "artifact_code_ratio": 44.836,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -138,16 +138,16 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 131185,
-      "expanded_bytes": 1604665,
-      "expanded_line_count": 28419
+      "compressed_bytes": 132099,
+      "expanded_bytes": 1610272,
+      "expanded_line_count": 28509
     }
   },
   "decision_index": {
     "schema_version": "0.1.0",
     "story_id": "story-vibepro-execute-merge-cost-accounting",
     "source": "execute_merge",
-    "generated_at": "2026-06-28T01:20:21.010Z",
+    "generated_at": "2026-06-28T01:20:24.709Z",
     "evidence_depth": "standard",
     "budget_status": "exceeded",
     "cost_summary": {
@@ -169,7 +169,7 @@
       },
       "diff_stats_collected_at": "2026-06-28T01:20:16.641Z",
       "diff_stats_reason": null,
-      "artifact_lines": 28336,
+      "artifact_lines": 28426,
       "changed_lines": {
         "status": "available",
         "total_changed_lines": 634,
@@ -232,7 +232,7 @@
       "product_changed_lines": 634,
       "product_changed_lines_status": "available",
       "product_changed_lines_reason": null,
-      "artifact_code_ratio": 44.694,
+      "artifact_code_ratio": 44.836,
       "artifact_code_ratio_reason": null,
       "budget": {
         "profile": "high",
@@ -264,9 +264,9 @@
         "reason": "elapsed-time logs were not provided to canonical audit promotion"
       },
       "replay_bundle": {
-        "compressed_bytes": 131185,
-        "expanded_bytes": 1604665,
-        "expanded_line_count": 28419
+        "compressed_bytes": 132099,
+        "expanded_bytes": 1610272,
+        "expanded_line_count": 28509
       }
     },
     "pr_prepare": {
@@ -386,11 +386,11 @@
       "path": "docs/management/audit-artifacts/story-vibepro-execute-merge-cost-accounting/audit-replay-bundle.json.gz",
       "compression": "gzip",
       "media_type": "application/json",
-      "content_hash": "sha256:3c04e32b3eda692f0404b8a1c7181a475cb9a8b0b927067671cbd18a83c84c8f",
-      "compressed_hash": "sha256:9829f4867050afe0356cca496d6237c8730d7d8d780bbdba220c78fcbe8d9bcf",
-      "expanded_bytes": 1604665,
-      "compressed_bytes": 131185,
-      "expanded_line_count": 28419,
+      "content_hash": "sha256:ece2c276b31dcfcadf8d076e7db5f6dbb0fb96e490e6312ec3d195ef9a10abca",
+      "compressed_hash": "sha256:1ccedfdb0d09eb04d84e2a8deac403a0d493de57c6f7e49dfb6129e3751ed0ef",
+      "expanded_bytes": 1610272,
+      "compressed_bytes": 132099,
+      "expanded_line_count": 28509,
       "included_artifact_kinds": [
         "evidence_reuse",
         "gate_dag",
@@ -407,9 +407,9 @@
       ],
       "replay_command": "vibepro audit replay . --story-id story-vibepro-execute-merge-cost-accounting",
       "cost": {
-        "compressed_bytes": 131185,
-        "expanded_bytes": 1604665,
-        "expanded_line_count": 28419
+        "compressed_bytes": 132099,
+        "expanded_bytes": 1610272,
+        "expanded_line_count": 28509
       }
     }
   },
@@ -418,11 +418,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-execute-merge-cost-accounting/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:3c04e32b3eda692f0404b8a1c7181a475cb9a8b0b927067671cbd18a83c84c8f",
-    "compressed_hash": "sha256:9829f4867050afe0356cca496d6237c8730d7d8d780bbdba220c78fcbe8d9bcf",
-    "expanded_bytes": 1604665,
-    "compressed_bytes": 131185,
-    "expanded_line_count": 28419,
+    "content_hash": "sha256:ece2c276b31dcfcadf8d076e7db5f6dbb0fb96e490e6312ec3d195ef9a10abca",
+    "compressed_hash": "sha256:1ccedfdb0d09eb04d84e2a8deac403a0d493de57c6f7e49dfb6129e3751ed0ef",
+    "expanded_bytes": 1610272,
+    "compressed_bytes": 132099,
+    "expanded_line_count": 28509,
     "included_artifact_kinds": [
       "evidence_reuse",
       "gate_dag",
@@ -439,9 +439,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-execute-merge-cost-accounting",
     "cost": {
-      "compressed_bytes": 131185,
-      "expanded_bytes": 1604665,
-      "expanded_line_count": 28419
+      "compressed_bytes": 132099,
+      "expanded_bytes": 1610272,
+      "expanded_line_count": 28509
     }
   },
   "merge": {
@@ -475,7 +475,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-execute-merge-cost-accounting/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:3c04e32b3eda692f0404b8a1c7181a475cb9a8b0b927067671cbd18a83c84c8f"
+      "content_hash": "sha256:ece2c276b31dcfcadf8d076e7db5f6dbb0fb96e490e6312ec3d195ef9a10abca"
     }
   ],
   "raw_artifacts": [
@@ -524,8 +524,8 @@
       "source": ".vibepro/pr/story-vibepro-execute-merge-cost-accounting/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-execute-merge-cost-accounting/audit-replay-bundle.json.gz",
-      "digest": "sha256:5950c512b769997ef1e5d1db39975ca620b60d8a09324c7ac5cdaf43e58154ad",
-      "line_count": 3256
+      "digest": "sha256:74015d65bf4024318f26ee2c8f473ceddceecf12af3dba05a45d5ec339d48996",
+      "line_count": 3346
     },
     {
       "kind": "traceability",

@@ -3,9 +3,9 @@
 - story: story-vibepro-execute-merge-cost-accounting
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 28336
+- artifact_lines: 28426
 - product_changed_lines: 634
-- artifact_code_ratio: 44.694
+- artifact_code_ratio: 44.836
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
