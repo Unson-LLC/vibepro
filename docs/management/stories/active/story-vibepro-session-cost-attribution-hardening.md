@@ -34,7 +34,8 @@ three remaining gaps:
 ## Scenarios
 
 - `SCATTR-SCENARIO-001`: Given symlinked or very large Codex sessions storage,
-  session inference only scans bounded real day directories and still returns.
+  session inference only scans bounded real day directories and still returns
+  instead of traversing the full store.
 - `SCATTR-SCENARIO-002`: Given a Codex session whose cwd is a sibling Git
   worktree of the canonical repo, cost attribution treats the session as
   repo-matching.
@@ -42,7 +43,7 @@ three remaining gaps:
   to another repository, the audit remains partial with `session_cwd_mismatch`
   instead of ready.
 - `SCATTR-SCENARIO-004`: Given a bounded session window with no in-window events,
-  elapsed-time accounting is unavailable and no elapsed duration is fabricated
+  `elapsed_time_accounting` is unavailable and no elapsed duration is fabricated
   from requested bounds.
 
 ## Verification
