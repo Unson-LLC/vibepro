@@ -163,6 +163,15 @@ Story 診断を実行します。
 npx vibepro story diagnose /path/to/repo --id story-internal-beta --run-graphify
 ```
 
+final Specへ昇格する前にPre-Spec Readinessを記録します。
+
+```bash
+npx vibepro spec readiness /path/to/repo --id story-internal-beta --base <base-branch>
+npx vibepro spec write /path/to/repo --id story-internal-beta --final --input spec.json
+```
+
+探索中の仮説Specは `spec write --draft` で保存します。draftは実装やPR Gateの正本にはなりません。
+
 PR 証跡を生成します。
 
 ```bash
@@ -350,6 +359,7 @@ walking skeleton gap、未解決の問いを残します。curated Journey は
 ### VibePro 経由で PR を作成する
 
 ```bash
+npx vibepro spec readiness /path/to/repo --id <story-id> --base <base-branch>
 npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
 npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
 ```

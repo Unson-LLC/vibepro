@@ -1,19 +1,22 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
+import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { buildSpecFingerprint } from '../src/spec-fingerprint.js';
 import { validateSpec, globToRegExp, matchGlob } from '../src/spec-validator.js';
 import { buildSpecDrift } from '../src/spec-drift.js';
-import { similarity, stabilizeClauseIds, writeInferredSpec } from '../src/spec-store.js';
+import { similarity, stabilizeClauseIds, writeInferredSpec, writePreSpecReadiness } from '../src/spec-store.js';
 
 const STORY_ID = 'story-spec-pipeline-test';
+const execFileAsync = promisify(execFile);
 
-async function makeSpecRepo() {
+async function makeSpecRepo(options = {}) {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-spec-'));
   await mkdir(path.join(root, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(root, 'test'), { recursive: true });
@@ -46,7 +49,99 @@ story_id: ${STORY_ID}
 - cancelAtPeriodEnd が true でも期間内は premium を維持する
 `);
   await runCli(['init', root, '--story-id', STORY_ID, '--title', 'spec pipeline test']);
+  if (options.readyPreSpecEvidence !== false) {
+    await writeReadyPreSpecEvidence(root, STORY_ID);
+  }
   return root;
+}
+
+async function writeReadyPreSpecEvidence(repo, storyId) {
+  await writePreSpecReadiness(repo, storyId, {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    created_at: new Date().toISOString(),
+    status: 'ready',
+    git: { head_sha: null },
+    checks: [
+      { id: 'story_selected', status: 'pass', reason: 'test story exists' },
+      { id: 'graphify_context', status: 'pass', reason: 'test graph context exists' },
+      { id: 'story_diagnosis', status: 'pass', reason: 'test diagnosis exists' },
+      { id: 'architecture_check', status: 'pass', reason: 'test architecture check exists' },
+      { id: 'engineering_judgment', status: 'pass', reason: 'test engineering judgment exists' }
+    ]
+  });
+}
+
+async function initGitRepo(repo) {
+  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
+  await execFileAsync('git', ['add', '.'], { cwd: repo });
+  await execFileAsync('git', [
+    '-c',
+    'user.name=VibePro Test',
+    '-c',
+    'user.email=vibepro-test@example.com',
+    'commit',
+    '-m',
+    'initial'
+  ], { cwd: repo });
+}
+
+async function commitAll(repo, message) {
+  await execFileAsync('git', ['add', '.'], { cwd: repo });
+  await execFileAsync('git', [
+    '-c',
+    'user.name=VibePro Test',
+    '-c',
+    'user.email=vibepro-test@example.com',
+    'commit',
+    '-m',
+    message
+  ], { cwd: repo });
+}
+
+async function writeMinimalReadinessPrerequisites(repo, storyId) {
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'diagnostics', 'diag-1'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'checks', 'architecture', 'arch-1'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'src/lib/services/billing.ts' }, { id: `docs/management/stories/active/${storyId}.md` }],
+    links: [{ source: 'src/lib/services/billing.ts', target: `docs/management/stories/active/${storyId}.md` }]
+  }));
+  await writeFile(path.join(repo, '.vibepro', 'diagnostics', 'diag-1', 'evidence.json'), '{}\n');
+  await writeFile(path.join(repo, '.vibepro', 'checks', 'architecture', 'arch-1', 'check.json'), '{}\n');
+  await writeFile(path.join(repo, '.vibepro', 'checks', 'architecture', 'arch-1', 'check.md'), '# Architecture check\n');
+  await writeFile(path.join(repo, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    repo: { root: '.', git_remote: null, commit: null },
+    latest_run: 'diag-1',
+    latest_run_by_story: { [storyId]: 'diag-1' },
+    latest_check_run_by_pack: { architecture: 'arch-1' },
+    stories: {
+      [storyId]: {
+        latest_report: `.vibepro/stories/${storyId}/story-report.md`,
+        latest_report_run_id: 'diag-1'
+      }
+    },
+    artifacts: {},
+    runs: [{
+      run_id: 'diag-1',
+      story_id: storyId,
+      created_at: new Date().toISOString(),
+      gate_status: 'needs_review',
+      artifacts: { evidence: '.vibepro/diagnostics/diag-1/evidence.json' }
+    }],
+    check_runs: [{
+      run_id: 'arch-1',
+      pack_id: 'architecture',
+      created_at: new Date().toISOString(),
+      status: 'needs_review',
+      artifacts: {
+        check_json: '.vibepro/checks/architecture/arch-1/check.json',
+        check_report: '.vibepro/checks/architecture/arch-1/check.md'
+      }
+    }]
+  }, null, 2)}\n`);
 }
 
 function readableFrom(text) {
@@ -145,6 +240,151 @@ Premium users see the current subscription status before cancellation controls.
   const stored = JSON.parse(show.stdout);
   assert.equal(stored.clauses[0].id, 'S-001');
   assert.equal(stored.clauses[0].origin.architecture_refs[0].file, `docs/architecture/${STORY_ID}.md`);
+});
+
+test('spec write final blocks when pre-spec readiness is missing', async () => {
+  const repo = await makeSpecRepo({ readyPreSpecEvidence: false });
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    clauses: [{
+      id: 'INV-NEW-1',
+      type: 'invariant',
+      statement: 'premium users keep userType=2 until cancellation completes',
+      origin: { story_refs: [{ kind: 'acceptance_criteria', index: 0 }] }
+    }]
+  };
+
+  const blocked = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--final'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(blocked.exitCode, 1);
+  assert.match(blocked.stderr, /requires Pre-Spec Readiness evidence/);
+});
+
+test('spec write final blocks when pre-spec readiness is blocked, while draft remains writable', async () => {
+  const repo = await makeSpecRepo();
+  await mkdir(path.join(repo, '.vibepro', 'spec', STORY_ID), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'spec', STORY_ID, 'pre-spec-readiness.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    status: 'blocked',
+    checks: [{ id: 'engineering_judgment', status: 'blocked', reason: 'missing' }]
+  }));
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    clauses: [{
+      id: 'INV-NEW-1',
+      type: 'invariant',
+      statement: 'premium users keep userType=2 until cancellation completes',
+      origin: { story_refs: [{ kind: 'acceptance_criteria', index: 0 }] }
+    }]
+  };
+
+  const blocked = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--final'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(blocked.exitCode, 1);
+  assert.match(blocked.stderr, /Pre-Spec Readiness/);
+
+  const draft = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--draft'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(draft.exitCode, 0);
+  const report = JSON.parse(draft.stdout);
+  assert.equal(report.mode, 'draft');
+});
+
+test('spec write final blocks stale pre-spec readiness recorded for another HEAD', async () => {
+  const repo = await makeSpecRepo();
+  await initGitRepo(repo);
+  await writePreSpecReadiness(repo, STORY_ID, {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    created_at: new Date().toISOString(),
+    status: 'ready',
+    git: { head_sha: '0000000000000000000000000000000000000000' },
+    checks: [
+      { id: 'story_selected', status: 'pass', reason: 'test story exists' },
+      { id: 'graphify_context', status: 'pass', reason: 'test graph context exists' },
+      { id: 'story_diagnosis', status: 'pass', reason: 'test diagnosis exists' },
+      { id: 'architecture_check', status: 'pass', reason: 'test architecture check exists' },
+      { id: 'engineering_judgment', status: 'pass', reason: 'test engineering judgment exists' }
+    ]
+  });
+  const valid = {
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    clauses: [{
+      id: 'INV-NEW-1',
+      type: 'invariant',
+      statement: 'premium users keep userType=2 until cancellation completes',
+      origin: { story_refs: [{ kind: 'acceptance_criteria', index: 0 }] }
+    }]
+  };
+
+  const blocked = await captureRunCli(
+    ['spec', 'write', repo, '--id', STORY_ID, '--from-stdin', '--caller', 'test', '--final'],
+    { stdin: readableFrom(JSON.stringify(valid)) }
+  );
+  assert.equal(blocked.exitCode, 1);
+  assert.match(blocked.stderr, /current_head=stale/);
+});
+
+test('spec readiness records required pre-spec evidence surfaces', async () => {
+  const repo = await makeSpecRepo();
+  await initGitRepo(repo);
+  await execFileAsync('git', ['checkout', '-b', 'feature/spec-readiness'], { cwd: repo });
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'billing.ts'), `
+export function handleCancel(user, sub) {
+  if (sub.cancelAtPeriodEnd === true && user.userType === 2) {
+    return { userType: 2, status: 'premium_pending_cancel' };
+  }
+  return { userType: 1, status: 'free' };
+}
+
+export function specReadinessMarker() {
+  return 'pre-spec-readiness';
+}
+`);
+  await commitAll(repo, 'change billing for readiness');
+  await writeMinimalReadinessPrerequisites(repo, STORY_ID);
+  const { stdout: headStdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  const { exitCode, stdout } = await captureRunCli([
+    'spec',
+    'readiness',
+    repo,
+    '--id',
+    STORY_ID,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(exitCode, 0);
+  const readiness = JSON.parse(stdout);
+  const checksById = new Map(readiness.checks.map((check) => [check.id, check]));
+
+  assert.equal(readiness.status, 'ready');
+  assert.equal(readiness.git.head_sha, headStdout.trim());
+  for (const checkId of [
+    'story_selected',
+    'graphify_context',
+    'story_diagnosis',
+    'architecture_check',
+    'engineering_judgment'
+  ]) {
+    assert.equal(checksById.get(checkId)?.status, 'pass', `${checkId} should pass`);
+  }
+  assert.equal(readiness.graphify.available, true);
+  assert.ok(readiness.graphify.node_count > 0);
+  assert.equal(typeof readiness.diagnosis.run_id, 'string');
+  assert.equal(typeof readiness.architecture_check.run_id, 'string');
+  assert.equal(typeof readiness.engineering_judgment.route_type, 'string');
+  assert.ok(readiness.engineering_judgment.active_axis_count >= 0);
 });
 
 test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {

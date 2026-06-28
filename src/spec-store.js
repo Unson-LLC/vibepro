@@ -16,6 +16,14 @@ export function getSpecFile(repoRoot, storyId) {
   return path.join(getSpecDir(repoRoot, storyId), 'spec.json');
 }
 
+export function getSpecDraftFile(repoRoot, storyId) {
+  return path.join(getSpecDir(repoRoot, storyId), 'draft.json');
+}
+
+export function getPreSpecReadinessFile(repoRoot, storyId) {
+  return path.join(getSpecDir(repoRoot, storyId), 'pre-spec-readiness.json');
+}
+
 export function getDriftFile(repoRoot, storyId) {
   return path.join(getSpecDir(repoRoot, storyId), 'drift.json');
 }
@@ -38,6 +46,16 @@ export async function readInferredSpec(repoRoot, storyId) {
   if (!storyId) return null;
   try {
     return JSON.parse(await readFile(getSpecFile(repoRoot, storyId), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+export async function readPreSpecReadiness(repoRoot, storyId) {
+  if (!storyId) return null;
+  try {
+    return JSON.parse(await readFile(getPreSpecReadinessFile(repoRoot, storyId), 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;
@@ -74,6 +92,20 @@ export async function writeInferredSpec(repoRoot, storyId, spec) {
   await writeFile(historyPath, `${JSON.stringify(spec, null, 2)}\n`);
   await pruneHistory(historyDir);
   return specPath;
+}
+
+export async function writeDraftSpec(repoRoot, storyId, spec) {
+  await ensureSpecDir(repoRoot, storyId);
+  const specPath = getSpecDraftFile(repoRoot, storyId);
+  await writeFile(specPath, `${JSON.stringify(spec, null, 2)}\n`);
+  return specPath;
+}
+
+export async function writePreSpecReadiness(repoRoot, storyId, readiness) {
+  await ensureSpecDir(repoRoot, storyId);
+  const readinessPath = getPreSpecReadinessFile(repoRoot, storyId);
+  await writeFile(readinessPath, `${JSON.stringify(readiness, null, 2)}\n`);
+  return readinessPath;
 }
 
 export async function writeDrift(repoRoot, storyId, drift) {

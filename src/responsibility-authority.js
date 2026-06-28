@@ -519,7 +519,9 @@ function resolveEvidenceRequirements({ requiredEvidence, contractClauseIds, veri
 function verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent }) {
   if (!PASS_STATUSES.has(String(command?.status ?? '').toLowerCase())) return false;
   const bindingStatus = command?.binding?.status ?? command?.git_context?.binding_status ?? null;
-  const current = CURRENT_BINDING_STATUSES.has(bindingStatus) || (!command?.binding && !command?.git_context);
+  const current = CURRENT_BINDING_STATUSES.has(bindingStatus)
+    || isCurrentGitContext(command?.git_context)
+    || (!command?.binding && !command?.git_context);
   if (requireCurrent && !current) return false;
   const normalizedEvidence = normalizeEvidenceToken(evidence);
   if (normalizedEvidence === 'current_head_verification') return true;
@@ -530,12 +532,19 @@ function verificationCommandMatches(command, evidence, contractClauseIds, { requ
     command?.artifact,
     ...(command?.observation?.targets ?? []),
     ...(command?.observation?.scenarios ?? []),
+    ...Object.entries(command?.observation?.values ?? {}).flatMap(([key, value]) => [key, value]),
     ...Object.entries(command?.observation?.observed ?? {}).flatMap(([key, value]) => [key, value])
   ].filter(Boolean).join('\n').toLowerCase();
   const tokens = normalizedEvidence.split(/[^a-z0-9]+/).filter((token) => token.length >= 3);
   if (tokens.length === 0 || !tokens.every((token) => haystack.includes(token))) return false;
   if (isGenericEvidenceRequirement(tokens)) return hasContractEvidenceBinding(haystack, contractClauseIds);
   return true;
+}
+
+function isCurrentGitContext(gitContext) {
+  if (!gitContext) return false;
+  if (gitContext.binding_status && !CURRENT_BINDING_STATUSES.has(gitContext.binding_status)) return false;
+  return Boolean(gitContext.head_sha) && gitContext.dirty === false;
 }
 
 function hasContractEvidenceBinding(haystack, contractClauseIds) {
