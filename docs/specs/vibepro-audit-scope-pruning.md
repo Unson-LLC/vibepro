@@ -72,4 +72,3 @@ diagrams:
   corruption detection still work.
 - `ASP-VERIFY-003`: Existing handoff reference tests prove raw reference
   discovery survives pruning.
-

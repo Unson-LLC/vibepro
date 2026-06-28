@@ -31,4 +31,3 @@ evidence.
 ## Verification
 
 - `node --test test/canonical-audit-self-contained.test.js`
-

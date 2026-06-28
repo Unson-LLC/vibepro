@@ -40,4 +40,3 @@ flowchart TD
 - duplicated full gate DAGs embedded in PR lifecycle artifacts;
 - raw command stdout/stderr beyond bounded excerpts;
 - UI/HTML reports and local progress snapshots.
-
