@@ -280,6 +280,23 @@
           "docs/specs/vibepro-audit-budget-action-controls.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-audit-scope-pruning",
+      "title": "VibePro Audit Scope Pruning",
+      "root_doc": "docs/architecture/vibepro-audit-scope-pruning.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-audit-scope-pruning.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-audit-scope-pruning.md"
+        ]
+      }
     }
   ]
 }
