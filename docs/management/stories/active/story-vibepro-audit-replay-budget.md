@@ -2,6 +2,7 @@
 story_id: story-vibepro-audit-replay-budget
 title: Canonical Audit Replay Budget
 status: active
+parent_design: vibepro-audit-replay-budget
 related_architecture:
   - ../../architecture/vibepro-audit-replay-budget.md
 related_specs:
