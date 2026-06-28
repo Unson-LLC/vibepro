@@ -1,6 +1,14 @@
 ---
 story_id: story-vibepro-audit-budget-action-controls
 title: Audit Budget Action Controls Spec
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Cost["cost_summary"] --> Controls["cost_controls"]
+        MissingCost["Missing token/time"] --> RuntimeAction["collect_runtime_cost_before_merge"]
+        HeavyEvidence["Budget exceeded"] --> SummaryAction["prefer_summary_canonical_artifacts"]
+        Controls --> DailyAudit["daily automation input"]
 ---
 
 # Spec
@@ -38,4 +46,3 @@ title: Audit Budget Action Controls Spec
 
 - `ABC-VERIFY-001`: Canonical audit tests assert cost-control status and
   recommendations.
-

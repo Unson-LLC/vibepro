@@ -1,6 +1,15 @@
 ---
 story_id: story-vibepro-runtime-cost-gap-closure
 title: Runtime Cost Gap Closure Spec
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Env["Env session/memory defaults"] --> Collector["session-cost collector"]
+        JSONL["Codex JSONL"] --> Collector
+        Ambiguous["Ambiguous candidates"] --> Unknown["unavailable provenance, no zero fabrication"]
+        Collector --> Merge["execute merge cost accounting"]
+        Merge --> Audit["canonical automation_value_audit"]
 ---
 
 # Spec
@@ -43,4 +52,3 @@ title: Runtime Cost Gap Closure Spec
 - `RCGC-VERIFY-001`: Session efficiency tests cover defaults and inference.
 - `RCGC-VERIFY-002`: CLI tests cover merge-time propagation.
 - `RCGC-VERIFY-003`: Canonical audit tests cover cost controls.
-

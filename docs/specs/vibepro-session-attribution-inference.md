@@ -1,6 +1,15 @@
 ---
 story_id: story-vibepro-session-attribution-inference
 title: Session Attribution Inference Spec
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Repo["Repo cwd"] --> Rank["Candidate scoring"]
+        Window["Automation window"] --> Rank
+        Story["Story id reference"] --> Rank
+        Tie["Top-score tie"] --> Ambiguous["ambiguous, no silent selection"]
+        Rank --> Selection["session_selection provenance"]
 ---
 
 # Spec
@@ -38,4 +47,3 @@ title: Session Attribution Inference Spec
 
 - `SAI-VERIFY-001`: Unit and CLI tests cover inferred session selection and
   merge-time propagation.
-

@@ -1,6 +1,14 @@
 ---
 story_id: story-vibepro-automation-cost-defaults
 title: Automation Cost Defaults Spec
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Env["VIBEPRO_SESSION_ID / VIBEPRO_AUTOMATION_MEMORY"] --> CLI["CLI defaults"]
+        CLI --> Collector["session-cost collector"]
+        Missing["Missing env"] --> Unknown["not_requested / unavailable"]
+        Unknown --> Collector
 ---
 
 # Spec
@@ -36,4 +44,3 @@ title: Automation Cost Defaults Spec
 
 - `ACD-VERIFY-001`: CLI regression covers help exposure and env/default
   collection behavior.
-
