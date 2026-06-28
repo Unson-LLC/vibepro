@@ -39,6 +39,8 @@ produce bounded token/time evidence from the same audit window.
   without fabricating token or elapsed-time values.
 - [x] `AUTCOST-AC-005`: CLI help exposes the new option so daily automation can use the public
   command surface instead of local conventions.
+- [x] `AUTCOST-AC-006`: If automation memory only exposes `Last run`, VibePro may use it as a
+  fallback window start, but the evidence must remain `partial` rather than fully trusted.
 
 ## Non Goals
 

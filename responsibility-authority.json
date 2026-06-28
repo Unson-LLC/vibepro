@@ -143,6 +143,46 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.runtime_cost.telemetry_ingestion",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-session-efficiency-audit.md",
+        "docs/architecture/vibepro-execute-merge-cost-accounting.md",
+        "docs/architecture/vibepro-automation-runtime-cost-ingestion.md",
+        "docs/specs/vibepro-automation-runtime-cost-ingestion.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/session-efficiency-audit.js",
+          "src/merge-manager.js",
+          "src/cli.js",
+          "test/session-efficiency-audit.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "symbols": [
+          "audit session-cost",
+          "automation_memory",
+          "cost_accounting_collection",
+          "token_accounting",
+          "elapsed_time_accounting"
+        ],
+        "risk_surfaces": [
+          "verification_evidence",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.story_source.integrity",
       "primary_authority": {
         "kind": "domain_contract",

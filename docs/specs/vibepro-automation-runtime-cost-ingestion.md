@@ -2,6 +2,17 @@
 story_id: story-vibepro-automation-runtime-cost-ingestion
 title: Automation Runtime Cost Ingestion Spec
 parent_design: vibepro-automation-runtime-cost-ingestion
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Memory["Automation memory file"] --> Window["Parsed daily window"]
+        Window --> Collector["session-cost collector"]
+        Session["Explicit session id"] --> Collector
+        Collector --> JSONL["Codex session JSONL"]
+        JSONL --> Cost["Bounded token/time accounting"]
+        BadMemory["Missing or unparsable memory"] --> Unknown["partial/unavailable provenance, no zero fabrication"]
+        Unknown --> Collector
 ---
 
 # Spec
@@ -19,6 +30,9 @@ parent_design: vibepro-automation-runtime-cost-ingestion
   collector when `--session-id` is supplied.
 - `AUTCOST-CONTRACT-006`: `cost_accounting_collection` MUST preserve automation-memory provenance
   so canonical audit readers can distinguish measured daily-window cost from full-session cost.
+- `AUTCOST-CONTRACT-007`: If automation memory only contains `Last run`, the collector MAY use that
+  timestamp as the start and current `now` as the end, but the automation-memory status MUST be
+  `partial`.
 
 ## Scenarios
 
@@ -29,6 +43,8 @@ parent_design: vibepro-automation-runtime-cost-ingestion
 - `AUTCOST-SCENARIO-003`: Given explicit bounds and automation memory, explicit bounds win.
 - `AUTCOST-SCENARIO-004`: Given missing automation memory, cost remains unavailable/partial with a
   reason instead of zero values.
+- `AUTCOST-SCENARIO-005`: Given automation memory with only `Last run`, the collector records partial
+  provenance instead of treating the fallback as a fully reliable daily window.
 
 ## Verification
 

@@ -190,7 +190,7 @@ test('audit session-cost CLI exposes JSON contract for active session cost audit
   assert.match(help.stdout, /vibepro audit session-cost/);
 });
 
-test('AUTCOST-SCENARIO-001 session efficiency audit uses automation memory daily window when explicit bounds are absent', async () => {
+test('AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   const automationMemoryPath = path.join(codexHome, 'automations', 'vibepro-value-audit', 'memory.md');
   await mkdir(path.dirname(automationMemoryPath), { recursive: true });
@@ -279,4 +279,25 @@ test('AUTCOST-SCENARIO-001 session efficiency audit uses automation memory daily
   assert.equal(missingMemory.automation_memory.status, 'unavailable');
   assert.equal(missingMemory.session.token_accounting.status, 'available');
   assert.equal(missingMemory.session.token_accounting.total_tokens, 880);
+
+  const lastRunMemoryPath = path.join(codexHome, 'automations', 'last-run-only', 'memory.md');
+  await mkdir(path.dirname(lastRunMemoryPath), { recursive: true });
+  await writeFile(lastRunMemoryPath, [
+    '# vibepro-value-audit memory',
+    '',
+    'Last run: 2026-06-27T13:01:00.000Z',
+    ''
+  ].join('\n'));
+  const lastRunFallback = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    automationMemoryPath: lastRunMemoryPath,
+    baseRef: 'base',
+    now: '2026-06-27T13:03:00.000Z'
+  });
+  assert.equal(lastRunFallback.automation_memory.status, 'partial');
+  assert.equal(lastRunFallback.automation_memory.window_start, '2026-06-27T13:01:00.000Z');
+  assert.equal(lastRunFallback.automation_memory.window_end, '2026-06-27T13:03:00.000Z');
+  assert.equal(lastRunFallback.session.token_accounting.total_tokens, 160);
 });
