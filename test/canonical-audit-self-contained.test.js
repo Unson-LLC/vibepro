@@ -26,6 +26,24 @@ async function writeJson(filePath, value) {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+async function writeLargeVerificationEvidence(root, storyId, count = 700) {
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    commands: Array.from({ length: count }, (_, index) => ({
+      id: `verification-${index}`,
+      kind: 'unit',
+      status: 'pass',
+      command: `node --test test/example-${index}.test.js`,
+      summary: `Audit-relevant verification summary ${index}`,
+      target: [`src/example-${index}.js`],
+      scenario: [`SCOPE-VERIFY-${index}`],
+      observed: { result: 'pass' },
+      recorded_at: '2026-06-28T00:00:00.000Z'
+    }))
+  });
+}
+
 function argvFromReplayCommand(command) {
   assert.match(command, /^vibepro audit replay \. --story-id [A-Za-z0-9._-]+$/);
   return command.split(/\s+/).slice(1);
@@ -144,6 +162,7 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
       cumulative_generation_count: 3
     }
   });
+  await writeLargeVerificationEvidence(root, storyId);
 
   const promoted = await promoteCanonicalAuditArtifacts(root, {
     storyId,
@@ -199,6 +218,175 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(cliReplayResult.verdict.pr_merge, 'merged');
 });
 
+test('canonical audit scope prunes debug inventory and duplicate full gate context from persisted audit data', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-scope-prune-'));
+  const storyId = 'story-audit-scope-pruning';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-28T00:00:00.000Z',
+    story: { story_id: storyId },
+    manual_result: `.vibepro/manual-verification/${storyId}/unit-result.json`,
+    gate_status: {
+      ready_for_pr_create: true,
+      overall_status: 'ready_for_review',
+      critical_unresolved_gates: []
+    },
+    pr_context: {
+      design_ssot_reconciliation: {
+        status: 'passed',
+        summary: { unregistered_doc_count: 2, changed_doc_count: 1 },
+        coverage: {
+          status: 'passed',
+          summary: { unregistered_doc_count: 2, changed_doc_count: 1 },
+          changed_docs: [{ path: 'docs/architecture/current.md', registered: true }],
+          unregistered_docs: [
+            { path: 'docs/architecture/old-a.md', registered: false },
+            { path: 'docs/architecture/old-b.md', registered: false }
+          ],
+          registered_docs: [{ path: 'docs/architecture/current.md', registered: true }]
+        }
+      },
+      engineering_judgment: {
+        status: 'passed',
+        judgment_axes: [
+          {
+            axis: 'public_contract',
+            status: 'active_passed',
+            reason: 'contract surface changed',
+            matched_evidence: [{
+              kind: 'contract_doc',
+              ref: 'docs/reference/cli.md',
+              strength: 'supporting',
+              verbose_debug_payload: 'x'.repeat(1000)
+            }]
+          },
+          {
+            axis: 'unused_axis',
+            status: 'inactive',
+            reason: 'not relevant',
+            matched_evidence: [{
+              kind: 'debug',
+              ref: 'debug-log',
+              verbose_debug_payload: 'y'.repeat(1000)
+            }]
+          }
+        ]
+      },
+      gate_dag: {
+        schema_version: '0.1.0',
+        story_id: storyId,
+        overall_status: 'ready_for_review',
+        nodes: [{
+          id: 'gate:judgment_axis_public_contract',
+          type: 'judgment_axis_gate',
+          status: 'passed',
+          required: true,
+          matched_evidence: [{
+            kind: 'contract_doc',
+            ref: 'docs/reference/cli.md',
+            strength: 'supporting',
+            verbose_debug_payload: 'z'.repeat(1000)
+          }]
+        }],
+        edges: []
+      }
+    }
+  });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'gate-dag.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    overall_status: 'ready_for_review',
+    nodes: [{
+      id: 'gate:judgment_axis_public_contract',
+      type: 'judgment_axis_gate',
+      status: 'passed',
+      required: true,
+      matched_evidence: [{
+        kind: 'contract_doc',
+        ref: 'docs/reference/cli.md',
+        strength: 'supporting',
+        verbose_debug_payload: 'z'.repeat(1000)
+      }]
+    }],
+    edges: []
+  });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-28T00:01:00.000Z',
+    story: { story_id: storyId },
+    pr_url: 'https://github.com/example/repo/pull/1',
+    raw_command_output: 'raw lifecycle output that must not become canonical',
+    verbose_debug_payload: 'lifecycle-debug'.repeat(100),
+    gate_dag: {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      overall_status: 'ready_for_review',
+      nodes: [{
+        id: 'gate:lifecycle',
+        status: 'passed',
+        matched_evidence: [{ ref: 'debug', verbose_debug_payload: 'node-debug'.repeat(100) }]
+      }]
+    },
+    results: [{
+      command: 'gh pr create',
+      exit_code: 0,
+      stdout: 'created'.repeat(100),
+      stderr: 'warning'.repeat(100),
+      raw_command_output: 'nested raw lifecycle output'
+    }]
+  });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    updated_at: '2026-06-28T00:02:00.000Z',
+    raw_command_output: 'raw verification output that must not become canonical',
+    verbose_debug_payload: 'verification-debug'.repeat(100),
+    commands: [{
+      kind: 'unit',
+      status: 'pass',
+      command: 'node --test',
+      stdout: 'ok'.repeat(100),
+      stderr: 'warn'.repeat(100),
+      raw_command_output: 'nested raw verification output',
+      verbose_debug_payload: 'command-debug'.repeat(100)
+    }]
+  });
+  await writeJson(path.join(root, '.vibepro', 'manual-verification', storyId, 'unit-result.json'), {
+    status: 'pass'
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+  const prPrepareRaw = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), 'utf8');
+  const prPrepareCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-prepare.json'));
+  const prCreateCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-create.json'));
+  const verificationCanonical = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'verification-evidence.json'));
+  const canonicalText = JSON.stringify(prPrepareCanonical);
+  const lifecycleText = JSON.stringify(prCreateCanonical);
+  const verificationText = JSON.stringify(verificationCanonical);
+
+  assert.equal(prPrepareCanonical.artifact_kind, 'canonical_pr_prepare_audit_summary');
+  assert.equal(
+    prPrepareCanonical.pr_context.design_ssot_reconciliation.coverage.unregistered_doc_count,
+    2
+  );
+  assert.equal(
+    Object.hasOwn(prPrepareCanonical.pr_context.design_ssot_reconciliation.coverage, 'unregistered_docs'),
+    false
+  );
+  assert.equal(prPrepareCanonical.pr_context.engineering_judgment.inactive_axis_count, 1);
+  assert.equal(prPrepareCanonical.pr_context.engineering_judgment.judgment_axes.length, 1);
+  assert.equal(canonicalText.includes('verbose_debug_payload'), false);
+  assert.equal(prCreateCanonical.artifact_kind, 'canonical_pr_create_audit_summary');
+  assert.equal(lifecycleText.includes('raw_command_output'), false);
+  assert.equal(lifecycleText.includes('verbose_debug_payload'), false);
+  assert.equal(typeof prCreateCanonical.results[0].stdout_bytes, 'number');
+  assert.equal(verificationText.includes('raw_command_output'), false);
+  assert.equal(verificationText.includes('verbose_debug_payload'), false);
+  assert.equal(typeof verificationCanonical.commands[0].stdout_bytes, 'number');
+  assert.equal(Buffer.byteLength(canonicalText) < Buffer.byteLength(prPrepareRaw), true);
+  assert.equal(promoted.bundle.resolved_references.some((item) => item.source.endsWith('unit-result.json')), true);
+});
+
 test('compressed canonical audit replay blocks when the bundle is corrupted', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-replay-corrupt-'));
   const storyId = 'story-corrupt-replay';
@@ -208,6 +396,7 @@ test('compressed canonical audit replay blocks when the bundle is corrupted', as
     gate_status: { overall_status: 'ready_for_review' },
     large_gate_context: Array.from({ length: 1700 }, (_, index) => ({ id: `gate-${index}` }))
   });
+  await writeLargeVerificationEvidence(root, storyId);
 
   const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
   await writeFile(path.join(root, promoted.bundle.replay_bundle.path), 'not gzip\n');
@@ -225,6 +414,7 @@ test('compressed canonical audit replay blocks when hash metadata is missing', a
     gate_status: { overall_status: 'ready_for_review' },
     large_gate_context: Array.from({ length: 1700 }, (_, index) => ({ id: `gate-${index}` }))
   });
+  await writeLargeVerificationEvidence(root, storyId);
 
   const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
   const auditIndexPath = path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json');
@@ -378,6 +568,7 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
       status: 'passed'
     }))
   });
+  await writeLargeVerificationEvidence(root, storyId);
 
   const promoted = await promoteCanonicalAuditArtifacts(root, {
     storyId,

@@ -26,6 +26,7 @@ const REVIEW_HANDOFF_FILES = [/^review-request-.+\.md$/];
 const VIBEPRO_REFERENCE_RE = /\.vibepro\/[A-Za-z0-9_./:@-]+/g;
 const MAX_REFERENCED_ARTIFACT_BYTES = 512 * 1024;
 const COMPRESSED_REPLAY_BUNDLE_FILE = 'audit-replay-bundle.json.gz';
+const CANONICAL_AUDIT_SCOPE = 'judgment_evidence_v1';
 
 export function getCanonicalAuditDir(repoRoot, storyId) {
   return path.join(path.resolve(repoRoot), CANONICAL_AUDIT_ROOT, storyId);
@@ -268,7 +269,11 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       persisted: 'compressed',
       compressed_path: replayBundle.path,
       digest: artifact.digest,
-      line_count: artifact.line_count
+      audit_digest: artifact.audit_digest,
+      line_count: artifact.line_count,
+      raw_line_count: artifact.raw_line_count,
+      audit_scope: artifact.audit_scope,
+      excluded_from_audit: artifact.excluded_from_audit
     })),
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
     resolved_references: [],
@@ -315,7 +320,11 @@ async function writeCompressedReplayBundle(root, {
       stage: artifact.stage,
       source: toWorkspaceRelative(root, artifact.sourcePath),
       digest: artifact.digest,
+      audit_digest: artifact.audit_digest,
       line_count: artifact.line_count,
+      raw_line_count: artifact.raw_line_count,
+      audit_scope: artifact.audit_scope,
+      excluded_from_audit: artifact.excluded_from_audit,
       data: artifact.type === 'json' ? artifact.data : null,
       content: artifact.type === 'text' ? artifact.content : null
     })),
@@ -404,6 +413,20 @@ async function collectAuditSourceInventory(root, storyId, canonicalDir) {
 async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, type, stage = null }) {
   const text = await readTextIfExists(sourcePath);
   if (text === null) return null;
+  const rawLineCount = countTextLines(text);
+  const rawDigest = `sha256:${sha256Hex(text)}`;
+  const sourceReferences = extractVibeProReferences(text);
+  const scoped = type === 'json'
+    ? applyCanonicalAuditScope(kind, JSON.parse(text))
+    : {
+        data: null,
+        content: text,
+        excluded_from_audit: [],
+        audit_scope: CANONICAL_AUDIT_SCOPE
+      };
+  const auditText = type === 'json'
+    ? `${JSON.stringify(scoped.data, null, 2)}\n`
+    : scoped.content;
   return {
     kind,
     type,
@@ -412,10 +435,15 @@ async function readAuditSourceArtifact(root, { sourcePath, targetPath, kind, typ
     targetPath,
     source: toWorkspaceRelative(root, sourcePath),
     canonical_path: toWorkspaceRelative(root, targetPath),
-    line_count: countTextLines(text),
-    digest: `sha256:${sha256Hex(text)}`,
-    data: type === 'json' ? JSON.parse(text) : null,
-    content: type === 'text' ? text : null
+    line_count: countTextLines(auditText),
+    raw_line_count: rawLineCount,
+    digest: rawDigest,
+    audit_digest: `sha256:${sha256Hex(auditText)}`,
+    audit_scope: scoped.audit_scope,
+    excluded_from_audit: scoped.excluded_from_audit,
+    source_references: sourceReferences,
+    data: scoped.data,
+    content: scoped.content
   };
 }
 
@@ -900,6 +928,424 @@ Full audit artifacts were not copied into canonical history because the evidence
 `;
 }
 
+function applyCanonicalAuditScope(kind, data) {
+  const excluded = [];
+  const scopedData = (() => {
+    if (kind === 'pr_prepare') return scopedPrPrepare(data, excluded);
+    if (kind === 'pr_create') return scopedPrLifecycle(data, 'canonical_pr_create_audit_summary', excluded);
+    if (kind === 'pr_merge') return scopedPrLifecycle(data, 'canonical_pr_merge_audit_summary', excluded);
+    if (kind === 'gate_dag') return scopedGateDag(data, excluded);
+    if (kind === 'senior_gap_judgment') return scopedSeniorGapJudgment(data, excluded);
+    if (kind === 'verification_evidence') return scopedVerificationEvidence(data, excluded);
+    return data;
+  })();
+  return {
+    data: scopedData,
+    content: null,
+    audit_scope: CANONICAL_AUDIT_SCOPE,
+    excluded_from_audit: [...new Set(excluded)]
+  };
+}
+
+function scopedPrPrepare(data, excluded) {
+  excluded.push(
+    'pr_prepare.diagnostics.progress_snapshots',
+    'pr_prepare.pr_context.full_gate_dag',
+    'pr_prepare.pr_context.design_ssot_full_registry_inventory',
+    'pr_prepare.pr_context.inactive_judgment_axis_details',
+    'pr_prepare.duplicated_child_artifacts'
+  );
+  const context = data?.pr_context ?? {};
+  return compactObject({
+    schema_version: data?.schema_version,
+    artifact_kind: 'canonical_pr_prepare_audit_summary',
+    audit_scope: CANONICAL_AUDIT_SCOPE,
+    created_at: data?.created_at,
+    story: data?.story,
+    output: data?.output,
+    gate_status: data?.gate_status,
+    git: scopedGit(data?.git),
+    scope: data?.scope,
+    lifecycle_artifacts: data?.lifecycle_artifacts,
+    pr_context: compactObject({
+      story_source: context.story_source,
+      story_source_integrity: context.story_source_integrity,
+      design_ssot_reconciliation: scopedDesignSsotReconciliation(context.design_ssot_reconciliation, excluded),
+      responsibility_authority: scopedResponsibilityAuthority(context.responsibility_authority, excluded),
+      requirement_consistency: scopedRequirementConsistency(context.requirement_consistency, excluded),
+      engineering_judgment: scopedEngineeringJudgment(context.engineering_judgment, excluded),
+      verification_evidence: scopedVerificationEvidence(context.verification_evidence, excluded),
+      decision_records: context.decision_records,
+      agent_reviews: context.agent_reviews,
+      senior_gap_judgment: scopedSeniorGapJudgment(context.senior_gap_judgment, excluded),
+      traceability_clause_coverage: context.traceability_clause_coverage,
+      evidence_reuse: context.evidence_reuse ? {
+        status: context.evidence_reuse.status,
+        key: context.evidence_reuse.key,
+        stale: context.evidence_reuse.stale,
+        fresh_use_allowed: context.evidence_reuse.fresh_use_allowed,
+        used_as_fresh: context.evidence_reuse.used_as_fresh,
+        artifact: context.evidence_reuse.artifact
+      } : null,
+      gate_dag_summary: scopedGateDag(context.gate_dag, excluded),
+      execution_gate: context.execution_gate,
+      completion_quality: context.completion_quality
+    }),
+    artifact_refs: compactObject({
+      evidence_reuse: data?.evidence_reuse ? '.vibepro/pr/<story-id>/evidence-reuse.json' : null,
+      evidence_plan: data?.evidence_plan ? '.vibepro/pr/<story-id>/evidence-plan.json' : null,
+      decision_index: data?.decision_index ? '.vibepro/pr/<story-id>/decision-index.json' : null,
+      split_plan: data?.split_plan ? '.vibepro/pr/<story-id>/split-plan.json' : null,
+      gate_dag: context.gate_dag ? '.vibepro/pr/<story-id>/gate-dag.json' : null
+    })
+  });
+}
+
+function scopedPrLifecycle(data, artifactKind, excluded) {
+  excluded.push('pr_lifecycle.full_gate_dag', 'pr_lifecycle.raw_command_output');
+  const gateDag = data?.gate_dag;
+  const results = data?.results;
+  return compactObject({
+    schema_version: data?.schema_version,
+    artifact_kind: artifactKind,
+    audit_scope: CANONICAL_AUDIT_SCOPE,
+    created_at: data?.created_at,
+    story: data?.story,
+    mode: data?.mode,
+    dry_run: data?.dry_run,
+    status: data?.status,
+    output: data?.output,
+    pr_url: data?.pr_url,
+    pr: data?.pr,
+    title: data?.title,
+    base: data?.base,
+    head: data?.head,
+    body_file: data?.body_file,
+    current_branch: data?.current_branch,
+    current_head_sha: data?.current_head_sha,
+    workspace_initialized: data?.workspace_initialized,
+    repository_slug: data?.repository_slug,
+    strategy: data?.strategy,
+    branch_cleanup: data?.branch_cleanup,
+    delete_branch: data?.delete_branch,
+    preconditions: data?.preconditions,
+    merged_at: data?.merged_at,
+    merge_commit_sha: data?.merge_commit_sha,
+    stop_reason: data?.stop_reason,
+    cost_accounting: data?.cost_accounting,
+    cost_accounting_collection: data?.cost_accounting_collection,
+    canonical_audit: data?.canonical_audit,
+    prepare_artifacts: data?.prepare_artifacts,
+    gate_override: data?.gate_override,
+    execution_gate: data?.execution_gate,
+    artifact_freshness: data?.artifact_freshness,
+    warnings: data?.warnings,
+    toolchain: data?.toolchain,
+    gate_dag_summary: scopedGateDag(gateDag, excluded),
+    commands: data?.commands,
+    results: Array.isArray(results)
+      ? results.map((result) => ({
+          command: result.command,
+          started_at: result.started_at,
+          finished_at: result.finished_at,
+          exit_code: result.exit_code,
+          stdout_bytes: byteLength(result.stdout),
+          stderr_bytes: byteLength(result.stderr),
+          stdout_excerpt: excerpt(result.stdout),
+          stderr_excerpt: excerpt(result.stderr)
+        }))
+      : results
+  });
+}
+
+function scopedGateDag(gateDag, excluded) {
+  if (!gateDag || typeof gateDag !== 'object') return gateDag ?? null;
+  excluded.push('gate_dag.verbose_evidence_objects');
+  return compactObject({
+    schema_version: gateDag.schema_version,
+    artifact_kind: 'canonical_gate_dag_audit_summary',
+    audit_scope: CANONICAL_AUDIT_SCOPE,
+    story_id: gateDag.story_id,
+    model: gateDag.model,
+    overall_status: gateDag.overall_status,
+    risk_profile: gateDag.risk_profile,
+    summary: gateDag.summary,
+    nodes: Array.isArray(gateDag.nodes) ? gateDag.nodes.map(scopedGateNode) : gateDag.nodes,
+    edges: gateDag.edges
+  });
+}
+
+function scopedGateNode(node) {
+  if (!node || typeof node !== 'object') return node;
+  return compactObject({
+    id: node.id,
+    type: node.type,
+    label: node.label,
+    status: node.status,
+    required: node.required,
+    axis: node.axis,
+    axis_status: node.axis_status,
+    confidence: node.confidence,
+    reason: node.reason,
+    missing_evidence: node.missing_evidence,
+    matched_blockers: node.matched_blockers,
+    blocker_waiver: scopedDecisionRef(node.blocker_waiver),
+    evidence: summarizeEvidenceList(node.matched_evidence),
+    optional_evidence_count: Array.isArray(node.optional_evidence) ? node.optional_evidence.length : undefined
+  });
+}
+
+function scopedEngineeringJudgment(judgment, excluded) {
+  if (!judgment || typeof judgment !== 'object') return judgment ?? null;
+  const axes = Array.isArray(judgment.judgment_axes) ? judgment.judgment_axes : [];
+  const activeAxes = axes.filter((axis) => !String(axis.status ?? '').startsWith('inactive'));
+  excluded.push('engineering_judgment.inactive_axis_details', 'engineering_judgment.verbose_matched_evidence');
+  return compactObject({
+    schema_version: judgment.schema_version,
+    label: judgment.label,
+    route_type: judgment.route_type,
+    route_dag: judgment.route_dag,
+    confidence: judgment.confidence,
+    signals: judgment.signals,
+    active_axes: judgment.active_axes,
+    active_axis_count: judgment.active_axis_count ?? activeAxes.length,
+    inactive_axis_count: Math.max(axes.length - activeAxes.length, 0),
+    common_spine: judgment.common_spine,
+    judgment_axes: activeAxes.map(scopedJudgmentAxis)
+  });
+}
+
+function scopedJudgmentAxis(axis) {
+  return compactObject({
+    axis: axis.axis,
+    status: axis.status,
+    reason: axis.reason,
+    confidence: axis.confidence,
+    decision_question: axis.decision_question,
+    required_evidence: axis.required_evidence,
+    blocking_criteria: axis.blocking_criteria,
+    acceptable_followup: axis.acceptable_followup,
+    signals: axis.signals,
+    activation_precision: axis.activation_precision,
+    missing_evidence: axis.missing_evidence,
+    matched_blockers: axis.matched_blockers,
+    blocker_waiver: scopedDecisionRef(axis.blocker_waiver),
+    evidence: summarizeEvidenceList(axis.matched_evidence),
+    optional_evidence_count: Array.isArray(axis.optional_evidence) ? axis.optional_evidence.length : undefined
+  });
+}
+
+function scopedDesignSsotReconciliation(reconciliation, excluded) {
+  if (!reconciliation || typeof reconciliation !== 'object') return reconciliation ?? null;
+  const coverage = reconciliation.coverage ?? {};
+  excluded.push('design_ssot.unregistered_docs_full_inventory', 'design_ssot.registered_docs_full_inventory');
+  return compactObject({
+    schema_version: reconciliation.schema_version,
+    status: reconciliation.status,
+    model: reconciliation.model,
+    workflow: reconciliation.workflow,
+    generated_at: reconciliation.generated_at,
+    summary: reconciliation.summary,
+    changed_paths: reconciliation.changed_paths,
+    action_items: reconciliation.action_items,
+    registry_sources: reconciliation.registry_sources,
+    coverage: compactObject({
+      schema_version: coverage.schema_version,
+      status: coverage.status,
+      summary: coverage.summary,
+      changed_paths: coverage.changed_paths,
+      changed_docs: coverage.changed_docs,
+      unregistered_changed_docs: coverage.unregistered_changed_docs,
+      registered_doc_count: Array.isArray(coverage.registered_docs) ? coverage.registered_docs.length : undefined,
+      unregistered_doc_count: Array.isArray(coverage.unregistered_docs) ? coverage.unregistered_docs.length : undefined,
+      registry_sources: coverage.registry_sources
+    })
+  });
+}
+
+function scopedResponsibilityAuthority(authority, excluded) {
+  if (!authority || typeof authority !== 'object') return authority ?? null;
+  excluded.push('responsibility_authority.full_registry_entries');
+  return compactObject({
+    schema_version: authority.schema_version,
+    status: authority.status,
+    model: authority.model,
+    summary: authority.summary,
+    risk_surfaces: authority.risk_surfaces,
+    changed_paths: authority.changed_paths,
+    registry_sources: authority.registry_sources,
+    domain_contract_sources: authority.domain_contract_sources,
+    invalid_registry_entries: authority.invalid_registry_entries,
+    unregistered_candidates: authority.unregistered_candidates,
+    matched_responsibilities: Array.isArray(authority.matched_responsibilities)
+      ? authority.matched_responsibilities.map((item) => compactObject({
+          id: item.id,
+          primary_authority: item.primary_authority,
+          supporting_authority: item.supporting_authority,
+          matched_by: item.matched_by,
+          confidence: item.confidence,
+          required_evidence: summarizeEvidenceList(item.required_evidence),
+          contract_refs: item.contract_refs,
+          unknown_policy: item.unknown_policy
+        }))
+      : authority.matched_responsibilities
+  });
+}
+
+function scopedRequirementConsistency(consistency, excluded) {
+  if (!consistency || typeof consistency !== 'object') return consistency ?? null;
+  excluded.push('requirement_consistency.verbose_code_scenarios');
+  return compactObject({
+    schema_version: consistency.schema_version,
+    status: consistency.status,
+    summary: consistency.summary,
+    story_source: consistency.story_source,
+    requirement_sources: consistency.requirement_sources,
+    invariants: consistency.invariants,
+    contradictions: consistency.contradictions,
+    scenario_gaps: consistency.scenario_gaps,
+    policy_refs: consistency.policy_refs,
+    responsibility_authority: consistency.responsibility_authority,
+    code_scenarios: Array.isArray(consistency.code_scenarios)
+      ? consistency.code_scenarios.map((scenario) => compactObject({
+          id: scenario.id ?? scenario.scenario_id,
+          status: scenario.status,
+          source: scenario.source,
+          covered: scenario.covered,
+          evidence_refs: scenario.evidence_refs,
+          requirement_count: Array.isArray(scenario.requirements) ? scenario.requirements.length : undefined
+        }))
+      : consistency.code_scenarios
+  });
+}
+
+function scopedSeniorGapJudgment(data, excluded) {
+  if (!data || typeof data !== 'object') return data ?? null;
+  excluded.push('senior_gap_judgment.verbose_supporting_context');
+  return compactObject({
+    schema_version: data.schema_version,
+    status: data.status,
+    judgment_status: data.judgment_status,
+    story_id: data.story_id,
+    created_at: data.created_at,
+    summary: data.summary,
+    blocking_gap_count: data.blocking_gap_count,
+    residual_gap_count: data.residual_gap_count,
+    gaps: Array.isArray(data.gaps)
+      ? data.gaps.map((gap) => compactObject({
+          id: gap.id,
+          status: gap.status,
+          severity: gap.severity,
+          title: gap.title,
+          current: gap.current,
+          ideal: gap.ideal,
+          residual_risk: gap.residual_risk,
+          recommendation: gap.recommendation,
+          evidence_refs: gap.evidence_refs
+        }))
+      : data.gaps
+  });
+}
+
+function scopedVerificationEvidence(data, excluded) {
+  if (!data || typeof data !== 'object') return data ?? null;
+  excluded.push('verification.raw_command_output');
+  return compactObject({
+    schema_version: data.schema_version,
+    story_id: data.story_id,
+    updated_at: data.updated_at,
+    generated_at: data.generated_at,
+    evidence_key: data.evidence_key,
+    command_count: data.command_count,
+    pass_count: data.pass_count,
+    fail_count: data.fail_count,
+    status: data.status,
+    summary: data.summary,
+    warnings: data.warnings,
+    commands: Array.isArray(data.commands)
+      ? data.commands.map((command) => compactObject({
+          id: command.id,
+          kind: command.kind,
+          status: command.status,
+          command: command.command,
+          summary: command.summary,
+          artifact: command.artifact,
+          target: command.target,
+          targets: command.targets,
+          scenario: command.scenario,
+          scenarios: command.scenarios,
+          observed: command.observed,
+          recorded_at: command.recorded_at,
+          stdout_bytes: byteLength(command.stdout),
+          stderr_bytes: byteLength(command.stderr),
+          stdout_excerpt: excerpt(command.stdout),
+          stderr_excerpt: excerpt(command.stderr)
+        }))
+      : data.commands
+  });
+}
+
+function scopedGit(git) {
+  if (!git || typeof git !== 'object') return git ?? null;
+  return compactObject({
+    base_ref: git.base_ref,
+    head_ref: git.head_ref,
+    base_sha: git.base_sha,
+    head_sha: git.head_sha,
+    current_branch: git.current_branch,
+    diff_stats: git.diff_stats,
+    diff_line_stats: git.diff_line_stats,
+    changed_files: Array.isArray(git.changed_files)
+      ? git.changed_files.map((file) => typeof file === 'string' ? file : file.path ?? file.file ?? file)
+      : git.changed_files
+  });
+}
+
+function summarizeEvidenceList(items) {
+  if (!Array.isArray(items)) return items;
+  return items.map((item) => {
+    if (typeof item === 'string') return item;
+    return compactObject({
+      kind: item.kind ?? item.id ?? item.type,
+      ref: item.ref ?? item.path ?? item.artifact,
+      status: item.status,
+      strength: item.strength,
+      binding_status: item.binding_status,
+      artifact_quality: item.artifact_quality,
+      freshness: item.freshness,
+      summary: item.summary
+    });
+  });
+}
+
+function scopedDecisionRef(value) {
+  if (!value || typeof value !== 'object') return value ?? null;
+  return compactObject({
+    decision_id: value.decision_id ?? value.id,
+    source: value.source,
+    status: value.status ?? 'accepted',
+    reason: value.reason,
+    artifact: value.artifact
+  });
+}
+
+function compactObject(object) {
+  if (!object || typeof object !== 'object' || Array.isArray(object)) return object;
+  return Object.fromEntries(
+    Object.entries(object).filter(([, value]) => value !== undefined && value !== null)
+  );
+}
+
+function byteLength(value) {
+  return value === undefined || value === null ? 0 : Buffer.byteLength(String(value));
+}
+
+function excerpt(value, limit = 240) {
+  if (value === undefined || value === null || value === '') return null;
+  const text = String(value);
+  return text.length > limit ? `${text.slice(0, limit)}...` : text;
+}
+
 async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts }) {
   const sourceToCanonical = new Map();
   for (const artifact of artifacts) {
@@ -909,6 +1355,7 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts }
   }
   const refs = new Set();
   for (const artifact of artifacts) {
+    for (const ref of artifact.source_references ?? []) refs.add(ref);
     if (!artifact.canonical_path) continue;
     const text = await readTextIfExists(path.join(root, artifact.canonical_path));
     for (const ref of extractVibeProReferences(text)) refs.add(ref);
@@ -1050,20 +1497,25 @@ export function mergeArtifactsPreferLocal(localArtifacts, canonicalArtifacts) {
 }
 
 async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts, missing_artifacts }) {
-  const data = await readJsonIfExists(sourcePath);
-  if (!data) {
+  const text = await readTextIfExists(sourcePath);
+  if (text === null) {
     missing_artifacts.push({
       kind,
       source: toWorkspaceRelative(root, sourcePath)
     });
     return;
   }
+  const data = JSON.parse(text);
+  const scoped = applyCanonicalAuditScope(kind, data);
   await mkdir(path.dirname(targetPath), { recursive: true });
-  await writeFile(targetPath, `${JSON.stringify(data, null, 2)}\n`);
+  await writeFile(targetPath, `${JSON.stringify(scoped.data, null, 2)}\n`);
   artifacts.push({
     kind,
     source: toWorkspaceRelative(root, sourcePath),
-    canonical_path: toWorkspaceRelative(root, targetPath)
+    canonical_path: toWorkspaceRelative(root, targetPath),
+    audit_scope: scoped.audit_scope,
+    excluded_from_audit: scoped.excluded_from_audit,
+    source_references: extractVibeProReferences(text)
   });
 }
 
