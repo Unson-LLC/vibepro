@@ -10010,7 +10010,7 @@ function buildVerificationGates({ fileGroups, verificationCommands, e2eCommand, 
   const gateOverride = buildBugPhysicsVerificationGateOverride(bugPhysicsTriage);
   const e2eRequired = gateOverride.e2e
     ? false
-    : shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence });
+    : shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence, changeClassification });
   const gateE2eCoverage = e2eRequired ? e2eCoverage : markE2eCoverageNotApplicable(e2eCoverage);
   const e2eGateStatus = e2eRequired ? resolveE2eGateStatus(e2eCommand, flowVerification, e2eCoverage) : 'not_required';
   const e2eReason = e2eRequired
@@ -10102,19 +10102,38 @@ function markE2eCoverageNotApplicable(e2eCoverage) {
   };
 }
 
-function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence = null }) {
+function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence = null, changeClassification = null }) {
   if (hasUiExperienceSourceChange(fileGroups)) return true;
-  if (fileGroups.tests.files.some((file) => file.startsWith('e2e/'))) return true;
+  if (fileGroups.tests.files.some(isE2eTestPath)) return true;
   if (fileGroups.repo_control.files.some(isE2eInfraPath)) return true;
-  if (e2eCommand?.detected) return true;
   if (flowVerification) return true;
   if (visualQaEvidence) return true;
+  if (e2eCommand?.detected && changeClassificationRequiresRuntimeE2e(changeClassification)) return true;
   return false;
+}
+
+function isE2eTestPath(filePath) {
+  return filePath.startsWith('tests/e2e/')
+    || filePath.startsWith('test/e2e/')
+    || filePath.startsWith('e2e/');
 }
 
 function isE2eInfraPath(filePath) {
   return filePath.startsWith('e2e/')
     || /^playwright\.config\.[cm]?[jt]s$/.test(filePath);
+}
+
+function changeClassificationRequiresRuntimeE2e(changeClassification) {
+  const profile = changeClassification?.profile ?? 'light';
+  if (profile === 'ui_interaction' || profile === 'workflow_heavy') return true;
+  const surfaces = new Set(changeClassification?.risk_surfaces ?? []);
+  return [
+    'frontend_interaction',
+    'core_workflow_state',
+    'service_orchestration',
+    'queue_worker',
+    'polling_retry'
+  ].some((surface) => surfaces.has(surface));
 }
 
 function isPackageManifestPath(filePath) {
