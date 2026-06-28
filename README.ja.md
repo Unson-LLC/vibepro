@@ -269,6 +269,21 @@ npx vibepro check architecture /path/to/repo --story-id <story-id>
 npx vibepro check pr-readiness /path/to/repo --story-id <story-id> --base <base-branch>
 ```
 
+### Architectureをfinalへ昇格する
+
+正本として扱うArchitectureは、その前提になる証跡を集めた後で昇格します。draftはゲート前でも許可されますが、final Architectureは現在の `HEAD` に対してreadiness bundleがreadyになるまでブロックされます。
+
+```bash
+npx vibepro graph /path/to/repo --run-graphify
+npx vibepro story diagnose /path/to/repo --id <story-id> --run-graphify
+npx vibepro check architecture /path/to/repo --story-id <story-id> --base <base-branch>
+npx vibepro architecture readiness /path/to/repo --id <story-id> --base <base-branch>
+npx vibepro architecture write /path/to/repo --id <story-id> --draft < architecture.md
+npx vibepro architecture write /path/to/repo --id <story-id> --final --output docs/architecture/<topic>.md < architecture.md
+```
+
+`architecture readiness` はStory、Graphify、Story diagnosis、Architecture check、Engineering Judgmentの証跡を `.vibepro/architecture/<story-id>/architecture-readiness.json` に記録します。`architecture write --final` はこのartifactが存在しない、blocked、または現在のgit `HEAD` に対してstaleな場合に失敗します。
+
 ### UI フローを検証する
 
 ```bash

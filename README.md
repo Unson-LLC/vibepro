@@ -276,6 +276,21 @@ npx vibepro check architecture /path/to/repo --story-id <story-id>
 npx vibepro check pr-readiness /path/to/repo --story-id <story-id> --base <base-branch>
 ```
 
+### Promote Architecture To Final
+
+Authoritative Architecture should be promoted after the evidence that informs it has been collected. Drafts are allowed before the gate; final Architecture is blocked until the readiness bundle is ready for the current `HEAD`.
+
+```bash
+npx vibepro graph /path/to/repo --run-graphify
+npx vibepro story diagnose /path/to/repo --id <story-id> --run-graphify
+npx vibepro check architecture /path/to/repo --story-id <story-id> --base <base-branch>
+npx vibepro architecture readiness /path/to/repo --id <story-id> --base <base-branch>
+npx vibepro architecture write /path/to/repo --id <story-id> --draft < architecture.md
+npx vibepro architecture write /path/to/repo --id <story-id> --final --output docs/architecture/<topic>.md < architecture.md
+```
+
+`architecture readiness` records Story, Graphify, Story diagnosis, Architecture check, and Engineering Judgment evidence in `.vibepro/architecture/<story-id>/architecture-readiness.json`. `architecture write --final` fails when that artifact is missing, blocked, or stale for the current git `HEAD`.
+
 ### Verify A User Flow
 
 ```bash

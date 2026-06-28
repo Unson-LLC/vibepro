@@ -220,6 +220,23 @@
       }
     },
     {
+      "id": "vibepro-architecture-readiness-gate",
+      "title": "Architecture Readiness Gate",
+      "root_doc": "docs/architecture/vibepro-architecture-readiness-gate.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-architecture-readiness-gate.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-architecture-readiness-gate.md"
+        ]
+      }
+    },
+    {
       "id": "vibepro-automation-runtime-cost-ingestion",
       "title": "VibePro Automation Runtime Cost Ingestion",
       "root_doc": "docs/architecture/vibepro-automation-runtime-cost-ingestion.md",

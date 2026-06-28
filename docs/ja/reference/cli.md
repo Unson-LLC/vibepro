@@ -11,6 +11,8 @@ vibepro story list [repo]
 vibepro story derive [repo] [--run-graphify] [--json]
 vibepro story diagnose [repo] --id <story-id> [--run-graphify]
 vibepro check pr-readiness [repo] --story-id <story-id> --base <base-branch>
+vibepro architecture readiness [repo] --id <story-id> --base <base-branch>
+vibepro architecture write [repo] --id <story-id> --draft|--final
 vibepro pr prepare [repo] --id <story-id>
 vibepro review status [repo] --id <story-id>
 vibepro verify record [repo] --id <story-id> --command "<command>" --status passed
