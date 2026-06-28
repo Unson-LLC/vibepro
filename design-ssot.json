@@ -297,6 +297,23 @@
           "docs/specs/vibepro-audit-scope-pruning.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-audit-replay-budget",
+      "title": "VibePro Canonical Audit Replay Budget",
+      "root_doc": "docs/architecture/vibepro-audit-replay-budget.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-audit-replay-budget.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-audit-replay-budget.md"
+        ]
+      }
     }
   ]
 }

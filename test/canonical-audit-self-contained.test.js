@@ -177,7 +177,8 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
 
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
-  assert.equal(bundle.cost_summary.budget_status, 'exceeded');
+  assert.equal(bundle.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
+  assert.equal(bundle.cost_summary.raw_source_artifact_lines > bundle.cost_summary.artifact_lines, true);
   assert.equal(bundle.artifacts.some((item) => item.kind === 'audit_index'), true);
   assert.equal(bundle.artifacts.some((item) => item.kind === 'compressed_replay_bundle'), true);
   assert.equal(bundle.handoff_replay_status, 'ready');
@@ -187,6 +188,8 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
   assert.equal(auditIndex.replay_bundle.path, bundle.replay_bundle.path);
   assert.equal(auditIndex.replay_bundle.replay_command, `vibepro audit replay . --story-id ${storyId}`);
+  assert.equal(auditIndex.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
+  assert.equal(auditIndex.cost_summary.raw_source_artifact_lines > auditIndex.cost_summary.artifact_lines, true);
   assert.equal(auditIndex.pr_prepare.present, true);
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
@@ -204,6 +207,12 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replay.verdict.pr_prepare, 'ready_for_review');
   assert.equal(replay.verdict.pr_merge, 'merged');
   assert.equal(replay.included_artifact_kinds.includes('pr_prepare'), true);
+  const replayText = gunzipSync(await readFile(path.join(root, bundle.replay_bundle.path))).toString('utf8');
+  const replayPayload = JSON.parse(replayText);
+  assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
+  assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
+  assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);
+  assert.equal(bundle.replay_bundle.expanded_line_count < bundle.cost_summary.raw_source_artifact_lines, true);
 
   const declaredReplayArgv = argvFromReplayCommand(auditIndex.replay_bundle.replay_command);
   const cliReplay = await execFileAsync(

@@ -207,8 +207,6 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   });
   decisionIndex.replay_bundle = replayBundle;
   costSummary.replay_bundle = replayBundle.cost;
-  await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
-  await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
   const artifacts = [
     {
       kind: 'audit_index',
@@ -225,6 +223,18 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       content_hash: replayBundle.content_hash
     }
   ];
+  const rawArtifacts = inventory.artifacts.map((artifact) => ({
+    kind: artifact.kind,
+    source: toWorkspaceRelative(root, artifact.sourcePath),
+    persisted: 'compressed',
+    compressed_path: replayBundle.path,
+    digest: artifact.digest,
+    audit_digest: artifact.audit_digest,
+    line_count: artifact.line_count,
+    raw_line_count: artifact.raw_line_count,
+    audit_scope: artifact.audit_scope,
+    excluded_from_audit: artifact.excluded_from_audit
+  }));
   const bundle = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -263,23 +273,20 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       replay_command: replayBundle.replay_command
     },
     artifacts,
-    raw_artifacts: inventory.artifacts.map((artifact) => ({
-      kind: artifact.kind,
-      source: toWorkspaceRelative(root, artifact.sourcePath),
-      persisted: 'compressed',
-      compressed_path: replayBundle.path,
-      digest: artifact.digest,
-      audit_digest: artifact.audit_digest,
-      line_count: artifact.line_count,
-      raw_line_count: artifact.raw_line_count,
-      audit_scope: artifact.audit_scope,
-      excluded_from_audit: artifact.excluded_from_audit
-    })),
+    raw_artifacts: rawArtifacts,
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
     resolved_references: [],
     copied_references: [],
     unresolved_references: []
   };
+  applyCompactCanonicalLineAccounting(costSummary, {
+    rawSourceArtifactLines: inventory.artifact_line_count,
+    replayBundle,
+    decisionIndex,
+    bundle
+  });
+  await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
+  await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
   await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`);
   return {
@@ -287,6 +294,46 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     bundle_path: bundlePath,
     bundle
   };
+}
+
+function applyCompactCanonicalLineAccounting(costSummary, {
+  rawSourceArtifactLines,
+  replayBundle,
+  decisionIndex,
+  bundle
+}) {
+  const rawRatio = ratioOrNull(rawSourceArtifactLines, costSummary.product_changed_lines);
+  costSummary.raw_source_artifact_lines = rawSourceArtifactLines;
+  costSummary.raw_source_artifact_code_ratio = rawRatio;
+  costSummary.artifact_lines_source = 'persisted_canonical_compact';
+
+  // Run twice so the second pass includes the first pass's accounting fields.
+  for (let index = 0; index < 2; index += 1) {
+    const summaryText = renderDecisionSummary(decisionIndex);
+    const persistedLines = (
+      countJsonLines(decisionIndex)
+      + countTextLines(summaryText)
+      + countJsonLines(bundle)
+      + (replayBundle.expanded_line_count ?? 0)
+    );
+    const persistedRatio = ratioOrNull(persistedLines, costSummary.product_changed_lines);
+    const lineBudgetExceeded = persistedLines > (costSummary.budget?.canonical_artifact_lines ?? Number.POSITIVE_INFINITY);
+    const ratioBudgetExceeded = persistedRatio !== null
+      && persistedRatio > (costSummary.budget?.artifact_code_ratio ?? Number.POSITIVE_INFINITY);
+    costSummary.artifact_lines = persistedLines;
+    costSummary.artifact_code_ratio = persistedRatio;
+    costSummary.artifact_code_ratio_reason = persistedRatio === null
+      ? (costSummary.product_changed_lines_status === 'available' ? 'product_changed_lines_zero' : 'diff_stats_unavailable')
+      : null;
+    costSummary.budget_status = lineBudgetExceeded || ratioBudgetExceeded ? 'exceeded' : 'within_budget';
+    costSummary.budget_exceeded_reasons = [
+      lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
+      ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
+    ].filter(Boolean);
+    decisionIndex.budget_status = costSummary.budget_status;
+    decisionIndex.automation_value_audit = buildAutomationValueAuditContract(decisionIndex);
+    bundle.automation_value_audit = decisionIndex.automation_value_audit;
+  }
 }
 
 async function writeCompressedReplayBundle(root, {
@@ -314,20 +361,7 @@ async function writeCompressedReplayBundle(root, {
       merged_at: merge.merged_at ?? null,
       current_head_sha: merge.current_head_sha ?? null
     } : null,
-    artifacts: inventory.artifacts.map((artifact) => ({
-      kind: artifact.kind,
-      type: artifact.type,
-      stage: artifact.stage,
-      source: toWorkspaceRelative(root, artifact.sourcePath),
-      digest: artifact.digest,
-      audit_digest: artifact.audit_digest,
-      line_count: artifact.line_count,
-      raw_line_count: artifact.raw_line_count,
-      audit_scope: artifact.audit_scope,
-      excluded_from_audit: artifact.excluded_from_audit,
-      data: artifact.type === 'json' ? artifact.data : null,
-      content: artifact.type === 'text' ? artifact.content : null
-    })),
+    artifacts: inventory.artifacts.map((artifact) => buildReplayArtifactManifest(root, artifact)),
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts)
   };
   const expandedText = `${JSON.stringify(replayPayload, null, 2)}\n`;
@@ -353,6 +387,136 @@ async function writeCompressedReplayBundle(root, {
       expanded_line_count: countTextLines(expandedText)
     }
   };
+}
+
+function buildReplayArtifactManifest(root, artifact) {
+  return {
+    kind: artifact.kind,
+    type: artifact.type,
+    stage: artifact.stage,
+    source: toWorkspaceRelative(root, artifact.sourcePath),
+    digest: artifact.digest,
+    audit_digest: artifact.audit_digest,
+    line_count: artifact.line_count,
+    raw_line_count: artifact.raw_line_count,
+    audit_scope: artifact.audit_scope,
+    excluded_from_audit: artifact.excluded_from_audit,
+    summary: summarizeReplayArtifact(artifact)
+  };
+}
+
+function summarizeReplayArtifact(artifact) {
+  const data = artifact.data;
+  if (artifact.kind === 'pr_prepare') {
+    return compactObject({
+      created_at: data?.created_at,
+      gate_status: data?.gate_status,
+      ready_for_pr_create: data?.gate_status?.ready_for_pr_create,
+      unresolved_gate_count: data?.gate_status?.unresolved_gate_count,
+      critical_unresolved_gate_count: data?.gate_status?.critical_unresolved_gate_count,
+      evidence_reuse_status: data?.evidence_reuse?.status
+    });
+  }
+  if (artifact.kind === 'pr_create') {
+    return compactObject({
+      status: data?.status,
+      pr_url: data?.pr_url ?? data?.url,
+      created_at: data?.created_at,
+      gate_override_allowed: data?.gate_override?.allowed
+    });
+  }
+  if (artifact.kind === 'pr_merge') {
+    return compactObject({
+      status: data?.status,
+      pr_url: data?.pr?.url ?? data?.pr_url,
+      merge_commit_sha: data?.merge_commit_sha,
+      merged_at: data?.merged_at,
+      current_head_sha: data?.current_head_sha,
+      cost_accounting_status: data?.cost_accounting?.status,
+      cost_accounting_collection_status: data?.cost_accounting_collection?.status
+    });
+  }
+  if (artifact.kind === 'gate_dag') {
+    const nodes = Array.isArray(data?.nodes) ? data.nodes : [];
+    return compactObject({
+      overall_status: data?.overall_status,
+      node_count: nodes.length,
+      blocking_count: nodes.filter((node) => ['block', 'needs_evidence', 'needs_review', 'failed'].includes(node?.status)).length,
+      risk_profile: data?.risk_profile ?? data?.change_classification?.profile
+    });
+  }
+  if (artifact.kind === 'senior_gap_judgment') {
+    return compactObject({
+      status: data?.decision?.status,
+      gap_count: data?.gaps?.length,
+      blocking_gap_count: data?.decision?.blocking_gap_count,
+      residual_risk_count: data?.residual_risks?.length,
+      followup_count: data?.followups?.length
+    });
+  }
+  if (artifact.kind === 'traceability') {
+    return compactObject({
+      lifecycle: data?.lifecycle,
+      coverage_summary: data?.coverage_summary
+    });
+  }
+  if (artifact.kind === 'verification_evidence') {
+    const commands = Array.isArray(data?.commands) ? data.commands : [];
+    return compactObject({
+      command_count: commands.length,
+      pass_count: commands.filter((command) => ['pass', 'passed', 'success', 'ok'].includes(command?.status)).length,
+      fail_count: commands.filter((command) => ['fail', 'failed', 'error'].includes(command?.status)).length,
+      kinds: [...new Set(commands.map((command) => command?.kind).filter(Boolean))].sort()
+    });
+  }
+  if (artifact.kind === 'evidence_reuse') {
+    return compactObject({
+      status: data?.status,
+      evidence_key: data?.evidence_key,
+      stale_reason_count: data?.stale_reasons?.length,
+      full_evidence_status: data?.full_evidence?.status
+    });
+  }
+  if (artifact.kind === 'review_summary') {
+    return compactObject({
+      status: data?.status,
+      pass_count: data?.pass_count,
+      stale_count: data?.stale_count,
+      missing_count: data?.missing_count,
+      block_count: data?.block_count,
+      needs_changes_count: data?.needs_changes_count
+    });
+  }
+  if (artifact.kind === 'review_result') {
+    return compactObject({
+      status: data?.status,
+      summary: data?.summary,
+      finding_count: data?.finding_count ?? data?.findings?.length,
+      agent_id: data?.agent_provenance?.agent_id,
+      provenance_status: data?.agent_provenance?.system
+    });
+  }
+  if (artifact.kind === 'review_lifecycle') {
+    const entries = Array.isArray(data?.entries) ? data.entries : [];
+    return compactObject({
+      entry_count: data?.entry_count ?? entries.length,
+      running_count: data?.running_count,
+      timed_out_count: data?.timed_out_count,
+      closed_count: data?.closed_count,
+      latest_status: data?.latest?.status
+    });
+  }
+  if (artifact.kind === 'review_request') {
+    return compactObject({
+      line_count: artifact.line_count,
+      raw_line_count: artifact.raw_line_count,
+      content_digest: artifact.audit_digest
+    });
+  }
+  return compactObject({
+    line_count: artifact.line_count,
+    raw_line_count: artifact.raw_line_count
+  });
 }
 
 async function collectAuditSourceInventory(root, storyId, canonicalDir) {
@@ -899,6 +1063,10 @@ function bucketChangedLines(bucket) {
 function ratioOrNull(numerator, denominator) {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
   return Number((numerator / denominator).toFixed(3));
+}
+
+function countJsonLines(value) {
+  return countTextLines(`${JSON.stringify(value, null, 2)}\n`);
 }
 
 function renderDecisionSummary(index) {
