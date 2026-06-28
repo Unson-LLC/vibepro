@@ -28,6 +28,8 @@ diagrams:
 - `SAI-CONTRACT-002`: Process-manager cwd can strengthen candidate confidence.
 - `SAI-CONTRACT-003`: Window overlap and story-id references are positive
   attribution evidence.
+- `SAI-CONTRACT-004`: Codex JSONL `session_meta` entries are the authority for
+  in-file `session_id` and cwd when process-manager metadata is absent.
 
 ## Scenarios
 
@@ -37,6 +39,8 @@ diagrams:
   selecting arbitrarily.
 - `SAI-SCENARIO-003`: Low-confidence candidates produce unavailable cost
   accounting.
+- `SAI-SCENARIO-004`: Given a JSONL with `session_meta`, inference uses its cwd
+  and session id as candidate evidence.
 
 ## Anti-Patterns
 
