@@ -160,6 +160,27 @@ test('session efficiency audit uses process-manager worktree and Codex token_cou
   assert.equal(result.cost_breakdown.total_tokens, 250);
 });
 
+test('session efficiency audit infers the matching Codex session from repo cwd and window', async () => {
+  const { root, codexHome, storyId, sessionId } = await createFixture();
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.confidence, 'high');
+  assert.equal(result.session_selection.candidates_considered, 1);
+  assert.equal(result.session.token_accounting.total_tokens, 250);
+  assert.equal(result.audit_readiness.status, 'ready');
+});
+
 test('audit session-cost CLI exposes JSON contract for active session cost audits', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
   const { stdout } = await execFileAsync(
@@ -188,6 +209,7 @@ test('audit session-cost CLI exposes JSON contract for active session cost audit
 
   const help = await execFileAsync(process.execPath, [CLI_BIN, 'help', '--language', 'en'], { cwd: root, encoding: 'utf8' });
   assert.match(help.stdout, /vibepro audit session-cost/);
+  assert.match(help.stdout, /--infer-session/);
 });
 
 test('AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent', async () => {

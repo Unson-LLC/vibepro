@@ -11124,6 +11124,33 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
+
+  const inferred = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--infer-session',
+    '--codex-home',
+    codexHome,
+    '--dry-run',
+    '--json'
+  ], {
+    env: {
+      ...env,
+      VIBEPRO_AUTOMATION_MEMORY: automationMemoryPath
+    }
+  });
+
+  assert.equal(inferred.exitCode, 0);
+  assert.equal(inferred.result.merge.cost_accounting_collection.status, 'ready');
+  assert.equal(inferred.result.merge.cost_accounting_collection.session_selection.status, 'inferred');
+  assert.equal(inferred.result.merge.cost_accounting_collection.session_id, sessionId);
+  assert.equal(inferred.result.merge.cost_accounting_collection.automation_memory.source_path, automationMemoryPath);
+  assert.equal(inferred.result.merge.cost_accounting.token_accounting.total_tokens, 250);
 });
 
 test('execute merge dry-run ignores stale pr-create selectors', async () => {
