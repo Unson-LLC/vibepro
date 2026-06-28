@@ -3,9 +3,9 @@
 - story: story-vibepro-automation-readable-value-audit
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 22178
+- artifact_lines: 22268
 - product_changed_lines: 397
-- artifact_code_ratio: 55.864
+- artifact_code_ratio: 56.091
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
