@@ -242,7 +242,7 @@ Typical PR-safety flow:
   vibepro pr prepare <repo> --base <base-branch> --story-id <id>
   vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
-  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>]
+  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>] [--automation-memory <path>]
 
 PR prepare creates evidence-plan, decision-index, concise pr-body, verification
 evidence, and plan-selected gate/review artifacts under .vibepro/pr/<story-id>/
@@ -309,7 +309,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
-  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
+  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -431,7 +431,7 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       pr prepareを再実行し、PR作成に進めるか、必要なreview prepare / review start / review recordを表示します。
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
-  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>]
+  vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>] [--automation-memory <path>]
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 risk-adaptive Gate DAG:
@@ -515,7 +515,7 @@ Usage:
   vibepro status [repo] [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
-  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
+  vibepro audit session-cost [repo] --story-id <id> --session-id <id> [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -859,6 +859,7 @@ export async function runCli(argv, io = {}) {
           storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
           sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id'),
           codexHome: getOption(rest, '--codex-home'),
+          automationMemoryPath: getOption(rest, '--automation-memory'),
           windowStart: getOption(rest, '--window-start'),
           windowEnd: getOption(rest, '--window-end'),
           baseRef: getOption(rest, '--base'),
@@ -1654,6 +1655,7 @@ export async function runCli(argv, io = {}) {
           costAccountingPath: getOption(rest, '--cost-accounting'),
           sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id'),
           codexHome: getOption(rest, '--codex-home'),
+          automationMemoryPath: getOption(rest, '--automation-memory'),
           windowStart: getOption(rest, '--window-start'),
           windowEnd: getOption(rest, '--window-end'),
           dryRun: hasFlag(rest, '--dry-run'),
