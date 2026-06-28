@@ -2,7 +2,7 @@
 story_id: story-vibepro-budget-policy-semantics
 title: Canonical Audit Budget Policy Semantics
 status: active
-parent_design: vibepro-budget-policy-semantics
+parent_design: vibepro-audit-bundle-budget
 spec: ../../../specs/vibepro-budget-policy-semantics.md
 architecture: ../../../architecture/vibepro-budget-policy-semantics.md
 ---

@@ -1,9 +1,19 @@
 ---
 story_id: story-vibepro-budget-policy-semantics
 title: Canonical Audit Budget Policy Semantics Spec
-parent_design: vibepro-budget-policy-semantics
+parent_design: vibepro-audit-bundle-budget
 related_architecture:
   - ../architecture/vibepro-budget-policy-semantics.md
+diagrams:
+  - kind: threat_model
+    mermaid: |
+      flowchart TD
+        Actor["Daily value audit"] --> Cost["canonical cost summary"]
+        Cost --> Budget["budget_status and cost_controls"]
+        Raw["raw source artifacts"] --> Compact["compact canonical bundle"]
+        Compact --> Cost
+        Misread["false cost-risk signal"] --> Budget
+        Budget --> Decision["senior engineer value judgment"]
 ---
 
 # Canonical Audit Budget Policy Semantics Spec

@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-budget-policy-semantics
 title: Canonical Audit Budget Policy Semantics Architecture
+parent_design: vibepro-audit-bundle-budget
 ---
 
 # Canonical Audit Budget Policy Semantics Architecture
