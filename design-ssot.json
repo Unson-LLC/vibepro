@@ -314,6 +314,23 @@
           "docs/specs/vibepro-audit-replay-budget.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-audit-bundle-budget",
+      "title": "VibePro Audit Bundle Budget",
+      "root_doc": "docs/architecture/vibepro-audit-bundle-budget.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-audit-bundle-budget.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-audit-bundle-budget.md"
+        ]
+      }
     }
   ]
 }

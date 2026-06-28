@@ -177,13 +177,17 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
 
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
-  assert.equal(bundle.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
-  assert.equal(bundle.cost_summary.raw_source_artifact_lines > bundle.cost_summary.artifact_lines, true);
+  assert.equal(Object.hasOwn(bundle, 'cost_summary'), false);
+  assert.equal(Object.hasOwn(bundle, 'automation_value_audit'), false);
+  assert.equal(Object.hasOwn(bundle, 'decision_index'), false);
+  assert.equal(bundle.cost_summary_ref.pointer, '/cost_summary');
+  assert.equal(bundle.automation_value_audit_ref.pointer, '/automation_value_audit');
   assert.equal(bundle.artifacts.some((item) => item.kind === 'audit_index'), true);
   assert.equal(bundle.artifacts.some((item) => item.kind === 'compressed_replay_bundle'), true);
   assert.equal(bundle.handoff_replay_status, 'ready');
-  assert.equal(bundle.raw_artifacts.some((item) => item.kind === 'pr_prepare' && item.persisted === 'compressed'), true);
+  assert.equal(bundle.raw_artifact_manifest.some((item) => item.kind === 'pr_prepare' && item.persisted === 'compressed'), true);
   assert.equal(bundle.replay_bundle.compression, 'gzip');
+  assert.equal(bundle.replay_bundle.persisted_line_count, 1);
   assert.equal(bundle.replay_bundle.included_artifact_kinds.includes('pr_prepare'), true);
   const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
   assert.equal(auditIndex.replay_bundle.path, bundle.replay_bundle.path);
@@ -209,13 +213,14 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replay.included_artifact_kinds.includes('pr_prepare'), true);
   const replayText = gunzipSync(await readFile(path.join(root, bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);
-  assert.equal(replayPayload.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
-  assert.equal(replayPayload.decision_index.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
-  assert.equal(replayPayload.cost_summary.raw_source_artifact_lines > replayPayload.cost_summary.artifact_lines, true);
+  assert.equal(Object.hasOwn(replayPayload, 'cost_summary'), false);
+  assert.equal(Object.hasOwn(replayPayload, 'decision_index'), false);
+  assert.equal(replayPayload.cost_summary_ref.pointer, '/cost_summary');
+  assert.equal(replayPayload.verdict.pr_prepare, 'ready_for_review');
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
   assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);
-  assert.equal(bundle.replay_bundle.expanded_line_count < bundle.cost_summary.raw_source_artifact_lines, true);
+  assert.equal(bundle.replay_bundle.expanded_line_count < auditIndex.cost_summary.raw_source_artifact_lines, true);
 
   const declaredReplayArgv = argvFromReplayCommand(auditIndex.replay_bundle.replay_command);
   const cliReplay = await execFileAsync(
@@ -436,7 +441,6 @@ test('compressed canonical audit replay blocks when hash metadata is missing', a
 
   delete auditIndex.replay_bundle.compressed_hash;
   delete auditBundle.replay_bundle.compressed_hash;
-  delete auditBundle.decision_index.replay_bundle.compressed_hash;
   await writeJson(auditIndexPath, auditIndex);
   await writeJson(auditBundlePath, auditBundle);
   const missingCompressedHash = await replayCanonicalAuditBundle(root, { storyId });
@@ -445,10 +449,8 @@ test('compressed canonical audit replay blocks when hash metadata is missing', a
 
   auditIndex.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
   auditBundle.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
-  auditBundle.decision_index.replay_bundle.compressed_hash = promoted.bundle.replay_bundle.compressed_hash;
   delete auditIndex.replay_bundle.content_hash;
   delete auditBundle.replay_bundle.content_hash;
-  delete auditBundle.decision_index.replay_bundle.content_hash;
   await writeJson(auditIndexPath, auditIndex);
   await writeJson(auditBundlePath, auditBundle);
   const missingContentHash = await replayCanonicalAuditBundle(root, { storyId });
@@ -608,13 +610,13 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
   });
 
   assert.equal(promoted.bundle.artifact_policy.compacted, true);
-  assert.equal(promoted.bundle.cost_summary.token_accounting.status, 'available');
-  assert.equal(promoted.bundle.cost_summary.token_accounting.total_tokens, 3456);
-  assert.equal(promoted.bundle.cost_summary.elapsed_time_accounting.status, 'available');
-  assert.equal(promoted.bundle.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+  assert.equal(Object.hasOwn(promoted.bundle, 'cost_summary'), false);
+  assert.equal(promoted.bundle.cost_summary_ref.pointer, '/cost_summary');
 
   const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
+  assert.equal(auditIndex.cost_summary.token_accounting.status, 'available');
   assert.equal(auditIndex.cost_summary.token_accounting.total_tokens, 3456);
+  assert.equal(auditIndex.cost_summary.elapsed_time_accounting.status, 'available');
   assert.equal(auditIndex.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
   assert.equal(auditIndex.automation_value_audit.status, 'needs_evidence');
   assert.equal(auditIndex.automation_value_audit.session_cost.total_tokens, 3456);
@@ -628,13 +630,12 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
   assert.match(decisionSummary, /token_accounting: available total=3456 source=codex-session-jsonl/);
   assert.match(decisionSummary, /elapsed_time_accounting: available elapsed_ms=720000 source=codex-session-jsonl/);
   assert.match(decisionSummary, /automation_value_audit: needs_evidence/);
-  assert.match(decisionSummary, /cost_controls: action_required/);
+  assert.match(decisionSummary, /cost_controls: within_controls/);
 
   const replayText = gunzipSync(await readFile(path.join(root, promoted.bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);
-  assert.equal(replayPayload.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
-  assert.equal(replayPayload.cost_summary.token_accounting.total_tokens, 3456);
-  assert.equal(replayPayload.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
-  assert.equal(replayPayload.decision_index.cost_summary.artifact_lines_source, 'persisted_canonical_compact');
-  assert.equal(replayPayload.decision_index.automation_value_audit.session_cost.total_tokens, 3456);
+  assert.equal(Object.hasOwn(replayPayload, 'cost_summary'), false);
+  assert.equal(Object.hasOwn(replayPayload, 'decision_index'), false);
+  assert.equal(replayPayload.cost_summary_ref.pointer, '/cost_summary');
+  assert.equal(replayPayload.verdict.pr_prepare, 'ready_for_review');
 });
