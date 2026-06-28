@@ -111,6 +111,14 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     canonicalDir,
     artifacts
   });
+  const decisionIndex = buildDecisionIndex({
+    storyId,
+    source,
+    merge,
+    promotedAt,
+    inventory,
+    costSummary
+  });
 
   const bundle = {
     schema_version: '0.1.0',
@@ -133,6 +141,7 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     },
     evidence_depth: costSummary.evidence_depth,
     cost_summary: costSummary,
+    automation_value_audit: decisionIndex.automation_value_audit,
     merge: merge ? {
       status: merge.status ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
@@ -239,6 +248,7 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     },
     evidence_depth: costSummary.evidence_depth,
     cost_summary: costSummary,
+    automation_value_audit: decisionIndex.automation_value_audit,
     decision_index: decisionIndex,
     replay_bundle: replayBundle,
     merge: decisionIndex.pr_merge.present ? decisionIndex.pr_merge.summary : null,
@@ -552,7 +562,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
   const reviewSummaries = (byKind.get('review_summary') ?? []).map((artifact) => artifact.data);
   const reviewResults = (byKind.get('review_result') ?? []).map((artifact) => artifact.data);
 
-  return {
+  const index = {
     schema_version: '0.1.0',
     story_id: storyId,
     source,
@@ -651,6 +661,176 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
     raw_artifact_count: inventory.artifacts.length
   };
+  index.automation_value_audit = buildAutomationValueAuditContract(index);
+  return index;
+}
+
+function buildAutomationValueAuditContract(index) {
+  const cost = index.cost_summary ?? {};
+  const changedLines = cost.changed_lines ?? {};
+  const buckets = changedLines.buckets ?? {};
+  const srcLines = bucketChangedLines(buckets.src);
+  const testLines = bucketChangedLines(buckets.test);
+  const storySpecArchitectureLines = bucketChangedLines(buckets.story_spec_architecture_docs);
+  const auditArtifactLines = bucketChangedLines(buckets.audit_artifacts);
+  const otherLines = bucketChangedLines(buckets.other);
+  const verificationAndDocsLines = testLines + storySpecArchitectureLines;
+  const auditEvidenceLines = verificationAndDocsLines + auditArtifactLines;
+  const evidenceToSrcRatio = ratioOrNull(auditEvidenceLines, srcLines);
+  const findings = buildAutomationValueAuditFindings({
+    index,
+    cost,
+    srcLines,
+    auditEvidenceLines,
+    evidenceToSrcRatio
+  });
+
+  return {
+    schema_version: '0.1.0',
+    artifact_kind: 'vibepro_automation_value_audit',
+    story_id: index.story_id,
+    generated_at: index.generated_at ?? null,
+    status: automationReadinessStatus({ index, cost }),
+    purpose: 'daily_automation_input',
+    sources: {
+      canonical_audit: true,
+      cost_summary: true,
+      pr_lifecycle: index.pr_merge?.present === true,
+      verification: index.verification?.present === true,
+      review: (index.review?.result_count ?? 0) > 0,
+      senior_gap_judgment: index.senior_gap_judgment?.present === true
+    },
+    merge_context: {
+      pr_url: index.pr_merge?.summary?.pr_url ?? index.pr_create?.pr_url ?? null,
+      merge_status: index.pr_merge?.summary?.status ?? null,
+      merge_commit_sha: index.pr_merge?.summary?.merge_commit_sha ?? null,
+      merged_at: index.pr_merge?.summary?.merged_at ?? null
+    },
+    allocation: {
+      changed_lines_status: changedLines.status ?? cost.diff_stats_status ?? 'unknown',
+      total_changed_lines: changedLines.total_changed_lines ?? null,
+      implementation_changed_lines: srcLines,
+      verification_and_docs_changed_lines: verificationAndDocsLines,
+      audit_evidence_changed_lines: auditEvidenceLines,
+      buckets: {
+        src: srcLines,
+        test: testLines,
+        story_spec_architecture_docs: storySpecArchitectureLines,
+        audit_artifacts: auditArtifactLines,
+        other: otherLines
+      }
+    },
+    ratios: {
+      test_to_src: ratioOrNull(testLines, srcLines),
+      story_spec_architecture_to_src: ratioOrNull(storySpecArchitectureLines, srcLines),
+      audit_artifacts_to_src: ratioOrNull(auditArtifactLines, srcLines),
+      automation_evidence_to_src: evidenceToSrcRatio,
+      artifact_lines_to_product_changed_lines: cost.artifact_code_ratio ?? null
+    },
+    session_cost: {
+      token_status: cost.token_accounting?.status ?? 'unknown',
+      total_tokens: cost.token_accounting?.total_tokens ?? null,
+      token_source: cost.token_accounting?.source ?? null,
+      token_window: cost.token_accounting?.window ?? null,
+      elapsed_status: cost.elapsed_time_accounting?.status ?? 'unknown',
+      elapsed_ms: cost.elapsed_time_accounting?.elapsed_ms ?? null,
+      elapsed_source: cost.elapsed_time_accounting?.source ?? null,
+      elapsed_window: cost.elapsed_time_accounting?.window ?? null
+    },
+    value_signal_inputs: {
+      budget_status: cost.budget_status ?? null,
+      budget_exceeded_reasons: cost.budget_exceeded_reasons ?? [],
+      evidence_depth: index.evidence_depth ?? null,
+      verification_pass_count: index.verification?.pass_count ?? 0,
+      verification_fail_count: index.verification?.fail_count ?? 0,
+      review_result_count: index.review?.result_count ?? 0,
+      review_pass_count: index.review?.pass_count ?? 0,
+      review_block_count: index.review?.block_count ?? 0,
+      senior_gap_status: index.senior_gap_judgment?.status ?? null,
+      senior_gap_residual_risk_count: index.senior_gap_judgment?.residual_risk_count ?? 0,
+      evidence_reuse_status: index.evidence_reuse?.status ?? null,
+      evidence_reuse_stale_reason_count: index.evidence_reuse?.stale_reason_count ?? 0,
+      traceability_lifecycle: index.traceability?.lifecycle ?? null,
+      missing_artifact_count: index.missing_artifacts?.length ?? 0
+    },
+    findings
+  };
+}
+
+function automationReadinessStatus({ index, cost }) {
+  if (index.pr_merge?.present !== true) return 'not_merged';
+  if ((index.missing_artifacts?.length ?? 0) > 0 || cost.diff_stats_status !== 'available') return 'needs_evidence';
+  if (
+    cost.token_accounting?.status !== 'available'
+    || cost.elapsed_time_accounting?.status !== 'available'
+    || cost.budget_status === 'exceeded'
+    || (index.senior_gap_judgment?.residual_risk_count ?? 0) > 0
+  ) {
+    return 'partial';
+  }
+  return 'ready';
+}
+
+function buildAutomationValueAuditFindings({ index, cost, srcLines, auditEvidenceLines, evidenceToSrcRatio }) {
+  const findings = [];
+  if (cost.token_accounting?.status !== 'available' || cost.elapsed_time_accounting?.status !== 'available') {
+    findings.push({
+      id: 'session_cost_unavailable',
+      severity: 'needs_context',
+      reason: 'token or elapsed-time accounting is not available in canonical audit summary',
+      token_status: cost.token_accounting?.status ?? 'unknown',
+      elapsed_status: cost.elapsed_time_accounting?.status ?? 'unknown'
+    });
+  }
+  if (cost.budget_status === 'exceeded') {
+    findings.push({
+      id: 'artifact_budget_exceeded',
+      severity: 'cost_risk',
+      reason: 'canonical audit evidence exceeded the configured artifact budget',
+      budget_exceeded_reasons: cost.budget_exceeded_reasons ?? [],
+      artifact_code_ratio: cost.artifact_code_ratio ?? null
+    });
+  }
+  if (srcLines === 0 && auditEvidenceLines > 0) {
+    findings.push({
+      id: 'no_src_changed_lines',
+      severity: 'review_needed',
+      reason: 'automation evidence changed without src/ implementation changes'
+    });
+  } else if (evidenceToSrcRatio !== null && evidenceToSrcRatio > 3) {
+    findings.push({
+      id: 'evidence_heavy_relative_to_src',
+      severity: 'cost_risk',
+      reason: 'test/story/audit evidence changed lines are more than 3x src changed lines',
+      automation_evidence_to_src: evidenceToSrcRatio
+    });
+  }
+  if ((index.review?.result_count ?? 0) === 0) {
+    findings.push({
+      id: 'agent_review_not_recorded',
+      severity: 'needs_context',
+      reason: 'no recorded review result is available for automation value judgment'
+    });
+  }
+  if ((index.senior_gap_judgment?.residual_risk_count ?? 0) > 0) {
+    findings.push({
+      id: 'senior_gap_residual_risk',
+      severity: 'review_needed',
+      reason: 'senior gap judgment still reports residual risk',
+      residual_risk_count: index.senior_gap_judgment.residual_risk_count
+    });
+  }
+  return findings;
+}
+
+function bucketChangedLines(bucket) {
+  const value = bucket?.changed_lines;
+  return Number.isFinite(value) ? value : 0;
+}
+
+function ratioOrNull(numerator, denominator) {
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
+  return Number((numerator / denominator).toFixed(3));
 }
 
 function renderDecisionSummary(index) {
@@ -665,6 +845,7 @@ function renderDecisionSummary(index) {
 - diff_stats: ${index.cost_summary.diff_stats_status ?? 'unknown'}
 - token_accounting: ${index.cost_summary.token_accounting?.status ?? 'unknown'} total=${index.cost_summary.token_accounting?.total_tokens ?? 'unknown'} source=${index.cost_summary.token_accounting?.source ?? 'unknown'}
 - elapsed_time_accounting: ${index.cost_summary.elapsed_time_accounting?.status ?? 'unknown'} elapsed_ms=${index.cost_summary.elapsed_time_accounting?.elapsed_ms ?? 'unknown'} source=${index.cost_summary.elapsed_time_accounting?.source ?? 'unknown'}
+- automation_value_audit: ${index.automation_value_audit?.status ?? 'unknown'} findings=${index.automation_value_audit?.findings?.length ?? 0} evidence_to_src=${index.automation_value_audit?.ratios?.automation_evidence_to_src ?? 'unknown'}
 - pr_prepare: ${index.pr_prepare.present ? index.pr_prepare.gate_status?.overall_status ?? 'present' : 'missing'}
 - evidence_reuse: ${index.evidence_reuse.present ? `${index.evidence_reuse.status ?? 'present'} key=${index.evidence_reuse.evidence_key ?? 'unknown'} verification_updated_at=${index.evidence_reuse.verification_evidence_updated_at ?? 'unknown'} verification_fingerprint=${index.evidence_reuse.verification_summary_fingerprint ?? 'unknown'}` : 'missing'}
 - senior_gap_judgment: ${index.senior_gap_judgment.present ? `${index.senior_gap_judgment.status ?? 'present'} gaps=${index.senior_gap_judgment.gap_count} blocking=${index.senior_gap_judgment.blocking_gap_count} residual=${index.senior_gap_judgment.residual_risk_count}` : 'missing'}

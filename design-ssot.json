@@ -184,6 +184,23 @@
           "docs/specs/vibepro-execute-merge-cost-accounting.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-automation-readable-value-audit",
+      "title": "VibePro Automation Readable Value Audit",
+      "root_doc": "docs/architecture/vibepro-automation-readable-value-audit.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-automation-readable-value-audit.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-automation-readable-value-audit.md"
+        ]
+      }
     }
   ]
 }

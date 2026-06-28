@@ -308,6 +308,14 @@ test('canonical audit bundle stores diff stats provenance and bucketed changed l
   assert.equal(cost.changed_lines.buckets.audit_artifacts.changed_lines, 50);
   assert.equal(cost.product_changed_lines, 31);
   assert.equal(cost.artifact_code_ratio !== null, true);
+  assert.equal(promoted.bundle.automation_value_audit.status, 'needs_evidence');
+  assert.equal(promoted.bundle.automation_value_audit.allocation.implementation_changed_lines, 15);
+  assert.equal(promoted.bundle.automation_value_audit.allocation.audit_evidence_changed_lines, 66);
+  assert.equal(promoted.bundle.automation_value_audit.ratios.automation_evidence_to_src, 4.4);
+  assert.equal(
+    promoted.bundle.automation_value_audit.findings.some((finding) => finding.id === 'evidence_heavy_relative_to_src'),
+    true
+  );
 });
 
 test('canonical evidence cost summary preserves available and unavailable token/time accounting', () => {
@@ -400,13 +408,22 @@ test('canonical audit promotion persists merge cost accounting in compact artifa
   const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
   assert.equal(auditIndex.cost_summary.token_accounting.total_tokens, 3456);
   assert.equal(auditIndex.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+  assert.equal(auditIndex.automation_value_audit.status, 'needs_evidence');
+  assert.equal(auditIndex.automation_value_audit.session_cost.total_tokens, 3456);
+  assert.equal(auditIndex.automation_value_audit.session_cost.elapsed_ms, 720000);
+  assert.equal(
+    auditIndex.automation_value_audit.findings.some((finding) => finding.id === 'agent_review_not_recorded'),
+    true
+  );
 
   const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
   assert.match(decisionSummary, /token_accounting: available total=3456 source=codex-session-jsonl/);
   assert.match(decisionSummary, /elapsed_time_accounting: available elapsed_ms=720000 source=codex-session-jsonl/);
+  assert.match(decisionSummary, /automation_value_audit: needs_evidence/);
 
   const replayText = gunzipSync(await readFile(path.join(root, promoted.bundle.replay_bundle.path))).toString('utf8');
   const replayPayload = JSON.parse(replayText);
   assert.equal(replayPayload.cost_summary.token_accounting.total_tokens, 3456);
   assert.equal(replayPayload.cost_summary.elapsed_time_accounting.elapsed_ms, 720000);
+  assert.equal(replayPayload.decision_index.automation_value_audit.session_cost.total_tokens, 3456);
 });
