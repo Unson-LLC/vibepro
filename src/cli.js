@@ -132,8 +132,14 @@ import { buildSpecFingerprint } from './spec-fingerprint.js';
 import { validateSpec } from './spec-validator.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
+  assertPreSpecReadinessForFinalSpec,
+  recordPreSpecReadiness,
+  renderPreSpecReadinessSummary
+} from './pre-spec-readiness.js';
+import {
   readInferredSpec,
   stabilizeClauseIds,
+  writeDraftSpec,
   writeDrift,
   writeDriftMarkdown,
   writeInferredSpec
@@ -386,7 +392,8 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
-  vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
+  vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
   vibepro spec show [repo] --id <story-id> [--clause <clause-id>] [--json]
   vibepro spec drift [repo] --id <story-id> [--against <git-ref>] [--json]
   vibepro report fingerprint [repo] --kind <kind> --id <story-id> [--base <ref>] [--task <id>] [--group <id>] [--include-instructions]
@@ -577,7 +584,8 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
-  vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--json]
+  vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
   vibepro spec show [repo] --id <story-id> [--clause <clause-id>] [--json]
   vibepro spec drift [repo] --id <story-id> [--against <git-ref>] [--json]
 `;
@@ -2245,11 +2253,31 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, fingerprint };
       }
 
+      if (subcommand === 'readiness') {
+        if (!storyId) throw new Error('--id <story-id> is required for spec readiness');
+        const result = await recordPreSpecReadiness(repoRoot, {
+          storyId,
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          env: io.env
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.readiness, null, 2)}\n`
+          : renderPreSpecReadinessSummary(result));
+        return { exitCode: result.readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
+      }
+
       if (subcommand === 'write') {
         if (!storyId) throw new Error('--id <story-id> is required for spec write');
         const inputPath = getOption(rest, '--input');
         const fromStdin = hasFlag(rest, '--from-stdin') || !inputPath;
         const caller = getOption(rest, '--caller') ?? 'unknown';
+        const draft = hasFlag(rest, '--draft');
+        const final = hasFlag(rest, '--final') || !draft;
+        if (draft && hasFlag(rest, '--final')) {
+          throw new Error('spec write cannot use --draft and --final together');
+        }
         const raw = inputPath
           ? await readFile(path.resolve(inputPath), 'utf8')
           : await readStdin(io.stdin ?? process.stdin);
@@ -2265,6 +2293,9 @@ export async function runCli(argv, io = {}) {
           write(stdout, `${JSON.stringify({ ok: false, errors: validation.errors, warnings: validation.warnings }, null, 2)}\n`);
           return { exitCode: 2, command, subcommand, validation };
         }
+        const preSpecReadiness = final
+          ? await assertPreSpecReadinessForFinalSpec(repoRoot, storyId)
+          : null;
         const previousSpec = await readInferredSpec(repoRoot, storyId);
         const seeded = {
           ...parsed,
@@ -2278,8 +2309,22 @@ export async function runCli(argv, io = {}) {
           previous_spec_id: previousSpec ? `${previousSpec.generated_at ?? ''}` : null
         };
         const stabilized = stabilizeClauseIds(seeded, previousSpec);
-        await writeInferredSpec(repoRoot, storyId, stabilized);
-        write(stdout, `${JSON.stringify({ ok: true, story_id: storyId, clauses: stabilized.clauses.length, warnings: validation.warnings }, null, 2)}\n`);
+        const artifact = draft
+          ? await writeDraftSpec(repoRoot, storyId, stabilized)
+          : await writeInferredSpec(repoRoot, storyId, stabilized);
+        write(stdout, `${JSON.stringify({
+          ok: true,
+          story_id: storyId,
+          mode: draft ? 'draft' : 'final',
+          clauses: stabilized.clauses.length,
+          warnings: validation.warnings,
+          pre_spec_readiness: preSpecReadiness ? {
+            status: preSpecReadiness.status,
+            created_at: preSpecReadiness.created_at,
+            artifact: `.vibepro/spec/${storyId}/pre-spec-readiness.json`
+          } : null,
+          artifact
+        }, null, 2)}\n`);
         return { exitCode: 0, command, subcommand, spec: stabilized };
       }
 

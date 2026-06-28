@@ -170,6 +170,15 @@ Run a story diagnosis:
 npx vibepro story diagnose /path/to/repo --id story-internal-beta --run-graphify
 ```
 
+Record Pre-Spec Readiness before promoting a final Spec:
+
+```bash
+npx vibepro spec readiness /path/to/repo --id story-internal-beta --base <base-branch>
+npx vibepro spec write /path/to/repo --id story-internal-beta --final --input spec.json
+```
+
+Use `spec write --draft` for exploratory Spec drafts that are not ready to drive implementation or PR gates.
+
 Prepare PR evidence:
 
 ```bash
@@ -367,6 +376,7 @@ treated as an authoritative curated Journey.
 ### Create A PR Through VibePro
 
 ```bash
+npx vibepro spec readiness /path/to/repo --id <story-id> --base <base-branch>
 npx vibepro pr prepare /path/to/repo --story-id <story-id> --base <base-branch>
 npx vibepro pr create /path/to/repo --story-id <story-id> --base <base-branch> --head <feature-branch>
 ```

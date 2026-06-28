@@ -201,6 +201,23 @@
           "docs/specs/vibepro-automation-readable-value-audit.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-pre-spec-readiness-gate",
+      "title": "Pre-Spec Readiness Gate",
+      "root_doc": "docs/architecture/vibepro-pre-spec-readiness-gate.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-pre-spec-readiness-gate.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-pre-spec-readiness-gate.md"
+        ]
+      }
     }
   ]
 }

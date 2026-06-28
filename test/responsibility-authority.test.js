@@ -82,6 +82,44 @@ test('resolver passes matched contract when current-head evidence is bound to re
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'passed');
 });
 
+test('resolver accepts verify-record git context and observed values as current responsibility evidence', async () => {
+  const repo = await makeFixtureRepo();
+  await writeResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), 'export const symbol = "metadata.awaitingProductionGenerationStart";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/cleanup-worker.js'] },
+    fileGroups: { source: { files: ['src/cleanup-worker.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    verificationEvidence: {
+      commands: [
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: 'npm test',
+          summary: 'full suite passed for responsibility contracts',
+          git_context: {
+            head_sha: 'abc123',
+            dirty: false
+          },
+          observation: {
+            targets: ['test/**/*.js', 'docs/contracts/generation-state.json', 'GEN-STATE-001'],
+            scenarios: ['full responsibility authority regression suite'],
+            values: {
+              unit_regression: 'pass',
+              cleanup_recovery_replay: 'pass'
+            }
+          }
+        }
+      ]
+    }
+  });
+
+  assert.equal(result.status, 'passed');
+  assert.equal(result.summary.missing_evidence_count, 0);
+  assert.equal(buildResponsibilityAuthorityGate(result).status, 'passed');
+});
+
 test('resolver does not satisfy contract evidence with unrelated generic unit pass', async () => {
   const repo = await makeFixtureRepo();
   await writeResponsibilityFixture(repo);
