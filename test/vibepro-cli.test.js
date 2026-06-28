@@ -6556,7 +6556,7 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.gate_status.overall_status, 'needs_verification');
   assert.equal(prepare.gate_status.ready_for_pr_create, false);
   assert.equal(prepare.gate_status.completion_quality_status, 'needs_quality_closure');
-  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), true);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), false);
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
   assert.match(prepare.gate_status.agent_instruction, /Do not treat scope\.status=reviewable/);
   assert.equal(prepare.toolchain.package.name, 'vibepro');
@@ -6609,9 +6609,9 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.pr_context.visual_qa.status, 'needs_review');
   assert.equal(prepare.pr_context.completion_quality.status, 'needs_quality_closure');
   assert.equal(prepare.pr_context.completion_quality.status, 'needs_quality_closure');
-  assert.equal(prepare.pr_context.completion_quality.metrics.e2e_experience_reach_rate, 0);
+  assert.equal(prepare.pr_context.completion_quality.metrics.e2e_experience_reach_rate, null);
   assert.equal(prepare.pr_context.completion_quality.metrics.visual_qa_pass_rate, 0);
-  assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience')), true);
+  assert.equal(prepare.pr_context.completion_quality.required_evidence.some((item) => item.includes('E2E experience')), false);
   assert.equal(prepare.pr_context.visual_qa.threshold_pct, 5);
   assert.equal(prepare.pr_context.visual_qa.runs[0].qa_id, 'story-pr-prepare-visual');
   assert.equal(prepare.pr_context.visual_qa.runs[0].latest_residual.meanAbsResidualPct, 13.41);
@@ -6716,7 +6716,8 @@ Weighted semantic/layout residual: **34%**
   });
   assert.equal(criticalWaiverResult.exitCode, 1);
   assert.match(criticalWaiverStderrOutput, /Pre-create critical gate check failed/);
-  assert.match(criticalWaiverStderrOutput, /E2E Gate:needs_(setup|evidence)/);
+  assert.match(criticalWaiverStderrOutput, /Common Judgment Spine Gate:needs_evidence/);
+  assert.doesNotMatch(criticalWaiverStderrOutput, /E2E Gate:needs_(setup|evidence)/);
   assert.match(criticalWaiverStderrOutput, /Visual QA Gate:needs_review/);
   assert.match(criticalWaiverStderrOutput, /Agent Review Gate:needs_review/);
   assert.match(criticalWaiverStderrOutput, /vibepro verify record/);
@@ -7458,6 +7459,79 @@ ADR-unnecessary: This changes only verification-layer classification and introdu
   await writeFile(path.join(repo, 'test', 'contracts', 'story-pr-prepare-contract.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("source contract", () => assert.match("source contract unit layer", /unit layer/));\n');
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'test: move story contract coverage to unit layer']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/contracts/story-pr-prepare-contract.test.js',
+    '--summary', 'unit-layer source contract passed'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.required, false);
+  assert.equal(e2eGate.status, 'not_required');
+  assert.equal(e2eGate.command, null);
+  assert.equal(e2eGate.acceptance_e2e_coverage.required, false);
+  assert.equal(e2eGate.acceptance_e2e_coverage.status, 'not_applicable');
+  assert.deepEqual(e2eGate.acceptance_e2e_coverage.missing_acceptance_criteria, []);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), false);
+});
+
+test('pr prepare does not require E2E when moving source contract coverage from E2E to unit', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'contract-move-app',
+    type: 'module',
+    scripts: {
+      test: 'node --test',
+      'test:e2e': 'playwright test'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: Contract-only verification layer change
+---
+
+# PR準備
+
+## Architecture Decision
+
+ADR-unnecessary: This moves browser-unnecessary source contract coverage from Playwright to unit tests.
+
+## 受け入れ基準
+
+- [x] ブラウザ不要のsource contract確認はunit layerで検証される
+`);
+  await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-contract.spec.ts'), `
+import { expect, test } from '@playwright/test';
+test('source contract', async () => {
+  // story-pr-prepare ac:1
+  expect('source contract unit layer').toContain('unit layer');
+});
+`);
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'old-ui-story'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'old-ui-story', 'residual.json'), {
+    meanAbsResidualPct: 0,
+    rmsResidualPct: 0
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: initial e2e source contract']);
+
+  await rm(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-contract.spec.ts'));
+  await mkdir(path.join(repo, 'test', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'contracts', 'story-pr-prepare-contract.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("source contract", () => assert.match("source contract unit layer", /unit layer/));\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: move source contract coverage to unit']);
 
   assert.equal((await runCli([
     'verify', 'record', repo,
@@ -10898,6 +10972,7 @@ test('required managed worktree backfills VibePro control files when reusing an 
 
 test('execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
+  await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
@@ -10967,7 +11042,9 @@ process.exit(99);
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr view')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('git fetch origin main')), true);
-  assert.equal(result.result.merge.commands.some((command) => command.includes('--repo unson/vibepro')), true);
+  assert.equal(result.result.merge.repository_slug, 'unson/target-product');
+  assert.equal(result.result.merge.commands.some((command) => command.includes('--repo unson/target-product')), true);
+  assert.equal(result.result.merge.commands.some((command) => command.includes('--repo unson/vibepro')), false);
   assert.equal(result.result.merge.commands.some((command) => command.includes('--match-head-commit')), true);
   assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Dry-run skipped external commands')), true);
 

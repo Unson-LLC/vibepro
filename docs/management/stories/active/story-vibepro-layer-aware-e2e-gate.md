@@ -27,7 +27,8 @@ ADR-unnecessary: This narrows existing PR Gate classification inside `src/pr-man
 
 - [ ] A repository-level `test:e2e` script alone does not make E2E Gate required.
 - [ ] UI source changes still require E2E Gate.
-- [ ] `tests/e2e`, `test/e2e`, `e2e`, and Playwright config changes still require E2E Gate.
+- [ ] `tests/e2e`, `test/e2e`, `e2e`, and Playwright config additions/modifications still require E2E Gate; deleting or moving a browser-unnecessary E2E source-contract test to unit does not.
 - [ ] Flow Verification and Visual QA evidence still require E2E Gate.
+- [ ] Stale or unrelated Visual QA artifacts alone do not make E2E Gate required for non-UI/non-flow changes.
 - [ ] Unit-layer source-contract acceptance coverage can close the PR without Story E2E coverage.
 - [ ] PR creation critical instructions no longer force `tests/e2e/<story-id>-*.spec.ts` for non-browser/non-flow changes.
