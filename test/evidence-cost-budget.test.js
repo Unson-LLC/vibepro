@@ -45,6 +45,44 @@ test('canonical evidence cost budget selects compact persistence on artifact/cod
   assert.equal(shouldUseCompactCanonicalEvidence(cost), true);
 });
 
+test('BPOL-CONTRACT-001 canonical evidence cost budget treats 2-to-3x compact artifacts as within policy', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 710,
+    diffStats: {
+      'src/canonical-audit.js': { additions: 75, deletions: 21 },
+      'src/usage-report.js': { additions: 7, deletions: 3 },
+      'test/canonical-audit-self-contained.test.js': { additions: 21, deletions: 20 },
+      'test/traceability-usage-report.test.js': { additions: 8, deletions: 2 },
+      'docs/architecture/vibepro-audit-bundle-budget.md': { additions: 39, deletions: 0 },
+      'docs/management/stories/active/story-vibepro-audit-bundle-budget.md': { additions: 29, deletions: 0 },
+      'docs/specs/vibepro-audit-bundle-budget.md': { additions: 27, deletions: 0 },
+      'design-ssot.json': { additions: 17, deletions: 0 }
+    }
+  });
+
+  assert.equal(cost.product_changed_lines, 269);
+  assert.equal(cost.artifact_code_ratio, 2.639);
+  assert.equal(cost.budget.artifact_code_ratio, 3);
+  assert.equal(cost.budget.effective_canonical_artifact_lines, 807);
+  assert.equal(cost.budget_status, 'within_budget');
+  assert.deepEqual(cost.budget_exceeded_reasons, []);
+  assert.equal(shouldUseCompactCanonicalEvidence(cost), false);
+});
+
+test('BPOL-CONTRACT-002 canonical evidence cost budget still flags ratios above 3x', () => {
+  const cost = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 301,
+    diffStats: {
+      'src/small-change.js': { additions: 100, deletions: 0 }
+    }
+  });
+
+  assert.equal(cost.artifact_code_ratio, 3.01);
+  assert.equal(cost.budget_status, 'exceeded');
+  assert.deepEqual(cost.budget_exceeded_reasons, ['artifact_code_ratio_exceeded']);
+  assert.equal(shouldUseCompactCanonicalEvidence(cost), true);
+});
+
 test('canonical evidence cost budget counts docs-only changes as product context', () => {
   const cost = buildCanonicalEvidenceCostSummary({
     artifactLineCount: 20,

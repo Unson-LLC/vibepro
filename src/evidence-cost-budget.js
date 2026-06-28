@@ -3,7 +3,7 @@ export const EVIDENCE_DEPTHS = new Set(['summary', 'standard', 'full']);
 export const DEFAULT_EVIDENCE_COST_BUDGET = {
   normal: {
     canonical_artifact_lines: 500,
-    artifact_code_ratio: 1
+    artifact_code_ratio: 3
   },
   high: {
     canonical_artifact_lines: 1500,
@@ -120,7 +120,8 @@ export function buildCanonicalEvidenceCostSummary({
   const highRisk = isHighRiskProfile(riskProfile) || triggerSignals.length > 0;
   const thresholds = highRisk ? budget.high : budget.normal;
   const ratio = Number.isFinite(productChangedLines) && productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
-  const lineBudgetExceeded = artifactLineCount > thresholds.canonical_artifact_lines;
+  const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(thresholds, productChangedLines);
+  const lineBudgetExceeded = artifactLineCount > effectiveCanonicalArtifactLines;
   const ratioBudgetExceeded = ratio !== null && ratio > thresholds.artifact_code_ratio;
   const explicitDepth = normalizeEvidenceDepth(requestedDepth);
   const budgetExceeded = lineBudgetExceeded || ratioBudgetExceeded;
@@ -149,6 +150,7 @@ export function buildCanonicalEvidenceCostSummary({
     budget: {
       profile: highRisk ? 'high' : 'normal',
       canonical_artifact_lines: thresholds.canonical_artifact_lines,
+      effective_canonical_artifact_lines: effectiveCanonicalArtifactLines,
       artifact_code_ratio: thresholds.artifact_code_ratio
     },
     budget_status: budgetExceeded ? 'exceeded' : 'within_budget',
@@ -163,6 +165,15 @@ export function buildCanonicalEvidenceCostSummary({
 
 export function shouldUseCompactCanonicalEvidence(costSummary) {
   return costSummary?.budget_status === 'exceeded' && costSummary?.evidence_depth !== 'full';
+}
+
+export function resolveEffectiveCanonicalArtifactLineBudget(thresholds = {}, productChangedLines = null) {
+  const configuredLines = normalizePositiveNumber(thresholds?.canonical_artifact_lines);
+  const ratioLimit = normalizePositiveNumber(thresholds?.artifact_code_ratio);
+  if (Number.isFinite(productChangedLines) && productChangedLines > 0 && ratioLimit !== null) {
+    return Math.max(configuredLines ?? 0, Math.ceil(productChangedLines * ratioLimit));
+  }
+  return configuredLines ?? Number.POSITIVE_INFINITY;
 }
 
 export function normalizeTokenAccounting(input = null) {
@@ -234,6 +245,11 @@ function changedLineCount(stats) {
   const deletions = stats?.deletions;
   if (!Number.isFinite(additions) || !Number.isFinite(deletions)) return null;
   return additions + deletions;
+}
+
+function normalizePositiveNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : null;
 }
 
 function normalizeDiffStatsProvenance(diffStats, provenance) {

@@ -565,6 +565,59 @@ test('canonical evidence cost summary preserves available and unavailable token/
   assert.equal(unavailable.elapsed_time_accounting.reason, 'elapsed-time logs were not provided to canonical audit promotion');
 });
 
+test('BPOL-CONTRACT-003 compact canonical promotion re-evaluates budget against 3x effective line cap', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-budget-policy-'));
+  const storyId = 'story-budget-policy-semantics';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-29T00:00:00.000Z',
+    story: { story_id: storyId },
+    gate_status: {
+      ready_for_pr_create: true,
+      overall_status: 'ready_for_review',
+      critical_unresolved_gates: []
+    },
+    large_gate_context: Array.from({ length: 1700 }, (_, index) => ({
+      id: `gate-${index}`,
+      status: 'passed'
+    }))
+  });
+  await writeLargeVerificationEvidence(root, storyId);
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge: {
+      status: 'merged',
+      merged_at: '2026-06-29T00:05:00.000Z',
+      merge_commit_sha: 'abc123',
+      pr: { url: 'https://github.com/example/repo/pull/3' },
+      git: {
+        diff_line_stats: {
+          'src/budget-policy.js': { additions: 250, deletions: 0 },
+          'test/budget-policy.test.js': { additions: 150, deletions: 0 },
+          'docs/specs/vibepro-budget-policy-semantics.md': { additions: 100, deletions: 0 }
+        },
+        diff_stats: {
+          status: 'available',
+          source: 'fixture numstat',
+          refs: { base_ref: 'origin/main', head_ref: 'HEAD' },
+          collected_at: '2026-06-29T00:04:00.000Z'
+        }
+      }
+    }
+  });
+
+  assert.equal(promoted.bundle.artifact_policy.compacted, true);
+  const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
+  assert.equal(auditIndex.cost_summary.product_changed_lines, 500);
+  assert.equal(auditIndex.cost_summary.budget.artifact_code_ratio, 3);
+  assert.equal(auditIndex.cost_summary.budget.effective_canonical_artifact_lines, 1500);
+  assert.equal(auditIndex.cost_summary.artifact_code_ratio <= 3, true);
+  assert.equal(auditIndex.cost_summary.budget_status, 'within_budget');
+  assert.deepEqual(auditIndex.cost_summary.budget_exceeded_reasons, []);
+  assert.equal(auditIndex.automation_value_audit.cost_controls.budget_status, 'within_budget');
+});
+
 test('canonical audit promotion persists merge cost accounting in compact artifacts', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-cost-accounting-'));
   const storyId = 'story-cost-accounting';
