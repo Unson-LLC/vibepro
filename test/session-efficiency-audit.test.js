@@ -244,6 +244,36 @@ test('SCATTR-SCENARIO-001 session inference ignores symlink directories during J
   assert.equal(result.session_selection.candidates_considered, 1);
 });
 
+test('SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories', async () => {
+  const { root, codexHome, storyId, sessionId } = await createFixture();
+  const oldSessionPath = path.join(codexHome, 'sessions', '2026', '05', '01', 'rollout-test-019f0405-d790-70e1-882f-a436d8074aaa.jsonl');
+  await mkdir(path.dirname(oldSessionPath), { recursive: true });
+  await writeFile(
+    oldSessionPath,
+    `${sessionLines({
+      sessionId: '019f0405-d790-70e1-882f-a436d8074aaa',
+      cwd: root,
+      storyId,
+      firstToken: 500,
+      lastToken: 900
+    }).map((line) => JSON.stringify({ ...line, timestamp: line.timestamp.replace('2026-06-27', '2026-05-01') })).join('\n')}\n`
+  );
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.candidates_considered, 1);
+});
+
 test('SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   const siblingWorktree = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-worktree-'));

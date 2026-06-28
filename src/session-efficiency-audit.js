@@ -13,6 +13,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 const execFileAsync = promisify(execFile);
 
 const SESSION_FILE_RE = /\.jsonl$/;
+const DEFAULT_SESSION_LOOKBACK_DAYS = 14;
 const ARTIFACT_TEXT_EXTENSIONS = new Set([
   '.json', '.md', '.txt', '.log', '.tap', '.html', '.xml', '.yaml', '.yml'
 ]);
@@ -247,7 +248,7 @@ function normalizeRequestedSessionId(value) {
 
 async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, windowStart, windowEnd } = {}) {
   const sessionsRoot = path.join(codexHome, 'sessions');
-  const files = await collectSessionJsonlFiles(sessionsRoot, 7);
+  const files = await collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd });
   const processEntries = await readProcessEntries(codexHome);
   const candidates = [];
   for (const filePath of files) {
@@ -263,6 +264,84 @@ async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, window
     candidates.push(candidate);
   }
   return candidates;
+}
+
+async function collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd } = {}) {
+  const dayDirs = await selectSessionDayDirs(sessionsRoot, { windowStart, windowEnd });
+  const roots = dayDirs.length > 0 ? dayDirs.map((entry) => entry.path) : [sessionsRoot];
+  const maxDepth = dayDirs.length > 0 ? 1 : 7;
+  const files = [];
+  for (const root of roots) {
+    files.push(...await collectSessionJsonlFiles(root, maxDepth));
+  }
+  return [...new Set(files)].sort((a, b) => a.localeCompare(b));
+}
+
+async function selectSessionDayDirs(sessionsRoot, { windowStart, windowEnd } = {}) {
+  const dayDirs = await listSessionDayDirs(sessionsRoot);
+  if (dayDirs.length === 0) return [];
+  const startMs = normalizeTimeMs(windowStart);
+  const endMs = normalizeTimeMs(windowEnd);
+  if (startMs !== null || endMs !== null) {
+    const start = startMs ?? endMs;
+    const end = endMs ?? startMs;
+    const startDay = dayOrdinal(start) - 1;
+    const endDay = dayOrdinal(end) + 1;
+    return dayDirs.filter((entry) => entry.ordinal >= startDay && entry.ordinal <= endDay);
+  }
+  return dayDirs
+    .sort((a, b) => b.ordinal - a.ordinal)
+    .slice(0, DEFAULT_SESSION_LOOKBACK_DAYS)
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
+
+async function listSessionDayDirs(sessionsRoot) {
+  const years = await listDirNames(sessionsRoot, (name) => /^\d{4}$/.test(name));
+  const dayDirs = [];
+  for (const year of years) {
+    const yearPath = path.join(sessionsRoot, year);
+    const months = await listDirNames(yearPath, (name) => /^\d{2}$/.test(name));
+    for (const month of months) {
+      const monthPath = path.join(yearPath, month);
+      const days = await listDirNames(monthPath, (name) => /^\d{2}$/.test(name));
+      for (const day of days) {
+        const ordinal = sessionDayOrdinal(year, month, day);
+        if (ordinal === null) continue;
+        dayDirs.push({ path: path.join(monthPath, day), ordinal });
+      }
+    }
+  }
+  return dayDirs;
+}
+
+async function listDirNames(root, predicate) {
+  try {
+    const entries = await readdir(root, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isDirectory() && predicate(entry.name))
+      .map((entry) => entry.name)
+      .sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
+}
+
+function sessionDayOrdinal(year, month, day) {
+  const ms = Date.UTC(Number(year), Number(month) - 1, Number(day));
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
+  return dayOrdinal(ms);
+}
+
+function dayOrdinal(ms) {
+  return Math.floor(ms / 86_400_000);
 }
 
 async function collectSessionJsonlFiles(root, maxDepth, depth = 0) {
