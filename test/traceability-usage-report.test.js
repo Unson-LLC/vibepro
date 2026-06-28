@@ -310,8 +310,14 @@ test('compact canonical audit index resolves merged story and renders evidence c
     promoted_at: '2026-06-23T00:10:00.000Z',
     evidence_depth: 'standard',
     handoff_replay_status: 'ready',
-    cost_summary: costSummary,
-    automation_value_audit: automationValueAudit,
+    cost_summary_ref: {
+      source: 'docs/management/audit-artifacts/story-compact-audit/audit-index.json',
+      pointer: '/cost_summary'
+    },
+    automation_value_audit_ref: {
+      source: 'docs/management/audit-artifacts/story-compact-audit/audit-index.json',
+      pointer: '/automation_value_audit'
+    },
     replay_bundle: {
       compression: 'gzip',
       compressed_bytes: 512,
