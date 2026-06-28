@@ -132,6 +132,49 @@ async function createFixture() {
   return { root, codexHome, storyId, sessionId, sessionPath };
 }
 
+async function writeSessionJsonl(codexHome, sessionId, lines) {
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '06', '27', `rollout-test-${sessionId}.jsonl`);
+  await mkdir(path.dirname(sessionPath), { recursive: true });
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+  return sessionPath;
+}
+
+function sessionLines({ sessionId, cwd = null, storyId = null, firstToken = 100, lastToken = 200 } = {}) {
+  return [
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, ...(cwd ? { cwd } : {}) }
+    },
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: firstToken, output_tokens: 20, total_tokens: firstToken + 20 } }
+      }
+    },
+    ...(storyId ? [{
+      timestamp: '2026-06-27T13:00:20.000Z',
+      type: 'response_item',
+      payload: { text: `working on ${storyId}` }
+    }] : []),
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: lastToken, output_tokens: 70, total_tokens: lastToken + 70 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:20.000Z',
+      type: 'event_msg',
+      payload: { type: 'final_answer' }
+    }
+  ];
+}
+
 test('session efficiency audit uses process-manager worktree and Codex token_count window', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
   const result = await collectSessionEfficiencyAudit(root, {
@@ -179,6 +222,65 @@ test('session efficiency audit infers the matching Codex session from repo cwd a
   assert.equal(result.session_selection.candidates_considered, 1);
   assert.equal(result.session.token_accounting.total_tokens, 250);
   assert.equal(result.audit_readiness.status, 'ready');
+});
+
+test('SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: root }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+  await writeSessionJsonl(
+    codexHome,
+    '019f0405-d790-70e1-882f-a436d8074dcf',
+    sessionLines({ sessionId: '019f0405-d790-70e1-882f-a436d8074dcf', cwd: root, firstToken: 300, lastToken: 500 })
+  );
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, null);
+  assert.equal(result.session_selection.status, 'ambiguous');
+  assert.equal(result.session_selection.confidence, 'ambiguous');
+  assert.equal(result.session_selection.candidates_considered, 2);
+  assert.match(result.session_selection.reason, /multiple session candidates/);
+  assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.equal(result.audit_readiness.status, 'partial');
+});
+
+test('SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable', async () => {
+  const { root, codexHome, storyId } = await createFixture();
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(path.join(codexHome, 'sessions', '2026', '06', '27', 'rollout-test-019f0405-d790-70e1-882f-a436d8074dcd.jsonl'), '');
+  await writeSessionJsonl(
+    codexHome,
+    '019f0405-d790-70e1-882f-a436d8074ddd',
+    sessionLines({ sessionId: '019f0405-d790-70e1-882f-a436d8074ddd' })
+  );
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, null);
+  assert.equal(result.session_selection.status, 'ambiguous');
+  assert.equal(result.session_selection.confidence, 'low');
+  assert.match(result.session_selection.reason, /confidence threshold/);
+  assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.equal(result.audit_readiness.status, 'partial');
 });
 
 test('audit session-cost CLI exposes JSON contract for active session cost audits', async () => {

@@ -45,12 +45,18 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     windowStart: effectiveWindowStart,
     windowEnd: effectiveWindowEnd
   });
-  if (!sessionSelection.session_id) throw new Error('audit session-cost requires --session-id <id> or --infer-session');
+  if (!sessionSelection.session_id && !inferSession && sessionId !== 'auto') {
+    throw new Error('audit session-cost requires --session-id <id> or --infer-session');
+  }
 
   const selectedSessionId = sessionSelection.session_id;
-  const processMetadata = await readProcessMetadata(resolvedCodexHome, selectedSessionId);
-  const sessionFile = sessionSelection.source_path ?? await findCodexSessionFile(resolvedCodexHome, selectedSessionId);
-  const session = sessionFile
+  const processMetadata = selectedSessionId
+    ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
+    : null;
+  const sessionFile = selectedSessionId
+    ? sessionSelection.source_path ?? await findCodexSessionFile(resolvedCodexHome, selectedSessionId)
+    : null;
+  const session = selectedSessionId && sessionFile
     ? await parseCodexSessionJsonl(sessionFile, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
