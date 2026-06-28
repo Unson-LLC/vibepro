@@ -1,0 +1,282 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-policy-semantics",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-28T15:41:01.088Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:b9ec0637d15ab2bee58009ee89cfbcca0aa8975c1902a716c40f2a88744b6d6e",
+    "compressed_hash": "sha256:86c247e7539b8d4b9f659d6fea7634573f7fba23c282d13b6073ff682f1c06cd",
+    "expanded_bytes": 12243,
+    "compressed_bytes": 2884,
+    "expanded_line_count": 334,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-policy-semantics",
+    "cost": {
+      "compressed_bytes": 2884,
+      "expanded_bytes": 12243,
+      "expanded_line_count": 334,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/256",
+    "merge_commit_sha": "22c3e3d451cf604d84e3f14c8b78fa81003c8502",
+    "merged_at": "2026-06-28T15:40:59Z",
+    "current_head_sha": "a38de4f4fc093f266b1ec9a4a30e89c594d045b8",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...a38de4f4fc093f266b1ec9a4a30e89c594d045b8"
+  },
+  "handoff_replay_status": "ready",
+  "handoff_replay": {
+    "status": "ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-policy-semantics"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:b9ec0637d15ab2bee58009ee89cfbcca0aa8975c1902a716c40f2a88744b6d6e"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:b0a701b0551c7fc85e468292090cdfaefeb4b7728256e24c22dad0abd5bd70ac",
+      "audit_digest": "sha256:b0a701b0551c7fc85e468292090cdfaefeb4b7728256e24c22dad0abd5bd70ac",
+      "line_count": 94,
+      "raw_line_count": 94,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:5ad1d26af04dac43f51250bd38cd063db4f4ebd62968eb505ec6a3b7895bf66f",
+      "audit_digest": "sha256:edf0c26b7958b317893db321cd9938e8c036dd5bd45abac71d10f73f6a6253a6",
+      "line_count": 3281,
+      "raw_line_count": 17577,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:2759c9c88c9b9f433bc2557c683016321543f07f50d13eaa2a5d4248b2abcfe5",
+      "audit_digest": "sha256:014ed82b13740284c2e0f755f533fe86a236aee16e49c330ab03a05025fa3340",
+      "line_count": 1421,
+      "raw_line_count": 2998,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:f0e898ae447f7be6b36445b60afa0f0f71843c7b7133de28fabc283f796ed9eb",
+      "audit_digest": "sha256:55f4c1977d0e3d3ef22c428ffe807960ebbaa86ada5a000bca262f52a7a8e197",
+      "line_count": 1278,
+      "raw_line_count": 2852,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:662c19f873868d4a7e48177b348b65ba1f086ad3425254f7cf56bfc5ac8e1b14",
+      "audit_digest": "sha256:0f38d0c537b7557dfe814f9f7fb4090edf58c3f00fcb70daf8e996fa7dc0738a",
+      "line_count": 55,
+      "raw_line_count": 596,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:0702f60e9838d27894ee3fe7620a020ba1faac4aba299cfd2031978f0df84492",
+      "audit_digest": "sha256:eb3b8d25ec0fc7e267089dbc4d765bbe93ecaa38ea5236098af595e0fb66d4a0",
+      "line_count": 1462,
+      "raw_line_count": 3080,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:f3720ca09526675a82e002b1ae2524b3908e42467b630f5aabcb23d28dc1e588",
+      "audit_digest": "sha256:f3720ca09526675a82e002b1ae2524b3908e42467b630f5aabcb23d28dc1e588",
+      "line_count": 338,
+      "raw_line_count": 338,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-budget-policy-semantics/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:55868ceec8da5adb47119dabb48577d3a040f0df84585e23c602aba9e0c4b1f2",
+      "audit_digest": "sha256:f340a31e72f500f5ca862bcebbed0a0bb21fec51c8485093e8d16fb771a7b821",
+      "line_count": 65,
+      "raw_line_count": 446,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-budget-policy-semantics/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:84b3b1a41dcd9e154ebac852ad3ec4fb1f2b72a4599a09bbd2bb79317ebd6440",
+      "audit_digest": "sha256:84b3b1a41dcd9e154ebac852ad3ec4fb1f2b72a4599a09bbd2bb79317ebd6440",
+      "line_count": 59,
+      "raw_line_count": 59,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-budget-policy-semantics/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:12db8fc3e1f0f0d007902320c95b3ae78cfc89a2392d75825308f1660ff6febd",
+      "audit_digest": "sha256:12db8fc3e1f0f0d007902320c95b3ae78cfc89a2392d75825308f1660ff6febd",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-budget-policy-semantics/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:039eba4686b0b7353746f08e0dfabf5a5fee4b2553f09d45082fdc5edb7c4418",
+      "audit_digest": "sha256:039eba4686b0b7353746f08e0dfabf5a5fee4b2553f09d45082fdc5edb7c4418",
+      "line_count": 96,
+      "raw_line_count": 96,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-budget-policy-semantics/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-policy-semantics/audit-replay-bundle.json.gz",
+      "digest": "sha256:8aadf9e70fc1104a0202669199bf5456a05dfcd7b5983da25138e97aa3316066",
+      "audit_digest": "sha256:8aadf9e70fc1104a0202669199bf5456a05dfcd7b5983da25138e97aa3316066",
+      "line_count": 213,
+      "raw_line_count": 213,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
