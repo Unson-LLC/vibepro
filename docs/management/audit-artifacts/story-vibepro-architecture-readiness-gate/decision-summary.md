@@ -3,9 +3,9 @@
 - story: story-vibepro-architecture-readiness-gate
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 32560
+- artifact_lines: 32650
 - product_changed_lines: 973
-- artifact_code_ratio: 33.464
+- artifact_code_ratio: 33.556
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
