@@ -331,6 +331,23 @@
           "docs/specs/vibepro-audit-bundle-budget.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-layer-aware-e2e-gate",
+      "title": "Layer-aware E2E Gate",
+      "root_doc": "docs/architecture/vibepro-layer-aware-e2e-gate.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-layer-aware-e2e-gate.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-layer-aware-e2e-gate.md"
+        ]
+      }
     }
   ]
 }

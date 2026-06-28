@@ -7426,6 +7426,62 @@ architecture_docs:
   assert.doesNotMatch(runtimeLanePlan.review_note, /後続のe2e-gate/);
 });
 
+test('pr prepare ignores package E2E script for unit-layer contract-only acceptance coverage', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'contract-only-app',
+    type: 'module',
+    scripts: {
+      test: 'node --test',
+      'test:e2e': 'playwright test'
+    }
+  }, null, 2));
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: Contract-only verification layer change
+---
+
+# PR準備
+
+## Architecture Decision
+
+ADR-unnecessary: This changes only verification-layer classification and introduces no runtime, browser, network, queue, or persistence boundary.
+
+## 受け入れ基準
+
+- [x] ブラウザ不要のsource contract確認はunit layerで検証される
+`);
+  await mkdir(path.join(repo, 'test', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'contracts', 'story-pr-prepare-contract.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("source contract", () => assert.match("source contract unit layer", /unit layer/));\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'test: move story contract coverage to unit layer']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/contracts/story-pr-prepare-contract.test.js',
+    '--summary', 'unit-layer source contract passed'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  const e2eGate = prepare.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.required, false);
+  assert.equal(e2eGate.status, 'not_required');
+  assert.equal(e2eGate.command, null);
+  assert.equal(e2eGate.acceptance_e2e_coverage.required, false);
+  assert.equal(e2eGate.acceptance_e2e_coverage.status, 'not_applicable');
+  assert.deepEqual(e2eGate.acceptance_e2e_coverage.missing_acceptance_criteria, []);
+  assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:e2e'), false);
+});
+
 test('pr prepare uses node --test targeted command for node test runner', async () => {
   const repo = await makeGitRepoWithStory();
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
@@ -12886,7 +12942,7 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
 test('verify record promotes gate evidence into the next pr prepare', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
-  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
   await mkdir(path.join(repo, 'tests'), { recursive: true });
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     scripts: {
@@ -12911,7 +12967,7 @@ title: PR準備
 
 - PR本文に検証証跡が入る
 `);
-  await writeFile(path.join(repo, 'src', 'feature.js'), 'export const ok = true;\n');
+  await writeFile(path.join(repo, 'src', 'components', 'Feature.jsx'), 'export function Feature(){ return <button>OK</button>; }\n');
   await writeFile(path.join(repo, 'tests', 'feature.test.js'), 'import test from "node:test";\ntest("ok", () => {});\n');
 
   assert.equal((await runCli([
