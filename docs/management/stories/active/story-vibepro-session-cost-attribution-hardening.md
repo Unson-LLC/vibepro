@@ -38,7 +38,9 @@ three remaining gaps:
   instead of traversing the full store.
 - `SCATTR-SCENARIO-002`: Given a Codex session whose cwd is a sibling Git
   worktree of the canonical repo, cost attribution treats the session as
-  repo-matching.
+  repo-matching. JSONL parsing may use the `entry.type === 'session_meta'`
+  branch to read cwd metadata, but that branch must feed repo/worktree
+  attribution instead of becoming timestamp-only attribution.
 - `SCATTR-SCENARIO-003`: Given an explicit session whose observed cwd belongs
   to another repository, the audit remains partial with `session_cwd_mismatch`
   instead of ready.

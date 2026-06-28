@@ -44,7 +44,8 @@ diagrams:
 - `SCATTR-SCENARIO-001`: Given a symlink directory under sessions, discovery
   ignores it and inference still completes from real JSONL files.
 - `SCATTR-SCENARIO-002`: Given a session from a same Git worktree, inference
-  treats it as repo-matching.
+  treats it as repo-matching. The JSONL `entry.type === 'session_meta'` branch
+  is the cwd metadata source for repo/worktree attribution.
 - `SCATTR-SCENARIO-003`: Given an explicit session whose cwd is another repo,
   the audit remains partial with `session_cwd_mismatch`.
 - `SCATTR-SCENARIO-004`: Given a bounded window before the session's first
