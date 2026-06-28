@@ -222,6 +222,56 @@ async function makeGitRepoWithStory(options = {}) {
   return repo;
 }
 
+async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepare') {
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: storyId, title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main' }
+  });
+  await writeJson(path.join(prDir, 'pr-create.json'), {
+    schema_version: '0.1.0',
+    created_at: '2026-06-07T00:00:00.000Z',
+    mode: 'pr_create',
+    dry_run: false,
+    workspace_initialized: true,
+    story: { story_id: storyId, title: 'PR準備' },
+    output: { language: 'ja' },
+    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
+    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    base: 'main',
+    head: 'feature/test-story',
+    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    current_head_sha: headSha,
+    artifact_freshness: {
+      kind: 'pr_create',
+      status: 'current',
+      artifact_head_sha: headSha,
+      current_head_sha: headSha
+    },
+    toolchain: { source_git: { origin_url: 'https://github.com/unson/vibepro.git', commit: headSha } },
+    results: []
+  });
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-dry-run-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.stderr.write('gh must not be executed during execute merge --dry-run');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+  return {
+    headSha,
+    prDir,
+    ghCallLog,
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+  };
+}
+
 async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
   const stageRoles = {
     planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -1684,6 +1734,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /evidence-coverage\.json と ds-gate\.json/);
   assert.match(output, /GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らない/);
   assert.doesNotMatch(output, /gh pr create.*標準経路として使/i);
+  assert.match(output, /vibepro execute merge <repo> --story-id <id>.*--cost-accounting <json>.*--session-id <id>/);
   assert.match(output, /vibepro measure \[repo\].*--base-url <url>/);
   assert.match(output, /vibepro harness status \[repo\]/);
   assert.match(output, /vibepro harness map \[repo\]/);
@@ -1729,6 +1780,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /product-local Design System/);
   assert.match(englishOutput, /evidence-coverage\.json and ds-gate\.json/);
   assert.match(englishOutput, /Do not use raw\s+gh pr create/i);
+  assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>.*--cost-accounting <json>.*--session-id <id>/);
 });
 
 test('check list prints available diagnosis packs', async () => {
@@ -10876,6 +10928,190 @@ process.exit(99);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
   assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
+});
+
+test('execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { prDir, ghCallLog, env } = await prepareExecuteMergeDryRunFixture(repo);
+
+  const noInput = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--dry-run',
+    '--json'
+  ], { env });
+
+  assert.equal(noInput.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.equal(noInput.result.merge.cost_accounting, undefined);
+  assert.equal(noInput.result.merge.cost_accounting_collection.status, 'not_requested');
+  assert.match(noInput.result.merge.cost_accounting_collection.reason, /did not receive --cost-accounting or --session-id/);
+
+  const unreadable = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--cost-accounting',
+    path.join(prDir, 'missing-cost-accounting.json'),
+    '--dry-run',
+    '--json'
+  ], { env });
+
+  assert.equal(unreadable.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.equal(unreadable.result.merge.cost_accounting.status, 'unavailable');
+  assert.equal(unreadable.result.merge.cost_accounting_collection.status, 'unavailable');
+  assert.equal(unreadable.result.merge.cost_accounting.token_accounting.total_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
+  assert.match(unreadable.result.merge.cost_accounting_collection.reason, /ENOENT/);
+  assert.equal(unreadable.result.merge.warnings.some((warning) => warning.includes('Cost accounting file could not be read')), true);
+
+  const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(artifact.cost_accounting.status, 'unavailable');
+  assert.equal(artifact.cost_accounting.token_accounting.total_tokens, null);
+});
+
+test('execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { prDir, env } = await prepareExecuteMergeDryRunFixture(repo);
+  const partialCostPath = path.join(prDir, 'partial-cost-accounting.json');
+  await writeJson(partialCostPath, {
+    cost_accounting: {
+      token_accounting: {
+        status: 'available',
+        total_tokens: 777,
+        input_tokens: 700,
+        output_tokens: 77,
+        source: 'codex-session-jsonl',
+        window: { session_id: 'partial-session' }
+      }
+    }
+  });
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--cost-accounting',
+    partialCostPath,
+    '--dry-run',
+    '--json'
+  ], { env });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.cost_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 777);
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'unavailable');
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
+  assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
+});
+
+test('execute merge dry-run collects explicit session-id cost accounting from Codex JSONL', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-merge-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const { env } = await prepareExecuteMergeDryRunFixture(repo);
+  const codexHome = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execute-merge-codex-'));
+  const sessionId = '019f0405-d790-70e1-882f-a436d8074dcd';
+  await mkdir(path.join(codexHome, 'process_manager'), { recursive: true });
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), [{
+    conversationId: sessionId,
+    cwd: repo,
+    startedAtMs: 1782558001000,
+    updatedAtMs: 1782558140000
+  }]);
+  const sessionPath = path.join(codexHome, 'sessions', '2026', '06', '27', `rollout-test-${sessionId}.jsonl`);
+  await mkdir(path.dirname(sessionPath), { recursive: true });
+  const sessionLines = [
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: repo }
+    },
+    {
+      timestamp: '2026-06-27T13:00:01.000Z',
+      type: 'event_msg',
+      payload: { type: 'task_started', started_at: 1782558001 }
+    },
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: {
+            input_tokens: 100,
+            cached_input_tokens: 40,
+            output_tokens: 20,
+            total_tokens: 120
+          }
+        }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: {
+            input_tokens: 300,
+            cached_input_tokens: 120,
+            output_tokens: 70,
+            total_tokens: 370
+          }
+        }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:20.000Z',
+      type: 'event_msg',
+      payload: { type: 'final_answer' }
+    }
+  ];
+  await writeFile(sessionPath, `${sessionLines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--session-id',
+    sessionId,
+    '--codex-home',
+    codexHome,
+    '--dry-run',
+    '--json'
+  ], { env });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.cost_accounting_collection.status, 'ready');
+  assert.equal(result.result.merge.cost_accounting_collection.source, 'audit-session-cost');
+  assert.equal(result.result.merge.cost_accounting.session_id, sessionId);
+  assert.equal(result.result.merge.cost_accounting.token_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 250);
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 139000);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
 });
 
 test('execute merge dry-run ignores stale pr-create selectors', async () => {
