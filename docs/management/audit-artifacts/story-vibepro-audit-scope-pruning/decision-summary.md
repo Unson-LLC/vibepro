@@ -3,9 +3,9 @@
 - story: story-vibepro-audit-scope-pruning
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 9408
+- artifact_lines: 9498
 - product_changed_lines: 827
-- artifact_code_ratio: 11.376
+- artifact_code_ratio: 11.485
 - diff_stats: available
 - token_accounting: available total=456571 source=codex-session-jsonl
 - elapsed_time_accounting: available elapsed_ms=86480851 source=codex-session-jsonl
