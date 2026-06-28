@@ -137,6 +137,16 @@ import {
   renderPreSpecReadinessSummary
 } from './pre-spec-readiness.js';
 import {
+  assertArchitectureReadinessForFinal,
+  recordArchitectureReadiness,
+  renderArchitectureReadinessSummary
+} from './architecture-readiness.js';
+import {
+  defaultArchitectureFinalPath,
+  writeDraftArchitecture,
+  writeFinalArchitecture
+} from './architecture-store.js';
+import {
   readInferredSpec,
   stabilizeClauseIds,
   writeDraftSpec,
@@ -391,6 +401,8 @@ Usage:
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
+  vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -583,6 +595,8 @@ Usage:
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
+  vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro spec write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--draft|--final] [--json]
@@ -2236,6 +2250,69 @@ export async function runCli(argv, io = {}) {
           : `Portfolio dashboard story status published: ${publishResult.storyId}\n`);
       }
       return { exitCode: 0, command, result };
+    }
+
+    if (command === 'architecture') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+
+      if (subcommand === 'readiness') {
+        if (!storyId) throw new Error('--id <story-id> is required for architecture readiness');
+        const result = await recordArchitectureReadiness(repoRoot, {
+          storyId,
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          env: io.env
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.readiness, null, 2)}\n`
+          : renderArchitectureReadinessSummary(result));
+        return { exitCode: result.readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
+      }
+
+      if (subcommand === 'write') {
+        if (!storyId) throw new Error('--id <story-id> is required for architecture write');
+        const inputPath = getOption(rest, '--input');
+        const caller = getOption(rest, '--caller') ?? 'unknown';
+        const draft = hasFlag(rest, '--draft');
+        const final = hasFlag(rest, '--final') || !draft;
+        if (draft && hasFlag(rest, '--final')) {
+          throw new Error('architecture write cannot use --draft and --final together');
+        }
+        const raw = inputPath
+          ? await readFile(path.resolve(inputPath), 'utf8')
+          : await readStdin(io.stdin ?? process.stdin);
+        if (!raw.trim()) throw new Error('architecture write received empty input');
+        const readiness = final
+          ? await assertArchitectureReadinessForFinal(repoRoot, storyId)
+          : null;
+        const outputPath = getOption(rest, '--output') ?? defaultArchitectureFinalPath(storyId);
+        const artifact = draft
+          ? await writeDraftArchitecture(repoRoot, storyId, raw)
+          : await writeFinalArchitecture(repoRoot, storyId, raw, { outputPath });
+        write(stdout, `${JSON.stringify({
+          ok: true,
+          story_id: storyId,
+          mode: draft ? 'draft' : 'final',
+          caller,
+          architecture_readiness: readiness ? {
+            status: readiness.status,
+            created_at: readiness.created_at,
+            artifact: `.vibepro/architecture/${storyId}/architecture-readiness.json`
+          } : null,
+          artifact
+        }, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, artifact };
+      }
+
+      write(stderr, `Unknown architecture command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'spec') {
