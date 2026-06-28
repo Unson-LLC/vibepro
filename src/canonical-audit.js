@@ -5,6 +5,7 @@ import { gunzipSync, gzipSync } from 'node:zlib';
 
 import {
   buildCanonicalEvidenceCostSummary,
+  resolveEffectiveCanonicalArtifactLineBudget,
   shouldUseCompactCanonicalEvidence
 } from './evidence-cost-budget.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
@@ -379,7 +380,11 @@ function applyCompactCanonicalLineAccounting(costSummary, {
       + (replayBundle.persisted_line_count ?? COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT)
     );
     const persistedRatio = ratioOrNull(persistedLines, costSummary.product_changed_lines);
-    const lineBudgetExceeded = persistedLines > (costSummary.budget?.canonical_artifact_lines ?? Number.POSITIVE_INFINITY);
+    const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(
+      costSummary.budget,
+      costSummary.product_changed_lines
+    );
+    const lineBudgetExceeded = persistedLines > effectiveCanonicalArtifactLines;
     const ratioBudgetExceeded = persistedRatio !== null
       && persistedRatio > (costSummary.budget?.artifact_code_ratio ?? Number.POSITIVE_INFINITY);
     costSummary.artifact_lines = persistedLines;
@@ -392,6 +397,7 @@ function applyCompactCanonicalLineAccounting(costSummary, {
       lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
       ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
     ].filter(Boolean);
+    costSummary.budget.effective_canonical_artifact_lines = effectiveCanonicalArtifactLines;
     decisionIndex.budget_status = costSummary.budget_status;
     decisionIndex.automation_value_audit = buildAutomationValueAuditContract(decisionIndex);
     bundle.artifact_policy.why_compacted = costSummary.budget_exceeded_reasons;

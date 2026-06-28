@@ -325,10 +325,15 @@
       ],
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-audit-bundle-budget.md"
+          "docs/management/stories/active/story-vibepro-audit-bundle-budget.md",
+          "docs/management/stories/active/story-vibepro-budget-policy-semantics.md"
+        ],
+        "architecture": [
+          "docs/architecture/vibepro-budget-policy-semantics.md"
         ],
         "spec": [
-          "docs/specs/vibepro-audit-bundle-budget.md"
+          "docs/specs/vibepro-audit-bundle-budget.md",
+          "docs/specs/vibepro-budget-policy-semantics.md"
         ]
       }
     },
