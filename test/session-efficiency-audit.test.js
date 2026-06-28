@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -222,6 +222,95 @@ test('session efficiency audit infers the matching Codex session from repo cwd a
   assert.equal(result.session_selection.candidates_considered, 1);
   assert.equal(result.session.token_accounting.total_tokens, 250);
   assert.equal(result.audit_readiness.status, 'ready');
+});
+
+test('SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery', async () => {
+  const { root, codexHome, storyId, sessionId } = await createFixture();
+  await symlink(path.join(codexHome, 'sessions'), path.join(codexHome, 'sessions', 'loop'), 'dir');
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates_considered, 1);
+});
+
+test('SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const siblingWorktree = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-worktree-'));
+  await git(root, ['worktree', 'add', '--detach', siblingWorktree, 'HEAD']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: siblingWorktree, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.candidates[0].cwd_matches_repo, true);
+  assert.equal(result.observed_worktree_matches_repo, true);
+  assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), false);
+});
+
+test('SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const otherRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-other-repo-'));
+  await git(otherRoot, ['init']);
+  await git(otherRoot, ['config', 'user.email', 'vibepro@example.test']);
+  await git(otherRoot, ['config', 'user.name', 'VibePro Test']);
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${sessionLines({ sessionId, cwd: otherRoot, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.observed_worktree, otherRoot);
+  assert.equal(result.observed_worktree_source, 'session_meta');
+  assert.equal(result.observed_worktree_matches_repo, false);
+  assert.equal(result.audit_readiness.status, 'partial');
+  assert.equal(result.audit_readiness.blockers.includes('session_cwd_mismatch'), true);
+});
+
+test('SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable', async () => {
+  const { root, codexHome, storyId, sessionId } = await createFixture();
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    windowStart: '2026-06-27T12:00:00.000Z',
+    windowEnd: '2026-06-27T12:10:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session.window.in_window_event_count, 0);
+  assert.equal(result.session.token_accounting.status, 'unavailable');
+  assert.equal(result.session.elapsed_time_accounting.status, 'unavailable');
+  assert.match(result.session.elapsed_time_accounting.reason, /no events were found/);
+  assert.equal(result.audit_readiness.blockers.includes('elapsed_time_unavailable'), true);
 });
 
 test('SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection', async () => {

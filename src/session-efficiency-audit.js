@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -62,6 +62,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
+  const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
   const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId);
   const git = await collectGitCostStats(observedRoot, {
     baseRef,
@@ -85,6 +86,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     repo_root: root,
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
+    observed_worktree_matches_repo: observedWorktreeMatchesRepo,
     session,
     process_manager: processMetadata ? {
       status: 'available',
@@ -103,7 +105,13 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     story_artifacts: artifactInventory,
     git,
     cost_breakdown: costBreakdown,
-    audit_readiness: buildAuditReadiness({ session, processMetadata, artifactInventory, git })
+    audit_readiness: buildAuditReadiness({
+      session,
+      processMetadata,
+      observedWorktreeMatchesRepo,
+      artifactInventory,
+      git
+    })
   };
 }
 
@@ -272,7 +280,7 @@ async function collectSessionJsonlFiles(root, maxDepth, depth = 0) {
       files.push(fullPath);
       continue;
     }
-    if (depth < maxDepth && (entry.isDirectory() || entry.isSymbolicLink())) {
+    if (depth < maxDepth && entry.isDirectory()) {
       files.push(...await collectSessionJsonlFiles(fullPath, maxDepth, depth + 1));
     }
   }
@@ -328,7 +336,7 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
   const processEntry = processEntries.find((entry) => entry?.conversationId === sessionId) ?? null;
   const processCwd = processEntry?.cwd ?? null;
   const effectiveCwd = processCwd ?? cwd;
-  const cwdMatchesRepo = effectiveCwd ? samePath(effectiveCwd, repoRoot) : false;
+  const cwdMatchesRepo = effectiveCwd ? await matchesRepo(effectiveCwd, repoRoot) : false;
   const windowOverlap = overlapsWindow(firstEventMs, lastEventMs, normalizeTimeMs(windowStart), normalizeTimeMs(windowEnd));
   const score = [
     cwdMatchesRepo ? 45 : 0,
@@ -359,8 +367,37 @@ function inferSessionIdFromFile(filePath) {
   return match?.[0] ?? null;
 }
 
-function samePath(a, b) {
-  return path.resolve(a) === path.resolve(b);
+async function matchesRepo(candidatePath, repoRoot) {
+  if (await sameExistingPath(candidatePath, repoRoot)) return true;
+  try {
+    const [candidateCommonDir, repoCommonDir] = await Promise.all([
+      gitCommonDir(candidatePath),
+      gitCommonDir(repoRoot)
+    ]);
+    return candidateCommonDir !== null && repoCommonDir !== null && await sameExistingPath(candidateCommonDir, repoCommonDir);
+  } catch {
+    return false;
+  }
+}
+
+async function sameExistingPath(a, b) {
+  try {
+    const [resolvedA, resolvedB] = await Promise.all([realpath(a), realpath(b)]);
+    return resolvedA === resolvedB;
+  } catch {
+    return path.resolve(a) === path.resolve(b);
+  }
+}
+
+async function gitCommonDir(cwd) {
+  try {
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--git-common-dir'], { cwd });
+    const raw = stdout.trim();
+    if (!raw) return null;
+    return path.resolve(cwd, raw);
+  } catch {
+    return null;
+  }
 }
 
 function overlapsWindow(firstMs, lastMs, startMs, endMs) {
@@ -516,6 +553,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
   const tokenEvents = [];
   const taskStartedEvents = [];
   const finalAnswerEvents = [];
+  const inWindowEventTimestamps = [];
   let cwd = null;
   let firstEventAt = null;
   let lastEventAt = null;
@@ -536,6 +574,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       cwd = entry.payload?.cwd ?? cwd;
     }
     if (!isInsideWindow(eventAt, startMs, endMs)) continue;
+    if (eventAt !== null) inWindowEventTimestamps.push(eventAt);
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
       if (usage) tokenEvents.push({ line: index + 1, timestamp_ms: eventAt, usage });
@@ -550,8 +589,14 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
 
   const firstToken = tokenEvents[0] ?? null;
   const lastToken = tokenEvents.at(-1) ?? null;
-  const windowStartedAt = startMs ?? taskStartedEvents[0]?.timestamp_ms ?? firstToken?.timestamp_ms ?? firstEventAt;
-  const windowFinishedAt = endMs ?? finalAnswerEvents.at(-1)?.timestamp_ms ?? lastToken?.timestamp_ms ?? lastEventAt;
+  const boundedWindowRequested = startMs !== null || endMs !== null;
+  const hasInWindowEvents = inWindowEventTimestamps.length > 0;
+  const windowStartedAt = boundedWindowRequested && !hasInWindowEvents
+    ? null
+    : (startMs ?? taskStartedEvents[0]?.timestamp_ms ?? firstToken?.timestamp_ms ?? inWindowEventTimestamps[0] ?? firstEventAt);
+  const windowFinishedAt = boundedWindowRequested && !hasInWindowEvents
+    ? null
+    : (endMs ?? finalAnswerEvents.at(-1)?.timestamp_ms ?? lastToken?.timestamp_ms ?? inWindowEventTimestamps.at(-1) ?? lastEventAt);
   const tokenDelta = firstToken && lastToken
     ? subtractUsage(lastToken.usage, firstToken.usage)
     : null;
@@ -568,6 +613,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       first_token_line: firstToken?.line ?? null,
       last_token_line: lastToken?.line ?? null,
       token_event_count: tokenEvents.length,
+      in_window_event_count: inWindowEventTimestamps.length,
       scope: windowStart || windowEnd ? 'bounded' : 'full_session'
     },
     token_accounting: tokenDelta ? {
@@ -612,7 +658,9 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       finished_at: null,
       source: 'codex-session-jsonl',
       window: { session_id: sessionId, source_path: filePath },
-      reason: 'no usable timestamps were found in the selected session window'
+      reason: boundedWindowRequested && !hasInWindowEvents
+        ? 'no events were found in the selected bounded session window'
+        : 'no usable timestamps were found in the selected session window'
     }
   };
 }
@@ -841,11 +889,12 @@ function buildCostBreakdown({ changedLines, tokenAccounting }) {
   };
 }
 
-function buildAuditReadiness({ session, processMetadata, artifactInventory, git }) {
+function buildAuditReadiness({ session, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
   const blockers = [
     session.token_accounting.status !== 'available' ? 'token_count_unavailable' : null,
     session.elapsed_time_accounting.status === 'unavailable' ? 'elapsed_time_unavailable' : null,
-    !processMetadata ? 'process_manager_cwd_unavailable' : null,
+    !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
+    observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
     artifactInventory.status !== 'available' ? 'story_artifacts_unavailable' : null,
     git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
   ].filter(Boolean);
