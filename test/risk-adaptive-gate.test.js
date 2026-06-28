@@ -259,6 +259,24 @@ test('change classifier does not treat design authority files as auth boundary',
   assert.equal(authRuntime.risk_surfaces.includes('auth_boundary'), true);
 });
 
+test('change classifier does not treat standalone session cost paths as auth boundary', () => {
+  const sessionCost = classifyChangeRisk({
+    fileGroups: {
+      source: { files: ['src/session-cost.js'] },
+      tests: { files: [] },
+      repo_control: { files: [] },
+      story_docs: { files: [] },
+      specifications: { files: [] }
+    },
+    storySource: {
+      title: 'Session Cost Accounting',
+      background: 'Codex session-cost accounting parses session_meta elapsed-time events and LLM token usage.'
+    }
+  });
+  assert.equal(sessionCost.risk_surfaces.includes('auth_boundary'), false);
+  assert.equal(sessionCost.profile, 'light');
+});
+
 test('change classifier recognizes monorepo app runtime API source paths', () => {
   const result = classifyChangeRisk({
     fileGroups: {

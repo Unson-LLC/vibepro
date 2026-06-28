@@ -14154,6 +14154,36 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.deepEqual(runtimeReality.matched_evidence, []);
   assert.deepEqual(runtimeReality.optional_evidence_kind, ['graph_impact_scope', 'code_topology_impact_scope']);
 
+  const sessionCostRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(sessionCostRepo, 'src'), { recursive: true });
+  await mkdir(path.join(sessionCostRepo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(
+    path.join(sessionCostRepo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'),
+    [
+      '---',
+      'story_id: story-pr-prepare',
+      'title: Session Cost Accounting',
+      '---',
+      '',
+      '# Story',
+      '',
+      'Codex session-cost accounting should parse session_meta elapsed-time events for value audits.',
+      '',
+      '## Acceptance Criteria',
+      '',
+      '- Session cost accounting uses session_meta for elapsed-time accounting.'
+    ].join('\n')
+  );
+  await writeFile(path.join(sessionCostRepo, 'src', 'session-cost.js'), 'export function sessionCost() { return "session_meta"; }\n');
+  await git(sessionCostRepo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/session-cost.js']);
+  await git(sessionCostRepo, ['commit', '-m', 'feat: add session cost accounting']);
+  const sessionCostPrepare = await runCli(['pr', 'prepare', sessionCostRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(sessionCostPrepare.exitCode, 0);
+  const sessionCostSpine = sessionCostPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const sessionCostFailureModes = sessionCostSpine.subchecks.find((check) => check.id === 'failure_modes');
+  assert.notEqual(sessionCostFailureModes.surface, 'auth_boundary');
+  assert.notDeepEqual(sessionCostFailureModes.required_evidence_kind, ['auth_denied', 'permission_denied', 'boundary_condition', 'negative_path']);
+
   const workflowRepo = await makeGitRepoWithStory();
   await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
   await mkdir(path.join(workflowRepo, 'test'), { recursive: true });
