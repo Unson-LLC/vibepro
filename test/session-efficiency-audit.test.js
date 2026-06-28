@@ -129,7 +129,7 @@ async function createFixture() {
   ];
   await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
 
-  return { root, codexHome, storyId, sessionId };
+  return { root, codexHome, storyId, sessionId, sessionPath };
 }
 
 test('session efficiency audit uses process-manager worktree and Codex token_count window', async () => {
@@ -188,4 +188,116 @@ test('audit session-cost CLI exposes JSON contract for active session cost audit
 
   const help = await execFileAsync(process.execPath, [CLI_BIN, 'help', '--language', 'en'], { cwd: root, encoding: 'utf8' });
   assert.match(help.stdout, /vibepro audit session-cost/);
+});
+
+test('AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const automationMemoryPath = path.join(codexHome, 'automations', 'vibepro-value-audit', 'memory.md');
+  await mkdir(path.dirname(automationMemoryPath), { recursive: true });
+  await writeFile(automationMemoryPath, [
+    '# vibepro-value-audit memory',
+    '',
+    '- 2026-06-28 daily value audit: window was `2026-06-27T13:01:00Z` to `2026-06-27T13:03:00Z`.',
+    '- Window cost snapshot: downstream session from `2026-06-27T13:03:00Z` to `2026-06-27T13:05:00Z` should not replace the daily window.',
+    ''
+  ].join('\n'));
+  const lines = [
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 100, output_tokens: 20, total_tokens: 120 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:01:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 180, output_tokens: 30, total_tokens: 210 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 300, output_tokens: 70, total_tokens: 370 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:04:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 900, output_tokens: 100, total_tokens: 1000 } }
+      }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    automationMemoryPath,
+    baseRef: 'base',
+    now: '2026-06-28T00:05:00.000Z'
+  });
+
+  assert.equal(result.automation_memory.status, 'available');
+  assert.equal(result.automation_memory.window_start, '2026-06-27T13:01:00.000Z');
+  assert.equal(result.automation_memory.window_end, '2026-06-27T13:03:00.000Z');
+  assert.equal(result.session.window.scope, 'bounded');
+  assert.equal(result.session.token_accounting.total_tokens, 160);
+  assert.equal(result.session.elapsed_time_accounting.status, 'available');
+  assert.equal(result.session.elapsed_time_accounting.elapsed_ms, 120000);
+  assert.equal(result.cost_breakdown.total_tokens, 160);
+
+  const explicitBounds = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    automationMemoryPath,
+    windowStart: '2026-06-27T13:00:00Z',
+    windowEnd: '2026-06-27T13:03:00Z',
+    baseRef: 'base',
+    now: '2026-06-28T00:05:00.000Z'
+  });
+  assert.equal(explicitBounds.session.window.requested_start, '2026-06-27T13:00:00Z');
+  assert.equal(explicitBounds.session.token_accounting.total_tokens, 250);
+
+  const missingMemory = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    automationMemoryPath: path.join(codexHome, 'automations', 'missing', 'memory.md'),
+    baseRef: 'base',
+    now: '2026-06-28T00:05:00.000Z'
+  });
+  assert.equal(missingMemory.automation_memory.status, 'unavailable');
+  assert.equal(missingMemory.session.token_accounting.status, 'available');
+  assert.equal(missingMemory.session.token_accounting.total_tokens, 880);
+
+  const lastRunMemoryPath = path.join(codexHome, 'automations', 'last-run-only', 'memory.md');
+  await mkdir(path.dirname(lastRunMemoryPath), { recursive: true });
+  await writeFile(lastRunMemoryPath, [
+    '# vibepro-value-audit memory',
+    '',
+    'Last run: 2026-06-27T13:01:00.000Z',
+    ''
+  ].join('\n'));
+  const lastRunFallback = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    automationMemoryPath: lastRunMemoryPath,
+    baseRef: 'base',
+    now: '2026-06-27T13:03:00.000Z'
+  });
+  assert.equal(lastRunFallback.automation_memory.status, 'partial');
+  assert.equal(lastRunFallback.automation_memory.window_start, '2026-06-27T13:01:00.000Z');
+  assert.equal(lastRunFallback.automation_memory.window_end, '2026-06-27T13:03:00.000Z');
+  assert.equal(lastRunFallback.session.token_accounting.total_tokens, 160);
 });

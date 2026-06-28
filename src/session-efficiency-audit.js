@@ -21,6 +21,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   storyId,
   sessionId,
   codexHome = null,
+  automationMemoryPath = null,
   windowStart = null,
   windowEnd = null,
   baseRef = null,
@@ -33,11 +34,14 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
 
   const root = path.resolve(repoRoot);
   const resolvedCodexHome = path.resolve(codexHome ?? process.env.CODEX_HOME ?? path.join(os.homedir(), '.codex'));
+  const automationMemory = await resolveAutomationMemoryWindow(automationMemoryPath, { now });
+  const effectiveWindowStart = windowStart ?? automationMemory.window_start ?? null;
+  const effectiveWindowEnd = windowEnd ?? automationMemory.window_end ?? null;
   const processMetadata = await readProcessMetadata(resolvedCodexHome, sessionId);
   const sessionFile = await findCodexSessionFile(resolvedCodexHome, sessionId);
   const session = sessionFile
-    ? await parseCodexSessionJsonl(sessionFile, { sessionId, windowStart, windowEnd })
-    : missingSessionAccounting(sessionId, windowStart, windowEnd);
+    ? await parseCodexSessionJsonl(sessionFile, { sessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+    : missingSessionAccounting(sessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
@@ -59,6 +63,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     session_id: sessionId,
     generated_at: now ?? new Date().toISOString(),
     codex_home: resolvedCodexHome,
+    automation_memory: automationMemory,
     repo_root: root,
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
@@ -147,6 +152,106 @@ async function findFileByNameFragment(root, fragment, maxDepth, depth = 0) {
     if (found) return found;
   }
   return null;
+}
+
+async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null } = {}) {
+  if (!automationMemoryPath) return { status: 'not_requested' };
+  const filePath = resolveUserPath(automationMemoryPath);
+  let text;
+  try {
+    text = await readFile(filePath, 'utf8');
+  } catch (error) {
+    return {
+      status: 'unavailable',
+      source_path: filePath,
+      reason: error.message,
+      window_start: null,
+      window_end: null
+    };
+  }
+
+  const windows = extractAutomationWindows(text);
+  if (windows.length > 0) {
+    windows.sort((a, b) => (
+      (a.priority - b.priority)
+      || (normalizeTimeMs(a.window_start) - normalizeTimeMs(b.window_start))
+    ));
+    const latest = windows.at(-1);
+    return {
+      status: 'available',
+      source: latest.source,
+      source_path: filePath,
+      window_start: latest.window_start,
+      window_end: latest.window_end,
+      reason: null
+    };
+  }
+
+  const lastRun = extractLastRun(text);
+  if (lastRun) {
+    return {
+      status: 'partial',
+      source: 'automation-memory-last-run',
+      source_path: filePath,
+      window_start: lastRun,
+      window_end: now ?? new Date().toISOString(),
+      reason: 'automation memory did not contain an explicit daily window; used Last run as start and now as end'
+    };
+  }
+
+  return {
+    status: 'unavailable',
+    source_path: filePath,
+    reason: 'automation memory did not contain a parseable daily window or Last run timestamp',
+    window_start: null,
+    window_end: null
+  };
+}
+
+function extractAutomationWindows(text) {
+  const windows = [];
+  const patterns = [
+    {
+      source: 'automation-memory-daily-window',
+      priority: 3,
+      regex: /daily\s+value\s+audit:\s+window\s+(?:was|=|:)\s*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?\s*(?:to|->|から|〜|~)\s*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?/gi
+    },
+    {
+      source: 'automation-memory-daily-window',
+      priority: 2,
+      regex: /window\s+(?:was|=|:)\s*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?\s*(?:to|->|から|〜|~)\s*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?/gi
+    },
+    {
+      source: 'automation-memory-cost-snapshot-window',
+      priority: 1,
+      regex: /window\s+cost\s+snapshot:.*?from\s+`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?\s+to\s+`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?/gi
+    }
+  ];
+  for (const { source, priority, regex } of patterns) {
+    for (const match of text.matchAll(regex)) {
+      const start = normalizeIso(match[1]);
+      const end = normalizeIso(match[2]);
+      if (!start || !end) continue;
+      windows.push({ source, priority, window_start: start, window_end: end });
+    }
+  }
+  return windows;
+}
+
+function extractLastRun(text) {
+  const match = text.match(/Last run:\s*`?([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]+Z?)`?/i);
+  return match ? normalizeIso(match[1]) : null;
+}
+
+function normalizeIso(value) {
+  const ms = normalizeTimeMs(value);
+  return ms === null ? null : new Date(ms).toISOString();
+}
+
+function resolveUserPath(value) {
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
+  return path.resolve(value);
 }
 
 async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, windowEnd } = {}) {

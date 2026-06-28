@@ -281,7 +281,7 @@ function isQueueWorkerPath(file) {
 }
 
 function isAuthBoundaryPath(file) {
-  return /(^|[/_.-])(?:auth|authn|authz|authentication|authorization|session|permission|permissions|middleware)(?=$|[/_.-])/i
+  return /(^|[/_.-])(?:auth|authn|authz|authentication|authorization|permission|permissions|middleware)(?=$|[/_.-])/i
     .test(stripMonorepoPackagePrefix(file));
 }
 

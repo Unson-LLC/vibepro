@@ -218,6 +218,23 @@
           "docs/specs/vibepro-pre-spec-readiness-gate.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-automation-runtime-cost-ingestion",
+      "title": "VibePro Automation Runtime Cost Ingestion",
+      "root_doc": "docs/architecture/vibepro-automation-runtime-cost-ingestion.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-automation-runtime-cost-ingestion.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-automation-runtime-cost-ingestion.md"
+        ]
+      }
     }
   ]
 }

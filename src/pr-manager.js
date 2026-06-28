@@ -5794,7 +5794,7 @@ function buildEngineeringJudgmentClassification({
     setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
   } else if (agentWorkflowSignal) {
     setRoute('agent_workflow', 'AI Agent Workflow', 0.82, 'agent_workflow_dag', ['surface:agent_or_gate_workflow']);
-  } else if (/\b(auth|permission|security|secret|token|oauth|saml|rbac|acl|middleware)\b|権限|認証|監査/.test(text)
+  } else if (/\b(auth|permission|security|secret|oauth|saml|rbac|acl|middleware)\b|権限|認証|監査/.test(text)
     || changeClassification?.risk_surfaces?.includes('auth_boundary')) {
     setRoute('security_trust', 'Security / Trust', 0.82, 'security_trust_dag', ['surface:auth_or_security']);
   } else if (/\b(migration|schema|database|db|prisma|repository|backfill|etl|pipeline)\b|移行|データ|集計/.test(text)
@@ -6720,7 +6720,7 @@ function deriveJudgmentSurfaceProfile({ routeType, prRoute, fileGroups, changeCl
     || /\b(workflow|agent|gate|review|dag|replay|artifact|orchestration|queue|retry)\b/.test(text)) {
     return { surface: 'workflow', reason: 'workflow/agent orchestration change' };
   }
-  if (/\b(auth|permission|session|token|role|denied|forbidden|認可|認証|権限)\b/.test(text)) {
+  if (/\b(auth|permission|role|denied|forbidden|認可|認証|権限)\b/.test(text)) {
     return { surface: 'auth_boundary', reason: 'auth/security boundary change' };
   }
   if (sourceCount > 0 || riskSurfaces.size > 0) {

@@ -11019,7 +11019,7 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
   assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
 });
 
-test('execute merge dry-run collects explicit session-id cost accounting from Codex JSONL', async () => {
+test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -11038,6 +11038,14 @@ test('execute merge dry-run collects explicit session-id cost accounting from Co
   }]);
   const sessionPath = path.join(codexHome, 'sessions', '2026', '06', '27', `rollout-test-${sessionId}.jsonl`);
   await mkdir(path.dirname(sessionPath), { recursive: true });
+  const automationMemoryPath = path.join(codexHome, 'automations', 'vibepro-value-audit', 'memory.md');
+  await mkdir(path.dirname(automationMemoryPath), { recursive: true });
+  await writeFile(automationMemoryPath, [
+    '# vibepro-value-audit memory',
+    '',
+    '- 2026-06-27 daily value audit: window was `2026-06-27T13:00:00Z` to `2026-06-27T13:02:20Z`.',
+    ''
+  ].join('\n'));
   const sessionLines = [
     {
       timestamp: '2026-06-27T13:00:00.000Z',
@@ -11099,6 +11107,8 @@ test('execute merge dry-run collects explicit session-id cost accounting from Co
     sessionId,
     '--codex-home',
     codexHome,
+    '--automation-memory',
+    automationMemoryPath,
     '--dry-run',
     '--json'
   ], { env });
@@ -11106,11 +11116,13 @@ test('execute merge dry-run collects explicit session-id cost accounting from Co
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.cost_accounting_collection.status, 'ready');
   assert.equal(result.result.merge.cost_accounting_collection.source, 'audit-session-cost');
+  assert.equal(result.result.merge.cost_accounting_collection.automation_memory.status, 'available');
+  assert.equal(result.result.merge.cost_accounting_collection.automation_memory.window_start, '2026-06-27T13:00:00.000Z');
   assert.equal(result.result.merge.cost_accounting.session_id, sessionId);
   assert.equal(result.result.merge.cost_accounting.token_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 250);
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
-  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 139000);
+  assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
 });
 
@@ -14141,6 +14153,36 @@ test('common judgment spine requires surface-specific evidence instead of generi
   assert.deepEqual(runtimeReality.required_evidence_kind, ['focused_test', 'runtime_path_evidence', 'integration_runtime_path', 'e2e_runtime_path']);
   assert.deepEqual(runtimeReality.matched_evidence, []);
   assert.deepEqual(runtimeReality.optional_evidence_kind, ['graph_impact_scope', 'code_topology_impact_scope']);
+
+  const sessionCostRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(sessionCostRepo, 'src'), { recursive: true });
+  await mkdir(path.join(sessionCostRepo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(
+    path.join(sessionCostRepo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'),
+    [
+      '---',
+      'story_id: story-pr-prepare',
+      'title: Session Cost Accounting',
+      '---',
+      '',
+      '# Story',
+      '',
+      'Codex session-cost accounting should parse session_meta elapsed-time events for value audits.',
+      '',
+      '## Acceptance Criteria',
+      '',
+      '- Session cost accounting uses session_meta for elapsed-time accounting.'
+    ].join('\n')
+  );
+  await writeFile(path.join(sessionCostRepo, 'src', 'session-cost.js'), 'export function sessionCost() { return "session_meta"; }\n');
+  await git(sessionCostRepo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/session-cost.js']);
+  await git(sessionCostRepo, ['commit', '-m', 'feat: add session cost accounting']);
+  const sessionCostPrepare = await runCli(['pr', 'prepare', sessionCostRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(sessionCostPrepare.exitCode, 0);
+  const sessionCostSpine = sessionCostPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const sessionCostFailureModes = sessionCostSpine.subchecks.find((check) => check.id === 'failure_modes');
+  assert.notEqual(sessionCostFailureModes.surface, 'auth_boundary');
+  assert.notDeepEqual(sessionCostFailureModes.required_evidence_kind, ['auth_denied', 'permission_denied', 'boundary_condition', 'negative_path']);
 
   const workflowRepo = await makeGitRepoWithStory();
   await mkdir(path.join(workflowRepo, 'src'), { recursive: true });
