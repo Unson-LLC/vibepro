@@ -2,6 +2,7 @@
 story_id: story-vibepro-audit-bundle-budget
 title: Canonical Audit Bundle Budget
 status: active
+parent_design: vibepro-audit-bundle-budget
 spec: ../../../specs/vibepro-audit-bundle-budget.md
 architecture: ../../../architecture/vibepro-audit-bundle-budget.md
 ---
