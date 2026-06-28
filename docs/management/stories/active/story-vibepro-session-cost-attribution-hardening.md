@@ -31,6 +31,20 @@ three remaining gaps:
 - [ ] `SCATTR-AC-004`: Merge/session-cost evidence preserves mismatch and
   selection provenance instead of fabricating usable cost.
 
+## Scenarios
+
+- `SCATTR-SCENARIO-001`: Given symlinked or very large Codex sessions storage,
+  session inference only scans bounded real day directories and still returns.
+- `SCATTR-SCENARIO-002`: Given a Codex session whose cwd is a sibling Git
+  worktree of the canonical repo, cost attribution treats the session as
+  repo-matching.
+- `SCATTR-SCENARIO-003`: Given an explicit session whose observed cwd belongs
+  to another repository, the audit remains partial with `session_cwd_mismatch`
+  instead of ready.
+- `SCATTR-SCENARIO-004`: Given a bounded session window with no in-window events,
+  elapsed-time accounting is unavailable and no elapsed duration is fabricated
+  from requested bounds.
+
 ## Verification
 
 - `node --test test/session-efficiency-audit.test.js`
