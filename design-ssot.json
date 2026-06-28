@@ -167,6 +167,23 @@
           "docs/specs/vibepro-codebase-memory-skill.md"
         ]
       }
+    },
+    {
+      "id": "vibepro-execute-merge-cost-accounting",
+      "title": "VibePro Execute Merge Cost Accounting",
+      "root_doc": "docs/architecture/vibepro-execute-merge-cost-accounting.md",
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "children": {
+        "story": [
+          "docs/management/stories/active/story-vibepro-execute-merge-cost-accounting.md"
+        ],
+        "spec": [
+          "docs/specs/vibepro-execute-merge-cost-accounting.md"
+        ]
+      }
     }
   ]
 }
