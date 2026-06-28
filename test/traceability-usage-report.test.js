@@ -244,6 +244,24 @@ test('compact canonical audit index resolves merged story and renders evidence c
     token_accounting: { status: 'unavailable', total_tokens: null },
     elapsed_time_accounting: { status: 'unavailable', elapsed_ms: null }
   };
+  const automationValueAudit = {
+    schema_version: '0.1.0',
+    artifact_kind: 'vibepro_automation_value_audit',
+    story_id: 'story-compact-audit',
+    status: 'partial',
+    allocation: {
+      implementation_changed_lines: 8,
+      audit_evidence_changed_lines: 40
+    },
+    ratios: {
+      automation_evidence_to_src: 5
+    },
+    findings: [
+      { id: 'session_cost_unavailable', severity: 'needs_context' },
+      { id: 'artifact_budget_exceeded', severity: 'cost_risk' },
+      { id: 'evidence_heavy_relative_to_src', severity: 'cost_risk' }
+    ]
+  };
   await writeFile(path.join(auditDir, 'audit-index.json'), JSON.stringify({
     schema_version: '0.1.0',
     story_id: 'story-compact-audit',
@@ -251,6 +269,7 @@ test('compact canonical audit index resolves merged story and renders evidence c
     evidence_depth: 'standard',
     budget_status: 'exceeded',
     cost_summary: costSummary,
+    automation_value_audit: automationValueAudit,
     pr_prepare: {
       present: true,
       created_at: '2026-06-23T00:00:00.000Z',
@@ -292,6 +311,7 @@ test('compact canonical audit index resolves merged story and renders evidence c
     evidence_depth: 'standard',
     handoff_replay_status: 'ready',
     cost_summary: costSummary,
+    automation_value_audit: automationValueAudit,
     replay_bundle: {
       compression: 'gzip',
       compressed_bytes: 512,
@@ -320,11 +340,20 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.equal(report.evidence_cost.budget_exceeded_count, 1);
   assert.equal(report.evidence_cost.total_artifact_lines, 2200);
   assert.equal(report.evidence_cost.by_story[0].replay_bundle.compressed_bytes, 512);
+  assert.equal(report.evidence_cost.by_story[0].automation_value_audit.status, 'partial');
+  assert.equal(report.evidence_cost.by_story[0].automation_value_audit.implementation_changed_lines, 8);
+  assert.equal(report.evidence_cost.by_story[0].automation_value_audit.audit_evidence_changed_lines, 40);
+  assert.deepEqual(report.evidence_cost.by_story[0].automation_value_audit.finding_ids, [
+    'session_cost_unavailable',
+    'artifact_budget_exceeded',
+    'evidence_heavy_relative_to_src'
+  ]);
   assert.equal(report.value_signals.senior_gap_judgment_story_count, 1);
   assert.equal(report.value_signals.senior_gap_residual_risk_story_count, 1);
   assert.match(renderUsageReport(report), /## 証跡コスト/);
   assert.match(renderUsageReport(report), /story-compact-audit: depth=standard budget=exceeded/);
   assert.match(renderUsageReport(report), /diff=available src=8 test=4 docs=6 audit=30 other=2/);
+  assert.match(renderUsageReport(report), /automation_value=partial:impl=8:audit_evidence=40:evidence_to_src=5:findings=session_cost_unavailable,artifact_budget_exceeded,evidence_heavy_relative_to_src/);
   assert.match(renderUsageReport(report), /replay_bundle=gzip:compressed_bytes=512:expanded_lines=120/);
   assert.match(renderUsageReport(report), /tokens=未確認/);
 });

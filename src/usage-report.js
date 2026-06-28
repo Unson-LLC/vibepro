@@ -104,6 +104,9 @@ export async function createUsageReport(repoRoot, options = {}) {
     story.artifacts.push(artifact.path);
     story.canonical_audit_bundle_count += 1;
     story.evidence_cost.canonical_audit = artifact.data?.cost_summary ?? story.evidence_cost.canonical_audit;
+    story.evidence_cost.automation_value_audit = artifact.data?.automation_value_audit
+      ?? artifact.data?.decision_index?.automation_value_audit
+      ?? story.evidence_cost.automation_value_audit;
     story.evidence_cost.evidence_depth = artifact.data?.evidence_depth ?? story.evidence_cost.evidence_depth;
     story.evidence_cost.budget_status = artifact.data?.cost_summary?.budget_status ?? story.evidence_cost.budget_status;
     story.evidence_cost.replay_bundle = artifact.data?.replay_bundle
@@ -348,6 +351,7 @@ function ensureStoryUsage(storyMap, storyId) {
       handoff_replay_unresolved_reference_count: 0,
       evidence_cost: {
         canonical_audit: null,
+        automation_value_audit: null,
         evidence_depth: null,
         budget_status: null
       },
@@ -1175,6 +1179,13 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
           expanded_bytes: story.evidence_cost.replay_bundle.expanded_bytes ?? null,
           expanded_line_count: story.evidence_cost.replay_bundle.expanded_line_count ?? null
         } : null,
+        automation_value_audit: story.evidence_cost.automation_value_audit ? {
+          status: story.evidence_cost.automation_value_audit.status ?? null,
+          implementation_changed_lines: story.evidence_cost.automation_value_audit.allocation?.implementation_changed_lines ?? null,
+          audit_evidence_changed_lines: story.evidence_cost.automation_value_audit.allocation?.audit_evidence_changed_lines ?? null,
+          automation_evidence_to_src: story.evidence_cost.automation_value_audit.ratios?.automation_evidence_to_src ?? null,
+          finding_ids: (story.evidence_cost.automation_value_audit.findings ?? []).map((finding) => finding.id).filter(Boolean)
+        } : null,
         tokens: story.evidence_cost.canonical_audit.token_accounting?.total_tokens ?? null,
         elapsed_ms: story.evidence_cost.canonical_audit.elapsed_time_accounting?.elapsed_ms ?? null
       }))
@@ -1198,10 +1209,18 @@ function renderEvidenceCostRows(report) {
   ];
   const storyRows = cost.by_story?.length
     ? cost.by_story.map((story) => (
-        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} ${renderReplayBundleCost(story.replay_bundle, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} ${renderAutomationValueAudit(story.automation_value_audit, unknown)} ${renderReplayBundleCost(story.replay_bundle, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
+}
+
+function renderAutomationValueAudit(automationValueAudit, unknown) {
+  if (!automationValueAudit) return `automation_value=${unknown}`;
+  const findingIds = automationValueAudit.finding_ids?.length
+    ? automationValueAudit.finding_ids.join(',')
+    : 'none';
+  return `automation_value=${automationValueAudit.status ?? unknown}:impl=${automationValueAudit.implementation_changed_lines ?? unknown}:audit_evidence=${automationValueAudit.audit_evidence_changed_lines ?? unknown}:evidence_to_src=${automationValueAudit.automation_evidence_to_src ?? unknown}:findings=${findingIds}`;
 }
 
 function renderReplayBundleCost(replayBundle, unknown) {
