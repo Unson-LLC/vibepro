@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-automation-cost-defaults
 title: Automation Cost Defaults Architecture
+parent_design: vibepro-runtime-cost-gap-closure
 ---
 
 # Architecture
@@ -26,4 +27,3 @@ flowchart TD
 - Explicit CLI options override env defaults.
 - Env defaults only select telemetry inputs.
 - Value interpretation remains in the daily audit automation.
-

@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-runtime-cost-gap-closure
 title: Runtime Cost Gap Closure Spec
+parent_design: vibepro-runtime-cost-gap-closure
 diagrams:
   - kind: threat_model
     mermaid: |

@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-automation-cost-defaults
 title: Automation Cost Defaults Spec
+parent_design: vibepro-runtime-cost-gap-closure
 diagrams:
   - kind: threat_model
     mermaid: |

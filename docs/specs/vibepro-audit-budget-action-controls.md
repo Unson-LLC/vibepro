@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-audit-budget-action-controls
 title: Audit Budget Action Controls Spec
+parent_design: vibepro-runtime-cost-gap-closure
 diagrams:
   - kind: threat_model
     mermaid: |

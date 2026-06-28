@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-audit-budget-action-controls
 title: Audit Budget Action Controls Architecture
+parent_design: vibepro-runtime-cost-gap-closure
 ---
 
 # Architecture
@@ -25,4 +26,3 @@ flowchart TD
 - Cost controls do not replace `budget_status`.
 - Recommendations are stable machine-readable hints.
 - Merge remains controlled by existing gate/review/CI checks.
-

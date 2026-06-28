@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-session-attribution-inference
 title: Session Attribution Inference Architecture
+parent_design: vibepro-runtime-cost-gap-closure
 ---
 
 # Architecture
@@ -28,4 +29,3 @@ flowchart TD
 - Inference is opt-in.
 - Top-score ties are ambiguous.
 - Low-confidence results remain unavailable rather than zero.
-

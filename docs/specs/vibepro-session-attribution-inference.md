@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-session-attribution-inference
 title: Session Attribution Inference Spec
+parent_design: vibepro-runtime-cost-gap-closure
 diagrams:
   - kind: threat_model
     mermaid: |
