@@ -1032,6 +1032,8 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     merged_at: data?.merged_at,
     merge_commit_sha: data?.merge_commit_sha,
     stop_reason: data?.stop_reason,
+    cost_accounting: data?.cost_accounting,
+    cost_accounting_collection: data?.cost_accounting_collection,
     canonical_audit: data?.canonical_audit,
     prepare_artifacts: data?.prepare_artifacts,
     gate_override: data?.gate_override,
