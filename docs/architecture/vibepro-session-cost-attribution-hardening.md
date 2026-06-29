@@ -20,7 +20,8 @@ flowchart TD
   Request["execute merge / audit session-cost"] --> Window["explicit or automation window"]
   Request --> Selection["session selection"]
   Selection --> Files["bounded JSONL discovery"]
-  Files --> Cwd["repo/worktree attribution"]
+  Files --> Aggregate["session_id aggregation"]
+  Aggregate --> Cwd["repo/worktree attribution"]
   Cwd --> Parse["token/time parser"]
   Parse --> Cost["cost_accounting or partial provenance"]
   Cost --> Canonical["canonical audit summary"]
@@ -32,6 +33,8 @@ flowchart TD
   symlink directory loops.
 - Explicit session IDs are allowed, but a repo/cwd mismatch is a readiness
   blocker.
+- Multiple rollout JSONL files can belong to one Codex conversation. Session
+  selection is session-id based; file paths are evidence fragments.
 - Window bounds are accounting bounds, not proof that work happened. If the
   selected window has no events, elapsed time is unavailable.
 - Daily automation windows and merge/story windows are different evidence

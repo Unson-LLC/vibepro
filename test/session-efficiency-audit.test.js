@@ -224,6 +224,66 @@ test('session efficiency audit infers the matching Codex session from repo cwd a
   assert.equal(result.audit_readiness.status, 'ready');
 });
 
+test('SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), []);
+  await writeFile(sessionPath, `${[
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: root }
+    },
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 100, output_tokens: 20, total_tokens: 120 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:00:20.000Z',
+      type: 'response_item',
+      payload: { text: `working on ${storyId}` }
+    }
+  ].map((line) => JSON.stringify(line)).join('\n')}\n`);
+  const splitSessionPath = path.join(codexHome, 'sessions', '2026', '06', '27', `rollout-split-${sessionId}.jsonl`);
+  await writeFile(splitSessionPath, `${[
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: { total_token_usage: { input_tokens: 380, output_tokens: 80, total_tokens: 460 } }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:20.000Z',
+      type: 'event_msg',
+      payload: { type: 'final_answer' }
+    }
+  ].map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId: 'auto',
+    inferSession: true,
+    codexHome,
+    windowStart: '2026-06-27T13:00:00.000Z',
+    windowEnd: '2026-06-27T13:03:00.000Z',
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.session_id, sessionId);
+  assert.equal(result.session_selection.status, 'inferred');
+  assert.equal(result.session_selection.candidates_considered, 1);
+  assert.equal(result.session_selection.candidates[0].source_paths.length, 2);
+  assert.equal(result.session.source_paths.length, 2);
+  assert.equal(result.session.token_accounting.total_tokens, 340);
+  assert.equal(result.session.elapsed_time_accounting.elapsed_ms, 180000);
+});
+
 test('SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
   await symlink(path.join(codexHome, 'sessions'), path.join(codexHome, 'sessions', 'loop'), 'dir');

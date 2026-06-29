@@ -10,9 +10,11 @@ diagrams:
         Loop --> Guard["Do not recurse symlink dirs"]
         WrongCwd["Explicit session from another repo"] --> Mismatch["cwd_mismatch readiness blocker"]
         EmptyWindow["No events in bounded window"] --> Unknown["elapsed unavailable, not 24h available"]
+        Split["Same session split across JSONL files"] --> Merge["session_id-level aggregation"]
         Guard --> Cost["safe cost accounting"]
         Mismatch --> Cost
         Unknown --> Cost
+        Merge --> Cost
 ---
 
 # Spec
@@ -27,6 +29,8 @@ diagrams:
   `elapsed_time_accounting.status=available`.
 - `SCATTR-INV-004`: Missing or mismatched cost evidence must remain explicit and
   must not be converted to zero or ready.
+- `SCATTR-INV-005`: Multiple JSONL files with the same session id represent one
+  session candidate, not multiple independent candidates.
 
 ## Contracts
 
@@ -38,6 +42,8 @@ diagrams:
   the requested repo are reported with a readiness blocker.
 - `SCATTR-CONTRACT-004`: Empty bounded windows report token and elapsed
   accounting as unavailable with a reason.
+- `SCATTR-CONTRACT-005`: When selected session evidence spans multiple JSONL
+  files, token/time parsing uses the ordered union of those files.
 
 ## Scenarios
 
@@ -50,6 +56,9 @@ diagrams:
   the audit remains partial with `session_cwd_mismatch`.
 - `SCATTR-SCENARIO-004`: Given a bounded window before the session's first
   event, elapsed time is unavailable and no 24h window is reported.
+- `SCATTR-SCENARIO-005`: Given split JSONL files for the same session id,
+  inference de-duplicates by session id and token accounting uses the first and
+  last token events across the selected file set.
 
 ## Anti-Patterns
 
@@ -58,11 +67,13 @@ diagrams:
   window has start and end timestamps.
 - `SCATTR-AP-003`: Do not treat canonical-main artifact absence as zero-cost
   evidence.
+- `SCATTR-AP-004`: Do not treat each rollout JSONL file as a separate session
+  when `session_meta.session_id` identifies the same conversation.
 
 ## Verification
 
 - `SCATTR-VERIFY-001`: `test/session-efficiency-audit.test.js` covers symlink
-  pruning, same-repo worktree matching, cwd mismatch, and empty-window elapsed
-  handling.
+  pruning, same-repo worktree matching, cwd mismatch, empty-window elapsed
+  handling, and split JSONL aggregation.
 - `SCATTR-VERIFY-002`: CLI regression confirms merge/session-cost still exposes
   cost provenance.

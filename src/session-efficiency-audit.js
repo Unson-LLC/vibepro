@@ -54,11 +54,11 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const processMetadata = selectedSessionId
     ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
     : null;
-  const sessionFile = selectedSessionId
-    ? sessionSelection.source_path ?? await findCodexSessionFile(resolvedCodexHome, selectedSessionId)
-    : null;
-  const session = selectedSessionId && sessionFile
-    ? await parseCodexSessionJsonl(sessionFile, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+  const sessionFiles = selectedSessionId
+    ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
+    : [];
+  const session = selectedSessionId && sessionFiles.length > 0
+    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
@@ -154,10 +154,14 @@ async function readProcessMetadata(codexHome, sessionId) {
 }
 
 async function findCodexSessionFile(codexHome, sessionId) {
+  const files = await findCodexSessionFiles(codexHome, sessionId);
+  return files[0] ?? null;
+}
+
+async function findCodexSessionFiles(codexHome, sessionId) {
   const sessionsRoot = path.join(codexHome, 'sessions');
-  const direct = await findFileByNameFragment(sessionsRoot, sessionId, 7);
-  if (direct) return direct;
-  return null;
+  const files = await findFilesByNameFragment(sessionsRoot, sessionId, 7);
+  return files;
 }
 
 async function resolveSessionSelection(codexHome, {
@@ -198,7 +202,7 @@ async function resolveSessionSelection(codexHome, {
     windowStart,
     windowEnd
   });
-  candidates.sort((a, b) => b.score - a.score || String(b.last_event_at ?? '').localeCompare(String(a.last_event_at ?? '')));
+  candidates.sort(compareSessionCandidates);
   const best = candidates[0] ?? null;
   const tied = best ? candidates.filter((candidate) => candidate.score === best.score) : [];
   if (!best) {
@@ -232,6 +236,7 @@ async function resolveSessionSelection(codexHome, {
     session_id: best.session_id,
     source: 'codex-session-jsonl',
     source_path: best.source_path,
+    source_paths: best.source_paths ?? [best.source_path].filter(Boolean),
     confidence: best.score >= 85 ? 'high' : 'medium',
     score: best.score,
     candidates_considered: candidates.length,
@@ -263,7 +268,69 @@ async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, window
     if (!candidate.window_overlap && !candidate.cwd_matches_repo && !candidate.story_ref_found) continue;
     candidates.push(candidate);
   }
-  return candidates;
+  return mergeSessionCandidates(candidates);
+}
+
+function mergeSessionCandidates(candidates) {
+  const bySession = new Map();
+  for (const candidate of candidates) {
+    const group = bySession.get(candidate.session_id) ?? [];
+    group.push(candidate);
+    bySession.set(candidate.session_id, group);
+  }
+  return [...bySession.values()].map(mergeSessionCandidateGroup);
+}
+
+function mergeSessionCandidateGroup(group) {
+  const sorted = [...group].sort(compareSessionCandidates);
+  const best = sorted[0];
+  const cwdMatchesRepo = group.some((candidate) => candidate.cwd_matches_repo);
+  const storyRefFound = group.some((candidate) => candidate.story_ref_found);
+  const windowOverlap = group.some((candidate) => candidate.window_overlap);
+  const tokenEventCount = group.reduce((sum, candidate) => sum + candidate.token_event_count, 0);
+  const finalAnswerCount = group.reduce((sum, candidate) => sum + candidate.final_answer_count, 0);
+  const processCwdAvailable = group.some((candidate) => candidate.process_cwd_available);
+  const firstEventAt = minIso(group.map((candidate) => candidate.first_event_at));
+  const lastEventAt = maxIso(group.map((candidate) => candidate.last_event_at));
+  const sourcePaths = [...new Set(group.map((candidate) => candidate.source_path).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  const score = [
+    cwdMatchesRepo ? 45 : 0,
+    storyRefFound ? 30 : 0,
+    windowOverlap ? 20 : 0,
+    processCwdAvailable ? 10 : 0,
+    tokenEventCount > 0 ? 5 : 0,
+    finalAnswerCount > 0 ? 5 : 0
+  ].reduce((sum, value) => sum + value, 0);
+
+  return {
+    ...best,
+    source_path: best.source_path,
+    source_paths: sourcePaths,
+    cwd_matches_repo: cwdMatchesRepo,
+    story_ref_found: storyRefFound,
+    window_overlap: windowOverlap,
+    first_event_at: firstEventAt,
+    last_event_at: lastEventAt,
+    token_event_count: tokenEventCount,
+    final_answer_count: finalAnswerCount,
+    process_cwd_available: processCwdAvailable,
+    score
+  };
+}
+
+function compareSessionCandidates(a, b) {
+  return b.score - a.score || String(b.last_event_at ?? '').localeCompare(String(a.last_event_at ?? ''));
+}
+
+function minIso(values) {
+  const timestamps = values.map(normalizeTimeMs).filter((value) => value !== null);
+  return timestamps.length > 0 ? new Date(Math.min(...timestamps)).toISOString() : null;
+}
+
+function maxIso(values) {
+  const timestamps = values.map(normalizeTimeMs).filter((value) => value !== null);
+  return timestamps.length > 0 ? new Date(Math.max(...timestamps)).toISOString() : null;
 }
 
 async function collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd } = {}) {
@@ -431,6 +498,7 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
     source_path: filePath,
     cwd: effectiveCwd,
     cwd_matches_repo: cwdMatchesRepo,
+    process_cwd_available: Boolean(processCwd),
     story_ref_found: storyRefFound,
     window_overlap: windowOverlap,
     first_event_at: firstEventMs === null ? null : new Date(firstEventMs).toISOString(),
@@ -493,6 +561,7 @@ function renderSessionCandidate(candidate) {
     session_id: candidate.session_id,
     score: candidate.score,
     source_path: candidate.source_path,
+    source_paths: candidate.source_paths ?? [candidate.source_path].filter(Boolean),
     cwd: candidate.cwd,
     cwd_matches_repo: candidate.cwd_matches_repo,
     story_ref_found: candidate.story_ref_found,
@@ -504,24 +573,29 @@ function renderSessionCandidate(candidate) {
 }
 
 async function findFileByNameFragment(root, fragment, maxDepth, depth = 0) {
+  const files = await findFilesByNameFragment(root, fragment, maxDepth, depth);
+  return files[0] ?? null;
+}
+
+async function findFilesByNameFragment(root, fragment, maxDepth, depth = 0) {
   let entries;
   try {
     entries = await readdir(root, { withFileTypes: true });
   } catch {
-    return null;
+    return [];
   }
+  const files = [];
   entries.sort((a, b) => a.name.localeCompare(b.name));
   for (const entry of entries) {
     const fullPath = path.join(root, entry.name);
-    if (entry.isFile() && entry.name.includes(fragment) && SESSION_FILE_RE.test(entry.name)) return fullPath;
+    if (entry.isFile() && entry.name.includes(fragment) && SESSION_FILE_RE.test(entry.name)) files.push(fullPath);
   }
-  if (depth >= maxDepth) return null;
+  if (depth >= maxDepth) return files;
   for (const entry of entries) {
-    if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
-    const found = await findFileByNameFragment(path.join(root, entry.name), fragment, maxDepth, depth + 1);
-    if (found) return found;
+    if (!entry.isDirectory()) continue;
+    files.push(...await findFilesByNameFragment(path.join(root, entry.name), fragment, maxDepth, depth + 1));
   }
-  return null;
+  return files;
 }
 
 async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null } = {}) {
@@ -624,9 +698,8 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, windowEnd } = {}) {
-  const text = await readFile(filePath, 'utf8');
-  const lines = text.split('\n').filter(Boolean);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, windowEnd } = {}) {
+  const entries = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
@@ -637,13 +710,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
   let firstEventAt = null;
   let lastEventAt = null;
 
-  for (let index = 0; index < lines.length; index += 1) {
-    let entry;
-    try {
-      entry = JSON.parse(lines[index]);
-    } catch {
-      continue;
-    }
+  for (const { entry, sourcePath, line } of entries) {
     const eventAt = normalizeTimeMs(entry.timestamp);
     if (eventAt !== null) {
       firstEventAt ??= eventAt;
@@ -656,13 +723,13 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
     if (eventAt !== null) inWindowEventTimestamps.push(eventAt);
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
-      if (usage) tokenEvents.push({ line: index + 1, timestamp_ms: eventAt, usage });
+      if (usage) tokenEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, usage });
     }
     if (entry.type === 'event_msg' && entry.payload?.type === 'task_started') {
-      taskStartedEvents.push({ line: index + 1, timestamp_ms: eventAt, started_at: entry.payload?.started_at });
+      taskStartedEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, started_at: entry.payload?.started_at });
     }
     if (entry.type === 'event_msg' && entry.payload?.type === 'final_answer') {
-      finalAnswerEvents.push({ line: index + 1, timestamp_ms: eventAt });
+      finalAnswerEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt });
     }
   }
 
@@ -682,9 +749,10 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
 
   return {
     status: 'available',
-    source_path: filePath,
+    source_path: filePaths[0] ?? null,
+    source_paths: filePaths,
     cwd,
-    line_count: lines.length,
+    line_count: entries.length,
     window: {
       session_id: sessionId,
       requested_start: windowStart ?? null,
@@ -705,9 +773,11 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       source: 'codex-session-jsonl',
       window: {
         session_id: sessionId,
-        source_path: filePath,
+        source_path: firstToken.source_path,
+        source_paths: filePaths,
         first_token_line: firstToken.line,
         last_token_line: lastToken.line,
+        last_token_source_path: lastToken.source_path,
         scope: windowStart || windowEnd ? 'bounded' : 'full_session'
       },
       reason: null
@@ -719,7 +789,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       cached_input_tokens: null,
       reasoning_output_tokens: null,
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: 'no token_count events were found in the selected session window'
     },
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
@@ -728,7 +798,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       started_at: new Date(windowStartedAt).toISOString(),
       finished_at: new Date(windowFinishedAt).toISOString(),
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: finalAnswerEvents.length > 0 || windowEnd ? null : 'no final_answer event in selected window; used last observed event timestamp'
     } : {
       status: 'unavailable',
@@ -736,12 +806,41 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       started_at: null,
       finished_at: null,
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: boundedWindowRequested && !hasInWindowEvents
         ? 'no events were found in the selected bounded session window'
         : 'no usable timestamps were found in the selected session window'
     }
   };
+}
+
+async function parseCodexSessionJsonl(filePath, options = {}) {
+  return parseCodexSessionJsonlFiles([filePath], options);
+}
+
+async function readCodexSessionEntries(filePaths) {
+  const entries = [];
+  for (const sourcePath of filePaths) {
+    const text = await readFile(sourcePath, 'utf8');
+    const lines = text.split('\n').filter(Boolean);
+    for (let index = 0; index < lines.length; index += 1) {
+      try {
+        entries.push({
+          entry: JSON.parse(lines[index]),
+          sourcePath,
+          line: index + 1
+        });
+      } catch {
+        // Ignore malformed JSONL rows; other rows in the session may still carry usable accounting.
+      }
+    }
+  }
+  entries.sort((a, b) => (
+    (normalizeTimeMs(a.entry.timestamp) ?? 0) - (normalizeTimeMs(b.entry.timestamp) ?? 0)
+    || a.sourcePath.localeCompare(b.sourcePath)
+    || a.line - b.line
+  ));
+  return entries;
 }
 
 function missingSessionAccounting(sessionId, windowStart, windowEnd) {

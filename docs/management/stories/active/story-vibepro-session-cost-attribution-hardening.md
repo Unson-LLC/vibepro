@@ -18,6 +18,9 @@ three remaining gaps:
 - `--infer-session` can scan too broadly and stall the merge path.
 - Explicit session IDs can point at a different repo without a clear readiness
   blocker.
+- A single Codex conversation can be split across multiple rollout JSONL files,
+  causing false ambiguity or partial token accounting if each file is ranked as
+  a separate session.
 - Bounded windows with no session events can look like valid elapsed time.
 
 ## Acceptance Criteria
@@ -30,6 +33,8 @@ three remaining gaps:
   elapsed time as `available`.
 - [ ] `SCATTR-AC-004`: Merge/session-cost evidence preserves mismatch and
   selection provenance instead of fabricating usable cost.
+- [ ] `SCATTR-AC-005`: Split JSONL files for the same Codex session are merged
+  for inference and token/time accounting.
 
 ## Scenarios
 
@@ -47,6 +52,9 @@ three remaining gaps:
 - `SCATTR-SCENARIO-004`: Given a bounded session window with no in-window events,
   `elapsed_time_accounting` is unavailable and no elapsed duration is fabricated
   from requested bounds.
+- `SCATTR-SCENARIO-005`: Given two rollout JSONL files with the same
+  `session_meta.session_id`, inference treats them as one session candidate and
+  token accounting spans the selected files instead of failing as ambiguous.
 
 ## Verification
 
