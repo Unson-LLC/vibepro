@@ -1,0 +1,306 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-ai-artifact-lineage-reconcile",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-29T02:54:28.443Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:0aa28c29cbdf011fbe2541e15fb71464515dab9fc7b4d7dd0b0b34e14fe9faf2",
+    "compressed_hash": "sha256:b84f10b6d3c7dae4f9b19bdcd6d9f72d71d019135ccb788f84e13ddd173a0911",
+    "expanded_bytes": 13823,
+    "compressed_bytes": 3069,
+    "expanded_line_count": 368,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-ai-artifact-lineage-reconcile",
+    "cost": {
+      "compressed_bytes": 3069,
+      "expanded_bytes": 13823,
+      "expanded_line_count": 368,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/260",
+    "merge_commit_sha": "6f09397bd136a49ded379171edfe16353fe4a309",
+    "merged_at": "2026-06-29T02:54:25Z",
+    "current_head_sha": "1bf000d8a6f05db4590cbe9c4b446e9d92348cc0",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...1bf000d8a6f05db4590cbe9c4b446e9d92348cc0"
+  },
+  "handoff_replay_status": "ready",
+  "handoff_replay": {
+    "status": "ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-ai-artifact-lineage-reconcile"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:0aa28c29cbdf011fbe2541e15fb71464515dab9fc7b4d7dd0b0b34e14fe9faf2"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:50b9f2e835b1685b43c7afb662d0f6f2945f77dcda03be51aa442cd46c99ae2e",
+      "audit_digest": "sha256:50b9f2e835b1685b43c7afb662d0f6f2945f77dcda03be51aa442cd46c99ae2e",
+      "line_count": 158,
+      "raw_line_count": 158,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:d40845cc7456503052f47a4b9d7359828c1ee21d378013dcd8cdeac08537bce0",
+      "audit_digest": "sha256:47c4b5e36cfeb82aeef1add4bdd390dbe6f20e91c59b6cd9430d385b0cee6a70",
+      "line_count": 4513,
+      "raw_line_count": 19669,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:ea5dac991ba4adf4bd90ffe1834738837886f974f8c77308e27def1d93ca62b1",
+      "audit_digest": "sha256:5478a35634b5e09abdbfb78ce261df2b1b77a70552fa9ca41949b6e454554d60",
+      "line_count": 1561,
+      "raw_line_count": 3154,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:3e9f31e146b0057862530ac71cc2f2838f2104c4c1d56d1e1c95adc90e680d40",
+      "audit_digest": "sha256:882e693920e7740dd93d909ac8dc7b0c4ddf3f7ef8dcac260696d17afb0c9622",
+      "line_count": 1418,
+      "raw_line_count": 3008,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:a1da34dc75c851e0c6fc08c3b77d92c497781df4c34e9f73b04a11b4dd6a70f5",
+      "audit_digest": "sha256:65b4010e9be7416b5bb0dea1b9dcd36774eb4aa713891bcac7a3312d8293c580",
+      "line_count": 54,
+      "raw_line_count": 746,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:fec3365b642695c7358eab38ed00ba07660f0101c3c315bafb08d61cb62cfbe4",
+      "audit_digest": "sha256:d63563b58c0f59609899be9b8009c9b8702c0194e8314aca3714521dacf99616",
+      "line_count": 1615,
+      "raw_line_count": 3239,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:c721865d45a3051fb8333271f5b98e0ff82f90c7e5c37231604bb69e600f4122",
+      "audit_digest": "sha256:c721865d45a3051fb8333271f5b98e0ff82f90c7e5c37231604bb69e600f4122",
+      "line_count": 342,
+      "raw_line_count": 342,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:53de893853ba5d7da2c8f8d463570b2ead5d6296b652590c48beb32cbb4017af",
+      "audit_digest": "sha256:b3929c3e1ebbbfaeec298f66fdaed65b05e2073356b711a72ce212f44a2ab41a",
+      "line_count": 85,
+      "raw_line_count": 451,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:838b9e1f2df775d4ced7bb04c1925c6be019d5c70e1eaf33ac13579cc80765a2",
+      "audit_digest": "sha256:838b9e1f2df775d4ced7bb04c1925c6be019d5c70e1eaf33ac13579cc80765a2",
+      "line_count": 209,
+      "raw_line_count": 209,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:ad86ff60f441cbb22b04095e24c5be24a89630d88a618797130b331b393eaa38",
+      "audit_digest": "sha256:ad86ff60f441cbb22b04095e24c5be24a89630d88a618797130b331b393eaa38",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/review-request-pr_split_scope.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:8b9a57d482201a9b1e4350892e69d4c6ec381ff78cc236d432b8f9f2826b5af2",
+      "audit_digest": "sha256:8b9a57d482201a9b1e4350892e69d4c6ec381ff78cc236d432b8f9f2826b5af2",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:0f2af48a66bb1ee7d34e0877246b57755462b1e21f7729f667c5905c6b7bf422",
+      "audit_digest": "sha256:0f2af48a66bb1ee7d34e0877246b57755462b1e21f7729f667c5905c6b7bf422",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:68ab4c13bd9da75af4b0204d895d388c0402d1212a2449b0af91727f3c7653d5",
+      "audit_digest": "sha256:68ab4c13bd9da75af4b0204d895d388c0402d1212a2449b0af91727f3c7653d5",
+      "line_count": 95,
+      "raw_line_count": 95,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-ai-artifact-lineage-reconcile/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
+      "digest": "sha256:aa248a278fcb4d080c55c362f5837ef25efbe4b4c6c74d957a2dc6e783f4389a",
+      "audit_digest": "sha256:aa248a278fcb4d080c55c362f5837ef25efbe4b4c6c74d957a2dc6e783f4389a",
+      "line_count": 402,
+      "raw_line_count": 402,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
