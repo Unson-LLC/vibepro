@@ -2,7 +2,7 @@
 story_id: story-vibepro-ai-artifact-lineage-reconcile
 title: AI Artifact Lineage Reconcile Spec
 diagrams:
-  - kind: flow
+  - kind: threat_model
     mermaid: |
       flowchart TD
         Current["current .vibepro/pr/story"] --> Inventory["artifact inventory"]
