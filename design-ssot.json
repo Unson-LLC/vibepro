@@ -266,18 +266,21 @@
           "docs/management/stories/active/story-vibepro-runtime-cost-gap-closure.md",
           "docs/management/stories/active/story-vibepro-automation-cost-defaults.md",
           "docs/management/stories/active/story-vibepro-session-attribution-inference.md",
-          "docs/management/stories/active/story-vibepro-audit-budget-action-controls.md"
+          "docs/management/stories/active/story-vibepro-audit-budget-action-controls.md",
+          "docs/management/stories/active/story-vibepro-session-cost-attribution-hardening.md"
         ],
         "architecture": [
           "docs/architecture/vibepro-automation-cost-defaults.md",
           "docs/architecture/vibepro-session-attribution-inference.md",
-          "docs/architecture/vibepro-audit-budget-action-controls.md"
+          "docs/architecture/vibepro-audit-budget-action-controls.md",
+          "docs/architecture/vibepro-session-cost-attribution-hardening.md"
         ],
         "spec": [
           "docs/specs/vibepro-runtime-cost-gap-closure.md",
           "docs/specs/vibepro-automation-cost-defaults.md",
           "docs/specs/vibepro-session-attribution-inference.md",
-          "docs/specs/vibepro-audit-budget-action-controls.md"
+          "docs/specs/vibepro-audit-budget-action-controls.md",
+          "docs/specs/vibepro-session-cost-attribution-hardening.md"
         ]
       }
     },

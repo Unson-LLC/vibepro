@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -13,6 +13,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 const execFileAsync = promisify(execFile);
 
 const SESSION_FILE_RE = /\.jsonl$/;
+const DEFAULT_SESSION_LOOKBACK_DAYS = 14;
 const ARTIFACT_TEXT_EXTENSIONS = new Set([
   '.json', '.md', '.txt', '.log', '.tap', '.html', '.xml', '.yaml', '.yml'
 ]);
@@ -53,15 +54,16 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
   const processMetadata = selectedSessionId
     ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
     : null;
-  const sessionFile = selectedSessionId
-    ? sessionSelection.source_path ?? await findCodexSessionFile(resolvedCodexHome, selectedSessionId)
-    : null;
-  const session = selectedSessionId && sessionFile
-    ? await parseCodexSessionJsonl(sessionFile, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+  const sessionFiles = selectedSessionId
+    ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
+    : [];
+  const session = selectedSessionId && sessionFiles.length > 0
+    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
+  const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
   const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId);
   const git = await collectGitCostStats(observedRoot, {
     baseRef,
@@ -85,6 +87,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     repo_root: root,
     observed_worktree: observedRoot,
     observed_worktree_source: processMetadata?.cwd ? 'process_manager' : (session.cwd ? 'session_meta' : 'cli_repo'),
+    observed_worktree_matches_repo: observedWorktreeMatchesRepo,
     session,
     process_manager: processMetadata ? {
       status: 'available',
@@ -103,7 +106,13 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     story_artifacts: artifactInventory,
     git,
     cost_breakdown: costBreakdown,
-    audit_readiness: buildAuditReadiness({ session, processMetadata, artifactInventory, git })
+    audit_readiness: buildAuditReadiness({
+      session,
+      processMetadata,
+      observedWorktreeMatchesRepo,
+      artifactInventory,
+      git
+    })
   };
 }
 
@@ -145,10 +154,14 @@ async function readProcessMetadata(codexHome, sessionId) {
 }
 
 async function findCodexSessionFile(codexHome, sessionId) {
+  const files = await findCodexSessionFiles(codexHome, sessionId);
+  return files[0] ?? null;
+}
+
+async function findCodexSessionFiles(codexHome, sessionId) {
   const sessionsRoot = path.join(codexHome, 'sessions');
-  const direct = await findFileByNameFragment(sessionsRoot, sessionId, 7);
-  if (direct) return direct;
-  return null;
+  const files = await findFilesByNameFragment(sessionsRoot, sessionId, 7);
+  return files;
 }
 
 async function resolveSessionSelection(codexHome, {
@@ -189,7 +202,7 @@ async function resolveSessionSelection(codexHome, {
     windowStart,
     windowEnd
   });
-  candidates.sort((a, b) => b.score - a.score || String(b.last_event_at ?? '').localeCompare(String(a.last_event_at ?? '')));
+  candidates.sort(compareSessionCandidates);
   const best = candidates[0] ?? null;
   const tied = best ? candidates.filter((candidate) => candidate.score === best.score) : [];
   if (!best) {
@@ -223,6 +236,7 @@ async function resolveSessionSelection(codexHome, {
     session_id: best.session_id,
     source: 'codex-session-jsonl',
     source_path: best.source_path,
+    source_paths: best.source_paths ?? [best.source_path].filter(Boolean),
     confidence: best.score >= 85 ? 'high' : 'medium',
     score: best.score,
     candidates_considered: candidates.length,
@@ -239,7 +253,7 @@ function normalizeRequestedSessionId(value) {
 
 async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, windowStart, windowEnd } = {}) {
   const sessionsRoot = path.join(codexHome, 'sessions');
-  const files = await collectSessionJsonlFiles(sessionsRoot, 7);
+  const files = await collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd });
   const processEntries = await readProcessEntries(codexHome);
   const candidates = [];
   for (const filePath of files) {
@@ -254,7 +268,147 @@ async function findCodexSessionCandidates(codexHome, { repoRoot, storyId, window
     if (!candidate.window_overlap && !candidate.cwd_matches_repo && !candidate.story_ref_found) continue;
     candidates.push(candidate);
   }
-  return candidates;
+  return mergeSessionCandidates(candidates);
+}
+
+function mergeSessionCandidates(candidates) {
+  const bySession = new Map();
+  for (const candidate of candidates) {
+    const group = bySession.get(candidate.session_id) ?? [];
+    group.push(candidate);
+    bySession.set(candidate.session_id, group);
+  }
+  return [...bySession.values()].map(mergeSessionCandidateGroup);
+}
+
+function mergeSessionCandidateGroup(group) {
+  const sorted = [...group].sort(compareSessionCandidates);
+  const best = sorted[0];
+  const cwdMatchesRepo = group.some((candidate) => candidate.cwd_matches_repo);
+  const storyRefFound = group.some((candidate) => candidate.story_ref_found);
+  const windowOverlap = group.some((candidate) => candidate.window_overlap);
+  const tokenEventCount = group.reduce((sum, candidate) => sum + candidate.token_event_count, 0);
+  const finalAnswerCount = group.reduce((sum, candidate) => sum + candidate.final_answer_count, 0);
+  const processCwdAvailable = group.some((candidate) => candidate.process_cwd_available);
+  const firstEventAt = minIso(group.map((candidate) => candidate.first_event_at));
+  const lastEventAt = maxIso(group.map((candidate) => candidate.last_event_at));
+  const sourcePaths = [...new Set(group.map((candidate) => candidate.source_path).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+  const score = [
+    cwdMatchesRepo ? 45 : 0,
+    storyRefFound ? 30 : 0,
+    windowOverlap ? 20 : 0,
+    processCwdAvailable ? 10 : 0,
+    tokenEventCount > 0 ? 5 : 0,
+    finalAnswerCount > 0 ? 5 : 0
+  ].reduce((sum, value) => sum + value, 0);
+
+  return {
+    ...best,
+    source_path: best.source_path,
+    source_paths: sourcePaths,
+    cwd_matches_repo: cwdMatchesRepo,
+    story_ref_found: storyRefFound,
+    window_overlap: windowOverlap,
+    first_event_at: firstEventAt,
+    last_event_at: lastEventAt,
+    token_event_count: tokenEventCount,
+    final_answer_count: finalAnswerCount,
+    process_cwd_available: processCwdAvailable,
+    score
+  };
+}
+
+function compareSessionCandidates(a, b) {
+  return b.score - a.score || String(b.last_event_at ?? '').localeCompare(String(a.last_event_at ?? ''));
+}
+
+function minIso(values) {
+  const timestamps = values.map(normalizeTimeMs).filter((value) => value !== null);
+  return timestamps.length > 0 ? new Date(Math.min(...timestamps)).toISOString() : null;
+}
+
+function maxIso(values) {
+  const timestamps = values.map(normalizeTimeMs).filter((value) => value !== null);
+  return timestamps.length > 0 ? new Date(Math.max(...timestamps)).toISOString() : null;
+}
+
+async function collectCandidateSessionFiles(sessionsRoot, { windowStart, windowEnd } = {}) {
+  const dayDirs = await selectSessionDayDirs(sessionsRoot, { windowStart, windowEnd });
+  const roots = dayDirs.length > 0 ? dayDirs.map((entry) => entry.path) : [sessionsRoot];
+  const maxDepth = dayDirs.length > 0 ? 1 : 7;
+  const files = [];
+  for (const root of roots) {
+    files.push(...await collectSessionJsonlFiles(root, maxDepth));
+  }
+  return [...new Set(files)].sort((a, b) => a.localeCompare(b));
+}
+
+async function selectSessionDayDirs(sessionsRoot, { windowStart, windowEnd } = {}) {
+  const dayDirs = await listSessionDayDirs(sessionsRoot);
+  if (dayDirs.length === 0) return [];
+  const startMs = normalizeTimeMs(windowStart);
+  const endMs = normalizeTimeMs(windowEnd);
+  if (startMs !== null || endMs !== null) {
+    const start = startMs ?? endMs;
+    const end = endMs ?? startMs;
+    const startDay = dayOrdinal(start) - 1;
+    const endDay = dayOrdinal(end) + 1;
+    return dayDirs.filter((entry) => entry.ordinal >= startDay && entry.ordinal <= endDay);
+  }
+  return dayDirs
+    .sort((a, b) => b.ordinal - a.ordinal)
+    .slice(0, DEFAULT_SESSION_LOOKBACK_DAYS)
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
+
+async function listSessionDayDirs(sessionsRoot) {
+  const years = await listDirNames(sessionsRoot, (name) => /^\d{4}$/.test(name));
+  const dayDirs = [];
+  for (const year of years) {
+    const yearPath = path.join(sessionsRoot, year);
+    const months = await listDirNames(yearPath, (name) => /^\d{2}$/.test(name));
+    for (const month of months) {
+      const monthPath = path.join(yearPath, month);
+      const days = await listDirNames(monthPath, (name) => /^\d{2}$/.test(name));
+      for (const day of days) {
+        const ordinal = sessionDayOrdinal(year, month, day);
+        if (ordinal === null) continue;
+        dayDirs.push({ path: path.join(monthPath, day), ordinal });
+      }
+    }
+  }
+  return dayDirs;
+}
+
+async function listDirNames(root, predicate) {
+  try {
+    const entries = await readdir(root, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isDirectory() && predicate(entry.name))
+      .map((entry) => entry.name)
+      .sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
+}
+
+function sessionDayOrdinal(year, month, day) {
+  const ms = Date.UTC(Number(year), Number(month) - 1, Number(day));
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  if (
+    date.getUTCFullYear() !== Number(year) ||
+    date.getUTCMonth() !== Number(month) - 1 ||
+    date.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
+  return dayOrdinal(ms);
+}
+
+function dayOrdinal(ms) {
+  return Math.floor(ms / 86_400_000);
 }
 
 async function collectSessionJsonlFiles(root, maxDepth, depth = 0) {
@@ -272,7 +426,7 @@ async function collectSessionJsonlFiles(root, maxDepth, depth = 0) {
       files.push(fullPath);
       continue;
     }
-    if (depth < maxDepth && (entry.isDirectory() || entry.isSymbolicLink())) {
+    if (depth < maxDepth && entry.isDirectory()) {
       files.push(...await collectSessionJsonlFiles(fullPath, maxDepth, depth + 1));
     }
   }
@@ -328,7 +482,7 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
   const processEntry = processEntries.find((entry) => entry?.conversationId === sessionId) ?? null;
   const processCwd = processEntry?.cwd ?? null;
   const effectiveCwd = processCwd ?? cwd;
-  const cwdMatchesRepo = effectiveCwd ? samePath(effectiveCwd, repoRoot) : false;
+  const cwdMatchesRepo = effectiveCwd ? await matchesRepo(effectiveCwd, repoRoot) : false;
   const windowOverlap = overlapsWindow(firstEventMs, lastEventMs, normalizeTimeMs(windowStart), normalizeTimeMs(windowEnd));
   const score = [
     cwdMatchesRepo ? 45 : 0,
@@ -344,6 +498,7 @@ async function summarizeSessionCandidate(filePath, { repoRoot, storyId, windowSt
     source_path: filePath,
     cwd: effectiveCwd,
     cwd_matches_repo: cwdMatchesRepo,
+    process_cwd_available: Boolean(processCwd),
     story_ref_found: storyRefFound,
     window_overlap: windowOverlap,
     first_event_at: firstEventMs === null ? null : new Date(firstEventMs).toISOString(),
@@ -359,8 +514,37 @@ function inferSessionIdFromFile(filePath) {
   return match?.[0] ?? null;
 }
 
-function samePath(a, b) {
-  return path.resolve(a) === path.resolve(b);
+async function matchesRepo(candidatePath, repoRoot) {
+  if (await sameExistingPath(candidatePath, repoRoot)) return true;
+  try {
+    const [candidateCommonDir, repoCommonDir] = await Promise.all([
+      gitCommonDir(candidatePath),
+      gitCommonDir(repoRoot)
+    ]);
+    return candidateCommonDir !== null && repoCommonDir !== null && await sameExistingPath(candidateCommonDir, repoCommonDir);
+  } catch {
+    return false;
+  }
+}
+
+async function sameExistingPath(a, b) {
+  try {
+    const [resolvedA, resolvedB] = await Promise.all([realpath(a), realpath(b)]);
+    return resolvedA === resolvedB;
+  } catch {
+    return path.resolve(a) === path.resolve(b);
+  }
+}
+
+async function gitCommonDir(cwd) {
+  try {
+    const { stdout } = await execFileAsync('git', ['rev-parse', '--git-common-dir'], { cwd });
+    const raw = stdout.trim();
+    if (!raw) return null;
+    return path.resolve(cwd, raw);
+  } catch {
+    return null;
+  }
 }
 
 function overlapsWindow(firstMs, lastMs, startMs, endMs) {
@@ -377,6 +561,7 @@ function renderSessionCandidate(candidate) {
     session_id: candidate.session_id,
     score: candidate.score,
     source_path: candidate.source_path,
+    source_paths: candidate.source_paths ?? [candidate.source_path].filter(Boolean),
     cwd: candidate.cwd,
     cwd_matches_repo: candidate.cwd_matches_repo,
     story_ref_found: candidate.story_ref_found,
@@ -388,24 +573,29 @@ function renderSessionCandidate(candidate) {
 }
 
 async function findFileByNameFragment(root, fragment, maxDepth, depth = 0) {
+  const files = await findFilesByNameFragment(root, fragment, maxDepth, depth);
+  return files[0] ?? null;
+}
+
+async function findFilesByNameFragment(root, fragment, maxDepth, depth = 0) {
   let entries;
   try {
     entries = await readdir(root, { withFileTypes: true });
   } catch {
-    return null;
+    return [];
   }
+  const files = [];
   entries.sort((a, b) => a.name.localeCompare(b.name));
   for (const entry of entries) {
     const fullPath = path.join(root, entry.name);
-    if (entry.isFile() && entry.name.includes(fragment) && SESSION_FILE_RE.test(entry.name)) return fullPath;
+    if (entry.isFile() && entry.name.includes(fragment) && SESSION_FILE_RE.test(entry.name)) files.push(fullPath);
   }
-  if (depth >= maxDepth) return null;
+  if (depth >= maxDepth) return files;
   for (const entry of entries) {
-    if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
-    const found = await findFileByNameFragment(path.join(root, entry.name), fragment, maxDepth, depth + 1);
-    if (found) return found;
+    if (!entry.isDirectory()) continue;
+    files.push(...await findFilesByNameFragment(path.join(root, entry.name), fragment, maxDepth, depth + 1));
   }
-  return null;
+  return files;
 }
 
 async function resolveAutomationMemoryWindow(automationMemoryPath, { now = null } = {}) {
@@ -508,25 +698,19 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, windowEnd } = {}) {
-  const text = await readFile(filePath, 'utf8');
-  const lines = text.split('\n').filter(Boolean);
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, windowEnd } = {}) {
+  const entries = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
   const taskStartedEvents = [];
   const finalAnswerEvents = [];
+  const inWindowEventTimestamps = [];
   let cwd = null;
   let firstEventAt = null;
   let lastEventAt = null;
 
-  for (let index = 0; index < lines.length; index += 1) {
-    let entry;
-    try {
-      entry = JSON.parse(lines[index]);
-    } catch {
-      continue;
-    }
+  for (const { entry, sourcePath, line } of entries) {
     const eventAt = normalizeTimeMs(entry.timestamp);
     if (eventAt !== null) {
       firstEventAt ??= eventAt;
@@ -536,31 +720,39 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       cwd = entry.payload?.cwd ?? cwd;
     }
     if (!isInsideWindow(eventAt, startMs, endMs)) continue;
+    if (eventAt !== null) inWindowEventTimestamps.push(eventAt);
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
-      if (usage) tokenEvents.push({ line: index + 1, timestamp_ms: eventAt, usage });
+      if (usage) tokenEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, usage });
     }
     if (entry.type === 'event_msg' && entry.payload?.type === 'task_started') {
-      taskStartedEvents.push({ line: index + 1, timestamp_ms: eventAt, started_at: entry.payload?.started_at });
+      taskStartedEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, started_at: entry.payload?.started_at });
     }
     if (entry.type === 'event_msg' && entry.payload?.type === 'final_answer') {
-      finalAnswerEvents.push({ line: index + 1, timestamp_ms: eventAt });
+      finalAnswerEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt });
     }
   }
 
   const firstToken = tokenEvents[0] ?? null;
   const lastToken = tokenEvents.at(-1) ?? null;
-  const windowStartedAt = startMs ?? taskStartedEvents[0]?.timestamp_ms ?? firstToken?.timestamp_ms ?? firstEventAt;
-  const windowFinishedAt = endMs ?? finalAnswerEvents.at(-1)?.timestamp_ms ?? lastToken?.timestamp_ms ?? lastEventAt;
+  const boundedWindowRequested = startMs !== null || endMs !== null;
+  const hasInWindowEvents = inWindowEventTimestamps.length > 0;
+  const windowStartedAt = boundedWindowRequested && !hasInWindowEvents
+    ? null
+    : (startMs ?? taskStartedEvents[0]?.timestamp_ms ?? firstToken?.timestamp_ms ?? inWindowEventTimestamps[0] ?? firstEventAt);
+  const windowFinishedAt = boundedWindowRequested && !hasInWindowEvents
+    ? null
+    : (endMs ?? finalAnswerEvents.at(-1)?.timestamp_ms ?? lastToken?.timestamp_ms ?? inWindowEventTimestamps.at(-1) ?? lastEventAt);
   const tokenDelta = firstToken && lastToken
     ? subtractUsage(lastToken.usage, firstToken.usage)
     : null;
 
   return {
     status: 'available',
-    source_path: filePath,
+    source_path: filePaths[0] ?? null,
+    source_paths: filePaths,
     cwd,
-    line_count: lines.length,
+    line_count: entries.length,
     window: {
       session_id: sessionId,
       requested_start: windowStart ?? null,
@@ -568,6 +760,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       first_token_line: firstToken?.line ?? null,
       last_token_line: lastToken?.line ?? null,
       token_event_count: tokenEvents.length,
+      in_window_event_count: inWindowEventTimestamps.length,
       scope: windowStart || windowEnd ? 'bounded' : 'full_session'
     },
     token_accounting: tokenDelta ? {
@@ -580,9 +773,11 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       source: 'codex-session-jsonl',
       window: {
         session_id: sessionId,
-        source_path: filePath,
+        source_path: firstToken.source_path,
+        source_paths: filePaths,
         first_token_line: firstToken.line,
         last_token_line: lastToken.line,
+        last_token_source_path: lastToken.source_path,
         scope: windowStart || windowEnd ? 'bounded' : 'full_session'
       },
       reason: null
@@ -594,7 +789,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       cached_input_tokens: null,
       reasoning_output_tokens: null,
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: 'no token_count events were found in the selected session window'
     },
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
@@ -603,7 +798,7 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       started_at: new Date(windowStartedAt).toISOString(),
       finished_at: new Date(windowFinishedAt).toISOString(),
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: finalAnswerEvents.length > 0 || windowEnd ? null : 'no final_answer event in selected window; used last observed event timestamp'
     } : {
       status: 'unavailable',
@@ -611,10 +806,41 @@ async function parseCodexSessionJsonl(filePath, { sessionId, windowStart, window
       started_at: null,
       finished_at: null,
       source: 'codex-session-jsonl',
-      window: { session_id: sessionId, source_path: filePath },
-      reason: 'no usable timestamps were found in the selected session window'
+      window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
+      reason: boundedWindowRequested && !hasInWindowEvents
+        ? 'no events were found in the selected bounded session window'
+        : 'no usable timestamps were found in the selected session window'
     }
   };
+}
+
+async function parseCodexSessionJsonl(filePath, options = {}) {
+  return parseCodexSessionJsonlFiles([filePath], options);
+}
+
+async function readCodexSessionEntries(filePaths) {
+  const entries = [];
+  for (const sourcePath of filePaths) {
+    const text = await readFile(sourcePath, 'utf8');
+    const lines = text.split('\n').filter(Boolean);
+    for (let index = 0; index < lines.length; index += 1) {
+      try {
+        entries.push({
+          entry: JSON.parse(lines[index]),
+          sourcePath,
+          line: index + 1
+        });
+      } catch {
+        // Ignore malformed JSONL rows; other rows in the session may still carry usable accounting.
+      }
+    }
+  }
+  entries.sort((a, b) => (
+    (normalizeTimeMs(a.entry.timestamp) ?? 0) - (normalizeTimeMs(b.entry.timestamp) ?? 0)
+    || a.sourcePath.localeCompare(b.sourcePath)
+    || a.line - b.line
+  ));
+  return entries;
 }
 
 function missingSessionAccounting(sessionId, windowStart, windowEnd) {
@@ -841,11 +1067,12 @@ function buildCostBreakdown({ changedLines, tokenAccounting }) {
   };
 }
 
-function buildAuditReadiness({ session, processMetadata, artifactInventory, git }) {
+function buildAuditReadiness({ session, processMetadata, observedWorktreeMatchesRepo, artifactInventory, git }) {
   const blockers = [
     session.token_accounting.status !== 'available' ? 'token_count_unavailable' : null,
     session.elapsed_time_accounting.status === 'unavailable' ? 'elapsed_time_unavailable' : null,
-    !processMetadata ? 'process_manager_cwd_unavailable' : null,
+    !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
+    observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
     artifactInventory.status !== 'available' ? 'story_artifacts_unavailable' : null,
     git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
   ].filter(Boolean);
