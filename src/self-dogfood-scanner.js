@@ -294,9 +294,9 @@ async function readCurrentGitHubPr(repoRoot, options = {}) {
 }
 
 function isVibeProPrBody(body) {
-  const hasDecisionBrief = /(##\s+What|##\s+このPRで決めたいこと|##\s+What this PR needs to decide|このPRで閉じる問い|Review question)/i.test(body);
-  const hasVerification = /##\s+Verification|##\s+検証/i.test(body);
-  const hasVibeProEvidence = /##\s+VibePro/i.test(body) && /Evidence:\s+\.vibepro\/pr\/|Gate DAG:\s+\.vibepro\/pr\/|Decision index:\s+\.vibepro\/pr\//i.test(body);
+  const hasDecisionBrief = /(##\s+判断|##\s+What|##\s+このPRで決めたいこと|##\s+What this PR needs to decide|このPRで閉じる問い|Review question)/i.test(body);
+  const hasVerification = /##\s+確認|##\s+Verification|##\s+検証/i.test(body);
+  const hasVibeProEvidence = /(##\s+詳細|##\s+VibePro)/i.test(body) && /(証跡|Evidence):\s+\.vibepro\/pr\/|(判断索引|Decision index):\s+\.vibepro\/pr\/|Gate DAG:\s+\.vibepro\/pr\//i.test(body);
   return hasDecisionBrief && hasVerification && hasVibeProEvidence;
 }
 

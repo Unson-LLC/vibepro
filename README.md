@@ -145,7 +145,7 @@ Open in this order:
 4. `.vibepro/pr/<story-id>/pr-body.md`
 5. `review-cockpit.html`, `gate-dag.html`, and `split-plan.html` when they were generated for the selected evidence depth.
 
-`pr-body.md` is the concise GitHub decision brief. It is not the audit log. Full Gate, Agent Review, split-plan, verification, and lifecycle evidence stay in `.vibepro/pr/<story-id>/` artifacts.
+`pr-body.md` is the GitHub judgment brief. It should be readable on its own: the Story interpretation, origin, root cause, solution, review focus, and final verification come first. Full Gate, Agent Review, split-plan, verification, and lifecycle evidence stay in `.vibepro/pr/<story-id>/` artifacts.
 
 `<base-branch>` is repository-specific. Use the repository default branch, such as `origin/main`, `main`, `origin/develop`, or `develop`.
 
@@ -248,7 +248,7 @@ The most important PR artifacts are:
 - `decision-index.json`: compact index of the Story, decision points, evidence references, and review path.
 - `evidence-plan.json`: evidence-depth policy, generated artifacts, skipped artifacts, and follow-up evidence requirements.
 - `verification-evidence.json`: verification commands and external CI evidence imported for the current head.
-- `pr-body.md`: concise GitHub decision brief with `What`, `Why`, `How to review`, `Verification`, and `VibePro` sections.
+- `pr-body.md`: GitHub judgment brief with `判断`, `経緯`, `原因`, `解決`, `レビュー観点`, `確認`, and `詳細` sections.
 - `review-cockpit.html`: human-readable review cockpit when generated for the selected evidence depth.
 - `gate-dag.json` / `gate-dag.html`: completion dependency map. The JSON evidence is the durable contract; the HTML view is optional.
 - `split-plan.json` / `split-plan.html`: PR split lanes and merge order. The JSON evidence is the durable contract; the HTML view is optional.

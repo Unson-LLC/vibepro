@@ -438,7 +438,7 @@ test('pr prepare reports preferred managed worktree gate without blocking', asyn
   assert.equal(prepare.pr_context.gate_dag.summary.managed_worktree_status, 'needs_review');
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((node) => node.id === 'gate:managed_worktree'), false);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Managed worktree: needs_review/);
+  assert.match(prBody, /- 管理worktree: needs_review/);
 });
 
 test('managed worktree gate is not applicable when disabled', async () => {
@@ -460,7 +460,7 @@ test('managed worktree gate is not applicable when disabled', async () => {
   assert.equal(gate.status, 'not_applicable');
   assert.equal(gate.required, false);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Managed worktree: disabled/);
+  assert.match(prBody, /- 管理worktree: disabled/);
 });
 
 test('required managed worktree gate blocks evidence commands outside managed worktree', async () => {
@@ -1983,24 +1983,31 @@ test('check self-dogfood accepts GitHub PRs with VibePro body and matching pr-cr
     headRefName: 'feat/vibepro-pr-path',
     headRefOid: '1111111111111111111111111111111111111111',
     body: [
-      '## What',
+      '## 判断',
+      '- このPRで判断すること: VibePro経由のPRとして受け入れてよいか。',
       '- Story: story-pr-path',
       '',
-      '## Why',
-      '- Requirement: VibePro経由のPRとして受け入れてよいか。',
+      '## 経緯',
+      '- 要求: VibePro経由のPRとして受け入れてよいか。',
       '',
-      '## How to review',
+      '## 原因',
+      '- PR証跡がVibePro経由で閉じているか判断できない。',
+      '',
+      '## 解決',
+      '- VibePro PR create証跡をPR本文へ接続する。',
+      '',
+      '## レビュー観点',
       '- Gate: required gates are closed',
       '',
-      '## Verification',
+      '## 確認',
       '- [x] npm test',
+      '- 最終E2E: passed',
       '',
-      '## VibePro',
+      '## 詳細',
       '- Gate: ready_for_review',
-      '- Execution: ready',
-      '- Evidence: .vibepro/pr/story-pr-path/',
-      '- Decision index: .vibepro/pr/story-pr-path/decision-index.json',
-      '- Gate DAG: .vibepro/pr/story-pr-path/gate-dag.json'
+      '- 実行状態: ready',
+      '- 証跡: .vibepro/pr/story-pr-path/',
+      '- 判断索引: .vibepro/pr/story-pr-path/decision-index.json'
     ].join('\n')
   });
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
@@ -2037,23 +2044,30 @@ test('check self-dogfood rejects failed pr-create evidence for visible GitHub PR
     headRefName: 'feat/failed-pr-create-artifact',
     headRefOid: '2222222222222222222222222222222222222222',
     body: [
-      '## What',
+      '## 判断',
+      '- このPRで判断すること: 失敗証跡をPR作成証跡として扱わないか。',
       '- Story: story-pr-path',
       '',
-      '## Why',
-      '- Requirement: 失敗証跡をPR作成証跡として扱わないか。',
+      '## 経緯',
+      '- 要求: 失敗証跡をPR作成証跡として扱わないか。',
       '',
-      '## How to review',
+      '## 原因',
+      '- PR作成証跡の失敗状態が本文だけでは判断できない。',
+      '',
+      '## 解決',
+      '- 失敗したpr-create artifactをGateで拒否する。',
+      '',
+      '## レビュー観点',
       '- Gate: required gates are closed',
       '',
-      '## Verification',
+      '## 確認',
       '- [x] npm test',
+      '- 最終E2E: passed',
       '',
-      '## VibePro',
+      '## 詳細',
       '- Gate: ready_for_review',
-      '- Execution: ready',
-      '- Evidence: .vibepro/pr/story-pr-path/',
-      '- Gate DAG: .vibepro/pr/story-pr-path/gate-dag.json'
+      '- 実行状態: ready',
+      '- 証跡: .vibepro/pr/story-pr-path/'
     ].join('\n')
   });
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
@@ -2089,23 +2103,30 @@ test('check self-dogfood rejects dry-run pr-create evidence for visible GitHub P
     headRefName: 'feat/dry-run-pr-create-artifact',
     headRefOid: '3333333333333333333333333333333333333333',
     body: [
-      '## What',
+      '## 判断',
+      '- このPRで判断すること: dry-run証跡をPR作成証跡として扱わないか。',
       '- Story: story-pr-path',
       '',
-      '## Why',
-      '- Requirement: dry-run証跡をPR作成証跡として扱わないか。',
+      '## 経緯',
+      '- 要求: dry-run証跡をPR作成証跡として扱わないか。',
       '',
-      '## How to review',
+      '## 原因',
+      '- dry-runのまま見えるPRは作成境界を通った証拠にならない。',
+      '',
+      '## 解決',
+      '- 実PRでは非dry-runのpr-create artifactを要求する。',
+      '',
+      '## レビュー観点',
       '- Gate: required gates are closed',
       '',
-      '## Verification',
+      '## 確認',
       '- [x] npm test',
+      '- 最終E2E: passed',
       '',
-      '## VibePro',
+      '## 詳細',
       '- Gate: ready_for_review',
-      '- Execution: ready',
-      '- Evidence: .vibepro/pr/story-pr-path/',
-      '- Gate DAG: .vibepro/pr/story-pr-path/gate-dag.json'
+      '- 実行状態: ready',
+      '- 証跡: .vibepro/pr/story-pr-path/'
     ].join('\n')
   });
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
@@ -2141,23 +2162,30 @@ test('check self-dogfood rejects stale pr-create evidence for visible GitHub PRs
     headRefName: 'feat/stale-pr-create-artifact',
     headRefOid: '4444444444444444444444444444444444444444',
     body: [
-      '## What',
+      '## 判断',
+      '- このPRで判断すること: stale証跡をPR作成証跡として扱わないか。',
       '- Story: story-pr-path',
       '',
-      '## Why',
-      '- Requirement: stale証跡をPR作成証跡として扱わないか。',
+      '## 経緯',
+      '- 要求: stale証跡をPR作成証跡として扱わないか。',
       '',
-      '## How to review',
+      '## 原因',
+      '- 古いheadのpr-create artifactでは現PRを判断できない。',
+      '',
+      '## 解決',
+      '- 現headに一致するpr-create artifactを要求する。',
+      '',
+      '## レビュー観点',
       '- Gate: required gates are closed',
       '',
-      '## Verification',
+      '## 確認',
       '- [x] npm test',
+      '- 最終E2E: passed',
       '',
-      '## VibePro',
+      '## 詳細',
       '- Gate: ready_for_review',
-      '- Execution: ready',
-      '- Evidence: .vibepro/pr/story-pr-path/',
-      '- Gate DAG: .vibepro/pr/story-pr-path/gate-dag.json'
+      '- 実行状態: ready',
+      '- 証跡: .vibepro/pr/story-pr-path/'
     ].join('\n')
   });
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-path');
@@ -2513,7 +2541,7 @@ brainbaseのWikiには複数プロジェクトのナレッジが格納されて�
   assert.equal(integrityGate.status, 'story_source_mismatch');
   assert.equal(integrityGate.mismatched_changed_story_docs[0].path, 'docs/stories/STR-001-wiki-project-filter.md');
   const prBody = await readFile(result.result.artifacts.pr_body, 'utf8');
-  assert.match(prBody, /- Source: Story未検出/);
+  assert.match(prBody, /- 正本: Story未検出/);
   assert.doesNotMatch(prBody, /Story Source story_source_mismatch/);
   assert.doesNotMatch(prBody, /search_wiki に project_id を追加する/);
 });
@@ -5044,8 +5072,8 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
   assert.equal(e2eGate.flow_verification.run_id, 'flow-pass');
   assert.equal(e2eGate.flow_verification.artifact, '.vibepro/verification/flow-pass/flow-verification.json');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /## Verification/);
-  assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /## 確認/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /^## Flow Verification Evidence$/m);
 });
 
@@ -5472,7 +5500,7 @@ test('pr prepare includes performance evidence summary for the story', async () 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /^## Performance Evidence$/m);
 });
 
@@ -6396,6 +6424,14 @@ architecture_docs:
 
 PR本文がファイル数だけでは、レビュアーがなぜこの変更を読むべきか判断できない。
 
+## 根本原因
+
+PR本文が証跡索引に寄りすぎていて、Story解釈、発生経緯、原因、解決、最終確認が一画面でつながらない。
+
+## 解決
+
+PR本文を日本語の判断ブリーフにして、詳細artifactではなくレビュー判断に必要な流れを先に出す。
+
 ## 受け入れ基準
 
 - [x] PR本文に背景が入る
@@ -6577,25 +6613,33 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.file_groups.tests.count, 2);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /story-pr-prepare/);
-  assert.ok(prBody.indexOf('## What') < prBody.indexOf('## Why'));
-  assert.ok(prBody.indexOf('## Why') < prBody.indexOf('## How to review'));
-  assert.ok(prBody.indexOf('## How to review') < prBody.indexOf('## Verification'));
-  assert.ok(prBody.indexOf('## Verification') < prBody.indexOf('## VibePro'));
-  assert.match(prBody, /Scope: \d+ files \/ Runtime \/ Contract Docs \/ Tests/);
+  assert.ok(prBody.indexOf('## 判断') < prBody.indexOf('## 経緯'));
+  assert.ok(prBody.indexOf('## 経緯') < prBody.indexOf('## 原因'));
+  assert.ok(prBody.indexOf('## 原因') < prBody.indexOf('## 解決'));
+  assert.ok(prBody.indexOf('## 解決') < prBody.indexOf('## レビュー観点'));
+  assert.ok(prBody.indexOf('## レビュー観点') < prBody.indexOf('## 確認'));
+  assert.ok(prBody.indexOf('## 確認') < prBody.indexOf('## 詳細'));
+  assert.doesNotMatch(prBody, /^## What$/m);
+  assert.doesNotMatch(prBody, /^## Why$/m);
+  assert.doesNotMatch(prBody, /^## How to review$/m);
+  assert.doesNotMatch(prBody, /^## Verification$/m);
+  assert.match(prBody, /変更範囲: \d+ files \/ Runtime \/ Contract Docs \/ Tests/);
   assert.match(prBody, /Gate: 未解決Gateがあります（対象: .*Gate/);
   assert.doesNotMatch(prBody, /Change map:/);
   assert.doesNotMatch(prBody, /Non-goals:/);
   assert.doesNotMatch(prBody, /Engineering Judgment:/);
-  assert.match(prBody, /Code: src\/feature\/pr-prepare\.js/);
-  assert.match(prBody, /Tests: src\/feature\/pr-prepare\.test\.js, tests\/unit\/pr-prepare\.test\.js/);
+  assert.match(prBody, /実装: src\/feature\/pr-prepare\.js/);
+  assert.match(prBody, /テスト: src\/feature\/pr-prepare\.test\.js, tests\/unit\/pr-prepare\.test\.js/);
   assert.match(prBody, /PR本文がファイル数だけでは/);
+  assert.match(prBody, /Story解釈、発生経緯、原因、解決、最終確認が一画面でつながらない/);
+  assert.match(prBody, /PR本文を日本語の判断ブリーフ/);
   assert.doesNotMatch(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /- Gate: needs_verification/);
-  assert.match(prBody, /- Execution: blocked/);
-  assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
-  assert.match(prBody, /- Decision index: \.vibepro\/pr\/story-pr-prepare\/decision-index\.json/);
-  assert.match(prBody, /- Gate DAG: \.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 実行状態: blocked/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 判断索引: \.vibepro\/pr\/story-pr-prepare\/decision-index\.json/);
+  assert.doesNotMatch(prBody, /- Gate DAG: \.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
   assert.doesNotMatch(prBody, /^## Gate DAG$/m);
   assert.doesNotMatch(prBody, /^## Gate Enforcement$/m);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
@@ -7570,7 +7614,7 @@ test('pr prepare uses node --test targeted command for node test runner', async 
 
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /Tests: test\/node-runner\.test\.js/);
+  assert.match(prBody, /テスト: test\/node-runner\.test\.js/);
   assert.doesNotMatch(prBody, /node --test test\/node-runner\.test\.js/);
   assert.doesNotMatch(prBody, /--runTestsByPath/);
 });
@@ -8787,7 +8831,7 @@ test('explore prepare record status and pr prepare surface read-only exploration
   assert.equal(prResult.exitCode, 0);
   assert.equal(prResult.result.preparation.pr_context.explore_evidence.summary.recorded_role_count, 1);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /^## Explore Evidence$/m);
 });
 
@@ -9393,7 +9437,7 @@ test('review record keeps append-only history for replaced review findings', asy
   const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/review-cockpit\.html/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /### Review Artifacts/);
 });
 
@@ -12050,7 +12094,7 @@ test('managed worktree command context uses current config mode after execution 
   assert.equal(gate?.status, 'not_applicable');
   assert.equal(gate?.required, false);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Managed worktree: disabled/);
+  assert.match(prBody, /- 管理worktree: disabled/);
 });
 
 test('managed worktree command context uses source repo config from an existing managed worktree', async () => {
@@ -12581,7 +12625,7 @@ architecture_docs:
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:join:gate').status, 'passed');
   assert.equal(passedResult.result.preparation.pr_context.agent_reviews.summary.unmet_required_review_count, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- Evidence: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
 
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -14283,7 +14327,7 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
   assert.equal(spineGate.subchecks.find((check) => check.id === 'intent').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
@@ -14841,7 +14885,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(architectureGate.axis_quality.evaluations.some((item) => item.axis === 'public_contract'), true);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /#### Senior first scan axes/);
   assert.equal(axisGate.axis_status, 'active_needs_evidence');
   assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
@@ -14965,7 +15009,7 @@ spec_docs:
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /active_accepted_followup/);
   assert.match(gateDagHtml, /accepted_followup/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}accepted_followup/);
@@ -15168,7 +15212,7 @@ title: Public Contract Block
   assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /public_contract: active_blocked/);
   assert.equal(gate.matched_blockers.some((item) => item.id === 'public_contract_traceability_missing'), true);
 });
@@ -16619,7 +16663,7 @@ export async function execute(actionParams) {
   assert.equal(networkGate.status, 'failed');
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:network_contract'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /\/api\/detail-search/);
 });
 
