@@ -1,0 +1,511 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-attribution-hardening",
+  "source": "execute_merge",
+  "generated_at": "2026-06-29T01:34:56.913Z",
+  "evidence_depth": "standard",
+  "budget_status": "within_budget",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "merge_warning",
+      "gate:gate:managed_worktree:needs_review",
+      "gate:gate:traceability_clause_coverage:needs_evidence"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+      "base_sha": "6c7ce1447f4bd7ec4cdf989ba950fd7d2fd14821",
+      "head_sha": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+      "merge_commit_sha": "10cb029e82d12176cbeebce7177ff8ffd3f4ae11"
+    },
+    "diff_stats_collected_at": "2026-06-29T01:34:52.138Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 820,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 696,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 1,
+          "changed_lines": 323,
+          "unknown_files": 0,
+          "paths": [
+            "src/session-efficiency-audit.js"
+          ]
+        },
+        "test": {
+          "files": 1,
+          "changed_lines": 181,
+          "unknown_files": 0,
+          "paths": [
+            "test/session-efficiency-audit.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 183,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-session-cost-attribution-hardening.md",
+            "docs/management/stories/active/story-vibepro-session-cost-attribution-hardening.md",
+            "docs/specs/vibepro-session-cost-attribution-hardening.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 1,
+          "changed_lines": 9,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+        "base_sha": "6c7ce1447f4bd7ec4cdf989ba950fd7d2fd14821",
+        "head_sha": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+        "merge_commit_sha": "10cb029e82d12176cbeebce7177ff8ffd3f4ae11"
+      },
+      "collected_at": "2026-06-29T01:34:52.138Z",
+      "reason": null
+    },
+    "product_changed_lines": 696,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 1.178,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "effective_canonical_artifact_lines": 2088,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "within_budget",
+    "budget_exceeded_reasons": [],
+    "token_accounting": {
+      "status": "available",
+      "total_tokens": 710398,
+      "input_tokens": 703680,
+      "output_tokens": 6718,
+      "cached_input_tokens": 619264,
+      "source": "codex-session-jsonl",
+      "window": {
+        "session_id": "019f013b-c6c7-7893-a398-69cebe953d36",
+        "source_path": "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T01-05-12-019f04ad-95c2-7653-b906-76978ecf8e90.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-18-019f0ba9-b438-7401-8f0e-fb885f907579.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-29-019f0ba9-df05-7db2-9fb9-b057dec42ee6.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T10-09-45-019f0bc6-7bc0-7ee2-9915-1fbb7d566cce.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-18-57-019f0c05-d6dc-7bb1-b26f-ce941b6d9bfc.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-24-11-019f0c0a-a18e-7503-8404-65dc189910a0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-00-019f0c86-fabf-7502-93c5-ff497486fd81.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-12-019f0c87-2b96-7121-baf4-efa7d119c3bb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-28-019f0c87-66ca-7210-8d42-2a21c79277f1.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-50-41-019f0cc7-b08d-7f31-ad2a-d161beb3c95d.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-41-019f0ccb-5c57-72c3-acd5-7565a5453280.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-58-019f0ccb-9e68-72f0-8881-ef3e3191d27f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-55-15-019f0ccb-df0d-7eb3-a3b1-d990577c2c92.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-13-12-019f0d13-3cdf-7551-87e7-da5a06fc67c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-22-33-019f0d1b-cb95-7140-b07a-4327968f21a9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-05-17-019f0e1e-a772-73a1-9e72-e335a218b4bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-31-28-019f0e36-9dac-7012-b659-a7b4a5380559.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-36-54-019f0e3b-975b-7501-8e0d-a8761f33b015.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-41-51-019f0e40-2229-7bd2-ba61-2adb8534e9c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-52-16-019f0e49-ab17-77f1-95f6-1b7b6ab98d7c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-43-09-019f0e78-3dc3-79b1-b059-18f35888f49c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-54-05-019f0e82-416b-7871-a0a4-70cb101868c0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-30-12-019f0ea3-5288-7e60-8355-741c050c4bcb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-36-31-019f0ea9-1a32-7ed3-953a-d350ee0a3681.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-20-35-019f0ed1-72c1-76a2-b388-29f38d70939c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-30-26-019f0eda-77b6-7712-abb8-06d5ce53c623.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-59-53-019f0f63-4b76-79b0-bcc1-5cddaec2d50e.jsonl"
+        ],
+        "first_token_line": 13,
+        "last_token_line": 138,
+        "last_token_source_path": "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+        "scope": "bounded"
+      },
+      "reason": null
+    },
+    "elapsed_time_accounting": {
+      "status": "available",
+      "elapsed_ms": 86363464,
+      "started_at": "2026-06-28T00:02:10.536Z",
+      "finished_at": "2026-06-29T00:01:34.000Z",
+      "source": "codex-session-jsonl",
+      "window": {
+        "session_id": "019f013b-c6c7-7893-a398-69cebe953d36",
+        "source_path": "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T01-05-12-019f04ad-95c2-7653-b906-76978ecf8e90.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-18-019f0ba9-b438-7401-8f0e-fb885f907579.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-29-019f0ba9-df05-7db2-9fb9-b057dec42ee6.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T10-09-45-019f0bc6-7bc0-7ee2-9915-1fbb7d566cce.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-18-57-019f0c05-d6dc-7bb1-b26f-ce941b6d9bfc.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-24-11-019f0c0a-a18e-7503-8404-65dc189910a0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-00-019f0c86-fabf-7502-93c5-ff497486fd81.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-12-019f0c87-2b96-7121-baf4-efa7d119c3bb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-28-019f0c87-66ca-7210-8d42-2a21c79277f1.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-50-41-019f0cc7-b08d-7f31-ad2a-d161beb3c95d.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-41-019f0ccb-5c57-72c3-acd5-7565a5453280.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-58-019f0ccb-9e68-72f0-8881-ef3e3191d27f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-55-15-019f0ccb-df0d-7eb3-a3b1-d990577c2c92.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-13-12-019f0d13-3cdf-7551-87e7-da5a06fc67c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-22-33-019f0d1b-cb95-7140-b07a-4327968f21a9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-05-17-019f0e1e-a772-73a1-9e72-e335a218b4bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-31-28-019f0e36-9dac-7012-b659-a7b4a5380559.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-36-54-019f0e3b-975b-7501-8e0d-a8761f33b015.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-41-51-019f0e40-2229-7bd2-ba61-2adb8534e9c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-52-16-019f0e49-ab17-77f1-95f6-1b7b6ab98d7c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-43-09-019f0e78-3dc3-79b1-b059-18f35888f49c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-54-05-019f0e82-416b-7871-a0a4-70cb101868c0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-30-12-019f0ea3-5288-7e60-8355-741c050c4bcb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-36-31-019f0ea9-1a32-7ed3-953a-d350ee0a3681.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-20-35-019f0ed1-72c1-76a2-b388-29f38d70939c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-30-26-019f0eda-77b6-7712-abb8-06d5ce53c623.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-59-53-019f0f63-4b76-79b0-bcc1-5cddaec2d50e.jsonl"
+        ]
+      },
+      "reason": null
+    },
+    "replay_bundle": {
+      "compressed_bytes": 3166,
+      "expanded_bytes": 13329,
+      "expanded_line_count": 351,
+      "persisted_line_count": 1
+    },
+    "raw_source_artifact_lines": 9425,
+    "raw_source_artifact_code_ratio": 13.542,
+    "artifact_lines_source": "persisted_canonical_compact"
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-06-29T01:34:19.745Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-06-29T01:34:19.745Z",
+    "status": "hit",
+    "evidence_key": "evk_6ff6fdeaf5e73f43d1a54d6662231ce2",
+    "verification_summary_fingerprint": "sha256:91ac863a7f594f418cddbd2ca57d91889fe60329d78927c599d81694a1edc9b4",
+    "verification_evidence_updated_at": "2026-06-29T01:33:50.759Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-06-29T01:33:50.759Z",
+        "git_recorded_at": "2026-06-29T01:33:50.759Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-06-29T01:30:29.269Z",
+        "git_recorded_at": "2026-06-29T01:30:29.268Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-06-29T01:13:24.777Z",
+        "git_recorded_at": "2026-06-29T01:13:24.776Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-06-29T01:13:23.979Z",
+        "git_recorded_at": "2026-06-29T01:13:23.978Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-06-29T01:10:23.071Z",
+        "git_recorded_at": "2026-06-29T01:10:23.069Z"
+      }
+    ],
+    "stale_reason_count": 0,
+    "full_evidence_status": "reused",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 26
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-06-29T01:34:19.761Z",
+    "status": "updated_existing_pr",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/258",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/258",
+      "merge_commit_sha": "10cb029e82d12176cbeebce7177ff8ffd3f4ae11",
+      "merged_at": "2026-06-29T01:34:54Z",
+      "current_head_sha": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...8f1f6881cafcb0f72269d8a4e46a3913f5e865d6"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 53,
+    "blocking_count": 2
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": null,
+    "gap_count": 2,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 5,
+      "acceptance_criteria_count": 5,
+      "scenario_clause_count": 0,
+      "mapped_count": 4,
+      "weakly_mapped_count": 1,
+      "unmapped_count": 0,
+      "examples": [
+        {
+          "id": "AC-3",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "`SCATTR-AC-003`: A bounded window with no in-window events does not report",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        }
+      ]
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 5,
+    "pass_count": 5,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "automation_value_audit": {
+    "schema_version": "0.1.0",
+    "artifact_kind": "vibepro_automation_value_audit",
+    "story_id": "story-vibepro-session-cost-attribution-hardening",
+    "generated_at": "2026-06-29T01:34:56.913Z",
+    "status": "ready",
+    "purpose": "daily_automation_input",
+    "sources": {
+      "canonical_audit": true,
+      "cost_summary": true,
+      "pr_lifecycle": true,
+      "verification": true,
+      "review": true,
+      "senior_gap_judgment": true
+    },
+    "merge_context": {
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/258",
+      "merge_status": "merged",
+      "merge_commit_sha": "10cb029e82d12176cbeebce7177ff8ffd3f4ae11",
+      "merged_at": "2026-06-29T01:34:54Z"
+    },
+    "allocation": {
+      "changed_lines_status": "available",
+      "total_changed_lines": 696,
+      "implementation_changed_lines": 323,
+      "verification_and_docs_changed_lines": 364,
+      "audit_evidence_changed_lines": 364,
+      "buckets": {
+        "src": 323,
+        "test": 181,
+        "story_spec_architecture_docs": 183,
+        "audit_artifacts": 0,
+        "other": 9
+      }
+    },
+    "ratios": {
+      "test_to_src": 0.56,
+      "story_spec_architecture_to_src": 0.567,
+      "audit_artifacts_to_src": 0,
+      "automation_evidence_to_src": 1.127,
+      "artifact_lines_to_product_changed_lines": 1.178
+    },
+    "session_cost": {
+      "token_status": "available",
+      "total_tokens": 710398,
+      "token_source": "codex-session-jsonl",
+      "token_window": {
+        "session_id": "019f013b-c6c7-7893-a398-69cebe953d36",
+        "source_path": "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T01-05-12-019f04ad-95c2-7653-b906-76978ecf8e90.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-18-019f0ba9-b438-7401-8f0e-fb885f907579.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-29-019f0ba9-df05-7db2-9fb9-b057dec42ee6.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T10-09-45-019f0bc6-7bc0-7ee2-9915-1fbb7d566cce.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-18-57-019f0c05-d6dc-7bb1-b26f-ce941b6d9bfc.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-24-11-019f0c0a-a18e-7503-8404-65dc189910a0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-00-019f0c86-fabf-7502-93c5-ff497486fd81.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-12-019f0c87-2b96-7121-baf4-efa7d119c3bb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-28-019f0c87-66ca-7210-8d42-2a21c79277f1.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-50-41-019f0cc7-b08d-7f31-ad2a-d161beb3c95d.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-41-019f0ccb-5c57-72c3-acd5-7565a5453280.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-58-019f0ccb-9e68-72f0-8881-ef3e3191d27f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-55-15-019f0ccb-df0d-7eb3-a3b1-d990577c2c92.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-13-12-019f0d13-3cdf-7551-87e7-da5a06fc67c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-22-33-019f0d1b-cb95-7140-b07a-4327968f21a9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-05-17-019f0e1e-a772-73a1-9e72-e335a218b4bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-31-28-019f0e36-9dac-7012-b659-a7b4a5380559.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-36-54-019f0e3b-975b-7501-8e0d-a8761f33b015.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-41-51-019f0e40-2229-7bd2-ba61-2adb8534e9c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-52-16-019f0e49-ab17-77f1-95f6-1b7b6ab98d7c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-43-09-019f0e78-3dc3-79b1-b059-18f35888f49c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-54-05-019f0e82-416b-7871-a0a4-70cb101868c0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-30-12-019f0ea3-5288-7e60-8355-741c050c4bcb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-36-31-019f0ea9-1a32-7ed3-953a-d350ee0a3681.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-20-35-019f0ed1-72c1-76a2-b388-29f38d70939c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-30-26-019f0eda-77b6-7712-abb8-06d5ce53c623.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-59-53-019f0f63-4b76-79b0-bcc1-5cddaec2d50e.jsonl"
+        ],
+        "first_token_line": 13,
+        "last_token_line": 138,
+        "last_token_source_path": "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+        "scope": "bounded"
+      },
+      "elapsed_status": "available",
+      "elapsed_ms": 86363464,
+      "elapsed_source": "codex-session-jsonl",
+      "elapsed_window": {
+        "session_id": "019f013b-c6c7-7893-a398-69cebe953d36",
+        "source_path": "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+        "source_paths": [
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T00-10-34-019f047b-8eec-71d0-9051-eedeb93baabf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/27/rollout-2026-06-27T01-05-12-019f04ad-95c2-7653-b906-76978ecf8e90.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-06-019f0ba9-82d1-73a3-af45-deef3ec14012.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-18-019f0ba9-b438-7401-8f0e-fb885f907579.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T09-38-29-019f0ba9-df05-7db2-9fb9-b057dec42ee6.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T10-09-45-019f0bc6-7bc0-7ee2-9915-1fbb7d566cce.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-18-57-019f0c05-d6dc-7bb1-b26f-ce941b6d9bfc.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T11-24-11-019f0c0a-a18e-7503-8404-65dc189910a0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-00-019f0c86-fabf-7502-93c5-ff497486fd81.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-12-019f0c87-2b96-7121-baf4-efa7d119c3bb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T13-40-28-019f0c87-66ca-7210-8d42-2a21c79277f1.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-50-41-019f0cc7-b08d-7f31-ad2a-d161beb3c95d.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-41-019f0ccb-5c57-72c3-acd5-7565a5453280.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-54-58-019f0ccb-9e68-72f0-8881-ef3e3191d27f.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T14-55-15-019f0ccb-df0d-7eb3-a3b1-d990577c2c92.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-13-12-019f0d13-3cdf-7551-87e7-da5a06fc67c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T16-22-33-019f0d1b-cb95-7140-b07a-4327968f21a9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-05-17-019f0e1e-a772-73a1-9e72-e335a218b4bf.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-31-28-019f0e36-9dac-7012-b659-a7b4a5380559.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-36-54-019f0e3b-975b-7501-8e0d-a8761f33b015.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-41-51-019f0e40-2229-7bd2-ba61-2adb8534e9c9.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T21-52-16-019f0e49-ab17-77f1-95f6-1b7b6ab98d7c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-43-09-019f0e78-3dc3-79b1-b059-18f35888f49c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T22-54-05-019f0e82-416b-7871-a0a4-70cb101868c0.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-30-12-019f0ea3-5288-7e60-8355-741c050c4bcb.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/28/rollout-2026-06-28T23-36-31-019f0ea9-1a32-7ed3-953a-d350ee0a3681.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-20-35-019f0ed1-72c1-76a2-b388-29f38d70939c.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T00-30-26-019f0eda-77b6-7712-abb8-06d5ce53c623.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-39-19-019f0f50-7712-7df2-b346-be1bfb8ef5d2.jsonl",
+          "/Users/ksato/.codex/sessions/2026/06/29/rollout-2026-06-29T02-59-53-019f0f63-4b76-79b0-bcc1-5cddaec2d50e.jsonl"
+        ]
+      }
+    },
+    "value_signal_inputs": {
+      "budget_status": "within_budget",
+      "budget_exceeded_reasons": [],
+      "evidence_depth": "standard",
+      "verification_pass_count": 5,
+      "verification_fail_count": 0,
+      "review_result_count": 1,
+      "review_pass_count": 1,
+      "review_block_count": 0,
+      "senior_gap_status": null,
+      "senior_gap_residual_risk_count": 0,
+      "evidence_reuse_status": "hit",
+      "evidence_reuse_stale_reason_count": 0,
+      "traceability_lifecycle": "merged",
+      "missing_artifact_count": 0
+    },
+    "cost_controls": {
+      "status": "within_controls",
+      "budget_status": "within_budget",
+      "artifact_code_ratio": 1.178,
+      "automation_evidence_to_src": 1.127,
+      "budget_exceeded_reasons": [],
+      "canonical_artifact_lines": 820,
+      "product_changed_lines": 696,
+      "evidence_depth": "standard",
+      "recommended_evidence_depth": "standard",
+      "recommendations": []
+    },
+    "findings": []
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1",
+    "compressed_hash": "sha256:63242e46b6fbe7f664b794a4922ed5d77ff76b76a6b95bd86846f7cc4aca7719",
+    "expanded_bytes": 13329,
+    "compressed_bytes": 3166,
+    "expanded_line_count": 351,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-attribution-hardening",
+    "cost": {
+      "compressed_bytes": 3166,
+      "expanded_bytes": 13329,
+      "expanded_line_count": 351,
+      "persisted_line_count": 1
+    }
+  }
+}

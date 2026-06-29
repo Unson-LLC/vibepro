@@ -1,0 +1,282 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-attribution-hardening",
+  "source": "execute_merge",
+  "promoted_at": "2026-06-29T01:34:56.913Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1",
+    "compressed_hash": "sha256:63242e46b6fbe7f664b794a4922ed5d77ff76b76a6b95bd86846f7cc4aca7719",
+    "expanded_bytes": 13329,
+    "compressed_bytes": 3166,
+    "expanded_line_count": 351,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-attribution-hardening",
+    "cost": {
+      "compressed_bytes": 3166,
+      "expanded_bytes": 13329,
+      "expanded_line_count": 351,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/258",
+    "merge_commit_sha": "10cb029e82d12176cbeebce7177ff8ffd3f4ae11",
+    "merged_at": "2026-06-29T01:34:54Z",
+    "current_head_sha": "8f1f6881cafcb0f72269d8a4e46a3913f5e865d6",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...8f1f6881cafcb0f72269d8a4e46a3913f5e865d6"
+  },
+  "handoff_replay_status": "ready",
+  "handoff_replay": {
+    "status": "ready",
+    "resolved_reference_count": 0,
+    "copied_reference_count": 0,
+    "unresolved_reference_count": 0,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-attribution-hardening"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:7ce60031f2746daa180ebbf52e114b73681b097800739c4e724c7683f7dd1bee",
+      "audit_digest": "sha256:7ce60031f2746daa180ebbf52e114b73681b097800739c4e724c7683f7dd1bee",
+      "line_count": 91,
+      "raw_line_count": 91,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:103d28d2134be5763cba2b2fc63cd6d114a9aead2a747db91e260a87abe06b11",
+      "audit_digest": "sha256:f35dfb49034c85e701158e0dd292f6c67183a0ec574eb6777145613b0b65ff1e",
+      "line_count": 3642,
+      "raw_line_count": 18168,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:96aff32d2fe7f2d6118769f06da8655a613a48297669b5ed36435c3371293f52",
+      "audit_digest": "sha256:3ab0182d22bbdb42e0a73f94af56fd7f4ecb477769c601d36ab21212eb07fa00",
+      "line_count": 1449,
+      "raw_line_count": 2990,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:1190c8fac16ea76345739e291fea68f7dbd936f31654b961822bc1822adda95e",
+      "audit_digest": "sha256:83caba6b08d3cdec6e7feb3dd79eb7d2202fe211a0e8ae46a1aac2ffdec09708",
+      "line_count": 1306,
+      "raw_line_count": 2844,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:85ccd4b42d3fc9a875063d40828bb3109e9debf8a22e9981d88b97960d5f0650",
+      "audit_digest": "sha256:a17358d8c3396ef31cb0269592032fcc1ceb02e899208bc296fd03eceaa286ec",
+      "line_count": 51,
+      "raw_line_count": 617,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:f4fd6b717acf91cb76a62d79dadaafdc22267f8fc7c0bd44d32acd496c6018a6",
+      "audit_digest": "sha256:9212fb102d1f8f3ecf8dc060db5076cdc947e3eb9589f56ed74dc6f2b4f65987",
+      "line_count": 1832,
+      "raw_line_count": 3404,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:a8bc64ea5a1c2fbeb2d776897397c037ed5789bbf902e22b8cf93894100862be",
+      "audit_digest": "sha256:a8bc64ea5a1c2fbeb2d776897397c037ed5789bbf902e22b8cf93894100862be",
+      "line_count": 338,
+      "raw_line_count": 338,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:dddbe34cfc72e6c0c61a893eb5ed77adc500e6bfc9ec9edfec4a91fce8b51f4e",
+      "audit_digest": "sha256:d09960cff280407bb6f128505f34f6a30c0dee55ceb1b43a6f2b216551f5c91c",
+      "line_count": 84,
+      "raw_line_count": 456,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-attribution-hardening/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:87d2448d92eb79543fb0b212496bef84fc993c339a1c6205804b5ad3e3321c3c",
+      "audit_digest": "sha256:87d2448d92eb79543fb0b212496bef84fc993c339a1c6205804b5ad3e3321c3c",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-attribution-hardening/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:1d9fdccc83d237ffcee16518ad0e25f800874ae63cfec6c595ff0eb84e32cb29",
+      "audit_digest": "sha256:1d9fdccc83d237ffcee16518ad0e25f800874ae63cfec6c595ff0eb84e32cb29",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-attribution-hardening/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:9f3599edfdb8dd0c41265aee825cc706d945f01de5dc541acdcf0c310793d69e",
+      "audit_digest": "sha256:9f3599edfdb8dd0c41265aee825cc706d945f01de5dc541acdcf0c310793d69e",
+      "line_count": 104,
+      "raw_line_count": 104,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-attribution-hardening/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
+      "digest": "sha256:258a3a9bb235a214a328125ae60f5cfa40af86f2fbf55836c0af966d556c8e7f",
+      "audit_digest": "sha256:258a3a9bb235a214a328125ae60f5cfa40af86f2fbf55836c0af966d556c8e7f",
+      "line_count": 280,
+      "raw_line_count": 280,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [],
+  "copied_references": [],
+  "unresolved_references": []
+}
