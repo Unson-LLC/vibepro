@@ -45,5 +45,5 @@ test('story-vibepro-engineering-judgment-surface-evidence acceptance evidence is
   assert.match(cliTests, /assert\.equal\(authFailureModes\.status, 'needs_evidence'\)/);
   assert.match(cliTests, /assert\.equal\(docsReality\.surface, 'docs_only'\)/);
   assert.match(cliTests, /assert\.equal\(spineGate\.subchecks\.find\(\(check\) => check\.id === 'done_evidence'\)\.status, 'needs_evidence'\)/);
-  assert.match(cliTests, /assert\.match\(prBody, \/\\\.vibepro\\\/pr\\\/story-pr-prepare\\\/gate-dag\\\.json\//);
+  assert.match(cliTests, /assert\.match\(prBody,[\s\S]{0,80}証跡:[\s\S]{0,80}story-pr-prepare/);
 });

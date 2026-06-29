@@ -9437,7 +9437,7 @@ test('review record keeps append-only history for replaced review findings', asy
   const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /\.vibepro\/pr\/story-pr-prepare\/review-cockpit\.html/);
+  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
   assert.doesNotMatch(prBody, /### Review Artifacts/);
 });
 
