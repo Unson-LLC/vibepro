@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-session-cost-attribution-hardening",
   "source": "execute_merge",
-  "promoted_at": "2026-06-29T01:34:56.913Z",
+  "promoted_at": "2026-06-29T01:35:00.772Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1",
-    "compressed_hash": "sha256:63242e46b6fbe7f664b794a4922ed5d77ff76b76a6b95bd86846f7cc4aca7719",
+    "content_hash": "sha256:48097cc8b95d31d47edd43df511d8e80aa1df6a516bee1475abf4624c3d15c34",
+    "compressed_hash": "sha256:cf097b9c59bb1204a83d4a9c1589c6d3c3529f37bd4194a2ae5c6f74fdf8f4b4",
     "expanded_bytes": 13329,
-    "compressed_bytes": 3166,
+    "compressed_bytes": 3164,
     "expanded_line_count": 351,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-attribution-hardening",
     "cost": {
-      "compressed_bytes": 3166,
+      "compressed_bytes": 3164,
       "expanded_bytes": 13329,
       "expanded_line_count": 351,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1"
+      "content_hash": "sha256:48097cc8b95d31d47edd43df511d8e80aa1df6a516bee1475abf4624c3d15c34"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-session-cost-attribution-hardening/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
-      "digest": "sha256:f4fd6b717acf91cb76a62d79dadaafdc22267f8fc7c0bd44d32acd496c6018a6",
-      "audit_digest": "sha256:9212fb102d1f8f3ecf8dc060db5076cdc947e3eb9589f56ed74dc6f2b4f65987",
-      "line_count": 1832,
-      "raw_line_count": 3404,
+      "digest": "sha256:cffcdb285bdd8ba8b2868e063d236e9dfe5618e350a846e73c6201bfe63d0420",
+      "audit_digest": "sha256:9265296b709bb8f0f3810288052c8c878bc752edde6edf90b20a5b01642400fe",
+      "line_count": 1922,
+      "raw_line_count": 3494,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",

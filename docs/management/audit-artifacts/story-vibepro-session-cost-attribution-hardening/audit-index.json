@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-session-cost-attribution-hardening",
   "source": "execute_merge",
-  "generated_at": "2026-06-29T01:34:56.913Z",
+  "generated_at": "2026-06-29T01:35:00.772Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -190,13 +190,13 @@
       "reason": null
     },
     "replay_bundle": {
-      "compressed_bytes": 3166,
+      "compressed_bytes": 3164,
       "expanded_bytes": 13329,
       "expanded_line_count": 351,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9425,
-    "raw_source_artifact_code_ratio": 13.542,
+    "raw_source_artifact_lines": 9515,
+    "raw_source_artifact_code_ratio": 13.671,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -323,7 +323,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-session-cost-attribution-hardening",
-    "generated_at": "2026-06-29T01:34:56.913Z",
+    "generated_at": "2026-06-29T01:35:00.772Z",
     "status": "ready",
     "purpose": "daily_automation_input",
     "sources": {
@@ -480,10 +480,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-session-cost-attribution-hardening/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:7a7b4c11a8fc36eb91c7333a6e0026c55aaa56a01d5666208ccf72de00a312b1",
-    "compressed_hash": "sha256:63242e46b6fbe7f664b794a4922ed5d77ff76b76a6b95bd86846f7cc4aca7719",
+    "content_hash": "sha256:48097cc8b95d31d47edd43df511d8e80aa1df6a516bee1475abf4624c3d15c34",
+    "compressed_hash": "sha256:cf097b9c59bb1204a83d4a9c1589c6d3c3529f37bd4194a2ae5c6f74fdf8f4b4",
     "expanded_bytes": 13329,
-    "compressed_bytes": 3166,
+    "compressed_bytes": 3164,
     "expanded_line_count": 351,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -502,7 +502,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-attribution-hardening",
     "cost": {
-      "compressed_bytes": 3166,
+      "compressed_bytes": 3164,
       "expanded_bytes": 13329,
       "expanded_line_count": 351,
       "persisted_line_count": 1
