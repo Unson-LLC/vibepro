@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -603,4 +603,81 @@ test('AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCE
   assert.equal(lastRunFallback.automation_memory.window_start, '2026-06-27T13:01:00.000Z');
   assert.equal(lastRunFallback.automation_memory.window_end, '2026-06-27T13:03:00.000Z');
   assert.equal(lastRunFallback.session.token_accounting.total_tokens, 160);
+});
+
+test('AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const detachedRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-session-cost-detached-'));
+  await writeJson(path.join(detachedRoot, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    story: { story_id: storyId },
+    gate_status: {
+      overall_status: 'ready',
+      ready_for_pr_create: true,
+      critical_unresolved_gates: []
+    }
+  });
+  await writeJson(path.join(detachedRoot, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+    story_id: storyId,
+    updated_at: '2026-06-27T13:54:00.000Z',
+    commands: [
+      { kind: 'unit', status: 'pass' },
+      { kind: 'typecheck', status: 'pass' }
+    ]
+  });
+  await rm(path.join(root, '.vibepro', 'pr', storyId), { recursive: true, force: true });
+  const lines = [
+    ...sessionLines({ sessionId, cwd: root, storyId }),
+    {
+      timestamp: '2026-06-27T13:01:00.000Z',
+      type: 'response_item',
+      payload: {
+        text: `read ${path.join(detachedRoot, '.vibepro', 'pr', storyId, 'verification-evidence.json')}`
+      }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.story_artifacts.status, 'detached_available');
+  assert.equal(result.story_artifacts.lineage.status, 'detached_artifact_found');
+  assert.equal(result.story_artifacts.lineage.detached_candidates.length, 1);
+  assert.equal(result.story_artifacts.lineage.detached_candidates[0].exists, true);
+  assert.equal(result.story_artifacts.pr_prepare.overall_status, 'ready');
+  assert.equal(result.story_artifacts.verification.pass_count, 2);
+  assert.equal(result.audit_readiness.status, 'ready');
+});
+
+test('AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await rm(path.join(root, '.vibepro', 'pr', storyId), { recursive: true, force: true });
+  const missingRoot = path.join(os.tmpdir(), 'vibepro-missing-detached-root', '.vibepro', 'pr', storyId);
+  const lines = [
+    ...sessionLines({ sessionId, cwd: root, storyId }),
+    {
+      timestamp: '2026-06-27T13:01:00.000Z',
+      type: 'response_item',
+      payload: { text: `cat ${path.join(missingRoot, 'pr-prepare.json')}` }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.story_artifacts.status, 'unavailable');
+  assert.equal(result.story_artifacts.lineage.status, 'detached_artifact_observed');
+  assert.equal(result.story_artifacts.lineage.detached_candidates[0].exists, false);
+  assert.deepEqual(result.audit_readiness.blockers, ['story_artifacts_detached_unavailable']);
 });
