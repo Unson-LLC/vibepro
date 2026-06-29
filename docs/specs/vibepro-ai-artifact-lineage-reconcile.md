@@ -29,6 +29,8 @@ diagrams:
   `pr-prepare`, and `verification-evidence` summaries.
 - `AIL-006`: An observed but unreadable detached root MUST be reported as
   `detached_artifact_observed`, not as clean artifact absence.
+- `AIL-007`: Codex JSONL `session_meta` cwd MUST be treated as a candidate base
+  for resolving relative `.vibepro/pr/<story-id>` references.
 
 ## Invariants
 
