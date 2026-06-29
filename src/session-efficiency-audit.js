@@ -64,7 +64,9 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     ? path.resolve(processMetadata.cwd)
     : (session.cwd ? path.resolve(session.cwd) : root);
   const observedWorktreeMatchesRepo = await matchesRepo(observedRoot, root);
-  const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId);
+  const artifactInventory = await collectStoryArtifactInventory(observedRoot, storyId, {
+    sessionFiles
+  });
   const git = await collectGitCostStats(observedRoot, {
     baseRef,
     headRef,
@@ -127,6 +129,7 @@ export function renderSessionEfficiencyAudit(result) {
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
     `- story_artifact_lines: ${result.story_artifacts.total_lines} files=${result.story_artifacts.file_count}`,
+    `- story_artifact_lineage: ${result.story_artifacts.lineage?.status ?? 'unknown'} source=${result.story_artifacts.lineage?.effective_source ?? '-'}`,
     '',
     '| 区分 | changed lines | tokens 推定 | 比率 |',
     '| --- | ---: | ---: | ---: |',
@@ -878,9 +881,14 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
   };
 }
 
-async function collectStoryArtifactInventory(repoRoot, storyId) {
+async function collectStoryArtifactInventory(repoRoot, storyId, { sessionFiles = [] } = {}) {
   const artifactRoot = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
-  const files = await collectTextFiles(artifactRoot);
+  const lineage = await collectArtifactLineage(repoRoot, storyId, {
+    currentArtifactRoot: artifactRoot,
+    sessionFiles
+  });
+  const effectiveRoot = lineage.effective_root_path ?? artifactRoot;
+  const files = await collectTextFiles(effectiveRoot);
   let totalLines = 0;
   const artifacts = [];
   for (const filePath of files) {
@@ -888,20 +896,250 @@ async function collectStoryArtifactInventory(repoRoot, storyId) {
     const lineCount = countTextLines(text);
     totalLines += lineCount;
     artifacts.push({
-      path: toWorkspaceRelative(repoRoot, filePath),
+      path: renderArtifactPath(repoRoot, filePath),
       lines: lineCount
     });
   }
   artifacts.sort((a, b) => b.lines - a.lines || a.path.localeCompare(b.path));
+  const currentArtifactsAvailable = files.length > 0 && path.resolve(effectiveRoot) === path.resolve(artifactRoot);
   return {
-    status: files.length > 0 ? 'available' : 'unavailable',
+    status: files.length > 0
+      ? (currentArtifactsAvailable ? 'available' : 'detached_available')
+      : 'unavailable',
     root: toWorkspaceRelative(repoRoot, artifactRoot),
+    effective_root: renderArtifactPath(repoRoot, effectiveRoot),
     file_count: files.length,
     total_lines: totalLines,
     largest_files: artifacts.slice(0, 10),
-    pr_prepare: await readPrPrepareSummary(repoRoot, storyId),
-    verification: await readVerificationSummary(repoRoot, storyId)
+    pr_prepare: await readPrPrepareSummary(repoRoot, storyId, effectiveRoot),
+    verification: await readVerificationSummary(repoRoot, storyId, effectiveRoot),
+    lineage
   };
+}
+
+async function collectArtifactLineage(repoRoot, storyId, {
+  currentArtifactRoot,
+  sessionFiles = []
+} = {}) {
+  const currentCandidate = await summarizeArtifactRoot(repoRoot, currentArtifactRoot, {
+    source: 'current_worktree',
+    source_path: renderArtifactPath(repoRoot, currentArtifactRoot),
+    line: null,
+    observed_at: null
+  });
+  const detachedCandidates = sessionFiles.length > 0
+    ? await collectDetachedArtifactCandidates(repoRoot, storyId, sessionFiles, currentArtifactRoot)
+    : [];
+  const readableDetached = detachedCandidates.find((candidate) => candidate.exists && candidate.file_count > 0) ?? null;
+  const observedDetached = detachedCandidates[0] ?? null;
+  const effective = currentCandidate.exists && currentCandidate.file_count > 0
+    ? currentCandidate
+    : readableDetached;
+  const status = currentCandidate.exists && currentCandidate.file_count > 0
+    ? (detachedCandidates.length > 0 ? 'current_with_detached_candidates' : 'current')
+    : readableDetached
+      ? 'detached_artifact_found'
+      : observedDetached
+        ? 'detached_artifact_observed'
+        : 'missing';
+
+  return {
+    status,
+    current: currentCandidate,
+    effective_root_path: effective?.root_path ?? null,
+    effective_source: effective?.source ?? null,
+    detached_candidates: detachedCandidates.map((candidate) => ({
+      source: candidate.source,
+      root: candidate.root,
+      root_path: candidate.root_path,
+      exists: candidate.exists,
+      file_count: candidate.file_count,
+      total_lines: candidate.total_lines,
+      first_observed_at: candidate.first_observed_at,
+      last_observed_at: candidate.last_observed_at,
+      first_line: candidate.first_line,
+      last_line: candidate.last_line,
+      observation_count: candidate.observation_count,
+      evidence_refs: candidate.evidence_refs.slice(0, 5)
+    })),
+    reason: lineageReason(status)
+  };
+}
+
+async function collectDetachedArtifactCandidates(repoRoot, storyId, sessionFiles, currentArtifactRoot) {
+  const byRoot = new Map();
+  let latestCwd = null;
+  for (const sessionFile of sessionFiles) {
+    let text;
+    try {
+      text = await readFile(sessionFile, 'utf8');
+    } catch {
+      continue;
+    }
+    const lines = text.split('\n').filter(Boolean);
+    for (let index = 0; index < lines.length; index += 1) {
+      let entry;
+      try {
+        entry = JSON.parse(lines[index]);
+      } catch {
+        continue;
+      }
+      const observedAt = normalizeIso(entry.timestamp);
+      const strings = collectJsonStrings(entry);
+      const cwdHints = collectCwdHints(entry);
+      if (entry.type === 'session_meta') {
+        latestCwd = entry.payload?.cwd ?? latestCwd;
+      }
+      if (cwdHints.length > 0) latestCwd = cwdHints.at(-1);
+      const candidateBases = uniqueStrings([
+        latestCwd,
+        ...cwdHints
+      ].filter(Boolean));
+
+      const roots = new Set();
+      for (const value of strings) {
+        for (const root of extractArtifactRoots(value, storyId, candidateBases)) {
+          roots.add(root);
+        }
+      }
+      if (roots.size === 0 && lines[index].includes(storyId) && /\bvibepro\b|\.vibepro\//.test(lines[index])) {
+        for (const base of candidateBases) {
+          if (path.isAbsolute(base)) roots.add(path.join(base, '.vibepro', 'pr', storyId));
+        }
+      }
+      for (const root of roots) {
+        const resolved = path.resolve(root);
+        if (path.resolve(currentArtifactRoot) === resolved) continue;
+        const current = byRoot.get(resolved) ?? {
+          root_path: resolved,
+          first_observed_at: observedAt,
+          last_observed_at: observedAt,
+          first_line: index + 1,
+          last_line: index + 1,
+          observation_count: 0,
+          evidence_refs: []
+        };
+        current.first_observed_at ??= observedAt;
+        current.last_observed_at = observedAt ?? current.last_observed_at;
+        current.last_line = index + 1;
+        current.observation_count += 1;
+        current.evidence_refs.push({
+          source_path: sessionFile,
+          line: index + 1,
+          observed_at: observedAt
+        });
+        byRoot.set(resolved, current);
+      }
+    }
+  }
+
+  const candidates = [];
+  for (const candidate of byRoot.values()) {
+    candidates.push(await summarizeArtifactRoot(repoRoot, candidate.root_path, {
+      source: 'codex-session-jsonl',
+      source_path: candidate.evidence_refs[0]?.source_path ?? null,
+      line: candidate.first_line,
+      observed_at: candidate.first_observed_at,
+      first_observed_at: candidate.first_observed_at,
+      last_observed_at: candidate.last_observed_at,
+      first_line: candidate.first_line,
+      last_line: candidate.last_line,
+      observation_count: candidate.observation_count,
+      evidence_refs: candidate.evidence_refs
+    }));
+  }
+  candidates.sort((a, b) => Number(b.exists) - Number(a.exists) || b.file_count - a.file_count || a.root.localeCompare(b.root));
+  return candidates;
+}
+
+async function summarizeArtifactRoot(repoRoot, artifactRoot, observation) {
+  const files = await collectTextFiles(artifactRoot);
+  let totalLines = 0;
+  for (const filePath of files) {
+    const text = await readFile(filePath, 'utf8');
+    totalLines += countTextLines(text);
+  }
+  return {
+    source: observation.source,
+    root: renderArtifactPath(repoRoot, artifactRoot),
+    root_path: path.resolve(artifactRoot),
+    exists: files.length > 0,
+    file_count: files.length,
+    total_lines: totalLines,
+    source_path: observation.source_path ?? null,
+    line: observation.line ?? null,
+    first_observed_at: observation.first_observed_at ?? observation.observed_at ?? null,
+    last_observed_at: observation.last_observed_at ?? observation.observed_at ?? null,
+    first_line: observation.first_line ?? observation.line ?? null,
+    last_line: observation.last_line ?? observation.line ?? null,
+    observation_count: observation.observation_count ?? (observation.line ? 1 : 0),
+    evidence_refs: observation.evidence_refs ?? []
+  };
+}
+
+function collectJsonStrings(value, out = []) {
+  if (typeof value === 'string') {
+    out.push(value);
+    return out;
+  }
+  if (!value || typeof value !== 'object') return out;
+  if (Array.isArray(value)) {
+    for (const item of value) collectJsonStrings(item, out);
+    return out;
+  }
+  for (const item of Object.values(value)) collectJsonStrings(item, out);
+  return out;
+}
+
+function collectCwdHints(value, out = []) {
+  if (!value || typeof value !== 'object') return out;
+  if (Array.isArray(value)) {
+    for (const item of value) collectCwdHints(item, out);
+    return out;
+  }
+  for (const [key, item] of Object.entries(value)) {
+    if ((key === 'cwd' || key === 'workdir') && typeof item === 'string' && path.isAbsolute(item)) out.push(item);
+    collectCwdHints(item, out);
+  }
+  return uniqueStrings(out);
+}
+
+function extractArtifactRoots(value, storyId, candidateBases) {
+  if (!value.includes('.vibepro') || !value.includes(storyId)) return [];
+  const escapedStoryId = escapeRegex(storyId);
+  const roots = [];
+  const absolute = new RegExp(`(/[^\\s"'\\\`]+?\\.vibepro/pr/${escapedStoryId})(?:/[^\\s"'\\\`]*)?`, 'g');
+  for (const match of value.matchAll(absolute)) {
+    roots.push(match[1]);
+  }
+  const relative = new RegExp(`(^|[\\s"'\\\`])((?:\\./)?\\.vibepro/pr/${escapedStoryId})(?:/[^\\s"'\\\`]*)?`, 'g');
+  for (const match of value.matchAll(relative)) {
+    for (const base of candidateBases) {
+      if (path.isAbsolute(base)) roots.push(path.resolve(base, match[2]));
+    }
+  }
+  return uniqueStrings(roots);
+}
+
+function renderArtifactPath(repoRoot, filePath) {
+  const relative = toWorkspaceRelative(repoRoot, filePath);
+  return relative.startsWith('..') ? path.resolve(filePath) : relative;
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter((value) => typeof value === 'string' && value.length > 0))];
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function lineageReason(status) {
+  if (status === 'current') return null;
+  if (status === 'current_with_detached_candidates') return 'current story artifacts were available; detached candidates are secondary provenance';
+  if (status === 'detached_artifact_found') return 'current story artifacts were unavailable, but a readable detached artifact root was found from Codex session JSONL';
+  if (status === 'detached_artifact_observed') return 'current story artifacts were unavailable, and Codex session JSONL observed a detached artifact root that is no longer readable';
+  return 'no current or detached story artifact root was found';
 }
 
 async function collectTextFiles(root) {
@@ -927,17 +1165,17 @@ async function collectTextFiles(root) {
   return out;
 }
 
-async function readPrPrepareSummary(repoRoot, storyId) {
+async function readPrPrepareSummary(repoRoot, storyId, artifactRoot = path.join(getWorkspaceDir(repoRoot), 'pr', storyId)) {
   const candidates = [
-    path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'pr-prepare-current.json'),
-    path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'pr-prepare.json')
+    path.join(artifactRoot, 'pr-prepare-current.json'),
+    path.join(artifactRoot, 'pr-prepare.json')
   ];
   for (const filePath of candidates) {
     const parsed = await readJsonIfExists(filePath);
     if (!parsed) continue;
     return {
       status: 'available',
-      source: toWorkspaceRelative(repoRoot, filePath),
+      source: renderArtifactPath(repoRoot, filePath),
       overall_status: parsed.gate_status?.overall_status ?? parsed.overall_status ?? null,
       ready_for_pr_create: parsed.gate_status?.ready_for_pr_create ?? parsed.ready_for_pr_create ?? null,
       critical_unresolved_gate_count: parsed.gate_status?.critical_unresolved_gates?.length ?? null
@@ -946,14 +1184,14 @@ async function readPrPrepareSummary(repoRoot, storyId) {
   return { status: 'unavailable', reason: 'pr-prepare artifact was not found' };
 }
 
-async function readVerificationSummary(repoRoot, storyId) {
-  const filePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
+async function readVerificationSummary(repoRoot, storyId, artifactRoot = path.join(getWorkspaceDir(repoRoot), 'pr', storyId)) {
+  const filePath = path.join(artifactRoot, 'verification-evidence.json');
   const parsed = await readJsonIfExists(filePath);
   if (!parsed) return { status: 'unavailable', reason: 'verification-evidence artifact was not found' };
   const commands = Array.isArray(parsed.commands) ? parsed.commands : [];
   return {
     status: 'available',
-    source: toWorkspaceRelative(repoRoot, filePath),
+    source: renderArtifactPath(repoRoot, filePath),
     updated_at: parsed.updated_at ?? null,
     command_count: commands.length,
     pass_count: commands.filter((command) => command.status === 'pass').length,
@@ -1073,13 +1311,23 @@ function buildAuditReadiness({ session, processMetadata, observedWorktreeMatches
     session.elapsed_time_accounting.status === 'unavailable' ? 'elapsed_time_unavailable' : null,
     !processMetadata && !session.cwd ? 'session_cwd_unavailable' : null,
     observedWorktreeMatchesRepo === false ? 'session_cwd_mismatch' : null,
-    artifactInventory.status !== 'available' ? 'story_artifacts_unavailable' : null,
+    !isUsableArtifactInventory(artifactInventory) ? artifactInventoryBlocker(artifactInventory) : null,
     git.changed_lines.status !== 'available' ? 'changed_lines_unavailable' : null
   ].filter(Boolean);
   return {
     status: blockers.length === 0 ? 'ready' : 'partial',
     blockers
   };
+}
+
+function isUsableArtifactInventory(artifactInventory) {
+  return artifactInventory.status === 'available' || artifactInventory.status === 'detached_available';
+}
+
+function artifactInventoryBlocker(artifactInventory) {
+  return artifactInventory.lineage?.status === 'detached_artifact_observed'
+    ? 'story_artifacts_detached_unavailable'
+    : 'story_artifacts_unavailable';
 }
 
 function subtractUsage(last, first) {
