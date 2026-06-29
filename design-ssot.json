@@ -6,356 +6,1506 @@
       "id": "vibepro-design-ssot-reconciliation",
       "title": "VibePro Design SSOT Reconciliation",
       "root_doc": "docs/architecture/vibepro-design-ssot-reconciliation.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-design-ssot-reconciliation.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-design-ssot-reconciliation.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-design-ssot-reconciliation.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-design-ssot-reconciliation.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-design-ssot-reconciliation.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-design-ssot-reconciliation.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-code-topology-judgment-evidence",
       "title": "VibePro Code Topology Judgment Evidence",
       "root_doc": "docs/architecture/vibepro-code-topology-judgment-evidence.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-code-topology-judgment-evidence.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-code-topology-judgment-evidence.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "architecture": [
-          "docs/architecture/vibepro-senior-judgment-multi-axis-dag.md"
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-senior-judgment-multi-axis-dag.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-code-topology-judgment-evidence.md",
-          "docs/specs/vibepro-senior-judgment-multi-axis-dag.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-code-topology-judgment-evidence.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-senior-judgment-multi-axis-dag.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-code-topology-judgment-evidence.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-senior-judgment-multi-axis-dag.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-code-topology-judgment-evidence.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-senior-judgment-multi-axis-dag.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-senior-gap-judgment",
       "title": "VibePro Senior Gap Judgment",
       "root_doc": "docs/architecture/vibepro-senior-gap-judgment.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-senior-gap-judgment.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-senior-gap-judgment.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-senior-gap-judgment.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-senior-gap-judgment.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-senior-gap-judgment.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-senior-gap-judgment.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-design-ssot-coverage-auditor",
       "title": "VibePro Design SSOT Coverage Auditor",
       "root_doc": "docs/architecture/vibepro-design-ssot-coverage-auditor.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-design-ssot-coverage-auditor.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-design-ssot-coverage-auditor.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-design-ssot-coverage-auditor.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-design-ssot-coverage-auditor.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-design-ssot-coverage-auditor.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-design-ssot-coverage-auditor.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-canonical-audit-cost-accounting",
       "title": "VibePro Canonical Audit Cost Accounting",
       "root_doc": "docs/architecture/vibepro-canonical-audit-cost-accounting.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-canonical-audit-cost-accounting.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-canonical-audit-cost-accounting.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-canonical-audit-cost-accounting.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-canonical-audit-cost-accounting.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-canonical-audit-cost-accounting.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-canonical-audit-cost-accounting.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-audit-replay-command-surface",
       "title": "VibePro Audit Replay Command Surface",
       "root_doc": "docs/architecture/vibepro-audit-replay-command-surface.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-audit-replay-command-surface.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-audit-replay-command-surface.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-audit-replay-command-surface.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-audit-replay-command-surface.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-audit-replay-command-surface.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-audit-replay-command-surface.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-manual-pr-flow-alignment",
       "title": "VibePro Manual PR Flow Alignment",
       "root_doc": "docs/architecture/vibepro-manual-pr-flow-alignment.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-manual-pr-flow-alignment.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-manual-pr-flow-alignment.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "architecture": [
-          "docs/architecture/vibepro-human-reviewable-pr-body.md",
-          "docs/architecture/vibepro-oss-engineering-judgment-pr-message.md"
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-human-reviewable-pr-body.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-oss-engineering-judgment-pr-message.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-manual-pr-flow-alignment.md",
-          "docs/specs/vibepro-human-reviewable-pr-body.md",
-          "docs/specs/vibepro-cli-graphify-spec.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-manual-pr-flow-alignment.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-human-reviewable-pr-body.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-cli-graphify-spec.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-manual-pr-flow-alignment.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-human-reviewable-pr-body.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-oss-engineering-judgment-pr-message.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-manual-pr-flow-alignment.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-human-reviewable-pr-body.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-cli-graphify-spec.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-residual-risk-closure",
       "title": "VibePro Residual Risk Closure",
       "root_doc": "docs/architecture/vibepro-residual-risk-closure.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-residual-risk-closure.md",
-          "docs/management/stories/active/story-vibepro-public-contract-followup-closure.md",
-          "docs/management/stories/active/story-vibepro-scope-reviewability-followup-closure.md",
-          "docs/management/stories/active/story-vibepro-cost-telemetry-residual-closure.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-residual-risk-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-public-contract-followup-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-scope-reviewability-followup-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-cost-telemetry-residual-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-residual-risk-closure.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-residual-risk-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-residual-risk-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-public-contract-followup-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-scope-reviewability-followup-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-cost-telemetry-residual-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-residual-risk-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-codebase-memory-skill",
       "title": "VibePro Codebase Memory Skill",
       "root_doc": "docs/architecture/vibepro-codebase-memory-skill.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-codebase-memory-skill.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-codebase-memory-skill.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-codebase-memory-skill.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-codebase-memory-skill.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-codebase-memory-skill.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-codebase-memory-skill.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-execute-merge-cost-accounting",
       "title": "VibePro Execute Merge Cost Accounting",
       "root_doc": "docs/architecture/vibepro-execute-merge-cost-accounting.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-execute-merge-cost-accounting.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-execute-merge-cost-accounting.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-execute-merge-cost-accounting.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-execute-merge-cost-accounting.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-execute-merge-cost-accounting.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-execute-merge-cost-accounting.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-automation-readable-value-audit",
       "title": "VibePro Automation Readable Value Audit",
       "root_doc": "docs/architecture/vibepro-automation-readable-value-audit.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-automation-readable-value-audit.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-automation-readable-value-audit.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-automation-readable-value-audit.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-automation-readable-value-audit.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-automation-readable-value-audit.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-automation-readable-value-audit.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-pre-spec-readiness-gate",
       "title": "Pre-Spec Readiness Gate",
       "root_doc": "docs/architecture/vibepro-pre-spec-readiness-gate.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-pre-spec-readiness-gate.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-pre-spec-readiness-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-pre-spec-readiness-gate.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-pre-spec-readiness-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-pre-spec-readiness-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-pre-spec-readiness-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-architecture-readiness-gate",
       "title": "Architecture Readiness Gate",
       "root_doc": "docs/architecture/vibepro-architecture-readiness-gate.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-architecture-readiness-gate.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-architecture-readiness-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-architecture-readiness-gate.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-architecture-readiness-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-architecture-readiness-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-architecture-readiness-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-automation-runtime-cost-ingestion",
       "title": "VibePro Automation Runtime Cost Ingestion",
       "root_doc": "docs/architecture/vibepro-automation-runtime-cost-ingestion.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-automation-runtime-cost-ingestion.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-automation-runtime-cost-ingestion.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-automation-runtime-cost-ingestion.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-automation-runtime-cost-ingestion.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-automation-runtime-cost-ingestion.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-automation-runtime-cost-ingestion.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-runtime-cost-gap-closure",
       "title": "VibePro Runtime Cost Gap Closure",
       "root_doc": "docs/architecture/vibepro-runtime-cost-gap-closure.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-runtime-cost-gap-closure.md",
-          "docs/management/stories/active/story-vibepro-automation-cost-defaults.md",
-          "docs/management/stories/active/story-vibepro-session-attribution-inference.md",
-          "docs/management/stories/active/story-vibepro-audit-budget-action-controls.md",
-          "docs/management/stories/active/story-vibepro-session-cost-attribution-hardening.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-runtime-cost-gap-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-automation-cost-defaults.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-session-attribution-inference.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-audit-budget-action-controls.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-session-cost-attribution-hardening.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "architecture": [
-          "docs/architecture/vibepro-automation-cost-defaults.md",
-          "docs/architecture/vibepro-session-attribution-inference.md",
-          "docs/architecture/vibepro-audit-budget-action-controls.md",
-          "docs/architecture/vibepro-session-cost-attribution-hardening.md"
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-automation-cost-defaults.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-session-attribution-inference.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-audit-budget-action-controls.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-session-cost-attribution-hardening.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-runtime-cost-gap-closure.md",
-          "docs/specs/vibepro-automation-cost-defaults.md",
-          "docs/specs/vibepro-session-attribution-inference.md",
-          "docs/specs/vibepro-audit-budget-action-controls.md",
-          "docs/specs/vibepro-session-cost-attribution-hardening.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-runtime-cost-gap-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-automation-cost-defaults.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-session-attribution-inference.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-audit-budget-action-controls.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-session-cost-attribution-hardening.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-runtime-cost-gap-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-automation-cost-defaults.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-session-attribution-inference.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-audit-budget-action-controls.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-session-cost-attribution-hardening.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-automation-cost-defaults.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-session-attribution-inference.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-audit-budget-action-controls.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-session-cost-attribution-hardening.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-runtime-cost-gap-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-automation-cost-defaults.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-session-attribution-inference.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-audit-budget-action-controls.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-session-cost-attribution-hardening.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-audit-scope-pruning",
       "title": "VibePro Audit Scope Pruning",
       "root_doc": "docs/architecture/vibepro-audit-scope-pruning.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-audit-scope-pruning.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-audit-scope-pruning.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-audit-scope-pruning.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-audit-scope-pruning.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-audit-scope-pruning.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-audit-scope-pruning.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-audit-replay-budget",
       "title": "VibePro Canonical Audit Replay Budget",
       "root_doc": "docs/architecture/vibepro-audit-replay-budget.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-audit-replay-budget.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-audit-replay-budget.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-audit-replay-budget.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-audit-replay-budget.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-audit-replay-budget.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-audit-replay-budget.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-audit-bundle-budget",
       "title": "VibePro Audit Bundle Budget",
       "root_doc": "docs/architecture/vibepro-audit-bundle-budget.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-audit-bundle-budget.md",
-          "docs/management/stories/active/story-vibepro-budget-policy-semantics.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-audit-bundle-budget.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-policy-semantics.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "architecture": [
-          "docs/architecture/vibepro-budget-policy-semantics.md"
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-budget-policy-semantics.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-audit-bundle-budget.md",
-          "docs/specs/vibepro-budget-policy-semantics.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-audit-bundle-budget.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-budget-policy-semantics.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-audit-bundle-budget.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-policy-semantics.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-budget-policy-semantics.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-audit-bundle-budget.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-budget-policy-semantics.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     },
     {
       "id": "vibepro-layer-aware-e2e-gate",
       "title": "Layer-aware E2E Gate",
       "root_doc": "docs/architecture/vibepro-layer-aware-e2e-gate.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
       "required_child_kinds": [
         "story",
         "spec"
       ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
       "children": {
         "story": [
-          "docs/management/stories/active/story-vibepro-layer-aware-e2e-gate.md"
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-layer-aware-e2e-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ],
         "spec": [
-          "docs/specs/vibepro-layer-aware-e2e-gate.md"
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-layer-aware-e2e-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-layer-aware-e2e-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-layer-aware-e2e-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-ai-artifact-lineage-reconcile",
+      "title": "VibePro AI Artifact Lineage Reconcile",
+      "root_doc": "docs/architecture/vibepro-ai-artifact-lineage-reconcile.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-ai-artifact-lineage-reconcile.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-ai-artifact-lineage-reconcile.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-ai-artifact-lineage-reconcile.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-ai-artifact-lineage-reconcile.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
-  ]
+  ],
+  "updated_at": "2026-06-29T02:47:35.068Z"
 }

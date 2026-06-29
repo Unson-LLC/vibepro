@@ -7,6 +7,7 @@ period: 2026-06
 source:
   type: value_audit_followup
   id: VP-VALUE-AUDIT-2026-06-29-ARTIFACT-LINEAGE
+parent_design: vibepro-ai-artifact-lineage-reconcile
 architecture_docs:
   - docs/architecture/vibepro-ai-artifact-lineage-reconcile.md
 spec_docs:

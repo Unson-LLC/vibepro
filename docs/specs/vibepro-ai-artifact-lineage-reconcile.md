@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-ai-artifact-lineage-reconcile
 title: AI Artifact Lineage Reconcile Spec
+parent_design: vibepro-ai-artifact-lineage-reconcile
 diagrams:
   - kind: threat_model
     mermaid: |
