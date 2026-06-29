@@ -1075,11 +1075,11 @@ const PR_VIEW_FIELDS = [
 
 async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
   const candidates = [
-    context.prCreate?.toolchain?.source_git?.origin_url,
-    context.prPrepare?.toolchain?.source_git?.origin_url,
     await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']),
     context.prCreate?.pr_url,
-    context.executionState?.pr_url
+    context.executionState?.pr_url,
+    context.prCreate?.toolchain?.source_git?.origin_url,
+    context.prPrepare?.toolchain?.source_git?.origin_url
   ];
   for (const candidate of candidates) {
     const slug = githubRepositorySlug(candidate);

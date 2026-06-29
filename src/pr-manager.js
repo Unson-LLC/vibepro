@@ -1877,7 +1877,11 @@ function groupChangedFiles(files) {
   return Object.fromEntries(
     Object.entries(groups).map(([key, value]) => [key, {
       count: value.length,
-      files: value.map((file) => file.path)
+      files: value.map((file) => file.path),
+      items: value.map((file) => ({
+        status: file.status,
+        path: file.path
+      }))
     }])
   );
 }
@@ -10104,12 +10108,23 @@ function markE2eCoverageNotApplicable(e2eCoverage) {
 
 function shouldRequireE2eGate({ fileGroups, e2eCommand, flowVerification, visualQaEvidence = null, changeClassification = null }) {
   if (hasUiExperienceSourceChange(fileGroups)) return true;
-  if (fileGroups.tests.files.some(isE2eTestPath)) return true;
+  if (hasRuntimeE2eTestChange(fileGroups)) return true;
   if (fileGroups.repo_control.files.some(isE2eInfraPath)) return true;
   if (flowVerification) return true;
-  if (visualQaEvidence) return true;
+  if (visualQaEvidence && hasUiExperienceSourceChange(fileGroups)) return true;
   if (e2eCommand?.detected && changeClassificationRequiresRuntimeE2e(changeClassification)) return true;
   return false;
+}
+
+function hasRuntimeE2eTestChange(fileGroups) {
+  const testItems = Array.isArray(fileGroups.tests.items)
+    ? fileGroups.tests.items
+    : fileGroups.tests.files.map((filePath) => ({ path: filePath, status: 'M' }));
+  return testItems.some((item) => isE2eTestPath(item.path) && !isDeleteOnlyStatus(item.status));
+}
+
+function isDeleteOnlyStatus(status) {
+  return String(status ?? '').startsWith('D');
 }
 
 function isE2eTestPath(filePath) {
