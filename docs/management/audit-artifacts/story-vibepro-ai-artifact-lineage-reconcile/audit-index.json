@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-ai-artifact-lineage-reconcile",
   "source": "execute_merge",
-  "generated_at": "2026-06-29T02:54:28.443Z",
+  "generated_at": "2026-06-29T02:54:32.020Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -115,13 +115,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3069,
+      "compressed_bytes": 3068,
       "expanded_bytes": 13823,
       "expanded_line_count": 368,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 10857,
-    "raw_source_artifact_code_ratio": 5.959,
+    "raw_source_artifact_lines": 10947,
+    "raw_source_artifact_code_ratio": 6.008,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -240,7 +240,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-ai-artifact-lineage-reconcile",
-    "generated_at": "2026-06-29T02:54:28.443Z",
+    "generated_at": "2026-06-29T02:54:32.020Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -337,10 +337,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:0aa28c29cbdf011fbe2541e15fb71464515dab9fc7b4d7dd0b0b34e14fe9faf2",
-    "compressed_hash": "sha256:b84f10b6d3c7dae4f9b19bdcd6d9f72d71d019135ccb788f84e13ddd173a0911",
+    "content_hash": "sha256:dd2c6a942c00b35a7e1435791a271053de439cf214f245f875c2232f13cbe52f",
+    "compressed_hash": "sha256:8df1d2bbce835fa67a0d0cc5f99cdee93b4f9dee555f3a2d3b78c62c89e6e4d5",
     "expanded_bytes": 13823,
-    "compressed_bytes": 3069,
+    "compressed_bytes": 3068,
     "expanded_line_count": 368,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -359,7 +359,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-ai-artifact-lineage-reconcile",
     "cost": {
-      "compressed_bytes": 3069,
+      "compressed_bytes": 3068,
       "expanded_bytes": 13823,
       "expanded_line_count": 368,
       "persisted_line_count": 1

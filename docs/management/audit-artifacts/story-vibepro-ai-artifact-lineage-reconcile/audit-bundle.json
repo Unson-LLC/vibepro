@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-ai-artifact-lineage-reconcile",
   "source": "execute_merge",
-  "promoted_at": "2026-06-29T02:54:28.443Z",
+  "promoted_at": "2026-06-29T02:54:32.020Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:0aa28c29cbdf011fbe2541e15fb71464515dab9fc7b4d7dd0b0b34e14fe9faf2",
-    "compressed_hash": "sha256:b84f10b6d3c7dae4f9b19bdcd6d9f72d71d019135ccb788f84e13ddd173a0911",
+    "content_hash": "sha256:dd2c6a942c00b35a7e1435791a271053de439cf214f245f875c2232f13cbe52f",
+    "compressed_hash": "sha256:8df1d2bbce835fa67a0d0cc5f99cdee93b4f9dee555f3a2d3b78c62c89e6e4d5",
     "expanded_bytes": 13823,
-    "compressed_bytes": 3069,
+    "compressed_bytes": 3068,
     "expanded_line_count": 368,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-ai-artifact-lineage-reconcile",
     "cost": {
-      "compressed_bytes": 3069,
+      "compressed_bytes": 3068,
       "expanded_bytes": 13823,
       "expanded_line_count": 368,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:0aa28c29cbdf011fbe2541e15fb71464515dab9fc7b4d7dd0b0b34e14fe9faf2"
+      "content_hash": "sha256:dd2c6a942c00b35a7e1435791a271053de439cf214f245f875c2232f13cbe52f"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-ai-artifact-lineage-reconcile/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-ai-artifact-lineage-reconcile/audit-replay-bundle.json.gz",
-      "digest": "sha256:fec3365b642695c7358eab38ed00ba07660f0101c3c315bafb08d61cb62cfbe4",
-      "audit_digest": "sha256:d63563b58c0f59609899be9b8009c9b8702c0194e8314aca3714521dacf99616",
-      "line_count": 1615,
-      "raw_line_count": 3239,
+      "digest": "sha256:ff9ec84dd28f33d4bba0b09b38644d65fa31517a09619d985fe198659979865a",
+      "audit_digest": "sha256:2a7a552ca107b72488641f03e07e4ab334a1a6e741f5d45f85900aa41995b008",
+      "line_count": 1705,
+      "raw_line_count": 3329,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
