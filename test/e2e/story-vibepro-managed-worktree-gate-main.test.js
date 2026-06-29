@@ -16,11 +16,11 @@ const gateDag = {
 };
 
 const prBody = [
-  '## How to review',
-  '- Managed worktree: passed',
-  '- Managed worktree: needs_review',
-  '- Managed worktree: bypassed',
-  '- Managed worktree: disabled'
+  '## レビュー観点',
+  '- 管理worktree: passed',
+  '- 管理worktree: needs_review',
+  '- 管理worktree: bypassed',
+  '- 管理worktree: disabled'
 ].join('\n');
 
 test('story-vibepro-managed-worktree-gate ac1 exposes managed worktree gate in PR Gate DAG', () => {
@@ -46,29 +46,29 @@ test('story-vibepro-managed-worktree-gate ac3 reports preferred outside executio
   // `execution.managed_worktree=preferred` では、管理worktree外の実行を `needs_review` としてPR body / Gate DAG / execution stateに表示する。
   const preferredOutside = gateDag.nodes.find((node) => node.mode === 'preferred');
   assert.equal(preferredOutside.status, 'needs_review');
-  assert.match(prBody, /Managed worktree: needs_review/);
+  assert.match(prBody, /管理worktree: needs_review/);
 });
 
 test('story-vibepro-managed-worktree-gate ac4 ac5 support disabled and bypass states', () => {
   // story-vibepro-managed-worktree-gate ac:4
   // `execution.managed_worktree=disabled` では `gate:managed_worktree` を `not_applicable` または省略する。
   assert.equal(gateDag.nodes.find((node) => node.mode === 'disabled').status, 'not_applicable');
-  assert.match(prBody, /Managed worktree: disabled/);
+  assert.match(prBody, /管理worktree: disabled/);
 
   // story-vibepro-managed-worktree-gate ac:5
   // emergency bypassには理由が必要で、decision recordとして保存される。
   assert.match('emergency bypassには理由が必要でdecision recordとして保存される', /decision record/);
   assert.equal(gateDag.nodes.find((node) => node.status === 'bypassed').status, 'bypassed');
-  assert.match(prBody, /Managed worktree: bypassed/);
+  assert.match(prBody, /管理worktree: bypassed/);
 });
 
 test('story-vibepro-managed-worktree-gate ac6 ac7 keep PR body visible and compatible', () => {
   // story-vibepro-managed-worktree-gate ac:6
   // PR body上部に「管理worktree: passed / needs_review / bypassed / disabled」が表示される。
-  assert.match(prBody, /Managed worktree: passed/);
-  assert.match(prBody, /Managed worktree: needs_review/);
-  assert.match(prBody, /Managed worktree: bypassed/);
-  assert.match(prBody, /Managed worktree: disabled/);
+  assert.match(prBody, /管理worktree: passed/);
+  assert.match(prBody, /管理worktree: needs_review/);
+  assert.match(prBody, /管理worktree: bypassed/);
+  assert.match(prBody, /管理worktree: disabled/);
 
   // story-vibepro-managed-worktree-gate ac:7
   // 既存の非worktree運用は `preferred` または `disabled` で回帰しない。

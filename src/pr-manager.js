@@ -451,7 +451,6 @@ export async function preparePullRequest(repoRoot, options = {}) {
     latestStoryRun,
     scope,
     prContext,
-    evidencePlan,
     splitPlan,
     narrative: prBodyNarrative,
     language: outputLanguage
@@ -2091,7 +2090,7 @@ function renderPrNarrative(narrative) {
   return `${sections.join('\n\n')}\n\n`;
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, evidencePlan = null, splitPlan, narrative = null, language = 'ja' }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
   const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   const source = prContext.story_source;
@@ -2112,7 +2111,6 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const evidenceDir = `.vibepro/pr/${story.story_id}`;
   const gateStatus = prContext.gate_dag?.overall_status ?? '-';
   const executionStatus = prContext.execution_gate?.status ?? '-';
-  const vibeproArtifacts = renderVibeProArtifactReferences({ evidenceDir, evidencePlan });
   const sourceFiles = limitItems(fileGroups?.source?.files ?? [], 3);
   const testFiles = limitItems(fileGroups?.tests?.files ?? [], 3);
   const docFiles = limitItems([
@@ -2123,45 +2121,87 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const taskLine = taskContext
     ? `- Task: ${taskContext.task.id} ${taskContext.task.title ?? ''}`.trim()
     : null;
-  const sourceLine = sourceFiles.length ? `- Code: ${sourceFiles.join(', ')}` : null;
-  const testLine = testFiles.length ? `- Tests: ${testFiles.join(', ')}` : null;
-  const docLine = docFiles.length ? `- Docs: ${docFiles.join(', ')}` : null;
+  const sourceLine = sourceFiles.length ? `- 実装: ${sourceFiles.join(', ')}` : null;
+  const testLine = testFiles.length ? `- テスト: ${testFiles.join(', ')}` : null;
+  const docLine = docFiles.length ? `- 設計/Story: ${docFiles.join(', ')}` : null;
   const requirementLines = [
-    `- Requirement: ${requirementTitle}`,
-    source.background ? `- Background: ${source.background}` : null,
-    source.requirement_id ? `- Requirement ID: ${source.requirement_id}` : null,
-    source.requirement_url ? `- Requirement URL: ${source.requirement_url}` : null,
+    `- 要求: ${requirementTitle}`,
+    source.requirement_id ? `- 要求ID: ${source.requirement_id}` : null,
+    source.requirement_url ? `- 要求URL: ${source.requirement_url}` : null,
     taskLine
   ].filter(Boolean).join('\n');
   const reviewFocus = reviewPoints || '- Story / Spec / Architecture と実装差分が対応しているか';
   const riskLines = risks ? `\n${risks}` : '';
+  const storyInterpretation = buildPrBodyStoryInterpretation({ requirementTitle, fileGroups });
+  const origin = source.background ?? 'Story文書から経緯を抽出できませんでした。';
+  const rootCause = source.root_cause
+    ?? source.problem
+    ?? summarizeFirstAvailable(prContext.risks, 'Story文書から根本原因を抽出できませんでした。');
+  const solution = source.solution
+    ?? source.policy
+    ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。');
+  const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
+  const details = [
+    `- 証跡: ${evidenceDir}/`,
+    `- PR準備: ${evidenceDir}/pr-prepare.json`,
+    `- 判断索引: ${evidenceDir}/decision-index.json`,
+    `- Gate: ${gateStatus}`,
+    `- 実行状態: ${executionStatus}`,
+    `- Scope: ${scope.status} / ${scope.recommended_strategy}`,
+    `- Runtime: ${renderRuntimeSummary(prContext, story)}`
+  ].join('\n');
 
-  return `## What
+  return `## 判断
+- このPRで判断すること: ${storyInterpretation}
 - Story: ${storyLabel}
-- Source: ${source.path ?? 'Story未検出'}
-- Scope: ${git.changed_files.length} files / ${primaryReviewAreas}
+- 正本: ${source.path ?? 'Story未検出'}
+- 変更範囲: ${git.changed_files.length} files / ${primaryReviewAreas}
 ${[docLine, sourceLine, testLine].filter(Boolean).join('\n')}
 
-## Why
+## 経緯
 ${requirementLines}
+- 発生経緯: ${origin}
 ${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 
-## How to review
+## 原因
+- ${rootCause}
+
+## 解決
+- ${solution}
+
+## レビュー観点
 - Gate: ${gateNote}
 - Scope: ${scopeNote}
-- Managed worktree: ${managedWorktreeStatus}
+- 管理worktree: ${managedWorktreeStatus}
 ${reviewFocus}${riskLines}
 
-## Verification
+## 確認
 ${verification}
+- 最終E2E: ${finalE2e}
 
-## VibePro
-- Gate: ${gateStatus}
-- Execution: ${executionStatus}
-- Scope: ${scope.status} / ${scope.recommended_strategy}
-${vibeproArtifacts}
-- Runtime: ${renderRuntimeSummary(prContext, story)}
+## 詳細
+${details}
 `;
+}
+
+function buildPrBodyStoryInterpretation({ requirementTitle, fileGroups }) {
+  const areas = buildPrimaryReviewAreas(fileGroups);
+  return `${requirementTitle} を満たすための ${areas} 変更として、このPRを受け入れてよいか。`;
+}
+
+function summarizeFirstAvailable(items = [], fallback) {
+  const value = (Array.isArray(items) ? items : []).find((item) => typeof item === 'string' && item.trim());
+  return value?.trim() ?? fallback;
+}
+
+function renderFinalE2eConfidence(gateDag, verificationEvidence) {
+  const e2eGate = (gateDag?.nodes ?? []).find((gate) => gate.id === 'gate:e2e')
+    ?? (gateDag?.nodes ?? []).find((gate) => /e2e/i.test(`${gate.label ?? ''} ${gate.type ?? ''}`));
+  const e2eEvidence = (verificationEvidence?.commands ?? []).find((item) => /e2e|flow/i.test(`${item.kind ?? ''} ${item.type ?? ''} ${item.summary ?? ''} ${item.command ?? ''}`));
+  const status = e2eEvidence?.status ?? e2eGate?.status ?? '未確認';
+  const summary = e2eEvidence?.summary ?? e2eGate?.reason ?? e2eGate?.label ?? '最終E2E証跡が見つかりません。';
+  const artifact = e2eEvidence?.artifact ?? e2eGate?.evidence?.artifact ?? null;
+  return `${status}: ${summary}${artifact ? `（${artifact}）` : ''}`;
 }
 
 function limitItems(items = [], max = 3) {
@@ -2183,40 +2223,6 @@ function renderConciseVerificationChecklist(commands, gateDag, verificationEvide
     .filter((line) => line.trim().startsWith('- [x]'))
     .slice(0, 4)
     .join('\n') || '- [ ] 手動確認または対象テストを追記する';
-}
-
-function renderVibeProArtifactReferences({ evidenceDir, evidencePlan }) {
-  const generated = new Set(evidencePlan?.generated_artifacts ?? evidencePlan?.artifact_policy?.generated_artifacts ?? []);
-  const skipped = new Set(evidencePlan?.skipped_artifacts ?? evidencePlan?.artifact_policy?.skipped_artifacts ?? []);
-  const hasPlan = evidencePlan && typeof evidencePlan === 'object';
-  const isGenerated = (artifact) => !hasPlan || generated.has(artifact);
-  const isSkipped = (artifact) => hasPlan && skipped.has(artifact);
-  const lines = [
-    `- Evidence: ${evidenceDir}/`,
-    `- Evidence plan: ${evidenceDir}/evidence-plan.json`,
-    `- Decision index: ${evidenceDir}/decision-index.json`,
-    `- PR prepare: ${evidenceDir}/pr-prepare.json`,
-    `- Design SSOT: ${evidenceDir}/design-ssot-reconciliation.json`,
-    `- Senior Gap Judgment: ${evidenceDir}/senior-gap-judgment.json`
-  ];
-
-  if (isGenerated('gate-dag.json')) {
-    lines.push(`- Gate DAG: ${evidenceDir}/gate-dag.json`);
-  } else if (isSkipped('gate-dag.json')) {
-    lines.push('- Gate DAG: embedded in PR prepare / decision index; standalone gate-dag.json not generated at this evidence depth');
-  }
-
-  if (isGenerated('review-cockpit.html')) {
-    lines.push(`- Review cockpit: ${evidenceDir}/review-cockpit.html`);
-  } else if (isSkipped('review-cockpit.html')) {
-    lines.push('- Review cockpit: not generated at this evidence depth');
-  }
-
-  if (isGenerated('split-plan.json')) {
-    lines.push(`- Split plan: ${evidenceDir}/split-plan.json`);
-  }
-
-  return lines.join('\n');
 }
 
 function renderPrDecisionSection({ story, git, fileGroups, scope, prContext, splitPlan }) {
@@ -5015,6 +5021,9 @@ function parseStoryDoc(file, content) {
     requirement_url: frontmatter.url ?? frontmatter.source_url ?? null,
     background: extractSectionText(content, ['背景', '現状', '課題'])
       ?? extractStoryIntro(content),
+    problem: extractSectionText(content, ['問題', 'Problem', 'Pain']),
+    root_cause: extractSectionText(content, ['根本原因', '原因', 'Root Cause', 'Cause']),
+    solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
     acceptance_criteria: extractAcceptanceCriteria(content),
     architecture_docs: normalizeFrontmatterList(frontmatter.architecture_docs),

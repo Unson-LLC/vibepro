@@ -9,26 +9,28 @@ title: Concise GitHub PR body architecture
 
 Use `pr-body.md` as the GitHub-facing decision brief, not as the full audit log.
 
-`preparePullRequest` continues to build the same PR context, Gate DAG, decision index, review cockpit, split plan, and lifecycle artifacts. `renderPrBody` projects that context into five short sections:
+`preparePullRequest` continues to build the same PR context, Gate DAG, decision index, review cockpit, split plan, and lifecycle artifacts. `renderPrBody` projects that context into a Japanese judgment brief that can be read without opening the artifact directory first:
 
-1. `What`: Story, changed file count, review areas, and change summary.
-2. `Why`: requirement, background, task context, and optional narrative.
-3. `How to review`: Gate summary, scope, managed worktree state, Engineering Judgment summary, review focus, change map, risks, and non-goals.
-4. `Verification`: concise verification checklist.
-5. `VibePro`: Gate/Execution/Scope status plus references to `.vibepro/pr/<story-id>/` artifacts.
+1. `判断`: the Story interpretation and the decision the reviewer is being asked to make.
+2. `経緯`: requirement, origin/background, task context, and optional narrative.
+3. `原因`: root cause or the best available risk/problem summary.
+4. `解決`: solution/policy or the best available change summary.
+5. `レビュー観点`: Gate summary, scope, managed worktree state, review focus, and bounded risks.
+6. `確認`: concise verification plus the final E2E/flow confidence line.
+7. `詳細`: only the minimal `.vibepro/pr/<story-id>/` evidence entrypoints and runtime status.
 
 ## Rationale
 
-Human reviewers need the first screen to answer: what changed, why, where to look, and what verified it. Full Gate DAG and Agent Review evidence is still valuable, but it belongs in structured artifacts where it can be replayed, diffed, and summarized without consuming GitHub body budget or LLM context by default.
+Human reviewers reading dozens of AI-generated PRs need the first screen to answer: what Story interpretation is being reviewed, where it came from, what root cause was found, what solution was applied, and which final test makes the change shippable. Full Gate DAG and Agent Review evidence is still valuable, but it belongs in structured artifacts where it can be replayed, diffed, and summarized without consuming GitHub body budget or LLM context by default.
 
 ## Boundaries
 
 - `renderPrBody` changes only the GitHub-facing Markdown projection.
 - Gate DAG readiness, Agent Review requirements, evidence depth, and PR creation enforcement remain unchanged.
-- `self-dogfood` checks the new body contract by looking for the decision brief, Verification, and `.vibepro` evidence references instead of requiring full Gate DAG and Execution Gate sections in the PR body.
+- `self-dogfood` checks the body contract by looking for the Japanese decision brief, confirmation section, and `.vibepro` evidence references instead of requiring full Gate DAG and Execution Gate sections in the PR body.
 
 ## Risk Controls
 
-- The `VibePro` section always includes artifact paths so the audit trail remains discoverable.
+- The `詳細` section includes the minimal artifact paths so the audit trail remains discoverable without turning the PR body into an artifact index.
 - Gate and execution status stay visible in the concise body.
 - Raw `gh pr create` bodies still fail self-dogfood because they lack VibePro evidence references and matching PR lifecycle artifacts.

@@ -138,7 +138,7 @@ vibepro pr prepare /path/to/repo \
 4. `.vibepro/pr/<story-id>/pr-body.md`
 5. 選択された evidence depth で生成された場合のみ `review-cockpit.html`、`gate-dag.html`、`split-plan.html`
 
-`pr-body.md` はGitHubに載せる短い判断ブリーフです。監査ログの保管場所ではありません。Gate、Agent Review、split-plan、検証、PRライフサイクルの詳細証跡は `.vibepro/pr/<story-id>/` のartifactを正本にします。
+`pr-body.md` はGitHubに載せる判断ブリーフです。PR単体で Story の解釈、発生経緯、根本原因、解決、レビュー観点、最終確認が読めることを優先します。監査ログの保管場所ではありません。Gate、Agent Review、split-plan、検証、PRライフサイクルの詳細証跡は `.vibepro/pr/<story-id>/` のartifactを正本にします。
 
 `<base-branch>` はリポジトリごとに異なります。`origin/main`、`main`、`origin/develop`、`develop` など、そのリポジトリの既定 branch を指定してください。
 
@@ -241,7 +241,7 @@ PR 前に見る主な成果物:
 - `decision-index.json`: Story、判断点、証跡参照、レビュー経路のcompact index。
 - `evidence-plan.json`: evidence-depth policy、生成artifact、skipされたartifact、追加証跡要求。
 - `verification-evidence.json`: 現在headに紐づく検証コマンドと外部CI取り込み証跡。
-- `pr-body.md`: `What`、`Why`、`How to review`、`Verification`、`VibePro` だけを載せる短いGitHub判断ブリーフ。
+- `pr-body.md`: `判断`、`経緯`、`原因`、`解決`、`レビュー観点`、`確認`、`詳細` を載せるGitHub判断ブリーフ。
 - `review-cockpit.html`: 選択された evidence depth で生成された場合の人間レビュー画面。
 - `gate-dag.json` / `gate-dag.html`: 完了条件の依存関係。JSONが永続的な契約で、HTMLは任意の表示面です。
 - `split-plan.json` / `split-plan.html`: PR 分割レーンと merge order。JSONが永続的な契約で、HTMLは任意の表示面です。

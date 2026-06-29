@@ -17,6 +17,6 @@ vibepro pr prepare . --id <story-id>
 - Verification, review, and decision records.
 - Gate DAG and human-readable review artifacts.
 
-The generated GitHub PR body should stay concise. Detailed evidence belongs in `.vibepro/pr/<story-id>/`, especially `pr-prepare.json`, `gate-dag.html`, `review-cockpit.html`, and `split-plan.html`.
+The generated GitHub PR body should be a self-contained judgment brief: Story interpretation, origin, root cause, solution, review focus, and final verification first. Detailed evidence belongs in `.vibepro/pr/<story-id>/`, especially `pr-prepare.json`, `gate-dag.html`, `review-cockpit.html`, and `split-plan.html`.
 
 If `code_topology_context.available=false`, inspect the `reason`. It may simply mean the provider is not installed, the repository is clean, or no changed files matched the indexed project.
