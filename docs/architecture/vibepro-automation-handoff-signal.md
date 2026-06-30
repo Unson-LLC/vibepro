@@ -4,6 +4,8 @@ story_id: story-vibepro-automation-handoff-signal
 status: active
 created_at: 2026-06-30
 updated_at: 2026-06-30
+related_stories:
+  - story-vibepro-automation-handoff-signal
 ---
 
 # Automation Handoff Signal Architecture
@@ -18,6 +20,8 @@ handoff replay の blocked 状態を `audit-index.json` と
 
 - `promoteReferencedAuditArtifacts` の解決結果を `buildDecisionIndex` に渡し、
   handoff replay の集約状態を index 正本に持たせる
+- replay bundle 圧縮ループは `currentAccountingSignature === previousAccountingSignature`
+  になった時点で停止し、handoff signal をその安定後の会計スナップショットに束縛する
 - `buildAutomationValueAuditContract` は handoff replay 状態を
   `value_signal_inputs` に露出し、blocked なら専用 finding を追加する
 - full bundle / compact bundle の両方で同じ handoff signal を維持する
