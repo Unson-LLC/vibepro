@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+  "created_at": "2026-06-30T06:46:17.832Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-meeting-minutes-editor-prompt.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-meeting-minutes-editor-prompt.md)"
+    },
+    "decision_records": {
+      "total": 3,
+      "open": 0,
+      "by_type": {
+        "waiver": 3
+      },
+      "by_status": {
+        "accepted": 3
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "expected_root": null,
+          "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1782799983002-d1636ec3",
+        "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Current PR scope is reviewable as one bundled skill change.",
+        "reason": "The diff adds one meeting-minutes editor skill plus its Story, Architecture, Spec, README registration, design SSOT linkage, and focused CLI test assertions. Ownership is the VibePro bundled skills surface; splitting docs from the skill would remove the traceability required for review.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+            "expected_root": null,
+            "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+            "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+          "dirty": true,
+          "status_fingerprint": "M docs/management/stories/active/story-vibepro-meeting-minutes-editor-prompt.md",
+          "recorded_at": "2026-06-30T06:13:03.001Z"
+        },
+        "recorded_at": "2026-06-30T06:13:03.002Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-30T06:46:16.221Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+      "branch": "codex/vibepro-meeting-minutes-editor-prompt",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b3a26d0075a9a60818d890a6f61fda438847b2b5",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

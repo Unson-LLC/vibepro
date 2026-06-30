@@ -1,0 +1,94 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "PR split/scope review passes: the 8-file change is small, story-bound, and has a split plan plus current verification for the touched skills surface.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified HEAD b7e685c, inspected changed-file list/diff, split plan, PR/gate artifacts, story/spec/architecture/README/skill/test changes, skills-manager discovery path, and reran focused skills list/lint/test checks.",
+    "evidence": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/split-plan.json; .vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/gate-dag.json; node --test --test-name-pattern skills... test/vibepro-cli.test.js; node bin/vibepro.js skills list --json; node bin/vibepro.js skills lint . --json",
+    "inputs": [
+      "git diff --name-status origin/main...HEAD",
+      ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/split-plan.json",
+      "skills/vibepro-meeting-minutes-editor/SKILL.md",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial split concern from split_recommended -> pass because actual diff is 8 files, all story-bound, with focused skills verification and no unrelated-file risk."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+    "expected_root": null,
+    "expected_head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+    "current_head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+      "expected_root": null,
+      "expected_head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+      "current_head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-06-30T06:35:36.557Z",
+  "git_context": {
+    "head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+    "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-06-30T06:35:36.556Z"
+  },
+  "source_fingerprint": "4d513090a33981e636a33d80c8f3e61f64dcdd82242b03bf21406b2b36054131",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f1739-5200-74f3-a53c-3514b23ea71b",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-meeting-minutes-editor-prompt/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-meeting-minutes-editor-prompt/gate/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

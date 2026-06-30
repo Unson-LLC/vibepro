@@ -1,0 +1,214 @@
+{
+  "schema_version": "0.1.0",
+  "planner_version": "0.1.0",
+  "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+  "created_at": "2026-06-30T06:46:17.832Z",
+  "evidence_depth": "standard",
+  "default_depth": "standard",
+  "manual_override": {
+    "status": "none",
+    "depth": null,
+    "reason": null,
+    "consumer": null
+  },
+  "planner_inputs": {
+    "base_ref": "main",
+    "head_ref": "HEAD",
+    "head_sha": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+    "changed_file_count": 8,
+    "scope_status": "reviewable",
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "test_coverage"
+    ],
+    "pr_route": "test_only",
+    "engineering_route": "agent_workflow"
+  },
+  "risk_signals": [
+    {
+      "kind": "risk_surface",
+      "value": "test_coverage",
+      "source": "change_classification"
+    },
+    {
+      "kind": "engineering_route",
+      "value": "agent_workflow",
+      "source": "engineering_judgment"
+    }
+  ],
+  "targeted_full_surfaces": [
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment",
+      "gate": null
+    },
+    {
+      "surface": "gate:judgment_axis_scope_reviewability",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:bug_physics_deployment_version_stamp",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:bug_physics_triage",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    }
+  ],
+  "escalation_reasons": [
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification"
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment"
+    },
+    {
+      "surface": "gate:judgment_axis_scope_reviewability",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:bug_physics_deployment_version_stamp",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    },
+    {
+      "surface": "gate:bug_physics_triage",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record"
+    }
+  ],
+  "artifact_policy": {
+    "write_html_reports": true,
+    "write_full_gate_dag_dump": true,
+    "write_full_review_lifecycle_dump": false,
+    "write_raw_logs": false,
+    "pr_body_token_policy": {
+      "status": "bounded_by_artifact_links",
+      "duplicates_canonical_artifacts": false,
+      "reason": "PR body stays concise and links canonical VibePro artifacts instead of embedding full diagnostics"
+    },
+    "generated_artifacts": [
+      "evidence-reuse.json",
+      "evidence-plan.json",
+      "decision-index.json",
+      "senior-gap-judgment.json",
+      "pr-prepare.json",
+      "pr-body.md",
+      "split-plan.json",
+      "traceability.json",
+      "human-review.json",
+      "architecture-review.json",
+      "decision-records.json",
+      "pr-prepare.html",
+      "review-cockpit.html",
+      "gate-dag.html",
+      "gate-dag.json",
+      "split-plan.html"
+    ],
+    "skipped_artifacts": []
+  },
+  "generated_artifacts": [
+    "evidence-reuse.json",
+    "evidence-plan.json",
+    "decision-index.json",
+    "senior-gap-judgment.json",
+    "pr-prepare.json",
+    "pr-body.md",
+    "split-plan.json",
+    "traceability.json",
+    "human-review.json",
+    "architecture-review.json",
+    "decision-records.json",
+    "pr-prepare.html",
+    "review-cockpit.html",
+    "gate-dag.html",
+    "gate-dag.json",
+    "split-plan.html"
+  ],
+  "skipped_artifacts": [],
+  "consumers": [
+    "evidence-reuse.json",
+    "review-cockpit.html",
+    "gate-dag.html",
+    "split-plan.html",
+    "decision-index.json",
+    "senior-gap-judgment.json"
+  ],
+  "evidence_reuse": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-evidence-summary-reuse-v1",
+    "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+    "evidence_key": "evk_25c4463627164f4231e0026c26dd8775",
+    "status": "stale",
+    "reason": "evidence_key_changed",
+    "stale_reasons": [
+      {
+        "field": "evidence_key",
+        "previous": "evk_5cfbef9a9b32cf434c60f75d6cd196a1",
+        "current": "evk_25c4463627164f4231e0026c26dd8775",
+        "reason": "evidence key changed"
+      }
+    ],
+    "fresh_use_allowed": false,
+    "used_as_fresh": false,
+    "gate_status": "needs_refresh",
+    "verification_summary_fingerprint": "sha256:7974272b0e284955a40dc8da290654f754fbc1b0508aae4d08dfdb8e66f52a0c",
+    "verification_evidence_updated_at": "2026-06-30T06:46:11.523Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-06-30T06:46:11.523Z",
+        "git_recorded_at": "2026-06-30T06:46:11.523Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-06-30T06:35:04.570Z",
+        "git_recorded_at": "2026-06-30T06:35:04.569Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-06-30T06:28:17.132Z",
+        "git_recorded_at": "2026-06-30T06:28:17.131Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-06-30T06:28:16.325Z",
+        "git_recorded_at": "2026-06-30T06:28:16.310Z"
+      }
+    ],
+    "full_evidence": {
+      "status": "generated",
+      "generation_count": 1,
+      "generation_count_scope": "same_evidence_key",
+      "same_key_generation_count": 1,
+      "cumulative_generation_count": 19,
+      "digest": "sha256:0a8dacccfa14c6a01eb6c32840b31c76c797676eba27619ad050ab9761263a2b",
+      "reference": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/decision-index.json"
+    },
+    "summary_artifacts": {
+      "evidence_reuse": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/evidence-reuse.json",
+      "evidence_plan": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/evidence-plan.json",
+      "decision_index": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/decision-index.json",
+      "pr_prepare": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+      "gate_dag": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/gate-dag.json"
+    }
+  }
+}

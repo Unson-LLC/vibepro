@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+  "updated_at": "2026-06-30T06:13:03.002Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+      "expected_root": null,
+      "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+      "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782799983002-d1636ec3",
+      "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Current PR scope is reviewable as one bundled skill change.",
+      "reason": "The diff adds one meeting-minutes editor skill plus its Story, Architecture, Spec, README registration, design SSOT linkage, and focused CLI test assertions. Ownership is the VibePro bundled skills surface; splitting docs from the skill would remove the traceability required for review.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "expected_root": null,
+          "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+        "dirty": true,
+        "status_fingerprint": "M docs/management/stories/active/story-vibepro-meeting-minutes-editor-prompt.md",
+        "recorded_at": "2026-06-30T06:13:03.001Z"
+      },
+      "recorded_at": "2026-06-30T06:13:03.002Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782799280375-861ece1d",
+      "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:bug_physics_deployment_version_stamp",
+      "source_status": null,
+      "summary": "No deployed artifact version-stamp verification is required for this bundled skill/docs/test change.",
+      "reason": "The change is distributed through repository/package content and validated by skills lint/list/install tests; no live Mac Companion, Meeting Pack, or deployed runtime artifact is changed here.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "expected_root": null,
+          "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-30T06:01:20.374Z"
+      },
+      "recorded_at": "2026-06-30T06:01:20.375Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782799278137-bb34bd55",
+      "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": null,
+      "summary": "This is a bundled prompt skill, docs, SSOT, and test assertion change, not a runtime bug fix.",
+      "reason": "Changed paths add a meeting-minutes editor skill and documentation/test registration only; no production runtime repair path or incident reproduction is being claimed.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "expected_root": null,
+          "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-06-30T06:01:18.135Z"
+      },
+      "recorded_at": "2026-06-30T06:01:18.137Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+        "expected_root": null,
+        "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782799983002-d1636ec3",
+      "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Current PR scope is reviewable as one bundled skill change.",
+      "reason": "The diff adds one meeting-minutes editor skill plus its Story, Architecture, Spec, README registration, design SSOT linkage, and focused CLI test assertions. Ownership is the VibePro bundled skills surface; splitting docs from the skill would remove the traceability required for review.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-prepare.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt",
+          "expected_root": null,
+          "expected_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "current_head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c8254d7184de49e49da87b0a73a5e97384218125",
+        "current_branch": "codex/vibepro-meeting-minutes-editor-prompt",
+        "dirty": true,
+        "status_fingerprint": "M docs/management/stories/active/story-vibepro-meeting-minutes-editor-prompt.md",
+        "recorded_at": "2026-06-30T06:13:03.001Z"
+      },
+      "recorded_at": "2026-06-30T06:13:03.002Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/decision-records.json"
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-meeting-minutes-editor-prompt",
+  "created_at": "2026-06-30T06:46:17.832Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-meeting-minutes-editor-prompt.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-meeting-minutes-editor-prompt.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-meeting-minutes-editor-prompt.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-meeting-minutes-editor-prompt.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-06-30T06:46:16.221Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-meeting-minutes-editor-prompt/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b7e685c7963243ac6163c9fa07ec0df1c785ea0f",
+      "branch": "codex/vibepro-meeting-minutes-editor-prompt",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b3a26d0075a9a60818d890a6f61fda438847b2b5",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
