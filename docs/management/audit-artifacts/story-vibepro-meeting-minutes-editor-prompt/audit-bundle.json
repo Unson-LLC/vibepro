@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-meeting-minutes-editor-prompt",
   "source": "execute_merge",
-  "promoted_at": "2026-06-30T06:47:25.197Z",
+  "promoted_at": "2026-06-30T06:47:30.078Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt/audit-index.json",
@@ -40,10 +40,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:24b578acd10d5936958cbab0a9b3a8c0efecd69e415aa0b2c663ed6a0d2ff3e5",
-    "compressed_hash": "sha256:096eb0650f753e1c6968585647f015b1bfedf82115a8c9e7816d6fc003f7006a",
+    "content_hash": "sha256:d8d220d607493382e5744a5bb64ca852b0f44d24e956b3d5f79371289e7fd928",
+    "compressed_hash": "sha256:69e290afb2c47bac8fa737b321989c79e02a81a7b2ecf9de3cee5535b7a63116",
     "expanded_bytes": 18287,
-    "compressed_bytes": 3990,
+    "compressed_bytes": 3991,
     "expanded_line_count": 449,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -62,7 +62,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-meeting-minutes-editor-prompt",
     "cost": {
-      "compressed_bytes": 3990,
+      "compressed_bytes": 3991,
       "expanded_bytes": 18287,
       "expanded_line_count": 449,
       "persisted_line_count": 1
@@ -99,7 +99,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:24b578acd10d5936958cbab0a9b3a8c0efecd69e415aa0b2c663ed6a0d2ff3e5"
+      "content_hash": "sha256:d8d220d607493382e5744a5bb64ca852b0f44d24e956b3d5f79371289e7fd928"
     }
   ],
   "raw_artifact_manifest": [
@@ -191,10 +191,10 @@
       "source": ".vibepro/pr/story-vibepro-meeting-minutes-editor-prompt/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt/audit-replay-bundle.json.gz",
-      "digest": "sha256:1c9decd30508ae45ad968fc56c73e7bb2675e44a1e9f82c01e972a7ef09b9757",
-      "audit_digest": "sha256:88ea02a5d4659fe41529d7ec6f4154426c1aaf38ab27a0973bbb4f55bd42d462",
-      "line_count": 1319,
-      "raw_line_count": 2694,
+      "digest": "sha256:da19bd6a003fe2138ffd94eb2958f915713656e2fdbd0cf25825d810d7283aa3",
+      "audit_digest": "sha256:6a58c30abaa273a8b75e77d5b9f65c57769f57ec7a77c69c487de0d94f9990af",
+      "line_count": 1409,
+      "raw_line_count": 2784,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",

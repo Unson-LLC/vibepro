@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-meeting-minutes-editor-prompt",
   "source": "execute_merge",
-  "generated_at": "2026-06-30T06:47:25.197Z",
+  "generated_at": "2026-06-30T06:47:30.078Z",
   "evidence_depth": "standard",
   "budget_status": "exceeded",
   "cost_summary": {
@@ -119,13 +119,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3990,
+      "compressed_bytes": 3991,
       "expanded_bytes": 18287,
       "expanded_line_count": 449,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8867,
-    "raw_source_artifact_code_ratio": 30.895,
+    "raw_source_artifact_lines": 8957,
+    "raw_source_artifact_code_ratio": 31.209,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -263,7 +263,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-meeting-minutes-editor-prompt",
-    "generated_at": "2026-06-30T06:47:25.197Z",
+    "generated_at": "2026-06-30T06:47:30.078Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -391,10 +391,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-meeting-minutes-editor-prompt/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:24b578acd10d5936958cbab0a9b3a8c0efecd69e415aa0b2c663ed6a0d2ff3e5",
-    "compressed_hash": "sha256:096eb0650f753e1c6968585647f015b1bfedf82115a8c9e7816d6fc003f7006a",
+    "content_hash": "sha256:d8d220d607493382e5744a5bb64ca852b0f44d24e956b3d5f79371289e7fd928",
+    "compressed_hash": "sha256:69e290afb2c47bac8fa737b321989c79e02a81a7b2ecf9de3cee5535b7a63116",
     "expanded_bytes": 18287,
-    "compressed_bytes": 3990,
+    "compressed_bytes": 3991,
     "expanded_line_count": 449,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -413,7 +413,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-meeting-minutes-editor-prompt",
     "cost": {
-      "compressed_bytes": 3990,
+      "compressed_bytes": 3991,
       "expanded_bytes": 18287,
       "expanded_line_count": 449,
       "persisted_line_count": 1
