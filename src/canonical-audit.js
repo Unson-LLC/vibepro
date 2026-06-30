@@ -51,6 +51,11 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
   });
 
   if (shouldUseCompactCanonicalEvidence(costSummary)) {
+    const referenceResolution = await promoteReferencedAuditArtifacts({
+      root,
+      canonicalDir,
+      artifacts: inventory.artifacts
+    });
     return writeCompactCanonicalAuditArtifacts(root, {
       storyId,
       source,
@@ -58,7 +63,8 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
       promotedAt,
       canonicalDir,
       inventory,
-      costSummary
+      costSummary,
+      referenceResolution
     });
   }
 
@@ -120,8 +126,11 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     merge,
     promotedAt,
     inventory,
-    costSummary
+    costSummary,
+    referenceResolution
   });
+  const indexPath = path.join(canonicalDir, 'audit-index.json');
+  const summaryPath = path.join(canonicalDir, 'decision-summary.md');
 
   const bundle = {
     schema_version: '0.1.0',
@@ -169,6 +178,8 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
   };
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
   await mkdir(path.dirname(bundlePath), { recursive: true });
+  await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
+  await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
   await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`);
   return {
     canonical_dir: canonicalDir,
@@ -184,7 +195,8 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   promotedAt,
   canonicalDir,
   inventory,
-  costSummary
+  costSummary,
+  referenceResolution
 }) {
   const decisionIndex = buildDecisionIndex({
     storyId,
@@ -192,7 +204,8 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     merge,
     promotedAt,
     inventory,
-    costSummary
+    costSummary,
+    referenceResolution
   });
   const indexPath = path.join(canonicalDir, 'audit-index.json');
   const summaryPath = path.join(canonicalDir, 'decision-summary.md');
@@ -275,21 +288,21 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     },
     replay_bundle: replayBundle,
     merge: decisionIndex.pr_merge.present ? decisionIndex.pr_merge.summary : null,
-    handoff_replay_status: 'ready',
+    handoff_replay_status: referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked',
     handoff_replay: {
-      status: 'ready',
-      resolved_reference_count: 0,
-      copied_reference_count: 0,
-      unresolved_reference_count: 0,
+      status: referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked',
+      resolved_reference_count: referenceResolution.resolved_references.length,
+      copied_reference_count: referenceResolution.copied_references.length,
+      unresolved_reference_count: referenceResolution.unresolved_references.length,
       replay_bundle: replayBundle.path,
       replay_command: replayBundle.replay_command
     },
     artifacts,
     raw_artifact_manifest: rawArtifacts,
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
-    resolved_references: [],
-    copied_references: [],
-    unresolved_references: []
+    resolved_references: referenceResolution.resolved_references,
+    copied_references: referenceResolution.copied_references,
+    unresolved_references: referenceResolution.unresolved_references
   };
   let previousAccountingSignature = null;
   for (let index = 0; index < 5; index += 1) {
@@ -846,7 +859,7 @@ function replayBlocked(storyId, replayBundle, reason, extra = {}) {
   };
 }
 
-function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, costSummary }) {
+function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, costSummary, referenceResolution = null }) {
   const byKind = new Map();
   for (const artifact of inventory.artifacts) {
     const items = byKind.get(artifact.kind) ?? [];
@@ -962,6 +975,10 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
       block_count: reviewSummaries.reduce((sum, item) => sum + (item?.block_count ?? 0), 0),
       stale_count: reviewSummaries.reduce((sum, item) => sum + (item?.stale_count ?? 0), 0)
     },
+    handoff_replay_status: referenceResolution
+      ? (referenceResolution.unresolved_references.length === 0 ? 'ready' : 'blocked')
+      : null,
+    handoff_replay_unresolved_reference_count: referenceResolution?.unresolved_references?.length ?? 0,
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts),
     raw_artifact_count: inventory.artifacts.length
   };
@@ -1055,6 +1072,8 @@ function buildAutomationValueAuditContract(index) {
       evidence_reuse_status: index.evidence_reuse?.status ?? null,
       evidence_reuse_stale_reason_count: index.evidence_reuse?.stale_reason_count ?? 0,
       traceability_lifecycle: index.traceability?.lifecycle ?? null,
+      handoff_replay_status: index.handoff_replay_status ?? null,
+      handoff_replay_unresolved_reference_count: index.handoff_replay_unresolved_reference_count ?? 0,
       missing_artifact_count: index.missing_artifacts?.length ?? 0
     },
     cost_controls: buildAutomationCostControls({ index, cost, evidenceToSrcRatio }),
@@ -1094,6 +1113,14 @@ function buildAutomationValueAuditFindings({ index, cost, srcLines, auditEvidenc
       reason: 'canonical audit evidence exceeded the configured artifact budget',
       budget_exceeded_reasons: cost.budget_exceeded_reasons ?? [],
       artifact_code_ratio: cost.artifact_code_ratio ?? null
+    });
+  }
+  if (index.handoff_replay_status === 'blocked') {
+    findings.push({
+      id: 'canonical_handoff_replay_blocked',
+      severity: 'review_needed',
+      reason: 'canonical audit references cannot be fully replayed by another engineer or agent',
+      unresolved_reference_count: index.handoff_replay_unresolved_reference_count ?? 0
     });
   }
   if (srcLines === 0 && auditEvidenceLines > 0) {
