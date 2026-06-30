@@ -81,7 +81,16 @@ test('canonical audit bundle copies handoff references and reports unresolved re
 
   const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
   const bundle = promoted.bundle;
+  const auditIndex = await readJson(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'audit-index.json'));
   assert.equal(bundle.handoff_replay_status, 'blocked');
+  assert.equal(auditIndex.handoff_replay_status, 'blocked');
+  assert.equal(auditIndex.handoff_replay_unresolved_reference_count, 1);
+  assert.equal(auditIndex.automation_value_audit.value_signal_inputs.handoff_replay_status, 'blocked');
+  assert.equal(auditIndex.automation_value_audit.value_signal_inputs.handoff_replay_unresolved_reference_count, 1);
+  assert.equal(
+    auditIndex.automation_value_audit.findings.some((item) => item.id === 'canonical_handoff_replay_blocked'),
+    true
+  );
   assert.equal(bundle.artifacts.some((item) => item.kind === 'review_request' && item.source.endsWith('review-request-gate_evidence.md')), true);
   assert.equal(bundle.resolved_references.some((item) => item.source.endsWith('review-request-gate_evidence.md')), true);
   assert.equal(bundle.copied_references.some((item) => item.source.endsWith('unit-result.json')), true);
