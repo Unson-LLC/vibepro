@@ -500,6 +500,7 @@ Claude / Claude Code 向けの同梱 Skills を対象リポジトリへ導入し
 npx vibepro skills list
 npx vibepro skills install /path/to/repo
 npx vibepro skills verify /path/to/repo
+npx vibepro skills lint /path/to/repo
 ```
 
 同梱 Skills:
@@ -509,6 +510,7 @@ npx vibepro skills verify /path/to/repo
 - `vibepro-story-refactor`: Story、Architecture、Spec、Task、Code、Gate evidence を揃えながら進める refactor workflow。
 - `vibepro-diagnosis-packages`: UI、security、performance、architecture、PR、launch readiness の目的別check。
 - `vibepro-human-review`: PR readiness artifact、split plan、review cockpit、waiver 判断の読み方。
+- `vibepro-meeting-minutes-editor`: トランスクリプト、Slack添付、見本から日本語のビジネス議事録を作る時に、入力欠落を隠さず、固定テンプレートへ押し込まないための編集基準。
 
 Codex 向け instructions を導入します。
 

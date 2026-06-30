@@ -595,6 +595,7 @@ Bundled skills:
 - `vibepro-story-refactor`: refactor workflow that keeps Story, Architecture, Spec, task, code, and Gate evidence aligned.
 - `vibepro-diagnosis-packages`: purpose-level UI, security, performance, architecture, PR, and launch readiness checks.
 - `vibepro-human-review`: how to read PR readiness artifacts, split plans, review cockpit, and waiver decisions.
+- `vibepro-meeting-minutes-editor`: how to generate and review Japanese business meeting minutes from transcripts, Slack attachments, and exemplars without hiding missing inputs or forcing a fixed template.
 
 Install Codex instructions:
 
