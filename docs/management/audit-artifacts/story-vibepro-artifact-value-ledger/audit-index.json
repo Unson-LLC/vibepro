@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-artifact-value-ledger",
   "source": "execute_merge",
-  "generated_at": "2026-07-01T03:42:17.064Z",
+  "generated_at": "2026-07-01T03:42:21.022Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -118,13 +118,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3044,
+      "compressed_bytes": 3048,
       "expanded_bytes": 13685,
       "expanded_line_count": 367,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 11277,
-    "raw_source_artifact_code_ratio": 13.786,
+    "raw_source_artifact_lines": 11367,
+    "raw_source_artifact_code_ratio": 13.896,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -240,7 +240,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-artifact-value-ledger",
-    "generated_at": "2026-07-01T03:42:17.064Z",
+    "generated_at": "2026-07-01T03:42:21.022Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -345,10 +345,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-artifact-value-ledger/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:3dea3ea09067556738bcacc7bdab2aaee3bfc10d2e1f9cafa9e5a689fa0abeb4",
-    "compressed_hash": "sha256:98722dd1af22a153446c05545ad5b46b1a9435b4090d106e66f5b9f51c0f4a71",
+    "content_hash": "sha256:d580e5576737ecf12921cd9ba50f58e87e4b5a94b8f09f0e694703c1aae7e2da",
+    "compressed_hash": "sha256:5194ab680dbe1bf6a1b94c236a357e949aafa8ee187ac728092ce00b977ec4c2",
     "expanded_bytes": 13685,
-    "compressed_bytes": 3044,
+    "compressed_bytes": 3048,
     "expanded_line_count": 367,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -367,7 +367,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-artifact-value-ledger",
     "cost": {
-      "compressed_bytes": 3044,
+      "compressed_bytes": 3048,
       "expanded_bytes": 13685,
       "expanded_line_count": 367,
       "persisted_line_count": 1
