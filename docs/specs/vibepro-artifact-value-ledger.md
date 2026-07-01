@@ -5,6 +5,30 @@ status: active
 created_at: 2026-07-01
 updated_at: 2026-07-01
 parent_design: vibepro-artifact-value-ledger
+diagrams:
+  - kind: flow
+    mermaid: |
+      flowchart TD
+        Prepare["pr prepare"]
+        EvidenceReuse["evidence-reuse artifact value ledger"]
+        SeniorGap["senior gap judgment"]
+        UsageReport["usage report"]
+        Responsibility["responsibility authority"]
+        Prepare --> EvidenceReuse
+        EvidenceReuse --> SeniorGap
+        EvidenceReuse --> UsageReport
+        Prepare --> Responsibility
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Actor["developer or automation"]
+        Artifact["PR evidence artifacts"]
+        Gate["VibePro gates"]
+        Risk["false workflow risk inflation"]
+        Actor --> Artifact
+        Artifact --> Gate
+        Risk --> Gate
+        Gate --> Actor
 ---
 
 # Artifact Value Ledger Spec
