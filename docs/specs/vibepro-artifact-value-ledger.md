@@ -41,9 +41,12 @@ diagrams:
 - `INV-AVL-4`: Usage reporting MUST expose decision-bound artifact counts separately from raw evidence-reuse hit/miss counts.
 - `INV-AVL-5`: Read-only audit reporting changes to ledger, senior gap judgment, or usage report MUST remain on the developer_tool route unless non-reporting source surfaces are changed.
 - `INV-AVL-6`: Read-only audit reporting responsibilities MUST NOT require high-risk workflow replay evidence when current unit regression and current head binding are present.
+- `INV-AVL-7`: When session attribution is available, the artifact value ledger MUST expose the attributed session count; when attribution is unavailable in PR prepare, it MUST use explicit unknown status instead of zero.
+- `INV-AVL-8`: Responsibility Authority entries without `primary_authority.ref` MUST remain invalid and MUST NOT be treated as satisfied evidence.
 
 ## Verification
 
 - `V-AVL-1`: `test/evidence-summary-reuse.test.js` verifies ledger generation and usage-report aggregation.
 - `V-AVL-2`: `test/senior-gap-judgment.test.js` verifies senior-gap cost context and decision card integration.
 - `V-AVL-3`: `test/responsibility-authority.test.js` verifies read-only audit reporting responsibility evidence semantics.
+- `V-AVL-4`: `test/evidence-summary-reuse.test.js` verifies session attribution is explicit and unavailable attribution is not collapsed to zero.

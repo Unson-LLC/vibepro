@@ -26,5 +26,8 @@ updated_at: 2026-07-01
 - [ ] ledgerがartifact path、consumer、decision_supported、head bindingを保持する
 - [ ] senior gap judgmentがledger状態をcost contextとdecision cardへ出す
 - [ ] usage reportがdecision-bound artifact数とconsumer数を集計する
+- [ ] session attributionが取得できる場合、ledgerは対象session数を明示してartifact valueの根拠へ含める
+- [ ] session attributionが取得できない場合、ledgerは `not_collected_in_pr_prepare` を明示し、0件や価値なしとして扱わない
 - [ ] ledger / senior gap / usage report の read-only audit reporting 変更は agent workflow ではなく developer_tool として分類される
 - [ ] read-only audit reporting 責務は high-risk workflow replay ではなく current unit regression と current head binding で証跡充足できる
+- [ ] Responsibility Authority の contract entry が primary authority を欠く場合、VibeProは自動充足せず validation error として needs_review に落とす
