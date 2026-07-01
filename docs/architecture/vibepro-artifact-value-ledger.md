@@ -4,6 +4,7 @@ story_id: story-vibepro-artifact-value-ledger
 status: active
 created_at: 2026-07-01
 updated_at: 2026-07-01
+parent_design: vibepro-artifact-value-ledger
 related_stories:
   - story-vibepro-artifact-value-ledger
 ---
