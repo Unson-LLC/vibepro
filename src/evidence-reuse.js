@@ -6,6 +6,8 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 export const EVIDENCE_REUSE_VERSION = '0.1.0';
 export const EVIDENCE_REUSE_MODEL = 'vibepro-evidence-summary-reuse-v1';
+export const ARTIFACT_VALUE_LEDGER_MODEL = 'vibepro-artifact-value-ledger-v1';
+export const SESSION_ATTRIBUTION_LEDGER_MODEL = 'vibepro-session-attribution-ledger-v1';
 
 const FRESH_REUSE_STATUSES = new Set(['hit', 'miss']);
 
@@ -59,6 +61,23 @@ export function buildEvidenceReuse({
     root
   });
   const summaryArtifacts = normalizeSummaryArtifacts({ root, artifacts, storyId });
+  const sessionAttribution = buildSessionAttributionLedger({
+    storyId,
+    git,
+    prContext,
+    evidencePlan,
+    createdAt
+  });
+  const artifactValueLedger = buildArtifactValueLedger({
+    storyId,
+    git,
+    evidenceKey,
+    comparison,
+    summaryArtifacts,
+    fullEvidence,
+    sessionAttribution,
+    createdAt
+  });
   const freshness = buildFreshnessStatus(comparison, { usedAsFresh });
 
   return {
@@ -75,6 +94,8 @@ export function buildEvidenceReuse({
     used_as_fresh: usedAsFresh === true,
     gate_status: freshness.gate_status,
     summary_artifacts: summaryArtifacts,
+    session_attribution_ledger: sessionAttribution,
+    artifact_value_ledger: artifactValueLedger,
     review_input_summary: {
       preferred_order: [
         summaryArtifacts.evidence_reuse,
@@ -108,6 +129,8 @@ export function summarizeEvidenceReuse(reuse) {
     fresh_use_allowed: reuse.fresh_use_allowed === true,
     used_as_fresh: reuse.used_as_fresh === true,
     gate_status: reuse.gate_status ?? null,
+    artifact_value_ledger: reuse.artifact_value_ledger ? summarizeArtifactValueLedger(reuse.artifact_value_ledger) : null,
+    session_attribution_ledger: reuse.session_attribution_ledger ? summarizeSessionAttributionLedger(reuse.session_attribution_ledger) : null,
     verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
     verification_evidence_updated_at: reuse.key_inputs?.verification_evidence_updated_at ?? null,
     verification_command_timestamps: reuse.key_inputs?.verification_command_timestamps ?? [],
@@ -121,6 +144,140 @@ export function summarizeEvidenceReuse(reuse) {
       reference: reuse.full_evidence.reference ?? null
     } : null,
     summary_artifacts: reuse.summary_artifacts ?? null
+  };
+}
+
+export function buildArtifactValueLedger({
+  storyId = null,
+  git = null,
+  evidenceKey = null,
+  comparison = null,
+  summaryArtifacts = null,
+  fullEvidence = null,
+  sessionAttribution = null,
+  createdAt = new Date().toISOString()
+} = {}) {
+  const artifacts = [
+    {
+      key: 'evidence_reuse',
+      path: summaryArtifacts?.evidence_reuse,
+      value_class: 'reuse_freshness',
+      consumer: 'review_prepare',
+      decision_supported: 'Use current evidence summary as first review input only when bound to the current evidence key.'
+    },
+    {
+      key: 'decision_index',
+      path: summaryArtifacts?.decision_index,
+      value_class: 'decision_trace',
+      consumer: 'senior_gap_judgment',
+      decision_supported: 'Reconstruct the PR decision path without rereading every generated artifact.'
+    },
+    {
+      key: 'evidence_plan',
+      path: summaryArtifacts?.evidence_plan,
+      value_class: 'evidence_scope',
+      consumer: 'gate_dag',
+      decision_supported: 'Bound which evidence is intentionally full-depth versus summary-only.'
+    },
+    {
+      key: 'pr_prepare',
+      path: summaryArtifacts?.pr_prepare,
+      value_class: 'handoff_packet',
+      consumer: 'pr_create',
+      decision_supported: 'Carry current gate readiness and next commands into PR creation.'
+    },
+    {
+      key: 'gate_dag',
+      path: summaryArtifacts?.gate_dag,
+      value_class: 'blocking_surface',
+      consumer: 'execute_merge',
+      decision_supported: 'Prevent merge when required gates are unresolved or stale.'
+    }
+  ].filter((entry) => entry.path);
+
+  const entries = artifacts.map((entry) => ({
+    artifact: entry.path,
+    artifact_key: entry.key,
+    value_class: entry.value_class,
+    consumer: entry.consumer,
+    decision_supported: entry.decision_supported,
+    head_sha: git?.head_sha ?? null,
+    base_sha: git?.base_sha ?? null,
+    evidence_key: evidenceKey,
+    freshness_status: comparison?.status ?? null,
+    semantic_value_status: 'decision_bound',
+    artifact_volume_risk: 'bounded_by_linked_canonical_artifact',
+    token_estimate: estimateTokenCount(entry),
+    line_count: null
+  }));
+
+  return {
+    schema_version: EVIDENCE_REUSE_VERSION,
+    model: ARTIFACT_VALUE_LEDGER_MODEL,
+    story_id: storyId,
+    generated_at: createdAt,
+    head_binding: {
+      base_ref: git?.base_ref ?? null,
+      base_sha: git?.base_sha ?? null,
+      head_ref: git?.head_ref ?? null,
+      head_sha: git?.head_sha ?? null,
+      status: git?.head_sha ? 'current_head_bound' : 'unknown_head'
+    },
+    status: entries.length > 0 ? 'present' : 'missing',
+    evidence_key: evidenceKey,
+    full_evidence_status: fullEvidence?.status ?? null,
+    full_evidence_generation_count: fullEvidence?.generation_count ?? null,
+    full_evidence_cumulative_generation_count: fullEvidence?.cumulative_generation_count ?? null,
+    session_attribution_status: sessionAttribution?.status ?? null,
+    session_attribution_confidence: sessionAttribution?.confidence ?? null,
+    entries,
+    summary: {
+      artifact_count: entries.length,
+      decision_bound_count: entries.filter((entry) => entry.semantic_value_status === 'decision_bound').length,
+      linked_consumer_count: new Set(entries.map((entry) => entry.consumer).filter(Boolean)).size,
+      total_token_estimate: entries.reduce((sum, entry) => sum + (entry.token_estimate ?? 0), 0)
+    }
+  };
+}
+
+export function buildSessionAttributionLedger({
+  storyId = null,
+  git = null,
+  prContext = null,
+  evidencePlan = null,
+  createdAt = new Date().toISOString()
+} = {}) {
+  const explicit = prContext?.session_attribution
+    ?? prContext?.session_attribution_ledger
+    ?? evidencePlan?.session_attribution
+    ?? evidencePlan?.session_attribution_ledger
+    ?? null;
+  const sessions = normalizeSessionAttributionEntries(explicit?.sessions ?? explicit?.entries ?? explicit);
+  if (sessions.length > 0) {
+    return {
+      schema_version: EVIDENCE_REUSE_VERSION,
+      model: SESSION_ATTRIBUTION_LEDGER_MODEL,
+      story_id: storyId,
+      generated_at: createdAt,
+      status: 'explicit',
+      confidence: 'high',
+      reason: 'Explicit session attribution was supplied to PR prepare.',
+      head_sha: git?.head_sha ?? null,
+      sessions,
+      unattributed_count: sessions.filter((session) => session.status === 'unattributed').length
+    };
+  }
+  return {
+    schema_version: EVIDENCE_REUSE_VERSION,
+    model: SESSION_ATTRIBUTION_LEDGER_MODEL,
+    story_id: storyId,
+    generated_at: createdAt,
+    status: 'not_collected_in_pr_prepare',
+    confidence: 'none',
+    reason: 'PR prepare did not receive Codex session attribution; downstream usage mentions must not be treated as clean product-value adoption.',
+    head_sha: git?.head_sha ?? null,
+    sessions: [],
+    unattributed_count: 0
   };
 }
 
@@ -385,6 +542,48 @@ function normalizeSummaryArtifacts({ root, artifacts, storyId }) {
   };
 }
 
+function summarizeArtifactValueLedger(ledger) {
+  return {
+    status: ledger.status ?? null,
+    model: ledger.model ?? null,
+    head_binding_status: ledger.head_binding?.status ?? null,
+    artifact_count: ledger.summary?.artifact_count ?? ledger.entries?.length ?? 0,
+    decision_bound_count: ledger.summary?.decision_bound_count ?? null,
+    linked_consumer_count: ledger.summary?.linked_consumer_count ?? null,
+    session_attribution_status: ledger.session_attribution_status ?? null,
+    session_attribution_confidence: ledger.session_attribution_confidence ?? null,
+    total_token_estimate: ledger.summary?.total_token_estimate ?? null
+  };
+}
+
+function summarizeSessionAttributionLedger(ledger) {
+  return {
+    status: ledger.status ?? null,
+    model: ledger.model ?? null,
+    confidence: ledger.confidence ?? null,
+    reason: ledger.reason ?? null,
+    session_count: Array.isArray(ledger.sessions) ? ledger.sessions.length : 0,
+    unattributed_count: ledger.unattributed_count ?? null
+  };
+}
+
+function normalizeSessionAttributionEntries(input) {
+  if (!input) return [];
+  const entries = Array.isArray(input) ? input : [input];
+  return entries
+    .filter((entry) => entry && typeof entry === 'object')
+    .map((entry) => ({
+      session_id: normalizeString(entry.session_id ?? entry.id),
+      repo: normalizeString(entry.repo ?? entry.cwd ?? entry.repository),
+      story_id: normalizeString(entry.story_id),
+      status: normalizeString(entry.status) ?? (entry.story_id ? 'attributed' : 'unattributed'),
+      confidence: normalizeString(entry.confidence) ?? 'medium',
+      source: normalizeString(entry.source),
+      tokens: Number.isFinite(Number(entry.tokens ?? entry.total_tokens)) ? Number(entry.tokens ?? entry.total_tokens) : null,
+      elapsed_ms: Number.isFinite(Number(entry.elapsed_ms)) ? Number(entry.elapsed_ms) : null
+    }));
+}
+
 function summarizeVerificationEvidence(verificationEvidence) {
   const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   return {
@@ -462,6 +661,10 @@ function fingerprintValue(value) {
 
 function sha256Hex(value) {
   return createHash('sha256').update(String(value)).digest('hex');
+}
+
+function estimateTokenCount(value) {
+  return Math.ceil(stableStringify(value).length / 4);
 }
 
 function stableStringify(value) {

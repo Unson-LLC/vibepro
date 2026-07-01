@@ -71,6 +71,10 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   const firstReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
   assert.equal(firstReuse.status, 'miss');
   assert.equal(firstReuse.full_evidence.status, 'generated');
+  assert.equal(firstReuse.artifact_value_ledger.status, 'present');
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 5);
+  assert.equal(firstReuse.artifact_value_ledger.session_attribution_status, 'not_collected_in_pr_prepare');
+  assert.equal(firstReuse.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
   assert.equal(firstReuse.full_evidence.generation_count, 1);
   assert.equal(firstReuse.full_evidence.same_key_generation_count, 1);
@@ -102,10 +106,16 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   const report = await createUsageReport(repo, { language: 'ja' });
   assert.equal(report.evidence_reuse.hit_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_ledger_status, 'present');
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 5);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_linked_consumer_count, 5);
+  assert.equal(report.evidence_reuse.by_story[0].session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(report.evidence_reuse.by_story[0].full_evidence_generation_count_scope, 'same_evidence_key');
   assert.equal(report.evidence_reuse.by_story[0].same_key_full_evidence_generation_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].cumulative_full_evidence_generation_count, 1);
   assert.match(renderUsageReport(report), /Evidence Reuse/);
+  assert.match(renderUsageReport(report), /artifact_value=present/);
+  assert.match(renderUsageReport(report), /session_attribution=not_collected_in_pr_prepare/);
   assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
   assert.match(renderUsageReport(report), /cumulative_full_generation_count=1/);
 });
@@ -270,6 +280,49 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
   assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
   assert.equal(gate.status, 'passed');
   assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:05:00.000Z');
+});
+
+test('explicit session attribution is preserved in the artifact value ledger', () => {
+  const reuse = buildEvidenceReuse({
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: {
+      session_attribution: {
+        sessions: [
+          {
+            session_id: 'session-1',
+            repo: '/repo/a',
+            story_id: STORY_ID,
+            status: 'attributed',
+            confidence: 'high',
+            source: 'session_index',
+            tokens: 1200,
+            elapsed_ms: 60000
+          },
+          {
+            session_id: 'session-2',
+            repo: '/repo/a',
+            status: 'unattributed',
+            confidence: 'low',
+            source: 'session_index',
+            tokens: 300,
+            elapsed_ms: 10000
+          }
+        ]
+      }
+    },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  });
+
+  assert.equal(reuse.session_attribution_ledger.status, 'explicit');
+  assert.equal(reuse.session_attribution_ledger.confidence, 'high');
+  assert.equal(reuse.session_attribution_ledger.sessions.length, 2);
+  assert.equal(reuse.session_attribution_ledger.unattributed_count, 1);
+  assert.equal(reuse.session_attribution_ledger.sessions[0].session_id, 'session-1');
+  assert.equal(reuse.session_attribution_ledger.sessions[0].tokens, 1200);
+  assert.equal(reuse.artifact_value_ledger.session_attribution_status, 'explicit');
+  assert.equal(reuse.artifact_value_ledger.session_attribution_confidence, 'high');
 });
 
 test('stale reuse marked as fresh fails the evidence reuse gate', () => {

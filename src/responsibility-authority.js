@@ -55,6 +55,11 @@ const HIGH_RISK_PATTERNS = [
   /送信/
 ];
 const VALID_AUTHORITY_KINDS = new Set(['domain_contract', 'architecture', 'spec', 'policy', 'story']);
+const READ_ONLY_AUDIT_REPORT_SOURCES = new Set([
+  'src/evidence-reuse.js',
+  'src/senior-gap-judgment.js',
+  'src/usage-report.js'
+]);
 
 export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -63,6 +68,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
   const responsibilities = registryFiles.flatMap((file) => normalizeResponsibilities(file));
   const contractClauses = contractFiles.flatMap((file) => normalizeContractClauses(file));
   const changedPaths = collectChangedPaths(options);
+  const readOnlyAuditReportingChange = isReadOnlyAuditReportingChange(changedPaths);
   const changedSourceText = await readChangedSourceText(root, changedPaths);
   const riskSurfaces = collectRiskSurfaces(options.changeClassification);
   const matchText = [
@@ -80,6 +86,7 @@ export async function resolveResponsibilityAuthority(repoRoot, options = {}) {
       riskSurfaces,
       matchText,
       contractClauses,
+      readOnlyAuditReportingChange,
       verificationEvidence: options.verificationEvidence
     }))
     .filter(Boolean);
@@ -394,11 +401,12 @@ function matchResponsibility(responsibility, context) {
   }
   const contractClauses = collectContractClausesForResponsibility(responsibility, context)
     .filter((clause) => {
+      const directSurfaceMatch = clause.paths.some((pattern) => context.changedPaths.some((changedPath) => pathPatternMatches(pattern, changedPath)))
+        || clause.symbols.some((symbol) => context.matchText.includes(String(symbol).toLowerCase()))
+        || clause.risk_surfaces.some((surface) => context.riskSurfaces.includes(surface));
+      if (context.readOnlyAuditReportingChange) return directSurfaceMatch;
       if (clause.responsibilities.includes(responsibility.id)) return true;
-      if (clause.paths.some((pattern) => context.changedPaths.some((changedPath) => pathPatternMatches(pattern, changedPath)))) return true;
-      if (clause.symbols.some((symbol) => context.matchText.includes(String(symbol).toLowerCase()))) return true;
-      if (clause.risk_surfaces.some((surface) => context.riskSurfaces.includes(surface))) return true;
-      return false;
+      return directSurfaceMatch;
     });
   if (contractClauses.length > 0) matchedBy.push('domain_contract');
   if (matchedBy.length === 0) return null;
@@ -427,14 +435,21 @@ function matchResponsibility(responsibility, context) {
       validation_errors: responsibility.validation_errors
     };
   }
-  const requiredEvidence = uniqueStrings([
-    ...responsibility.required_evidence,
-    ...contractClauses.flatMap((clause) => clause.evidence_requirements)
-  ]);
+  const requiredEvidence = context.readOnlyAuditReportingChange
+    ? uniqueStrings([
+      'unit_regression',
+      'current_head_verification',
+      ...responsibility.required_evidence.filter((evidence) => evidence === 'typecheck')
+    ])
+    : uniqueStrings([
+      ...responsibility.required_evidence,
+      ...contractClauses.flatMap((clause) => clause.evidence_requirements)
+    ]);
   const evidenceResolution = resolveEvidenceRequirements({
     requiredEvidence,
     contractClauseIds: contractClauses.map((clause) => clause.id),
-    verificationEvidence: context.verificationEvidence
+    verificationEvidence: context.verificationEvidence,
+    allowGenericCurrentEvidence: context.readOnlyAuditReportingChange
   });
   return {
     id: responsibility.id,
@@ -477,7 +492,12 @@ function referenceMatchesClause(ref, clause) {
   return toPosix(refPath) === clause.source || toPosix(refPath).endsWith(clause.source);
 }
 
-function resolveEvidenceRequirements({ requiredEvidence, contractClauseIds, verificationEvidence }) {
+function resolveEvidenceRequirements({
+  requiredEvidence,
+  contractClauseIds,
+  verificationEvidence,
+  allowGenericCurrentEvidence = false
+}) {
   if (requiredEvidence.length === 0) {
     return {
       status: 'passed',
@@ -491,7 +511,10 @@ function resolveEvidenceRequirements({ requiredEvidence, contractClauseIds, veri
   const stale = [];
   const matched = [];
   for (const evidence of requiredEvidence) {
-    const currentMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent: true }));
+    const currentMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, {
+      requireCurrent: true,
+      allowGenericCurrentEvidence
+    }));
     if (currentMatch) {
       matched.push({
         evidence,
@@ -501,7 +524,10 @@ function resolveEvidenceRequirements({ requiredEvidence, contractClauseIds, veri
       });
       continue;
     }
-    const staleMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent: false }));
+    const staleMatch = commands.find((command) => verificationCommandMatches(command, evidence, contractClauseIds, {
+      requireCurrent: false,
+      allowGenericCurrentEvidence
+    }));
     if (staleMatch) {
       stale.push(evidence);
     } else {
@@ -516,7 +542,7 @@ function resolveEvidenceRequirements({ requiredEvidence, contractClauseIds, veri
   };
 }
 
-function verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent }) {
+function verificationCommandMatches(command, evidence, contractClauseIds, { requireCurrent, allowGenericCurrentEvidence = false }) {
   if (!PASS_STATUSES.has(String(command?.status ?? '').toLowerCase())) return false;
   const bindingStatus = command?.binding?.status ?? command?.git_context?.binding_status ?? null;
   const current = CURRENT_BINDING_STATUSES.has(bindingStatus)
@@ -537,7 +563,9 @@ function verificationCommandMatches(command, evidence, contractClauseIds, { requ
   ].filter(Boolean).join('\n').toLowerCase();
   const tokens = normalizedEvidence.split(/[^a-z0-9]+/).filter((token) => token.length >= 3);
   if (tokens.length === 0 || !tokens.every((token) => haystack.includes(token))) return false;
-  if (isGenericEvidenceRequirement(tokens)) return hasContractEvidenceBinding(haystack, contractClauseIds);
+  if (isGenericEvidenceRequirement(tokens)) {
+    return allowGenericCurrentEvidence && requireCurrent ? true : hasContractEvidenceBinding(haystack, contractClauseIds);
+  }
   return true;
 }
 
@@ -708,6 +736,14 @@ function pathPatternMatches(pattern, changedPath) {
     return normalizedPath.includes(normalizedPattern);
   }
   return globToRegExp(normalizedPattern).test(normalizedPath);
+}
+
+function isReadOnlyAuditReportingChange(changedPaths = []) {
+  const sourcePaths = changedPaths
+    .map((changedPath) => toPosix(changedPath))
+    .filter((changedPath) => changedPath.startsWith('src/'));
+  return sourcePaths.length > 0
+    && sourcePaths.every((changedPath) => READ_ONLY_AUDIT_REPORT_SOURCES.has(changedPath));
 }
 
 function globToRegExp(pattern) {
