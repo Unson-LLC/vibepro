@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-body-path-links",
   "source": "execute_merge",
-  "promoted_at": "2026-07-01T11:48:20.727Z",
+  "promoted_at": "2026-07-01T11:48:25.049Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-pr-body-path-links",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-pr-body-path-links/audit-index.json",
@@ -38,8 +38,8 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-body-path-links/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:e7a9fae11b4eff98c363837e2923030c346041a7af9da293f8f7f5b4d8dcfe32",
-    "compressed_hash": "sha256:2f638cd040dd97d89c41e02d615f5576d3fbeee1b13e89914598c468a4eb380d",
+    "content_hash": "sha256:d7f65fe378beb0bcbdec41ada3a1eb71fb4706e9553dfe20935e2a9d3f6d6845",
+    "compressed_hash": "sha256:1902f6b9119e45629d467c1f85fb469161e4a3069a68d02ede61894830d2c5cc",
     "expanded_bytes": 12195,
     "compressed_bytes": 2921,
     "expanded_line_count": 333,
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-path-links/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:e7a9fae11b4eff98c363837e2923030c346041a7af9da293f8f7f5b4d8dcfe32"
+      "content_hash": "sha256:d7f65fe378beb0bcbdec41ada3a1eb71fb4706e9553dfe20935e2a9d3f6d6845"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-pr-body-path-links/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-path-links/audit-replay-bundle.json.gz",
-      "digest": "sha256:36fbf7fadfc42f00889b7a44d4953d4bceb5fe5c5e8f0c434c0cee25dd09cf49",
-      "audit_digest": "sha256:47386da8307bc84384a56c065d1071b8c8d6b0bfdd8cbb9b5867ce4ca8383ee1",
-      "line_count": 1763,
-      "raw_line_count": 3624,
+      "digest": "sha256:be033634d14e35195970b3e624dfef5516ec52195a9c236f10448fcf0b0a6696",
+      "audit_digest": "sha256:a0788211d417ada531a93c3ac1dd2dab8828be259580538f6086f1c59832d739",
+      "line_count": 1853,
+      "raw_line_count": 3714,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
