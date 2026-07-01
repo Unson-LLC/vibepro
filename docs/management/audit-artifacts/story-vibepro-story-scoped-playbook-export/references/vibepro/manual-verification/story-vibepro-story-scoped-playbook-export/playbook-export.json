@@ -1,0 +1,379 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "story_engineering_playbook",
+  "generated_at": "2026-07-01T16:33:03.528Z",
+  "output": {
+    "language": "ja"
+  },
+  "catalog": {
+    "id": "story-engineering-playbook-v1",
+    "description": "VibePro Engineering Judgment / Gate DAG の判断をもとにStory単位で選択される開発ブリーフ。"
+  },
+  "story": {
+    "story_id": "story-vibepro-story-scoped-playbook-export",
+    "title": "Story単位のStory Engineering Playbook形式ドキュメント出力",
+    "status": "active",
+    "horizon": "month",
+    "view": "dev",
+    "period": "2026-07"
+  },
+  "sources": {
+    "story_docs": [
+      "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md"
+    ],
+    "architecture_docs": [
+      "docs/architecture/vibepro-story-scoped-playbook-export.md"
+    ],
+    "spec": ".vibepro/spec/story-vibepro-story-scoped-playbook-export/spec.json",
+    "pr_prepare": ".vibepro/pr/story-vibepro-story-scoped-playbook-export/pr-prepare.json",
+    "gate_dag": ".vibepro/pr/story-vibepro-story-scoped-playbook-export/gate-dag.json",
+    "evidence_status": {
+      "story_doc": "present",
+      "spec": "present",
+      "architecture": "present",
+      "pr_prepare": "present",
+      "gate_dag": "present"
+    }
+  },
+  "engineering_judgment": {
+    "route_type": "agent_workflow",
+    "active_axes": [
+      "public_contract",
+      "scope_reviewability"
+    ],
+    "source": "pr_prepare"
+  },
+  "template_decisions": [
+    {
+      "template_id": "story.intent",
+      "title": "Storyの意図",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Story単位の実装判断で常に必要な価値・背景・受け入れ条件。"
+        }
+      ],
+      "reason": "Story単位の実装判断で常に必要な価値・背景・受け入れ条件。"
+    },
+    {
+      "template_id": "story.scope",
+      "title": "Scope / Non-goals",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Storyから外れる変更をPRに混ぜないための範囲境界。"
+        }
+      ],
+      "reason": "Storyから外れる変更をPRに混ぜないための範囲境界。"
+    },
+    {
+      "template_id": "architecture.delta",
+      "title": "Architecture delta",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Story実装が既存境界・責務・依存方向に与える差分。"
+        }
+      ],
+      "reason": "Story実装が既存境界・責務・依存方向に与える差分。"
+    },
+    {
+      "template_id": "quality.gates",
+      "title": "Quality gates",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "実装完了ではなく、PR作成・レビュー・マージに必要な証跡を明示するため。"
+        }
+      ],
+      "reason": "実装完了ではなく、PR作成・レビュー・マージに必要な証跡を明示するため。"
+    },
+    {
+      "template_id": "open.questions",
+      "title": "Open questions",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "曖昧さを暗黙の実装判断に落とさず、未確認として残すため。"
+        }
+      ],
+      "reason": "曖昧さを暗黙の実装判断に落とさず、未確認として残すため。"
+    },
+    {
+      "template_id": "contract.surface",
+      "title": "公開契約 / コマンド面",
+      "decision": "selected",
+      "source": "engineering_judgment_axis",
+      "active_axes": [
+        "public_contract"
+      ],
+      "evidence": [
+        {
+          "source": "engineering_judgment_axis",
+          "detail": "active axis: public_contract"
+        },
+        {
+          "source": "gate_dag",
+          "detail": "gate:judgment_axis_public_contract: passed"
+        },
+        {
+          "source": "gate_dag",
+          "detail": "gate:pr_body_contract: passed"
+        },
+        {
+          "source": "engineering_judgment_route",
+          "detail": "route_type: agent_workflow"
+        },
+        {
+          "source": "surface_supporting_signal",
+          "detail": "Story/Spec/Architecture本文に該当surfaceのsignalがある。"
+        }
+      ],
+      "reason": "外部またはエージェントが依存する入出力契約に触れるため。"
+    },
+    {
+      "template_id": "data.state",
+      "title": "Data / State",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "security.trust",
+      "title": "Security / Trust boundary",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "ux.workflow",
+      "title": "UX / Workflow",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "release.ops",
+      "title": "Release / Operations",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "external.integration",
+      "title": "External integration",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "evidence": [
+        {
+          "source": "surface_supporting_signal",
+          "detail": "Story/Spec/Architecture本文に該当surfaceのsignalがある。"
+        }
+      ],
+      "reason": "本文上のsurface signalはあるが、生成済みEngineering Judgment / Gate DAGでこのテンプレは選択されていない。"
+    }
+  ],
+  "content": {
+    "intent": {
+      "story_title": "Story単位のStory Engineering Playbook形式ドキュメント出力",
+      "background": "VibeProのStoryは、Story、Spec、Architecture、PR Gate DAGを分けて扱える一方で、実装前に「今回のStoryでどの開発ブリーフ項目を埋めるべきか」を人間が毎回翻訳する必要がある。\n\n全体設計図を常に更新する運用に寄せると重くなる。逆に固定テンプレを全Storyへ一律適用すると、Engineering Judgment DAGで判断している意味が薄くなる。",
+      "acceptance_criteria": [
+        "vibepro playbook export はStory単位でStory Engineering PlaybookのMarkdown/JSON artifactを出力する。",
+        "テンプレ選択は固定ルールではなく、Engineering Judgment / Gate DAGを優先し、存在しない場合だけStory/Spec/Architectureのfallback signalを明示する。",
+        "出力には選択したテンプレと省略したテンプレの根拠が含まれる。",
+        "出力は日本語設定のworkspaceでは日本語を既定にする。",
+        "OSS利用者に伝わらない個人名をPlaybook名や出力契約に含めない。"
+      ],
+      "source_status": "present"
+    },
+    "scope": {
+      "included": [
+        "CLI command: playbook export",
+        "出力先: .vibepro/playbook/<story-id>/",
+        "入力: Story doc、Spec、Architecture doc、PR prepare / Gate DAG"
+      ],
+      "excluded": [
+        "全体設計図の自動更新",
+        "Story実行後のArchitecture正本への自動反映",
+        "Playbookテンプレcatalogを外部サービスから同期する機能"
+      ],
+      "changed_files": [
+        "design-ssot.json",
+        "docs/architecture/vibepro-story-scoped-playbook-export.md",
+        "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+        "src/cli.js",
+        "src/playbook-exporter.js",
+        "src/workspace.js",
+        "test/cli-smoke.test.js",
+        "test/playbook-exporter.test.js"
+      ]
+    },
+    "architecture_delta": {
+      "docs": [
+        "docs/architecture/vibepro-story-scoped-playbook-export.md"
+      ],
+      "summary": "Story実装前の認知負荷を下げるため、VibeProが既に持つStory、Spec、Architecture、Engineering Judgment / Gate DAGを読み、Story単位の開発ブリーフとしてStory Engineering Playbookを生成する。",
+      "source_status": "present"
+    },
+    "spec": {
+      "status": "present",
+      "clause_count": 3,
+      "clause_types": {
+        "contract": 2,
+        "invariant": 1
+      },
+      "open_question_count": 0
+    },
+    "quality_gates": {
+      "status": "present",
+      "overall_status": "needs_verification",
+      "items": [
+        {
+          "id": "story",
+          "status": "present",
+          "required": true
+        },
+        {
+          "id": "gate:story_source_integrity",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:engineering_judgment_route",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:common_judgment_spine",
+          "status": "needs_evidence",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_axis_public_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_axis_scope_reviewability",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_scope_judgment",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:bug_physics_triage",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_agent_workflow_context_acquisition",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_agent_workflow_tool_boundary",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_agent_workflow_delegation_policy",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_agent_workflow_human_decision_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_route_classification",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_body_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:managed_worktree",
+          "status": "needs_review",
+          "required": false
+        },
+        {
+          "id": "gate:change_classification",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_freshness",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "architecture",
+          "status": "satisfied",
+          "required": true
+        },
+        {
+          "id": "spec",
+          "status": "inferred",
+          "required": true
+        }
+      ]
+    },
+    "open_questions": []
+  }
+}

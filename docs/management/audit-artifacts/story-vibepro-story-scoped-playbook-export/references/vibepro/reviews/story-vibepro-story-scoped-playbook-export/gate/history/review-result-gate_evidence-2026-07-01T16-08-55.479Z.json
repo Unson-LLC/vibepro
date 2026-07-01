@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-scoped-playbook-export",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD 048832caecc6a7172998bb9a7cbcd2b5bc842021 passes gate_evidence review; no product/code/evidence blocker remains beyond the review lifecycle gates this record satisfies.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "The worktree is clean on codex/story-engineering-playbook-export, ahead of origin/main by one commit. The 8-file diff is coherent for one story-scoped playbook export: design SSOT root, Story/Architecture docs, CLI/exporter/workspace changes, and focused tests. Gate DAG product/code/evidence gates are passed or accepted; unresolved readiness before this record was limited to gate_evidence review/record/join, agent_review/evidence-lifecycle/DoD, plus a non-required managed_worktree warning and senior_gap_judgment derived from those review gaps.",
+    "evidence": ".vibepro/reviews/story-vibepro-story-scoped-playbook-export/gate/agent-transcript-gate_evidence-019f1e68-e2b5-7790-98d1-9e6e4f58053b.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/gate-dag.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/verification-evidence.json",
+      ".vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-gate-evidence.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/design-ssot-reconciliation.json",
+      ".vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-export.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/playbook.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/story-engineering-playbook.md"
+    ]
+  },
+  "judgment_delta": [
+    "Previous stale/missing verification concern is resolved because unit, typecheck, integration, and e2e records are current-head bound and artifact-backed.",
+    "Design SSOT lineage is coherent because root, Story parent_design, and reconcile evidence align with zero action items.",
+    "scope_reviewability is accepted by decision record decision-1782921568580-4054d961; split-plan remains advisory and not a blocker.",
+    "Implementation review confirmed Japanese default output, OSS-friendly catalog naming, Engineering Judgment/Gate DAG-first template selection, fallback source labeling, and selected/omitted rationale in JSON and Markdown outputs."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export",
+    "expected_root": null,
+    "expected_head_sha": "048832caecc6a7172998bb9a7cbcd2b5bc842021",
+    "current_head_sha": "048832caecc6a7172998bb9a7cbcd2b5bc842021",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export",
+      "expected_root": null,
+      "expected_head_sha": "048832caecc6a7172998bb9a7cbcd2b5bc842021",
+      "current_head_sha": "048832caecc6a7172998bb9a7cbcd2b5bc842021",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-01T16:08:55.479Z",
+  "git_context": {
+    "head_sha": "048832caecc6a7172998bb9a7cbcd2b5bc842021",
+    "current_branch": "codex/story-engineering-playbook-export",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-01T16:08:55.478Z"
+  },
+  "source_fingerprint": "117f754f59e30abce8245437f5836fa887f36fc6f55a6a135f2a860eb29460ae",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f1e68-e2b5-7790-98d1-9e6e4f58053b",
+    "agent_role": null,
+    "model": "inherited",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-story-scoped-playbook-export/gate/agent-transcript-gate_evidence-019f1e68-e2b5-7790-98d1-9e6e4f58053b.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-scoped-playbook-export/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-story-scoped-playbook-export/gate/agent-transcript-gate_evidence-019f1e68-e2b5-7790-98d1-9e6e4f58053b.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

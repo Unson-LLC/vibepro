@@ -1,0 +1,49 @@
+{
+  "schema_version": "0.1.0",
+  "agent_id": "019f1e7b-5e6e-7ec0-9086-798c4ac13b3d",
+  "agent_system": "codex",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "head_sha": "3efc23a965dea9159e7380531fbe29da27396380",
+  "completed": {
+    "summary": "Current HEAD 3efc23a965dea9159e7380531fbe29da27396380 is correctly bound in the inspected artifacts. The only delta from the previously passed HEAD is the escapeTable hardening, and no regression was found in CLI wiring, workspace init, exporter selection, Markdown/JSON output, or PR-gate evidence.",
+    "findings": [],
+    "inspection_summary": [
+      "Confirmed clean branch codex/story-engineering-playbook-export at 3efc23a; diff vs origin/main is the expected eight-file feature surface.",
+      "Diff vs old passed HEAD 048832c is only src/playbook-exporter.js escapeTable.",
+      "escapeTable now escapes backslashes before pipes/newlines, which addresses the CodeQL incomplete-sanitization pattern for Markdown table cells. The generated Markdown template table remains well-formed.",
+      "Exporter selection is auditable: core templates always selected; optional templates prefer Engineering Judgment / Gate DAG / route signals; fallback surface selection is only used when those stronger signals are absent.",
+      "CLI and workspace changes are additive: playbook export is wired into help/dispatch/smoke coverage, and workspace init only adds .vibepro/playbook.",
+      "Story, architecture doc, design-ssot.json, PR prepare, Gate DAG, manual export, canonical playbook JSON, and Markdown artifact are aligned on Japanese default output, selected/omitted templates, and current-head evidence.",
+      "Recorded verification evidence was inspected rather than rerunning tests or live GitHub checks inside the subagent. The local artifacts record CodeQL, analyze, test(20), test(22), typecheck, design-SSOT reconcile, focused tests, and playbook replay at 3efc23a.",
+      "Existing Gate DAG review/stale nodes are expected pre-record state because the previous review was for 048832c; this review is the current-head binding."
+    ],
+    "inspection_inputs": [
+      "src/playbook-exporter.js",
+      "src/cli.js",
+      "src/workspace.js",
+      "test/playbook-exporter.test.js",
+      "test/cli-smoke.test.js",
+      "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+      "docs/architecture/vibepro-story-scoped-playbook-export.md",
+      "design-ssot.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/gate-dag.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/ci-evidence/CodeQL.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/ci-evidence/analyze.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/ci-evidence/test_20_.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/ci-evidence/test_22_.json",
+      ".vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-export.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/playbook.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/story-engineering-playbook.md"
+    ],
+    "judgment_delta": [
+      "Rebound from previous pass to current HEAD: the only implementation change is the escapeTable backslash pre-escape.",
+      "CodeQL judgment improved: the escape ordering now prevents preexisting backslashes from weakening pipe escaping in table cells.",
+      "Markdown regression concern reduced: generated artifact still renders the template decision table as stable four-column rows.",
+      "Evidence concern reduced: current-head CI and local verification are recorded, while stale review nodes are attributable to the old review SHA pending this record."
+    ]
+  }
+}

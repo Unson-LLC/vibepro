@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "story_id": "story-vibepro-story-scoped-playbook-export",
+  "checked_at": "2026-07-01T16:35:18.946Z",
+  "head_sha": "3efc23a965dea9159e7380531fbe29da27396380",
+  "command_subject": "story engineering playbook flow replay and artifact replay",
+  "checks": [
+    {
+      "name": "story.intent selected",
+      "status": "pass"
+    },
+    {
+      "name": "story.scope selected",
+      "status": "pass"
+    },
+    {
+      "name": "architecture.delta selected",
+      "status": "pass"
+    },
+    {
+      "name": "quality.gates selected",
+      "status": "pass"
+    },
+    {
+      "name": "open.questions selected",
+      "status": "pass"
+    },
+    {
+      "name": "contract.surface selected",
+      "status": "pass"
+    },
+    {
+      "name": "data.state omitted",
+      "status": "pass"
+    },
+    {
+      "name": "security.trust omitted",
+      "status": "pass"
+    },
+    {
+      "name": "ux.workflow omitted",
+      "status": "pass"
+    },
+    {
+      "name": "release.ops omitted",
+      "status": "pass"
+    },
+    {
+      "name": "external.integration omitted",
+      "status": "pass"
+    },
+    {
+      "name": "selected and omitted reasons present",
+      "status": "pass"
+    },
+    {
+      "name": "japanese output",
+      "status": "pass"
+    },
+    {
+      "name": "OSS catalog naming",
+      "status": "pass"
+    },
+    {
+      "name": "story source present",
+      "status": "pass"
+    },
+    {
+      "name": "architecture source present",
+      "status": "pass"
+    },
+    {
+      "name": "gate dag source present",
+      "status": "pass"
+    },
+    {
+      "name": "markdown artifact written",
+      "status": "pass"
+    },
+    {
+      "name": "json artifact written",
+      "status": "pass"
+    }
+  ],
+  "failed": [],
+  "evidence_kind": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e"
+  ],
+  "acceptance_criteria": [
+    "AC-3 selected and omitted template reasons are included",
+    "AC-4 Japanese output is default"
+  ]
+}

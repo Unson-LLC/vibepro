@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-scoped-playbook-export",
+  "created_at": "2026-07-01T16:36:10.961Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-story-scoped-playbook-export.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-story-scoped-playbook-export/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-story-scoped-playbook-export/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-story-scoped-playbook-export.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "reason": "3 clauses inferred from Story+Code+Test"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-01T16:36:09.872Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-story-engineering-playbook-export/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "3efc23a965dea9159e7380531fbe29da27396380",
+      "branch": "codex/story-engineering-playbook-export",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "202599f7082d1c49783ae4d42623f4f825c53564",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

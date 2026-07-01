@@ -1,0 +1,47 @@
+{
+  "agent_id": "019f1e68-e2b5-7790-98d1-9e6e4f58053b",
+  "lifecycle_id": "0d9444b0-20f9-4630-b261-4eac40da7bd9",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "received_at": "2026-07-01T16:06:00.000Z",
+  "result": {
+    "status": "pass",
+    "summary": "Current HEAD 048832caecc6a7172998bb9a7cbcd2b5bc842021 passes this gate_evidence review; I found no product/code/evidence blocker beyond the expected unrecorded agent-review lifecycle gates this review is meant to satisfy.",
+    "inspection_summary": "The worktree is clean on codex/story-engineering-playbook-export, ahead of origin/main by one commit. The 8-file diff is coherent for one story-scoped playbook export: design SSOT root, story/architecture docs, CLI/exporter/workspace changes, and focused tests. Gate DAG product/code/evidence gates are passed or accepted; unresolved readiness is limited to gate_evidence review/record/join, agent_review/evidence-lifecycle/DoD, plus a non-required managed_worktree warning and senior_gap_judgment derived from those review gaps.",
+    "inspection_evidence": "Verified git status clean and HEAD=048832caecc6a7172998bb9a7cbcd2b5bc842021. pr-prepare.json is bound to the same head and reports dirty=false/raw_dirty=false. verification-evidence.json records typecheck, integration, unit, and e2e pass at current head with artifact_check=verified against .vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-gate-evidence.json; the manual evidence artifact itself has status=pass and head_sha=048832caecc6a7172998bb9a7cbcd2b5bc842021. design-ssot-reconciliation.json passed with 0 action items. Generated playbook JSON/Markdown use language=ja, catalog=story-engineering-playbook-v1, select contract.surface from Engineering Judgment/Gate DAG evidence, and record omitted-template reasons.",
+    "inspection_inputs": [
+      "git status --short --branch",
+      "git rev-parse HEAD",
+      "git diff --stat origin/main...HEAD",
+      "git diff --name-status origin/main...HEAD",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/gate-dag.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/verification-evidence.json",
+      ".vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-gate-evidence.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/senior-gap-judgment.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/decision-records.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/design-ssot-reconciliation.json",
+      ".vibepro/pr/story-vibepro-story-scoped-playbook-export/split-plan.json",
+      ".vibepro/spec/story-vibepro-story-scoped-playbook-export/spec.json",
+      ".vibepro/manual-verification/story-vibepro-story-scoped-playbook-export/playbook-export.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/playbook.json",
+      ".vibepro/playbook/story-vibepro-story-scoped-playbook-export/story-engineering-playbook.md",
+      "design-ssot.json",
+      "docs/architecture/vibepro-story-scoped-playbook-export.md",
+      "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+      "src/playbook-exporter.js",
+      "src/cli.js",
+      "src/workspace.js",
+      "test/playbook-exporter.test.js",
+      "test/cli-smoke.test.js"
+    ],
+    "judgment_delta": [
+      "Previous gate_evidence needs_changes condition for stale/missing verification is resolved: unit, typecheck, integration, and e2e records are current-head bound and artifact-backed.",
+      "Design SSOT lineage is now coherent: new root vibepro-story-scoped-playbook-export links to the changed story, story frontmatter points back to parent_design, and reconcile passed with no action items.",
+      "scope_reviewability is accepted by decision record decision-1782921568580-4054d961; split-plan remains advisory but not a blocker for this PR.",
+      "Remaining unresolved PR readiness gates are the expected missing gate_evidence agent review/record/join/agent_review/definition-of-done/evidence-lifecycle path; senior_gap_judgment is derived from those same missing review records.",
+      "Implementation review confirmed Japanese default output, OSS-friendly catalog naming, Engineering Judgment/Gate DAG-first template selection, fallback source labeling, and selected/omitted rationale in JSON and Markdown outputs."
+    ],
+    "findings": []
+  }
+}
