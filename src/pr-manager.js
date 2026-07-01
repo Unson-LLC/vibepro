@@ -5803,7 +5803,9 @@ function buildEngineeringJudgmentClassification({
     || changeClassification?.risk_surfaces?.includes('gate_orchestration')
     || changeClassification?.risk_surfaces?.includes('review_lifecycle')
   );
-  if (['release_merge', 'mirror_sync'].includes(prRoute?.route_type) || (releaseSignal && !agentWorkflowSignal)) {
+  if (readOnlyUsageReportingChange) {
+    setRoute('developer_tool', 'Developer Tool', 0.74, 'developer_tool_dag', ['surface:read_only_audit_reporting']);
+  } else if (['release_merge', 'mirror_sync'].includes(prRoute?.route_type) || (releaseSignal && !agentWorkflowSignal)) {
     setRoute('release_engineering', 'Release Engineering', 0.84, 'release_engineering_dag', ['route:release_or_mirror']);
   } else if (agentWorkflowSignal) {
     setRoute('agent_workflow', 'AI Agent Workflow', 0.82, 'agent_workflow_dag', ['surface:agent_or_gate_workflow']);
@@ -5870,8 +5872,12 @@ function buildEngineeringJudgmentClassification({
 function isReadOnlyUsageReportingChange(fileGroups = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   if (sourceFiles.length === 0) return false;
-  const usageReportSources = new Set(['src/usage-report.js']);
-  return sourceFiles.every((file) => usageReportSources.has(file));
+  const readOnlyReportSources = new Set([
+    'src/evidence-reuse.js',
+    'src/senior-gap-judgment.js',
+    'src/usage-report.js'
+  ]);
+  return sourceFiles.every((file) => readOnlyReportSources.has(file));
 }
 
 function buildSeniorJudgmentAxes({

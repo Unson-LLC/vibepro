@@ -152,6 +152,39 @@ test('resolver does not satisfy contract evidence with unrelated generic unit pa
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'needs_evidence');
 });
 
+test('resolver accepts generic current unit evidence for read-only audit reporting responsibilities', async () => {
+  const repo = await makeFixtureRepo();
+  await writeReadOnlyReportingResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'evidence-reuse.js'), 'export const artifact_value_ledger = "read-only report";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/evidence-reuse.js'] },
+    fileGroups: { source: { files: ['src/evidence-reuse.js'] } },
+    changeClassification: { risk_surfaces: ['audit_reporting'] },
+    verificationEvidence: {
+      commands: [
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: 'node --test test/evidence-summary-reuse.test.js',
+          summary: 'unit_regression read_only_audit_reporting_regression',
+          binding: { status: 'current' },
+          observation: {
+            targets: ['src/evidence-reuse.js'],
+            scenarios: ['artifact value ledger read-only reporting remains current-head bound']
+          }
+        }
+      ]
+    }
+  });
+
+  assert.equal(result.status, 'passed');
+  assert.equal(result.summary.matched_responsibility_count, 1);
+  assert.deepEqual(result.matched_responsibilities[0].required_evidence, ['unit_regression', 'current_head_verification']);
+  assert.equal(result.summary.missing_evidence_count, 0);
+  assert.equal(buildResponsibilityAuthorityGate(result).status, 'passed');
+});
+
 test('resolver emits no_registered_authority for unregistered high-risk state surfaces', async () => {
   const repo = await makeFixtureRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -437,6 +470,47 @@ async function writeResponsibilityFixture(repo) {
           risk_surfaces: ['core_workflow_state']
         },
         evidence_requirements: ['cleanup_recovery_replay']
+      }
+    ]
+  }, null, 2)}\n`);
+}
+
+async function writeReadOnlyReportingResponsibilityFixture(repo) {
+  await mkdir(path.join(repo, 'docs', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'responsibility-authority.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    responsibilities: [
+      {
+        id: 'vibepro.evidence_reuse.reporting',
+        primary_authority: {
+          kind: 'domain_contract',
+          ref: 'docs/contracts/audit-reporting.json#AUDIT-REPORT-001'
+        },
+        supporting_authority: ['docs/architecture/rar-fixture.md'],
+        owned_surfaces: {
+          paths: ['src/evidence-reuse.js'],
+          symbols: ['artifact_value_ledger'],
+          risk_surfaces: ['audit_reporting']
+        },
+        required_evidence: ['unit_regression', 'deep_review_required', 'current_head_verification'],
+        unknown_policy: 'block_or_review'
+      }
+    ]
+  }, null, 2)}\n`);
+  await writeFile(path.join(repo, 'docs', 'contracts', 'audit-reporting.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    domain: 'audit-reporting',
+    clauses: [
+      {
+        id: 'AUDIT-REPORT-001',
+        statement: 'read-only audit reporting must stay current-head bound without requiring high-risk workflow replay',
+        applies_to: {
+          responsibility: 'vibepro.evidence_reuse.reporting',
+          paths: ['src/evidence-reuse.js'],
+          symbols: ['artifact_value_ledger'],
+          risk_surfaces: ['audit_reporting']
+        },
+        evidence_requirements: ['read_only_audit_reporting_regression']
       }
     ]
   }, null, 2)}\n`);
