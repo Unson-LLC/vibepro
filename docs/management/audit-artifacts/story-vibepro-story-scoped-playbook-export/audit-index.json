@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-story-scoped-playbook-export",
   "source": "execute_merge",
-  "generated_at": "2026-07-01T16:36:45.729Z",
+  "generated_at": "2026-07-01T16:36:50.313Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -117,13 +117,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2991,
+      "compressed_bytes": 2993,
       "expanded_bytes": 12500,
       "expanded_line_count": 334,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9179,
-    "raw_source_artifact_code_ratio": 8.46,
+    "raw_source_artifact_lines": 9269,
+    "raw_source_artifact_code_ratio": 8.543,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -244,7 +244,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-story-scoped-playbook-export",
-    "generated_at": "2026-07-01T16:36:45.729Z",
+    "generated_at": "2026-07-01T16:36:50.313Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -349,10 +349,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-story-scoped-playbook-export/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:2bb599f3c11dac08c97cbb4c744d115cf0cf49070d44a328053528e44bc8f7a9",
-    "compressed_hash": "sha256:855102d65a0e54b8c95357a2f6cb4c5bbacb1526a6e4a4b97c5593663d853cef",
+    "content_hash": "sha256:8bdf88dec92d33a49ffdf2c4881051b98b24865ec6170878d3edb6131145a0ff",
+    "compressed_hash": "sha256:4b1790d80297c5f6225c5645dc52f869f9c43922f99d12194da669dc78b3685b",
     "expanded_bytes": 12500,
-    "compressed_bytes": 2991,
+    "compressed_bytes": 2993,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -371,7 +371,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-story-scoped-playbook-export",
     "cost": {
-      "compressed_bytes": 2991,
+      "compressed_bytes": 2993,
       "expanded_bytes": 12500,
       "expanded_line_count": 334,
       "persisted_line_count": 1
