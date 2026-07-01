@@ -85,7 +85,7 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
   assert.equal(traceability.coverage_summary.mapped_count, 0);
   assert.equal(gateDag.summary.traceability_clause_coverage.weakly_mapped_count, 1);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:traceability_clause_coverage').status, 'needs_evidence');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-test-promo\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-test-promo\/\]\(\.vibepro\/pr\/story-test-promo\/\)/);
   assert.doesNotMatch(prBody, /weakly_mapped: 1/);
 });
 

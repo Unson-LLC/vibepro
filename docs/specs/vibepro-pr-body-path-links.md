@@ -1,0 +1,30 @@
+---
+story_id: story-vibepro-pr-body-path-links
+title: GitHub PR body repository path links spec
+parent_design: vibepro-pr-body-path-links
+---
+
+# Spec
+
+## Contracts
+
+- `PBL-CONTRACT-001`: `renderPrBody` MUST render GitHub-facing repository paths as Markdown links when the path is a repository-relative path.
+- `PBL-CONTRACT-002`: Story source, design/story docs, source files, test files, `.vibepro/pr/<story-id>/` entrypoints, verification evidence artifacts, and final E2E artifacts MUST be linkified when they are repository-relative paths.
+- `PBL-CONTRACT-003`: Link labels MUST preserve the visible path, including a trailing slash when present.
+- `PBL-CONTRACT-004`: Link labels MUST escape Markdown link delimiters in path text, especially `[` and `]`.
+- `PBL-CONTRACT-005`: Link hrefs MUST encode path segments so dynamic route directories such as `[projectId]` remain valid links.
+- `PBL-CONTRACT-006`: External URLs, absolute paths, parent-directory traversals, blank values, multiline values, and sentinel text such as `Story未検出` MUST NOT be linkified.
+- `PBL-CONTRACT-007`: Linkification MUST NOT change Gate readiness, verification evidence binding, PR creation enforcement, or merge execution.
+
+## Scenarios
+
+- `PBL-SCENARIO-001`: Given a PR body with changed files under `src/` and `tests/`, when `pr prepare` runs, then those paths are rendered as Markdown links.
+- `PBL-SCENARIO-002`: Given a changed path containing `[projectId]`, when `pr-body.md` is rendered, then the label escapes brackets and the href percent-encodes them.
+- `PBL-SCENARIO-003`: Given verification evidence with a `.vibepro/verification/...json` artifact, when the concise checklist is rendered, then the artifact path is a Markdown link.
+- `PBL-SCENARIO-004`: Given a missing Story source, when the PR body is rendered, then `Story未検出` remains plain text.
+
+## Verification
+
+- `PBL-VERIFY-001`: CLI tests assert linked source, test, verification artifact, PR prepare artifact, and Story source paths in `pr-body.md`.
+- `PBL-VERIFY-002`: CLI tests assert dynamic-route bracket escaping and href encoding.
+- `PBL-VERIFY-003`: Existing PR prepare and verification checklist tests continue to pass.
