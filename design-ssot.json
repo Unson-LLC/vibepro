@@ -1734,7 +1734,48 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-story-scoped-playbook-export",
+      "title": "Story-scoped Story Engineering Playbook Export",
+      "root_doc": "docs/architecture/vibepro-story-scoped-playbook-export.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-story-scoped-playbook-export.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-01T11:09:30.000Z"
+  "updated_at": "2026-07-01T15:41:44.161Z"
 }

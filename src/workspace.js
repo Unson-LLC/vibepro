@@ -24,6 +24,7 @@ export async function initWorkspace(repoRoot, options = {}) {
   await mkdir(path.join(workspaceDir, 'diagnostics'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'raw'), { recursive: true });
   await mkdir(path.join(workspaceDir, 'spec'), { recursive: true });
+  await mkdir(path.join(workspaceDir, 'playbook'), { recursive: true });
 
   await writeJsonIfMissing(path.join(workspaceDir, 'config.json'), {
     schema_version: SCHEMA_VERSION,

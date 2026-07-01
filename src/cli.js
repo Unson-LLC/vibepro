@@ -129,6 +129,10 @@ import {
   renderDecisionStatusSummary
 } from './decision-records.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
+import {
+  exportStoryEngineeringPlaybook,
+  renderPlaybookExportSummary
+} from './playbook-exporter.js';
 import { validateSpec } from './spec-validator.js';
 import { buildSpecDrift, renderDriftMarkdown } from './spec-drift.js';
 import {
@@ -386,6 +390,7 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
@@ -586,6 +591,7 @@ Usage:
   vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
@@ -610,7 +616,7 @@ Usage:
 export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
-  'journey', 'execute',
+  'playbook', 'journey', 'execute',
   'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'explore', 'performance',
   'nocodb', 'repo-status'
@@ -1943,6 +1949,30 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown story command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
+    }
+
+    if (command === 'playbook') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'export') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'playbook export');
+        const result = await exportStoryEngineeringPlaybook(repoRoot, {
+          storyId,
+          format: getOption(rest, '--format'),
+          outputPath: getOption(rest, '--output'),
+          language: getOption(rest, '--language')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderPlaybookExportSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown playbook command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command };
     }
 
