@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-path-links",
+  "created_at": "2026-07-01T11:47:54.464Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-pr-body-path-links.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-pr-body-path-links.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-body-path-links/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-body-path-links/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-pr-body-path-links.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-pr-body-path-links.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-01T11:47:52.615Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b13efe81f505b4a54ff44c020274263a904ce5c2",
+      "branch": "codex/vibepro-pr-body-path-links",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ffbea812b8e2e46f01d3a300a3b06f91fb38766c",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

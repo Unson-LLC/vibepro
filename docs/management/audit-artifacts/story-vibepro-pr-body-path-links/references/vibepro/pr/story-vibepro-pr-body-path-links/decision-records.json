@@ -1,0 +1,265 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-body-path-links",
+  "updated_at": "2026-07-01T11:03:56.585Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903836583-2c98e5ee",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gap:design_ssot:3",
+      "source_status": "needs_review",
+      "summary": "Unregistered Spec doc accepted as Story-scoped contract evidence.",
+      "reason": "The new Spec document is bounded to the PR body path-link contract and cross-checks the implementation and regression tests without changing an existing registered design root.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-pr-body-path-links.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:03:56.574Z"
+      },
+      "recorded_at": "2026-07-01T11:03:56.585Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903829370-7cffc863",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gap:design_ssot:2",
+      "source_status": "needs_review",
+      "summary": "Unregistered Story doc accepted as Story source evidence.",
+      "reason": "The active Story document is the canonical source for this change and does not modify an existing registered design root.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-pr-body-path-links.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:03:49.323Z"
+      },
+      "recorded_at": "2026-07-01T11:03:49.372Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903812173-afa9fb2d",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gap:design_ssot:1",
+      "source_status": "needs_review",
+      "summary": "Unregistered architecture doc accepted as Story-scoped design evidence.",
+      "reason": "The new architecture note for this Story is bounded to the PR body path-link contract and does not modify an existing registered design root.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-body-path-links.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:03:32.157Z"
+      },
+      "recorded_at": "2026-07-01T11:03:32.176Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903791491-0ddb7274",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gap:gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT gap accepted for this bounded Story-scoped document set.",
+      "reason": "The three changed design documents are the Story, Spec, and Architecture documents for this exact Story. They introduce the path-link rendering contract and are cross-linked to the implementation and tests; no existing design root or product contract is contradicted. Registering these child docs in design-ssot.json is treated as non-blocking cleanup for this bounded CLI PR-body rendering change.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:03:11.456Z"
+      },
+      "recorded_at": "2026-07-01T11:03:11.532Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903717325-5232667b",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: this is one coherent PR body rendering change.",
+      "reason": "The changed behavior is limited to src/pr-manager.js PR body path linkification, focused regressions, Story/Spec/Architecture docs, and one executable Story marker. This remains one reviewer-sized rendering contract.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:01:57.316Z"
+      },
+      "recorded_at": "2026-07-01T11:01:57.327Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903649343-fde9aeca",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation accepted for this Story's new docs.",
+      "reason": "The changed design docs are new Story-scoped docs for the PR body path-link contract, cross-reference the implementation and tests, and do not alter an existing design root. The bounded CLI rendering change can proceed without blocking on lineage cleanup.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:00:49.335Z"
+      },
+      "recorded_at": "2026-07-01T11:00:49.345Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782902854039-8202c31b",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation accepted for this Story's new docs.",
+      "reason": "The three unregistered changed design docs are new child documents created for this Story, scoped to the PR body path-link contract, and cross-reference the implementation and tests. They do not alter an existing design root, so registration cleanup is not required to block this bounded CLI rendering change.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "d32269d4d90c2220b2ecc54fbbfd2817772cd190",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T10:47:34.032Z"
+      },
+      "recorded_at": "2026-07-01T10:47:34.041Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782902852794-69372bef",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: this is one coherent PR body rendering change.",
+      "reason": "The changed product behavior is limited to src/pr-manager.js PR body path linkification, focused regression tests, Story/Spec/Architecture docs, and one executable Story E2E marker. Graphify reports a bounded review surface and the split plan status is single_pr_ok, so one reviewer can review this as a single rendering contract.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "d32269d4d90c2220b2ecc54fbbfd2817772cd190",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T10:47:32.783Z"
+      },
+      "recorded_at": "2026-07-01T10:47:32.796Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "waiver": 4,
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782903836583-2c98e5ee",
+      "story_id": "story-vibepro-pr-body-path-links",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gap:design_ssot:3",
+      "source_status": "needs_review",
+      "summary": "Unregistered Spec doc accepted as Story-scoped contract evidence.",
+      "reason": "The new Spec document is bounded to the PR body path-link contract and cross-checks the implementation and regression tests without changing an existing registered design root.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-pr-body-path-links.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+        "current_branch": "codex/vibepro-pr-body-path-links",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T11:03:56.574Z"
+      },
+      "recorded_at": "2026-07-01T11:03:56.585Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-body-path-links/decision-records.json"
+}

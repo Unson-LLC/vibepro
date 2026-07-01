@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-path-links",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Gate evidence review found fixable issues; narrative path linkification and stale evidence packet were addressed after this review.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-binding-open",
+      "detail": "Required gate_evidence lifecycle was still open and unrecorded at review time."
+    },
+    {
+      "severity": "medium",
+      "id": "evidence-freshness",
+      "detail": "Review dispatch artifacts were stale relative to later verification evidence."
+    },
+    {
+      "severity": "medium",
+      "id": "narrative-surface",
+      "detail": "renderPrNarrative did not linkify repo paths before commit c5cb38e."
+    },
+    {
+      "severity": "low",
+      "id": "e2e-label",
+      "detail": "Story E2E marker is source/acceptance coverage rather than full runtime PR creation."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "narrative-surface",
+      "disposition": "accepted",
+      "resolved_by": [
+        "c5cb38e12b096b5a769f167e97d1b63db3faf45c"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/gate-evidence-path-links-replacement-transcript.md"
+  ],
+  "inspection": {
+    "summary": "Subagent inspected PR/gate artifacts and code, identified open lifecycle, stale packet, and narrative linkification gap.",
+    "evidence": ".vibepro/pr/story-vibepro-pr-body-path-links/verification-evidence.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial implementation mostly correct; final status needs_changes because gate lifecycle, evidence freshness, and narrative path surface required follow-up fixes."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-01T10:58:05.644Z",
+  "git_context": {
+    "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+    "current_branch": "codex/vibepro-pr-body-path-links",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-01T10:58:05.637Z"
+  },
+  "source_fingerprint": "4c81c6faaf2ad19947fe4325ffa471bad86d828e80d8ac656082dce8419eb58f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-evidence-path-links-replacement",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/gate-evidence-path-links-replacement-transcript.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/gate-evidence-path-links-replacement-transcript.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

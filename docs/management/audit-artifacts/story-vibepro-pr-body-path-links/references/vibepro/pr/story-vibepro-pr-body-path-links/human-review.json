@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-path-links",
+  "created_at": "2026-07-01T11:47:54.464Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-body-path-links/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-pr-body-path-links/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-pr-body-path-links/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-body-path-links/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-pr-body-path-links/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-pr-body-path-links/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-pr-body-path-links.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-pr-body-path-links.md)"
+    },
+    "decision_records": {
+      "total": 8,
+      "open": 0,
+      "by_type": {
+        "waiver": 4,
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 8
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1782903836583-2c98e5ee",
+        "story_id": "story-vibepro-pr-body-path-links",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gap:design_ssot:3",
+        "source_status": "needs_review",
+        "summary": "Unregistered Spec doc accepted as Story-scoped contract evidence.",
+        "reason": "The new Spec document is bounded to the PR body path-link contract and cross-checks the implementation and regression tests without changing an existing registered design root.",
+        "reviewer": "codex",
+        "artifact": "docs/specs/vibepro-pr-body-path-links.md",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "c5cb38e12b096b5a769f167e97d1b63db3faf45c",
+          "current_branch": "codex/vibepro-pr-body-path-links",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-01T11:03:56.574Z"
+        },
+        "recorded_at": "2026-07-01T11:03:56.585Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-01T11:47:52.615Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b13efe81f505b4a54ff44c020274263a904ce5c2",
+      "branch": "codex/vibepro-pr-body-path-links",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ffbea812b8e2e46f01d3a300a3b06f91fb38766c",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

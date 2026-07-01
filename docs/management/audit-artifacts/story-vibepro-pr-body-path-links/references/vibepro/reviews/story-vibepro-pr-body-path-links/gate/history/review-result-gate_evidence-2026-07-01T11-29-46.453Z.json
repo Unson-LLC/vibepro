@@ -1,0 +1,63 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-path-links",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence review passed on current HEAD after PR body path linkification, existing Markdown link preservation, Design SSOT registration, and current-head evidence refresh.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read-only review confirmed current HEAD b13efe81f505b4a54ff44c020274263a904ce5c2, clean user-visible worktree, linkification implementation and tests, generated PR body, Design SSOT registration, and current verification evidence.",
+    "evidence": ".vibepro/pr/story-vibepro-pr-body-path-links/verification-evidence.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern was Markdown link corruption or missed PR body surfaces; final judgment is pass because generated output preserves existing Markdown links, links repo paths across required surfaces, and evidence is current-head bound."
+  ],
+  "managed_worktree_context": null,
+  "warnings": [],
+  "recorded_at": "2026-07-01T11:29:46.453Z",
+  "git_context": {
+    "head_sha": "b13efe81f505b4a54ff44c020274263a904ce5c2",
+    "current_branch": "codex/vibepro-pr-body-path-links",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-01T11:29:46.438Z"
+  },
+  "source_fingerprint": "b9a6752ee1f61087f725d81e80521cd490da3be44fa293c0472b75167bba1ec4",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-evidence-path-links-final-b13efe8",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/gate-evidence-path-links-final-b13efe8-transcript.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-body-path-links/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

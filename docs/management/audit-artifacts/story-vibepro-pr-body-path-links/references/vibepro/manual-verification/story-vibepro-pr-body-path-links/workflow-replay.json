@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-pr-body-path-links-main.spec.ts",
+  "head_sha": "b13efe81f505b4a54ff44c020274263a904ce5c2",
+  "observed": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "artifact_replay": "verified",
+    "flow_replay": "verified",
+    "scenario_clause_e2e": "verified"
+  }
+}
