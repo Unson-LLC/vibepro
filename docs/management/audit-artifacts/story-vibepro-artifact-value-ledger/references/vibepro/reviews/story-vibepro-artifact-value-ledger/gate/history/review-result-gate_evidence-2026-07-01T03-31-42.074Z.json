@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-artifact-value-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current-head review confirms positive session attribution coverage and bounded artifact-value semantics; stale-review blocker is resolved by this record.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "stale-review-self-reference",
+      "detail": "reviewer observed prior gate_evidence record was stale before this current-head record existed"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "stale-review-self-reference",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "self-referential stale gate resolved by recording this current-head review",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/pr/story-vibepro-artifact-value-ledger/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-artifact-value-ledger/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-artifact-value-ledger/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-artifact-value-ledger/gate-dag.json"
+  ],
+  "inspection": {
+    "summary": "Reviewed current HEAD 8abfdc9 artifacts, verification evidence, evidence reuse ledger, src/evidence-reuse.js, and test/evidence-summary-reuse.test.js; no implementation changes by reviewer.",
+    "evidence": ".vibepro/pr/story-vibepro-artifact-value-ledger/verification-evidence.json records unit/typecheck/e2e pass at 8abfdc9 with verified artifacts and recorded observations; test/evidence-summary-reuse.test.js covers explicit session attribution positive path.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "core semantics not proven -> session attribution and fake-volume artifact value semantics verified at current HEAD; stale review blocker resolved by this current-head record"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+    "expected_root": null,
+    "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+    "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "expected_root": null,
+      "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-01T03:31:42.074Z",
+  "git_context": {
+    "head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+    "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-01T03:31:42.073Z"
+  },
+  "source_fingerprint": "2963770cb812c2a72379978e6a2f8396e9c25ad199b8cc0534f9b428491744d2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f1bb9-51b4-79e3-8d47-7d3304b5b6a4",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/gate-evidence-subagent-019f1bb9-transcript.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1.close_agent completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

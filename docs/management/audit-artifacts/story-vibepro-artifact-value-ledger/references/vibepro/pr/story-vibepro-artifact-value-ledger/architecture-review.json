@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-artifact-value-ledger",
+  "created_at": "2026-07-01T03:41:52.144Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-artifact-value-ledger.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-artifact-value-ledger.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-artifact-value-ledger/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-artifact-value-ledger/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-artifact-value-ledger.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-artifact-value-ledger.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-01T03:41:50.396Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "branch": "codex/vibepro-artifact-value-ledger-clean",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "3a5f0064d0413120a9434bac627183499781a26d",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

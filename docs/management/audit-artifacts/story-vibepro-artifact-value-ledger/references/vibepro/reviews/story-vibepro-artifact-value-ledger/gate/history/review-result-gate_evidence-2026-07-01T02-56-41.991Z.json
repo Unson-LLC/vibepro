@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-artifact-value-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "No release-blocking product risk found; remaining common/responsibility/requirement blockers look conservative/noisy, but PR creation remains blocked by current VibePro artifacts.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "gate-lifecycle-unresolved",
+      "detail": "PR creation must remain blocked because current PR artifacts still report ready_for_pr_create=false and execution_gate=blocked."
+    },
+    {
+      "severity": "low",
+      "id": "classification-noise-common-spine",
+      "detail": "common_judgment_spine auth/permission negative-path requirements appear over-classified for artifact/report-only changes."
+    },
+    {
+      "severity": "low",
+      "id": "classification-noise-responsibility-authority",
+      "detail": "responsibility_authority lifecycle/runtime/worktree evidence appears over-broad for artifact reuse and reporting changes."
+    },
+    {
+      "severity": "low",
+      "id": "requirement-scenario-noise",
+      "detail": "requirement reports one unexpressed scenario, but traceability maps all four acceptance criteria and tests cover new report surfaces."
+    },
+    {
+      "severity": "low",
+      "id": "evidence-reuse-stale-bounded",
+      "detail": "evidence-reuse is stale but was not reused as fresh; residual context, not a blocker."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed gate request, PR artifacts, code diff vs origin/main, current tests, and gate DAG; no files edited.",
+    "evidence": ".vibepro/pr/story-vibepro-artifact-value-ledger/pr-prepare.json ready_for_pr_create=false; /tmp/vibepro-artifact-value-ledger-clean-evidence/node-test.tap 13/13 pass; /tmp/vibepro-artifact-value-ledger-clean-evidence/typecheck.txt pass",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-artifact-value-ledger/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-artifact-value-ledger/gate-dag.json",
+      ".vibepro/pr/story-vibepro-artifact-value-ledger/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-artifact-value-ledger/decision-records.json"
+    ]
+  },
+  "judgment_delta": [
+    "Product risk blockers downgraded to conservative/noisy classification; process gate remains blocked until VibePro artifacts report ready_for_pr_create=true."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+    "expected_root": null,
+    "expected_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+    "current_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "expected_root": null,
+      "expected_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+      "current_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-01T02:56:41.991Z",
+  "git_context": {
+    "head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+    "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-01T02:56:41.989Z"
+  },
+  "source_fingerprint": "12d9c72aa111b32fc5b79938c7f7002525a7545ec07e0155f4d30d77a78f1d2c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f1b96-8dfe-7c73-82b8-d5a3d48f3dd2",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent completed and closed",
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

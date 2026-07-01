@@ -1,0 +1,398 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-artifact-value-ledger",
+  "updated_at": "2026-07-01T03:33:54.583Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+      "expected_root": null,
+      "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782876834583-7b68c232",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Accept bundled review scope as bounded follow-up",
+      "reason": "The branch has six commits but remains one story objective: artifact value ledger plus the minimum gate precision changes needed to evaluate that ledger. Current gate_evidence review is pass/current at HEAD 8abfdc9, the changed-file blast radius is 12 files across [REDACTED:b0835188dbab], and follow-up splitting would hide the coupling between fake-value detection and the gate semantics under test.",
+      "reviewer": "codex-automation",
+      "artifact": ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-result-gate_evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+          "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T03:33:54.581Z"
+      },
+      "recorded_at": "2026-07-01T03:33:54.583Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782875938250-c138e764",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Accept bundled scope for artifact ledger PR",
+      "reason": "The branch has multiple commits because it includes the artifact ledger implementation, the gate precision fix required to evaluate that implementation, and the documentation/spec updates demanded by VibePro gates. A split PR would either leave the ledger PR blocked by stale gate behavior or force reviewers to evaluate artifact value without the route/evidence semantics that make the story safe. The scope remains one story objective and 12 changed files.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "d3f5999a3083619447064a58bdbfc37c74c703da",
+          "current_head_sha": "d3f5999a3083619447064a58bdbfc37c74c703da",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d3f5999a3083619447064a58bdbfc37c74c703da",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T03:18:58.249Z"
+      },
+      "recorded_at": "2026-07-01T03:18:58.251Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782875845388-24d65211",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "REQ-GAP-001",
+      "source_status": "needs_review",
+      "summary": "Accept session-attribution branch as covered by AVL-004",
+      "reason": "src/evidence-reuse.js sessions.length > 0 is the positive attribution path for INV-AVL-7 / AVL-004. The story and spec now require attributed session count when available and explicit unknown status when PR prepare has no session attribution, so this branch is intentionally covered rather than unrelated scope.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+          "current_head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T03:17:25.386Z"
+      },
+      "recorded_at": "2026-07-01T03:17:25.388Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782875841071-0ed2f8b3",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundle artifact ledger and gate-precision changes in one PR",
+      "reason": "The artifact ledger story exposed a false-positive gate classification that blocked the story from using VibePro's own PR path. Splitting the gate-precision fix first would leave the ledger branch blocked by the system under change; the bundled scope is still reviewable at 12 changed files and is bound to one story objective: distinguish valuable evidence from fake artifact volume without inflating review workflow risk.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+          "current_head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "beb87e7307f303643335311dc0cfbb9efbd04124",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T03:17:20.948Z"
+      },
+      "recorded_at": "2026-07-01T03:17:21.072Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782874244858-676072bb",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_evidence",
+      "summary": "Unmatched lifecycle authority evidence is non-applicable beyond artifact ledger unit/typecheck coverage.",
+      "reason": "The story changes evidence-reuse, senior-gap judgment, and usage report surfaces. It does not alter PR creation/merge execution, agent review lifecycle, managed worktree locality, or runtime telemetry ingestion contracts; required evidence for those contracts is classified as conservative route noise for this PR.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "current_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T02:50:44.857Z"
+      },
+      "recorded_at": "2026-07-01T02:50:44.858Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782874244258-2cf5dd4b",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:common_judgment_spine",
+      "source_status": "needs_evidence",
+      "summary": "Auth-boundary failure-mode evidence is non-applicable for artifact/report-only ledger changes.",
+      "reason": "The changed code produces VibePro local artifacts and reporting summaries only; it does not touch authentication, permission checks, request routing, credentials, network calls, or production runtime access boundaries, so auth_denied/permission_denied negative-path tests would be noise for this story.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "current_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T02:50:44.257Z"
+      },
+      "recorded_at": "2026-07-01T02:50:44.258Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782874177611-91ea91a8",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_security_trust_security_regression",
+      "source_status": "needs_evidence",
+      "summary": "Security regression gate is non-applicable for artifact/report-only ledger changes.",
+      "reason": "Changed source only writes VibePro evidence/reporting/judgment artifacts and does not change auth, permission, network, credential, or production request boundaries.",
+      "reviewer": "codex-automation",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "current_head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "85283718f58ecec5d0ed37f22dac1866bd00fe50",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T02:49:37.611Z"
+      },
+      "recorded_at": "2026-07-01T02:49:37.612Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4,
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 7
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+        "expected_root": null,
+        "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+        "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782876834583-7b68c232",
+      "story_id": "story-vibepro-artifact-value-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Accept bundled review scope as bounded follow-up",
+      "reason": "The branch has six commits but remains one story objective: artifact value ledger plus the minimum gate precision changes needed to evaluate that ledger. Current gate_evidence review is pass/current at HEAD 8abfdc9, the changed-file blast radius is 12 files across [REDACTED:b0835188dbab], and follow-up splitting would hide the coupling between fake-value detection and the gate semantics under test.",
+      "reviewer": "codex-automation",
+      "artifact": ".vibepro/reviews/story-vibepro-artifact-value-ledger/gate/review-result-gate_evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-value-ledger-clean",
+          "expected_root": null,
+          "expected_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+          "current_head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8abfdc9ff29259fde67cd3730b357503dbf1134c",
+        "current_branch": "codex/vibepro-artifact-value-ledger-clean",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-01T03:33:54.581Z"
+      },
+      "recorded_at": "2026-07-01T03:33:54.583Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-artifact-value-ledger/decision-records.json"
+}
