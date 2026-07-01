@@ -362,6 +362,14 @@ function ensureStoryUsage(storyMap, storyId) {
       evidence_reuse: {
         latest_status: null,
         latest_evidence_key: null,
+        artifact_value_ledger_status: null,
+        artifact_value_decision_bound_count: 0,
+        artifact_value_linked_consumer_count: 0,
+        artifact_value_token_estimate: 0,
+        session_attribution_status: null,
+        session_attribution_confidence: null,
+        session_attribution_session_count: 0,
+        session_attribution_unattributed_count: 0,
         verification_summary_fingerprint: null,
         verification_evidence_updated_at: null,
         verification_command_timestamps: [],
@@ -1059,6 +1067,35 @@ function recordEvidenceReuse(story, evidenceReuse) {
   if (status === 'hit') story.evidence_reuse.hit_count += 1;
   if (status === 'miss') story.evidence_reuse.miss_count += 1;
   if (status === 'stale') story.evidence_reuse.stale_count += 1;
+  const artifactValueLedger = evidenceReuse.artifact_value_ledger ?? {};
+  if (artifactValueLedger.status) {
+    story.evidence_reuse.artifact_value_ledger_status = artifactValueLedger.status;
+    story.evidence_reuse.artifact_value_decision_bound_count = Math.max(
+      story.evidence_reuse.artifact_value_decision_bound_count,
+      firstFiniteNumber(artifactValueLedger.summary?.decision_bound_count, artifactValueLedger.decision_bound_count, 0)
+    );
+    story.evidence_reuse.artifact_value_linked_consumer_count = Math.max(
+      story.evidence_reuse.artifact_value_linked_consumer_count,
+      firstFiniteNumber(artifactValueLedger.summary?.linked_consumer_count, artifactValueLedger.linked_consumer_count, 0)
+    );
+    story.evidence_reuse.artifact_value_token_estimate = Math.max(
+      story.evidence_reuse.artifact_value_token_estimate,
+      firstFiniteNumber(artifactValueLedger.summary?.total_token_estimate, artifactValueLedger.total_token_estimate, 0)
+    );
+  }
+  const sessionAttribution = evidenceReuse.session_attribution_ledger ?? {};
+  if (sessionAttribution.status) {
+    story.evidence_reuse.session_attribution_status = sessionAttribution.status;
+    story.evidence_reuse.session_attribution_confidence = sessionAttribution.confidence ?? story.evidence_reuse.session_attribution_confidence;
+    story.evidence_reuse.session_attribution_session_count = Math.max(
+      story.evidence_reuse.session_attribution_session_count,
+      Array.isArray(sessionAttribution.sessions) ? sessionAttribution.sessions.length : firstFiniteNumber(sessionAttribution.session_count, 0)
+    );
+    story.evidence_reuse.session_attribution_unattributed_count = Math.max(
+      story.evidence_reuse.session_attribution_unattributed_count,
+      firstFiniteNumber(sessionAttribution.unattributed_count, 0)
+    );
+  }
   const fullEvidence = evidenceReuse.full_evidence ?? {};
   const generationCount = firstFiniteNumber(fullEvidence.generation_count);
   const sameKeyGenerationCount = firstFiniteNumber(fullEvidence.same_key_generation_count, fullEvidence.generation_count);
@@ -1126,6 +1163,14 @@ function buildEvidenceReuseMetrics(stories) {
         story_id: story.story_id,
         latest_status: story.evidence_reuse.latest_status,
         evidence_key: story.evidence_reuse.latest_evidence_key,
+        artifact_value_ledger_status: story.evidence_reuse.artifact_value_ledger_status,
+        artifact_value_decision_bound_count: story.evidence_reuse.artifact_value_decision_bound_count,
+        artifact_value_linked_consumer_count: story.evidence_reuse.artifact_value_linked_consumer_count,
+        artifact_value_token_estimate: story.evidence_reuse.artifact_value_token_estimate,
+        session_attribution_status: story.evidence_reuse.session_attribution_status,
+        session_attribution_confidence: story.evidence_reuse.session_attribution_confidence,
+        session_attribution_session_count: story.evidence_reuse.session_attribution_session_count,
+        session_attribution_unattributed_count: story.evidence_reuse.session_attribution_unattributed_count,
         verification_summary_fingerprint: story.evidence_reuse.verification_summary_fingerprint,
         verification_evidence_updated_at: story.evidence_reuse.verification_evidence_updated_at,
         verification_command_timestamps: story.evidence_reuse.verification_command_timestamps,
@@ -1243,7 +1288,7 @@ function renderEvidenceReuseRows(report) {
   ];
   const storyRows = reuse.by_story?.length
     ? reuse.by_story.map((story) => (
-        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0} generation_count_scope=${story.full_evidence_generation_count_scope ?? '-'} same_key_full_generation_count=${story.same_key_full_evidence_generation_count ?? 0} cumulative_full_generation_count=${story.cumulative_full_evidence_generation_count ?? 0}`
+        `- ${story.story_id}: status=${story.latest_status ?? '-'} key=${story.evidence_key ?? '-'} artifact_value=${story.artifact_value_ledger_status ?? '-'} decision_bound=${story.artifact_value_decision_bound_count ?? 0} consumers=${story.artifact_value_linked_consumer_count ?? 0} artifact_value_tokens=${story.artifact_value_token_estimate ?? 0} session_attribution=${story.session_attribution_status ?? '-'} session_confidence=${story.session_attribution_confidence ?? '-'} sessions=${story.session_attribution_session_count ?? 0} unattributed=${story.session_attribution_unattributed_count ?? 0} verification_fingerprint=${story.verification_summary_fingerprint ?? '-'} verification_updated_at=${story.verification_evidence_updated_at ?? '-'} verification_command_timestamps=${formatVerificationCommandTimestamps(story.verification_command_timestamps)} hit=${story.hit_count ?? 0} miss=${story.miss_count ?? 0} stale=${story.stale_count ?? 0} full_generation_count=${story.full_evidence_generation_count ?? 0} generation_count_scope=${story.full_evidence_generation_count_scope ?? '-'} same_key_full_generation_count=${story.same_key_full_evidence_generation_count ?? 0} cumulative_full_generation_count=${story.cumulative_full_evidence_generation_count ?? 0}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');
