@@ -282,6 +282,49 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
   assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:05:00.000Z');
 });
 
+test('explicit session attribution is preserved in the artifact value ledger', () => {
+  const reuse = buildEvidenceReuse({
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: {
+      session_attribution: {
+        sessions: [
+          {
+            session_id: 'session-1',
+            repo: '/repo/a',
+            story_id: STORY_ID,
+            status: 'attributed',
+            confidence: 'high',
+            source: 'session_index',
+            tokens: 1200,
+            elapsed_ms: 60000
+          },
+          {
+            session_id: 'session-2',
+            repo: '/repo/a',
+            status: 'unattributed',
+            confidence: 'low',
+            source: 'session_index',
+            tokens: 300,
+            elapsed_ms: 10000
+          }
+        ]
+      }
+    },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  });
+
+  assert.equal(reuse.session_attribution_ledger.status, 'explicit');
+  assert.equal(reuse.session_attribution_ledger.confidence, 'high');
+  assert.equal(reuse.session_attribution_ledger.sessions.length, 2);
+  assert.equal(reuse.session_attribution_ledger.unattributed_count, 1);
+  assert.equal(reuse.session_attribution_ledger.sessions[0].session_id, 'session-1');
+  assert.equal(reuse.session_attribution_ledger.sessions[0].tokens, 1200);
+  assert.equal(reuse.artifact_value_ledger.session_attribution_status, 'explicit');
+  assert.equal(reuse.artifact_value_ledger.session_attribution_confidence, 'high');
+});
+
 test('stale reuse marked as fresh fails the evidence reuse gate', () => {
   const first = buildEvidenceReuse({
     story: { story_id: STORY_ID },
