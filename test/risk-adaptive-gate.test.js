@@ -683,7 +683,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(pathSurfaceGate.missing_surfaces.includes('ui'), true);
   assert.equal(pathSurfaceGate.missing_surfaces.includes('api'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-risk-adaptive\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-risk-adaptive\/\]\(\.vibepro\/pr\/story-risk-adaptive\/\)/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
   assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'needs_evidence');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');

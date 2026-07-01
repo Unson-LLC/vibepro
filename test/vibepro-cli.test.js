@@ -5078,7 +5078,7 @@ test('pr prepare attaches latest flow verification evidence to the E2E gate', as
   assert.equal(e2eGate.flow_verification.artifact, '.vibepro/verification/flow-pass/flow-verification.json');
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /## 確認/);
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /^## Flow Verification Evidence$/m);
 });
 
@@ -5505,7 +5505,7 @@ test('pr prepare includes performance evidence summary for the story', async () 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /^## Performance Evidence$/m);
 });
 
@@ -6633,8 +6633,8 @@ Weighted semantic/layout residual: **34%**
   assert.doesNotMatch(prBody, /Change map:/);
   assert.doesNotMatch(prBody, /Non-goals:/);
   assert.doesNotMatch(prBody, /Engineering Judgment:/);
-  assert.match(prBody, /実装: src\/feature\/pr-prepare\.js/);
-  assert.match(prBody, /テスト: src\/feature\/pr-prepare\.test\.js, tests\/unit\/pr-prepare\.test\.js/);
+  assert.match(prBody, /実装: \[src\/feature\/pr-prepare\.js\]\(src\/feature\/pr-prepare\.js\)/);
+  assert.match(prBody, /テスト: \[src\/feature\/pr-prepare\.test\.js\]\(src\/feature\/pr-prepare\.test\.js\), \[tests\/unit\/pr-prepare\.test\.js\]\(tests\/unit\/pr-prepare\.test\.js\)/);
   assert.match(prBody, /PR本文がファイル数だけでは/);
   assert.match(prBody, /Story解釈、発生経緯、原因、解決、最終確認が一画面でつながらない/);
   assert.match(prBody, /PR本文を日本語の判断ブリーフ/);
@@ -6642,8 +6642,8 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /TASK-001 PR準備Task/);
   assert.match(prBody, /- Gate: needs_verification/);
   assert.match(prBody, /- 実行状態: blocked/);
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
-  assert.match(prBody, /- 判断索引: \.vibepro\/pr\/story-pr-prepare\/decision-index\.json/);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
+  assert.match(prBody, /- 判断索引: \[\.vibepro\/pr\/story-pr-prepare\/decision-index\.json\]\(\.vibepro\/pr\/story-pr-prepare\/decision-index\.json\)/);
   assert.doesNotMatch(prBody, /- Gate DAG: \.vibepro\/pr\/story-pr-prepare\/gate-dag\.json/);
   assert.doesNotMatch(prBody, /^## Gate DAG$/m);
   assert.doesNotMatch(prBody, /^## Gate Enforcement$/m);
@@ -7619,7 +7619,7 @@ test('pr prepare uses node --test targeted command for node test runner', async 
 
   assert.equal(result.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /テスト: test\/node-runner\.test\.js/);
+  assert.match(prBody, /テスト: \[test\/node-runner\.test\.js\]\(test\/node-runner\.test\.js\)/);
   assert.doesNotMatch(prBody, /node --test test\/node-runner\.test\.js/);
   assert.doesNotMatch(prBody, /--runTestsByPath/);
 });
@@ -8836,7 +8836,7 @@ test('explore prepare record status and pr prepare surface read-only exploration
   assert.equal(prResult.exitCode, 0);
   assert.equal(prResult.result.preparation.pr_context.explore_evidence.summary.recorded_role_count, 1);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /^## Explore Evidence$/m);
 });
 
@@ -9442,7 +9442,7 @@ test('review record keeps append-only history for replaced review findings', asy
   const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /### Review Artifacts/);
 });
 
@@ -12630,7 +12630,7 @@ architecture_docs:
   assert.equal(passedDag.nodes.find((node) => node.id === 'review:join:gate').status, 'passed');
   assert.equal(passedResult.result.preparation.pr_context.agent_reviews.summary.unmet_required_review_count, 0);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /^## Agent Review$/m);
 
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -13179,6 +13179,117 @@ test('pr body verification checklist checks exact current evidence even when the
   assert.match(prBody, /- \[x\] verification:typecheck\b/);
   assert.doesNotMatch(prBody, /- \[ \] `npm run typecheck`.*gate: passed via `node --test test\/risk-adaptive-gate\.test\.js`/);
   assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
+});
+
+test('pr body renders repo file paths as clickable markdown links', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+status: active
+---
+
+# PR準備
+
+## Background
+
+Reviewers jump from docs/management/stories/active/story-pr-prepare.md to implementation files.
+
+## Acceptance Criteria
+
+- PR body paths are linked.
+`);
+  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', '_components'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils'), { recursive: true });
+  await mkdir(path.join(repo, 'tests', 'src', 'app', 'api', 'projects', '[projectId]', 'available-recipients'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'src', 'app', 'projects', '[projectId]', '_components', 'TargetStrategyTab.tsx'),
+    'export function TargetStrategyTab() { return null; }\n'
+  );
+  await writeFile(
+    path.join(repo, 'src', 'app', '(app)', 'detail', '_components', 'hooks', 'utils', 'searchExecutor.ts'),
+    'export function executeSearch() { return null; }\n'
+  );
+  await writeFile(
+    path.join(repo, 'tests', 'src', 'app', 'api', 'projects', '[projectId]', 'available-recipients', 'route.test.ts'),
+    'import test from "node:test";\ntest("available recipients", () => {});\n'
+  );
+  await git(repo, ['add', 'docs', 'src', 'tests']);
+  await git(repo, ['commit', '-m', 'feat: add linked pr body paths']);
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'unit-status.json'), { status: 'pass' });
+  await mkdir(path.join(repo, '.vibepro', 'report', 'story-pr-prepare', 'pr-body'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'report', 'story-pr-prepare', 'pr-body', 'narrative.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    kind: 'pr-body',
+    generated_by: { caller: 'test' },
+    narrative_slots: [
+      {
+        slot: 'summary',
+        id: 'tp-1',
+        text: 'Narrative points reviewers at docs/management/stories/active/story-pr-prepare.md and src/app/(app)/detail/_components/hooks/utils/searchExecutor.ts.'
+      },
+      {
+        slot: 'review_focus',
+        id: 'tp-2',
+        text: 'Keep inline code like `src/app/projects/[projectId]/_components/TargetStrategyTab.tsx` unchanged and preserve [existing story link](docs/management/stories/active/story-pr-prepare.md).'
+      }
+    ]
+  });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test tests/src/app/api/projects/[projectId]/available-recipients/route.test.ts',
+    '--summary', 'unit passed',
+    '--artifact', '.vibepro/verification/story-pr-prepare/unit-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(result.result.artifacts.pr_body, 'utf8');
+  assert.match(prBody, /- 正本: \[[^\]]+\]\([^)]+\)/);
+  assert.match(
+    prBody,
+    /\[src\/app\/projects\/\\\[projectId\\\]\/_components\/TargetStrategyTab\.tsx\]\(src\/app\/projects\/%5BprojectId%5D\/_components\/TargetStrategyTab\.tsx\)/
+  );
+  assert.match(
+    prBody,
+    /\[src\/app\/\(app\)\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\]\(src\/app\/%28app%29\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\)/
+  );
+  assert.match(
+    prBody,
+    /\[tests\/src\/app\/api\/projects\/\\\[projectId\\\]\/available-recipients\/route\.test\.ts\]\(tests\/src\/app\/api\/projects\/%5BprojectId%5D\/available-recipients\/route\.test\.ts\)/
+  );
+  assert.match(
+    prBody,
+    /\[\.vibepro\/verification\/story-pr-prepare\/unit-status\.json\]\(\.vibepro\/verification\/story-pr-prepare\/unit-status\.json\)/
+  );
+  assert.match(
+    prBody,
+    /\[\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json\]\(\.vibepro\/pr\/story-pr-prepare\/pr-prepare\.json\)/
+  );
+  assert.match(
+    prBody,
+    /Narrative points reviewers at \[docs\/management\/stories\/active\/story-pr-prepare\.md\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\) and \[src\/app\/\(app\)\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\]\(src\/app\/%28app%29\/detail\/_components\/hooks\/utils\/searchExecutor\.ts\)\./
+  );
+  assert.match(
+    prBody,
+    /`src\/app\/projects\/\[projectId\]\/_components\/TargetStrategyTab\.tsx` unchanged/
+  );
+  assert.match(
+    prBody,
+    /preserve \[existing story link\]\(docs\/management\/stories\/active\/story-pr-prepare\.md\)\./
+  );
+  assert.doesNotMatch(
+    prBody,
+    /\[existing story link\]\(\[docs\/management\/stories\/active\/story-pr-prepare\.md\]/
+  );
 });
 
 test('pr prepare rejects stale verification evidence recorded before a dirty UI change', async () => {
@@ -14332,7 +14443,7 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:dag_connectivity' && edge.to === 'pr'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /Engineering Judgment: agent_workflow \/ dag=agent_workflow_dag/);
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
   assert.equal(spineGate.subchecks.find((check) => check.id === 'intent').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
@@ -14890,7 +15001,7 @@ Accepted followups: route-specific enforcement can deepen after the multi-axis a
   assert.equal(architectureGate.axis_quality.evaluations.some((item) => item.axis === 'public_contract'), true);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /#### Senior first scan axes/);
   assert.equal(axisGate.axis_status, 'active_needs_evidence');
   assert.equal(scopeAxis.optional_evidence.some((item) => item.kind === 'graph_impact_scope'), true);
@@ -15014,7 +15125,7 @@ spec_docs:
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'), 'utf8');
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /active_accepted_followup/);
   assert.match(gateDagHtml, /accepted_followup/);
   assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,500}accepted_followup/);
@@ -15217,7 +15328,7 @@ title: Public Contract Block
   assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
 
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /public_contract: active_blocked/);
   assert.equal(gate.matched_blockers.some((item) => item.id === 'public_contract_traceability_missing'), true);
 });
@@ -16668,7 +16779,7 @@ export async function execute(actionParams) {
   assert.equal(networkGate.status, 'failed');
   assert.equal(prepare.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:network_contract'), true);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
-  assert.match(prBody, /- 証跡: \.vibepro\/pr\/story-pr-prepare\//);
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
   assert.doesNotMatch(prBody, /\/api\/detail-search/);
 });
 

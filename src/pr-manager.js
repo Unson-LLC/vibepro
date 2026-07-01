@@ -2060,6 +2060,7 @@ function renderPrNarrative(narrative) {
   if (!narrative || !Array.isArray(narrative.narrative_slots) || narrative.narrative_slots.length === 0) {
     return '';
   }
+  const renderSlotText = (slot) => linkifyRepoPathsInText(`${slot.text ?? ''}`.trim());
   const grouped = new Map();
   for (const slot of narrative.narrative_slots) {
     if (!slot || typeof slot !== 'object' || typeof slot.slot !== 'string') continue;
@@ -2070,24 +2071,94 @@ function renderPrNarrative(narrative) {
   const callerLabel = narrative.generated_by?.caller ?? 'unknown';
   const summary = grouped.get('summary')?.[0];
   if (summary) {
-    sections.push(`## なぜこの PR か (${summary.id} by ${callerLabel})\n${summary.text.trim()}`);
+    sections.push(`## なぜこの PR か (${summary.id} by ${callerLabel})\n${renderSlotText(summary)}`);
   }
   const focus = grouped.get('review_focus') ?? [];
   if (focus.length > 0) {
-    const lines = focus.map((slot) => `- (${slot.id}) ${slot.text.trim()}`).join('\n');
+    const lines = focus.map((slot) => `- (${slot.id}) ${renderSlotText(slot)}`).join('\n');
     sections.push(`## レビュー焦点 (synthesis)\n${lines}`);
   }
   const risks = grouped.get('risks_synthesis')?.[0];
   if (risks) {
-    sections.push(`## リスク合成 (${risks.id})\n${risks.text.trim()}`);
+    sections.push(`## リスク合成 (${risks.id})\n${renderSlotText(risks)}`);
   }
   const openQuestions = grouped.get('open_questions') ?? [];
   if (openQuestions.length > 0) {
-    const lines = openQuestions.map((slot) => `- (${slot.id}) ${slot.text.trim()}`).join('\n');
+    const lines = openQuestions.map((slot) => `- (${slot.id}) ${renderSlotText(slot)}`).join('\n');
     sections.push(`## レビュアー判断要\n${lines}`);
   }
   if (sections.length === 0) return '';
   return `${sections.join('\n\n')}\n\n`;
+}
+
+function escapeMarkdownLinkLabel(value) {
+  return `${value}`.replace(/([\\[\]])/g, '\\$1');
+}
+
+function encodeMarkdownRelativePath(value) {
+  return `${value}`
+    .split('/')
+    .map((part) => encodeURIComponent(part).replace(/\(/g, '%28').replace(/\)/g, '%29'))
+    .join('/');
+}
+
+function formatRepoPathLink(filePath) {
+  if (typeof filePath !== 'string') return filePath;
+  const trimmed = filePath.trim();
+  if (!trimmed || trimmed.includes('\n') || /^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return filePath;
+  const trailingSlash = trimmed.endsWith('/');
+  const normalized = trailingSlash ? trimmed.slice(0, -1) : trimmed;
+  if (!normalized || normalized.startsWith('/') || normalized.includes('..')) return filePath;
+  if (!/^(?:\.vibepro|docs|src|test|tests|e2e|bin|skills|agent-instructions|README(?:\.ja)?\.md|package(?:-lock)?\.json|design-ssot\.json)(?:\/|$)/.test(normalized)) {
+    return filePath;
+  }
+  const displayPath = `${normalized}${trailingSlash ? '/' : ''}`;
+  const href = `${encodeMarkdownRelativePath(normalized)}${trailingSlash ? '/' : ''}`;
+  return `[${escapeMarkdownLinkLabel(displayPath)}](${href})`;
+}
+
+function formatRepoPathList(paths) {
+  return paths.map((filePath) => formatRepoPathLink(filePath)).join(', ');
+}
+
+function countCharacter(value, character) {
+  return [...`${value}`].filter((item) => item === character).length;
+}
+
+function splitRepoPathTrailingPunctuation(value) {
+  let core = `${value}`;
+  let suffix = '';
+  while (/[.;:!?！？。、，]/.test(core.at(-1) ?? '')) {
+    suffix = `${core.at(-1)}${suffix}`;
+    core = core.slice(0, -1);
+  }
+  while (core.endsWith(')') && countCharacter(core, ')') > countCharacter(core, '(')) {
+    suffix = `)${suffix}`;
+    core = core.slice(0, -1);
+  }
+  return { core, suffix };
+}
+
+function linkifyRepoPathsInPlainText(value) {
+  return `${value}`.replace(
+    /(^|[\s（(「『:：])((?:\.vibepro|docs|src|test|tests|e2e|bin|skills|agent-instructions)\/[^\s,，、）]+|README(?:\.ja)?\.md|package(?:-lock)?\.json|design-ssot\.json)(?=$|[\s,，、）])/g,
+    (match, prefix, filePath) => {
+      const { core, suffix } = splitRepoPathTrailingPunctuation(filePath);
+      return `${prefix}${formatRepoPathLink(core)}${suffix}`;
+    }
+  );
+}
+
+function linkifyRepoPathsInText(value) {
+  if (typeof value !== 'string' || !value) return value;
+  return value
+    .split(/(`[^`]*`|\[[^\]\n]+\]\([^) \n]+\))/g)
+    .map((part) => {
+      if (part.startsWith('`') && part.endsWith('`')) return part;
+      if (/^\[[^\]\n]+\]\([^) \n]+\)$/.test(part)) return part;
+      return linkifyRepoPathsInPlainText(part);
+    })
+    .join('');
 }
 
 function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
@@ -2099,10 +2170,10 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const verification = prContext.verification_commands.length === 0
     ? '- [ ] 手動確認または対象テストを追記する'
     : renderConciseVerificationChecklist(prContext.verification_commands, prContext.gate_dag, prContext.verification_evidence);
-  const reviewPoints = limitItems(prContext.review_points, 3).map((item) => `- ${item}`).join('\n');
+  const reviewPoints = limitItems(prContext.review_points, 3).map((item) => `- ${linkifyRepoPathsInText(item)}`).join('\n');
   const risks = prContext.risks.length === 0
     ? null
-    : limitRisksForPrBody(prContext.risks, 3).map((item) => `- Risk: ${item}`).join('\n');
+    : limitRisksForPrBody(prContext.risks, 3).map((item) => `- Risk: ${linkifyRepoPathsInText(item)}`).join('\n');
   const unresolved = collectUnresolvedRequiredGates(prContext.gate_dag);
   const warnings = collectReleaseDecisionWarningGates(prContext.gate_dag);
   const gateNote = buildHumanGateNote(unresolved, warnings);
@@ -2121,9 +2192,9 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const taskLine = taskContext
     ? `- Task: ${taskContext.task.id} ${taskContext.task.title ?? ''}`.trim()
     : null;
-  const sourceLine = sourceFiles.length ? `- 実装: ${sourceFiles.join(', ')}` : null;
-  const testLine = testFiles.length ? `- テスト: ${testFiles.join(', ')}` : null;
-  const docLine = docFiles.length ? `- 設計/Story: ${docFiles.join(', ')}` : null;
+  const sourceLine = sourceFiles.length ? `- 実装: ${formatRepoPathList(sourceFiles)}` : null;
+  const testLine = testFiles.length ? `- テスト: ${formatRepoPathList(testFiles)}` : null;
+  const docLine = docFiles.length ? `- 設計/Story: ${formatRepoPathList(docFiles)}` : null;
   const requirementLines = [
     `- 要求: ${requirementTitle}`,
     source.requirement_id ? `- 要求ID: ${source.requirement_id}` : null,
@@ -2133,18 +2204,18 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const reviewFocus = reviewPoints || '- Story / Spec / Architecture と実装差分が対応しているか';
   const riskLines = risks ? `\n${risks}` : '';
   const storyInterpretation = buildPrBodyStoryInterpretation({ requirementTitle, fileGroups });
-  const origin = source.background ?? 'Story文書から経緯を抽出できませんでした。';
-  const rootCause = source.root_cause
+  const origin = linkifyRepoPathsInText(source.background ?? 'Story文書から経緯を抽出できませんでした。');
+  const rootCause = linkifyRepoPathsInText(source.root_cause
     ?? source.problem
-    ?? summarizeFirstAvailable(prContext.risks, 'Story文書から根本原因を抽出できませんでした。');
-  const solution = source.solution
+    ?? summarizeFirstAvailable(prContext.risks, 'Story文書から根本原因を抽出できませんでした。'));
+  const solution = linkifyRepoPathsInText(source.solution
     ?? source.policy
-    ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。');
+    ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。'));
   const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
   const details = [
-    `- 証跡: ${evidenceDir}/`,
-    `- PR準備: ${evidenceDir}/pr-prepare.json`,
-    `- 判断索引: ${evidenceDir}/decision-index.json`,
+    `- 証跡: ${formatRepoPathLink(`${evidenceDir}/`)}`,
+    `- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}`,
+    `- 判断索引: ${formatRepoPathLink(`${evidenceDir}/decision-index.json`)}`,
     `- Gate: ${gateStatus}`,
     `- 実行状態: ${executionStatus}`,
     `- Scope: ${scope.status} / ${scope.recommended_strategy}`,
@@ -2154,7 +2225,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   return `## 判断
 - このPRで判断すること: ${storyInterpretation}
 - Story: ${storyLabel}
-- 正本: ${source.path ?? 'Story未検出'}
+- 正本: ${source.path ? formatRepoPathLink(source.path) : 'Story未検出'}
 - 変更範囲: ${git.changed_files.length} files / ${primaryReviewAreas}
 ${[docLine, sourceLine, testLine].filter(Boolean).join('\n')}
 
@@ -2201,7 +2272,7 @@ function renderFinalE2eConfidence(gateDag, verificationEvidence) {
   const status = e2eEvidence?.status ?? e2eGate?.status ?? '未確認';
   const summary = e2eEvidence?.summary ?? e2eGate?.reason ?? e2eGate?.label ?? '最終E2E証跡が見つかりません。';
   const artifact = e2eEvidence?.artifact ?? e2eGate?.evidence?.artifact ?? null;
-  return `${status}: ${summary}${artifact ? `（${artifact}）` : ''}`;
+  return linkifyRepoPathsInText(`${status}: ${summary}${artifact ? `（${artifact}）` : ''}`);
 }
 
 function limitItems(items = [], max = 3) {
@@ -2898,7 +2969,7 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
     const evidenceArtifact = recordedEvidence?.artifact
       ?? (gate?.command && gate.command === item.command ? gate.evidence?.artifact : null);
     const evidence = evidenceArtifact ? ` / evidence: ${evidenceArtifact}` : '';
-    return `- [${checked}] ${formatVerificationChecklistLabel(item, gate)} - ${item.reason}${status}${evidence}`;
+    return linkifyRepoPathsInText(`- [${checked}] ${formatVerificationChecklistLabel(item, gate)} - ${item.reason}${status}${evidence}`);
   });
   const evidenceOnlyItems = (gateDag?.nodes ?? [])
     .filter((gate) => gate.type === 'verification_gate')
@@ -2907,7 +2978,7 @@ function renderVerificationChecklist(commands, gateDag, verificationEvidence = n
       const checked = ['passed', 'pass'].includes(gate.status) ? 'x' : ' ';
       const evidence = gate.evidence?.artifact ? ` / evidence: ${gate.evidence.artifact}` : '';
       const label = gate.label ?? gate.id;
-      return `- [${checked}] ${label} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`;
+      return linkifyRepoPathsInText(`- [${checked}] ${label} - ${summarizePrGateReason(gate.reason) ?? gate.label}${gate.status ? ` / gate: ${gate.status}` : ''}${evidence}`);
     });
   return [...commandItems, ...evidenceOnlyItems].join('\n');
 }
