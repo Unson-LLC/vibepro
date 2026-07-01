@@ -49,6 +49,13 @@ export function buildSeniorGapJudgment({
   const criticalBlockingGaps = blockingGaps.filter((gap) => ['critical', 'block'].includes(gap.severity));
   const followups = buildFollowups({ prContext, gaps });
   const decision = buildDecision({ gaps, blockingGaps, criticalBlockingGaps, gateStatus });
+  const decisionCard = buildDecisionCard({
+    decision,
+    currentState,
+    costContext,
+    gaps,
+    followups
+  });
   return {
     schema_version: '0.1.0',
     model: 'vibepro-senior-gap-judgment-v1',
@@ -58,6 +65,7 @@ export function buildSeniorGapJudgment({
     current_state: currentState,
     gaps,
     decision,
+    decision_card: decisionCard,
     residual_risks: residualRisks,
     followups,
     cost_context: costContext
@@ -97,6 +105,10 @@ export function renderSeniorGapJudgmentSummary(judgment) {
     `- blocking_gaps: ${decision.blocking_gap_count ?? 0}`,
     `- residual_risks: ${judgment?.residual_risks?.length ?? 0}`,
     `- followups: ${judgment?.followups?.length ?? 0}`,
+    `- head_binding: ${judgment?.decision_card?.head_binding_status ?? 'unknown'}`,
+    `- artifact_value: ${judgment?.decision_card?.artifact_value_status ?? 'unknown'}`,
+    `- session_attribution: ${judgment?.decision_card?.session_attribution_status ?? 'unknown'}`,
+    `- subagent_budget: ${judgment?.decision_card?.subagent_review_budget?.recommended_action ?? 'unknown'}`,
     `- reason: ${decision.reason ?? '-'}`
   ];
   for (const gap of (judgment?.gaps ?? []).slice(0, 10)) {
@@ -164,7 +176,10 @@ function buildCurrentState({ git, fileGroups, scope, prContext, gateStatus, evid
     requirement_status: prContext?.requirement_consistency?.status ?? null,
     traceability_clause_coverage: normalizeTraceabilityCoverage(prContext?.traceability_clause_coverage),
     evidence_depth: evidencePlan?.evidence_depth ?? null,
-    evidence_reuse_status: evidenceReuse?.status ?? prContext?.evidence_reuse?.status ?? null
+    evidence_reuse_status: evidenceReuse?.status ?? prContext?.evidence_reuse?.status ?? null,
+    artifact_value_ledger_status: evidenceReuse?.artifact_value_ledger?.status ?? null,
+    session_attribution_status: evidenceReuse?.session_attribution_ledger?.status ?? null,
+    session_attribution_confidence: evidenceReuse?.session_attribution_ledger?.confidence ?? null
   };
 }
 
@@ -176,6 +191,8 @@ function buildGaps({ prContext, gateStatus, evidenceReuse, costContext }) {
     ...gapsFromTraceability(prContext?.traceability_clause_coverage),
     ...gapsFromJudgmentAxes(prContext?.engineering_judgment),
     ...gapsFromEvidenceReuse(evidenceReuse ?? prContext?.evidence_reuse),
+    ...gapsFromArtifactValueLedger(evidenceReuse?.artifact_value_ledger),
+    ...gapsFromSessionAttributionLedger(evidenceReuse?.session_attribution_ledger),
     buildTelemetryUnknownGap(costContext)
   ].filter(Boolean);
 }
@@ -338,6 +355,63 @@ function gapsFromEvidenceReuse(evidenceReuse) {
   }];
 }
 
+function gapsFromArtifactValueLedger(ledger) {
+  if (!ledger) return [];
+  if (ledger.status !== 'present') {
+    return [{
+      id: 'gap:artifact_value_ledger:missing',
+      kind: 'artifact_value_ledger_missing',
+      surface: 'artifact_value_ledger',
+      severity: 'minor',
+      confidence: 'medium',
+      safe_to_defer: true,
+      decision_effect: 'residual_risk',
+      evidence_refs: ['.vibepro/pr/<story-id>/evidence-reuse.json'],
+      summary: 'Artifact value ledger is missing; artifact volume cannot be distinguished from decision value.',
+      details: { status: ledger?.status ?? 'missing' }
+    }];
+  }
+  const decisionBoundCount = Number(getArtifactLedgerMetric(ledger, 'decision_bound_count') ?? 0);
+  if (decisionBoundCount > 0) return [];
+  return [{
+    id: 'gap:artifact_value_ledger:no_decision_bound_entries',
+    kind: 'artifact_value_ledger_weak',
+    surface: 'artifact_value_ledger',
+    severity: 'minor',
+    confidence: 'medium',
+    safe_to_defer: true,
+    decision_effect: 'residual_risk',
+    evidence_refs: ['.vibepro/pr/<story-id>/evidence-reuse.json'],
+    summary: 'Artifact value ledger has no decision-bound entries.',
+    details: ledger.summary ?? ledger
+  }];
+}
+
+function getArtifactLedgerMetric(ledger, key) {
+  if (!ledger || typeof ledger !== 'object') return null;
+  return ledger.summary?.[key] ?? ledger[key] ?? null;
+}
+
+function gapsFromSessionAttributionLedger(ledger) {
+  if (!ledger || ledger.status === 'explicit') return [];
+  return [{
+    id: 'gap:session_attribution:not_collected',
+    kind: 'session_attribution_not_collected',
+    surface: 'session_attribution',
+    severity: 'minor',
+    confidence: 'high',
+    safe_to_defer: true,
+    decision_effect: 'residual_risk',
+    evidence_refs: ['.vibepro/pr/<story-id>/evidence-reuse.json'],
+    summary: 'Codex session attribution was not collected in PR prepare; downstream usage must stay unattributed unless audit session-cost resolves it.',
+    details: {
+      status: ledger.status ?? 'missing',
+      confidence: ledger.confidence ?? null,
+      reason: ledger.reason ?? null
+    }
+  }];
+}
+
 function buildTelemetryUnknownGap(costContext) {
   if (costContext?.telemetry_unavailability?.status === 'bounded_by_artifact_policy') return null;
   if (hasUsableAccounting(costContext?.token_accounting) && hasUsableAccounting(costContext?.elapsed_time_accounting)) return null;
@@ -400,6 +474,79 @@ function buildDecision({ gaps, blockingGaps, criticalBlockingGaps, gateStatus })
   };
 }
 
+function buildDecisionCard({ decision, currentState, costContext, gaps, followups }) {
+  const artifactLedger = costContext?.artifact_value_ledger;
+  const sessionLedger = costContext?.session_attribution_ledger;
+  const blockingGapCount = Number(decision?.blocking_gap_count ?? 0);
+  const residualRiskCount = gaps.filter((gap) => gap.safe_to_defer).length;
+  return {
+    schema_version: '0.1.0',
+    status: decision?.status ?? 'unknown',
+    ready_for_pr_create: decision?.ready_for_pr_create ?? null,
+    head_binding_status: artifactLedger?.head_binding_status
+      ?? artifactLedger?.head_binding?.status
+      ?? (currentState?.git?.head_sha ? 'current_head_bound' : 'unknown_head'),
+    artifact_value_status: artifactLedger?.status ?? null,
+    artifact_decision_bound_count: getArtifactLedgerMetric(artifactLedger, 'decision_bound_count'),
+    session_attribution_status: sessionLedger?.status ?? currentState?.session_attribution_status ?? null,
+    session_attribution_confidence: sessionLedger?.confidence ?? currentState?.session_attribution_confidence ?? null,
+    blocking_gap_count: blockingGapCount,
+    residual_risk_count: residualRiskCount,
+    followup_count: followups.length,
+    subagent_review_budget: buildSubagentReviewBudget({
+      decision,
+      currentState,
+      artifactLedger,
+      sessionLedger,
+      blockingGapCount,
+      residualRiskCount
+    })
+  };
+}
+
+function buildSubagentReviewBudget({
+  decision,
+  currentState,
+  artifactLedger,
+  sessionLedger,
+  blockingGapCount,
+  residualRiskCount
+}) {
+  if (blockingGapCount > 0) {
+    return {
+      status: 'review_required',
+      recommended_action: 'dispatch_targeted_subagent',
+      reason: 'Non-deferrable senior judgment gaps remain.'
+    };
+  }
+  const traceability = currentState?.traceability_clause_coverage ?? {};
+  const incompleteTraceability = Number(traceability.unmapped_count ?? 0) > 0
+    || Number(traceability.weakly_mapped_count ?? 0) > 0;
+  if (incompleteTraceability) {
+    return {
+      status: 'review_useful',
+      recommended_action: 'dispatch_traceability_subagent',
+      reason: 'Traceability coverage is incomplete.'
+    };
+  }
+  if (artifactLedger?.status === 'present' && decision?.status !== 'block') {
+    return {
+      status: 'bounded',
+      recommended_action: 'no_subagent_needed',
+      reason: 'Current artifact ledger, traceability coverage, and gate decision are sufficient for a single-pass senior judgment card.'
+    };
+  }
+  return {
+    status: residualRiskCount > 0 ? 'bounded_residual_risk' : 'unknown',
+    recommended_action: sessionLedger?.status === 'not_collected_in_pr_prepare'
+      ? 'collect_session_cost_before_subagent'
+      : 'manual_judgment',
+    reason: sessionLedger?.status === 'not_collected_in_pr_prepare'
+      ? 'Session cost attribution is missing; do not spend another subagent before attribution is explicit.'
+      : 'Insufficient signal to choose a subagent budget automatically.'
+  };
+}
+
 function buildFollowups({ prContext, gaps }) {
   const axisFollowups = (prContext?.engineering_judgment?.judgment_axes ?? [])
     .filter((axis) => axis.status === 'active_accepted_followup')
@@ -442,6 +589,24 @@ function buildCostContext({ prContext, evidencePlan, evidenceReuse }) {
         ?? evidenceReuse.full_evidence_cumulative_generation_count
         ?? evidenceReuse.full_evidence_cumulative_count
         ?? null
+    } : null,
+    artifact_value_ledger: evidenceReuse?.artifact_value_ledger ? {
+      status: evidenceReuse.artifact_value_ledger.status ?? null,
+      head_binding_status: evidenceReuse.artifact_value_ledger.head_binding?.status
+        ?? evidenceReuse.artifact_value_ledger.head_binding_status
+        ?? null,
+      decision_bound_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'decision_bound_count'),
+      linked_consumer_count: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'linked_consumer_count'),
+      total_token_estimate: getArtifactLedgerMetric(evidenceReuse.artifact_value_ledger, 'total_token_estimate')
+    } : null,
+    session_attribution_ledger: evidenceReuse?.session_attribution_ledger ? {
+      status: evidenceReuse.session_attribution_ledger.status ?? null,
+      confidence: evidenceReuse.session_attribution_ledger.confidence ?? null,
+      session_count: Array.isArray(evidenceReuse.session_attribution_ledger.sessions)
+        ? evidenceReuse.session_attribution_ledger.sessions.length
+        : 0,
+      unattributed_count: evidenceReuse.session_attribution_ledger.unattributed_count ?? null,
+      reason: evidenceReuse.session_attribution_ledger.reason ?? null
     } : null,
     token_accounting: tokenAccounting,
     elapsed_time_accounting: elapsedTimeAccounting,

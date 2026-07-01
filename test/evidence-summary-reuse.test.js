@@ -71,6 +71,10 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   const firstReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
   assert.equal(firstReuse.status, 'miss');
   assert.equal(firstReuse.full_evidence.status, 'generated');
+  assert.equal(firstReuse.artifact_value_ledger.status, 'present');
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 5);
+  assert.equal(firstReuse.artifact_value_ledger.session_attribution_status, 'not_collected_in_pr_prepare');
+  assert.equal(firstReuse.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
   assert.equal(firstReuse.full_evidence.generation_count, 1);
   assert.equal(firstReuse.full_evidence.same_key_generation_count, 1);
@@ -102,10 +106,16 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   const report = await createUsageReport(repo, { language: 'ja' });
   assert.equal(report.evidence_reuse.hit_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_ledger_status, 'present');
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 5);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_linked_consumer_count, 5);
+  assert.equal(report.evidence_reuse.by_story[0].session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(report.evidence_reuse.by_story[0].full_evidence_generation_count_scope, 'same_evidence_key');
   assert.equal(report.evidence_reuse.by_story[0].same_key_full_evidence_generation_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].cumulative_full_evidence_generation_count, 1);
   assert.match(renderUsageReport(report), /Evidence Reuse/);
+  assert.match(renderUsageReport(report), /artifact_value=present/);
+  assert.match(renderUsageReport(report), /session_attribution=not_collected_in_pr_prepare/);
   assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
   assert.match(renderUsageReport(report), /cumulative_full_generation_count=1/);
 });

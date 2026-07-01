@@ -1,0 +1,22 @@
+---
+story_id: story-vibepro-artifact-value-ledger
+title: Artifact Value Ledger Spec
+status: active
+created_at: 2026-07-01
+updated_at: 2026-07-01
+parent_design: vibepro-artifact-value-ledger
+---
+
+# Artifact Value Ledger Spec
+
+## Invariants
+
+- `INV-AVL-1`: Each generated ledger entry MUST bind an artifact to a named consumer and a decision it supports.
+- `INV-AVL-2`: Ledger head binding MUST include current head SHA when git context is available.
+- `INV-AVL-3`: Missing ledger state MUST remain explicit and MUST NOT be interpreted as zero artifact cost or zero artifact value.
+- `INV-AVL-4`: Usage reporting MUST expose decision-bound artifact counts separately from raw evidence-reuse hit/miss counts.
+
+## Verification
+
+- `V-AVL-1`: `test/evidence-summary-reuse.test.js` verifies ledger generation and usage-report aggregation.
+- `V-AVL-2`: `test/senior-gap-judgment.test.js` verifies senior-gap cost context and decision card integration.
