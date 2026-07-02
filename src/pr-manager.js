@@ -471,8 +471,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
       initialized: workspace.initialized,
       artifact_location: workspace.initialized ? 'repo' : 'temporary'
     },
-    git: reviewGit,
-    file_groups: fileGroups,
+    git: sanitizeGitStateForOutput(reviewGit),
+    file_groups: sanitizeFileGroupsForOutput(fileGroups),
     scope,
     split_plan: splitPlan,
     pr_context: prContext,
@@ -1595,7 +1595,8 @@ function formatExecutionGateAction(gate) {
     return `Close Definition of Done evidence before PR creation: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
   if (gate.id === 'gate:design_diagrams') {
-    return `Add required design diagram evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+    const downstream = (gate.downstream_diagram_requirements ?? []).map(formatDownstreamDiagramRequirementHint);
+    return `Add required design diagram evidence: ${downstream.join(' -> ') || (gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
   if (gate.id === 'gate:pr_scope_judgment') {
     return `Reduce or split PR scope before creation: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
@@ -1721,14 +1722,14 @@ async function collectGitState(repoRoot, options) {
   const headSha = await gitOptional(repoRoot, ['rev-parse', headRef]);
   const baseSha = await gitOptional(repoRoot, ['rev-parse', baseRef]);
   const mergeBaseSha = baseSha && headSha ? await gitOptional(repoRoot, ['merge-base', baseRef, headRef]) : '';
-  const committedChangedFiles = await getChangedFiles(repoRoot, baseRef, headRef);
+  const committedChangedFiles = await hydrateChangedFileContent(repoRoot, await getChangedFiles(repoRoot, baseRef, headRef));
   const diffLineStats = await getDiffLineStats(repoRoot, baseRef, headRef, includesDirtyInChangedFiles);
   const commits = await getCommits(repoRoot, baseRef, headRef);
   const commitMessageHealth = buildCommitMessageHealth(commits, { baseRef, headRef });
   const fingerprints = await collectGitStatusFingerprints(repoRoot);
   const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
-  const dirtyFiles = parseStatus(fingerprints.user_status_output);
-  const rawDirtyFiles = parseStatus(fingerprints.status_output);
+  const dirtyFiles = await hydrateChangedFileContent(repoRoot, parseStatus(fingerprints.user_status_output));
+  const rawDirtyFiles = await hydrateChangedFileContent(repoRoot, parseStatus(fingerprints.status_output));
   const changedFiles = includesDirtyInChangedFiles
     ? mergeChangedAndDirtyFiles(committedChangedFiles, dirtyFiles)
     : committedChangedFiles;
@@ -1786,8 +1787,17 @@ async function appendGateOverrideToPrBody(bodyFile, gateOverride) {
 function mergeChangedAndDirtyFiles(changedFiles, dirtyFiles) {
   const byPath = new Map(changedFiles.map((file) => [file.path, file]));
   for (const dirty of dirtyFiles) {
-    if (!dirty.path || byPath.has(dirty.path)) continue;
+    if (!dirty.path) continue;
+    const existing = byPath.get(dirty.path);
+    if (existing) {
+      byPath.set(dirty.path, {
+        ...existing,
+        content: existing.content ?? dirty.content
+      });
+      continue;
+    }
     byPath.set(dirty.path, {
+      ...dirty,
       status: dirty.status || 'M',
       path: dirty.path
     });
@@ -1846,6 +1856,26 @@ async function getChangedFiles(repoRoot, baseRef, headRef) {
     .map((line) => line.trim())
     .filter(Boolean)
     .map(parseNameStatus);
+}
+
+const DIAGRAM_REQUIREMENT_CONTENT_PATH = /\.(json|md|mdx|ts|tsx|js|jsx|sql|prisma|ya?ml|tf|tfvars|toml)$/;
+const DIAGRAM_REQUIREMENT_CONTENT_MAX_BYTES = 200_000;
+
+async function hydrateChangedFileContent(repoRoot, files) {
+  return Promise.all((files ?? []).map(async (file) => {
+    if (!file?.path || file.status === 'D' || !DIAGRAM_REQUIREMENT_CONTENT_PATH.test(file.path)) return file;
+    const fullPath = path.join(repoRoot, file.path);
+    try {
+      const stats = await stat(fullPath);
+      if (!stats.isFile() || stats.size > DIAGRAM_REQUIREMENT_CONTENT_MAX_BYTES) return file;
+      return {
+        ...file,
+        content: await readFile(fullPath, 'utf8')
+      };
+    } catch {
+      return file;
+    }
+  }));
 }
 
 async function getDiffLineStats(repoRoot, baseRef, headRef, includeDirty) {
@@ -1966,10 +1996,49 @@ function groupChangedFiles(files) {
       files: value.map((file) => file.path),
       items: value.map((file) => ({
         status: file.status,
-        path: file.path
+        path: file.path,
+        content: typeof file.content === 'string' ? file.content : undefined
       }))
     }])
   );
+}
+
+function sanitizeChangedFileItemForOutput(item) {
+  if (!item || typeof item !== 'object') return item;
+  const { content, ...safeItem } = item;
+  return safeItem;
+}
+
+function sanitizeGitStateForOutput(gitState) {
+  if (!gitState || typeof gitState !== 'object') return gitState;
+  return {
+    ...gitState,
+    committed_changed_files: Array.isArray(gitState.committed_changed_files)
+      ? gitState.committed_changed_files.map(sanitizeChangedFileItemForOutput)
+      : gitState.committed_changed_files,
+    changed_files: Array.isArray(gitState.changed_files)
+      ? gitState.changed_files.map(sanitizeChangedFileItemForOutput)
+      : gitState.changed_files,
+    dirty_files: Array.isArray(gitState.dirty_files)
+      ? gitState.dirty_files.map(sanitizeChangedFileItemForOutput)
+      : gitState.dirty_files,
+    raw_dirty_files: Array.isArray(gitState.raw_dirty_files)
+      ? gitState.raw_dirty_files.map(sanitizeChangedFileItemForOutput)
+      : gitState.raw_dirty_files,
+    vibepro_internal_dirty_files: Array.isArray(gitState.vibepro_internal_dirty_files)
+      ? gitState.vibepro_internal_dirty_files.map(sanitizeChangedFileItemForOutput)
+      : gitState.vibepro_internal_dirty_files
+  };
+}
+
+function sanitizeFileGroupsForOutput(fileGroups) {
+  if (!fileGroups || typeof fileGroups !== 'object') return fileGroups;
+  return Object.fromEntries(Object.entries(fileGroups).map(([key, group]) => [key, {
+    ...group,
+    items: Array.isArray(group?.items)
+      ? group.items.map(sanitizeChangedFileItemForOutput)
+      : group?.items
+  }]));
 }
 
 function isSourcePath(filePath) {
@@ -5582,15 +5651,79 @@ function extractFlowKeywords(acceptanceCriteria) {
   return [...hits];
 }
 
-function collectChangedFilePaths(fileGroups) {
+function collectChangedFileItems(fileGroups) {
   if (!fileGroups || typeof fileGroups !== 'object') return [];
   const buckets = ['source', 'tests', 'architecture_docs', 'specifications', 'policy_docs', 'repo_control', 'other'];
-  const paths = [];
+  const items = [];
+  const seen = new Set();
   for (const bucket of buckets) {
-    const files = fileGroups[bucket]?.files;
-    if (Array.isArray(files)) paths.push(...files);
+    const groupItems = Array.isArray(fileGroups[bucket]?.items)
+      ? fileGroups[bucket].items
+      : (fileGroups[bucket]?.files ?? []).map((path) => ({ path }));
+    for (const item of groupItems) {
+      if (!item?.path || seen.has(item.path)) continue;
+      seen.add(item.path);
+      items.push({
+        path: item.path,
+        status: item.status,
+        content: item.content
+      });
+    }
   }
-  return paths;
+  return items;
+}
+
+function extractPathFromDiagramReason(signal) {
+  const text = String(signal ?? '');
+  const match = text.match(/(?:^|:\s+| in )((?:docs|src|test|tests|packages|services|infra|prisma|db|migrations|contracts|\.github)\/\S+)/);
+  return match?.[1] ?? null;
+}
+
+function minimalDiagramShape(kind) {
+  if (kind === 'threat_model') {
+    return {
+      kind,
+      mermaid: [
+        'flowchart LR',
+        '  Actor[Actor] --> Surface[Changed authority or contract surface]',
+        '  Surface --> Asset[Protected asset]',
+        '  Threat[Threat] --> Surface',
+        '  Surface --> Control[Control or mitigation]'
+      ].join('\n')
+    };
+  }
+  return {
+    kind,
+    mermaid: 'flowchart LR\n  ChangedSurface[Changed surface] --> RequiredDiagram[Required diagram evidence]'
+  };
+}
+
+function buildDownstreamDiagramRequirementHints({ gate, storyId }) {
+  const missing = new Set(gate?.missing_diagrams ?? []);
+  if (missing.size === 0) return [];
+  return (gate?.detection_reasons ?? [])
+    .filter((reason) => missing.has(reason.kind))
+    .map((reason) => {
+      const triggerPath = extractPathFromDiagramReason(reason.signal);
+      return {
+        kind: reason.kind,
+        trigger_path: triggerPath,
+        trigger_signal: reason.signal,
+        insertion_target: storyId
+          ? `.vibepro/spec/${storyId}/spec.json diagrams[]`
+          : '.vibepro/spec/<story-id>/spec.json diagrams[]',
+        tracked_spec_guidance: storyId
+          ? `docs/specs/${storyId}.md diagrams section`
+          : 'tracked spec doc diagrams section',
+        minimal_diagram: minimalDiagramShape(reason.kind)
+      };
+    });
+}
+
+function formatDownstreamDiagramRequirementHint(hint) {
+  const trigger = hint.trigger_path ?? hint.trigger_signal ?? 'changed file';
+  const firstLine = String(hint.minimal_diagram?.mermaid ?? '').split('\n')[0] || '<mermaid>';
+  return `${hint.kind} triggered by ${trigger}; insert at ${hint.insertion_target} or ${hint.tracked_spec_guidance}; minimal diagram starts with \`${firstLine}\``;
 }
 
 function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
@@ -5600,7 +5733,7 @@ function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
     ac_keywords: extractFlowKeywords(acceptanceCriteria)
   };
   const code_diff = {
-    files: collectChangedFilePaths(fileGroups).map((p) => ({ path: p })),
+    files: collectChangedFileItems(fileGroups),
     deps_added: []
   };
   const requirement = resolveRequiredDiagrams({ story, code_diff });
@@ -5608,6 +5741,13 @@ function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
     required_diagrams: requirement.required_diagrams,
     reasons: requirement.reasons,
     spec: inferredSpec ?? null
+  });
+  const downstreamRequirements = buildDownstreamDiagramRequirementHints({
+    gate: {
+      missing_diagrams: verdict.missing,
+      detection_reasons: verdict.reasons
+    },
+    storyId: storySource?.story_id
   });
   let gateStatus;
   let reasonText;
@@ -5632,7 +5772,11 @@ function buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec }) {
     required_diagrams: verdict.required,
     provided_diagrams: verdict.provided,
     missing_diagrams: verdict.missing,
-    detection_reasons: verdict.reasons
+    detection_reasons: verdict.reasons,
+    downstream_diagram_requirements: downstreamRequirements,
+    required_actions: downstreamRequirements.length > 0
+      ? downstreamRequirements.map(formatDownstreamDiagramRequirementHint)
+      : []
   };
 }
 
@@ -8882,9 +9026,15 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
     raw_status_fingerprint_hash: git?.status_fingerprint_hash ?? null,
     dirty: git?.dirty === true,
     raw_dirty: git?.raw_dirty === true,
-    dirty_files: git?.dirty_files ?? [],
-    raw_dirty_files: git?.raw_dirty_files ?? [],
-    vibepro_internal_dirty_files: git?.vibepro_internal_dirty_files ?? [],
+    dirty_files: Array.isArray(git?.dirty_files)
+      ? git.dirty_files.map(sanitizeChangedFileItemForOutput)
+      : [],
+    raw_dirty_files: Array.isArray(git?.raw_dirty_files)
+      ? git.raw_dirty_files.map(sanitizeChangedFileItemForOutput)
+      : [],
+    vibepro_internal_dirty_files: Array.isArray(git?.vibepro_internal_dirty_files)
+      ? git.vibepro_internal_dirty_files.map(sanitizeChangedFileItemForOutput)
+      : [],
     fingerprint_scope: git?.fingerprint_scope ?? null,
     managed_worktree: managedWorktree ? {
       id: managedWorktree.id ?? null,
@@ -11397,6 +11547,11 @@ function collectUnresolvedRequiredGates(gateDag) {
       stale_artifact_groups: node.stale_artifact_groups,
       minimal_recovery_plan: node.minimal_recovery_plan,
       required_actions: node.required_actions,
+      required_diagrams: node.required_diagrams,
+      provided_diagrams: node.provided_diagrams,
+      missing_diagrams: node.missing_diagrams,
+      detection_reasons: node.detection_reasons,
+      downstream_diagram_requirements: node.downstream_diagram_requirements,
       reason: node.reason
     }));
 }

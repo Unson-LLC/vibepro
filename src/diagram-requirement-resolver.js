@@ -17,6 +17,13 @@ const SECURITY_DEPS = new Set([
 ]);
 const PII_KEYWORDS = ['email', 'phone', 'ssn', 'tax_id', 'dob', 'address', 'payment', 'credit_card'];
 const SECURITY_PATH_KEYWORDS = ['auth', 'login', 'oauth', 'session', 'jwt', 'password', 'permission', 'policy', 'rbac', 'acl'];
+const RESPONSIBILITY_AUTHORITY_PATH = /^docs\/responsibility-authority\/.+\.json$/;
+const CONTRACT_ARTIFACT_PATH = /^(docs\/contracts|contracts)\/.+\.json$/;
+const CONTRACT_SECURITY_TERMS = [
+  'authority', 'authorization', 'permission', 'policy', 'rbac', 'acl', 'security',
+  'credential', 'token', 'secret', 'session', 'jwt', 'oauth', 'password',
+  'access control', 'access-control', 'pii', 'personal data', 'personal-data'
+];
 const FLOW_KEYWORDS = ['checkout', 'onboarding', 'wizard', 'multi-step', 'flow', 'purchase', 'signup'];
 const IAC_EXT = /\.(tf|tfvars)$/;
 const IAC_PATH = /^(infra|pulumi|terraform)\//;
@@ -155,13 +162,41 @@ const RULES = [
 
   // R7: threat model for security-sensitive changes
   ({ files, deps, add }) => {
+    let explicitArtifactTrigger = false;
     for (const f of files) {
       const p = (f.path ?? '').toLowerCase();
+      const content = String(f.content ?? '').toLowerCase();
+      if (RESPONSIBILITY_AUTHORITY_PATH.test(p)) {
+        add('threat_model', `responsibility authority artifact: ${f.path}`);
+        explicitArtifactTrigger = true;
+        continue;
+      }
+      if (
+        CONTRACT_ARTIFACT_PATH.test(p)
+        && (
+          CONTRACT_SECURITY_TERMS.some((term) => content.includes(term))
+          || SECURITY_PATH_KEYWORDS.some((kw) => p.includes(kw))
+        )
+      ) {
+        add('threat_model', `security-sensitive contract artifact: ${f.path}`);
+        explicitArtifactTrigger = true;
+      }
+    }
+    if (explicitArtifactTrigger) return;
+    for (const f of files) {
+      const p = (f.path ?? '').toLowerCase();
+      const content = String(f.content ?? '').toLowerCase();
+      if (
+        CONTRACT_ARTIFACT_PATH.test(p)
+        && SECURITY_PATH_KEYWORDS.some((kw) => p.includes(kw))
+      ) {
+        add('threat_model', `security-sensitive contract artifact: ${f.path}`);
+        return;
+      }
       if (SECURITY_PATH_KEYWORDS.some((kw) => p.includes(kw))) {
         add('threat_model', `security-sensitive path: ${f.path}`);
         return;
       }
-      const content = String(f.content ?? '').toLowerCase();
       if (PII_KEYWORDS.some((kw) => content.includes(kw))) {
         add('threat_model', `PII column hint in ${f.path}`);
         return;

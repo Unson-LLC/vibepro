@@ -15575,6 +15575,93 @@ title: PR準備
   );
 });
 
+test('DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'responsibility-authority'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Diagram Preflight
+---
+
+# Diagram Preflight
+
+## Acceptance Criteria
+
+- [ ] Authority artifact changes surface threat model requirements.
+- [ ] Contract artifact changes surface insertion guidance.
+`);
+  await writeFile(
+    path.join(repo, 'docs', 'responsibility-authority', 'story-pr-prepare.json'),
+    '{"story_id":"story-pr-prepare","authority":"operator approval"}\n'
+  );
+  await writeFile(
+    path.join(repo, 'docs', 'contracts', 'generation-state.json'),
+    '{"authority":"approve generation","policy":"operator signoff"}\n'
+  );
+  await git(repo, [
+    'add',
+    'docs/management/stories/active/story-pr-prepare.md',
+    'docs/responsibility-authority/story-pr-prepare.json',
+    'docs/contracts/generation-state.json'
+  ]);
+  await git(repo, ['commit', '-m', 'feat: add authority and contract artifacts']);
+  await writeFile(
+    path.join(repo, 'docs', 'contracts', 'data-sharing.json'),
+    '{"access-control":"strict","personal-data":"customer-name"}\n'
+  );
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const assertNoHydratedContent = (items, label) => {
+    const leaked = (items ?? [])
+      .filter((item) => item && Object.prototype.hasOwnProperty.call(item, 'content'))
+      .map((item) => item.path ?? '<unknown>');
+    assert.deepEqual(leaked, [], `${label} should not expose hydrated content`);
+  };
+  const designGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:design_diagrams');
+  assert.equal(designGate.status, 'needs_evidence');
+  assert.deepEqual(designGate.missing_diagrams, ['threat_model']);
+  assert.equal(designGate.downstream_diagram_requirements.length, 3);
+  const authorityRequirement = designGate.downstream_diagram_requirements.find((item) => item.trigger_path === 'docs/responsibility-authority/story-pr-prepare.json');
+  const contractRequirement = designGate.downstream_diagram_requirements.find((item) => item.trigger_path === 'docs/contracts/generation-state.json');
+  const dirtyContractRequirement = designGate.downstream_diagram_requirements.find((item) => item.trigger_path === 'docs/contracts/data-sharing.json');
+  assert.equal(authorityRequirement.kind, 'threat_model');
+  assert.equal(contractRequirement.kind, 'threat_model');
+  assert.equal(dirtyContractRequirement.kind, 'threat_model');
+  assert.equal(authorityRequirement.insertion_target, '.vibepro/spec/story-pr-prepare/spec.json diagrams[]');
+  assert.equal(authorityRequirement.tracked_spec_guidance, 'docs/specs/story-pr-prepare.md diagrams section');
+  assert.equal(authorityRequirement.minimal_diagram.kind, 'threat_model');
+  assert.match(authorityRequirement.minimal_diagram.mermaid, /^flowchart LR/);
+  assertNoHydratedContent(result.result.preparation.git.committed_changed_files, 'git.committed_changed_files');
+  assertNoHydratedContent(result.result.preparation.git.changed_files, 'git.changed_files');
+  assertNoHydratedContent(result.result.preparation.git.dirty_files, 'git.dirty_files');
+  assertNoHydratedContent(result.result.preparation.git.raw_dirty_files, 'git.raw_dirty_files');
+  assertNoHydratedContent(result.result.preparation.git.vibepro_internal_dirty_files, 'git.vibepro_internal_dirty_files');
+  const artifactConsistencyGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assertNoHydratedContent(artifactConsistencyGate.current.dirty_files, 'gate:artifact_consistency.current.dirty_files');
+  assertNoHydratedContent(artifactConsistencyGate.current.raw_dirty_files, 'gate:artifact_consistency.current.raw_dirty_files');
+  assertNoHydratedContent(artifactConsistencyGate.current.vibepro_internal_dirty_files, 'gate:artifact_consistency.current.vibepro_internal_dirty_files');
+
+  const criticalGate = result.result.preparation.gate_status.critical_unresolved_gates.find((gate) => gate.id === 'gate:design_diagrams');
+  assert.equal(
+    criticalGate.downstream_diagram_requirements.some((item) => item.trigger_path === 'docs/responsibility-authority/story-pr-prepare.json'),
+    true
+  );
+  assert.equal(
+    criticalGate.downstream_diagram_requirements.some((item) => item.trigger_path === 'docs/contracts/generation-state.json'),
+    true
+  );
+  const nextActions = result.result.preparation.gate_status.next_required_actions.join('\n');
+  assert.match(nextActions, /threat_model/);
+  assert.match(nextActions, /docs\/responsibility-authority\/story-pr-prepare\.json/);
+  assert.match(nextActions, /docs\/contracts\/generation-state\.json/);
+  assert.match(nextActions, /docs\/contracts\/data-sharing\.json/);
+  assert.match(nextActions, /\.vibepro\/spec\/story-pr-prepare\/spec\.json diagrams\[\]/);
+  assert.match(nextActions, /flowchart LR/);
+});
+
 test('security_trust route enforces the security regression judgment gate with evidence or waiver', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
