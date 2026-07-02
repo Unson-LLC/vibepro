@@ -2691,8 +2691,19 @@ test('pr prepare blocks PR freshness when base advanced after branch creation', 
 test('pr prepare exposes stale verification evidence through artifact consistency gate', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare-path-bound.md'), `---
+title: PR準備 path-bound source
+---
+
+# PR準備 path-bound source
+
+## 背景
+
+This Story doc intentionally omits story_id frontmatter and binds by filename.
+`);
   await writeFile(path.join(repo, 'src', 'artifact-consistency.js'), 'export const value = 1;\n');
-  await git(repo, ['add', 'src/artifact-consistency.js']);
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare-path-bound.md', 'src/artifact-consistency.js']);
   await git(repo, ['commit', '-m', 'feat: add artifact consistency fixture']);
 
   const recordResult = await runCli([
@@ -2800,17 +2811,55 @@ test('pr prepare exposes stale verification evidence through artifact consistenc
   assert.equal(staleResult.exitCode, 0);
   const staleGate = staleResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(staleGate.status, 'stale_evidence');
+  assert.equal(staleResult.result.preparation.pr_context.story_source.story_id, null);
+  assert.match(staleResult.result.preparation.pr_context.story_source.path, /story-pr-prepare-path-bound\.md$/);
   assert.equal(staleGate.inconsistent_artifact_count >= 1, true);
   const staleVerificationArtifact = staleGate.inconsistent_artifacts.find((artifact) => artifact.artifact_type === 'verification_command');
   assert.equal(staleVerificationArtifact.kind, 'unit');
+  const staleReviewArtifact = staleGate.inconsistent_artifacts.find((artifact) => artifact.artifact_type === 'agent_review_result');
+  assert.equal(staleReviewArtifact.role, 'runtime_contract');
+  assert.equal(Array.isArray(staleGate.stale_artifact_details), true);
+  assert.equal(staleGate.stale_artifact_details.length >= 2, true);
+  const staleVerificationDetail = staleGate.stale_artifact_details.find((detail) => detail.artifact_type === 'verification_command');
+  assert.equal(staleVerificationDetail.artifact_path, staleVerificationArtifact.artifact);
+  assert.equal(staleVerificationDetail.artifact_kind, 'unit');
+  assert.equal(staleVerificationDetail.blocking, true);
+  assert.match(staleVerificationDetail.root_cause, /fingerprint|binding|head|stale/);
+  assert.match(staleVerificationDetail.stale_reason, /fingerprint|git state|binding|current|head/i);
+  assert.match(staleVerificationDetail.remediation_command, /vibepro verify record \. --id story-pr-prepare --kind unit --status pass --command 'npm test'/);
+  assert.equal(staleVerificationDetail.remediation_commands.some((command) => /vibepro pr prepare \. --story-id story-pr-prepare/.test(command)), true);
+  const staleReviewDetail = staleGate.stale_artifact_details.find((detail) => detail.artifact_type === 'agent_review_result');
+  assert.equal(staleReviewDetail.role, 'runtime_contract');
+  assert.equal(staleReviewDetail.stage, 'implementation');
+  assert.equal(staleReviewDetail.blocking, true);
+  assert.match(staleReviewDetail.remediation_command, /vibepro review prepare \. --id story-pr-prepare --stage implementation/);
+  assert.equal(staleReviewDetail.remediation_commands.some((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command)), true);
+  assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'verification_command'), true);
+  assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'agent_review_result'), true);
   assert.match(staleGate.reason, /not bound to the current git state/);
-  assert.equal(
-    staleResult.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:artifact_consistency'),
-    true
-  );
+  const criticalArtifactGate = staleResult.result.preparation.gate_status.critical_unresolved_gates.find((gate) => gate.id === 'gate:artifact_consistency');
+  assert.ok(criticalArtifactGate);
+  assert.equal(criticalArtifactGate.stale_artifact_details.length, staleGate.stale_artifact_details.length);
+  const artifactAction = staleResult.result.preparation.gate_status.execution_gate.required_actions
+    .find((action) => action.startsWith('Regenerate stale VibePro evidence artifacts'));
+  assert.ok(artifactAction);
   const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
   assert.match(actions, /Regenerate stale VibePro evidence artifacts/);
-  assert.match(actions, /Rerun current-bound verification evidence/);
+  assert.match(actions, /vibepro verify record \. --id story-pr-prepare --kind unit --status pass --command 'npm test'/);
+  assert.match(actions, /vibepro review prepare \. --id story-pr-prepare --stage implementation/);
+  assert.match(actions, /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/);
+  assert.doesNotMatch(artifactAction, /<story-id>/);
+
+  const staleSummary = await runCliWithStdout(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main']);
+  assert.equal(staleSummary.exitCode, 0);
+  assert.match(staleSummary.stdout, /## Artifact Consistency/);
+  assert.match(staleSummary.stdout, /verification_command/);
+  assert.match(staleSummary.stdout, /agent_review_result/);
+  assert.match(staleSummary.stdout, /vibepro verify record/);
+  assert.match(staleSummary.stdout, /vibepro review prepare/);
+  assert.match(staleSummary.stdout, /vibepro review record/);
+  const artifactSummary = staleSummary.stdout.split('## Artifact Consistency')[1].split('## Artifacts')[0];
+  assert.doesNotMatch(artifactSummary, /<story-id>/);
 });
 
 test('pr prepare annotates stale PR lifecycle artifacts with current HEAD mismatch', async () => {
