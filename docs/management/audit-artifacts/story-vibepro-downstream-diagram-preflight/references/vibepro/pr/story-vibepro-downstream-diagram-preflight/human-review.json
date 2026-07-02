@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-downstream-diagram-preflight",
+  "created_at": "2026-07-02T16:25:35.744Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-downstream-diagram-preflight.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-downstream-diagram-preflight.md)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+          "expected_root": null,
+          "expected_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+          "current_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783006073656-9698be7c",
+        "story_id": "story-vibepro-downstream-diagram-preflight",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "Scope reviewability accepted for issue 269 bundle",
+        "reason": "The changed files share one reviewer mental model: diagram requirement resolver, PR prepare rendering and sanitization, and issue-bound story/spec/tests. Review owner is the VibePro PR prepare gate owner; blast radius is limited to PR prepare diagnostics and resolver tests.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/pr-prepare.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+            "expected_root": null,
+            "expected_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+            "current_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+          "current_branch": "codex/issue-269-downstream-diagram-preflight",
+          "dirty": true,
+          "status_fingerprint": " M src/diagram-requirement-resolver.js\n M src/pr-manager.js\n M test/diagram-requirement-resolver.test.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-downstream-diagram-preflight.md\n?? docs/management/stories/active/story-vibepro-downstream-diagram-preflight.md\n?? docs/specs/vibepro-downstream-diagram-preflight.md\nM design-ssot.json",
+          "recorded_at": "2026-07-02T15:27:53.655Z"
+        },
+        "recorded_at": "2026-07-02T15:27:53.656Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-02T16:25:34.793Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+      "branch": "codex/issue-269-downstream-diagram-preflight",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

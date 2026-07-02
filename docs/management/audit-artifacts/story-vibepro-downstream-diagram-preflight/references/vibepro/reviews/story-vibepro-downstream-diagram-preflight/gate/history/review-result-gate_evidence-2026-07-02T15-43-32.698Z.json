@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-downstream-diagram-preflight",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Authority/contract diagram surfacing is covered, but hydrated changed-file content still leaks into PR and gate artifacts.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "content-leaks-into-pr-and-gate-artifacts",
+      "detail": "Hydrated changed-file content is not internal-only. src/pr-manager.js sanitizes changed_files, dirty_files, and file_groups, but does not sanitize raw_dirty_files or gate DAG current-state copies. Generated artifacts contain content at pr-prepare.json paths git.raw_dirty_files.*.content and pr_context.gate_dag current dirty/raw_dirty files, and gate-dag.json current dirty/raw_dirty files."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected dispatch/request, resolver and PR manager changes, story/spec/architecture docs, generated PR artifacts, gate DAG outputs, verification evidence, and focused resolver/CLI tests; found artifact serialization still exposes hydrated content outside internal use.",
+    "evidence": ".vibepro/pr/story-vibepro-downstream-diagram-preflight/pr-prepare.json and .vibepro/pr/story-vibepro-downstream-diagram-preflight/gate-dag.json content-path jq checks",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/parallel-dispatch.md",
+      ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/review-request-gate_evidence.md",
+      "src/pr-manager.js",
+      "src/diagram-requirement-resolver.js",
+      "test/vibepro-cli.test.js",
+      "test/diagram-requirement-resolver.test.js",
+      ".vibepro/pr/story-vibepro-downstream-diagram-preflight/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-downstream-diagram-preflight/gate-dag.json"
+    ]
+  },
+  "judgment_delta": [
+    "path_surface_coverage concern -> not resolved because raw_dirty_files and gate DAG current-state surfaces still serialize hydrated content"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+    "expected_root": null,
+    "expected_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+    "current_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+      "expected_root": null,
+      "expected_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+      "current_head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T15:43:32.698Z",
+  "git_context": {
+    "head_sha": "9d77c41e698a38e1fc83c159be4a359cfaa8b439",
+    "current_branch": "codex/issue-269-downstream-diagram-preflight",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "43839bf1776424a66a0fefd9fe694a7f8c18ba5a88e0d077cbe8e6e4c6efb4af",
+    "user_status_fingerprint_hash": "43839bf1776424a66a0fefd9fe694a7f8c18ba5a88e0d077cbe8e6e4c6efb4af",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T15:43:32.697Z"
+  },
+  "source_fingerprint": "42db981ca4336790a93282549ef14c7006c74ee9ef4f6a7b41035780bb3049f0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f237c-eeba-7752-81fb-4c53ca1d24c0",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1.close_agent:019f237c-eeba-7752-81fb-4c53ca1d24c0",
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

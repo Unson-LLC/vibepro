@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "suite": "downstream_diagram_preflight",
+  "tests": 28,
+  "pass": 28,
+  "fail": 0,
+  "focused_cli_tests": 1,
+  "focused_resolver_tests": 27,
+  "flow_replay": true,
+  "artifact_replay": true,
+  "scenario_clause_e2e": true
+}

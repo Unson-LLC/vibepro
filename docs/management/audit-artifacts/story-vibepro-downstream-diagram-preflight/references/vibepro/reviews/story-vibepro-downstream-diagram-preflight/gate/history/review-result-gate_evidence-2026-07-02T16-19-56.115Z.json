@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-downstream-diagram-preflight",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD resolves downstream diagram preflight review findings.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "content-leaks-into-pr-and-gate-artifacts",
+      "disposition": "accepted",
+      "resolved_by": [
+        "multi_agent_v1.wait_agent:019f239d-3d55-76e2-bac6-c30e70e1e480"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "contract-term-variants-uncovered",
+      "disposition": "accepted",
+      "resolved_by": [
+        "multi_agent_v1.wait_agent:019f239d-3d55-76e2-bac6-c30e70e1e480"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "dirty-contract-content-suppressed",
+      "disposition": "accepted",
+      "resolved_by": [
+        "multi_agent_v1.wait_agent:019f239d-3d55-76e2-bac6-c30e70e1e480"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected resolver, PR manager, focused tests, Story/Spec/Architecture docs, PR prepare artifacts, gate DAG, and replacement subagent transcript. Dirty contract content is preserved internally, hyphenated contract terms are covered, and hydrated file content remains sanitized from user-facing git/gate snapshots.",
+    "evidence": ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/agent-transcript-019f239d-3d55-76e2-bac6-c30e70e1e480.md",
+    "inputs": [
+      "src/pr-manager.js",
+      "src/diagram-requirement-resolver.js",
+      "test/vibepro-cli.test.js",
+      "test/diagram-requirement-resolver.test.js",
+      "docs/specs/vibepro-downstream-diagram-preflight.md",
+      "docs/architecture/vibepro-downstream-diagram-preflight.md",
+      "docs/management/stories/active/story-vibepro-downstream-diagram-preflight.md",
+      ".vibepro/pr/story-vibepro-downstream-diagram-preflight/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-downstream-diagram-preflight/gate-dag.json"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes findings dirty-contract-content-suppressed and contract-term-variants-uncovered -> resolved by preserving hydrated dirty content through mergeChangedAndDirtyFiles/file_groups, matching hyphenated security terms, and adding focused resolver plus PR prepare coverage; prior content leak remains resolved by output sanitization and jq content-key scan."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+    "expected_root": null,
+    "expected_head_sha": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+    "current_head_sha": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-downstream-diagram-preflight",
+      "expected_root": null,
+      "expected_head_sha": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+      "current_head_sha": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T16:19:56.115Z",
+  "git_context": {
+    "head_sha": "99b336a3bbf8a0bb4492bb44a15db88ee175dd1e",
+    "current_branch": "codex/issue-269-downstream-diagram-preflight",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T16:19:56.101Z"
+  },
+  "source_fingerprint": "673bcab5a8a28c7d1ce0fe6139d28c9f4633531ace8669eaeecb36ba34f29c11",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f239d-3d55-76e2-bac6-c30e70e1e480",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/agent-transcript-019f239d-3d55-76e2-bac6-c30e70e1e480.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-downstream-diagram-preflight/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1.close_agent:019f239d-3d55-76e2-bac6-c30e70e1e480",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
