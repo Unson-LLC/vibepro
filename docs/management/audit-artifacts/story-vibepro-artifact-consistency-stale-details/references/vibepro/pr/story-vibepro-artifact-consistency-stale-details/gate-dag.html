@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VibePro Gate DAG</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --fg: #14171f;
+      --muted: #667085;
+      --panel: #ffffff;
+      --panel-2: #f0f3f8;
+      --border: #d7dee8;
+      --good: #0f766e;
+      --warn: #a16207;
+      --danger: #b42318;
+      --info: #1d4ed8;
+      --neutral: #475467;
+      --code: #eef2f7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --fg: #e8edf5;
+        --muted: #9aa8bc;
+        --panel: #101827;
+        --panel-2: #172235;
+        --border: #2d3a4f;
+        --code: #1d2939;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1220px, calc(100% - 24px)); margin: 16px auto 40px; }
+    .topbar, section, article.card, .lane, .timeline-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 20px; margin-bottom: 12px; }
+    .brand { font-weight: 700; color: var(--info); }
+    section { padding: 18px; margin: 12px 0; }
+    h1, h2, h3 { margin: 0 0 10px; line-height: 1.25; letter-spacing: 0; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
+    .meta, .muted, .eyebrow { color: var(--muted); }
+    .meta, .eyebrow { margin: 0; font-size: 12px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; }
+    .hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+    .hero h2 { font-size: 22px; margin: 4px 0; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; background: transparent; border: 0; padding: 0; }
+    .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 92px; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin: 6px 0; font-size: 20px; overflow-wrap: anywhere; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: transparent; border: 0; padding: 0; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .flow-step { position: relative; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; min-height: 110px; overflow-wrap: anywhere; }
+    .flow-step:not(:last-child)::after { content: "->"; position: absolute; right: -12px; top: 44px; color: var(--muted); }
+    .cards, .node-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .card { padding: 14px; overflow-wrap: anywhere; }
+    .card p { margin: 6px 0 0; }
+    .lane-board { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 10px; overflow-x: auto; }
+    .lane { padding: 14px; min-width: 240px; }
+    .lane ul, .card ul { padding-left: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; overflow-wrap: anywhere; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top; }
+    th { background: var(--panel-2); }
+    code, pre { background: var(--code); border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { padding: 0.1rem 0.3rem; }
+    pre { padding: 10px; overflow: auto; white-space: pre-wrap; }
+    .timeline { display: grid; gap: 10px; }
+    .timeline-item { padding: 12px; }
+    .status { display: inline-block; border-radius: 999px; padding: 4px 10px; font-weight: 700; font-size: 12px; border: 1px solid currentColor; }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+    .info { color: var(--info); }
+    .neutral { color: var(--neutral); }
+    .dag-svg { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+    .dag-node { fill: var(--panel); stroke: var(--border); }
+    .dag-text { fill: var(--fg); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .dag-edge { stroke: var(--muted); stroke-width: 1.5; marker-end: url(#arrow); }
+    @media (max-width: 860px) {
+      .metrics, .grid-2, .flow, .cards, .node-grid { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+      .hero, .topbar { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main data-vibepro-report="gate-dag">
+    <header class="topbar">
+      <div>
+        <h1>VibePro Gate DAG</h1>
+        <p class="meta">Generated by VibePro at 2026-07-02T12:26:54.819Z</p>
+      </div>
+      <span class="brand">VibePro</span>
+    </header>
+
+      <section class="hero" data-overall-status="ready_for_review">
+        <div>
+          <p class="eyebrow">Completion dependency map</p>
+          <h2>story-vibepro-artifact-consistency-stale-details</h2>
+          <p class="muted">story-acceptance-verification-dag</p>
+        </div>
+        <span class="status good">ready_for_review</span>
+      </section>
+      <section class="metrics">
+        <article class="metric"><span>Acceptance</span><strong>6</strong><span>criteria</span></article>
+        <article class="metric"><span>Required Gates</span><strong>38</strong><span>gates</span></article>
+        <article class="metric"><span>Needs Evidence</span><strong>0</strong><span>unresolved</span></article>
+        <article class="metric"><span>Requirement</span><strong>passed</strong><span>status</span></article>
+      </section>
+
+    <section>
+      <h2>Suppressed Axis Candidates</h2>
+      <div class="cards">
+
+          <article class="card warn">
+            <h3>execution_topology[insufficient_signal]</h3>
+            <p class="muted">candidates=surface:workflow_or_agent, text:execution_topology</p>
+            <p>execution_topology has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists</p>
+          </article>
+
+      </div>
+    </section>
+
+
+    <section>
+      <h2>Unresolved Gates</h2>
+      <div class="cards">
+
+          <article class="card neutral">
+            <h3>No items</h3>
+
+            <p>なし</p>
+          </article>
+
+      </div>
+    </section>
+
+      <section>
+        <h2>Visual DAG</h2>
+
+    <svg class="dag-svg" viewBox="0 0 1120 2828" role="img" aria-label="Gate DAG">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L6,3 z" fill="currentColor"></path>
+        </marker>
+      </defs>
+      <line class="dag-edge" x1="194" y1="1438" x2="304" y2="105"></line><line class="dag-edge" x1="474" y1="105" x2="304" y2="186"></line><line class="dag-edge" x1="474" y1="186" x2="304" y2="266"></line><line class="dag-edge" x1="474" y1="266" x2="304" y2="347"></line><line class="dag-edge" x1="474" y1="347" x2="304" y2="428"></line><line class="dag-edge" x1="474" y1="428" x2="304" y2="509"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="590"></line><line class="dag-edge" x1="474" y1="590" x2="304" y2="994"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="670"></line><line class="dag-edge" x1="474" y1="670" x2="304" y2="994"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="751"></line><line class="dag-edge" x1="474" y1="751" x2="304" y2="994"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="832"></line><line class="dag-edge" x1="474" y1="832" x2="304" y2="994"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="913"></line><line class="dag-edge" x1="474" y1="913" x2="304" y2="994"></line><line class="dag-edge" x1="474" y1="509" x2="304" y2="1236"></line><line class="dag-edge" x1="474" y1="994" x2="304" y2="1074"></line><line class="dag-edge" x1="474" y1="1074" x2="304" y2="1155"></line><line class="dag-edge" x1="474" y1="1155" x2="304" y2="1236"></line><line class="dag-edge" x1="474" y1="1236" x2="304" y2="1317"></line><line class="dag-edge" x1="474" y1="1317" x2="117.33333333333333" y2="338"></line><line class="dag-edge" x1="474" y1="1317" x2="117.33333333333333" y2="652"></line><line class="dag-edge" x1="287.3333333333333" y1="338" x2="210.66666666666666" y2="1438"></line><line class="dag-edge" x1="287.3333333333333" y1="652" x2="304" y2="1398"></line><line class="dag-edge" x1="474" y1="1398" x2="210.66666666666666" y2="1438"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="967"></line><line class="dag-edge" x1="287.3333333333333" y1="967" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="967" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="967" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="967" x2="304" y2="2206"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="1281"></line><line class="dag-edge" x1="287.3333333333333" y1="1281" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="1281" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="1281" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="1281" x2="304" y2="2206"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="1595"></line><line class="dag-edge" x1="287.3333333333333" y1="1595" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="1595" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="1595" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="1595" x2="304" y2="2206"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="1909"></line><line class="dag-edge" x1="287.3333333333333" y1="1909" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="1909" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="1909" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="1909" x2="304" y2="2206"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="2224"></line><line class="dag-edge" x1="287.3333333333333" y1="2224" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="2224" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="2224" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="2224" x2="304" y2="2206"></line><line class="dag-edge" x1="194" y1="1438" x2="117.33333333333333" y2="2538"></line><line class="dag-edge" x1="287.3333333333333" y1="2538" x2="304" y2="1802"></line><line class="dag-edge" x1="287.3333333333333" y1="2538" x2="304" y2="2044"></line><line class="dag-edge" x1="287.3333333333333" y1="2538" x2="304" y2="2125"></line><line class="dag-edge" x1="287.3333333333333" y1="2538" x2="304" y2="2206"></line><line class="dag-edge" x1="380.66666666666663" y1="1438" x2="304" y2="1478"></line><line class="dag-edge" x1="474" y1="1478" x2="304" y2="1559"></line><line class="dag-edge" x1="474" y1="1559" x2="304" y2="1640"></line><line class="dag-edge" x1="474" y1="1640" x2="304" y2="1721"></line><line class="dag-edge" x1="474" y1="1721" x2="304" y2="1802"></line><line class="dag-edge" x1="474" y1="1802" x2="304" y2="1882"></line><line class="dag-edge" x1="474" y1="1882" x2="304" y2="1963"></line><line class="dag-edge" x1="474" y1="1963" x2="304" y2="2044"></line><line class="dag-edge" x1="474" y1="2044" x2="304" y2="2125"></line><line class="dag-edge" x1="474" y1="2125" x2="304" y2="2206"></line><line class="dag-edge" x1="474" y1="2206" x2="397.3333333333333" y2="1438"></line><line class="dag-edge" x1="474" y1="1802" x2="397.3333333333333" y2="1438"></line><line class="dag-edge" x1="287.3333333333333" y1="652" x2="397.3333333333333" y2="1438"></line><line class="dag-edge" x1="474" y1="2125" x2="397.3333333333333" y2="1438"></line><line class="dag-edge" x1="567.3333333333333" y1="1438" x2="490.66666666666663" y2="1438"></line><line class="dag-edge" x1="660.6666666666666" y1="1438" x2="584" y2="1438"></line><line class="dag-edge" x1="754" y1="1438" x2="677.3333333333333" y2="1438"></line><line class="dag-edge" x1="847.3333333333333" y1="1438" x2="770.6666666666666" y2="1438"></line><line class="dag-edge" x1="940.6666666666666" y1="1438" x2="864" y2="1438"></line><line class="dag-edge" x1="1034" y1="1438" x2="957.3333333333333" y2="1438"></line><line class="dag-edge" x1="1127.3333333333333" y1="1438" x2="304" y2="2286"></line><line class="dag-edge" x1="474" y1="2286" x2="304" y2="2367"></line><line class="dag-edge" x1="474" y1="2367" x2="304" y2="2448"></line><line class="dag-edge" x1="474" y1="2448" x2="304" y2="2529"></line><line class="dag-edge" x1="474" y1="2529" x2="1050.6666666666665" y2="1438"></line>
+
+      <g data-node-id="story">
+        <rect class="dag-node" x="24" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="34" y="1434">story-vibepro-artifac...</text>
+        <text class="dag-text" x="34" y="1452">present</text>
+      </g>
+
+      <g data-node-id="gate:story_source_integrity">
+        <rect class="dag-node" x="304" y="81" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="101">Story Source Integrit...</text>
+        <text class="dag-text" x="314" y="119">passed</text>
+      </g>
+
+      <g data-node-id="gate:engineering_judgment_route">
+        <rect class="dag-node" x="304" y="162" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="182">Engineering Judgment ...</text>
+        <text class="dag-text" x="314" y="200">passed</text>
+      </g>
+
+      <g data-node-id="gate:common_judgment_spine">
+        <rect class="dag-node" x="304" y="242" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="262">Common Judgment Spine...</text>
+        <text class="dag-text" x="314" y="280">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_axis_public_contract">
+        <rect class="dag-node" x="304" y="323" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="343">Judgment Axis: public...</text>
+        <text class="dag-text" x="314" y="361">passed</text>
+      </g>
+
+      <g data-node-id="gate:pr_scope_judgment">
+        <rect class="dag-node" x="304" y="404" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="424">PR Scope Judgment Gate</text>
+        <text class="dag-text" x="314" y="442">passed</text>
+      </g>
+
+      <g data-node-id="gate:bug_physics_triage">
+        <rect class="dag-node" x="304" y="485" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="505">Bug Physics Triage Ga...</text>
+        <text class="dag-text" x="314" y="523">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_agent_workflow_context_acquisition">
+        <rect class="dag-node" x="304" y="566" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="586">Context Acquisition G...</text>
+        <text class="dag-text" x="314" y="604">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_agent_workflow_tool_boundary">
+        <rect class="dag-node" x="304" y="646" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="666">Tool Boundary Gate</text>
+        <text class="dag-text" x="314" y="684">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_agent_workflow_delegation_policy">
+        <rect class="dag-node" x="304" y="727" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="747">Delegation Policy Gate</text>
+        <text class="dag-text" x="314" y="765">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_agent_workflow_evidence_lifecycle">
+        <rect class="dag-node" x="304" y="808" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="828">Evidence Lifecycle Ga...</text>
+        <text class="dag-text" x="314" y="846">passed</text>
+      </g>
+
+      <g data-node-id="gate:judgment_agent_workflow_human_decision_contract">
+        <rect class="dag-node" x="304" y="889" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="909">Human Decision Contra...</text>
+        <text class="dag-text" x="314" y="927">passed</text>
+      </g>
+
+      <g data-node-id="gate:pr_route_classification">
+        <rect class="dag-node" x="304" y="970" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="990">PR Route Classificati...</text>
+        <text class="dag-text" x="314" y="1008">passed</text>
+      </g>
+
+      <g data-node-id="gate:pr_body_contract">
+        <rect class="dag-node" x="304" y="1050" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1070">PR Body Contract Gate</text>
+        <text class="dag-text" x="314" y="1088">passed</text>
+      </g>
+
+      <g data-node-id="gate:managed_worktree">
+        <rect class="dag-node" x="304" y="1131" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1151">Managed Worktree Gate</text>
+        <text class="dag-text" x="314" y="1169">needs_review</text>
+      </g>
+
+      <g data-node-id="gate:change_classification">
+        <rect class="dag-node" x="304" y="1212" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1232">Change Classification...</text>
+        <text class="dag-text" x="314" y="1250">passed</text>
+      </g>
+
+      <g data-node-id="gate:pr_freshness">
+        <rect class="dag-node" x="304" y="1293" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1313">PR Freshness Gate</text>
+        <text class="dag-text" x="314" y="1331">passed</text>
+      </g>
+
+      <g data-node-id="architecture">
+        <rect class="dag-node" x="117.33333333333333" y="314" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="334">Architecture Gate</text>
+        <text class="dag-text" x="127.33333333333333" y="352">satisfied</text>
+      </g>
+
+      <g data-node-id="spec">
+        <rect class="dag-node" x="117.33333333333333" y="628" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="648">Spec Gate</text>
+        <text class="dag-text" x="127.33333333333333" y="666">present</text>
+      </g>
+
+      <g data-node-id="gate:design_diagrams">
+        <rect class="dag-node" x="304" y="1374" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1394">Design Diagrams (MUST...</text>
+        <text class="dag-text" x="314" y="1412">not_required</text>
+      </g>
+
+      <g data-node-id="code">
+        <rect class="dag-node" x="210.66666666666666" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="220.66666666666666" y="1434">Code Gate</text>
+        <text class="dag-text" x="220.66666666666666" y="1452">present</text>
+      </g>
+
+      <g data-node-id="gate:network_contract">
+        <rect class="dag-node" x="304" y="1454" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1474">Network Contract Gate</text>
+        <text class="dag-text" x="314" y="1492">passed</text>
+      </g>
+
+      <g data-node-id="gate:path_surface_matrix">
+        <rect class="dag-node" x="304" y="1535" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1555">Path Surface Matrix G...</text>
+        <text class="dag-text" x="314" y="1573">passed</text>
+      </g>
+
+      <g data-node-id="gate:design_ssot_reconciliation">
+        <rect class="dag-node" x="304" y="1616" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1636">Design SSOT Reconcili...</text>
+        <text class="dag-text" x="314" y="1654">passed</text>
+      </g>
+
+      <g data-node-id="gate:responsibility_authority">
+        <rect class="dag-node" x="304" y="1697" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1717">Responsibility Author...</text>
+        <text class="dag-text" x="314" y="1735">passed</text>
+      </g>
+
+      <g data-node-id="gate:requirement">
+        <rect class="dag-node" x="304" y="1778" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1798">Requirement Gate</text>
+        <text class="dag-text" x="314" y="1816">passed</text>
+      </g>
+
+      <g data-node-id="gate:failure_mode_coverage">
+        <rect class="dag-node" x="304" y="1858" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1878">Failure Mode Coverage...</text>
+        <text class="dag-text" x="314" y="1896">passed</text>
+      </g>
+
+      <g data-node-id="gate:decision_record">
+        <rect class="dag-node" x="304" y="1939" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="1959">Decision Record Gate</text>
+        <text class="dag-text" x="314" y="1977">passed</text>
+      </g>
+
+      <g data-node-id="gate:unit">
+        <rect class="dag-node" x="304" y="2020" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2040">Unit Gate</text>
+        <text class="dag-text" x="314" y="2058">passed</text>
+      </g>
+
+      <g data-node-id="gate:integration">
+        <rect class="dag-node" x="304" y="2101" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2121">Integration Gate</text>
+        <text class="dag-text" x="314" y="2139">passed</text>
+      </g>
+
+      <g data-node-id="gate:e2e">
+        <rect class="dag-node" x="304" y="2182" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2202">E2E Gate</text>
+        <text class="dag-text" x="314" y="2220">passed</text>
+      </g>
+
+      <g data-node-id="review:dispatch_batch:gate">
+        <rect class="dag-node" x="397.3333333333333" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="407.3333333333333" y="1434">Review Dispatch Batch...</text>
+        <text class="dag-text" x="407.3333333333333" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="review:preflight:gate:gate_evidence">
+        <rect class="dag-node" x="490.66666666666663" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="500.66666666666663" y="1434">Review Dispatch Prefl...</text>
+        <text class="dag-text" x="500.66666666666663" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="review:prepare:gate">
+        <rect class="dag-node" x="584" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="594" y="1434">Review Prepare: gate</text>
+        <text class="dag-text" x="594" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="review:gate:gate_evidence">
+        <rect class="dag-node" x="677.3333333333333" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="687.3333333333333" y="1434">Agent Review: gate_ev...</text>
+        <text class="dag-text" x="687.3333333333333" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="review:record:gate:gate_evidence">
+        <rect class="dag-node" x="770.6666666666666" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="780.6666666666666" y="1434">Review Record: gate_e...</text>
+        <text class="dag-text" x="780.6666666666666" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="review:join:gate">
+        <rect class="dag-node" x="864" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="874" y="1434">Review Stage Join: ga...</text>
+        <text class="dag-text" x="874" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="gate:agent_review">
+        <rect class="dag-node" x="957.3333333333333" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="967.3333333333333" y="1434">Agent Review Gate</text>
+        <text class="dag-text" x="967.3333333333333" y="1452">passed</text>
+      </g>
+
+      <g data-node-id="gate:review_inspection_required">
+        <rect class="dag-node" x="304" y="2262" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2282">Review Inspection Req...</text>
+        <text class="dag-text" x="314" y="2300">passed</text>
+      </g>
+
+      <g data-node-id="gate:definition_of_done">
+        <rect class="dag-node" x="304" y="2343" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2363">Definition of Done Ga...</text>
+        <text class="dag-text" x="314" y="2381">passed</text>
+      </g>
+
+      <g data-node-id="gate:artifact_consistency">
+        <rect class="dag-node" x="304" y="2424" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2444">Artifact Consistency ...</text>
+        <text class="dag-text" x="314" y="2462">passed</text>
+      </g>
+
+      <g data-node-id="gate:dag_connectivity">
+        <rect class="dag-node" x="304" y="2505" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2525">DAG Connectivity Gate</text>
+        <text class="dag-text" x="314" y="2543">passed</text>
+      </g>
+
+      <g data-node-id="pr">
+        <rect class="dag-node" x="1050.6666666666665" y="1414" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="1060.6666666666665" y="1434">PR Gate</text>
+        <text class="dag-text" x="1060.6666666666665" y="1452">pending</text>
+      </g>
+
+      <g data-node-id="ac:1">
+        <rect class="dag-node" x="117.33333333333333" y="943" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="963">`gate:artifact_consis...</text>
+        <text class="dag-text" x="127.33333333333333" y="981">present</text>
+      </g>
+
+      <g data-node-id="ac:2">
+        <rect class="dag-node" x="117.33333333333333" y="1257" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="1277">verification evidence...</text>
+        <text class="dag-text" x="127.33333333333333" y="1295">present</text>
+      </g>
+
+      <g data-node-id="ac:3">
+        <rect class="dag-node" x="117.33333333333333" y="1571" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="1591">`gate_status.critical...</text>
+        <text class="dag-text" x="127.33333333333333" y="1609">present</text>
+      </g>
+
+      <g data-node-id="ac:4">
+        <rect class="dag-node" x="117.33333333333333" y="1885" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="1905">`pr prepare` の人間向けサマリ...</text>
+        <text class="dag-text" x="127.33333333333333" y="1923">present</text>
+      </g>
+
+      <g data-node-id="ac:5">
+        <rect class="dag-node" x="117.33333333333333" y="2200" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="2220">既存の `inconsistent_art...</text>
+        <text class="dag-text" x="127.33333333333333" y="2238">present</text>
+      </g>
+
+      <g data-node-id="ac:6">
+        <rect class="dag-node" x="117.33333333333333" y="2514" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="127.33333333333333" y="2534">新規詳細フィールドはadditiveで、既...</text>
+        <text class="dag-text" x="127.33333333333333" y="2552">present</text>
+      </g>
+
+      <g data-node-id="gate:traceability_clause_coverage">
+        <rect class="dag-node" x="304" y="2586" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2606">Traceability Clause C...</text>
+        <text class="dag-text" x="314" y="2624">passed</text>
+      </g>
+
+      <g data-node-id="gate:evidence_reuse_freshness">
+        <rect class="dag-node" x="304" y="2666" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2686">Evidence Summary Reus...</text>
+        <text class="dag-text" x="314" y="2704">passed</text>
+      </g>
+
+      <g data-node-id="gate:senior_gap_judgment">
+        <rect class="dag-node" x="304" y="2747" width="170" height="48" rx="6"></rect>
+        <text class="dag-text" x="314" y="2767">Senior Gap Judgment G...</text>
+        <text class="dag-text" x="314" y="2785">passed</text>
+      </g>
+
+    </svg>
+
+      </section>
+      <section>
+        <h2>Gate Nodes</h2>
+        <div class="node-grid">
+    <article class="card good" data-node-id="story">
+      <h3>story-vibepro-artifact-consistency-stale-details - Artifact Consistency Gateでstale artifactの原因と復旧手順を出す</h3>
+      <p class="muted">story / story</p>
+      <p><span class="status good">present</span></p>
+      <p>Story source is present</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:story_source_integrity">
+      <h3>Story Source Integrity Gate</h3>
+      <p class="muted">gate:story_source_integrity / story_source_integrity_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Resolved and changed Story documents match the selected Story, or no changed Story document needs binding.</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:engineering_judgment_route">
+      <h3>Engineering Judgment Route Gate</h3>
+      <p class="muted">gate:engineering_judgment_route / engineering_judgment_route_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Engineering judgment route selected: agent_workflow; DAG=agent_workflow_dag</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:common_judgment_spine">
+      <h3>Common Judgment Spine Gate</h3>
+      <p class="muted">gate:common_judgment_spine / engineering_judgment_spine_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_axis_public_contract">
+      <h3>Judgment Axis: public_contract</h3>
+      <p class="muted">gate:judgment_axis_public_contract / judgment_axis_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, focused_test, focused_test, focused_test, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, integration_runtime_path, integration_runtime_path, negative_path, negative_path, negative_path, focused_test, runtime_path_evidence, e2e_runtime_path, e2e_runtime_path, flow_replay, flow_replay, artifact_replay, artifact_replay, scenario_clause_e2e, scenario_clause_e2e, current_verification, scope_reviewed, split_plan.</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:pr_scope_judgment">
+      <h3>PR Scope Judgment Gate</h3>
+      <p class="muted">gate:pr_scope_judgment / pr_scope_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>PR scope is focused; 6 changed file(s) are reviewable as one Story PR</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:bug_physics_triage">
+      <h3>Bug Physics Triage Gate</h3>
+      <p class="muted">gate:bug_physics_triage / bug_physics_triage_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>No bug-physics-specific route selected; ordinary gate profile remains in force</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_agent_workflow_context_acquisition">
+      <h3>Context Acquisition Gate</h3>
+      <p class="muted">gate:judgment_agent_workflow_context_acquisition / route_specific_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>agentが読むべきrepo/docs/log/graph/current stateを先に集める</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_agent_workflow_tool_boundary">
+      <h3>Tool Boundary Gate</h3>
+      <p class="muted">gate:judgment_agent_workflow_tool_boundary / route_specific_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>どのtool/agentがどの副作用を持つかを分離する</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_agent_workflow_delegation_policy">
+      <h3>Delegation Policy Gate</h3>
+      <p class="muted">gate:judgment_agent_workflow_delegation_policy / route_specific_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_agent_workflow_evidence_lifecycle">
+      <h3>Evidence Lifecycle Gate</h3>
+      <p class="muted">gate:judgment_agent_workflow_evidence_lifecycle / agent_evidence_lifecycle_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Agent review evidence lifecycle is closed for the current git state (recorded review or explicit waiver)</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:judgment_agent_workflow_human_decision_contract">
+      <h3>Human Decision Contract Gate</h3>
+      <p class="muted">gate:judgment_agent_workflow_human_decision_contract / route_specific_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>最後に人間が判断する問いと根拠をPRに出す</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:pr_route_classification">
+      <h3>PR Route Classification Gate</h3>
+      <p class="muted">gate:pr_route_classification / pr_route_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>PR route selected: runtime_change; body template: runtime_contract_review</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:pr_body_contract">
+      <h3>PR Body Contract Gate</h3>
+      <p class="muted">gate:pr_body_contract / pr_body_contract_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>PR body must use runtime_contract_review and expose the route-specific decision contract</p>
+    </article>
+
+    <article class="card warn" data-node-id="gate:managed_worktree">
+      <h3>Managed Worktree Gate</h3>
+      <p class="muted">gate:managed_worktree / managed_worktree_gate</p>
+      <p><span class="status warn">needs_review</span></p>
+      <p>VibePro managed worktree execution state is missing</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:change_classification">
+      <h3>Change Classification Gate</h3>
+      <p class="muted">gate:change_classification / change_classification_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>PR/gate orchestration source changed; Story or diff contains workflow/state transition keywords</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:pr_freshness">
+      <h3>PR Freshness Gate</h3>
+      <p class="muted">gate:pr_freshness / pr_freshness_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>HEAD contains current origin/main; PR prepare artifacts are based on the latest resolved base ref</p>
+    </article>
+
+    <article class="card good" data-node-id="architecture">
+      <h3>Architecture Gate</h3>
+      <p class="muted">architecture / architecture_gate</p>
+      <p><span class="status good">satisfied</span></p>
+      <p>ADRあり (docs/architecture/vibepro-artifact-consistency-stale-details.md)</p>
+    </article>
+
+    <article class="card good" data-node-id="spec">
+      <h3>Spec Gate</h3>
+      <p class="muted">spec / spec_gate</p>
+      <p><span class="status good">present</span></p>
+      <p>explicit Spec docs are present (docs/specs/vibepro-artifact-consistency-stale-details.md)</p>
+    </article>
+
+    <article class="card neutral" data-node-id="gate:design_diagrams">
+      <h3>Design Diagrams (MUST-HAVE)</h3>
+      <p class="muted">gate:design_diagrams / design_diagrams_gate</p>
+      <p><span class="status neutral">not_required</span></p>
+      <p>該当する設計図トリガーなし</p>
+    </article>
+
+    <article class="card good" data-node-id="code">
+      <h3>Code Gate</h3>
+      <p class="muted">code / code_gate</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:network_contract">
+      <h3>Network Contract Gate</h3>
+      <p class="muted">gate:network_contract / verification_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>No broken API client route contracts detected</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:path_surface_matrix">
+      <h3>Path Surface Matrix Gate</h3>
+      <p class="muted">gate:path_surface_matrix / path_surface_matrix_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>2 path surface row(s) are covered or not critical for this route</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:design_ssot_reconciliation">
+      <h3>Design SSOT Reconciliation Gate</h3>
+      <p class="muted">gate:design_ssot_reconciliation / design_ssot_reconciliation_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>27 design root(s) reconciled without deterministic lineage gaps.</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:responsibility_authority">
+      <h3>Responsibility Authority Gate</h3>
+      <p class="muted">gate:responsibility_authority / responsibility_authority_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>8 responsibility authority match(es) have current evidence.</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:requirement">
+      <h3>Requirement Gate</h3>
+      <p class="muted">gate:requirement / requirement_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:failure_mode_coverage">
+      <h3>Failure Mode Coverage Gate</h3>
+      <p class="muted">gate:failure_mode_coverage / failure_mode_coverage_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>3 failure mode candidate(s) are covered or not critical for this route profile</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:decision_record">
+      <h3>Decision Record Gate</h3>
+      <p class="muted">gate:decision_record / decision_record_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Decision records are captured; total=1, waivers=1, noise=0, secret_exposure=0</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:unit">
+      <h3>Unit Gate</h3>
+      <p class="muted">gate:unit / verification_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Imported CI evidence for test (22) (SUCCESS) at HEAD 4cd9e442c237; evidence: .vibepro/pr/story-vibepro-artifact-consistency-stale-details/ci-evidence/test_22_.json</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:integration">
+      <h3>Integration Gate</h3>
+      <p class="muted">gate:integration / verification_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Imported CI evidence for CodeQL (SUCCESS) at HEAD 4cd9e442c237; evidence: .vibepro/pr/story-vibepro-artifact-consistency-stale-details/ci-evidence/CodeQL.json</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:e2e">
+      <h3>E2E Gate</h3>
+      <p class="muted">gate:e2e / verification_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>CLI pr prepare replay covers stale artifact detail output, review-surface remediation commands, path-bound story id fallback, AC-5 compatibility, and responsibility authority evidence on current HEAD.; evidence: .vibepro/verification-artifacts/story-vibepro-artifact-consistency-stale-details/artifact-consistency-e2e-status.json</p>
+    </article>
+
+    <article class="card good" data-node-id="review:dispatch_batch:gate">
+      <h3>Review Dispatch Batch: gate</h3>
+      <p class="muted">review:dispatch_batch:gate / agent_review_dispatch_batch_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>All gate role preflight checks passed and dispatch instructions are prepared</p>
+    </article>
+
+    <article class="card good" data-node-id="review:preflight:gate:gate_evidence">
+      <h3>Review Dispatch Preflight: gate_evidence</h3>
+      <p class="muted">review:preflight:gate:gate_evidence / agent_review_dispatch_preflight_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Current gate:gate_evidence review already passed; do not dispatch a duplicate reviewer for the same git state</p>
+    </article>
+
+    <article class="card good" data-node-id="review:prepare:gate">
+      <h3>Review Prepare: gate</h3>
+      <p class="muted">review:prepare:gate / agent_review_prepare_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Policy-aware agent review dispatch instructions were generated</p>
+    </article>
+
+    <article class="card good" data-node-id="review:gate:gate_evidence">
+      <h3>Agent Review: gate_evidence</h3>
+      <p class="muted">review:gate:gate_evidence / agent_review_role_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Current HEAD 4cd9e442c2370739a52f1b10ce317fc690131ce8 passes gate_evidence review: stale prior review evidence is correctly rejected as stale, current verification evidence is HEAD-bound, remediation commands are concrete, and artifact consistency remains blocking until current evidence is recorded.</p>
+    </article>
+
+    <article class="card good" data-node-id="review:record:gate:gate_evidence">
+      <h3>Review Record: gate_evidence</h3>
+      <p class="muted">review:record:gate:gate_evidence / agent_review_record_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Recorded gate:gate_evidence review for the current git state</p>
+    </article>
+
+    <article class="card good" data-node-id="review:join:gate">
+      <h3>Review Stage Join: gate</h3>
+      <p class="muted">review:join:gate / agent_review_stage_join_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>All parallel gate agent review roles are closed and recorded for the current git state</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:agent_review">
+      <h3>Agent Review Gate</h3>
+      <p class="muted">gate:agent_review / agent_review_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Required staged agent reviews passed for the current git state</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:review_inspection_required">
+      <h3>Review Inspection Required Gate</h3>
+      <p class="muted">gate:review_inspection_required / review_inspection_required_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Review inspection evidence is not critical for this route profile</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:definition_of_done">
+      <h3>Definition of Done Gate</h3>
+      <p class="muted">gate:definition_of_done / definition_of_done_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Current-head verification evidence exists and required Agent Review is closed or not required</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:artifact_consistency">
+      <h3>Artifact Consistency Gate</h3>
+      <p class="muted">gate:artifact_consistency / artifact_consistency_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>6 recorded verification/review artifact(s) accepted for artifact consistency (6 current); reused artifacts are not labeled as current</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:dag_connectivity">
+      <h3>DAG Connectivity Gate</h3>
+      <p class="muted">gate:dag_connectivity / dag_connectivity_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Every DAG node is reachable from story and can reach the final PR decision</p>
+    </article>
+
+    <article class="card neutral" data-node-id="pr">
+      <h3>PR Gate</h3>
+      <p class="muted">pr / pr_gate</p>
+      <p><span class="status neutral">pending</span></p>
+      <p>Unit / Integration / E2E Gateの証跡をPR本文で確認する</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:1">
+      <h3>`gate:artifact_consistency` がstale artifactごとにartifact path、artifact type、stale reason、root cause、blocking status、remediation commandを出す。</h3>
+      <p class="muted">ac:1 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:2">
+      <h3>verification evidenceとagent review resultが混在してstaleになっても、それぞれの復旧コマンドが区別される。</h3>
+      <p class="muted">ac:2 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:3">
+      <h3>`gate_status.critical_unresolved_gates` とexecution gate actionからも、どのartifactを復旧すべきか追える。</h3>
+      <p class="muted">ac:3 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:4">
+      <h3>`pr prepare` の人間向けサマリに、stale artifactの短い一覧と復旧コマンドが表示される。</h3>
+      <p class="muted">ac:4 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:5">
+      <h3>既存の `inconsistent_artifacts` 互換フィールドは維持する。</h3>
+      <p class="muted">ac:5 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="ac:6">
+      <h3>新規詳細フィールドはadditiveで、既存JSON consumerの読み取り契約を壊さない。</h3>
+      <p class="muted">ac:6 / acceptance_criterion</p>
+      <p><span class="status good">present</span></p>
+      <p>-</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:traceability_clause_coverage">
+      <h3>Traceability Clause Coverage Gate</h3>
+      <p class="muted">gate:traceability_clause_coverage / traceability_clause_coverage_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Every extracted AC/scenario clause has clause-specific test, review, or verification evidence</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:evidence_reuse_freshness">
+      <h3>Evidence Summary Reuse Freshness</h3>
+      <p class="muted">gate:evidence_reuse_freshness / artifact_freshness_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>Evidence reuse status is hit.</p>
+    </article>
+
+    <article class="card good" data-node-id="gate:senior_gap_judgment">
+      <h3>Senior Gap Judgment Gate</h3>
+      <p class="muted">gate:senior_gap_judgment / senior_gap_judgment_gate</p>
+      <p><span class="status good">passed</span></p>
+      <p>1 residual risk(s) remain explicit but are safe to defer for this PR.</p>
+    </article>
+  </div>
+      </section>
+
+  </main>
+</body>
+</html>

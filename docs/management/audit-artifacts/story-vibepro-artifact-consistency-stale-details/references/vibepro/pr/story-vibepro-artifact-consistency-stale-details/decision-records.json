@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-artifact-consistency-stale-details",
+  "updated_at": "2026-07-02T12:14:08.429Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "expected_root": null,
+      "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782994448429-9acaaa34",
+      "story_id": "story-vibepro-artifact-consistency-stale-details",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "source_status": "needs_evidence",
+      "summary": "Only gate_evidence parallel subagent review is required for this Story; non-required review stages are not part of the PR creation contract.",
+      "reason": "The current change is scoped to Artifact Consistency Gate stale detail reporting. VibePro review prepare/start/close/record was completed for stage=gate role=gate_evidence on the implementation commit, and review status shows no stale, timed out, or blocking review result. Missing roles in other stages are checkpoint placeholders, not required reviews for this Story.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-result-gate_evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+          "expected_root": null,
+          "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+          "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+        "current_branch": "codex/vibepro-artifact-consistency-details",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T12:14:08.428Z"
+      },
+      "recorded_at": "2026-07-02T12:14:08.429Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+        "expected_root": null,
+        "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+        "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782994448429-9acaaa34",
+      "story_id": "story-vibepro-artifact-consistency-stale-details",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "source_status": "needs_evidence",
+      "summary": "Only gate_evidence parallel subagent review is required for this Story; non-required review stages are not part of the PR creation contract.",
+      "reason": "The current change is scoped to Artifact Consistency Gate stale detail reporting. VibePro review prepare/start/close/record was completed for stage=gate role=gate_evidence on the implementation commit, and review status shows no stale, timed out, or blocking review result. Missing roles in other stages are checkpoint placeholders, not required reviews for this Story.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-result-gate_evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+          "expected_root": null,
+          "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+          "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+        "current_branch": "codex/vibepro-artifact-consistency-details",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T12:14:08.428Z"
+      },
+      "recorded_at": "2026-07-02T12:14:08.429Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-artifact-consistency-stale-details/decision-records.json"
+}

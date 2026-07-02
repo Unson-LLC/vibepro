@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-artifact-consistency-stale-details",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD 4cd9e442c2370739a52f1b10ce317fc690131ce8 passes gate_evidence review: stale prior review evidence is correctly rejected as stale, current verification evidence is HEAD-bound, remediation commands are concrete, and artifact consistency remains blocking until current evidence is recorded.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed the VibePro gate_evidence request, current gate DAG, changed story/spec/architecture/docs, design SSOT, src/pr-manager.js, and focused regression tests. Verified freshness, command reliability, gate binding, regression_guard, and path_surface_coverage.",
+    "evidence": "subagent:019f22c2-ae92-7250-ae2d-c3964a345efa; node --test --test-name-pattern \"artifact consistency\" test/vibepro-cli.test.js; npm run typecheck; git diff --check",
+    "inputs": [
+      "HEAD: 4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-artifact-consistency-stale-details/gate-dag.json",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js",
+      "docs/architecture/vibepro-artifact-consistency-stale-details.md",
+      "docs/management/stories/active/story-vibepro-artifact-consistency-stale-details.md",
+      "docs/specs/vibepro-artifact-consistency-stale-details.md"
+    ]
+  },
+  "judgment_delta": [
+    "previous_recorded_gate_evidence was stale at 12464d55053d and not accepted as current; current review passes for implementation and evidence quality at 4cd9e442c237 after subagent inspection and focused tests."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+    "expected_root": null,
+    "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+    "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "expected_root": null,
+      "expected_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      "current_head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T12:22:12.851Z",
+  "git_context": {
+    "head_sha": "4cd9e442c2370739a52f1b10ce317fc690131ce8",
+    "current_branch": "codex/vibepro-artifact-consistency-details",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T12:22:12.850Z"
+  },
+  "source_fingerprint": "9a58bfeb749f8475d0542de70c8e30c5d5453b4b4ef91e0b52bca3fbd24b0586",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f22c2-ae92-7250-ae2d-c3964a345efa",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "subagent:019f22c2-ae92-7250-ae2d-c3964a345efa",
+    "request_artifact": ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f22c2-ae92-7250-ae2d-c3964a345efa",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

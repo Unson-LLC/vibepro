@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "tests": "1",
+    "pass": "1",
+    "fail": "0",
+    "gate": "artifact_consistency",
+    "review_surface": "covered",
+    "pr_prepare": "stale_artifact_details",
+    "remediation_commands": "verify_record_review_prepare_review_start_review_close_review_record_pr_prepare"
+  }
+}

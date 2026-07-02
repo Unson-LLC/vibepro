@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-artifact-consistency-stale-details",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence role is satisfied for current HEAD 12464d55053d3984751ac374121b32c849abed44: stale evidence reuse is detected and not used as fresh, verification artifacts are current-head bound, remediation commands are artifact-specific, and changed surfaces are covered by focused CLI regression.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, PR prepare artifacts, gate DAG, verification evidence, senior gaps, PR body, story/spec docs, src/pr-manager.js diff, focused test diff, code graph caller path, and reran focused artifact-consistency test plus typecheck read-only.",
+    "evidence": ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-request-gate_evidence.md; .vibepro/pr/story-vibepro-artifact-consistency-stale-details/pr-prepare.json; .vibepro/pr/story-vibepro-artifact-consistency-stale-details/gate-dag.json; npm test -- --test-name-pattern \"artifact consistency\" test/vibepro-cli.test.js; npm run typecheck",
+    "inputs": [
+      "HEAD: 12464d55053d3984751ac374121b32c849abed44",
+      ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-artifact-consistency-stale-details/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-artifact-consistency-stale-details/gate-dag.json",
+      ".vibepro/pr/story-vibepro-artifact-consistency-stale-details/verification-evidence.json",
+      "docs/management/stories/active/story-vibepro-artifact-consistency-stale-details.md",
+      "docs/specs/vibepro-artifact-consistency-stale-details.md",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "freshness concern -> passed because evidence-reuse is stale but fresh_use_allowed=false and used_as_fresh=false, while current verification timestamps are recorded against HEAD 12464d55053d3984751ac374121b32c849abed44.",
+    "command reliability concern -> passed because verification/remediation commands distinguish verification artifacts from agent review lifecycle artifacts, and the focused test asserts verify record, review prepare, review record, pr prepare, and absence of <story-id> fallback in rendered output.",
+    "gate binding concern -> passed because pr-prepare toolchain commit, gate artifact current.head_sha, verification git_context.head_sha, and local HEAD all match 12464d55053d3984751ac374121b32c849abed44.",
+    "regression_guard concern -> passed because typecheck and the focused CLI regression pass, and the test keeps legacy inconsistent_artifacts populated while adding stale_artifact_details/groups.",
+    "path_surface_coverage concern -> passed because implementation projects stale details into gate DAG payload, critical_unresolved_gates, execution_gate.required_actions, and human PR prepare summary; the test covers mixed verification and agent-review stale artifacts plus path-bound story id fallback."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+    "expected_root": null,
+    "expected_head_sha": "12464d55053d3984751ac374121b32c849abed44",
+    "current_head_sha": "12464d55053d3984751ac374121b32c849abed44",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-artifact-consistency-details",
+      "expected_root": null,
+      "expected_head_sha": "12464d55053d3984751ac374121b32c849abed44",
+      "current_head_sha": "12464d55053d3984751ac374121b32c849abed44",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T12:08:58.693Z",
+  "git_context": {
+    "head_sha": "12464d55053d3984751ac374121b32c849abed44",
+    "current_branch": "codex/vibepro-artifact-consistency-details",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T12:08:58.692Z"
+  },
+  "source_fingerprint": "352b56cf0c3c1119c6bccd800aaa1bad064fec552299757d6e70bcbffb13190e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f22b8-d492-7212-b538-8754e84245cb",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "subagent:019f22b8-d492-7212-b538-8754e84245cb",
+    "request_artifact": ".vibepro/reviews/story-vibepro-artifact-consistency-stale-details/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f22b8-d492-7212-b538-8754e84245cb",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
