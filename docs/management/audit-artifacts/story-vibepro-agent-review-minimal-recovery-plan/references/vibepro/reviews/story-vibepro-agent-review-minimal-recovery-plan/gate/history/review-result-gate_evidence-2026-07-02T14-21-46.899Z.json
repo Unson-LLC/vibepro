@@ -1,0 +1,97 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD f433abf satisfies gate_evidence: minimal_recovery_plan is additive JSON, mirrored into gate_status, rendered in PR prepare/report HTML, and covered by focused stale/timed-out lifecycle tests.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, pr-prepare JSON, gate DAG, verification evidence, src/pr-manager.js, src/html-report.js, focused tests, spec/architecture/story docs, design-ssot.json, generated JSON/HTML surfaces, clean HEAD, and current verification records.",
+    "evidence": "codex-agent:019f2331-1b4f-79f3-ac6c-c0b2dedc8017",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-agent-review-minimal-recovery-plan/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/gate-dag.json",
+      ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/verification-evidence.json",
+      "src/pr-manager.js",
+      "src/html-report.js",
+      "test/risk-adaptive-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern that previous needs_changes findings might leave stale or prose-only recovery evidence -> final pass because current verification records bind to f433abf, traceability maps all ACs, gate JSON/gate_status/HTML expose minimal_recovery_plan, and focused tests passed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+    "expected_root": null,
+    "expected_head_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+    "current_head_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+      "expected_root": null,
+      "expected_head_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+      "current_head_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T14:21:46.899Z",
+  "git_context": {
+    "head_sha": "f433abf9d546f6e347e8e85c63736034be76df38",
+    "current_branch": "codex/issue-270-agent-review-minimal-recovery",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T14:21:46.898Z"
+  },
+  "source_fingerprint": "9dc51c6f05e5c09c26a14ad148078c1c439c354181e33d1646007a8480ac4d21",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2331-1b4f-79f3-ac6c-c0b2dedc8017",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "codex-agent:019f2331-1b4f-79f3-ac6c-c0b2dedc8017",
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-review-minimal-recovery-plan/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "codex-agent:019f2331-1b4f-79f3-ac6c-c0b2dedc8017",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

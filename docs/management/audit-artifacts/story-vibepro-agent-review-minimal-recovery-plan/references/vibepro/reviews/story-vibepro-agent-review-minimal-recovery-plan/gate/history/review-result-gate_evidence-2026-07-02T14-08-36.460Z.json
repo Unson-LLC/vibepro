@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Gate evidence is not passable because verification artifacts are stale and first-look surface coverage is not yet evidenced.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "stale-contradictory-gate-evidence",
+      "detail": "pr-prepare and gate-dag artifacts predate later verification evidence, so the evidence package is internally stale"
+    },
+    {
+      "severity": "high",
+      "id": "regression-guard-contract-evidence-open",
+      "detail": "public contract and traceability gates remain open despite later AC-specific evidence records"
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-first-look-unproven",
+      "detail": "first-look/report output surface is not proven to include the minimal recovery plan"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed focused tests pass, but pr-prepare/gate artifacts were older than later verification evidence and public-contract/traceability gates remained open.",
+    "evidence": "codex-agent:019f2323-f34c-7f01-9328-6756c624babf",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-agent-review-minimal-recovery-plan/gate/review-request-gate_evidence.md",
+      "src/pr-manager.js",
+      "test/risk-adaptive-gate.test.js",
+      ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/gate-dag.json",
+      ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "current-head-bound evidence looked sufficient initially -> not sufficient because pr-prepare artifacts predated later verification evidence",
+    "JSON gate assertions looked sufficient initially -> not sufficient because first-look/report surface coverage was unproven"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+    "expected_root": null,
+    "expected_head_sha": "8422f87f87f9fbb9e2d8d01f3d16480bd08aad59",
+    "current_head_sha": "8422f87f87f9fbb9e2d8d01f3d16480bd08aad59",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery",
+      "expected_root": null,
+      "expected_head_sha": "8422f87f87f9fbb9e2d8d01f3d16480bd08aad59",
+      "current_head_sha": "8422f87f87f9fbb9e2d8d01f3d16480bd08aad59",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-02T14:08:36.460Z",
+  "git_context": {
+    "head_sha": "8422f87f87f9fbb9e2d8d01f3d16480bd08aad59",
+    "current_branch": "codex/issue-270-agent-review-minimal-recovery",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "acaa64f3d68d2f494a0e35dd44357acce03baefcd23f4bf34fdc064b2cb1ecf8",
+    "user_status_fingerprint_hash": "acaa64f3d68d2f494a0e35dd44357acce03baefcd23f4bf34fdc064b2cb1ecf8",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T14:08:36.459Z"
+  },
+  "source_fingerprint": "0058638ad295d5d2adf250c173aa0787d564bf8e155e45934f01d4b8e5568b14",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2323-f34c-7f01-9328-6756c624babf",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "codex-agent:019f2323-f34c-7f01-9328-6756c624babf",
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-review-minimal-recovery-plan/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "codex-agent:019f2323-f34c-7f01-9328-6756c624babf",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

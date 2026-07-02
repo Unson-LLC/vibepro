@@ -1,0 +1,81 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
+  "created_at": "2026-07-02T14:38:11.947Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-agent-review-minimal-recovery-plan.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-agent-review-minimal-recovery-plan.md)"
+    },
+    "decision_records": {
+      "total": 0,
+      "open": 0,
+      "by_type": {},
+      "by_status": {},
+      "warnings": [],
+      "latest": null
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-02T14:38:10.944Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "f433abf9d546f6e347e8e85c63736034be76df38",
+      "branch": "codex/issue-270-agent-review-minimal-recovery",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f299fd3ec20918fd4bf18cf4204fc015579cde57",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/risk-adaptive-gate.test.js test/review-repair.test.js",
+  "head": "f433abf9d546f6e347e8e85c63736034be76df38",
+  "tests": 23,
+  "failures": 0,
+  "observed": {
+    "unit_regression": "covered",
+    "flow_replay": "covered",
+    "artifact_replay": "covered",
+    "scenario_clause_e2e": "covered",
+    "integration_runtime_path": "covered",
+    "negative_path": "covered",
+    "managed_worktree_regression": "covered",
+    "agent_review_lifecycle_regression": "covered",
+    "evidence_lifecycle_regression": "covered",
+    "story_source_integrity_regression": "covered",
+    "engineering_judgment_regression": "covered",
+    "design_ssot_regression": "covered",
+    "report_surface_regression": "covered"
+  },
+  "artifacts": [
+    ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/test-artifacts/focused-risk-adaptive-gate.tap"
+  ]
+}

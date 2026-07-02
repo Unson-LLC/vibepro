@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
+  "created_at": "2026-07-02T14:38:11.947Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-agent-review-minimal-recovery-plan.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-agent-review-minimal-recovery-plan.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-agent-review-minimal-recovery-plan/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-agent-review-minimal-recovery-plan.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-agent-review-minimal-recovery-plan.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-02T14:38:10.944Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-agent-review-minimal-recovery/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "f433abf9d546f6e347e8e85c63736034be76df38",
+      "branch": "codex/issue-270-agent-review-minimal-recovery",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f299fd3ec20918fd4bf18cf4204fc015579cde57",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
