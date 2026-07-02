@@ -800,11 +800,126 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('Current Agent Review stage 1'), true);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('architecture_spec'), true);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions.some((action) => action.includes('Later Agent Review stages are serial-barriered')), true);
+  const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
+  assert.equal(agentReviewGate.minimal_recovery_plan.current_stage.stage, 'architecture_spec');
+  assert.deepEqual(agentReviewGate.minimal_recovery_plan.current_stage_work.map((item) => `${item.stage}:${item.role}:${item.recovery_kind}`), [
+    'architecture_spec:regression_risk:missing'
+  ]);
+  assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
+    'test_plan',
+    'implementation',
+    'preview',
+    'gate'
+  ]);
+  assert.equal(prepare.preparation.gate_status.agent_review_minimal_recovery_plan.first_command, agentReviewGate.minimal_recovery_plan.first_command);
+  let prepareSummary = '';
+  const summaryResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main'], {
+    stdout: { write: (text) => { prepareSummary += text; } }
+  });
+  assert.equal(summaryResult.exitCode, 0);
+  assert.match(prepareSummary, /minimal_recovery_plan/);
+  assert.match(prepareSummary, /current_stage: 1:architecture_spec/);
+  assert.match(prepareSummary, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prepareSummary, /first_command: `vibepro review prepare/);
+  assert.match(prepareSummary, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
 
   const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
   await stat(gateDagJsonPath);
   const writtenGateDag = await readJson(gateDagJsonPath);
   assert.equal(writtenGateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);
+  const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-prepare.html'), 'utf8');
+  assert.match(prPrepareHtml, /minimal_recovery_plan/);
+  assert.match(prPrepareHtml, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prPrepareHtml, /first_command/);
+  assert.match(prPrepareHtml, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
+});
+
+test('agent review gate minimal recovery plan dedupes stale result and timed-out lifecycle', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: FORM preflight workflow gate
+architecture_docs:
+  reason: existing route/service/queue boundaries only
+---
+
+# FORM preflight workflow gate
+
+## 背景
+
+Sample generation must run a preflight workflow, poll status, retry failed detection, and preserve auth.
+
+## 受け入れ基準
+
+- [ ] UI/API/service/queue workflow changes require staged Agent Review
+`);
+  await writeFile(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components', 'PlanTab.tsx'), 'export function PlanTab(){ return <button>Start sample</button>; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'batch-jobs', '[id]', 'generate-samples', 'route.ts'), 'export async function POST(){ return Response.json({ status: "preflight" }); }\n');
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
+  await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
+
+  assert.equal((await runCli([
+    'review', 'prepare', repo,
+    '--id', 'story-risk-adaptive',
+    '--stage', 'architecture_spec',
+    '--role', 'regression_risk'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--stage', 'architecture_spec',
+    '--role', 'regression_risk',
+    '--status', 'pass',
+    '--summary', 'Regression risk review passed before the workflow source changed',
+    '--inspection-summary', 'Inspected workflow service and queue boundaries',
+    '--inspection-input', 'src/lib/services/formProjectStartService.ts',
+    '--judgment-delta', 'initial risk -> accepted because staged workflow boundaries were inspected',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'agent-regression-risk',
+    '--agent-closed'
+  ])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status-v2"; }\n');
+  assert.equal((await runCli([
+    'review', 'start', repo,
+    '--id', 'story-risk-adaptive',
+    '--stage', 'architecture_spec',
+    '--role', 'regression_risk',
+    '--agent-system', 'codex',
+    '--agent-id', 'agent-timeout',
+    '--lifecycle-id', 'lifecycle-timeout',
+    '--timeout-ms', '1'
+  ])).exitCode, 0);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gateDag = result.result.preparation.pr_context.gate_dag;
+  const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
+  const plan = agentReviewGate.minimal_recovery_plan;
+
+  assert.equal(plan.current_stage.stage, 'architecture_spec');
+  assert.equal(plan.source_blocker_count > plan.deduped_blocker_count, true);
+  assert.deepEqual(plan.current_stage_work.map((item) => `${item.stage}:${item.role}`), ['architecture_spec:regression_risk']);
+  assert.equal(plan.current_stage_work[0].recovery_kind, 'timed_out');
+  assert.equal(plan.current_stage_work[0].lifecycle.agent_id, 'agent-timeout');
+  assert.equal(plan.current_stage_work[0].lifecycle.lifecycle_id, 'lifecycle-timeout');
+  assert.match(plan.current_stage_work[0].lifecycle.close_command, /review close .*--agent-id "agent-timeout".*--close-reason timeout/);
+  assert.match(plan.current_stage_work[0].lifecycle.replacement_command, /review start .*--replacement-for lifecycle-timeout/);
+  assert.equal(plan.first_command, plan.current_stage_work[0].lifecycle.close_command);
+  assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), [
+    'test_plan',
+    'implementation',
+    'preview',
+    'gate'
+  ]);
+  assert.equal(result.result.preparation.gate_status.agent_review_minimal_recovery_plan.current_stage_work[0].recovery_kind, 'timed_out');
 });
 
 test('workflow-heavy release confidence requires state scenario and no blocker questions', async () => {
