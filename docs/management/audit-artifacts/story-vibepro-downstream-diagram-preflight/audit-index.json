@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-downstream-diagram-preflight",
   "source": "execute_merge",
-  "generated_at": "2026-07-02T16:28:23.984Z",
+  "generated_at": "2026-07-02T16:28:27.957Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -118,13 +118,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3056,
+      "compressed_bytes": 3054,
       "expanded_bytes": 13020,
       "expanded_line_count": 349,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8048,
-    "raw_source_artifact_code_ratio": 12.897,
+    "raw_source_artifact_lines": 8138,
+    "raw_source_artifact_code_ratio": 13.042,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -248,7 +248,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-downstream-diagram-preflight",
-    "generated_at": "2026-07-02T16:28:23.984Z",
+    "generated_at": "2026-07-02T16:28:27.957Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -353,10 +353,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-downstream-diagram-preflight/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:cde1553252ea6ab40e064a930628a7bd638e0388056ddb6508fe10daf6ff0ba2",
-    "compressed_hash": "sha256:5a4e9d0b3a1fda20da94fb37b19b229b2b4e9ee12d3d8ab29be750f8b7729c09",
+    "content_hash": "sha256:b14c7527ff368499c269432c77c62a7de0d4feb83cf5d2373a9227ae3d304cf6",
+    "compressed_hash": "sha256:6cac14dfc7ebc748d8b005ec42c59294852af543a9106eddf3659d165aa464a4",
     "expanded_bytes": 13020,
-    "compressed_bytes": 3056,
+    "compressed_bytes": 3054,
     "expanded_line_count": 349,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -375,7 +375,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-downstream-diagram-preflight",
     "cost": {
-      "compressed_bytes": 3056,
+      "compressed_bytes": 3054,
       "expanded_bytes": 13020,
       "expanded_line_count": 349,
       "persisted_line_count": 1
