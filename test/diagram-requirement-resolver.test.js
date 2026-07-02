@@ -143,6 +143,54 @@ test('R7: auth file path requires threat_model', () => {
   assert.ok(result.required_diagrams.includes('threat_model'));
 });
 
+test('R7 DDP-INV-003 DDP-CONTRACT-001: responsibility authority artifact requires threat_model with path signal', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: { files: [{ path: 'docs/responsibility-authority/story-269.json', status: 'added' }] }
+  }));
+  assert.ok(result.required_diagrams.includes('threat_model'));
+  assert.ok(result.reasons.some((reason) => (
+    reason.kind === 'threat_model'
+    && reason.signal.includes('responsibility authority artifact')
+    && reason.signal.includes('docs/responsibility-authority/story-269.json')
+  )));
+});
+
+test('R7 DDP-CONTRACT-002: security-sensitive contract artifact content requires threat_model with path signal', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: {
+      files: [{
+        path: 'docs/contracts/generation-state.json',
+        status: 'added',
+        content: '{"authority":"approve generation","policy":"operator signoff"}'
+      }]
+    }
+  }));
+  assert.ok(result.required_diagrams.includes('threat_model'));
+  assert.ok(result.reasons.some((reason) => (
+    reason.kind === 'threat_model'
+    && reason.signal.includes('security-sensitive contract artifact')
+    && reason.signal.includes('docs/contracts/generation-state.json')
+  )));
+});
+
+test('R7 DDP-CONTRACT-002: hyphenated security contract terms require threat_model', () => {
+  const result = resolveRequiredDiagrams(input({
+    code_diff: {
+      files: [{
+        path: 'docs/contracts/data-sharing.json',
+        status: 'added',
+        content: '{"access-control":"strict","personal-data":"customer-name"}'
+      }]
+    }
+  }));
+  assert.ok(result.required_diagrams.includes('threat_model'));
+  assert.ok(result.reasons.some((reason) => (
+    reason.kind === 'threat_model'
+    && reason.signal.includes('security-sensitive contract artifact')
+    && reason.signal.includes('docs/contracts/data-sharing.json')
+  )));
+});
+
 test('R7: bcrypt dep requires threat_model', () => {
   const result = resolveRequiredDiagrams(input({
     code_diff: { files: [], deps_added: ['bcrypt'] }
