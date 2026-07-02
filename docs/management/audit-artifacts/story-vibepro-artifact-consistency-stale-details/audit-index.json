@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-artifact-consistency-stale-details",
   "source": "execute_merge",
-  "generated_at": "2026-07-02T12:27:20.405Z",
+  "generated_at": "2026-07-02T12:27:24.234Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -114,13 +114,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3345,
+      "compressed_bytes": 3344,
       "expanded_bytes": 16182,
       "expanded_line_count": 420,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8662,
-    "raw_source_artifact_code_ratio": 21.075,
+    "raw_source_artifact_lines": 8752,
+    "raw_source_artifact_code_ratio": 21.294,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -241,7 +241,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-artifact-consistency-stale-details",
-    "generated_at": "2026-07-02T12:27:20.405Z",
+    "generated_at": "2026-07-02T12:27:24.234Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -346,10 +346,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-artifact-consistency-stale-details/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:48458c70f29952f882476aefe7cf1e3a811445cae19f2e3d480ca94903db6687",
-    "compressed_hash": "sha256:bda53c4f57839b97b8b631448d6d346327c4a7bf16bbc105d921a7c58f253986",
+    "content_hash": "sha256:6218ea4f05c9aada0c611aa68e5a74c1b4a86a6fd5efae9814420e164ddf8b9d",
+    "compressed_hash": "sha256:19de3b9df031aaf4ce8c18cddef8f64c770a6942f098a303d98bcb347feb7802",
     "expanded_bytes": 16182,
-    "compressed_bytes": 3345,
+    "compressed_bytes": 3344,
     "expanded_line_count": 420,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -368,7 +368,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-artifact-consistency-stale-details",
     "cost": {
-      "compressed_bytes": 3345,
+      "compressed_bytes": 3344,
       "expanded_bytes": 16182,
       "expanded_line_count": 420,
       "persisted_line_count": 1
