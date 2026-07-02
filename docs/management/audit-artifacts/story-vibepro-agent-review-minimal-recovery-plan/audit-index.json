@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
   "source": "execute_merge",
-  "generated_at": "2026-07-02T14:38:27.742Z",
+  "generated_at": "2026-07-02T14:38:31.637Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -115,13 +115,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2981,
+      "compressed_bytes": 2983,
       "expanded_bytes": 12594,
       "expanded_line_count": 335,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8737,
-    "raw_source_artifact_code_ratio": 15.142,
+    "raw_source_artifact_lines": 8827,
+    "raw_source_artifact_code_ratio": 15.298,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -242,7 +242,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-agent-review-minimal-recovery-plan",
-    "generated_at": "2026-07-02T14:38:27.742Z",
+    "generated_at": "2026-07-02T14:38:31.637Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -347,10 +347,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-agent-review-minimal-recovery-plan/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:c2434a5879ff91689b9c8be3091d4305dbb37804a718dac3375d8b7857239eec",
-    "compressed_hash": "sha256:750da52a6bd82fd4362daf930cf8adaed67e1cd6b1a4dfde92b1b13da288543d",
+    "content_hash": "sha256:abf36bf028ad6a1b8dca1639aaad21eac5cc0207992af8e44f69960aa1a5c638",
+    "compressed_hash": "sha256:cfaf5fa059b087acdfad35b19a802692a2c3015517350abb308552ac458a9e34",
     "expanded_bytes": 12594,
-    "compressed_bytes": 2981,
+    "compressed_bytes": 2983,
     "expanded_line_count": 335,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -369,7 +369,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-agent-review-minimal-recovery-plan",
     "cost": {
-      "compressed_bytes": 2981,
+      "compressed_bytes": 2983,
       "expanded_bytes": 12594,
       "expanded_line_count": 335,
       "persisted_line_count": 1
