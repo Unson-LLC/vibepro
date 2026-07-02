@@ -1,0 +1,298 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "差分が 44 files あり、レビュー可能な目安 30 files を超えている",
+    "repo制御ファイルやagent設定が差分に含まれている",
+    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 3 changed files が一致し、5 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 3523,
+    "edge_count": 7885,
+    "matched_file_count": 3,
+    "related_file_count": 5,
+    "investigation_files": [
+      "src/architecture-store.js",
+      "src/cli.js",
+      "src/spec-store.js",
+      "src/story-manager.js",
+      "src/workspace.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/playbook-exporter.js",
+        "matched_nodes": [
+          "src_playbook_exporter_js",
+          "src_playbook_exporter_exportstoryengineeringplaybook",
+          "src_playbook_exporter_renderplaybookexportsummary",
+          "src_playbook_exporter_buildplaybook",
+          "src_playbook_exporter_buildsourcesummary",
+          "src_playbook_exporter_buildtemplatedecisions",
+          "src_playbook_exporter_readbundledplaybookcatalog",
+          "src_playbook_exporter_validatebundledcatalogtemplatepaths"
+        ],
+        "related_files": [
+          "src/architecture-store.js",
+          "src/cli.js",
+          "src/spec-store.js",
+          "src/story-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "test/playbook-exporter.test.js",
+        "matched_nodes": [
+          "test_playbook_exporter_test_js",
+          "test_playbook_exporter_test_pathexists",
+          "test_playbook_exporter_test_makerepo"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_pathexists",
+          "test_vibepro_cli_test_git",
+          "test_vibepro_cli_test_runcliwithstdout",
+          "test_vibepro_cli_test_makefakegh"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "repo-control",
+      "order": 5,
+      "title": "Repository control and agent policy",
+      "category": "repo_control",
+      "recommendation": "separate_pr",
+      "files": [
+        "package.json"
+      ],
+      "required_gates": [
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "アプリ挙動変更とrepo制御変更が混ざっていないか",
+        "無関係なagent設定やignore規則を巻き込んでいないか"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-bundled-playbook-templates-repo-control"
+    },
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md",
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 11,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-bundled-playbook-templates-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [
+        "src/architecture-store.js",
+        "src/cli.js",
+        "src/spec-store.js",
+        "src/story-manager.js",
+        "src/workspace.js"
+      ],
+      "suggested_branch": "feat/vibepro-bundled-playbook-templates-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 29,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-bundled-playbook-templates-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "repo-control",
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 4,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "repo-control",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "git diff --check",
+          "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json"
+        ],
+        "cumulative_checks": [],
+        "review_note": "repo-control は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+          "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "repo-control",
+      "action": "Create feat/vibepro-bundled-playbook-templates-repo-control with 1 files",
+      "command": "git switch -c feat/vibepro-bundled-playbook-templates-repo-control <base> && git add package.json"
+    },
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-bundled-playbook-templates-requirements-ssot with 11 files",
+      "command": "git switch -c feat/vibepro-bundled-playbook-templates-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-bundled-playbook-templates.md docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md docs/specs/vibepro-bundled-playbook-templates.md docs/architecture/vibepro-bundled-playbook-templates.md docs/playbooks/story-engineering-playbook/adr/_template.md docs/playbooks/story-engineering-playbook/architecture/README.md docs/playbooks/story-engineering-playbook/features/_feature-template/README.md docs/playbooks/story-engineering-playbook/product/README.md docs/playbooks/story-engineering-playbook/testing/README.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-bundled-playbook-templates-runtime-behavior with 3 files",
+      "command": "git switch -c feat/vibepro-bundled-playbook-templates-runtime-behavior <base> && git add src/playbook-exporter.js test/playbook-exporter.test.js test/vibepro-cli.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-bundled-playbook-templates-misc-follow-up with 29 files",
+      "command": "git switch -c feat/vibepro-bundled-playbook-templates-misc-follow-up <base> && git add design-ssot.json docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md docs/playbooks/story-engineering-playbook/architecture/02_db_design.md docs/playbooks/story-engineering-playbook/architecture/03_api_design.md docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md docs/playbooks/story-engineering-playbook/architecture/05_error_design.md docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md docs/playbooks/story-engineering-playbook/architecture/08_security_design.md docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md docs/playbooks/story-engineering-playbook/catalog.json docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md docs/playbooks/story-engineering-playbook/product/00_intent.md docs/playbooks/story-engineering-playbook/product/01_idea.md docs/playbooks/story-engineering-playbook/product/02_problem_definition.md docs/playbooks/story-engineering-playbook/product/03_personas.md docs/playbooks/story-engineering-playbook/product/04_user_stories.md docs/playbooks/story-engineering-playbook/product/05_product_scope.md docs/playbooks/story-engineering-playbook/product/06_success_metrics.md docs/playbooks/story-engineering-playbook/product/07_glossary.md docs/playbooks/story-engineering-playbook/testing/01_test_policy.md docs/playbooks/story-engineering-playbook/testing/02_test_types.md docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+  "agent_system": "codex",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Previous stale playbook export and gate summary concerns are resolved on current head for the gate_evidence role.",
+  "inspection_summary": "Inspected current git head/status, prior gate_evidence finding, gate DAG, verification evidence, replay artifact, current playbook export JSON/Markdown, exporter/package/catalog/tests, and direct read-only consistency checks for catalog paths, gate summary, and private-name surface.",
+  "inspection_evidence": "HEAD is 8e858767de464dbcb0dc543e970e23ae78dc6c30 with git status porcelain clean. gate-dag has gate:common_judgment_spine passed and current_reality passed as a spine subcheck. pr-prepare was created at 2026-07-02T03:54:47.846Z and current playbook-export.json was generated at 2026-07-02T03:54:49.020Z. Direct catalog/export check found 11 catalog templates, 11 export decisions, 27 template paths, and no missing or mismatched paths. Private-name scan only hit denylist assertions in tests.",
+  "inspection_inputs": [
+    "git status --short --branch",
+    "git rev-parse HEAD",
+    "git log --oneline -5",
+    ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+    ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-result-gate_evidence.json",
+    ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+    ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-prepare.json",
+    ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+    ".vibepro/playbook/story-vibepro-bundled-playbook-templates/story-engineering-playbook.md",
+    ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+    "src/playbook-exporter.js",
+    "package.json",
+    "docs/playbooks/story-engineering-playbook/catalog.json",
+    "test/playbook-exporter.test.js",
+    "test/vibepro-cli.test.js",
+    "read-only node catalog/export consistency check",
+    "read-only rg private-name denylist scan"
+  ],
+  "judgment_delta": [
+    "stale_playbook_export -> resolved because the current playbook-export.json was regenerated after current pr-prepare/gate-dag and direct inspection found catalog/export/template path consistency.",
+    "stale_playbook_gate_summary -> resolved because the current export's Quality Gates surface includes gate:common_judgment_spine as passed and the gate DAG contains current_reality passed inside that spine gate.",
+    "regression_guard concern -> satisfied because recorded unit/build evidence and inspected tests cover CLI export, fallback surface selection, package metadata, npm dry-run package inclusion, and private-name denylist behavior rather than only the new happy path.",
+    "path_surface_coverage concern -> satisfied because inspected evidence covers source exporter catalog loading, package inclusion, bundled catalog/template paths, generated JSON/Markdown playbook artifacts, and gate summary surface."
+  ],
+  "findings": []
+}

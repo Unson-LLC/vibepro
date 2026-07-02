@@ -1,0 +1,50 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "updated_at": "2026-07-02T04:11:42.487Z",
+  "warnings": [],
+  "commands": [
+    {
+      "kind": "integration",
+      "status": "pass",
+      "command": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+      "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD.",
+      "artifact": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    {
+      "kind": "unit",
+      "status": "pass",
+      "command": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+      "summary": "Responsibility Authority core regression suite passed on current head: unit_regression for docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001, docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002, and docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001; pr_lifecycle_regression for VIBE-CORE-PR-001; agent_review_lifecycle_regression for VIBE-CORE-AR-001; evidence_lifecycle_regression for VIBE-CORE-EV-001; integration_runtime_path and negative_path for VIBE-CORE-COST-001; story_source_integrity_regression for VIBE-CORE-STORY-001; managed_worktree_regression for VIBE-CORE-WT-001.",
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    {
+      "kind": "e2e",
+      "status": "pass",
+      "command": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+      "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions.",
+      "artifact": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    {
+      "kind": "build",
+      "status": "pass",
+      "command": "npm pack --dry-run --json; rg internal-name denylist",
+      "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD",
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    {
+      "kind": "typecheck",
+      "status": "pass",
+      "command": "npm run typecheck",
+      "summary": "CLI and source JavaScript syntax/typecheck passed on the amended clean HEAD",
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "created_at": "2026-07-02T04:12:11.390Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-bundled-playbook-templates.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-bundled-playbook-templates/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-bundled-playbook-templates.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-bundled-playbook-templates.md, docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md, docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md, docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-02T04:12:09.203Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "branch": "codex/vibepro-local-playbook-templates",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f10ee992cd4b640666ce2b066d09b3f9a9f4530b",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

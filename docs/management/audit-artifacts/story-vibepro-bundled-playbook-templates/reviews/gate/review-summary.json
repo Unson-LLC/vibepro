@@ -1,0 +1,233 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "stage": "gate",
+  "status": "pass",
+  "roles": [
+    {
+      "role": "gate_evidence",
+      "status": "pass",
+      "effective_status": "pass",
+      "stale": false,
+      "stale_reason": "review is bound to the current git state",
+      "binding_status": "current",
+      "merge_delta_reuse": null,
+      "provenance_status": "verified_agent",
+      "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
+      "agent_provenance": {
+        "schema_version": "0.1.0",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+        "agent_role": null,
+        "model": "inherited",
+        "reasoning_effort": "medium",
+        "cost_tier": "medium",
+        "thread_id": null,
+        "session_id": null,
+        "tool_call_id": null,
+        "transcript_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+        "request_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+        "recorded_by": null,
+        "lifecycle": {
+          "agent_closed": true,
+          "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+          "close_note": null
+        },
+        "evidence_strength": "strong"
+      },
+      "summary": "Previous stale playbook export and gate summary concerns are resolved on current head for the gate_evidence role.",
+      "inspection": {
+        "summary": "Inspected current git head/status, prior gate_evidence finding, gate DAG, verification evidence, replay artifact, current playbook export JSON/Markdown, exporter/package/catalog/tests, and direct read-only consistency checks for catalog paths, gate summary, and private-name surface.",
+        "evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+        "inputs": [
+          ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+          ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+          ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+          ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json"
+        ]
+      },
+      "judgment_delta": [
+        "stale_playbook_export -> resolved because the current playbook-export.json was regenerated after current pr-prepare/gate-dag and direct inspection found catalog/export/template path consistency.",
+        "stale_playbook_gate_summary -> resolved because the current export's Quality Gates surface includes gate:common_judgment_spine as passed and the gate DAG contains current_reality passed inside that spine gate.",
+        "regression_guard concern -> satisfied because recorded unit/build evidence and inspected tests cover CLI export, fallback surface selection, package metadata, npm dry-run package inclusion, and private-name denylist behavior."
+      ],
+      "findings": [],
+      "finding_dispositions": [
+        {
+          "finding_id": "stale_playbook_export",
+          "disposition": "accepted",
+          "resolved_by": [
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+          ],
+          "reason": null,
+          "inferred_from_resolution": true
+        },
+        {
+          "finding_id": "stale_playbook_gate_summary",
+          "disposition": "accepted",
+          "resolved_by": [
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+          ],
+          "reason": null,
+          "inferred_from_resolution": true
+        }
+      ],
+      "finding_count": 0,
+      "agent_usage": null,
+      "recorded_at": "2026-07-02T04:03:15.247Z",
+      "git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "raw_dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-07-02T04:03:15.236Z"
+      },
+      "source_git_context": null,
+      "lifecycle": {
+        "effective_status": "closed",
+        "running_count": 0,
+        "timed_out_count": 0,
+        "closed_count": 2,
+        "replaced_count": 0,
+        "latest": {
+          "schema_version": "0.1.0",
+          "lifecycle_id": "4f7a9da3-928a-4dfa-a522-be8c4447e796",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "status": "closed",
+          "agent_system": "codex",
+          "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+          "agent_model": null,
+          "agent_reasoning_effort": null,
+          "agent_cost_tier": null,
+          "intended_model_policy": null,
+          "model_policy_preflight": null,
+          "thread_id": null,
+          "session_id": null,
+          "tool_call_id": null,
+          "started_at": "2026-07-02T03:55:31.200Z",
+          "timeout_ms": 600000,
+          "replacement_for": null,
+          "close_reason": "completed",
+          "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+          "closed_at": "2026-07-02T04:02:48.859Z",
+          "result_artifact": null,
+          "effective_status": "closed",
+          "timed_out": false,
+          "elapsed_ms": 437659
+        }
+      },
+      "artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-result-gate_evidence.json",
+      "history_artifacts": [
+        ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T03-44-24.260Z.json",
+        ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T04-03-15.247Z.json"
+      ]
+    }
+  ],
+  "pass_count": 1,
+  "stale_count": 0,
+  "missing_count": 0,
+  "unverified_agent_count": 0,
+  "block_count": 0,
+  "needs_changes_count": 0,
+  "lifecycle": {
+    "entry_count": 2,
+    "running_count": 0,
+    "timed_out_count": 0,
+    "closed_count": 2,
+    "replaced_count": 0,
+    "entries": [
+      {
+        "schema_version": "0.1.0",
+        "lifecycle_id": "30796482-ae90-4f0c-8989-f2d41096c809",
+        "story_id": "story-vibepro-bundled-playbook-templates",
+        "stage": "gate",
+        "role": "gate_evidence",
+        "status": "closed",
+        "agent_system": "codex",
+        "agent_id": "019f20e8-b3ae-7d93-bb54-bf686226b115",
+        "agent_model": null,
+        "agent_reasoning_effort": null,
+        "agent_cost_tier": null,
+        "intended_model_policy": null,
+        "model_policy_preflight": null,
+        "thread_id": null,
+        "session_id": null,
+        "tool_call_id": null,
+        "started_at": "2026-07-02T03:39:25.594Z",
+        "timeout_ms": 600000,
+        "replacement_for": null,
+        "close_reason": "completed",
+        "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20e8-b3ae-7d93-bb54-bf686226b115.json",
+        "closed_at": "2026-07-02T03:43:58.339Z",
+        "result_artifact": null,
+        "effective_status": "closed",
+        "timed_out": false,
+        "elapsed_ms": 272745
+      },
+      {
+        "schema_version": "0.1.0",
+        "lifecycle_id": "4f7a9da3-928a-4dfa-a522-be8c4447e796",
+        "story_id": "story-vibepro-bundled-playbook-templates",
+        "stage": "gate",
+        "role": "gate_evidence",
+        "status": "closed",
+        "agent_system": "codex",
+        "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+        "agent_model": null,
+        "agent_reasoning_effort": null,
+        "agent_cost_tier": null,
+        "intended_model_policy": null,
+        "model_policy_preflight": null,
+        "thread_id": null,
+        "session_id": null,
+        "tool_call_id": null,
+        "started_at": "2026-07-02T03:55:31.200Z",
+        "timeout_ms": 600000,
+        "replacement_for": null,
+        "close_reason": "completed",
+        "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+        "closed_at": "2026-07-02T04:02:48.859Z",
+        "result_artifact": null,
+        "effective_status": "closed",
+        "timed_out": false,
+        "elapsed_ms": 437659
+      }
+    ]
+  },
+  "next_actions": [],
+  "updated_at": "2026-07-02T04:03:15.261Z",
+  "current_git_context": {
+    "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "current_branch": "codex/vibepro-local-playbook-templates",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T04:03:15.236Z"
+  },
+  "parallel_dispatch": {
+    "mode": "policy_aware_parallel_reviews",
+    "prepared": true,
+    "artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/parallel-dispatch.md",
+    "artifact_updated_at": "2026-07-02T03:54:58.312Z",
+    "prepare_command": "vibepro review prepare . --id story-vibepro-bundled-playbook-templates --stage gate --role gate_evidence"
+  }
+}

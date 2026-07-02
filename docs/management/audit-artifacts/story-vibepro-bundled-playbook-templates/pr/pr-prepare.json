@@ -1,0 +1,3767 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "canonical_pr_prepare_audit_summary",
+  "audit_scope": "judgment_evidence_v1",
+  "created_at": "2026-07-02T04:12:11.390Z",
+  "story": {
+    "story_id": "story-vibepro-bundled-playbook-templates",
+    "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
+    "due_at": null,
+    "category": null
+  },
+  "output": {
+    "language": "ja"
+  },
+  "gate_status": {
+    "schema_version": "0.1.0",
+    "overall_status": "ready_for_review",
+    "ready_for_pr_create": true,
+    "execution_gate": {
+      "schema_version": "0.1.0",
+      "status": "ready",
+      "pr_create_allowed": true,
+      "waiver_required": false,
+      "blocking_gate_count": 0,
+      "blocking_gates": [],
+      "required_actions": []
+    },
+    "fast_lane": false,
+    "completion_quality_status": "ready_for_human_acceptance",
+    "unresolved_gate_count": 0,
+    "critical_unresolved_gate_count": 0,
+    "unresolved_gates": [],
+    "critical_unresolved_gates": [],
+    "next_required_actions": [],
+    "agent_review_instruction": null,
+    "agent_review_dispatch_required": false,
+    "agent_review_user_confirmation_required_by_vibepro": false,
+    "agent_review_runner_policy_may_require_user_delegation": false,
+    "agent_instruction": "Gate DAG is ready_for_review; pr create may proceed if scope and branch checks are acceptable."
+  },
+  "git": {
+    "base_ref": "origin/main",
+    "head_ref": "HEAD",
+    "base_sha": "f10ee992cd4b640666ce2b066d09b3f9a9f4530b",
+    "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "current_branch": "codex/vibepro-local-playbook-templates",
+    "diff_line_stats": {
+      "design-ssot.json": {
+        "additions": 59,
+        "deletions": 1
+      },
+      "docs/architecture/vibepro-bundled-playbook-templates.md": {
+        "additions": 53,
+        "deletions": 0
+      },
+      "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md": {
+        "additions": 38,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/adr/_template.md": {
+        "additions": 21,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md": {
+        "additions": 58,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md": {
+        "additions": 65,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md": {
+        "additions": 114,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md": {
+        "additions": 50,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md": {
+        "additions": 48,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md": {
+        "additions": 49,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md": {
+        "additions": 48,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md": {
+        "additions": 152,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md": {
+        "additions": 217,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/architecture/README.md": {
+        "additions": 24,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/catalog.json": {
+        "additions": 114,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md": {
+        "additions": 89,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md": {
+        "additions": 64,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md": {
+        "additions": 142,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md": {
+        "additions": 195,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md": {
+        "additions": 149,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md": {
+        "additions": 464,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md": {
+        "additions": 136,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md": {
+        "additions": 97,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/00_intent.md": {
+        "additions": 53,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/01_idea.md": {
+        "additions": 58,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md": {
+        "additions": 61,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/03_personas.md": {
+        "additions": 58,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/04_user_stories.md": {
+        "additions": 66,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/05_product_scope.md": {
+        "additions": 49,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md": {
+        "additions": 39,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/07_glossary.md": {
+        "additions": 37,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/product/README.md": {
+        "additions": 23,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md": {
+        "additions": 66,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/02_test_types.md": {
+        "additions": 152,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md": {
+        "additions": 74,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md": {
+        "additions": 52,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md": {
+        "additions": 55,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md": {
+        "additions": 83,
+        "deletions": 0
+      },
+      "docs/playbooks/story-engineering-playbook/testing/README.md": {
+        "additions": 26,
+        "deletions": 0
+      },
+      "docs/specs/vibepro-bundled-playbook-templates.md": {
+        "additions": 51,
+        "deletions": 0
+      },
+      "package.json": {
+        "additions": 1,
+        "deletions": 0
+      },
+      "src/playbook-exporter.js": {
+        "additions": 93,
+        "deletions": 31
+      },
+      "test/playbook-exporter.test.js": {
+        "additions": 36,
+        "deletions": 1
+      },
+      "test/vibepro-cli.test.js": {
+        "additions": 11,
+        "deletions": 2
+      }
+    },
+    "changed_files": [
+      "design-ssot.json",
+      "docs/architecture/vibepro-bundled-playbook-templates.md",
+      "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+      "docs/playbooks/story-engineering-playbook/adr/_template.md",
+      "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+      "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+      "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+      "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+      "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+      "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+      "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+      "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+      "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+      "docs/playbooks/story-engineering-playbook/architecture/README.md",
+      "docs/playbooks/story-engineering-playbook/catalog.json",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+      "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+      "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+      "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+      "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+      "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+      "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+      "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+      "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+      "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+      "docs/playbooks/story-engineering-playbook/product/README.md",
+      "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+      "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+      "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+      "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+      "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+      "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+      "docs/playbooks/story-engineering-playbook/testing/README.md",
+      "docs/specs/vibepro-bundled-playbook-templates.md",
+      "package.json",
+      "src/playbook-exporter.js",
+      "test/playbook-exporter.test.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "scope": {
+    "status": "needs_clean_branch",
+    "recommended_strategy": "clean_branch_or_split_pr",
+    "reasons": [
+      "差分が 44 files あり、レビュー可能な目安 30 files を超えている",
+      "repo制御ファイルやagent設定が差分に含まれている"
+    ],
+    "reviewable_file_limit": 30,
+    "changed_file_count": 44
+  },
+  "lifecycle_artifacts": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-pr-lifecycle-artifact-freshness-v1",
+    "story_id": "story-vibepro-bundled-playbook-templates",
+    "status": "current",
+    "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "checked_at": "2026-07-02T04:12:11.390Z",
+    "artifacts": [
+      {
+        "kind": "pr_create",
+        "status": "current",
+        "exists": true,
+        "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-create.json",
+        "report": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-create.html",
+        "artifact_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "checked_at": "2026-07-02T04:12:11.390Z",
+        "reason": "pr-create artifact is bound to the current HEAD 8e858767de46"
+      },
+      {
+        "kind": "pr_merge",
+        "status": "not_created",
+        "exists": false,
+        "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-merge.json",
+        "report": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-merge.html",
+        "artifact_head_sha": null,
+        "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "reason": "pr-merge.json has not been created yet",
+        "checked_at": "2026-07-02T04:12:11.390Z"
+      }
+    ]
+  },
+  "pr_context": {
+    "story_source": {
+      "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "vibepro_story_id": null,
+      "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+      "requirement_id": null,
+      "requirement_title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+      "requirement_url": null,
+      "background": "`vibepro playbook export` はStory単位のPlaybook artifactを生成できるが、テンプレート本体がVibePro repo内に存在しないと、利用者には「どの型を選んでいるのか」が追えない。 元になった開発プレイブックは非公開repoにあるため、VibeProの実行時に外部repoを読みに行く設計にはできない。OSS利用者にも意味が通る名前と配置で、必須テンプレだけをVibePro本体に同梱する必要がある。",
+      "problem": null,
+      "root_cause": null,
+      "solution": null,
+      "policy": null,
+      "acceptance_criteria": [
+        "必須テンプレだけが `docs/playbooks/story-engineering-playbook/` に入っている。",
+        "`product/`、`architecture/`、`testing/`、`features/_feature-template/`、`adr/_template.md` が含まれる。",
+        "`design/` と `discovery/` は初期同梱対象外としてcatalogに明示される。",
+        "`vibepro playbook export` は対象repoではなく、VibeProパッケージに同梱されたcatalogを読む。",
+        "出力JSON/Markdownには選択されたtemplate idとローカルtemplate pathが含まれる。",
+        "npm packageに `docs/playbooks` が含まれる。",
+        "OSS利用者に伝わらない個人名、非公開repo名、会社固有名を含めない。"
+      ],
+      "architecture_docs": [
+        "docs/architecture/vibepro-bundled-playbook-templates.md"
+      ],
+      "spec_docs": [
+        "docs/specs/vibepro-bundled-playbook-templates.md"
+      ],
+      "architecture_reason": null
+    },
+    "story_source_integrity": {
+      "schema_version": "0.1.0",
+      "status": "passed",
+      "selected_story_id": "story-vibepro-bundled-playbook-templates",
+      "selected_story_title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+      "source": {
+        "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "story_id": "story-vibepro-bundled-playbook-templates",
+        "vibepro_story_id": null,
+        "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+        "matches_selected_story": true
+      },
+      "changed_story_docs": [
+        {
+          "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "vibepro_story_id": null,
+          "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+          "matches_selected_story": true
+        }
+      ],
+      "mismatched_changed_story_docs": [],
+      "required_actions": [],
+      "reason": "Resolved and changed Story documents match the selected Story, or no changed Story document needs binding."
+    },
+    "design_ssot_reconciliation": {
+      "schema_version": "0.1.0",
+      "status": "passed",
+      "model": "vibepro-design-ssot-reconciliation-v1",
+      "workflow": "design-ssot-reconcile",
+      "generated_at": "2026-07-02T04:12:10.908Z",
+      "summary": {
+        "registry_source_count": 1,
+        "design_root_count": 26,
+        "changed_design_root_count": 1,
+        "changed_child_count": 2,
+        "missing_required_child_count": 0,
+        "stale_child_count": 0,
+        "frontmatter_gap_count": 0,
+        "coverage_gap_count": 0,
+        "contradiction_count": 0,
+        "action_item_count": 0
+      },
+      "changed_paths": [
+        "design-ssot.json",
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md",
+        "package.json",
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "action_items": [],
+      "registry_sources": [
+        "design-ssot.json"
+      ],
+      "coverage": {
+        "schema_version": "0.1.0",
+        "status": "passed",
+        "summary": {
+          "registry_source_count": 1,
+          "design_root_count": 26,
+          "total_design_doc_count": 457,
+          "registered_root_count": 26,
+          "registered_child_count": 75,
+          "registered_doc_count": 101,
+          "unregistered_doc_count": 356,
+          "changed_design_doc_count": 3,
+          "changed_unregistered_design_doc_count": 0,
+          "parent_design_declared_count": 81
+        },
+        "changed_paths": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-bundled-playbook-templates.md",
+          "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+          "docs/playbooks/story-engineering-playbook/adr/_template.md",
+          "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+          "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+          "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+          "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+          "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+          "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+          "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+          "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+          "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+          "docs/playbooks/story-engineering-playbook/architecture/README.md",
+          "docs/playbooks/story-engineering-playbook/catalog.json",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+          "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+          "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+          "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+          "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+          "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+          "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+          "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+          "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+          "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+          "docs/playbooks/story-engineering-playbook/product/README.md",
+          "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+          "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+          "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+          "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+          "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+          "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+          "docs/playbooks/story-engineering-playbook/testing/README.md",
+          "docs/specs/vibepro-bundled-playbook-templates.md",
+          "package.json",
+          "src/playbook-exporter.js",
+          "test/playbook-exporter.test.js",
+          "test/vibepro-cli.test.js"
+        ],
+        "changed_docs": [
+          {
+            "path": "docs/architecture/vibepro-bundled-playbook-templates.md",
+            "kind": "architecture",
+            "title": "Story Engineering Playbook同梱テンプレートアーキテクチャ",
+            "status": "draft",
+            "parent_design": [],
+            "registered": true,
+            "registration": {
+              "role": "root",
+              "root_id": "vibepro-bundled-playbook-templates",
+              "kind": "architecture",
+              "source": "design-ssot.json"
+            }
+          },
+          {
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "kind": "story",
+            "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+            "status": "active",
+            "parent_design": [
+              "vibepro-bundled-playbook-templates"
+            ],
+            "registered": true,
+            "registration": {
+              "role": "child",
+              "root_id": "vibepro-bundled-playbook-templates",
+              "kind": "story",
+              "relationship": "implements",
+              "required": true,
+              "source": "design-ssot.json"
+            }
+          },
+          {
+            "path": "docs/specs/vibepro-bundled-playbook-templates.md",
+            "kind": "spec",
+            "title": "Story Engineering Playbook同梱テンプレート仕様",
+            "status": "draft",
+            "parent_design": [
+              "vibepro-bundled-playbook-templates"
+            ],
+            "registered": true,
+            "registration": {
+              "role": "child",
+              "root_id": "vibepro-bundled-playbook-templates",
+              "kind": "spec",
+              "relationship": "implements",
+              "required": true,
+              "source": "design-ssot.json"
+            }
+          }
+        ],
+        "unregistered_changed_docs": [],
+        "registered_doc_count": 101,
+        "unregistered_doc_count": 356,
+        "registry_sources": [
+          "design-ssot.json"
+        ]
+      }
+    },
+    "responsibility_authority": {
+      "schema_version": "0.1.0",
+      "status": "passed",
+      "model": "vibepro-responsibility-authority-v1",
+      "summary": {
+        "registry_source_count": 1,
+        "domain_contract_source_count": 2,
+        "responsibility_count": 8,
+        "matched_responsibility_count": 8,
+        "matched_contract_clause_count": 9,
+        "missing_evidence_count": 0,
+        "stale_evidence_count": 0,
+        "unregistered_candidate_count": 0,
+        "invalid_registry_entry_count": 0
+      },
+      "risk_surfaces": [
+        "test_coverage"
+      ],
+      "changed_paths": [
+        "design-ssot.json",
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md",
+        "package.json",
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "registry_sources": [
+        "responsibility-authority.json"
+      ],
+      "domain_contract_sources": [
+        "docs/contracts/vibepro-core-responsibilities.json",
+        "docs/contracts/vibepro-responsibility-authority.json"
+      ],
+      "invalid_registry_entries": [],
+      "unregistered_candidates": [],
+      "matched_responsibilities": [
+        {
+          "id": "vibepro.gate_dag.responsibility_authority",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-responsibility-authority-registry.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-responsibility-authority-registry.md"
+            }
+          ],
+          "matched_by": [
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "unit_regression",
+            "typecheck",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.pr_lifecycle.execution",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-pr-create-path-enforcement.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-execute-merge-command.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-pr-ship-command.md"
+            }
+          ],
+          "matched_by": [
+            "symbol",
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "pr_lifecycle_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.agent_review.lifecycle",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-AR-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-agent-review-lifecycle-control.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-review-inspection-required-gate.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-agent-review-lifecycle-control.md"
+            }
+          ],
+          "matched_by": [
+            "symbol",
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "agent_review_lifecycle_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.verification.evidence_lifecycle",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-gate-artifact-consistency.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-evidence-summary-reuse.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-traceability-autobind-backfill.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-gate-artifact-consistency.md"
+            }
+          ],
+          "matched_by": [
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "evidence_lifecycle_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.runtime_cost.telemetry_ingestion",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-session-efficiency-audit.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-execute-merge-cost-accounting.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-automation-runtime-cost-ingestion.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-automation-runtime-cost-ingestion.md"
+            }
+          ],
+          "matched_by": [
+            "path",
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "unit_regression",
+            "integration_runtime_path",
+            "negative_path",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.story_source.integrity",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STORY-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/ADR-story-source-integrity-gate.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/story-source-integrity-gate.md"
+            }
+          ],
+          "matched_by": [
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "story_source_integrity_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.engineering_judgment.route_axes",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-JUDGE-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-engineering-judgment-dag.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-engineering-judgment-activation-precision.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-senior-judgment-multi-axis-dag.md"
+            }
+          ],
+          "matched_by": [
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "engineering_judgment_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        },
+        {
+          "id": "vibepro.managed_worktree.execution_locality",
+          "primary_authority": {
+            "kind": "domain_contract",
+            "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001"
+          },
+          "supporting_authority": [
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-managed-worktree-gate.md"
+            },
+            {
+              "kind": "architecture",
+              "ref": "docs/architecture/vibepro-managed-worktree-execution-dag.md"
+            },
+            {
+              "kind": "spec",
+              "ref": "docs/specs/vibepro-managed-worktree-gate.md"
+            }
+          ],
+          "matched_by": [
+            "domain_contract"
+          ],
+          "required_evidence": [
+            "managed_worktree_regression",
+            "current_head_verification"
+          ],
+          "unknown_policy": "block_or_review"
+        }
+      ]
+    },
+    "requirement_consistency": {
+      "schema_version": "0.1.0",
+      "status": "pass",
+      "summary": {
+        "invariant_count": 5,
+        "scenario_gap_count": 0,
+        "contradiction_count": 0,
+        "scanned_code_files": 1,
+        "requirement_source_count": 2,
+        "spec_ref_count": 1,
+        "architecture_ref_count": 1,
+        "policy_ref_count": 0,
+        "domain_contract_ref_count": 0,
+        "responsibility_authority_ref_count": 8,
+        "responsibility_authority_unregistered_count": 0
+      },
+      "story_source": {
+        "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する"
+      },
+      "requirement_sources": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-bundled-playbook-templates.md",
+          "title": "Story Engineering Playbook同梱テンプレート仕様",
+          "linked_from_story": true,
+          "matched_by_story_id": true,
+          "invariant_count": 1
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-bundled-playbook-templates.md",
+          "title": "Story Engineering Playbook同梱テンプレートアーキテクチャ",
+          "linked_from_story": true,
+          "matched_by_story_id": false,
+          "invariant_count": 0
+        }
+      ],
+      "invariants": [
+        {
+          "id": "INV-001",
+          "text": "vibepro playbook export は対象repoではなくVibePro package rootのStory Engineering Playbook catalogを読む。",
+          "source": {
+            "kind": "inferred_spec",
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "clause_type": "invariant"
+          }
+        },
+        {
+          "id": "INV-002",
+          "text": "同梱catalogは docs/playbooks/story-engineering-playbook/ 配下のtemplate pathだけを参照する。",
+          "source": {
+            "kind": "inferred_spec",
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "clause_type": "invariant"
+          }
+        },
+        {
+          "id": "C-001",
+          "text": "exportStoryEngineeringPlaybook はJSON出力にplaybook catalog source metadataと選択済みtemplate_pathsを含める。",
+          "source": {
+            "kind": "inferred_spec",
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "clause_type": "contract"
+          }
+        },
+        {
+          "id": "C-002",
+          "text": "package.json の files は docs/playbooks を含め、npm packageに同梱catalogとtemplateを入れる。",
+          "source": {
+            "kind": "inferred_spec",
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "clause_type": "contract"
+          }
+        },
+        {
+          "id": "S-001",
+          "text": "対象repoにplaybook templateがなくても、vibepro playbook export は同梱catalogを読み、選択済みtemplate_pathsを成果物へ出力する。",
+          "source": {
+            "kind": "inferred_spec",
+            "path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "clause_type": "scenario"
+          }
+        }
+      ],
+      "contradictions": [],
+      "scenario_gaps": [],
+      "policy_refs": [],
+      "responsibility_authority": {
+        "status": "passed",
+        "matched_responsibility_count": 8,
+        "matched_contract_clause_count": 9,
+        "missing_evidence_count": 0,
+        "stale_evidence_count": 0,
+        "unregistered_candidate_count": 0,
+        "matched_responsibilities": [
+          {
+            "id": "vibepro.gate_dag.responsibility_authority",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001",
+              "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.pr_lifecycle.execution",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-PR-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.agent_review.lifecycle",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-AR-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-AR-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.verification.evidence_lifecycle",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.runtime_cost.telemetry_ingestion",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.story_source.integrity",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STORY-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STORY-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.engineering_judgment.route_axes",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-JUDGE-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-JUDGE-001"
+            ],
+            "missing_evidence": []
+          },
+          {
+            "id": "vibepro.managed_worktree.execution_locality",
+            "evidence_status": "passed",
+            "primary_authority": {
+              "kind": "domain_contract",
+              "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001"
+            },
+            "contract_clauses": [
+              "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-WT-001"
+            ],
+            "missing_evidence": []
+          }
+        ],
+        "unregistered_candidates": []
+      },
+      "code_scenarios": [
+        {}
+      ]
+    },
+    "engineering_judgment": {
+      "schema_version": "0.1.0",
+      "label": "Developer Tool",
+      "route_type": "developer_tool",
+      "route_dag": "developer_tool_dag",
+      "confidence": 0.74,
+      "signals": [
+        "surface:developer_tool",
+        "risk_profile:light"
+      ],
+      "active_axes": [
+        "public_contract",
+        "scope_reviewability"
+      ],
+      "active_axis_count": 2,
+      "inactive_axis_count": 7,
+      "common_spine": [
+        "intent",
+        "current_reality",
+        "invariants",
+        "domain_or_system_model",
+        "boundary",
+        "risk_classification",
+        "route_dag_selection",
+        "evidence_requirements",
+        "implementation_plan",
+        "verification",
+        "human_decision_contract",
+        "release_or_operation"
+      ],
+      "judgment_axes": [
+        {
+          "axis": "public_contract",
+          "status": "active_passed",
+          "reason": "pr_route:config_or_agent_policy; file_group:contract_docs; text:public_contract",
+          "confidence": 0.84,
+          "decision_question": "この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。",
+          "required_evidence": [
+            "story_spec_traceability",
+            "contract_doc",
+            "compat_or_output_test",
+            "current_verification"
+          ],
+          "blocking_criteria": [
+            "public contract change lacks traceability or compatibility evidence",
+            "output/API/CLI behavior changed without reviewable old/new expectation"
+          ],
+          "acceptable_followup": "Current behavior is backward-compatible and the remaining doc or cleanup item is bounded with an artifact or issue reference.",
+          "signals": [
+            "pr_route:config_or_agent_policy",
+            "file_group:contract_docs",
+            "text:public_contract"
+          ],
+          "activation_precision": {
+            "status": "active",
+            "reason": "public_contract activated from 2 non-text corroborating signal(s)",
+            "candidate_count": 3,
+            "non_text_signal_count": 2
+          },
+          "missing_evidence": [],
+          "matched_blockers": [],
+          "evidence": [
+            {
+              "kind": "story_spec_traceability",
+              "ref": "story/spec docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "story_doc"
+            },
+            {
+              "kind": "contract_doc",
+              "ref": "architecture/policy docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "topology_diagram",
+              "ref": "architecture docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "compat_or_output_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "semantic_invariant_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "current_verification",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "scope_classification"
+            },
+            {
+              "kind": "graph_impact_scope",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            }
+          ],
+          "optional_evidence_count": 1
+        },
+        {
+          "axis": "scope_reviewability",
+          "status": "active_accepted_followup",
+          "reason": "scope:needs_clean_branch; changed_files:44; mixed_surface:repo_control_with_product_change; graphify:related_files",
+          "confidence": 0.9,
+          "decision_question": "このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。",
+          "required_evidence": [
+            "scope_reviewed",
+            "split_plan",
+            "review_owner_map",
+            "related_file_blast_radius",
+            "decision_record"
+          ],
+          "blocking_criteria": [
+            "multiple unrelated decisions are bundled without split rationale",
+            "ownership or blast radius is unclear"
+          ],
+          "acceptable_followup": "Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
+          "signals": [
+            "scope:needs_clean_branch",
+            "changed_files:44",
+            "mixed_surface:repo_control_with_product_change",
+            "graphify:related_files"
+          ],
+          "activation_precision": {
+            "status": "active",
+            "reason": "scope_reviewability activated from 4 non-text corroborating signal(s)",
+            "candidate_count": 4,
+            "non_text_signal_count": 4
+          },
+          "missing_evidence": [
+            "scope_reviewed"
+          ],
+          "matched_blockers": [],
+          "blocker_waiver": {
+            "decision_id": "decision-1782955396432-c8baf93c",
+            "source": "gate:judgment_axis_scope_reviewability",
+            "status": "accepted",
+            "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+            "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+          },
+          "evidence": [
+            {
+              "kind": "story_spec_traceability",
+              "ref": "story/spec docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "story_doc"
+            },
+            {
+              "kind": "contract_doc",
+              "ref": "architecture/policy docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "topology_diagram",
+              "ref": "architecture docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "compat_or_output_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "semantic_invariant_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "current_verification",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "scope_classification"
+            },
+            {
+              "kind": "graph_impact_scope",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            },
+            {
+              "kind": "related_file_blast_radius",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            },
+            {
+              "kind": "review_owner_map",
+              "ref": "agent review stage/role ownership map",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "agent_review_artifact"
+            },
+            {
+              "kind": "decision_record",
+              "ref": "decision-1782955396432-c8baf93c",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "decision_record"
+            }
+          ],
+          "optional_evidence_count": 1
+        }
+      ]
+    },
+    "verification_evidence": {
+      "schema_version": "0.1.0",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "updated_at": "2026-07-02T04:11:42.487Z",
+      "warnings": [],
+      "commands": [
+        {
+          "kind": "integration",
+          "status": "pass",
+          "command": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD.",
+          "artifact": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "kind": "unit",
+          "status": "pass",
+          "command": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+          "summary": "Responsibility Authority core regression suite passed on current head: unit_regression for docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001, docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002, and docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001; pr_lifecycle_regression for VIBE-CORE-PR-001; agent_review_lifecycle_regression for VIBE-CORE-AR-001; evidence_lifecycle_regression for VIBE-CORE-EV-001; integration_runtime_path and negative_path for VIBE-CORE-COST-001; story_source_integrity_regression for VIBE-CORE-STORY-001; managed_worktree_regression for VIBE-CORE-WT-001.",
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "kind": "e2e",
+          "status": "pass",
+          "command": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions.",
+          "artifact": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "kind": "build",
+          "status": "pass",
+          "command": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD",
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        },
+        {
+          "kind": "typecheck",
+          "status": "pass",
+          "command": "npm run typecheck",
+          "summary": "CLI and source JavaScript syntax/typecheck passed on the amended clean HEAD",
+          "stdout_bytes": 0,
+          "stderr_bytes": 0
+        }
+      ]
+    },
+    "decision_records": {
+      "schema_version": "0.1.0",
+      "model": "vibepro-decision-records-v1",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "updated_at": "2026-07-02T01:23:16.433Z",
+      "warnings": [],
+      "decisions": [
+        {
+          "schema_version": "0.1.0",
+          "decision_id": "decision-1782955396432-c8baf93c",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "type": "waiver",
+          "status": "accepted",
+          "source": "gate:judgment_axis_scope_reviewability",
+          "source_status": "needs_evidence",
+          "summary": "scope_reviewability軸は1 PR維持でレビュー可能と判断する",
+          "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+          "reviewer": "codex",
+          "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json",
+          "secret_exposure": null,
+          "redaction": {
+            "applied": false,
+            "hit_count": 0
+          },
+          "warnings": [],
+          "git_context": {
+            "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+            "current_branch": "codex/vibepro-local-playbook-templates",
+            "dirty": false,
+            "status_fingerprint": "",
+            "recorded_at": "2026-07-02T01:23:16.427Z"
+          },
+          "recorded_at": "2026-07-02T01:23:16.433Z"
+        },
+        {
+          "schema_version": "0.1.0",
+          "decision_id": "decision-1782955272834-2cd1919d",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "type": "waiver",
+          "status": "accepted",
+          "source": "gate:split_resolution",
+          "source_status": "needs_review",
+          "summary": "Story Engineering Playbook同梱差分は分割せず1つの検証単位にする",
+          "reason": "この差分はplaybook markdown、catalog、exporter、package同梱設定、Story/Spec/Architecture記録が相互依存しており、分割するとVibePro利用者がnpm package内の必須テンプレをexportできるという受け入れ条件を単体で確認できない。repo-controlに見える差分はpackage.json filesへのdocs/playbooks追加のみで、agent設定、CI設定、release automationは変更していない。review_owner_map: CLI code and tests owner checks src/playbook-exporter.js/test/package.json; playbook content owner checks docs/playbooks; process owner checks story/spec/architecture/SSOT docs.",
+          "reviewer": "codex",
+          "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.json",
+          "secret_exposure": null,
+          "redaction": {
+            "applied": false,
+            "hit_count": 0
+          },
+          "warnings": [],
+          "git_context": {
+            "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+            "current_branch": "codex/vibepro-local-playbook-templates",
+            "dirty": false,
+            "status_fingerprint": "",
+            "recorded_at": "2026-07-02T01:21:12.829Z"
+          },
+          "recorded_at": "2026-07-02T01:21:12.834Z"
+        },
+        {
+          "schema_version": "0.1.0",
+          "decision_id": "decision-1782955260634-b8d2220a",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "type": "waiver",
+          "status": "accepted",
+          "source": "gate:pr_scope_judgment",
+          "source_status": "needs_split",
+          "summary": "Story Engineering Playbook必須テンプレ同梱は1 PRで扱う",
+          "reason": "35個のmdテンプレート、catalog、exporter、package files設定は同一のStory Engineering Playbook同梱契約を構成するため、今回は分割しない。テンプレートだけ先行するとcatalog path検証とnpm package同梱契約を検証できず、exporterだけ先行すると参照先が存在しない。repo-control扱いはpackage.jsonのfiles追加のみで、agent設定やCI制御は変更していない。review_owner_map: src/playbook-exporter.js/test/package.json=VibePro CLI reviewer; docs/playbooks/docs=playbook content reviewer; [REDACTED:751e8e64f796]-ssot=VibePro process reviewer.",
+          "reviewer": "codex",
+          "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.json",
+          "secret_exposure": null,
+          "redaction": {
+            "applied": true,
+            "hit_count": 1
+          },
+          "warnings": [],
+          "git_context": {
+            "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+            "current_branch": "codex/vibepro-local-playbook-templates",
+            "dirty": false,
+            "status_fingerprint": "",
+            "recorded_at": "2026-07-02T01:21:00.633Z"
+          },
+          "recorded_at": "2026-07-02T01:21:00.634Z"
+        }
+      ],
+      "summary": {
+        "total": 3,
+        "open": 0,
+        "by_type": {
+          "waiver": 3
+        },
+        "by_status": {
+          "accepted": 3
+        },
+        "warnings": [],
+        "latest": {
+          "schema_version": "0.1.0",
+          "decision_id": "decision-1782955396432-c8baf93c",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "type": "waiver",
+          "status": "accepted",
+          "source": "gate:judgment_axis_scope_reviewability",
+          "source_status": "needs_evidence",
+          "summary": "scope_reviewability軸は1 PR維持でレビュー可能と判断する",
+          "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+          "reviewer": "codex",
+          "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json",
+          "secret_exposure": null,
+          "redaction": {
+            "applied": false,
+            "hit_count": 0
+          },
+          "warnings": [],
+          "git_context": {
+            "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+            "current_branch": "codex/vibepro-local-playbook-templates",
+            "dirty": false,
+            "status_fingerprint": "",
+            "recorded_at": "2026-07-02T01:23:16.427Z"
+          },
+          "recorded_at": "2026-07-02T01:23:16.433Z"
+        }
+      },
+      "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+    },
+    "agent_reviews": {
+      "schema_version": "0.1.0",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "status": "pass",
+      "required": true,
+      "current_git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        },
+        "recorded_at": "2026-07-02T04:12:11.371Z"
+      },
+      "required_reviews": [
+        {
+          "stage": "gate",
+          "role": "gate_evidence",
+          "reason": "source changes require final gate evidence review before PR readiness",
+          "policy": "source_change_pr_final"
+        }
+      ],
+      "checkpoint_required_reviews": [],
+      "unmet_required_reviews": [],
+      "unmet_checkpoint_reviews": [],
+      "stages": [
+        {
+          "schema_version": "0.1.0",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "stage": "gate",
+          "status": "pass",
+          "roles": [
+            {
+              "role": "gate_evidence",
+              "status": "pass",
+              "effective_status": "pass",
+              "stale": false,
+              "stale_reason": "review is bound to the current git state",
+              "binding_status": "current",
+              "merge_delta_reuse": null,
+              "provenance_status": "verified_agent",
+              "provenance_reason": "codex parallel subagent provenance is recorded and the subagent lifecycle is closed",
+              "agent_provenance": {
+                "schema_version": "0.1.0",
+                "system": "codex",
+                "execution_mode": "parallel_subagent",
+                "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+                "agent_role": null,
+                "model": "inherited",
+                "reasoning_effort": "medium",
+                "cost_tier": "medium",
+                "thread_id": null,
+                "session_id": null,
+                "tool_call_id": null,
+                "transcript_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+                "request_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+                "recorded_by": null,
+                "lifecycle": {
+                  "agent_closed": true,
+                  "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+                  "close_note": null
+                },
+                "evidence_strength": "strong"
+              },
+              "summary": "Previous stale playbook export and gate summary concerns are resolved on current head for the gate_evidence role.",
+              "inspection": {
+                "summary": "Inspected current git head/status, prior gate_evidence finding, gate DAG, verification evidence, replay artifact, current playbook export JSON/Markdown, exporter/package/catalog/tests, and direct read-only consistency checks for catalog paths, gate summary, and private-name surface.",
+                "evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+                "inputs": [
+                  ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+                  ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+                  ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+                  ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+                  ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json"
+                ]
+              },
+              "judgment_delta": [
+                "stale_playbook_export -> resolved because the current playbook-export.json was regenerated after current pr-prepare/gate-dag and direct inspection found catalog/export/template path consistency.",
+                "stale_playbook_gate_summary -> resolved because the current export's Quality Gates surface includes gate:common_judgment_spine as passed and the gate DAG contains current_reality passed inside that spine gate.",
+                "regression_guard concern -> satisfied because recorded unit/build evidence and inspected tests cover CLI export, fallback surface selection, package metadata, npm dry-run package inclusion, and private-name denylist behavior."
+              ],
+              "findings": [],
+              "finding_dispositions": [
+                {
+                  "finding_id": "stale_playbook_export",
+                  "disposition": "accepted",
+                  "resolved_by": [
+                    ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+                  ],
+                  "reason": null,
+                  "inferred_from_resolution": true
+                },
+                {
+                  "finding_id": "stale_playbook_gate_summary",
+                  "disposition": "accepted",
+                  "resolved_by": [
+                    ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+                  ],
+                  "reason": null,
+                  "inferred_from_resolution": true
+                }
+              ],
+              "finding_count": 0,
+              "agent_usage": null,
+              "recorded_at": "2026-07-02T04:03:15.247Z",
+              "git_context": {
+                "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+                "current_branch": "codex/vibepro-local-playbook-templates",
+                "dirty": false,
+                "raw_dirty": false,
+                "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+                "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+                "fingerprint_scope": {
+                  "user_excludes": [
+                    ".vibepro/",
+                    ".worktrees/vibepro/"
+                  ]
+                },
+                "recorded_at": "2026-07-02T04:03:15.236Z"
+              },
+              "source_git_context": null,
+              "lifecycle": {
+                "effective_status": "closed",
+                "running_count": 0,
+                "timed_out_count": 0,
+                "closed_count": 2,
+                "replaced_count": 0,
+                "latest": {
+                  "schema_version": "0.1.0",
+                  "lifecycle_id": "4f7a9da3-928a-4dfa-a522-be8c4447e796",
+                  "story_id": "story-vibepro-bundled-playbook-templates",
+                  "stage": "gate",
+                  "role": "gate_evidence",
+                  "status": "closed",
+                  "agent_system": "codex",
+                  "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+                  "agent_model": null,
+                  "agent_reasoning_effort": null,
+                  "agent_cost_tier": null,
+                  "intended_model_policy": null,
+                  "model_policy_preflight": null,
+                  "thread_id": null,
+                  "session_id": null,
+                  "tool_call_id": null,
+                  "started_at": "2026-07-02T03:55:31.200Z",
+                  "timeout_ms": 600000,
+                  "replacement_for": null,
+                  "close_reason": "completed",
+                  "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+                  "closed_at": "2026-07-02T04:02:48.859Z",
+                  "result_artifact": null,
+                  "effective_status": "closed",
+                  "timed_out": false,
+                  "elapsed_ms": 437659
+                }
+              },
+              "artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-result-gate_evidence.json",
+              "history_artifacts": [
+                ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T03-44-24.260Z.json",
+                ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T04-03-15.247Z.json"
+              ]
+            }
+          ],
+          "pass_count": 1,
+          "stale_count": 0,
+          "missing_count": 0,
+          "unverified_agent_count": 0,
+          "block_count": 0,
+          "needs_changes_count": 0,
+          "lifecycle": {
+            "entry_count": 2,
+            "running_count": 0,
+            "timed_out_count": 0,
+            "closed_count": 2,
+            "replaced_count": 0,
+            "entries": [
+              {
+                "schema_version": "0.1.0",
+                "lifecycle_id": "30796482-ae90-4f0c-8989-f2d41096c809",
+                "story_id": "story-vibepro-bundled-playbook-templates",
+                "stage": "gate",
+                "role": "gate_evidence",
+                "status": "closed",
+                "agent_system": "codex",
+                "agent_id": "019f20e8-b3ae-7d93-bb54-bf686226b115",
+                "agent_model": null,
+                "agent_reasoning_effort": null,
+                "agent_cost_tier": null,
+                "intended_model_policy": null,
+                "model_policy_preflight": null,
+                "thread_id": null,
+                "session_id": null,
+                "tool_call_id": null,
+                "started_at": "2026-07-02T03:39:25.594Z",
+                "timeout_ms": 600000,
+                "replacement_for": null,
+                "close_reason": "completed",
+                "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20e8-b3ae-7d93-bb54-bf686226b115.json",
+                "closed_at": "2026-07-02T03:43:58.339Z",
+                "result_artifact": null,
+                "effective_status": "closed",
+                "timed_out": false,
+                "elapsed_ms": 272745
+              },
+              {
+                "schema_version": "0.1.0",
+                "lifecycle_id": "4f7a9da3-928a-4dfa-a522-be8c4447e796",
+                "story_id": "story-vibepro-bundled-playbook-templates",
+                "stage": "gate",
+                "role": "gate_evidence",
+                "status": "closed",
+                "agent_system": "codex",
+                "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+                "agent_model": null,
+                "agent_reasoning_effort": null,
+                "agent_cost_tier": null,
+                "intended_model_policy": null,
+                "model_policy_preflight": null,
+                "thread_id": null,
+                "session_id": null,
+                "tool_call_id": null,
+                "started_at": "2026-07-02T03:55:31.200Z",
+                "timeout_ms": 600000,
+                "replacement_for": null,
+                "close_reason": "completed",
+                "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+                "closed_at": "2026-07-02T04:02:48.859Z",
+                "result_artifact": null,
+                "effective_status": "closed",
+                "timed_out": false,
+                "elapsed_ms": 437659
+              }
+            ]
+          },
+          "next_actions": [],
+          "updated_at": "2026-07-02T04:12:11.374Z",
+          "current_git_context": {
+            "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+            "current_branch": "codex/vibepro-local-playbook-templates",
+            "dirty": false,
+            "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            },
+            "recorded_at": "2026-07-02T04:12:11.371Z"
+          },
+          "parallel_dispatch": {
+            "mode": "policy_aware_parallel_reviews",
+            "prepared": true,
+            "artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/parallel-dispatch.md",
+            "artifact_updated_at": "2026-07-02T03:54:58.312Z",
+            "prepare_command": "vibepro review prepare . --id story-vibepro-bundled-playbook-templates --stage gate --role gate_evidence"
+          }
+        }
+      ],
+      "parallel_dispatch": {
+        "required": true,
+        "mode": "policy_aware_parallel_reviews",
+        "stage_execution": {
+          "serial_between_stages": true,
+          "parallel_within_stage": true,
+          "current_stage": null,
+          "max_parallel_subagents_per_stage": 1,
+          "barrier": "A later review stage must not be dispatched until the current stage has closed and recorded every required role."
+        },
+        "required_stages": [
+          {
+            "stage": "gate",
+            "serial_index": 1,
+            "depends_on_stage": null,
+            "next_stage": null,
+            "roles": [
+              "gate_evidence"
+            ],
+            "role_count": 1,
+            "status": "pass",
+            "prepared": true,
+            "dispatch_state": "complete",
+            "dispatch_rule": "Run these roles in parallel only for this stage; after every role is closed and recorded, advance to next_stage.",
+            "prepare_command": "vibepro review prepare . --id story-vibepro-bundled-playbook-templates --stage gate --role gate_evidence",
+            "dispatch_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/parallel-dispatch.md"
+          }
+        ]
+      },
+      "summary": {
+        "required_review_count": 1,
+        "unmet_required_review_count": 0,
+        "checkpoint_required_review_count": 0,
+        "unmet_checkpoint_review_count": 0,
+        "stage_count": 1,
+        "stale_result_count": 0,
+        "block_result_count": 0,
+        "lifecycle_running_count": 0,
+        "lifecycle_timed_out_count": 0
+      }
+    },
+    "senior_gap_judgment": {
+      "schema_version": "0.1.0",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "gaps": [
+        {
+          "id": "gap:judgment_axis:scope_reviewability",
+          "severity": "minor",
+          "evidence_refs": [
+            "story/spec docs in diff",
+            "architecture/policy docs in diff",
+            "architecture docs in diff",
+            "test files in diff",
+            "test files in diff",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+            "npm pack --dry-run --json; rg internal-name denylist",
+            "npm pack --dry-run --json; rg internal-name denylist",
+            "npm pack --dry-run --json; rg internal-name denylist",
+            "npm pack --dry-run --json; rg internal-name denylist",
+            ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+            "clean_branch_or_split_pr",
+            ".vibepro/graphify/graph.json (3 changed / 5 related)",
+            ".vibepro/graphify/graph.json (3 changed / 5 related)",
+            "agent review stage/role ownership map",
+            ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+          ]
+        },
+        {
+          "id": "gap:session_attribution:not_collected",
+          "severity": "minor",
+          "evidence_refs": [
+            ".vibepro/pr/<story-id>/evidence-reuse.json"
+          ]
+        }
+      ]
+    },
+    "traceability_clause_coverage": {
+      "clause_count": 7,
+      "acceptance_criteria_count": 7,
+      "scenario_clause_count": 0,
+      "mapped_count": 7,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    },
+    "evidence_reuse": {
+      "status": "hit",
+      "fresh_use_allowed": true,
+      "used_as_fresh": false
+    },
+    "gate_dag_summary": {
+      "schema_version": "0.1.0",
+      "artifact_kind": "canonical_gate_dag_audit_summary",
+      "audit_scope": "judgment_evidence_v1",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "model": "story-acceptance-verification-dag",
+      "overall_status": "ready_for_review",
+      "summary": {
+        "acceptance_criteria_count": 7,
+        "required_gate_count": 42,
+        "needs_evidence_count": 0,
+        "engineering_judgment_route": "developer_tool",
+        "engineering_judgment_dag": "developer_tool_dag",
+        "active_judgment_axes": [
+          "public_contract",
+          "scope_reviewability"
+        ],
+        "suppressed_judgment_axes": [],
+        "judgment_axis_count": 2,
+        "judgment_axis_accepted_followup_count": 1,
+        "pr_scope_judgment_status": "passed",
+        "bug_physics_classes": [],
+        "bug_physics_profile_count": 0,
+        "pr_route": "config_or_agent_policy",
+        "pr_body_template": "policy_boundary_review",
+        "story_status": "present",
+        "story_source_integrity_status": "passed",
+        "architecture_status": "satisfied",
+        "architecture_axis_quality_status": "needs_review",
+        "spec_status": "present",
+        "path_surface_matrix_status": "passed",
+        "journey_context_status": null,
+        "design_ssot_reconciliation_status": "passed",
+        "responsibility_authority_status": "passed",
+        "requirement_status": "passed",
+        "failure_mode_coverage_status": "passed",
+        "decision_record_status": "passed",
+        "review_inspection_required_status": "passed",
+        "artifact_consistency_status": "passed",
+        "managed_worktree_status": "passed",
+        "traceability_clause_coverage": {
+          "clause_count": 7,
+          "acceptance_criteria_count": 7,
+          "scenario_clause_count": 0,
+          "mapped_count": 7,
+          "weakly_mapped_count": 0,
+          "unmapped_count": 0,
+          "examples": []
+        },
+        "evidence_reuse": {
+          "schema_version": "0.1.0",
+          "model": "vibepro-evidence-summary-reuse-v1",
+          "story_id": "story-vibepro-bundled-playbook-templates",
+          "evidence_key": "evk_283a6f22ad5322a907118fd6ad602a2a",
+          "status": "hit",
+          "reason": "evidence_key_match",
+          "stale_reasons": [],
+          "fresh_use_allowed": true,
+          "used_as_fresh": false,
+          "gate_status": "passed",
+          "artifact_value_ledger": {
+            "status": "present",
+            "model": "vibepro-artifact-value-ledger-v1",
+            "head_binding_status": "current_head_bound",
+            "artifact_count": 5,
+            "decision_bound_count": 5,
+            "linked_consumer_count": 5,
+            "session_attribution_status": "not_collected_in_pr_prepare",
+            "session_attribution_confidence": "none",
+            "total_token_estimate": 322
+          },
+          "session_attribution_ledger": {
+            "status": "not_collected_in_pr_prepare",
+            "model": "vibepro-session-attribution-ledger-v1",
+            "confidence": "none",
+            "reason": "PR prepare did not receive Codex session attribution; downstream usage mentions must not be treated as clean product-value adoption.",
+            "session_count": 0,
+            "unattributed_count": 0
+          },
+          "verification_summary_fingerprint": "sha256:625b750181307b12714d3dafb226dfc3c24400e8d0865f900b842850986c7950",
+          "verification_evidence_updated_at": "2026-07-02T04:11:42.487Z",
+          "verification_command_timestamps": [
+            {
+              "kind": "integration",
+              "executed_at": "2026-07-02T04:11:42.487Z",
+              "git_recorded_at": "2026-07-02T04:11:42.486Z"
+            },
+            {
+              "kind": "unit",
+              "executed_at": "2026-07-02T04:07:39.767Z",
+              "git_recorded_at": "2026-07-02T04:07:39.760Z"
+            },
+            {
+              "kind": "e2e",
+              "executed_at": "2026-07-02T03:45:16.176Z",
+              "git_recorded_at": "2026-07-02T03:45:16.171Z"
+            },
+            {
+              "kind": "build",
+              "executed_at": "2026-07-02T01:08:41.874Z",
+              "git_recorded_at": "2026-07-02T01:08:41.873Z"
+            },
+            {
+              "kind": "typecheck",
+              "executed_at": "2026-07-02T01:08:19.785Z",
+              "git_recorded_at": "2026-07-02T01:08:19.779Z"
+            }
+          ],
+          "full_evidence": {
+            "status": "reused",
+            "generation_count": 1,
+            "generation_count_scope": "same_evidence_key",
+            "same_key_generation_count": 1,
+            "cumulative_generation_count": 12,
+            "digest": "sha256:04c96f731be033afff6ae93ff36894377872d3cf08156c3d18c5aeb9728dfc3e",
+            "reference": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-index.json"
+          },
+          "summary_artifacts": {
+            "evidence_reuse": ".vibepro/pr/story-vibepro-bundled-playbook-templates/evidence-reuse.json",
+            "evidence_plan": ".vibepro/pr/story-vibepro-bundled-playbook-templates/evidence-plan.json",
+            "decision_index": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-index.json",
+            "pr_prepare": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-prepare.json",
+            "gate_dag": ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json"
+          }
+        },
+        "senior_gap_judgment": {
+          "status": "passed_with_residual_risk",
+          "gap_count": 2,
+          "blocking_gap_count": 0,
+          "residual_risk_count": 2,
+          "followup_count": 2
+        }
+      },
+      "nodes": [
+        {
+          "id": "story",
+          "type": "story",
+          "label": "story-vibepro-bundled-playbook-templates - Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+          "status": "present",
+          "required": true,
+          "reason": "Story source is present"
+        },
+        {
+          "id": "gate:story_source_integrity",
+          "type": "story_source_integrity_gate",
+          "label": "Story Source Integrity Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Resolved and changed Story documents match the selected Story, or no changed Story document needs binding."
+        },
+        {
+          "id": "gate:engineering_judgment_route",
+          "type": "engineering_judgment_route_gate",
+          "label": "Engineering Judgment Route Gate",
+          "status": "passed",
+          "required": true,
+          "confidence": 0.74,
+          "reason": "Engineering judgment route selected: developer_tool; DAG=developer_tool_dag"
+        },
+        {
+          "id": "gate:common_judgment_spine",
+          "type": "engineering_judgment_spine_gate",
+          "label": "Common Judgment Spine Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Intent, current reality, invariants, boundaries, failure modes, and done evidence have enough evidence for this route profile"
+        },
+        {
+          "id": "gate:judgment_axis_public_contract",
+          "type": "judgment_axis_gate",
+          "label": "Judgment Axis: public_contract",
+          "status": "passed",
+          "required": true,
+          "axis": "public_contract",
+          "axis_status": "active_passed",
+          "confidence": 0.84,
+          "reason": "public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, integration_runtime_path, integration_runtime_path, flow_replay, flow_replay, artifact_replay, artifact_replay, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, negative_path, negative_path, negative_path, focused_test, runtime_path_evidence, e2e_runtime_path, e2e_runtime_path, scenario_clause_e2e, scenario_clause_e2e, focused_test, focused_test, runtime_path_evidence, runtime_path_evidence, current_verification, split_plan, graph_impact_scope.",
+          "missing_evidence": [],
+          "matched_blockers": [],
+          "evidence": [
+            {
+              "kind": "story_spec_traceability",
+              "ref": "story/spec docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "story_doc"
+            },
+            {
+              "kind": "contract_doc",
+              "ref": "architecture/policy docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "topology_diagram",
+              "ref": "architecture docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "compat_or_output_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "semantic_invariant_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "current_verification",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "scope_classification"
+            },
+            {
+              "kind": "graph_impact_scope",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            }
+          ],
+          "optional_evidence_count": 1
+        },
+        {
+          "id": "gate:judgment_axis_scope_reviewability",
+          "type": "judgment_axis_gate",
+          "label": "Judgment Axis: scope_reviewability",
+          "status": "accepted_followup",
+          "required": true,
+          "axis": "scope_reviewability",
+          "axis_status": "active_accepted_followup",
+          "confidence": 0.9,
+          "reason": "scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence accepted as a bounded follow-up: scope_reviewed. Current PR is coherent; separate cleanup is tracked without hiding required review ownership.",
+          "missing_evidence": [
+            "scope_reviewed"
+          ],
+          "matched_blockers": [],
+          "blocker_waiver": {
+            "decision_id": "decision-1782955396432-c8baf93c",
+            "source": "gate:judgment_axis_scope_reviewability",
+            "status": "accepted",
+            "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+            "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+          },
+          "evidence": [
+            {
+              "kind": "story_spec_traceability",
+              "ref": "story/spec docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "story_doc"
+            },
+            {
+              "kind": "contract_doc",
+              "ref": "architecture/policy docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "topology_diagram",
+              "ref": "architecture docs in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "architecture_doc"
+            },
+            {
+              "kind": "compat_or_output_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "semantic_invariant_test",
+              "ref": "test files in diff",
+              "strength": "supporting",
+              "binding_status": "n/a",
+              "artifact_quality": "changed_test_files"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "integration_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "flow_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "artifact_replay",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "negative_path",
+              "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "e2e_runtime_path",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "scenario_clause_e2e",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "unrecognized"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "focused_test",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "runtime_path_evidence",
+              "ref": "npm pack --dry-run --json; rg internal-name denylist",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "missing_artifact"
+            },
+            {
+              "kind": "current_verification",
+              "ref": "node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json",
+              "strength": "strong",
+              "binding_status": "current",
+              "artifact_quality": "verified"
+            },
+            {
+              "kind": "split_plan",
+              "ref": "clean_branch_or_split_pr",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "scope_classification"
+            },
+            {
+              "kind": "graph_impact_scope",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            },
+            {
+              "kind": "related_file_blast_radius",
+              "ref": ".vibepro/graphify/graph.json (3 changed / 5 related)",
+              "strength": "supporting",
+              "binding_status": "derived",
+              "artifact_quality": "graph_context"
+            },
+            {
+              "kind": "review_owner_map",
+              "ref": "agent review stage/role ownership map",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "agent_review_artifact"
+            },
+            {
+              "kind": "decision_record",
+              "ref": "decision-1782955396432-c8baf93c",
+              "strength": "supporting",
+              "binding_status": "current",
+              "artifact_quality": "decision_record"
+            }
+          ],
+          "optional_evidence_count": 1
+        },
+        {
+          "id": "gate:pr_scope_judgment",
+          "type": "pr_scope_judgment_gate",
+          "label": "PR Scope Judgment Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "PR scope decision is recorded: Story Engineering Playbook必須テンプレ同梱は1 PRで扱う"
+        },
+        {
+          "id": "gate:bug_physics_triage",
+          "type": "bug_physics_triage_gate",
+          "label": "Bug Physics Triage Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "No bug-physics-specific route selected; ordinary gate profile remains in force"
+        },
+        {
+          "id": "gate:judgment_developer_tool_developer_friction",
+          "type": "route_specific_judgment_gate",
+          "label": "Developer Friction Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "実際の開発摩擦を最小単位で定義する"
+        },
+        {
+          "id": "gate:judgment_developer_tool_workflow_loop",
+          "type": "route_specific_judgment_gate",
+          "label": "Workflow Loop Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "copy/run/debug/release のような作業ループを閉じる"
+        },
+        {
+          "id": "gate:judgment_developer_tool_cli_api_contract",
+          "type": "route_specific_judgment_gate",
+          "label": "CLI / API Contract Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "人間向け出力、機械向けJSON、exit code、config precedenceを固定する"
+        },
+        {
+          "id": "gate:judgment_developer_tool_local_first_state",
+          "type": "route_specific_judgment_gate",
+          "label": "Local-First State Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "外部状態をローカルで高速・再現可能に読む"
+        },
+        {
+          "id": "gate:judgment_developer_tool_fast_feedback",
+          "type": "route_specific_judgment_gate",
+          "label": "Fast Feedback Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "doctor/check/watch/smoke で短い検証ループを作る"
+        },
+        {
+          "id": "gate:judgment_developer_tool_install_release_path",
+          "type": "route_specific_judgment_gate",
+          "label": "Install / Release Path Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "install、upgrade、package、releaseの導線を設計する"
+        },
+        {
+          "id": "gate:pr_route_classification",
+          "type": "pr_route_gate",
+          "label": "PR Route Classification Gate",
+          "status": "passed",
+          "required": true,
+          "confidence": 0.74,
+          "reason": "PR route selected: config_or_agent_policy; body template: policy_boundary_review"
+        },
+        {
+          "id": "gate:pr_body_contract",
+          "type": "pr_body_contract_gate",
+          "label": "PR Body Contract Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "PR body must use policy_boundary_review and expose the route-specific decision contract"
+        },
+        {
+          "id": "gate:split_resolution",
+          "type": "split_resolution_gate",
+          "label": "Split Resolution Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Split/clean-branch decision is explicitly recorded: Story Engineering Playbook同梱差分は分割せず1つの検証単位にする"
+        },
+        {
+          "id": "gate:managed_worktree",
+          "type": "managed_worktree_gate",
+          "label": "Managed Worktree Gate",
+          "status": "passed",
+          "required": false,
+          "reason": "command is running inside the VibePro managed worktree"
+        },
+        {
+          "id": "gate:change_classification",
+          "type": "change_classification_gate",
+          "label": "Change Classification Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Gate profile selected: light"
+        },
+        {
+          "id": "gate:pr_freshness",
+          "type": "pr_freshness_gate",
+          "label": "PR Freshness Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "HEAD contains current origin/main; PR prepare artifacts are based on the latest resolved base ref"
+        },
+        {
+          "id": "architecture",
+          "type": "architecture_gate",
+          "label": "Architecture Gate",
+          "status": "satisfied",
+          "required": true,
+          "reason": "ADRあり (docs/architecture/vibepro-bundled-playbook-templates.md)"
+        },
+        {
+          "id": "spec",
+          "type": "spec_gate",
+          "label": "Spec Gate",
+          "status": "present",
+          "required": true,
+          "reason": "explicit Spec docs are present (docs/specs/vibepro-bundled-playbook-templates.md, docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md, docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md, docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md)"
+        },
+        {
+          "id": "gate:design_diagrams",
+          "type": "design_diagrams_gate",
+          "label": "Design Diagrams (MUST-HAVE)",
+          "status": "satisfied",
+          "required": true,
+          "reason": "必須設計図が全て揃っている (threat_model)"
+        },
+        {
+          "id": "code",
+          "type": "code_gate",
+          "label": "Code Gate",
+          "status": "present"
+        },
+        {
+          "id": "gate:network_contract",
+          "type": "verification_gate",
+          "label": "Network Contract Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "No broken API client route contracts detected"
+        },
+        {
+          "id": "gate:path_surface_matrix",
+          "type": "path_surface_matrix_gate",
+          "label": "Path Surface Matrix Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "1 path surface row(s) are covered or not critical for this route"
+        },
+        {
+          "id": "gate:design_ssot_reconciliation",
+          "type": "design_ssot_reconciliation_gate",
+          "label": "Design SSOT Reconciliation Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "26 design root(s) reconciled without deterministic lineage gaps."
+        },
+        {
+          "id": "gate:responsibility_authority",
+          "type": "responsibility_authority_gate",
+          "label": "Responsibility Authority Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "8 responsibility authority match(es) have current evidence.",
+          "missing_evidence": []
+        },
+        {
+          "id": "gate:requirement",
+          "type": "requirement_gate",
+          "label": "Requirement Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない"
+        },
+        {
+          "id": "gate:failure_mode_coverage",
+          "type": "failure_mode_coverage_gate",
+          "label": "Failure Mode Coverage Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "2 failure mode candidate(s) are covered or not critical for this route profile"
+        },
+        {
+          "id": "gate:decision_record",
+          "type": "decision_record_gate",
+          "label": "Decision Record Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Decision records are captured; total=3, waivers=3, noise=0, secret_exposure=0"
+        },
+        {
+          "id": "gate:unit",
+          "type": "verification_gate",
+          "label": "Unit Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Responsibility Authority core regression suite passed on current head: unit_regression for docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001, docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002, and docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001; pr_lifecycle_regression for VIBE-CORE-PR-001; agent_review_lifecycle_regression for VIBE-CORE-AR-001; evidence_lifecycle_regression for VIBE-CORE-EV-001; integration_runtime_path and negative_path for VIBE-CORE-COST-001; story_source_integrity_regression for VIBE-CORE-STORY-001; managed_worktree_regression for VIBE-CORE-WT-001.; evidence: .vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json"
+        },
+        {
+          "id": "gate:integration",
+          "type": "verification_gate",
+          "label": "Integration Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD.; evidence: .vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json"
+        },
+        {
+          "id": "gate:e2e",
+          "type": "verification_gate",
+          "label": "E2E Gate",
+          "status": "passed",
+          "required": false,
+          "reason": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions.; evidence: .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+        },
+        {
+          "id": "review:dispatch_batch:gate",
+          "type": "agent_review_dispatch_batch_gate",
+          "label": "Review Dispatch Batch: gate",
+          "status": "passed",
+          "required": true,
+          "reason": "All gate role preflight checks passed and dispatch instructions are prepared"
+        },
+        {
+          "id": "review:preflight:gate:gate_evidence",
+          "type": "agent_review_dispatch_preflight_gate",
+          "label": "Review Dispatch Preflight: gate_evidence",
+          "status": "passed",
+          "required": true,
+          "reason": "Current gate:gate_evidence review already passed; do not dispatch a duplicate reviewer for the same git state"
+        },
+        {
+          "id": "review:prepare:gate",
+          "type": "agent_review_prepare_gate",
+          "label": "Review Prepare: gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Policy-aware agent review dispatch instructions were generated"
+        },
+        {
+          "id": "review:gate:gate_evidence",
+          "type": "agent_review_role_gate",
+          "label": "Agent Review: gate_evidence",
+          "status": "passed",
+          "required": true,
+          "reason": "Previous stale playbook export and gate summary concerns are resolved on current head for the gate_evidence role."
+        },
+        {
+          "id": "review:record:gate:gate_evidence",
+          "type": "agent_review_record_gate",
+          "label": "Review Record: gate_evidence",
+          "status": "passed",
+          "required": true,
+          "reason": "Recorded gate:gate_evidence review for the current git state"
+        },
+        {
+          "id": "review:join:gate",
+          "type": "agent_review_stage_join_gate",
+          "label": "Review Stage Join: gate",
+          "status": "passed",
+          "required": true,
+          "reason": "All parallel gate agent review roles are closed and recorded for the current git state"
+        },
+        {
+          "id": "gate:agent_review",
+          "type": "agent_review_gate",
+          "label": "Agent Review Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Required staged agent reviews passed for the current git state"
+        },
+        {
+          "id": "gate:review_inspection_required",
+          "type": "review_inspection_required_gate",
+          "label": "Review Inspection Required Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Review inspection evidence is not critical for this route profile"
+        },
+        {
+          "id": "gate:definition_of_done",
+          "type": "definition_of_done_gate",
+          "label": "Definition of Done Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Current-head verification evidence exists and required Agent Review is closed or not required"
+        },
+        {
+          "id": "gate:artifact_consistency",
+          "type": "artifact_consistency_gate",
+          "label": "Artifact Consistency Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "6 recorded verification/review artifact(s) accepted for artifact consistency (6 current); reused artifacts are not labeled as current"
+        },
+        {
+          "id": "gate:dag_connectivity",
+          "type": "dag_connectivity_gate",
+          "label": "DAG Connectivity Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Every DAG node is reachable from story and can reach the final PR decision"
+        },
+        {
+          "id": "pr",
+          "type": "pr_gate",
+          "label": "PR Gate",
+          "status": "pending",
+          "reason": "Unit / Integration / E2E Gateの証跡をPR本文で確認する"
+        },
+        {
+          "id": "ac:1",
+          "type": "acceptance_criterion",
+          "label": "必須テンプレだけが `docs/playbooks/story-engineering-playbook/` に入っている。",
+          "status": "present"
+        },
+        {
+          "id": "ac:2",
+          "type": "acceptance_criterion",
+          "label": "`product/`、`architecture/`、`testing/`、`features/_feature-template/`、`adr/_template.md` が含まれる。",
+          "status": "present"
+        },
+        {
+          "id": "ac:3",
+          "type": "acceptance_criterion",
+          "label": "`design/` と `discovery/` は初期同梱対象外としてcatalogに明示される。",
+          "status": "present"
+        },
+        {
+          "id": "ac:4",
+          "type": "acceptance_criterion",
+          "label": "`vibepro playbook export` は対象repoではなく、VibeProパッケージに同梱されたcatalogを読む。",
+          "status": "present"
+        },
+        {
+          "id": "ac:5",
+          "type": "acceptance_criterion",
+          "label": "出力JSON/Markdownには選択されたtemplate idとローカルtemplate pathが含まれる。",
+          "status": "present"
+        },
+        {
+          "id": "ac:6",
+          "type": "acceptance_criterion",
+          "label": "npm packageに `docs/playbooks` が含まれる。",
+          "status": "present"
+        },
+        {
+          "id": "ac:7",
+          "type": "acceptance_criterion",
+          "label": "OSS利用者に伝わらない個人名、非公開repo名、会社固有名を含めない。",
+          "status": "present"
+        },
+        {
+          "id": "gate:traceability_clause_coverage",
+          "type": "traceability_clause_coverage_gate",
+          "label": "Traceability Clause Coverage Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "Every extracted AC/scenario clause has clause-specific test, review, or verification evidence"
+        },
+        {
+          "id": "gate:evidence_reuse_freshness",
+          "type": "artifact_freshness_gate",
+          "label": "Evidence Summary Reuse Freshness",
+          "status": "passed",
+          "required": true,
+          "reason": "Evidence reuse status is hit."
+        },
+        {
+          "id": "gate:senior_gap_judgment",
+          "type": "senior_gap_judgment_gate",
+          "label": "Senior Gap Judgment Gate",
+          "status": "passed",
+          "required": true,
+          "reason": "2 residual risk(s) remain explicit but are safe to defer for this PR."
+        }
+      ],
+      "edges": [
+        {
+          "from": "story",
+          "to": "gate:story_source_integrity"
+        },
+        {
+          "from": "gate:story_source_integrity",
+          "to": "gate:engineering_judgment_route"
+        },
+        {
+          "from": "gate:engineering_judgment_route",
+          "to": "gate:common_judgment_spine"
+        },
+        {
+          "from": "gate:common_judgment_spine",
+          "to": "gate:judgment_axis_public_contract"
+        },
+        {
+          "from": "gate:judgment_axis_public_contract",
+          "to": "gate:pr_scope_judgment"
+        },
+        {
+          "from": "gate:common_judgment_spine",
+          "to": "gate:judgment_axis_scope_reviewability"
+        },
+        {
+          "from": "gate:judgment_axis_scope_reviewability",
+          "to": "gate:pr_scope_judgment"
+        },
+        {
+          "from": "gate:pr_scope_judgment",
+          "to": "gate:bug_physics_triage"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_developer_friction"
+        },
+        {
+          "from": "gate:judgment_developer_tool_developer_friction",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_workflow_loop"
+        },
+        {
+          "from": "gate:judgment_developer_tool_workflow_loop",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_cli_api_contract"
+        },
+        {
+          "from": "gate:judgment_developer_tool_cli_api_contract",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_local_first_state"
+        },
+        {
+          "from": "gate:judgment_developer_tool_local_first_state",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_fast_feedback"
+        },
+        {
+          "from": "gate:judgment_developer_tool_fast_feedback",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:judgment_developer_tool_install_release_path"
+        },
+        {
+          "from": "gate:judgment_developer_tool_install_release_path",
+          "to": "gate:pr_route_classification"
+        },
+        {
+          "from": "gate:bug_physics_triage",
+          "to": "gate:change_classification"
+        },
+        {
+          "from": "gate:pr_route_classification",
+          "to": "gate:pr_body_contract"
+        },
+        {
+          "from": "gate:pr_route_classification",
+          "to": "gate:split_resolution"
+        },
+        {
+          "from": "gate:split_resolution",
+          "to": "gate:pr_body_contract"
+        },
+        {
+          "from": "gate:pr_body_contract",
+          "to": "gate:managed_worktree"
+        },
+        {
+          "from": "gate:managed_worktree",
+          "to": "gate:change_classification"
+        },
+        {
+          "from": "gate:change_classification",
+          "to": "gate:pr_freshness"
+        },
+        {
+          "from": "gate:pr_freshness",
+          "to": "architecture"
+        },
+        {
+          "from": "gate:pr_freshness",
+          "to": "spec"
+        },
+        {
+          "from": "architecture",
+          "to": "code"
+        },
+        {
+          "from": "spec",
+          "to": "gate:design_diagrams"
+        },
+        {
+          "from": "gate:design_diagrams",
+          "to": "code"
+        },
+        {
+          "from": "story",
+          "to": "ac:1"
+        },
+        {
+          "from": "ac:1",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:1",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:1",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:1",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:2"
+        },
+        {
+          "from": "ac:2",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:2",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:2",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:2",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:3"
+        },
+        {
+          "from": "ac:3",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:3",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:3",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:3",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:4"
+        },
+        {
+          "from": "ac:4",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:4",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:4",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:4",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:5"
+        },
+        {
+          "from": "ac:5",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:5",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:5",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:5",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:6"
+        },
+        {
+          "from": "ac:6",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:6",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:6",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:6",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "story",
+          "to": "ac:7"
+        },
+        {
+          "from": "ac:7",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "ac:7",
+          "to": "gate:unit"
+        },
+        {
+          "from": "ac:7",
+          "to": "gate:integration"
+        },
+        {
+          "from": "ac:7",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "code",
+          "to": "gate:network_contract"
+        },
+        {
+          "from": "gate:network_contract",
+          "to": "gate:path_surface_matrix"
+        },
+        {
+          "from": "gate:path_surface_matrix",
+          "to": "gate:design_ssot_reconciliation"
+        },
+        {
+          "from": "gate:design_ssot_reconciliation",
+          "to": "gate:responsibility_authority"
+        },
+        {
+          "from": "gate:responsibility_authority",
+          "to": "gate:requirement"
+        },
+        {
+          "from": "gate:requirement",
+          "to": "gate:failure_mode_coverage"
+        },
+        {
+          "from": "gate:failure_mode_coverage",
+          "to": "gate:decision_record"
+        },
+        {
+          "from": "gate:decision_record",
+          "to": "gate:unit"
+        },
+        {
+          "from": "gate:unit",
+          "to": "gate:integration"
+        },
+        {
+          "from": "gate:integration",
+          "to": "gate:e2e"
+        },
+        {
+          "from": "gate:e2e",
+          "to": "review:dispatch_batch:gate",
+          "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+        },
+        {
+          "from": "gate:requirement",
+          "to": "review:dispatch_batch:gate",
+          "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+        },
+        {
+          "from": "spec",
+          "to": "review:dispatch_batch:gate",
+          "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+        },
+        {
+          "from": "gate:integration",
+          "to": "review:dispatch_batch:gate",
+          "reason": "serial Agent Review entry waits for all relevant upstream review surfaces before stage-local parallel dispatch"
+        },
+        {
+          "from": "review:dispatch_batch:gate",
+          "to": "review:preflight:gate:gate_evidence"
+        },
+        {
+          "from": "review:preflight:gate:gate_evidence",
+          "to": "review:prepare:gate"
+        },
+        {
+          "from": "review:prepare:gate",
+          "to": "review:gate:gate_evidence"
+        },
+        {
+          "from": "review:gate:gate_evidence",
+          "to": "review:record:gate:gate_evidence"
+        },
+        {
+          "from": "review:record:gate:gate_evidence",
+          "to": "review:join:gate"
+        },
+        {
+          "from": "review:join:gate",
+          "to": "gate:agent_review"
+        },
+        {
+          "from": "gate:agent_review",
+          "to": "gate:review_inspection_required"
+        },
+        {
+          "from": "gate:review_inspection_required",
+          "to": "gate:definition_of_done"
+        },
+        {
+          "from": "gate:definition_of_done",
+          "to": "gate:artifact_consistency"
+        },
+        {
+          "from": "gate:artifact_consistency",
+          "to": "gate:dag_connectivity"
+        },
+        {
+          "from": "gate:dag_connectivity",
+          "to": "pr"
+        }
+      ]
+    },
+    "execution_gate": {
+      "schema_version": "0.1.0",
+      "status": "ready",
+      "pr_create_allowed": true,
+      "waiver_required": false,
+      "blocking_gate_count": 0,
+      "blocking_gates": [],
+      "required_actions": []
+    },
+    "completion_quality": {
+      "schema_version": "0.1.0",
+      "status": "ready_for_human_acceptance",
+      "target_quality_rate": 0.95,
+      "metrics": {
+        "e2e_experience_reach_rate": null,
+        "final_20_auto_closure_rate": null,
+        "design_quality_pass_rate": null,
+        "visual_qa_pass_rate": null,
+        "human_usable_quality_rate": null
+      },
+      "required_evidence": []
+    }
+  },
+  "artifact_refs": {
+    "evidence_reuse": ".vibepro/pr/<story-id>/evidence-reuse.json",
+    "evidence_plan": ".vibepro/pr/<story-id>/evidence-plan.json",
+    "decision_index": ".vibepro/pr/<story-id>/decision-index.json",
+    "split_plan": ".vibepro/pr/<story-id>/split-plan.json",
+    "gate_dag": ".vibepro/pr/<story-id>/gate-dag.json"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "gaps": [
+    {
+      "id": "gap:judgment_axis:scope_reviewability",
+      "severity": "minor",
+      "evidence_refs": [
+        "story/spec docs in diff",
+        "architecture/policy docs in diff",
+        "architecture docs in diff",
+        "test files in diff",
+        "test files in diff",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        "npm pack --dry-run --json; rg internal-name denylist",
+        "npm pack --dry-run --json; rg internal-name denylist",
+        "npm pack --dry-run --json; rg internal-name denylist",
+        "npm pack --dry-run --json; rg internal-name denylist",
+        ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+        "clean_branch_or_split_pr",
+        ".vibepro/graphify/graph.json (3 changed / 5 related)",
+        ".vibepro/graphify/graph.json (3 changed / 5 related)",
+        "agent review stage/role ownership map",
+        ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+      ]
+    },
+    {
+      "id": "gap:session_attribution:not_collected",
+      "severity": "minor",
+      "evidence_refs": [
+        ".vibepro/pr/<story-id>/evidence-reuse.json"
+      ]
+    }
+  ]
+}

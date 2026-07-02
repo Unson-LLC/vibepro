@@ -1,0 +1,580 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "story_doc_path": "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+  "source": "execute_merge",
+  "lifecycle": "merged",
+  "evidence": [
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-body.md",
+      "summary": "pr prepare artifact: pr-body.md"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+      "summary": "pr prepare artifact: gate-dag.json"
+    },
+    {
+      "type": "pr_artifact",
+      "ref": ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+      "summary": "recorded verification evidence"
+    },
+    {
+      "type": "verification_evidence",
+      "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+      "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+      "strength": "supporting",
+      "binding_status": "current",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "artifact_quality": "verified",
+      "targets": [
+        "src/playbook-exporter.js",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+        "test/playbook-exporter.test.js",
+        "flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog",
+        "artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence",
+        "scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact",
+        "AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+      "summary": "Responsibility Authority core regression suite passed on current head: unit_regression for docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001, docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002, and docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001; pr_lifecycle_regression for VIBE-CORE-PR-001; agent_review_lifecycle_regression for VIBE-CORE-AR-001; evidence_lifecycle_regression for VIBE-CORE-EV-001; integration_runtime_path and negative_path for VIBE-CORE-COST-001; story_source_integrity_regression for VIBE-CORE-STORY-001; managed_worktree_regression for VIBE-CORE-WT-001. | node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js | unit_regression: VIBE-RAR-001 VIBE-RAR-002 VIBE-CORE-COST-001 current-head Responsibility Authority and runtime cost contract regression | pr_lifecycle_regression: VIBE-CORE-PR-001 PR lifecycle readiness remains VibePro-gate authoritative | agent_review_lifecycle_regression: VIBE-CORE-AR-001 staged parallel subagent provenance and lifecycle closure are enforced | evidence_lifecycle_regression: VIBE-CORE-EV-001 current-head verification and stale/reused evidence labeling are enforced | integration_runtime_path: VIBE-CORE-COST-001 session-cost runtime audit path preserves telemetry provenance | negative_path: VIBE-CORE-COST-001 unavailable token/time states remain explicit and are not fabricated as zero | story_source_integrity_regression: VIBE-CORE-STORY-001 explicit story source selection does not silently substitute unrelated story docs | managed_worktree_regression: VIBE-CORE-WT-001 locality and expected-head guards remain enforced | unit_regression=VIBE-RAR-001,VIBE-RAR-002,VIBE-CORE-COST-001 | pr_lifecycle_regression=VIBE-CORE-PR-001 | agent_review_lifecycle_regression=VIBE-CORE-AR-001 | evidence_lifecycle_regression=VIBE-CORE-EV-001 | integration_runtime_path=VIBE-CORE-COST-001 | negative_path=VIBE-CORE-COST-001 | story_source_integrity_regression=VIBE-CORE-STORY-001 | managed_worktree_regression=VIBE-CORE-WT-001",
+      "strength": "supporting",
+      "binding_status": "current",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "artifact_quality": "missing",
+      "targets": [
+        "test/responsibility-authority.test.js",
+        "test/session-efficiency-audit.test.js",
+        "test/senior-gap-judgment.test.js",
+        "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "docs/contracts/vibepro-responsibility-authority.json",
+        "docs/contracts/vibepro-core-responsibilities.json",
+        "unit_regression: VIBE-RAR-001 VIBE-RAR-002 VIBE-CORE-COST-001 current-head Responsibility Authority and runtime cost contract regression",
+        "pr_lifecycle_regression: VIBE-CORE-PR-001 PR lifecycle readiness remains VibePro-gate authoritative",
+        "agent_review_lifecycle_regression: VIBE-CORE-AR-001 staged parallel subagent provenance and lifecycle closure are enforced",
+        "evidence_lifecycle_regression: VIBE-CORE-EV-001 current-head verification and stale/reused evidence labeling are enforced",
+        "integration_runtime_path: VIBE-CORE-COST-001 session-cost runtime audit path preserves telemetry provenance",
+        "negative_path: VIBE-CORE-COST-001 unavailable token/time states remain explicit and are not fabricated as zero",
+        "story_source_integrity_regression: VIBE-CORE-STORY-001 explicit story source selection does not silently substitute unrelated story docs",
+        "managed_worktree_regression: VIBE-CORE-WT-001 locality and expected-head guards remain enforced"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+      "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+      "strength": "supporting",
+      "binding_status": "current",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "artifact_quality": "unrecognized",
+      "targets": [
+        "src/playbook-exporter.js",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "path_surface_coverage: playbook export binds selected templates and current gate summary",
+        "regression_guard: export command completes successfully from bundled catalog"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": "npm pack --dry-run --json; rg internal-name denylist",
+      "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+      "strength": "supporting",
+      "binding_status": "current",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "artifact_quality": "missing",
+      "targets": [
+        "package.json",
+        "docs/playbooks/story-engineering-playbook",
+        "test/playbook-exporter.test.js",
+        "bundled_templates_in_package",
+        "internal_name_denylist"
+      ]
+    },
+    {
+      "type": "verification_evidence",
+      "ref": "npm run typecheck",
+      "summary": "CLI and source JavaScript syntax/typecheck passed on the amended clean HEAD | npm run typecheck | exit_code=0 | checked_modules=src_and_cli",
+      "strength": "supporting",
+      "binding_status": "current",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "artifact_quality": "missing",
+      "targets": [
+        "bin/vibepro.js",
+        "src/playbook-exporter.js"
+      ]
+    },
+    {
+      "type": "pr_merge",
+      "ref": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-merge.json",
+      "summary": "merged https://github.com/Unson-LLC/vibepro/pull/272 at 2026-07-02T04:12:24Z (commit 49ac103ba164880ce5914e5db2c66515f434bb20)"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "type": "acceptance_criterion",
+      "source_text": "必須テンプレだけが `docs/playbooks/story-engineering-playbook/` に入っている。",
+      "source_line": 20,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-2",
+      "type": "acceptance_criterion",
+      "source_text": "`product/`、`architecture/`、`testing/`、`features/_feature-template/`、`adr/_template.md` が含まれる。",
+      "source_line": 21,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-3",
+      "type": "acceptance_criterion",
+      "source_text": "`design/` と `discovery/` は初期同梱対象外としてcatalogに明示される。",
+      "source_line": 22,
+      "status": "mapped",
+      "mapped_files": [
+        "design-ssot.json",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-4",
+      "type": "acceptance_criterion",
+      "source_text": "`vibepro playbook export` は対象repoではなく、VibeProパッケージに同梱されたcatalogを読む。",
+      "source_line": 23,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md",
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "mapped_tests": [
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+          "summary": "Responsibility Authority core regression suite passed on current head: unit_regression for docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001, docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002, and docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001; pr_lifecycle_regression for VIBE-CORE-PR-001; agent_review_lifecycle_regression for VIBE-CORE-AR-001; evidence_lifecycle_regression for VIBE-CORE-EV-001; integration_runtime_path and negative_path for VIBE-CORE-COST-001; story_source_integrity_regression for VIBE-CORE-STORY-001; managed_worktree_regression for VIBE-CORE-WT-001. | node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js | unit_regression: VIBE-RAR-001 VIBE-RAR-002 VIBE-CORE-COST-001 current-head Responsibility Authority and runtime cost contract regression | pr_lifecycle_regression: VIBE-CORE-PR-001 PR lifecycle readiness remains VibePro-gate authoritative | agent_review_lifecycle_regression: VIBE-CORE-AR-001 staged parallel subagent provenance and lifecycle closure are enforced | evidence_lifecycle_regression: VIBE-CORE-EV-001 current-head verification and stale/reused evidence labeling are enforced | integration_runtime_path: VIBE-CORE-COST-001 session-cost runtime audit path preserves telemetry provenance | negative_path: VIBE-CORE-COST-001 unavailable token/time states remain explicit and are not fabricated as zero | story_source_integrity_regression: VIBE-CORE-STORY-001 explicit story source selection does not silently substitute unrelated story docs | managed_worktree_regression: VIBE-CORE-WT-001 locality and expected-head guards remain enforced | unit_regression=VIBE-RAR-001,VIBE-RAR-002,VIBE-CORE-COST-001 | pr_lifecycle_regression=VIBE-CORE-PR-001 | agent_review_lifecycle_regression=VIBE-CORE-AR-001 | evidence_lifecycle_regression=VIBE-CORE-EV-001 | integration_runtime_path=VIBE-CORE-COST-001 | negative_path=VIBE-CORE-COST-001 | story_source_integrity_regression=VIBE-CORE-STORY-001 | managed_worktree_regression=VIBE-CORE-WT-001",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "npm run typecheck",
+          "summary": "CLI and source JavaScript syntax/typecheck passed on the amended clean HEAD | npm run typecheck | exit_code=0 | checked_modules=src_and_cli",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-5",
+      "type": "acceptance_criterion",
+      "source_text": "出力JSON/Markdownには選択されたtemplate idとローカルtemplate pathが含まれる。",
+      "source_line": 24,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-6",
+      "type": "acceptance_criterion",
+      "source_text": "npm packageに `docs/playbooks` が含まれる。",
+      "source_line": 25,
+      "status": "mapped",
+      "mapped_files": [
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md",
+        "package.json"
+      ],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+          "summary": "Regenerated Story Engineering Playbook export after gate_evidence review; playbook quality-gate surface now reflects current gate decisions. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | path_surface_coverage: playbook export binds selected templates and current gate summary | regression_guard: export command completes successfully from bundled catalog | export_generated_at=2026-07-02T03:44:53.423Z | gate_common_judgment_spine=passed | gate_pr_scope_judgment=passed",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "unrecognized",
+          "target_match": true
+        },
+        {
+          "type": "verification_evidence",
+          "ref": "npm pack --dry-run --json; rg internal-name denylist",
+          "summary": "npm dry-run includes 35 bundled markdown templates plus catalog under docs/playbooks, excludes docs/releases, and sensitive-name scan only matches test denylist patterns on the amended clean HEAD | npm pack --dry-run --json; rg internal-name denylist | bundled_templates_in_package | internal_name_denylist | exit_code=0 | playbook_markdown_templates=35 | playbook_package_entries=36 | catalog_included=true | docs_releases_included=false | sensitive_matches=test_denylist_only",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "missing",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    },
+    {
+      "id": "AC-7",
+      "type": "acceptance_criterion",
+      "source_text": "OSS利用者に伝わらない個人名、非公開repo名、会社固有名を含めない。",
+      "source_line": 26,
+      "status": "mapped",
+      "mapped_files": [],
+      "mapped_tests": [],
+      "mapped_evidence": [
+        {
+          "type": "verification_evidence",
+          "ref": ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json",
+          "summary": "Flow replay and artifact replay for Story Engineering Playbook export verified the bundled catalog/template path surface, current gate summary, and AC-7 private/non-public name absence on current HEAD. | node bin/vibepro.js playbook export . --id story-vibepro-bundled-playbook-templates --format json --output .vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json --json | flow_replay: playbook export flow regenerated the story engineering playbook from the bundled catalog | artifact_replay: generated playbook-export.json was parsed and checked against selected template paths, gate summary, and private-name absence | scenario_clause_e2e: story acceptance clause for local bundled template selection is covered by the replay artifact | AC-7: OSS users must not see private person names, private repo names, or company-specific names; replay and denylist evidence confirmed private_names_absent | status=pass | flow_replay=true | artifact_replay=true | scenario_clause_e2e=true | selected_template_count=6 | template_decision_count=11 | export_generated_at=2026-07-02T04:11:15.463Z | AC-7=private_names_absent",
+          "strength": "supporting",
+          "binding_status": "current",
+          "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+          "artifact_quality": "verified",
+          "target_match": true
+        }
+      ],
+      "mapped_review_findings": [],
+      "weak_mapping_reason": null
+    }
+  ],
+  "scenario_clauses": [],
+  "coverage_summary": {
+    "clause_count": 7,
+    "acceptance_criteria_count": 7,
+    "scenario_clause_count": 0,
+    "mapped_count": 7,
+    "weakly_mapped_count": 0,
+    "unmapped_count": 0,
+    "examples": []
+  },
+  "created_at": "2026-07-02T01:00:26.726Z",
+  "updated_at": "2026-07-02T04:12:26.858Z"
+}

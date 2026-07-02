@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "updated_at": "2026-07-02T01:23:16.433Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782955396432-c8baf93c",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability軸は1 PR維持でレビュー可能と判断する",
+      "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T01:23:16.427Z"
+      },
+      "recorded_at": "2026-07-02T01:23:16.433Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782955272834-2cd1919d",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Story Engineering Playbook同梱差分は分割せず1つの検証単位にする",
+      "reason": "この差分はplaybook markdown、catalog、exporter、package同梱設定、Story/Spec/Architecture記録が相互依存しており、分割するとVibePro利用者がnpm package内の必須テンプレをexportできるという受け入れ条件を単体で確認できない。repo-controlに見える差分はpackage.json filesへのdocs/playbooks追加のみで、agent設定、CI設定、release automationは変更していない。review_owner_map: CLI code and tests owner checks src/playbook-exporter.js/test/package.json; playbook content owner checks docs/playbooks; process owner checks story/spec/architecture/SSOT docs.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T01:21:12.829Z"
+      },
+      "recorded_at": "2026-07-02T01:21:12.834Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782955260634-b8d2220a",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Story Engineering Playbook必須テンプレ同梱は1 PRで扱う",
+      "reason": "35個のmdテンプレート、catalog、exporter、package files設定は同一のStory Engineering Playbook同梱契約を構成するため、今回は分割しない。テンプレートだけ先行するとcatalog path検証とnpm package同梱契約を検証できず、exporterだけ先行すると参照先が存在しない。repo-control扱いはpackage.jsonのfiles追加のみで、agent設定やCI制御は変更していない。review_owner_map: src/playbook-exporter.js/test/package.json=VibePro CLI reviewer; docs/playbooks/docs=playbook content reviewer; [REDACTED:751e8e64f796]-ssot=VibePro process reviewer.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T01:21:00.633Z"
+      },
+      "recorded_at": "2026-07-02T01:21:00.634Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "waiver": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1782955396432-c8baf93c",
+      "story_id": "story-vibepro-bundled-playbook-templates",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability軸は1 PR維持でレビュー可能と判断する",
+      "reason": "35個の必須テンプレ、catalog、exporter、package同梱設定、Story/Spec/Architecture記録は同じ公開playbook同梱契約の一部であり、切り離すと利用者がVibePro packageだけで必須テンプレを選択・exportできることを確認できない。レビュー担当面はCLI/test/package、playbook content、process docsに分けて明示済みで、CI/agent/release制御は変更していないため、このPRは1つの判断単位としてレビュー可能。",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "current_branch": "codex/vibepro-local-playbook-templates",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-02T01:23:16.427Z"
+      },
+      "recorded_at": "2026-07-02T01:23:16.433Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json"
+}

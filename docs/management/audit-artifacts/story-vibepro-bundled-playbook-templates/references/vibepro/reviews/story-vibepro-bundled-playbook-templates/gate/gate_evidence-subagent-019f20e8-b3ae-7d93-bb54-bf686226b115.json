@@ -1,0 +1,55 @@
+{
+  "agent_id": "019f20e8-b3ae-7d93-bb54-bf686226b115",
+  "agent_system": "codex",
+  "closed": true,
+  "result": {
+    "status": "needs_review",
+    "summary": "Current code passes the focused command, but the gate packet has a stale playbook export artifact bound as current evidence.",
+    "inspection_summary": [
+      "Checked branch/worktree state, review request, gate artifacts, playbook export, changed exporter/tests/package/catalog surfaces, and ran the focused verification command.",
+      "Regression guard is currently reproducible: the requested focused node test command passed 6/6 tests.",
+      "Path surface coverage is not clean because the user-facing playbook export surface contradicts the current gate DAG."
+    ],
+    "inspection_evidence": [
+      "git status --short --branch: codex/vibepro-local-playbook-templates ahead 1, no dirty files before and after focused test run.",
+      "node --test --test-name-pattern ... test/playbook-exporter.test.js test/vibepro-cli.test.js: pass 6, fail 0.",
+      ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json: generated_at 2026-07-02T01:17:53.634Z and mtime 2026-07-02T10:17:53+0900.",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json: integration executed_at 2026-07-02T01:22:44.814Z; e2e executed_at 2026-07-02T01:20:28.297Z.",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json: integration/e2e nodes mark playbook-export.json binding current, while the artifact is older and contains older gate statuses.",
+      "src/playbook-exporter.js: buildPlaybook uses new Date() for generated_at and writePlaybookArtifacts writes the requested --output path."
+    ],
+    "inspection_inputs": [
+      "git status --short --branch",
+      ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+      ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-prepare.json",
+      "src/playbook-exporter.js",
+      "test/playbook-exporter.test.js",
+      "test/vibepro-cli.test.js",
+      "package.json",
+      "docs/playbooks/story-engineering-playbook/catalog.json",
+      "node --test --test-name-pattern 'exportStoryEngineeringPlaybook|bundled playbook catalog|playbook export CLI|fallback surface|package metadata and README|npm dry-run package' test/playbook-exporter.test.js test/vibepro-cli.test.js"
+    ],
+    "judgment_delta": [
+      "Initial concern: stale reuse marker might only require a fresh subagent review -> final: needs_review because the packet binds an older playbook export artifact as current integration/e2e evidence.",
+      "Command reliability concern -> reduced because the focused command passed locally without dirtying the worktree.",
+      "Path surface coverage concern -> confirmed because the generated playbook surface still reports older gate statuses while current gate-dag.json reports updated statuses."
+    ],
+    "findings": [
+      {
+        "severity": "major",
+        "title": "Playbook export artifact is stale but gate DAG binds it as current",
+        "evidence": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json has generated_at 2026-07-02T01:17:53.634Z and mtime 2026-07-02T10:17:53+0900, while verification-evidence.json records e2e at 2026-07-02T01:20:28.297Z and integration at 2026-07-02T01:22:44.814Z; gate-dag.json marks those nodes passed with binding.status current against that artifact.",
+        "recommendation": "Regenerate the playbook export after the latest e2e/integration run, then rerun pr prepare/gate DAG so artifact timestamps, generated_at, and binding evidence agree."
+      },
+      {
+        "severity": "major",
+        "title": "User-facing playbook gate summary contradicts current gate DAG",
+        "evidence": "playbook-export.json content.quality_gates still includes older statuses such as gate:common_judgment_spine needs_evidence and gate:pr_scope_judgment needs_split, while gate-dag.json summary reports common spine passed and pr_scope_judgment_status passed.",
+        "recommendation": "Refresh the playbook export from the current gate DAG and verify the summary/report surface matches the canonical gate artifact before treating path_surface_coverage as satisfied."
+      }
+    ]
+  }
+}

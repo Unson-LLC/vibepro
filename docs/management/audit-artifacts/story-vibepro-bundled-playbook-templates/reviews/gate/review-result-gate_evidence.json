@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Previous stale playbook export and gate summary concerns are resolved on current head for the gate_evidence role.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "stale_playbook_export",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "stale_playbook_gate_summary",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current git head/status, prior gate_evidence finding, gate DAG, verification evidence, replay artifact, current playbook export JSON/Markdown, exporter/package/catalog/tests, and direct read-only consistency checks for catalog paths, gate summary, and private-name surface.",
+    "evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+      ".vibepro/pr/story-vibepro-bundled-playbook-templates/verification-evidence.json",
+      ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+      ".vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json"
+    ]
+  },
+  "judgment_delta": [
+    "stale_playbook_export -> resolved because the current playbook-export.json was regenerated after current pr-prepare/gate-dag and direct inspection found catalog/export/template path consistency.",
+    "stale_playbook_gate_summary -> resolved because the current export's Quality Gates surface includes gate:common_judgment_spine as passed and the gate DAG contains current_reality passed inside that spine gate.",
+    "regression_guard concern -> satisfied because recorded unit/build evidence and inspected tests cover CLI export, fallback surface selection, package metadata, npm dry-run package inclusion, and private-name denylist behavior."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates",
+    "expected_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-local-playbook-templates",
+      "branch": "codex/vibepro-local-playbook-templates",
+      "actual_branch": "codex/vibepro-local-playbook-templates",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-02T04:03:15.247Z",
+  "git_context": {
+    "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "current_branch": "codex/vibepro-local-playbook-templates",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-02T04:03:15.236Z"
+  },
+  "source_fingerprint": "3e15e4b84a9acd590d7ac188ed76dec831c5d3578f8b73579a0afcdc10068e0e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f20f7-897e-7172-a596-466906de8018",
+    "agent_role": null,
+    "model": "inherited",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

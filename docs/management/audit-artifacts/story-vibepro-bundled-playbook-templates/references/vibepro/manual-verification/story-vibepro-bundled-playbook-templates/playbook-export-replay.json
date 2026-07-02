@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "generated_at": "2026-07-02T04:11:15.463Z",
+  "source_artifact": ".vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json",
+  "observed": {
+    "flow_replay": "true",
+    "artifact_replay": "true",
+    "scenario_clause_e2e": "true",
+    "selected_template_count": "6",
+    "template_decision_count": "11",
+    "export_generated_at": "2026-07-02T04:11:15.463Z"
+  },
+  "checks": {
+    "required_decisions_present": true,
+    "template_paths_bundled": true,
+    "private_names_absent": true,
+    "current_gate_summary_present": true
+  },
+  "errors": []
+}

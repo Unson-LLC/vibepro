@@ -1,0 +1,469 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "story_engineering_playbook",
+  "generated_at": "2026-07-02T04:11:15.463Z",
+  "output": {
+    "language": "ja"
+  },
+  "catalog": {
+    "id": "story-engineering-playbook-v1",
+    "path": "docs/playbooks/story-engineering-playbook/catalog.json",
+    "template_root": "docs/playbooks/story-engineering-playbook",
+    "source": "bundled",
+    "description": "VibeProがStory単位で選択して埋めるための、OSS同梱の開発ブリーフテンプレートカタログ。"
+  },
+  "story": {
+    "story_id": "story-vibepro-bundled-playbook-templates",
+    "title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null
+  },
+  "sources": {
+    "story_docs": [
+      "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md"
+    ],
+    "architecture_docs": [
+      "docs/architecture/vibepro-bundled-playbook-templates.md"
+    ],
+    "spec": ".vibepro/spec/story-vibepro-bundled-playbook-templates/spec.json",
+    "pr_prepare": ".vibepro/pr/story-vibepro-bundled-playbook-templates/pr-prepare.json",
+    "gate_dag": ".vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.json",
+    "playbook_catalog": "docs/playbooks/story-engineering-playbook/catalog.json",
+    "evidence_status": {
+      "story_doc": "present",
+      "spec": "present",
+      "architecture": "present",
+      "pr_prepare": "present",
+      "gate_dag": "present"
+    }
+  },
+  "engineering_judgment": {
+    "route_type": "developer_tool",
+    "active_axes": [
+      "public_contract",
+      "scope_reviewability"
+    ],
+    "source": "pr_prepare"
+  },
+  "template_decisions": [
+    {
+      "template_id": "story.intent",
+      "title": "Storyの意図",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md"
+      ],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Story単位の実装判断で常に必要な価値・背景・受け入れ条件。"
+        }
+      ],
+      "reason": "Story単位の実装判断で常に必要な価値・背景・受け入れ条件。"
+    },
+    {
+      "template_id": "story.scope",
+      "title": "Scope / Non-goals",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md"
+      ],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Storyから外れる変更をPRに混ぜないための範囲境界。"
+        }
+      ],
+      "reason": "Storyから外れる変更をPRに混ぜないための範囲境界。"
+    },
+    {
+      "template_id": "architecture.delta",
+      "title": "Architecture delta",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md"
+      ],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "Story実装が既存境界・責務・依存方向に与える差分。"
+        }
+      ],
+      "reason": "Story実装が既存境界・責務・依存方向に与える差分。"
+    },
+    {
+      "template_id": "quality.gates",
+      "title": "Quality gates",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md"
+      ],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "実装完了ではなく、PR作成・レビュー・マージに必要な証跡を明示するため。"
+        }
+      ],
+      "reason": "実装完了ではなく、PR作成・レビュー・マージに必要な証跡を明示するため。"
+    },
+    {
+      "template_id": "open.questions",
+      "title": "Open questions",
+      "decision": "selected",
+      "source": "core_story_contract",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md"
+      ],
+      "evidence": [
+        {
+          "source": "story_contract",
+          "detail": "曖昧さを暗黙の実装判断に落とさず、未確認として残すため。"
+        }
+      ],
+      "reason": "曖昧さを暗黙の実装判断に落とさず、未確認として残すため。"
+    },
+    {
+      "template_id": "contract.surface",
+      "title": "公開契約 / コマンド面",
+      "decision": "selected",
+      "source": "engineering_judgment_axis",
+      "active_axes": [
+        "public_contract"
+      ],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ],
+      "evidence": [
+        {
+          "source": "engineering_judgment_axis",
+          "detail": "active axis: public_contract"
+        },
+        {
+          "source": "gate_dag",
+          "detail": "gate:judgment_axis_public_contract: passed"
+        },
+        {
+          "source": "gate_dag",
+          "detail": "gate:pr_body_contract: passed"
+        },
+        {
+          "source": "surface_supporting_signal",
+          "detail": "Story/Spec/Architecture本文に該当surfaceのsignalがある。"
+        }
+      ],
+      "reason": "外部またはエージェントが依存する入出力契約に触れるため。"
+    },
+    {
+      "template_id": "data.state",
+      "title": "Data / State",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "security.trust",
+      "title": "Security / Trust boundary",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "ux.workflow",
+      "title": "UX / Workflow",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md"
+      ],
+      "evidence": [
+        {
+          "source": "surface_supporting_signal",
+          "detail": "Story/Spec/Architecture本文に該当surfaceのsignalがある。"
+        }
+      ],
+      "reason": "本文上のsurface signalはあるが、生成済みEngineering Judgment / Gate DAGでこのテンプレは選択されていない。"
+    },
+    {
+      "template_id": "release.ops",
+      "title": "Release / Operations",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md"
+      ],
+      "evidence": [
+        {
+          "source": "surface_absence",
+          "detail": "該当signalなし。"
+        }
+      ],
+      "reason": "Engineering Judgmentのactive axis、Gate DAG node、route type、fallback surface signalのいずれからも選択根拠が出ていない。"
+    },
+    {
+      "template_id": "external.integration",
+      "title": "External integration",
+      "decision": "omitted",
+      "source": "engineering_judgment_absence",
+      "active_axes": [],
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ],
+      "evidence": [
+        {
+          "source": "surface_supporting_signal",
+          "detail": "Story/Spec/Architecture本文に該当surfaceのsignalがある。"
+        }
+      ],
+      "reason": "本文上のsurface signalはあるが、生成済みEngineering Judgment / Gate DAGでこのテンプレは選択されていない。"
+    }
+  ],
+  "content": {
+    "intent": {
+      "story_title": "Story Engineering Playbookの必須テンプレをVibePro本体に同梱する",
+      "background": "`vibepro playbook export` はStory単位のPlaybook artifactを生成できるが、テンプレート本体がVibePro repo内に存在しないと、利用者には「どの型を選んでいるのか」が追えない。\n\n元になった開発プレイブックは非公開repoにあるため、VibeProの実行時に外部repoを読みに行く設計にはできない。OSS利用者にも意味が通る名前と配置で、必須テンプレだけをVibePro本体に同梱する必要がある。",
+      "acceptance_criteria": [
+        "必須テンプレだけが docs/playbooks/story-engineering-playbook/ に入っている。",
+        "product/、architecture/、testing/、features/_feature-template/、adr/_template.md が含まれる。",
+        "design/ と discovery/ は初期同梱対象外としてcatalogに明示される。",
+        "vibepro playbook export は対象repoではなく、VibeProパッケージに同梱されたcatalogを読む。",
+        "出力JSON/Markdownには選択されたtemplate idとローカルtemplate pathが含まれる。",
+        "npm packageに docs/playbooks が含まれる。",
+        "OSS利用者に伝わらない個人名、非公開repo名、会社固有名を含めない。"
+      ],
+      "source_status": "present"
+    },
+    "scope": {
+      "included": [
+        "docs/playbooks/story-engineering-playbook/",
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "package.json"
+      ],
+      "excluded": [
+        "design/ と discovery/ の同梱",
+        "外部repoからの同期機能",
+        "全体設計図の自動更新",
+        "Story実行後のArchitecture正本への自動反映"
+      ],
+      "changed_files": [
+        "design-ssot.json",
+        "docs/architecture/vibepro-bundled-playbook-templates.md",
+        "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+        "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+        "docs/playbooks/story-engineering-playbook/architecture/README.md",
+        "docs/playbooks/story-engineering-playbook/catalog.json",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+        "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+        "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+        "docs/playbooks/story-engineering-playbook/product/README.md",
+        "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+        "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/testing/README.md",
+        "docs/specs/vibepro-bundled-playbook-templates.md",
+        "package.json",
+        "src/playbook-exporter.js",
+        "test/playbook-exporter.test.js",
+        "test/vibepro-cli.test.js"
+      ]
+    },
+    "architecture_delta": {
+      "docs": [
+        "docs/architecture/vibepro-bundled-playbook-templates.md"
+      ],
+      "summary": "Story Engineering PlaybookのテンプレートをVibePro本体に同梱し、非公開repoや外部同期に依存せず、Story単位のPlaybook exportが参照元テンプレを説明できるようにする。",
+      "source_status": "present"
+    },
+    "spec": {
+      "status": "present",
+      "clause_count": 5,
+      "clause_types": {
+        "invariant": 2,
+        "contract": 2,
+        "scenario": 1
+      },
+      "open_question_count": 0
+    },
+    "quality_gates": {
+      "status": "present",
+      "overall_status": "needs_verification",
+      "items": [
+        {
+          "id": "story",
+          "status": "present",
+          "required": true
+        },
+        {
+          "id": "gate:story_source_integrity",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:engineering_judgment_route",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:common_judgment_spine",
+          "status": "needs_evidence",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_axis_public_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_axis_scope_reviewability",
+          "status": "accepted_followup",
+          "required": true
+        },
+        {
+          "id": "gate:pr_scope_judgment",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:bug_physics_triage",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_developer_friction",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_workflow_loop",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_cli_api_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_local_first_state",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_fast_feedback",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:judgment_developer_tool_install_release_path",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_route_classification",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_body_contract",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:split_resolution",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:change_classification",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "gate:pr_freshness",
+          "status": "passed",
+          "required": true
+        },
+        {
+          "id": "architecture",
+          "status": "satisfied",
+          "required": true
+        }
+      ]
+    },
+    "open_questions": []
+  }
+}

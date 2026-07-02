@@ -1,0 +1,373 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bundled-playbook-templates",
+  "source": "execute_merge",
+  "generated_at": "2026-07-02T04:12:26.859Z",
+  "evidence_depth": "full",
+  "budget_status": "within_budget",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "full",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "merge_warning"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...8e858767de464dbcb0dc543e970e23ae78dc6c30",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "base_sha": "f10ee992cd4b640666ce2b066d09b3f9a9f4530b",
+      "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "merge_commit_sha": "49ac103ba164880ce5914e5db2c66515f434bb20"
+    },
+    "diff_stats_collected_at": "2026-07-02T04:12:22.234Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 9994,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 3625,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 1,
+          "changed_lines": 124,
+          "unknown_files": 0,
+          "paths": [
+            "src/playbook-exporter.js"
+          ]
+        },
+        "test": {
+          "files": 2,
+          "changed_lines": 50,
+          "unknown_files": 0,
+          "paths": [
+            "test/playbook-exporter.test.js",
+            "test/vibepro-cli.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 142,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/vibepro-bundled-playbook-templates.md",
+            "docs/management/stories/active/story-vibepro-bundled-playbook-templates.md",
+            "docs/specs/vibepro-bundled-playbook-templates.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 38,
+          "changed_lines": 3309,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json",
+            "docs/playbooks/story-engineering-playbook/adr/_template.md",
+            "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+            "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+            "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+            "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+            "docs/playbooks/story-engineering-playbook/architecture/05_error_design.md",
+            "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md",
+            "docs/playbooks/story-engineering-playbook/architecture/07_non_functional_requirements.md",
+            "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+            "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md",
+            "docs/playbooks/story-engineering-playbook/architecture/README.md",
+            "docs/playbooks/story-engineering-playbook/catalog.json",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+            "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md",
+            "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+            "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+            "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+            "docs/playbooks/story-engineering-playbook/product/03_personas.md",
+            "docs/playbooks/story-engineering-playbook/product/04_user_stories.md",
+            "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+            "docs/playbooks/story-engineering-playbook/product/06_success_metrics.md",
+            "docs/playbooks/story-engineering-playbook/product/07_glossary.md",
+            "docs/playbooks/story-engineering-playbook/product/README.md",
+            "docs/playbooks/story-engineering-playbook/testing/01_test_policy.md",
+            "docs/playbooks/story-engineering-playbook/testing/02_test_types.md",
+            "docs/playbooks/story-engineering-playbook/testing/03_e2e_policy.md",
+            "docs/playbooks/story-engineering-playbook/testing/04_manual_test_policy.md",
+            "docs/playbooks/story-engineering-playbook/testing/05_regression_policy.md",
+            "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+            "docs/playbooks/story-engineering-playbook/testing/README.md",
+            "package.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "base_sha": "f10ee992cd4b640666ce2b066d09b3f9a9f4530b",
+        "head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+        "merge_commit_sha": "49ac103ba164880ce5914e5db2c66515f434bb20"
+      },
+      "collected_at": "2026-07-02T04:12:22.234Z",
+      "reason": null
+    },
+    "product_changed_lines": 3625,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 2.757,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "effective_canonical_artifact_lines": 10875,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "within_budget",
+    "budget_exceeded_reasons": [],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cached_input_tokens": null,
+      "source": null,
+      "window": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "started_at": null,
+      "finished_at": null,
+      "source": null,
+      "window": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    }
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-07-02T04:12:11.390Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-07-02T04:12:11.390Z",
+    "status": "hit",
+    "evidence_key": "evk_283a6f22ad5322a907118fd6ad602a2a",
+    "verification_summary_fingerprint": "sha256:625b750181307b12714d3dafb226dfc3c24400e8d0865f900b842850986c7950",
+    "verification_evidence_updated_at": "2026-07-02T04:11:42.487Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-02T04:11:42.487Z",
+        "git_recorded_at": "2026-07-02T04:11:42.486Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-02T04:07:39.767Z",
+        "git_recorded_at": "2026-07-02T04:07:39.760Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-02T03:45:16.176Z",
+        "git_recorded_at": "2026-07-02T03:45:16.171Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-07-02T01:08:41.874Z",
+        "git_recorded_at": "2026-07-02T01:08:41.873Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-02T01:08:19.785Z",
+        "git_recorded_at": "2026-07-02T01:08:19.779Z"
+      }
+    ],
+    "stale_reason_count": 0,
+    "full_evidence_status": "reused",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 12
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-07-02T04:12:11.412Z",
+    "status": "updated_existing_pr",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/272",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/272",
+      "merge_commit_sha": "49ac103ba164880ce5914e5db2c66515f434bb20",
+      "merged_at": "2026-07-02T04:12:24Z",
+      "current_head_sha": "8e858767de464dbcb0dc543e970e23ae78dc6c30",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...8e858767de464dbcb0dc543e970e23ae78dc6c30"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 56,
+    "blocking_count": 0
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": null,
+    "gap_count": 2,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 7,
+      "acceptance_criteria_count": 7,
+      "scenario_clause_count": 0,
+      "mapped_count": 7,
+      "weakly_mapped_count": 0,
+      "unmapped_count": 0,
+      "examples": []
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 5,
+    "pass_count": 5,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay_unresolved_reference_count": 5,
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "automation_value_audit": {
+    "schema_version": "0.1.0",
+    "artifact_kind": "vibepro_automation_value_audit",
+    "story_id": "story-vibepro-bundled-playbook-templates",
+    "generated_at": "2026-07-02T04:12:26.859Z",
+    "status": "partial",
+    "purpose": "daily_automation_input",
+    "sources": {
+      "canonical_audit": true,
+      "cost_summary": true,
+      "pr_lifecycle": true,
+      "verification": true,
+      "review": true,
+      "senior_gap_judgment": true
+    },
+    "merge_context": {
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/272",
+      "merge_status": "merged",
+      "merge_commit_sha": "49ac103ba164880ce5914e5db2c66515f434bb20",
+      "merged_at": "2026-07-02T04:12:24Z"
+    },
+    "allocation": {
+      "changed_lines_status": "available",
+      "total_changed_lines": 3625,
+      "implementation_changed_lines": 124,
+      "verification_and_docs_changed_lines": 192,
+      "audit_evidence_changed_lines": 192,
+      "buckets": {
+        "src": 124,
+        "test": 50,
+        "story_spec_architecture_docs": 142,
+        "audit_artifacts": 0,
+        "other": 3309
+      }
+    },
+    "ratios": {
+      "test_to_src": 0.403,
+      "story_spec_architecture_to_src": 1.145,
+      "audit_artifacts_to_src": 0,
+      "automation_evidence_to_src": 1.548,
+      "artifact_lines_to_product_changed_lines": 2.757
+    },
+    "session_cost": {
+      "token_status": "unavailable",
+      "total_tokens": null,
+      "token_source": null,
+      "token_window": null,
+      "elapsed_status": "unavailable",
+      "elapsed_ms": null,
+      "elapsed_source": null,
+      "elapsed_window": null
+    },
+    "value_signal_inputs": {
+      "budget_status": "within_budget",
+      "budget_exceeded_reasons": [],
+      "evidence_depth": "full",
+      "verification_pass_count": 5,
+      "verification_fail_count": 0,
+      "review_result_count": 1,
+      "review_pass_count": 1,
+      "review_block_count": 0,
+      "senior_gap_status": null,
+      "senior_gap_residual_risk_count": 0,
+      "evidence_reuse_status": "hit",
+      "evidence_reuse_stale_reason_count": 0,
+      "traceability_lifecycle": "merged",
+      "handoff_replay_status": "blocked",
+      "handoff_replay_unresolved_reference_count": 5,
+      "missing_artifact_count": 0
+    },
+    "cost_controls": {
+      "status": "action_required",
+      "budget_status": "within_budget",
+      "artifact_code_ratio": 2.757,
+      "automation_evidence_to_src": 1.548,
+      "budget_exceeded_reasons": [],
+      "canonical_artifact_lines": 9994,
+      "product_changed_lines": 3625,
+      "evidence_depth": "full",
+      "recommended_evidence_depth": "full",
+      "recommendations": [
+        {
+          "id": "collect_runtime_cost_before_merge",
+          "action": "run execute merge with --session-id <id>|auto and --automation-memory <path>, or set VIBEPRO_SESSION_ID/CODEX_SESSION_ID and VIBEPRO_AUTOMATION_MEMORY",
+          "reason": "daily automation cannot judge time/token efficiency without measured session cost"
+        }
+      ]
+    },
+    "findings": [
+      {
+        "id": "session_cost_unavailable",
+        "severity": "needs_context",
+        "reason": "token or elapsed-time accounting is not available in canonical audit summary",
+        "token_status": "unavailable",
+        "elapsed_status": "unavailable"
+      },
+      {
+        "id": "canonical_handoff_replay_blocked",
+        "severity": "review_needed",
+        "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
+        "unresolved_reference_count": 5
+      }
+    ]
+  }
+}
