@@ -1264,6 +1264,7 @@ export function renderPrPrepareSummary(result) {
   const gateStatus = preparation.gate_status
     ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
   const firstLook = renderPrPrepareFirstLook({ preparation, gateStatus, result, language });
+  const artifactConsistencySummary = renderArtifactConsistencyGateSummary(preparation.pr_context?.gate_dag, language);
   return `# PR Prepare
 
 ${firstLook}
@@ -1300,6 +1301,7 @@ ${firstLook}
 - next_required_actions: ${formatRequiredActions(gateStatus.next_required_actions)}
 - agent_instruction: ${gateStatus.agent_instruction}
 
+${artifactConsistencySummary}
 ## Artifacts
 
 - evidence_plan_json: ${toDisplayPath(result.artifacts.evidence_plan)}
@@ -1324,6 +1326,49 @@ ${firstLook}
 function formatRequiredActions(actions) {
   if (!actions || actions.length === 0) return 'none';
   return actions.join(' | ');
+}
+
+function renderArtifactConsistencyGateSummary(gateDag, language = 'ja') {
+  const gate = (gateDag?.nodes ?? []).find((node) => node.id === 'gate:artifact_consistency');
+  const details = gate?.stale_artifact_details ?? [];
+  if (!gate || details.length === 0) return '';
+  const rows = details.slice(0, 10).map((detail) => [
+    toDisplayPath(detail.artifact_path ?? '-'),
+    detail.artifact_type ?? '-',
+    detail.root_cause ?? '-',
+    detail.stale_reason ?? '-',
+    formatArtifactRemediationCommands(detail)
+  ]);
+  const overflow = details.length > rows.length
+    ? localizedText(language, {
+        ja: `\n\n- 他 ${details.length - rows.length} 件は pr-prepare.json の stale_artifact_details を参照してください。`,
+        en: `\n\n- See stale_artifact_details in pr-prepare.json for ${details.length - rows.length} additional item(s).`
+      })
+    : '';
+  const title = localizedText(language, {
+    ja: '## Artifact Consistency',
+    en: '## Artifact Consistency'
+  });
+  return `${title}
+
+| Artifact | Type | Root cause | Reason | Remediation |
+|----------|------|------------|--------|-------------|
+${rows.map((row) => `| ${row.map(escapeMarkdownTableCell).join(' | ')} |`).join('\n')}${overflow}
+`;
+}
+
+function escapeMarkdownTableCell(value) {
+  return String(value ?? '-')
+    .replaceAll('\\', '\\\\')
+    .replaceAll('|', '\\|')
+    .replaceAll('\n', '<br>');
+}
+
+function formatArtifactRemediationCommands(detail) {
+  const commands = Array.isArray(detail?.remediation_commands) && detail.remediation_commands.length > 0
+    ? detail.remediation_commands
+    : [detail?.remediation_command].filter(Boolean);
+  return commands.length > 0 ? commands.join('\n') : '-';
 }
 
 function renderPrPrepareFirstLook({ preparation, gateStatus, result, language }) {
@@ -1490,7 +1535,13 @@ function formatExecutionGateAction(gate) {
     return `Refresh PR branch and regenerate VibePro evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
   }
   if (gate.id === 'gate:artifact_consistency') {
-    return `Regenerate stale VibePro evidence artifacts for the current git state: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
+    const detailActions = (gate.stale_artifact_details ?? [])
+      .slice(0, 5)
+      .map((detail) => `${detail.artifact_path ?? detail.artifact_type ?? 'artifact'}: ${formatArtifactRemediationCommands(detail) || detail.stale_reason || 'refresh evidence'}`);
+    const suffix = detailActions.length > 0
+      ? detailActions.join(' -> ')
+      : (gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status;
+    return `Regenerate stale VibePro evidence artifacts for the current git state: ${suffix}`;
   }
   if (gate.id === 'gate:failure_mode_coverage') {
     return `Record current failure-mode coverage evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
@@ -8095,7 +8146,8 @@ function buildGateDag({
     verificationEvidence,
     agentReviews,
     managedWorktreeContext,
-    changeClassification
+    changeClassification,
+    storyId: story?.story_id ?? storySource?.story_id ?? storySource?.storyId ?? storySource?.id ?? null
   });
   const uiExperienceChange = hasUiExperienceSourceChange(fileGroups);
   const designQualityGate = designQualityEvidence ? {
@@ -8785,7 +8837,7 @@ function buildPrFreshnessGate(git) {
   };
 }
 
-function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null } = {}) {
+function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
   const managedWorktree = managedWorktreeContext?.managed_worktree ?? managedWorktreeContext;
   const current = {
     head_sha: git?.head_sha ?? null,
@@ -8815,6 +8867,8 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
     ...collectReviewArtifactBindings(agentReviews, changeClassification)
   ];
   const inconsistent = artifacts.filter((artifact) => !isArtifactBindingAccepted(artifact.status));
+  const staleArtifactDetails = inconsistent.map((artifact) => buildStaleArtifactDetail(artifact, { git, storyId }));
+  const staleArtifactGroups = buildStaleArtifactGroups(staleArtifactDetails);
   const status = inconsistent.length === 0 ? 'passed' : 'stale_evidence';
   return {
     id: 'gate:artifact_consistency',
@@ -8827,17 +8881,130 @@ function buildArtifactConsistencyGate({ git = null, verificationEvidence = null,
     inconsistent_artifact_count: inconsistent.length,
     artifacts,
     inconsistent_artifacts: inconsistent.slice(0, 20),
-    required_actions: status === 'passed' ? [] : [
-      'Rerun current-bound verification evidence for stale command artifacts',
-      'Rerun `vibepro review prepare`, close review subagents, and record current-git review results for stale review artifacts',
-      'Rerun `vibepro pr prepare` so Gate DAG, PR body, verification evidence, and review summary are bound to the same HEAD and dirty fingerprint'
-    ],
+    stale_artifact_details: staleArtifactDetails,
+    stale_artifact_groups: staleArtifactGroups,
+    required_actions: buildArtifactConsistencyRequiredActions(status, staleArtifactDetails),
     reason: status === 'passed'
       ? artifacts.length > 0
         ? buildArtifactConsistencyPassedReason(artifacts)
         : 'No recorded verification/review artifacts are present; no cross-artifact binding conflict was found'
       : `${inconsistent.length} recorded verification/review artifact(s) are not bound to the current git state`
   };
+}
+
+function buildStaleArtifactDetail(artifact, { git = null, storyId = null } = {}) {
+  const rootCause = deriveArtifactRootCause(artifact);
+  const remediationCommands = buildArtifactRemediationCommands(artifact, storyId);
+  const artifactPath = artifact.artifact ?? null;
+  return {
+    artifact_path: artifactPath,
+    artifact_type: artifact.artifact_type ?? 'unknown',
+    artifact_kind: artifact.kind ?? null,
+    stage: artifact.stage ?? null,
+    role: artifact.role ?? null,
+    status: artifact.status ?? null,
+    stale_reason: artifact.reason ?? 'artifact is not bound to the current git state',
+    root_cause: rootCause,
+    blocking: true,
+    remediation_command: remediationCommands[0] ?? 'rerun current-bound VibePro evidence and rerun `vibepro pr prepare`',
+    remediation_commands: remediationCommands,
+    recorded_head_sha: artifact.recorded_head_sha ?? null,
+    current_head_sha: git?.head_sha ?? null,
+    recorded_status_fingerprint_hash: artifact.recorded_status_fingerprint_hash ?? null,
+    current_status_fingerprint_hash: fullFingerprintHashForContext(git),
+    dependency_chain: [
+      {
+        step: 'current_git_state',
+        head_sha: git?.head_sha ?? null,
+        status_fingerprint_hash: fullFingerprintHashForContext(git)
+      },
+      {
+        step: 'recorded_artifact',
+        artifact_path: artifactPath,
+        head_sha: artifact.recorded_head_sha ?? null,
+        status_fingerprint_hash: artifact.recorded_status_fingerprint_hash ?? null
+      }
+    ]
+  };
+}
+
+function deriveArtifactRootCause(artifact) {
+  const status = artifact.status ?? 'unknown';
+  const reason = String(artifact.reason ?? '').toLowerCase();
+  if (status === 'legacy' || reason.includes('not bound to a git head')) return 'missing_git_binding';
+  if (status === 'unverified_agent' || reason.includes('unverified')) return 'unverified_agent_lifecycle';
+  if (reason.includes('head')) return 'head_mismatch';
+  if (reason.includes('dirty') || reason.includes('fingerprint')) return 'dirty_fingerprint_mismatch';
+  if (reason.includes('provenance')) return 'missing_provenance';
+  if (reason.includes('review') && reason.includes('closed')) return 'review_lifecycle_not_closed';
+  if (reason.includes('summary')) return 'artifact_summary_mismatch';
+  if (reason.includes('risk surface')) return 'risk_surface_changed';
+  if (status === 'stale') return 'stale_binding';
+  if (status === 'not_current' || status === 'unknown') return 'unproven_current_binding';
+  return status;
+}
+
+function buildArtifactRemediationCommands(artifact, storyId = null) {
+  const storyArg = storyId ? shellQuote(storyId) : '<story-id>';
+  if (artifact.artifact_type === 'verification_command') {
+    const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
+    const commandArg = artifact.command ? ` --command ${shellQuote(artifact.command)}` : '';
+    return [
+      `vibepro verify record . --id ${storyArg} --kind ${kindArg} --status pass${commandArg}`,
+      `vibepro pr prepare . --story-id ${storyArg}`
+    ];
+  }
+  if (artifact.artifact_type === 'agent_review_result') {
+    const stageArg = artifact.stage ? shellQuote(artifact.stage) : '<stage>';
+    const roleArg = artifact.role ? shellQuote(artifact.role) : '<role>';
+    return [
+      `vibepro review prepare . --id ${storyArg} --stage ${stageArg}`,
+      `vibepro review start . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-system codex --agent-id <agent-id>`,
+      `vibepro review close . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --agent-id <agent-id> --close-reason completed --close-evidence <artifact>`,
+      `vibepro review record . --id ${storyArg} --stage ${stageArg} --role ${roleArg} --status pass --summary <summary> --agent-system codex --execution-mode parallel_subagent --agent-id <agent-id> --agent-transcript <artifact> --agent-closed --agent-close-evidence <artifact>`,
+      `vibepro pr prepare . --story-id ${storyArg}`
+    ];
+  }
+  return [
+    `vibepro pr prepare . --story-id ${storyArg}`
+  ];
+}
+
+function buildStaleArtifactGroups(details = []) {
+  const groups = new Map();
+  for (const detail of details) {
+    const key = `${detail.artifact_type ?? 'unknown'}:${detail.root_cause ?? 'unknown'}`;
+    const group = groups.get(key) ?? {
+      artifact_type: detail.artifact_type ?? 'unknown',
+      root_cause: detail.root_cause ?? 'unknown',
+      count: 0,
+      artifact_paths: [],
+      remediation_commands: []
+    };
+    group.count += 1;
+    if (detail.artifact_path && group.artifact_paths.length < 10) group.artifact_paths.push(detail.artifact_path);
+    for (const command of detail.remediation_commands ?? []) {
+      if (!group.remediation_commands.includes(command) && group.remediation_commands.length < 10) {
+        group.remediation_commands.push(command);
+      }
+    }
+    groups.set(key, group);
+  }
+  return Array.from(groups.values());
+}
+
+function buildArtifactConsistencyRequiredActions(status, staleArtifactDetails = []) {
+  if (status === 'passed') return [];
+  const detailActions = staleArtifactDetails.slice(0, 5).map((detail) => {
+    const artifact = detail.artifact_path ?? detail.artifact_type ?? 'artifact';
+    return `${artifact}: ${detail.root_cause}; ${detail.remediation_command}`;
+  });
+  return [
+    'Rerun current-bound verification evidence for stale command artifacts',
+    'Rerun `vibepro review prepare`, close review subagents, and record current-git review results for stale review artifacts',
+    ...detailActions,
+    'Rerun `vibepro pr prepare` so Gate DAG, PR body, verification evidence, and review summary are bound to the same HEAD and dirty fingerprint'
+  ];
 }
 
 function buildArtifactConsistencyPassedReason(artifacts = []) {
@@ -11000,6 +11167,8 @@ function collectUnresolvedRequiredGates(gateDag) {
       status: node.status,
       command: node.command,
       artifact: node.artifact,
+      stale_artifact_details: node.stale_artifact_details,
+      stale_artifact_groups: node.stale_artifact_groups,
       required_actions: node.required_actions,
       reason: node.reason
     }));
