@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { defaultArchitectureFinalPath } from './architecture-store.js';
 import { readInferredSpec } from './spec-store.js';
@@ -8,6 +9,9 @@ import { resolveStoryContext } from './story-manager.js';
 
 export const PLAYBOOK_SCHEMA_VERSION = '0.1.0';
 export const PLAYBOOK_CATALOG_ID = 'story-engineering-playbook-v1';
+export const PLAYBOOK_CATALOG_REPO_PATH = 'docs/playbooks/story-engineering-playbook/catalog.json';
+
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const CORE_TEMPLATES = [
   {
@@ -147,8 +151,9 @@ export async function exportStoryEngineeringPlaybook(repoRoot, options = {}) {
   const architectureDocs = await readArchitectureDocuments(root, story.story_id, storyDocs);
   const prArtifacts = await readPrArtifacts(root, story.story_id);
   const source = buildSourceSummary({ root, story, storyDocs, spec, architectureDocs, prArtifacts });
-  const decisions = buildTemplateDecisions(source, language);
-  const playbook = buildPlaybook({ story, source, decisions, language });
+  const catalog = await readBundledPlaybookCatalog();
+  const decisions = buildTemplateDecisions(source, language, catalog);
+  const playbook = buildPlaybook({ story, source, decisions, language, catalog });
 
   const artifacts = await writePlaybookArtifacts(root, playbook, {
     format: normalizeFormat(options.format),
@@ -182,7 +187,7 @@ Engineering Judgment / Gate DAG が存在する場合はそれを優先し、存
 `;
 }
 
-function buildPlaybook({ story, source, decisions, language }) {
+function buildPlaybook({ story, source, decisions, language, catalog }) {
   const generatedAt = new Date().toISOString();
   const content = {
     intent: {
@@ -212,10 +217,13 @@ function buildPlaybook({ story, source, decisions, language }) {
     generated_at: generatedAt,
     output: { language },
     catalog: {
-      id: PLAYBOOK_CATALOG_ID,
+      id: catalog.id,
+      path: PLAYBOOK_CATALOG_REPO_PATH,
+      template_root: catalog.template_root,
+      source: catalog.source ?? 'bundled',
       description: language === 'en'
-        ? 'Story-scoped engineering playbook selected from VibePro Engineering Judgment and Gate DAG evidence.'
-        : 'VibePro Engineering Judgment / Gate DAG の判断をもとにStory単位で選択される開発ブリーフ。'
+        ? (catalog.description_en ?? 'Story-scoped engineering playbook selected from VibePro Engineering Judgment and Gate DAG evidence.')
+        : (catalog.description_ja ?? 'VibePro Engineering Judgment / Gate DAG の判断をもとにStory単位で選択される開発ブリーフ。')
     },
     story: {
       story_id: story.story_id,
@@ -231,6 +239,7 @@ function buildPlaybook({ story, source, decisions, language }) {
       spec: source.spec ? `.vibepro/spec/${story.story_id}/spec.json` : null,
       pr_prepare: source.pr_prepare ? `.vibepro/pr/${story.story_id}/pr-prepare.json` : null,
       gate_dag: source.gate_dag ? `.vibepro/pr/${story.story_id}/gate-dag.json` : null,
+      playbook_catalog: PLAYBOOK_CATALOG_REPO_PATH,
       evidence_status: source.evidence_status
     },
     engineering_judgment: {
@@ -246,7 +255,8 @@ function buildPlaybook({ story, source, decisions, language }) {
       decisions,
       content,
       generatedAt,
-      language
+      language,
+      catalog
     })
   };
 }
@@ -292,21 +302,26 @@ function buildSourceSummary({ root, story, storyDocs, spec, architectureDocs, pr
   };
 }
 
-function buildTemplateDecisions(source, language) {
-  const core = CORE_TEMPLATES.map((template) => ({
-    template_id: template.id,
-    title: language === 'en' ? template.title : template.title_ja,
-    decision: 'selected',
-    source: 'core_story_contract',
-    active_axes: [],
-    evidence: [{
-      source: 'story_contract',
-      detail: language === 'en' ? template.reason_en : template.reason_ja
-    }],
-    reason: language === 'en' ? template.reason_en : template.reason_ja
-  }));
+function buildTemplateDecisions(source, language, catalog) {
+  const core = CORE_TEMPLATES.map((template) => {
+    const hydrated = hydrateTemplateFromCatalog(template, catalog);
+    return {
+      template_id: template.id,
+      title: language === 'en' ? template.title : template.title_ja,
+      decision: 'selected',
+      source: 'core_story_contract',
+      active_axes: [],
+      template_paths: hydrated.template_paths,
+      evidence: [{
+        source: 'story_contract',
+        detail: language === 'en' ? template.reason_en : template.reason_ja
+      }],
+      reason: language === 'en' ? template.reason_en : template.reason_ja
+    };
+  });
 
   const optional = OPTIONAL_TEMPLATES.map((template) => {
+    const hydrated = hydrateTemplateFromCatalog(template, catalog);
     const evidence = collectTemplateEvidence(template, source, language);
     const selected = evidence.some((item) => [
       'engineering_judgment_axis',
@@ -320,6 +335,7 @@ function buildTemplateDecisions(source, language) {
       decision: selected ? 'selected' : 'omitted',
       source: selected ? evidence[0].source : 'engineering_judgment_absence',
       active_axes: source.active_axes.filter((axis) => template.axes?.includes(axis)),
+      template_paths: hydrated.template_paths,
       evidence,
       reason: selected
         ? (language === 'en' ? template.reason_en : template.reason_ja)
@@ -328,6 +344,45 @@ function buildTemplateDecisions(source, language) {
   });
 
   return [...core, ...optional];
+}
+
+async function readBundledPlaybookCatalog() {
+  const catalog = await readJson(path.join(PACKAGE_ROOT, PLAYBOOK_CATALOG_REPO_PATH));
+  if (catalog.id !== PLAYBOOK_CATALOG_ID) {
+    throw new Error(`Unexpected playbook catalog id: ${catalog.id ?? '<missing>'}`);
+  }
+  await validateBundledCatalogTemplatePaths(catalog);
+  return catalog;
+}
+
+async function validateBundledCatalogTemplatePaths(catalog) {
+  const templateEntries = Object.entries(catalog.templates ?? {});
+  if (templateEntries.length === 0) throw new Error('Bundled playbook catalog has no templates');
+  for (const [templateId, template] of templateEntries) {
+    for (const templatePath of template.template_paths ?? []) {
+      const normalized = normalizeRepoPath(templatePath);
+      if (!normalized.startsWith(`${catalog.template_root}/`) && normalized !== catalog.template_root) {
+        throw new Error(`Playbook template ${templateId} points outside template root: ${templatePath}`);
+      }
+      const fullPath = path.resolve(PACKAGE_ROOT, normalized);
+      const relative = path.relative(PACKAGE_ROOT, fullPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`Playbook template ${templateId} points outside package root: ${templatePath}`);
+      }
+      await readFile(fullPath, 'utf8');
+    }
+  }
+}
+
+function hydrateTemplateFromCatalog(template, catalog) {
+  const entry = catalog.templates?.[template.id] ?? {};
+  if (!Array.isArray(entry.template_paths) || entry.template_paths.length === 0) {
+    throw new Error(`Bundled playbook catalog missing template paths for ${template.id}`);
+  }
+  return {
+    ...template,
+    template_paths: entry.template_paths.map(normalizeRepoPath)
+  };
 }
 
 function buildOmittedTemplateReason(evidence, language) {
@@ -417,10 +472,10 @@ async function writePlaybookArtifacts(root, playbook, options = {}) {
   return artifacts;
 }
 
-function renderPlaybookMarkdown({ story, source, decisions, content, generatedAt, language }) {
-  if (language === 'en') return renderPlaybookMarkdownEn({ story, source, decisions, content, generatedAt });
+function renderPlaybookMarkdown({ story, source, decisions, content, generatedAt, language, catalog }) {
+  if (language === 'en') return renderPlaybookMarkdownEn({ story, source, decisions, content, generatedAt, catalog });
   const selectedRows = decisions.map((decision) => (
-    `| ${decision.template_id} | ${decision.decision} | ${decision.source} | ${escapeTable(decision.reason)} |`
+    `| ${decision.template_id} | ${decision.decision} | ${decision.source} | ${formatTemplatePaths(decision.template_paths)} | ${escapeTable(decision.reason)} |`
   )).join('\n');
   const acceptance = content.intent.acceptance_criteria.length > 0
     ? content.intent.acceptance_criteria.map((item) => `- ${item}`).join('\n')
@@ -437,7 +492,8 @@ function renderPlaybookMarkdown({ story, source, decisions, content, generatedAt
 |------|------|
 | Story | ${story.story_id} |
 | Title | ${story.title} |
-| Catalog | ${PLAYBOOK_CATALOG_ID} |
+| Catalog | ${catalog.id} |
+| Catalog path | ${PLAYBOOK_CATALOG_REPO_PATH} |
 | Generated at | ${generatedAt} |
 
 ## 1. Intent
@@ -466,8 +522,8 @@ ${acceptance}
 
 ## 4. Template Decisions
 
-| Template | Decision | Source | Reason |
-|----------|----------|--------|--------|
+| Template | Decision | Source | Files | Reason |
+|----------|----------|--------|-------|--------|
 ${selectedRows}
 
 ## 5. Quality Gates
@@ -480,9 +536,9 @@ ${questions}
 `;
 }
 
-function renderPlaybookMarkdownEn({ story, source, decisions, content, generatedAt }) {
+function renderPlaybookMarkdownEn({ story, source, decisions, content, generatedAt, catalog }) {
   const rows = decisions.map((decision) => (
-    `| ${decision.template_id} | ${decision.decision} | ${decision.source} | ${escapeTable(decision.reason)} |`
+    `| ${decision.template_id} | ${decision.decision} | ${decision.source} | ${formatTemplatePaths(decision.template_paths)} | ${escapeTable(decision.reason)} |`
   )).join('\n');
   const acceptance = content.intent.acceptance_criteria.length > 0
     ? content.intent.acceptance_criteria.map((item) => `- ${item}`).join('\n')
@@ -499,7 +555,8 @@ function renderPlaybookMarkdownEn({ story, source, decisions, content, generated
 |-------|-------|
 | Story | ${story.story_id} |
 | Title | ${story.title} |
-| Catalog | ${PLAYBOOK_CATALOG_ID} |
+| Catalog | ${catalog.id} |
+| Catalog path | ${PLAYBOOK_CATALOG_REPO_PATH} |
 | Generated at | ${generatedAt} |
 
 ## 1. Intent
@@ -528,8 +585,8 @@ ${acceptance}
 
 ## 4. Template Decisions
 
-| Template | Decision | Source | Reason |
-|----------|----------|--------|--------|
+| Template | Decision | Source | Files | Reason |
+|----------|----------|--------|-------|--------|
 ${rows}
 
 ## 5. Quality Gates
@@ -777,6 +834,11 @@ function cleanMarkdownInline(value) {
 
 function escapeTable(value) {
   return String(value ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
+}
+
+function formatTemplatePaths(paths = []) {
+  if (!paths.length) return '-';
+  return escapeTable(paths.join('<br>'));
 }
 
 function escapeRegExp(value) {

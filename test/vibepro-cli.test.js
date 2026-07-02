@@ -19543,7 +19543,12 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   assert.equal(packageJson.publishConfig.access, 'public');
   assert.equal(packageJson.files.includes('docs/releases'), false);
   assert.equal(packageJson.files.includes('docs/assets/vibepro-header.png'), true);
-  assert.equal(packageJson.files.some((entry) => entry === 'docs' || (entry.startsWith('docs/') && entry !== 'docs/assets/vibepro-header.png')), false);
+  assert.equal(packageJson.files.includes('docs/playbooks'), true);
+  assert.equal(packageJson.files.some((entry) => (
+    entry === 'docs'
+    || (entry.startsWith('docs/')
+      && !['docs/assets/vibepro-header.png', 'docs/playbooks'].includes(entry))
+  )), false);
   assert.equal(packageJson.files.includes('.vibepro'), false);
   assert.equal(packageJson.files.includes('node_modules'), false);
   assert.match(license, /Apache License[\s\S]*Version 2\.0/);
@@ -19595,7 +19600,11 @@ test('npm dry-run package excludes VibePro workspace and internal artifacts', as
   assert.equal(files.some((file) => file === '.vibepro' || file.startsWith('.vibepro/')), false);
   assert.equal(files.some((file) => file === 'node_modules' || file.startsWith('node_modules/')), false);
   assert.equal(files.some((file) => file === 'docs/releases' || file.startsWith('docs/releases/')), false);
-  assert.equal(files.some((file) => file.startsWith('docs/') && file !== 'docs/assets/vibepro-header.png'), false);
+  assert.equal(files.some((file) => (
+    file.startsWith('docs/')
+    && file !== 'docs/assets/vibepro-header.png'
+    && !file.startsWith('docs/playbooks/story-engineering-playbook/')
+  )), false);
   assert.equal(files.some((file) => file.toLowerCase().includes('graphify') && !file.startsWith('src/') && !file.startsWith('README')), false);
 });
 

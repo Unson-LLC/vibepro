@@ -1,0 +1,114 @@
+{
+  "id": "story-engineering-playbook-v1",
+  "name": "Story Engineering Playbook",
+  "template_root": "docs/playbooks/story-engineering-playbook",
+  "source": "bundled",
+  "description_ja": "VibeProがStory単位で選択して埋めるための、OSS同梱の開発ブリーフテンプレートカタログ。",
+  "description_en": "Bundled development brief template catalog selected and filled by VibePro per story.",
+  "included_roots": [
+    "product",
+    "architecture",
+    "testing",
+    "features/_feature-template",
+    "adr/_template.md"
+  ],
+  "excluded_roots": [
+    "design",
+    "discovery"
+  ],
+  "templates": {
+    "story.intent": {
+      "kind": "core",
+      "required": true,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/product/00_intent.md",
+        "docs/playbooks/story-engineering-playbook/product/01_idea.md",
+        "docs/playbooks/story-engineering-playbook/product/02_problem_definition.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/01_behavior_spec.md"
+      ]
+    },
+    "story.scope": {
+      "kind": "core",
+      "required": true,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/product/05_product_scope.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/02_functional_spec.md"
+      ]
+    },
+    "architecture.delta": {
+      "kind": "core",
+      "required": true,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md",
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/09_directory_structure.md"
+      ]
+    },
+    "quality.gates": {
+      "kind": "core",
+      "required": true,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/testing/06_quality_gates.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/05_test_plan.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/06_tasks.md"
+      ]
+    },
+    "open.questions": {
+      "kind": "core",
+      "required": true,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/adr/_template.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/README.md"
+      ]
+    },
+    "contract.surface": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/03_api_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ]
+    },
+    "data.state": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/02_db_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ]
+    },
+    "security.trust": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/04_auth_permission.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ]
+    },
+    "ux.workflow": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/03_ui_ux_spec.md"
+      ]
+    },
+    "release.ops": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/07_release.md",
+        "docs/playbooks/story-engineering-playbook/architecture/06_logging_monitoring.md"
+      ]
+    },
+    "external.integration": {
+      "kind": "optional",
+      "required": false,
+      "template_paths": [
+        "docs/playbooks/story-engineering-playbook/architecture/01_system_overview.md",
+        "docs/playbooks/story-engineering-playbook/architecture/08_security_design.md",
+        "docs/playbooks/story-engineering-playbook/features/_feature-template/04_technical_delta.md"
+      ]
+    }
+  }
+}
