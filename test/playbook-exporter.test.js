@@ -3,13 +3,17 @@ import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { runCli } from '../src/cli.js';
 import {
   exportStoryEngineeringPlaybook,
-  PLAYBOOK_CATALOG_ID
+  PLAYBOOK_CATALOG_ID,
+  PLAYBOOK_CATALOG_REPO_PATH
 } from '../src/playbook-exporter.js';
 import { writeInferredSpec } from '../src/spec-store.js';
+
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 async function pathExists(filePath) {
   try {
@@ -104,17 +108,48 @@ test('exportStoryEngineeringPlaybook writes story-scoped markdown and json from 
   const result = await exportStoryEngineeringPlaybook(repo, { storyId: 'story-playbook-export' });
 
   assert.equal(result.playbook.catalog.id, PLAYBOOK_CATALOG_ID);
+  assert.equal(result.playbook.catalog.path, PLAYBOOK_CATALOG_REPO_PATH);
   assert.equal(result.playbook.output.language, 'ja');
   assert.equal(result.selected_templates.includes('contract.surface'), true);
   assert.equal(result.playbook.engineering_judgment.active_axes.includes('public_contract'), true);
+  assert.equal(
+    result.playbook.template_decisions
+      .find((item) => item.template_id === 'contract.surface')
+      .template_paths
+      .includes('docs/playbooks/story-engineering-playbook/architecture/03_api_design.md'),
+    true
+  );
   assert.equal(await pathExists(path.join(repo, result.artifacts.markdown)), true);
   assert.equal(await pathExists(path.join(repo, result.artifacts.json)), true);
 
   const markdown = await readFile(path.join(repo, result.artifacts.markdown), 'utf8');
   assert.match(markdown, /Story Engineering Playbook/);
+  assert.match(markdown, /Catalog path/);
   assert.match(markdown, /Template Decisions/);
   assert.match(markdown, /contract\.surface/);
+  assert.match(markdown, /docs\/playbooks\/story-engineering-playbook\/architecture\/03_api_design\.md/);
   assert.doesNotMatch(markdown, /kuramoto/i);
+});
+
+test('bundled playbook catalog includes only local readable template files', async () => {
+  const catalog = JSON.parse(await readFile(path.join(PACKAGE_ROOT, PLAYBOOK_CATALOG_REPO_PATH), 'utf8'));
+
+  assert.equal(catalog.id, PLAYBOOK_CATALOG_ID);
+  assert.equal(catalog.source, 'bundled');
+  assert.equal(catalog.included_roots.includes('design'), false);
+  assert.equal(catalog.included_roots.includes('discovery'), false);
+  assert.equal(catalog.excluded_roots.includes('design'), true);
+  assert.equal(catalog.excluded_roots.includes('discovery'), true);
+
+  for (const [templateId, template] of Object.entries(catalog.templates)) {
+    assert.equal(template.template_paths.length > 0, true, templateId);
+    for (const templatePath of template.template_paths) {
+      assert.equal(path.isAbsolute(templatePath), false, templatePath);
+      assert.equal(templatePath.startsWith(`${catalog.template_root}/`), true, templatePath);
+      const content = await readFile(path.join(PACKAGE_ROOT, templatePath), 'utf8');
+      assert.doesNotMatch(content, /Tech Knight|倉本|kuramoto|github\.com\/Tech-Knight|tech-knight/i);
+    }
+  }
 });
 
 test('playbook export CLI returns artifact paths as JSON', async () => {
