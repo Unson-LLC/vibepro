@@ -1373,10 +1373,11 @@ function formatArtifactRemediationCommands(detail) {
 
 function renderPrPrepareFirstLook({ preparation, gateStatus, result, language }) {
   const unresolvedCount = gateStatus.unresolved_gate_count ?? gateStatus.unresolved_gates?.length ?? 0;
+  const minimalRecovery = renderAgentReviewMinimalRecoveryPlan(gateStatus.agent_review_minimal_recovery_plan, language);
   const agentReviewLine = gateStatus.agent_review_instruction
     ? localizedText(language, {
-        ja: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}\n`,
-        en: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}\n`
+        ja: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}${minimalRecovery ? `\n${minimalRecovery}` : ''}\n`,
+        en: `\n## Agent Review Gate\n\n- ${gateStatus.agent_review_instruction}${minimalRecovery ? `\n${minimalRecovery}` : ''}\n`
       })
     : '';
   const summaryDepth = preparation.evidence_plan?.evidence_depth === 'summary';
@@ -1436,6 +1437,39 @@ ${agentReviewLine}
   });
 }
 
+function renderAgentReviewMinimalRecoveryPlan(plan, language = 'ja') {
+  if (!plan) return '';
+  const currentStage = plan.current_stage?.stage
+    ? `${plan.current_stage.serial_index ?? '?'}:${plan.current_stage.stage}`
+    : '-';
+  const currentRoles = (plan.current_stage_work ?? [])
+    .slice(0, 5)
+    .map((item) => `${item.stage}:${item.role}(${item.recovery_kind})`)
+    .join(', ') || '-';
+  const blocked = (plan.later_stages_blocked ?? [])
+    .map((stage) => `${stage.serial_index ?? '?'}:${stage.stage}`)
+    .join(', ') || '-';
+  const firstCommand = plan.first_command ?? '-';
+  return localizedText(language, {
+    ja: [
+      '',
+      '- minimal_recovery_plan:',
+      `  - current_stage: ${currentStage}`,
+      `  - current_roles: ${currentRoles}`,
+      `  - first_command: \`${firstCommand}\``,
+      `  - later_stages_blocked: ${blocked}`
+    ].join('\n'),
+    en: [
+      '',
+      '- minimal_recovery_plan:',
+      `  - current_stage: ${currentStage}`,
+      `  - current_roles: ${currentRoles}`,
+      `  - first_command: \`${firstCommand}\``,
+      `  - later_stages_blocked: ${blocked}`
+    ].join('\n')
+  });
+}
+
 function buildAuthorizationScoring({ fileGroups, storySource, decisionRecords }) {
   const riskProfile = classifyChangeRisk({
     fileGroups: fileGroups ?? {},
@@ -1464,6 +1498,7 @@ export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     && executionGate.pr_create_allowed === true
     && unresolvedGates.length === 0;
   const agentReviewAction = buildAgentReviewGateInstruction(unresolvedGates);
+  const agentReviewMinimalRecoveryPlan = unresolvedGates.find((gate) => gate.id === 'gate:agent_review')?.minimal_recovery_plan ?? null;
   const fastLaneNode = (gateDag?.nodes ?? []).find((node) => node.id === 'gate:fast_lane');
   return {
     schema_version: '0.1.0',
@@ -1478,6 +1513,7 @@ export function buildPrPrepareGateStatus(gateDag, completionQuality = null) {
     critical_unresolved_gates: criticalGates,
     next_required_actions: executionGate.required_actions,
     agent_review_instruction: agentReviewAction,
+    agent_review_minimal_recovery_plan: agentReviewMinimalRecoveryPlan,
     agent_review_dispatch_required: Boolean(agentReviewAction),
     agent_review_user_confirmation_required_by_vibepro: false,
     agent_review_runner_policy_may_require_user_delegation: false,
@@ -10027,6 +10063,7 @@ function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
   const unmet = agentReviews.unmet_required_reviews ?? [];
   const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
   const requiredActions = buildAgentReviewRequiredActions(agentReviews, status, unmet);
+  const minimalRecoveryPlan = buildAgentReviewMinimalRecoveryPlan(agentReviews, status, unmet);
   return {
     id: 'gate:agent_review',
     type: 'agent_review_gate',
@@ -10048,10 +10085,199 @@ function buildAgentReviewGate(agentReviews, fileGroups, fastLane = null) {
       manual_review_fallback: false,
       applies_to: ['codex', 'claude_code']
     },
+    minimal_recovery_plan: minimalRecoveryPlan,
     required_actions: requiredActions,
     unmet_required_reviews: unmet.slice(0, 20),
     unmet_checkpoint_reviews: checkpointUnmet.slice(0, 20)
   };
+}
+
+function buildAgentReviewMinimalRecoveryPlan(agentReviews, status, unmet) {
+  if (status === 'passed' || status === 'not_required') return null;
+  const storyId = agentReviews.story_id ?? '<story-id>';
+  const requiredStages = agentReviews.parallel_dispatch?.required_stages ?? [];
+  const checkpointUnmet = agentReviews.unmet_checkpoint_reviews ?? [];
+  const allUnmet = [
+    ...unmet,
+    ...checkpointUnmet
+  ];
+  const currentStage = requiredStages.find((stage) => stage.dispatch_state === 'current')
+    ?? requiredStages.find((stage) => stage.status !== 'pass' || stage.prepared !== true)
+    ?? null;
+  const blockedLaterStages = requiredStages
+    .filter((stage) => stage.dispatch_state === 'blocked_by_previous_stage')
+    .map((stage) => ({
+      stage: stage.stage,
+      serial_index: stage.serial_index ?? null,
+      roles: stage.roles ?? [],
+      reason: 'blocked_by_serial_barrier'
+    }));
+  const roleLookup = buildAgentReviewRoleLookup(agentReviews);
+  const deduped = dedupeAgentReviewRecoveryItems(allUnmet, roleLookup, storyId);
+  const currentStageItems = currentStage
+    ? deduped.filter((item) => item.stage === currentStage.stage)
+    : deduped;
+  const firstCommand = currentStageItems.find((item) => item.next_commands.length > 0)?.next_commands[0]
+    ?? currentStage?.prepare_command
+    ?? `vibepro review status . --id ${storyId}`;
+  return {
+    schema_version: '0.1.0',
+    story_id: storyId,
+    status,
+    source_blocker_count: allUnmet.length,
+    deduped_blocker_count: deduped.length,
+    first_command: firstCommand,
+    current_stage: currentStage ? {
+      stage: currentStage.stage,
+      serial_index: currentStage.serial_index ?? null,
+      status: currentStage.status ?? null,
+      prepared: currentStage.prepared === true,
+      roles: currentStage.roles ?? [],
+      prepare_command: currentStage.prepare_command ?? null,
+      dispatch_artifact: currentStage.dispatch_artifact ?? null
+    } : null,
+    current_stage_work: currentStageItems,
+    later_stages_blocked: blockedLaterStages,
+    rerun_command: `vibepro pr prepare . --story-id ${storyId} --base <base-ref>`
+  };
+}
+
+function buildAgentReviewRoleLookup(agentReviews) {
+  const lookup = new Map();
+  for (const stage of agentReviews.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      lookup.set(`${stage.stage}:${role.role}`, {
+        ...role,
+        stage: stage.stage
+      });
+    }
+  }
+  return lookup;
+}
+
+function dedupeAgentReviewRecoveryItems(items, roleLookup, storyId) {
+  const byRole = new Map();
+  for (const item of items) {
+    if (!item?.stage || !item?.role) continue;
+    const key = `${item.stage}:${item.role}`;
+    const role = roleLookup.get(key) ?? {};
+    const existing = byRole.get(key);
+    const candidate = buildAgentReviewRecoveryItem(item, role, storyId);
+    if (!existing || recoveryPriority(candidate.recovery_kind) > recoveryPriority(existing.recovery_kind)) {
+      byRole.set(key, existing ? mergeAgentReviewRecoveryDetails(candidate, existing) : candidate);
+    } else {
+      byRole.set(key, {
+        ...existing,
+        details: [...new Set([...existing.details, ...candidate.details].filter(Boolean))]
+      });
+    }
+  }
+  return [...byRole.values()];
+}
+
+function mergeAgentReviewRecoveryDetails(primary, secondary) {
+  return {
+    ...primary,
+    details: [...new Set([...(primary.details ?? []), ...(secondary.details ?? [])].filter(Boolean))]
+  };
+}
+
+function buildAgentReviewRecoveryItem(item, role, storyId) {
+  const lifecycle = role?.lifecycle ?? null;
+  const lifecycleStatus = lifecycle?.effective_status ?? lifecycle?.latest?.effective_status ?? null;
+  const recoveryKind = classifyAgentReviewRecoveryKind(item, role, lifecycleStatus);
+  const lifecycleRecovery = buildAgentReviewLifecycleRecovery({
+    storyId,
+    stage: item.stage,
+    role: item.role,
+    lifecycle,
+    recoveryKind
+  });
+  return {
+    stage: item.stage,
+    role: item.role,
+    status: item.status ?? role?.effective_status ?? 'missing',
+    recovery_kind: recoveryKind,
+    details: [item.detail, role?.stale_reason, role?.provenance_reason, role?.summary].filter(Boolean),
+    artifact: role?.artifact ?? null,
+    lifecycle: lifecycleRecovery,
+    next_commands: buildAgentReviewRecoveryCommands({
+      storyId,
+      stage: item.stage,
+      role: item.role,
+      recoveryKind,
+      lifecycleRecovery
+    })
+  };
+}
+
+function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
+  if (lifecycleStatus === 'timed_out' || item.status === 'timed_out') return 'timed_out';
+  if (lifecycleStatus === 'running' || item.status === 'running') return 'running';
+  if (role?.stale || item.status === 'stale' || role?.effective_status === 'stale') return 'stale';
+  if (item.status === 'unverified_agent' || role?.effective_status === 'unverified_agent') return 'unverified_agent';
+  if (item.status === 'missing' || role?.effective_status === 'missing') return 'missing';
+  return item.status ?? role?.effective_status ?? 'needs_review';
+}
+
+function recoveryPriority(kind) {
+  return {
+    timed_out: 60,
+    running: 50,
+    stale: 40,
+    unverified_agent: 30,
+    missing: 20
+  }[kind] ?? 10;
+}
+
+function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, recoveryKind }) {
+  const latest = lifecycle?.latest ?? null;
+  if (!latest && !['timed_out', 'running'].includes(recoveryKind)) return null;
+  const agentId = latest?.agent_id ?? null;
+  const lifecycleId = latest?.lifecycle_id ?? null;
+  const selector = agentId
+    ? `--agent-id "${agentId}"`
+    : `--lifecycle-id ${lifecycleId ?? '<lifecycle-id>'}`;
+  const closeReason = recoveryKind === 'timed_out' ? 'timeout' : 'completed';
+  const closeCommand = ['timed_out', 'running'].includes(recoveryKind)
+    ? `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} ${selector} --close-reason ${closeReason} --close-evidence <close-evidence>`
+    : null;
+  const replacementCommand = recoveryKind === 'timed_out'
+    ? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system ${latest?.agent_system ?? '<codex|claude_code>'} --agent-id "<subagent-id>" --timeout-ms 600000 --replacement-for ${lifecycleId ?? '<previous-lifecycle-id>'}`
+    : null;
+  return {
+    status: lifecycle?.effective_status ?? latest?.effective_status ?? null,
+    agent_id: agentId,
+    lifecycle_id: lifecycleId,
+    close_command: closeCommand,
+    replacement_command: replacementCommand
+  };
+}
+
+function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery }) {
+  const prepareCommand = `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${role}`;
+  const startCommand = lifecycleRecovery?.replacement_command
+    ?? `vibepro review start . --id ${storyId} --stage ${stage} --role ${role} --agent-system <codex|claude_code> --agent-id "<subagent-id>" --timeout-ms 600000`;
+  const recordCommand = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status <pass|needs_changes|block> --summary "<summary>" --agent-system <codex|claude_code> --execution-mode parallel_subagent --agent-id "<subagent-id>" --agent-closed`;
+  if (recoveryKind === 'timed_out') {
+    return [
+      lifecycleRecovery?.close_command,
+      prepareCommand,
+      startCommand,
+      recordCommand
+    ].filter(Boolean);
+  }
+  if (recoveryKind === 'running') {
+    return [
+      lifecycleRecovery?.close_command,
+      recordCommand
+    ].filter(Boolean);
+  }
+  return [
+    prepareCommand,
+    startCommand,
+    recordCommand
+  ];
 }
 
 function buildAgentReviewRequiredActions(agentReviews, status, unmet) {
@@ -11169,6 +11395,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       artifact: node.artifact,
       stale_artifact_details: node.stale_artifact_details,
       stale_artifact_groups: node.stale_artifact_groups,
+      minimal_recovery_plan: node.minimal_recovery_plan,
       required_actions: node.required_actions,
       reason: node.reason
     }));

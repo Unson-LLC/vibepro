@@ -84,7 +84,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
       ${risks}
       ${engineeringJudgmentSection}
       ${renderExecutionGatePanel(executionGate, language)}
-      ${renderAgentReviewPanel(agentReviews, language)}
+      ${renderAgentReviewPanel(agentReviews, language, preparation.gate_status?.agent_review_minimal_recovery_plan)}
       ${lifecycleArtifacts}
       ${requirementSection}
       ${networkSection}
@@ -821,7 +821,7 @@ function renderExecutionGatePanel(executionGate, language = 'ja') {
   `;
 }
 
-function renderAgentReviewPanel(agentReviews, language = 'ja') {
+function renderAgentReviewPanel(agentReviews, language = 'ja', minimalRecoveryPlan = null) {
   if (!agentReviews) {
     return renderCards(localizedText(language, { ja: 'Agent Review Gate', en: 'Agent Review Gate' }), [{
       title: localizedText(language, { ja: '未生成', en: 'Not generated' }),
@@ -850,6 +850,7 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
     tone: item.status === 'block' ? 'danger' : 'warn'
   }));
   const allUnmetCards = [...unmetCards, ...checkpointCards];
+  const minimalRecovery = renderAgentReviewMinimalRecoveryPanel(minimalRecoveryPlan, language);
   return `
     <section>
       <h2>${escapeHtml(localizedText(language, { ja: 'Agent Review Gate', en: 'Agent Review Gate' }))}</h2>
@@ -860,6 +861,7 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
         ${metricCard(localizedText(language, { ja: 'Checkpoint未充足', en: 'Checkpoint Unmet' }), agentReviews.summary?.unmet_checkpoint_review_count ?? 0, 'checkpoint')}
         ${metricCard(localizedText(language, { ja: '古い結果', en: 'Stale Results' }), agentReviews.summary?.stale_result_count ?? 0, 'current git binding')}
       </div>
+      ${minimalRecovery}
       <h3>${escapeHtml(localizedText(language, { ja: '未充足の必須レビュー', en: 'Unmet Required Reviews' }))}</h3>
       <div class="cards">${(allUnmetCards.length > 0 ? allUnmetCards : [{
         title: localizedText(language, { ja: '未充足レビューなし', en: 'No unmet reviews' }),
@@ -888,6 +890,33 @@ function renderAgentReviewPanel(agentReviews, language = 'ja') {
         </article>
       `).join('')}</div>
     </section>
+  `;
+}
+
+function renderAgentReviewMinimalRecoveryPanel(plan, language = 'ja') {
+  if (!plan) return '';
+  const currentStage = plan.current_stage?.stage
+    ? `${plan.current_stage.serial_index ?? '?'}:${plan.current_stage.stage}`
+    : '-';
+  const currentRoles = (plan.current_stage_work ?? [])
+    .slice(0, 8)
+    .map((item) => `${item.stage}:${item.role}(${item.recovery_kind})`);
+  const blockedStages = (plan.later_stages_blocked ?? [])
+    .map((stage) => `${stage.serial_index ?? '?'}:${stage.stage}`);
+  return `
+      <h3>${escapeHtml(localizedText(language, { ja: 'minimal_recovery_plan', en: 'minimal_recovery_plan' }))}</h3>
+      <div class="cards">
+        <article class="card warn">
+          <h3>current_stage</h3>
+          <p>${escapeHtml(currentStage)}</p>
+          <p class="muted">current_roles: ${escapeHtml(currentRoles.join(', ') || '-')}</p>
+        </article>
+        <article class="card warn">
+          <h3>first_command</h3>
+          <p><code>${escapeHtml(plan.first_command ?? '-')}</code></p>
+          <p class="muted">later_stages_blocked: ${escapeHtml(blockedStages.join(', ') || '-')}</p>
+        </article>
+      </div>
   `;
 }
 
