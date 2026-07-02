@@ -122,6 +122,96 @@
     "reason": "execute merge did not receive --cost-accounting or --session-id",
     "collected_at": "2026-07-02T04:12:20.782Z"
   },
+  "canonical_audit": {
+    "bundle": "docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/audit-bundle.json",
+    "directory": "docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+    "artifact_count": 12,
+    "missing_artifact_count": 0,
+    "persistence": {
+      "schema_version": "0.1.0",
+      "status": "pushed",
+      "base": "main",
+      "directory": "docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+      "worktree_path": "/var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-bundled-playbook-templates-1782965546915",
+      "base_head_sha": "49ac103ba164880ce5914e5db2c66515f434bb20",
+      "merge_commit_on_base": true,
+      "commit_sha": "4960eb779618e5e7b9421ca70c5080c0ca34820b",
+      "pushed": true,
+      "reason": "canonical audit bundle persisted after merge 49ac103ba164880ce5914e5db2c66515f434bb20",
+      "cleanup": {
+        "attempted": true,
+        "removed": true,
+        "exit_code": 0
+      },
+      "commands": [
+        "git fetch origin main",
+        "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-bundled-playbook-templates-1782965546915 origin/main",
+        "git add docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+        "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+        "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-bundled-playbook-templates'",
+        "git push origin HEAD:main",
+        "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-bundled-playbook-templates-1782965546915"
+      ],
+      "results": [
+        {
+          "command": "git fetch origin main",
+          "started_at": "2026-07-02T04:12:26.915Z",
+          "finished_at": "2026-07-02T04:12:27.913Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "From https://github.com/Unson-LLC/vibepro\n * branch            main       -> FETCH_HEAD\n   f10ee99..49ac103  main       -> origin/main"
+        },
+        {
+          "command": "git worktree add --detach /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-bundled-playbook-templates-1782965546915 origin/main",
+          "started_at": "2026-07-02T04:12:28.000Z",
+          "finished_at": "2026-07-02T04:12:28.586Z",
+          "exit_code": 0,
+          "stdout": "HEAD is now at 49ac103 Merge pull request #272 from Unson-LLC/codex/vibepro-local-playbook-templates",
+          "stderr": "Preparing worktree (detached HEAD 49ac103)"
+        },
+        {
+          "command": "git add docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+          "started_at": "2026-07-02T04:12:28.612Z",
+          "finished_at": "2026-07-02T04:12:28.776Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git diff --cached --quiet -- docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates",
+          "started_at": "2026-07-02T04:12:28.776Z",
+          "finished_at": "2026-07-02T04:12:28.843Z",
+          "exit_code": 1,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "command": "git commit -m 'docs: persist VibePro audit artifacts for story-vibepro-bundled-playbook-templates'",
+          "started_at": "2026-07-02T04:12:28.843Z",
+          "finished_at": "2026-07-02T04:12:29.079Z",
+          "exit_code": 0,
+          "stdout": "[detached HEAD 4960eb7] docs: persist VibePro audit artifacts for story-vibepro-bundled-playbook-templates\n 50 files changed, 24871 insertions(+)\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/audit-bundle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/audit-index.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/decision-summary.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/evidence-reuse.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/gate-dag.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/pr-create.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/pr-merge.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/pr-prepare.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/senior-gap-judgment.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/traceability.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/pr/verification-evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/architecture-profile.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/component-style-check-result.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/finding-review.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/flow-design-check-result.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/gesture-interaction-check-result.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/refactoring-delta.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/requirement-consistency.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/risk-register.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/spec-drift.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/static-site-check-result.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/summary.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/diagnostics/2026-07-02T011317Z/terminal-link-check-result.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/manual-verification/story-vibepro-bundled-playbook-templates/playbook-export-replay.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/playbook/story-vibepro-bundled-playbook-templates/playbook-export.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/architecture-review.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/decision-index.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/decision-records.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/design-ssot-reconciliation.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/evidence-plan.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/gate-dag.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/human-review.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/pr-body.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/pr-create.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/pr-merge.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/pr-prepare.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/review-cockpit.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.html\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/pr/story-vibepro-bundled-playbook-templates/split-plan.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20e8-b3ae-7d93-bb54-bf686226b115.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/gate_evidence-subagent-019f20f7-897e-7172-a596-466906de8018.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T03-44-24.260Z.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/history/review-result-gate_evidence-2026-07-02T04-03-15.247Z.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/reviews/story-vibepro-bundled-playbook-templates/gate/parallel-dispatch.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/stories/story-vibepro-bundled-playbook-templates/tasks/tasks.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/references/vibepro/stories/story-vibepro-bundled-playbook-templates/tasks/tasks.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/reviews/gate/lifecycle.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/reviews/gate/review-request-gate_evidence.md\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/reviews/gate/review-result-gate_evidence.json\n create mode 100644 docs/management/audit-artifacts/story-vibepro-bundled-playbook-templates/reviews/gate/review-summary.json",
+          "stderr": ""
+        },
+        {
+          "command": "git push origin HEAD:main",
+          "started_at": "2026-07-02T04:12:29.121Z",
+          "finished_at": "2026-07-02T04:12:31.957Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "To https://github.com/Unson-LLC/vibepro.git\n   49ac103..4960eb7  HEAD -> main"
+        },
+        {
+          "command": "git worktree remove --force /var/folders/36/r4ggny5d7nqclz7vpc2hphgr0000gp/T/vibepro-canonical-audit-story-vibepro-bundled-playbook-templates-1782965546915",
+          "started_at": "2026-07-02T04:12:31.957Z",
+          "finished_at": "2026-07-02T04:12:32.112Z",
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  },
   "artifact_freshness": {
     "kind": "pr_merge",
     "status": "current",

@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-bundled-playbook-templates",
   "source": "execute_merge",
-  "generated_at": "2026-07-02T04:12:26.859Z",
+  "generated_at": "2026-07-02T04:12:32.114Z",
   "evidence_depth": "full",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -23,7 +23,7 @@
     },
     "diff_stats_collected_at": "2026-07-02T04:12:22.234Z",
     "diff_stats_reason": null,
-    "artifact_lines": 9994,
+    "artifact_lines": 10084,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 3625,
@@ -122,7 +122,7 @@
     "product_changed_lines": 3625,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 2.757,
+    "artifact_code_ratio": 2.782,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -270,7 +270,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-bundled-playbook-templates",
-    "generated_at": "2026-07-02T04:12:26.859Z",
+    "generated_at": "2026-07-02T04:12:32.114Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -306,7 +306,7 @@
       "story_spec_architecture_to_src": 1.145,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 1.548,
-      "artifact_lines_to_product_changed_lines": 2.757
+      "artifact_lines_to_product_changed_lines": 2.782
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -339,10 +339,10 @@
     "cost_controls": {
       "status": "action_required",
       "budget_status": "within_budget",
-      "artifact_code_ratio": 2.757,
+      "artifact_code_ratio": 2.782,
       "automation_evidence_to_src": 1.548,
       "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 9994,
+      "canonical_artifact_lines": 10084,
       "product_changed_lines": 3625,
       "evidence_depth": "full",
       "recommended_evidence_depth": "full",

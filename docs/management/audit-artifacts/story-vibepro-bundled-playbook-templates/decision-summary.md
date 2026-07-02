@@ -3,9 +3,9 @@
 - story: story-vibepro-bundled-playbook-templates
 - evidence_depth: full
 - budget_status: within_budget
-- artifact_lines: 9994
+- artifact_lines: 10084
 - product_changed_lines: 3625
-- artifact_code_ratio: 2.757
+- artifact_code_ratio: 2.782
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
