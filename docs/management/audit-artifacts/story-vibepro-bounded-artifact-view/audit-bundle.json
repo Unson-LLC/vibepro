@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-bounded-artifact-view",
   "source": "execute_merge",
-  "promoted_at": "2026-07-03T03:43:43.023Z",
+  "promoted_at": "2026-07-03T03:43:47.176Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-bounded-artifact-view",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-bounded-artifact-view/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-bounded-artifact-view/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:71f728372586de74798e4e24c9c37fd8f90c90596b6d6ae61701694bcb1362ef",
-    "compressed_hash": "sha256:275002daf2d38a33f5139d2854ddb0e9c415203aadc62892210e9826f3d896ca",
+    "content_hash": "sha256:fb3ed13020fbdc833f7fce33f2a67d656b81c3100080fb81993e7a28942474db",
+    "compressed_hash": "sha256:c7e806fbf00505ec2972be1120218295bb256e6261b5ef60ace8e907374eef08",
     "expanded_bytes": 12266,
-    "compressed_bytes": 2930,
+    "compressed_bytes": 2929,
     "expanded_line_count": 333,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-bounded-artifact-view",
     "cost": {
-      "compressed_bytes": 2930,
+      "compressed_bytes": 2929,
       "expanded_bytes": 12266,
       "expanded_line_count": 333,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-bounded-artifact-view/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:71f728372586de74798e4e24c9c37fd8f90c90596b6d6ae61701694bcb1362ef"
+      "content_hash": "sha256:fb3ed13020fbdc833f7fce33f2a67d656b81c3100080fb81993e7a28942474db"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-bounded-artifact-view/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-bounded-artifact-view/audit-replay-bundle.json.gz",
-      "digest": "sha256:43d87abe4a2c967904b8f6fc18b44362f2378020bf1988092dea7d397f100c28",
-      "audit_digest": "sha256:3f31672d9ad2125ec8143dec5510c91b218b6208af134ac8e9c8c3ed247e2a5c",
-      "line_count": 1346,
-      "raw_line_count": 2767,
+      "digest": "sha256:adbfecce16708cb0d7b2624217d3d233a316f72b068f7c0e670dafde61763ec9",
+      "audit_digest": "sha256:b969723fae6f90fd1e174ae1f6067730d1fd07f726ff49befef5e026c5945076",
+      "line_count": 1436,
+      "raw_line_count": 2857,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
