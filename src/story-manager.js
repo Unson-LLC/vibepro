@@ -9,6 +9,7 @@ import {
 import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-generator.js';
 import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
+import { getJourneyStatus } from './journey-map.js';
 import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
 
@@ -20,6 +21,43 @@ const STORY_FIELDS = [
   ['--period', 'period'],
   ['--started-at', 'started_at'],
   ['--due-at', 'due_at']
+];
+
+const DEFAULT_STORY_JOURNEY_ID = 'default-product-journey';
+
+const STORY_DOCUMENT_DIRS = [
+  path.join('docs', 'management', 'stories', 'active'),
+  path.join('docs', 'user_stories', 'active'),
+  path.join('docs', 'stories')
+];
+
+const STORY_JOURNEY_PATTERNS = [
+  ['UI', /\bui\b/i],
+  ['UX', /\bux\b/i],
+  ['screen', /\bscreens?\b/i],
+  ['page', /\bpages?\b/i],
+  ['navigation', /\bnavigation\b/i],
+  ['touchpoint', /\btouchpoints?\b/i],
+  ['user flow', /\buser\s+flows?\b/i],
+  ['user journey', /\buser\s+journey\b/i],
+  ['customer journey', /\bcustomer\s+journey\b/i],
+  ['operation path', /\boperation\s+paths?\b/i],
+  ['primary operation', /\bprimary\s+operation\b/i],
+  ['CTA', /\bcta\b/i],
+  ['interaction', /\binteractions?\b/i],
+  ['画面', /画面/],
+  ['導線', /導線/],
+  ['ナビゲーション', /ナビゲーション/],
+  ['タッチポイント', /タッチポイント/],
+  ['ユーザーフロー', /ユーザーフロー/],
+  ['ユーザーの流れ', /ユーザーの流れ/],
+  ['操作導線', /操作導線/],
+  ['操作パス', /操作パス/],
+  ['UI体験', /UI体験/i],
+  ['ユーザー体験', /ユーザー体験/],
+  ['対応面', /対応面/],
+  ['Journey', /Journey/i],
+  ['ジャーニー', /ジャーニー/]
 ];
 
 export async function addStory(repoRoot, options = {}) {
@@ -100,12 +138,14 @@ export async function getStoryStatus(repoRoot, storyId = null) {
   const runs = getRunsForStory(manifest, story.story_id);
   const latestRun = findLatestStoryRun(manifest, story.story_id, runs);
   const evidence = latestRun ? await readRunEvidence(root, latestRun) : null;
+  const journeyContext = await buildStoryJourneyContext(root, story);
   return {
     story,
     latestRun,
     runs,
     findingCount: evidence?.findings?.length ?? 0,
-    artifacts: latestRun?.artifacts ?? {}
+    artifacts: latestRun?.artifacts ?? {},
+    journey_context: journeyContext
   };
 }
 
@@ -119,10 +159,11 @@ export async function createStoryReport(repoRoot, storyId = null) {
   if (!latestRun) throw new Error(`Story diagnosis run not found: ${story.story_id}`);
   const evidence = await readRunEvidence(root, latestRun);
   const taskState = await readStoryTasks(root, latestRun.artifacts?.story_tasks_json);
+  const journeyContext = await buildStoryJourneyContext(root, story);
   const storyDir = path.join(getWorkspaceDir(root), 'stories', story.story_id);
   await mkdir(storyDir, { recursive: true });
   const reportPath = path.join(storyDir, 'story-report.md');
-  await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState }));
+  await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState, journeyContext }));
   const htmlPath = path.join(storyDir, 'index.html');
   const graphHtmlRel = path.join(WORKSPACE_DIR, 'graphify', 'graph.html');
   await writeFile(htmlPath, renderStoryReportHtml({
@@ -134,7 +175,8 @@ export async function createStoryReport(repoRoot, storyId = null) {
     storyDir,
     graphHtmlPath: graphHtmlRel,
     storyReportMdPath: reportPath,
-    storyTasksMdPath: latestRun.artifacts?.story_tasks_markdown ?? null
+    storyTasksMdPath: latestRun.artifacts?.story_tasks_markdown ?? null,
+    journeyContext
   }));
   manifest.stories = {
     ...(manifest.stories ?? {}),
@@ -147,7 +189,7 @@ export async function createStoryReport(repoRoot, storyId = null) {
     }
   };
   await writeManifest(root, manifest);
-  return { story, latestRun, reportPath, htmlPath };
+  return { story, latestRun, reportPath, htmlPath, journeyContext };
 }
 
 export async function deriveStories(repoRoot, options = {}) {
@@ -421,10 +463,12 @@ export function renderStoryStatus(result) {
 ## Artifacts
 
 ${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(result.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+${renderStoryJourneyContext(result.journey_context)}
 `;
 }
 
-export function renderStoryReport({ story, latestRun, runs, evidence, taskState = null }) {
+export function renderStoryReport({ story, latestRun, runs, evidence, taskState = null, journeyContext = null }) {
   const graphify = evidence?.graphify ?? {};
   const architectureProfile = evidence?.architecture_profile ?? {};
   const applicableChecks = evidence?.check_catalog?.applicable_checks ?? architectureProfile.applicable_checks ?? [];
@@ -457,6 +501,8 @@ export function renderStoryReport({ story, latestRun, runs, evidence, taskState 
 | Gate | ${latestRun.gate_status ?? '-'} |
 | Created At | ${latestRun.created_at ?? '-'} |
 | Story run数 | ${runs.length} |
+
+${renderStoryJourneyContext(journeyContext)}
 
 ## graphify集計
 
@@ -526,6 +572,145 @@ ${Object.entries(artifacts).length === 0 ? '- なし' : Object.entries(artifacts
 - ${artifacts.risk_register ?? '-'}
 - ${artifacts.evidence ?? '-'}
 `;
+}
+
+async function buildStoryJourneyContext(root, story) {
+  const detection = await detectStoryJourneyImpact(root, story);
+  if (!detection.required) {
+    return {
+      required: false,
+      status: 'not_required',
+      artifact_kind: null,
+      curation_status: 'not_required',
+      curated: false,
+      handoff_available: false,
+      journey_id: DEFAULT_STORY_JOURNEY_ID,
+      reason: detection.reason,
+      detection,
+      next_actions: []
+    };
+  }
+
+  const status = await getJourneyStatus(root, { journeyId: DEFAULT_STORY_JOURNEY_ID });
+  return {
+    required: true,
+    status: status.status,
+    artifact_kind: status.artifact_kind,
+    curation_status: status.curation_status,
+    curated: Boolean(status.curated),
+    curated_journey_path: status.curated_journey_path ?? null,
+    handoff_available: Boolean(status.handoff_available),
+    journey_id: status.journey_id ?? DEFAULT_STORY_JOURNEY_ID,
+    reason: status.reason ?? null,
+    detection,
+    next_actions: buildStoryJourneyNextActions(status)
+  };
+}
+
+async function detectStoryJourneyImpact(root, story) {
+  const documents = await readStoryJourneyDocuments(root, story);
+  const haystack = [
+    story.story_id,
+    story.title,
+    story.view,
+    story.horizon,
+    story.period,
+    story.journey_activity,
+    story.journey_step,
+    ...documents.map((document) => document.content)
+  ].filter(Boolean).join('\n');
+  const matchedTerms = STORY_JOURNEY_PATTERNS
+    .filter(([, pattern]) => pattern.test(haystack))
+    .map(([term]) => term);
+
+  if (matchedTerms.length === 0) {
+    return {
+      required: false,
+      reason: 'No UI/Journey signals were found in the Story metadata or tracked Story docs.',
+      matched_terms: [],
+      source_paths: documents.map((document) => document.path)
+    };
+  }
+
+  return {
+    required: true,
+    reason: `UI/Journey signals found: ${matchedTerms.join(', ')}`,
+    matched_terms: matchedTerms,
+    source_paths: documents.map((document) => document.path)
+  };
+}
+
+async function readStoryJourneyDocuments(root, story) {
+  const candidates = buildStoryDocumentCandidates(root, story.story_id);
+  const documents = [];
+  for (const candidate of candidates) {
+    try {
+      documents.push({
+        path: toWorkspaceRelative(root, candidate),
+        content: await readFile(candidate, 'utf8')
+      });
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+  return documents;
+}
+
+function buildStoryDocumentCandidates(root, storyId) {
+  const names = storyId.startsWith('story-') ? [storyId] : [storyId, `story-${storyId}`];
+  return [...new Set(names.flatMap((name) => STORY_DOCUMENT_DIRS.map((dir) => path.join(root, dir, `${name}.md`))))];
+}
+
+function buildStoryJourneyNextActions(status) {
+  const journeyId = status.journey_id ?? DEFAULT_STORY_JOURNEY_ID;
+  if (status.status === 'missing') {
+    return [
+      `vibepro journey derive . --id ${journeyId}`,
+      `vibepro journey handoff . --id ${journeyId}`,
+      `Create curated Journey at .vibepro/journeys/${journeyId}.json`
+    ];
+  }
+  if (status.status === 'needs_curated_journey') {
+    const actions = [];
+    if (!status.handoff_available) actions.push(`vibepro journey handoff . --id ${journeyId}`);
+    actions.push(`Create curated Journey at .vibepro/journeys/${journeyId}.json`);
+    return actions;
+  }
+  return [];
+}
+
+function renderStoryJourneyContext(journeyContext) {
+  if (!journeyContext) return '## Journey Context\n\n- 未評価';
+  const detection = journeyContext.detection ?? {};
+  const sourcePaths = Array.isArray(detection.source_paths) ? detection.source_paths : [];
+  const matchedTerms = Array.isArray(detection.matched_terms) ? detection.matched_terms : [];
+  return `## Journey Context
+
+| 項目 | 内容 |
+|------|------|
+| Required | ${formatYesNo(journeyContext.required)} |
+| Status | ${formatNullable(journeyContext.status)} |
+| Artifact kind | ${formatNullable(journeyContext.artifact_kind)} |
+| Curated | ${formatYesNo(journeyContext.curated)} |
+| Curation status | ${formatNullable(journeyContext.curation_status)} |
+| Handoff | ${formatYesNo(journeyContext.handoff_available)} |
+| Journey ID | ${formatNullable(journeyContext.journey_id)} |
+| Detection | ${matchedTerms.join(', ') || '-'} |
+| Source docs | ${sourcePaths.join('<br>') || '-'} |
+| Reason | ${formatNullable(journeyContext.reason ?? detection.reason)} |
+
+### Journey Next Actions
+
+${journeyContext.next_actions?.length ? journeyContext.next_actions.map((action) => `- ${action}`).join('\n') : '- なし'}`;
+}
+
+function formatYesNo(value) {
+  return value ? 'yes' : 'no';
+}
+
+function formatNullable(value) {
+  if (value === null || value === undefined || value === '') return '-';
+  return String(value);
 }
 
 function renderStoryFindingReview(findingReview) {

@@ -28,12 +28,14 @@ const PRIMARY_ARTIFACT_KEYS = [
   'architecture_profile'
 ];
 
-export function renderStoryReportHtml({ story, latestRun, runs, storyDir, repoRoot, graphHtmlPath, storyReportMdPath, storyTasksMdPath, evidence = null }) {
+export function renderStoryReportHtml({ story, latestRun, runs, storyDir, repoRoot, graphHtmlPath, storyReportMdPath, storyTasksMdPath, evidence = null, journeyContext = null }) {
   const generatedAt = new Date().toISOString();
   const artifactRows = buildArtifactRows({ latestRun, repoRoot, storyDir });
   const localLinks = buildLocalLinkRows({ storyDir, storyReportMdPath, storyTasksMdPath, repoRoot });
   const graphLink = buildGraphLink({ storyDir, repoRoot, graphHtmlPath });
   const findings = Array.isArray(evidence?.findings) ? evidence.findings : [];
+  const journeyTable = renderJourneyContextTable(journeyContext);
+  const journeyActions = renderJourneyActions(journeyContext);
   const findingTable = findings.length === 0
     ? '<p class="muted">検出事項なし</p>'
     : renderTable(['ID', 'Title', 'Severity'], findings.slice(0, 20).map((finding) => [
@@ -47,6 +49,7 @@ export function renderStoryReportHtml({ story, latestRun, runs, storyDir, repoRo
     metricCard('Story', story.story_id, story.title ?? ''),
     metricCard('Latest Run', latestRun?.run_id ?? '-', latestRun?.gate_status ?? '-'),
     metricCard('Runs', String(runs?.length ?? 0), 'historical'),
+    metricCard('Journey', journeyContext?.status ?? 'unknown', journeyContext?.curated ? 'curated' : (journeyContext?.curation_status ?? '-')),
     metricCard('Findings', String(findings.length), evidence ? 'in latest evidence' : 'evidence missing')
   ].join('');
 
@@ -78,6 +81,11 @@ export function renderStoryReportHtml({ story, latestRun, runs, storyDir, repoRo
         ${graphLink ? `<p>Graph: ${graphLinkHtml}</p>` : ''}
       </section>
       <section>
+        <h2>Journey Context</h2>
+        ${journeyTable}
+        ${journeyActions}
+      </section>
+      <section>
         <h2>Latest Run Artifacts (${escapeHtml(latestRun?.run_id ?? '-')})</h2>
         ${artifactTable}
       </section>
@@ -87,6 +95,40 @@ export function renderStoryReportHtml({ story, latestRun, runs, storyDir, repoRo
       </section>
     `
   });
+}
+
+function renderJourneyContextTable(journeyContext) {
+  if (!journeyContext) return '<p class="muted">未評価</p>';
+  const detection = journeyContext.detection ?? {};
+  const sourcePaths = Array.isArray(detection.source_paths) ? detection.source_paths : [];
+  const matchedTerms = Array.isArray(detection.matched_terms) ? detection.matched_terms : [];
+  return renderTable(['Field', 'Value'], [
+    ['Required', formatYesNo(journeyContext.required)],
+    ['Status', formatNullable(journeyContext.status)],
+    ['Artifact kind', formatNullable(journeyContext.artifact_kind)],
+    ['Curated', formatYesNo(journeyContext.curated)],
+    ['Curation status', formatNullable(journeyContext.curation_status)],
+    ['Handoff', formatYesNo(journeyContext.handoff_available)],
+    ['Journey ID', formatNullable(journeyContext.journey_id)],
+    ['Detection', matchedTerms.join(', ') || '-'],
+    ['Source docs', sourcePaths.join(', ') || '-'],
+    ['Reason', formatNullable(journeyContext.reason ?? detection.reason)]
+  ]);
+}
+
+function renderJourneyActions(journeyContext) {
+  const actions = Array.isArray(journeyContext?.next_actions) ? journeyContext.next_actions : [];
+  if (actions.length === 0) return '<p class="muted">Next actions: なし</p>';
+  return `<ul>${actions.map((action) => `<li><code>${escapeHtml(action)}</code></li>`).join('')}</ul>`;
+}
+
+function formatYesNo(value) {
+  return value ? 'yes' : 'no';
+}
+
+function formatNullable(value) {
+  if (value === null || value === undefined || value === '') return '-';
+  return String(value);
 }
 
 function buildArtifactRows({ latestRun, repoRoot, storyDir }) {
