@@ -1,0 +1,225 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-bounded-artifact-view",
+  "updated_at": "2026-07-03T03:27:35.832Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+      "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783049255830-20c82df3",
+      "story_id": "story-vibepro-bounded-artifact-view",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "active_needs_evidence",
+      "summary": "Accept bounded scope follow-up for related-file blast radius",
+      "reason": "Scope boundary is one CLI/API contract: pr prepare bounded LLM projections. Related-file blast radius is constrained to projection shaping, CLI option routing/help, focused tests, and story/spec/architecture docs. Graph/code-topology blast-radius automation is useful follow-up but non-blocking for this coherent PR because reviewer ownership is single-surface and the changed files are explicitly listed in the story/spec docs.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-bounded-artifact-view.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "current_branch": "codex/vibepro-bounded-artifact-view",
+        "dirty": true,
+        "status_fingerprint": " M README.md\n M design-ssot.json\n M src/canonical-audit.js\n M src/cli.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-bounded-artifact-view.md\n?? docs/management/stories/active/story-vibepro-bounded-artifact-view.md\n?? docs/specs/vibepro-bounded-artifact-view.md\nM README.ja.md",
+        "recorded_at": "2026-07-03T03:27:35.823Z"
+      },
+      "recorded_at": "2026-07-03T03:27:35.832Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783047665301-f0a0d777",
+      "story_id": "story-vibepro-bounded-artifact-view",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "No split required for single contract surface",
+      "reason": "The PR changes one public developer-tool behavior: bounded LLM handoff views for pr prepare. Documentation and tests are supporting artifacts for the same surface, not independent product changes.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-bounded-artifact-view.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "current_branch": "codex/vibepro-bounded-artifact-view",
+        "dirty": true,
+        "status_fingerprint": " M README.md\n M src/canonical-audit.js\n M src/cli.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-bounded-artifact-view.md\n?? docs/management/stories/active/story-vibepro-bounded-artifact-view.md\n?? docs/specs/vibepro-bounded-artifact-view.md\nM README.ja.md",
+        "recorded_at": "2026-07-03T03:01:05.294Z"
+      },
+      "recorded_at": "2026-07-03T03:01:05.302Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783047664191-7e64329a",
+      "story_id": "story-vibepro-bounded-artifact-view",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep bounded artifact projection work in one PR",
+      "reason": "The touched files form one reviewable CLI contract: projection shaping in src/canonical-audit.js, CLI routing/help in src/cli.js, focused regression tests, and story/spec/architecture docs. Splitting would separate contract, implementation, and verification, making the handoff behavior harder to review.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-bounded-artifact-view.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "current_branch": "codex/vibepro-bounded-artifact-view",
+        "dirty": true,
+        "status_fingerprint": " M README.md\n M src/canonical-audit.js\n M src/cli.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-bounded-artifact-view.md\n?? docs/management/stories/active/story-vibepro-bounded-artifact-view.md\n?? docs/specs/vibepro-bounded-artifact-view.md\nM README.ja.md",
+        "recorded_at": "2026-07-03T03:01:04.183Z"
+      },
+      "recorded_at": "2026-07-03T03:01:04.192Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+        "expected_root": null,
+        "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783049255830-20c82df3",
+      "story_id": "story-vibepro-bounded-artifact-view",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "active_needs_evidence",
+      "summary": "Accept bounded scope follow-up for related-file blast radius",
+      "reason": "Scope boundary is one CLI/API contract: pr prepare bounded LLM projections. Related-file blast radius is constrained to projection shaping, CLI option routing/help, focused tests, and story/spec/architecture docs. Graph/code-topology blast-radius automation is useful follow-up but non-blocking for this coherent PR because reviewer ownership is single-surface and the changed files are explicitly listed in the story/spec docs.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-bounded-artifact-view.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+        "current_branch": "codex/vibepro-bounded-artifact-view",
+        "dirty": true,
+        "status_fingerprint": " M README.md\n M design-ssot.json\n M src/canonical-audit.js\n M src/cli.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-bounded-artifact-view.md\n?? docs/management/stories/active/story-vibepro-bounded-artifact-view.md\n?? docs/specs/vibepro-bounded-artifact-view.md\nM README.ja.md",
+        "recorded_at": "2026-07-03T03:27:35.823Z"
+      },
+      "recorded_at": "2026-07-03T03:27:35.832Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-bounded-artifact-view/decision-records.json"
+}

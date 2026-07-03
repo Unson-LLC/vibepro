@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bounded-artifact-view",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate:gate_evidence passes on committed HEAD: bounded projections filter false blockers, bind story refs, exclude full DAG payloads, and have semantic regression coverage.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/subagent-019f2606-0f4e-71a2-b8b5-3ef51ea54b9c-pass.json"
+  ],
+  "inspection": {
+    "summary": "Rebound the closed subagent review to committed HEAD after current-head unit/typecheck/integration/e2e verification reruns.",
+    "evidence": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/subagent-019f2606-0f4e-71a2-b8b5-3ef51ea54b9c-pass.json",
+    "inputs": [
+      "src/canonical-audit.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      "docs/management/stories/active/story-vibepro-bounded-artifact-view.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: commit changed head binding and review freshness -> final judgment: pass because content is unchanged from reviewed diff and current-head verification evidence now covers unit, typecheck, integration, and e2e paths"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+    "current_head_sha": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+      "current_head_sha": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-03T03:35:17.141Z",
+  "git_context": {
+    "head_sha": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+    "current_branch": "codex/vibepro-bounded-artifact-view",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T03:35:17.135Z"
+  },
+  "source_fingerprint": "71e1e2bbff030b45806ad19ff9929a99ef9985216e30c7c38886a0043b94962c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2606-0f4e-71a2-b8b5-3ef51ea54b9c",
+    "agent_role": null,
+    "model": "inherited",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/subagent-019f2606-0f4e-71a2-b8b5-3ef51ea54b9c-pass.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/subagent-019f2606-0f4e-71a2-b8b5-3ef51ea54b9c-pass.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

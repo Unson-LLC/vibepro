@@ -1,0 +1,26 @@
+{
+  "status": "pass",
+  "summary": "gate:gate_evidence passes: current gate-evidence projection filters false blockers, binds story artifact refs, excludes full DAG payloads, and has semantic regression coverage.",
+  "findings": [],
+  "inspection_summary": "Inspected review request, implementation, CLI routing, tests, docs, generated PR artifacts, and ran focused read-only projection/test checks for gate-evidence and regression paths.",
+  "inspection_evidence": "Focused test command passed 4/4; projection check on .vibepro/pr/story-vibepro-bounded-artifact-view/pr-prepare.json produced gate-evidence with no <story-id>, no full nodes/edges, 11 required semantic blockers, and no non-required or present/pending blockers.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/review-request-gate_evidence.md",
+    "src/canonical-audit.js",
+    "src/cli.js",
+    "test/vibepro-cli.test.js",
+    "README.md",
+    "README.ja.md",
+    "docs/management/stories/active/story-vibepro-bounded-artifact-view.md",
+    "docs/specs/vibepro-bounded-artifact-view.md",
+    "docs/architecture/vibepro-bounded-artifact-view.md",
+    "design-ssot.json",
+    ".vibepro/pr/story-vibepro-bounded-artifact-view/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-bounded-artifact-view/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-bounded-artifact-view/gate-dag.json",
+    ".vibepro/pr/story-vibepro-bounded-artifact-view/evidence/gate-evidence-projection-smoke.json",
+    "node --test --test-name-pattern 'pr prepare json emits progress on stderr and records stage diagnostics|pr prepare summary-json emits bounded LLM projection instead of full diagnostics|pr prepare view emits focused bounded projection for blocking gates|pr prepare gate-evidence view binds refs and excludes informational nodes from blockers' test/vibepro-cli.test.js",
+    "node projection checks using projectPrPrepareForLlm(..., 'gate-evidence') and all bounded views"
+  ],
+  "judgment_delta": "Initial concern was that the previous false blockers, unbound <story-id> refs, and weak tests might remain; final judgment is pass because implementation now filters only required non-passing gate nodes, binds placeholders across projections, preserves --json full output, documents bounded handoff surfaces, and focused tests plus current artifact projection verify the contract."
+}

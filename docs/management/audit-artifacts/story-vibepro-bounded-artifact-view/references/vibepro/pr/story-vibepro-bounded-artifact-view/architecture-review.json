@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bounded-artifact-view",
+  "created_at": "2026-07-03T03:43:13.408Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-bounded-artifact-view.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-bounded-artifact-view.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-bounded-artifact-view/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-bounded-artifact-view/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-bounded-artifact-view.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-bounded-artifact-view.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-03T03:43:12.268Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/.codex/worktrees/729a/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/729a/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/729a/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "5b33b0b1e1e715ce6cead673ff3a7059a7428167",
+      "branch": "codex/vibepro-bounded-artifact-view",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

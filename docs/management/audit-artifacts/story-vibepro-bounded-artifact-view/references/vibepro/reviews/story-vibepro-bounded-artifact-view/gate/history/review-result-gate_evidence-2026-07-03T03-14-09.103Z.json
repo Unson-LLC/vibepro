@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-bounded-artifact-view",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "gate-evidence view の blocker 分類と artifact ref binding が不十分。修正後に再レビューが必要。",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "review request/dispatch、story/spec/architecture、diff、verification evidence、pr-prepare/gate-dag、bounded projection output を確認。current evidence はあるが gate-evidence false blockers と unbound artifact refs を検出。",
+    "evidence": ".vibepro/pr/story-vibepro-bounded-artifact-view/verification-evidence.json",
+    "inputs": [
+      "src/canonical-audit.js",
+      "test/vibepro-cli.test.js",
+      "docs/management/stories/active/story-vibepro-bounded-artifact-view.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial judgment: current evidence may be sufficient -> final judgment: needs_changes because gate-evidence false blockers and unbound artifact refs were found"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+    "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/729a/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+      "current_head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-03T03:14:09.103Z",
+  "git_context": {
+    "head_sha": "2d4edc4d3dd11087f6223bedb1e26121b1fd93bf",
+    "current_branch": "codex/vibepro-bounded-artifact-view",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "496378d46d0552c616ee04df7e1df31c4e03d9d873254208f2ab3079c295218a",
+    "user_status_fingerprint_hash": "496378d46d0552c616ee04df7e1df31c4e03d9d873254208f2ab3079c295218a",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T03:14:09.097Z"
+  },
+  "source_fingerprint": "8e7a16d5b9514835fdec497576cb64ac6f61bd10f1c004584864041e9964d697",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f25f4-7127-7863-88cb-fce14f73322b",
+    "agent_role": null,
+    "model": "inherited",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/subagent-019f25f4-7127-7863-88cb-fce14f73322b-needs-changes.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-bounded-artifact-view/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

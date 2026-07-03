@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "observed": {
+    "targeted_node_tests": "pass",
+    "unit_regression": "pass",
+    "typecheck": "pass",
+    "pr_lifecycle_regression": "pass",
+    "agent_review_lifecycle_regression": "pass",
+    "evidence_lifecycle_regression": "pass",
+    "story_source_integrity_regression": "pass",
+    "engineering_judgment_regression": "pass",
+    "managed_worktree_regression": "pass",
+    "current_reality": "verified",
+    "failure_modes": "covered",
+    "done_evidence": "pass",
+    "scope_reviewed": "pass",
+    "review_owner_map": "single_reviewer_cli_projection_surface",
+    "related_file_blast_radius": "bounded_cli_projection_docs_tests_ssot",
+    "decision_record": "story_spec_architecture_ssot",
+    "summary_json_has_full_gate_dag": "false",
+    "summary_json_has_diagnostics": "false",
+    "blocking_gates_view_has_full_payload": "false",
+    "gate_evidence_semantic_blockers": "pass",
+    "artifact_refs_bound": "pass",
+    "story_placeholders_bound": "pass",
+    "gate_evidence_projection_smoke": "pass"
+  }
+}
