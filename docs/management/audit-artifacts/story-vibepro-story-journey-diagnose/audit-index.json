@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-story-journey-diagnose",
   "source": "execute_merge",
-  "generated_at": "2026-07-03T20:18:17.915Z",
+  "generated_at": "2026-07-03T20:18:22.016Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -115,13 +115,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2922,
+      "compressed_bytes": 2924,
       "expanded_bytes": 12361,
       "expanded_line_count": 334,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9154,
-    "raw_source_artifact_code_ratio": 16.145,
+    "raw_source_artifact_lines": 9244,
+    "raw_source_artifact_code_ratio": 16.303,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -237,7 +237,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-story-journey-diagnose",
-    "generated_at": "2026-07-03T20:18:17.915Z",
+    "generated_at": "2026-07-03T20:18:22.016Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -342,10 +342,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:f41076bf8dbaf6326c2a562ace50a133cd770793e0445926c85464084aa1cf93",
-    "compressed_hash": "sha256:c42c2742622a1c6f33cfe316bcce046ee46bbdcc4beadc7d8776652ec0791203",
+    "content_hash": "sha256:213328f1e5e2ad4519a7b4b1e8f2fb8cd3b315afcd9abd7e87603e9608f3bcb7",
+    "compressed_hash": "sha256:abee8b1255e391e7022d30f145840e8b5440eab9e9a7fa59a2ceea630408113e",
     "expanded_bytes": 12361,
-    "compressed_bytes": 2922,
+    "compressed_bytes": 2924,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -364,7 +364,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-story-journey-diagnose",
     "cost": {
-      "compressed_bytes": 2922,
+      "compressed_bytes": 2924,
       "expanded_bytes": 12361,
       "expanded_line_count": 334,
       "persisted_line_count": 1

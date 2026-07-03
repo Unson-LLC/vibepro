@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-story-journey-diagnose",
   "source": "execute_merge",
-  "promoted_at": "2026-07-03T20:18:17.915Z",
+  "promoted_at": "2026-07-03T20:18:22.016Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:f41076bf8dbaf6326c2a562ace50a133cd770793e0445926c85464084aa1cf93",
-    "compressed_hash": "sha256:c42c2742622a1c6f33cfe316bcce046ee46bbdcc4beadc7d8776652ec0791203",
+    "content_hash": "sha256:213328f1e5e2ad4519a7b4b1e8f2fb8cd3b315afcd9abd7e87603e9608f3bcb7",
+    "compressed_hash": "sha256:abee8b1255e391e7022d30f145840e8b5440eab9e9a7fa59a2ceea630408113e",
     "expanded_bytes": 12361,
-    "compressed_bytes": 2922,
+    "compressed_bytes": 2924,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-story-journey-diagnose",
     "cost": {
-      "compressed_bytes": 2922,
+      "compressed_bytes": 2924,
       "expanded_bytes": 12361,
       "expanded_line_count": 334,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:f41076bf8dbaf6326c2a562ace50a133cd770793e0445926c85464084aa1cf93"
+      "content_hash": "sha256:213328f1e5e2ad4519a7b4b1e8f2fb8cd3b315afcd9abd7e87603e9608f3bcb7"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-story-journey-diagnose/audit-replay-bundle.json.gz",
-      "digest": "sha256:25a0a1643a75d74c767db4038d7918c13dd5ea7f150765e84f0704e2272eef26",
-      "audit_digest": "sha256:b0fc7e1e7665db604e66c2a7e62f9e4f5e0d8806e23258108035be337b31da1b",
-      "line_count": 1497,
-      "raw_line_count": 3243,
+      "digest": "sha256:76f8672573b2e4be1523f038a5f48ddefd0c827fb95f3d3eb7bf1a02cde0ee9a",
+      "audit_digest": "sha256:b2adc4b6ce17b2bee00d8a0fcac54a0e627a560242cc2ca853ec08da7f9a795d",
+      "line_count": 1587,
+      "raw_line_count": 3333,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
