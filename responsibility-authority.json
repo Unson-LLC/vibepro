@@ -114,7 +114,9 @@
         "docs/architecture/vibepro-gate-artifact-consistency.md",
         "docs/architecture/vibepro-evidence-summary-reuse.md",
         "docs/architecture/vibepro-traceability-autobind-backfill.md",
-        "docs/specs/vibepro-gate-artifact-consistency.md"
+        "docs/specs/vibepro-gate-artifact-consistency.md",
+        "docs/architecture/vibepro-scoped-evidence-invalidation.md",
+        "docs/specs/story-vibepro-scoped-evidence-invalidation.md"
       ],
       "owned_surfaces": {
         "paths": [
@@ -122,14 +124,18 @@
           "src/evidence-reuse.js",
           "src/traceability.js",
           "src/git-fingerprint.js",
-          "src/canonical-audit.js"
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/pr-manager.js"
         ],
         "symbols": [
           "gate:artifact_consistency",
           "verification_evidence",
           "evidence_reuse",
           "binding_status",
-          "reused_merge_delta"
+          "reused_merge_delta",
+          "scoped_reuse_decision",
+          "scoped_invalidation"
         ],
         "risk_surfaces": [
           "verification_evidence",

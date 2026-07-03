@@ -1970,6 +1970,8 @@ function groupChangedFiles(files) {
     architecture_docs: [],
     specifications: [],
     policy_docs: [],
+    responsibility_authority_metadata: [],
+    contract_metadata: [],
     source: [],
     tests: [],
     repo_control: [],
@@ -1983,6 +1985,8 @@ function groupChangedFiles(files) {
     else if (isArchitectureDocPath(target)) groups.architecture_docs.push(file);
     else if (isSpecificationDocPath(target)) groups.specifications.push(file);
     else if (isPolicyDocPath(target)) groups.policy_docs.push(file);
+    else if (isResponsibilityAuthorityMetadataPath(target)) groups.responsibility_authority_metadata.push(file);
+    else if (isContractMetadataPath(target)) groups.contract_metadata.push(file);
     else if (target.startsWith('test/') || target.startsWith('tests/') || target.startsWith('e2e/') || target.includes('/__tests__/') || /\.(test|spec)\.[jt]sx?$/.test(target)) groups.tests.push(file);
     else if (isSourcePath(target)) groups.source.push(file);
     else if (target.startsWith('.vibepro/')) groups.vibepro_artifacts.push(file);
@@ -2096,6 +2100,22 @@ function isPolicyDocPath(filePath) {
     || filePath.startsWith('docs/00-glossary/');
 }
 
+function isResponsibilityAuthorityMetadataPath(filePath) {
+  return filePath === 'responsibility-authority.json'
+    || filePath.startsWith('responsibility-authority/')
+    || filePath.startsWith('docs/responsibility-authority/')
+    || filePath.startsWith('docs/management/responsibility-authority/')
+    || filePath.startsWith('docs/contracts/responsibility-authority/');
+}
+
+function isContractMetadataPath(filePath) {
+  return filePath === 'contracts.json'
+    || filePath.startsWith('contracts/')
+    || filePath.startsWith('docs/contracts/')
+    || filePath.startsWith('docs/domain-contracts/')
+    || filePath.startsWith('docs/management/contracts/');
+}
+
 function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, maxReviewableFiles }) {
   const reasons = [];
   if (changedFiles.length > maxReviewableFiles) {
@@ -2133,6 +2153,8 @@ function hasMixedRepoControlChanges(fileGroups) {
     fileGroups.architecture_docs,
     fileGroups.specifications,
     fileGroups.policy_docs,
+    fileGroups.responsibility_authority_metadata,
+    fileGroups.contract_metadata,
     fileGroups.source,
     fileGroups.other
   ];
@@ -5653,7 +5675,17 @@ function extractFlowKeywords(acceptanceCriteria) {
 
 function collectChangedFileItems(fileGroups) {
   if (!fileGroups || typeof fileGroups !== 'object') return [];
-  const buckets = ['source', 'tests', 'architecture_docs', 'specifications', 'policy_docs', 'repo_control', 'other'];
+  const buckets = [
+    'source',
+    'tests',
+    'architecture_docs',
+    'specifications',
+    'policy_docs',
+    'responsibility_authority_metadata',
+    'contract_metadata',
+    'repo_control',
+    'other'
+  ];
   const items = [];
   const seen = new Set();
   for (const bucket of buckets) {
@@ -9208,7 +9240,12 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
   const commands = Array.isArray(verificationEvidence?.commands) ? verificationEvidence.commands : [];
   return commands.map((command) => {
     const bindingStatus = command.binding?.status ?? (command.git_context?.head_sha ? 'unknown' : 'legacy');
-    const reusableLowRisk = canReuseLowRiskEvidence(command, changeClassification);
+    const reuseDecision = buildEvidenceReuseDecision({
+      item: command,
+      gate: gateForVerificationKind(command.kind),
+      changeClassification
+    });
+    const reusableLowRisk = reuseDecision.status === 'reusable';
     const status = bindingStatus === 'current'
       ? 'current'
       : reusableLowRisk
@@ -9224,8 +9261,9 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,
       status,
       reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
+      scoped_reuse_decision: reuseDecision,
       reason: reusableLowRisk
-        ? `low-risk evidence change reused passing verification despite dirty fingerprint change: ${command.binding?.reason ?? 'dirty worktree fingerprint changed'}`
+        ? reuseDecision.reason
         : command.binding?.reason ?? (bindingStatus === 'legacy'
         ? 'verification evidence is not bound to a git head'
         : 'verification evidence binding could not be proven current')
@@ -10852,42 +10890,150 @@ function findVerificationEvidenceForGate(gate, verificationEvidence, options = {
       ?? currentMatches.find((item) => ['pass', 'passed', 'success', 'ok'].includes(item.status))
       ?? currentMatches[0];
   }
-  const reusableLowRisk = matches.find((item) => canReuseLowRiskEvidence(item, options.changeClassification));
-  if (reusableLowRisk) {
+  const reusableDecision = matches
+    .map((item) => ({
+      item,
+      decision: buildEvidenceReuseDecision({ item, gate, changeClassification: options.changeClassification })
+    }))
+    .find(({ decision }) => decision.status === 'reusable');
+  if (reusableDecision) {
+    const { item, decision } = reusableDecision;
     return {
-      ...reusableLowRisk,
+      ...item,
       binding: {
-        ...reusableLowRisk.binding,
+        ...item.binding,
         status: 'reused_low_risk',
-        reason: `low-risk evidence change reused passing verification despite dirty fingerprint change: ${reusableLowRisk.binding?.reason ?? 'dirty worktree fingerprint changed'}`
+        reason: decision.reason,
+        scoped_reuse_decision: decision
       }
     };
   }
   const stale = matches[0];
+  const decision = buildEvidenceReuseDecision({ item: stale, gate, changeClassification: options.changeClassification });
   return {
     kind: stale.kind,
     status: 'needs_evidence',
     command: stale.command,
-    summary: stale.binding?.reason ?? 'verification evidence is not bound to the current git state',
+    summary: decision.reason ?? stale.binding?.reason ?? 'verification evidence is not bound to the current git state',
     artifact: stale.artifact,
     executed_at: stale.executed_at,
-    binding: stale.binding ?? {
-      status: 'legacy',
-      reason: 'legacy verification evidence is not bound to a git head'
+    binding: {
+      ...(stale.binding ?? {
+        status: 'legacy',
+        reason: 'legacy verification evidence is not bound to a git head'
+      }),
+      scoped_reuse_decision: decision
     }
   };
 }
 
-function canReuseLowRiskEvidence(item, changeClassification = null) {
-  return canReuseLowRiskArtifactBinding(item, changeClassification);
+function canReuseLowRiskEvidence(item, changeClassification = null, options = {}) {
+  return buildEvidenceReuseDecision({
+    item,
+    gate: options.gate ?? null,
+    changeClassification
+  }).status === 'reusable';
 }
 
-function canReuseLowRiskArtifactBinding(item, changeClassification = null) {
-  if (changeClassification?.change_type !== 'low_risk_evidence_change') return false;
-  if (changeClassification?.evidence_reuse_policy?.allowed !== true) return false;
-  if (!['pass', 'passed', 'success', 'ok'].includes(item?.status)) return false;
-  if (item?.binding?.status !== 'stale') return false;
-  return /dirty worktree fingerprint/i.test(item.binding?.reason ?? '');
+function canReuseLowRiskArtifactBinding(item, changeClassification = null, options = {}) {
+  return canReuseLowRiskEvidence(item, changeClassification, options);
+}
+
+function gateForVerificationKind(kind) {
+  if (['unit', 'test'].includes(kind)) return { id: 'gate:unit' };
+  if (['integration', 'typecheck', 'build'].includes(kind)) return { id: 'gate:integration' };
+  if (['e2e', 'flow'].includes(kind)) return { id: 'gate:e2e' };
+  return null;
+}
+
+function buildEvidenceReuseDecision({ item, gate = null, changeClassification = null } = {}) {
+  const policy = changeClassification?.evidence_reuse_policy ?? null;
+  const changedSurfaceFiles = changeClassification?.changed_surface_files
+    ?? policy?.scoped_invalidation?.changed_surface_files
+    ?? {};
+  const changedSurfaces = changeClassification?.changed_surfaces
+    ?? policy?.scoped_invalidation?.changed_surfaces
+    ?? [];
+  const changedFiles = [...new Set(Object.values(changedSurfaceFiles).flat())];
+  const base = {
+    model: 'vibepro-scoped-evidence-invalidation-v1',
+    gate_id: gate?.id ?? null,
+    evidence_kind: item?.kind ?? null,
+    changed_surfaces: changedSurfaces,
+    changed_files: changedFiles,
+    status: 'blocked',
+    action: 'strict_current',
+    reason: 'verification evidence must be current-bound'
+  };
+  if (changeClassification?.change_type !== 'low_risk_evidence_change' || policy?.allowed !== true) {
+    return {
+      ...base,
+      reason: 'change is not eligible for scoped stale evidence reuse'
+    };
+  }
+  if (!['pass', 'passed', 'success', 'ok'].includes(item?.status)) {
+    return {
+      ...base,
+      reason: 'only passing verification evidence can be reused'
+    };
+  }
+  if (item?.binding?.status !== 'stale') {
+    return {
+      ...base,
+      reason: 'scoped reuse only applies to stale evidence after current evidence has been considered'
+    };
+  }
+  const staleReason = item.binding?.reason ?? '';
+  const staleBindingSupported = /dirty worktree fingerprint|recorded for|worktree status|working tree status|status fingerprint/i.test(staleReason);
+  if (!staleBindingSupported) {
+    return {
+      ...base,
+      reason: `stale binding reason is not supported for scoped reuse: ${staleReason || 'unknown'}`
+    };
+  }
+  const testFiles = changedSurfaceFiles.tests ?? [];
+  if (testFiles.length > 0) {
+    return {
+      ...base,
+      status: 'blocked',
+      action: 'full_rerun',
+      affected_by: ['tests'],
+      changed_files: testFiles,
+      reason: `test files changed for ${gate?.id ?? item?.kind ?? 'verification'} evidence; rerun required: ${testFiles.join(', ')}`
+    };
+  }
+  const conservativeSurfaces = [
+    ...(policy.mode === 'small_source_low_risk_reuse' ? [] : ['runtime_source']),
+    'repo_control',
+    'other'
+  ]
+    .filter((surface) => (changedSurfaceFiles[surface] ?? []).length > 0);
+  if (conservativeSurfaces.length > 0) {
+    return {
+      ...base,
+      status: 'blocked',
+      action: 'strict_current',
+      affected_by: conservativeSurfaces,
+      reason: `changed surfaces require current-bound evidence: ${conservativeSurfaces.join(', ')}`
+    };
+  }
+  if (policy.mode === 'small_source_low_risk_reuse' && /recorded for/i.test(staleReason)) {
+    return {
+      ...base,
+      status: 'blocked',
+      action: 'strict_current',
+      affected_by: ['runtime_source'],
+      reason: 'small source reuse does not cross HEAD changes; record fresh evidence on the current head'
+    };
+  }
+  const reusableSurfaces = changedSurfaces.length > 0 ? changedSurfaces : ['dirty_fingerprint'];
+  return {
+    ...base,
+    status: 'reusable',
+    action: 'reuse',
+    affected_by: reusableSurfaces,
+    reason: `scoped evidence reuse accepted for ${gate?.id ?? item?.kind ?? 'verification'} because changed surfaces do not affect runtime source or test set: ${reusableSurfaces.join(', ')}`
+  };
 }
 
 function normalizeVerificationEvidenceStatus(status) {

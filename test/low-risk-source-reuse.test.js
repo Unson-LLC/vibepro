@@ -128,4 +128,6 @@ test('docs_specs_testsのみの変更は_従来のpath_scoped_low_risk_reuseの�
   assert.equal(result.change_type, 'low_risk_evidence_change');
   assert.equal(result.evidence_reuse_policy.allowed, true);
   assert.equal(result.evidence_reuse_policy.mode, 'path_scoped_low_risk_reuse');
+  assert.deepEqual(result.changed_surfaces.sort(), ['story_docs', 'tests']);
+  assert.deepEqual(result.evidence_reuse_policy.scoped_invalidation.changed_surface_files.tests, ['test/language.test.js']);
 });

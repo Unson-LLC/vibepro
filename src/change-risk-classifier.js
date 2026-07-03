@@ -24,13 +24,11 @@ const MAX_LOW_RISK_SOURCE_LINES = 30;
 export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkContracts = null, regressionRisk = null, diffStats = null } = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   const testFiles = fileGroups.tests?.files ?? [];
-  const allFiles = [
-    ...sourceFiles,
-    ...testFiles,
-    ...(fileGroups.repo_control?.files ?? []),
-    ...(fileGroups.story_docs?.files ?? []),
-    ...(fileGroups.specifications?.files ?? [])
-  ];
+  const changedSurfaceFiles = buildChangedSurfaceFiles(fileGroups);
+  const changedSurfaces = Object.entries(changedSurfaceFiles)
+    .filter(([, files]) => files.length > 0)
+    .map(([surface]) => surface);
+  const allFiles = [...new Set(Object.values(changedSurfaceFiles).flat())];
   const storyText = [
     storySource?.title,
     storySource?.requirement_title,
@@ -54,7 +52,7 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
   const reasons = buildReasons({ riskSurfaces, sourceFiles, allFiles, storyText, networkContracts });
   appendRegressionReasons(reasons, { criticalRegressionHits, highRegressionHits });
   const hasWorkflowSignal = WORKFLOW_KEYWORDS.some((pattern) => pattern.test(storyText) || allFiles.some((file) => pattern.test(file)));
-  const lowRiskEvidenceChange = isLowRiskEvidenceChange({ fileGroups, allFiles, sourceFiles });
+  const lowRiskEvidenceChange = isLowRiskEvidenceChange({ changedSurfaces, allFiles, sourceFiles });
   const smallSourceLowRisk = !lowRiskEvidenceChange && isSmallSourceLowRiskChange({
     fileGroups,
     allFiles,
@@ -95,22 +93,61 @@ export function classifyChangeRisk({ fileGroups = {}, storySource = {}, networkC
     risk_surfaces: riskSurfaces,
     reasons,
     required_gate_profile: profile,
-    evidence_reuse_policy: buildEvidenceReusePolicy({ lowRiskEvidenceChange, smallSourceLowRisk, fileGroups, sourceFiles, diffStats }),
+    changed_surfaces: changedSurfaces,
+    changed_surface_files: changedSurfaceFiles,
+    evidence_reuse_policy: buildEvidenceReusePolicy({
+      lowRiskEvidenceChange,
+      smallSourceLowRisk,
+      fileGroups,
+      sourceFiles,
+      diffStats,
+      changedSurfaces,
+      changedSurfaceFiles
+    }),
     regression_hotspots: regressionHits,
     regression_escalated: criticalRegressionHits.length > 0
   };
 }
 
-function isLowRiskEvidenceChange({ fileGroups, allFiles, sourceFiles }) {
+function buildChangedSurfaceFiles(fileGroups = {}) {
+  const fromGroup = (name) => fileGroups[name]?.files ?? [];
+  const known = {
+    runtime_source: fromGroup('source'),
+    tests: fromGroup('tests'),
+    story_docs: fromGroup('story_docs'),
+    spec_docs: fromGroup('specifications'),
+    architecture_docs: fromGroup('architecture_docs'),
+    policy_docs: fromGroup('policy_docs'),
+    responsibility_authority_metadata: [
+      ...fromGroup('responsibility_authority_metadata'),
+      ...fromGroup('authority_metadata')
+    ],
+    contract_metadata: fromGroup('contract_metadata'),
+    vibepro_generated_artifacts: fromGroup('vibepro_artifacts'),
+    repo_control: fromGroup('repo_control')
+  };
+  const explicitlyGrouped = new Set(Object.values(known).flat());
+  const otherFiles = fromGroup('other').filter((file) => !explicitlyGrouped.has(file));
+  return {
+    ...Object.fromEntries(Object.entries(known).map(([surface, files]) => [surface, [...new Set(files)]])),
+    other: [...new Set(otherFiles)]
+  };
+}
+
+function isLowRiskEvidenceChange({ changedSurfaces, allFiles, sourceFiles }) {
   if (sourceFiles.length > 0) return false;
   if (allFiles.length === 0) return false;
-  const allowedBuckets = [
-    fileGroups.story_docs?.files ?? [],
-    fileGroups.specifications?.files ?? [],
-    fileGroups.tests?.files ?? []
-  ].flat();
-  if (allowedBuckets.length !== allFiles.length) return false;
-  return allFiles.every((file) => isLowRiskEvidencePath(file));
+  const allowedSurfaces = new Set([
+    'tests',
+    'story_docs',
+    'spec_docs',
+    'architecture_docs',
+    'policy_docs',
+    'responsibility_authority_metadata',
+    'contract_metadata',
+    'vibepro_generated_artifacts'
+  ]);
+  return changedSurfaces.every((surface) => allowedSurfaces.has(surface));
 }
 
 function isLowRiskEvidencePath(file) {
@@ -139,19 +176,34 @@ function isSmallSourceLowRiskChange({ fileGroups, allFiles, sourceFiles, riskSur
   return totalChangedLines <= MAX_LOW_RISK_SOURCE_LINES;
 }
 
-function buildEvidenceReusePolicy({ lowRiskEvidenceChange, smallSourceLowRisk = false, fileGroups, sourceFiles = [], diffStats = null }) {
+function buildEvidenceReusePolicy({
+  lowRiskEvidenceChange,
+  smallSourceLowRisk = false,
+  fileGroups,
+  sourceFiles = [],
+  diffStats = null,
+  changedSurfaces = [],
+  changedSurfaceFiles = {}
+}) {
   const testFiles = fileGroups.tests?.files ?? [];
   if (lowRiskEvidenceChange) {
     const docsFiles = [
       ...(fileGroups.story_docs?.files ?? []),
-      ...(fileGroups.specifications?.files ?? [])
+      ...(fileGroups.specifications?.files ?? []),
+      ...(fileGroups.architecture_docs?.files ?? []),
+      ...(fileGroups.policy_docs?.files ?? [])
     ];
     return {
       allowed: true,
       mode: 'path_scoped_low_risk_reuse',
       reason: 'low-risk Story/Spec/test evidence changes may reuse already passing current-head runtime evidence without rerunning unrelated live verification',
       rerun_required_for: testFiles,
-      docs_only: docsFiles.length > 0 && testFiles.length === 0
+      docs_only: docsFiles.length > 0 && testFiles.length === 0,
+      scoped_invalidation: {
+        changed_surfaces: changedSurfaces,
+        changed_surface_files: changedSurfaceFiles,
+        conservative_fallback_surfaces: ['runtime_source', 'repo_control', 'other']
+      }
     };
   }
   if (smallSourceLowRisk) {
@@ -169,7 +221,12 @@ function buildEvidenceReusePolicy({ lowRiskEvidenceChange, smallSourceLowRisk = 
         max_total_lines: MAX_LOW_RISK_SOURCE_LINES,
         total_changed_lines: totalChangedLines
       },
-      docs_only: false
+      docs_only: false,
+      scoped_invalidation: {
+        changed_surfaces: changedSurfaces,
+        changed_surface_files: changedSurfaceFiles,
+        conservative_fallback_surfaces: ['runtime_source', 'repo_control', 'other']
+      }
     };
   }
   return {
