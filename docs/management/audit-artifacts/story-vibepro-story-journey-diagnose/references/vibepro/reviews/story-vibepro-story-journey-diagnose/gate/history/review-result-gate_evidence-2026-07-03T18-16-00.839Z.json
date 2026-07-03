@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-journey-diagnose",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "SJD-GATE-ARTIFACTS resolved: regenerated pr prepare is current for clean HEAD and artifact consistency passes; issue #265 implementation and evidence match the spec.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "SJD-GATE-ARTIFACTS",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-prepare.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Replacement subagent verified current clean-head pr prepare, artifact consistency, implementation behavior, and verification evidence.",
+    "evidence": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/subagent-019f2928-0e39-7b93-859a-8dbf925379dc-result.json",
+    "inputs": [
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-prepare.json"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes -> pass because pr prepare was regenerated for clean HEAD and gate:artifact_consistency now passes"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+    "expected_head_sha": "1d898c835b65a48a16cb347f435584abb6265f63",
+    "current_head_sha": "1d898c835b65a48a16cb347f435584abb6265f63",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+      "branch": "codex/issue-265-story-journey-diagnose",
+      "actual_branch": "codex/issue-265-story-journey-diagnose",
+      "current_head_sha": "1d898c835b65a48a16cb347f435584abb6265f63",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-03T18:16:00.839Z",
+  "git_context": {
+    "head_sha": "1d898c835b65a48a16cb347f435584abb6265f63",
+    "current_branch": "codex/issue-265-story-journey-diagnose",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T18:16:00.839Z"
+  },
+  "source_fingerprint": "4d1bf1f541969be47ef634c5194994b0e95f8a4b0fc4c457e3f43f3cd4819625",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2928-0e39-7b93-859a-8dbf925379dc",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/subagent-019f2928-0e39-7b93-859a-8dbf925379dc-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "findings": [],
+  "summary": "SJD-GATE-ARTIFACTS is resolved for the regenerated current-head evidence. gate:artifact_consistency now passes cleanly; the remaining stale-artifact wording is the superseded prior gate_evidence review record, not a current artifact-consistency or dirty-fingerprint blocker. Implementation and verification evidence match issue #265.",
+  "evidence": [
+    "Worktree HEAD is 1d898c835b65a48a16cb347f435584abb6265f63 on codex/issue-265-story-journey-diagnose; git status and diff are clean with no user changes.",
+    "pr-prepare.json created_at=2026-07-03T18:01:07.517Z records head_sha=1d898c835b65a48a16cb347f435584abb6265f63, dirty=false, raw_dirty=false, dirty_files=[], and pr_freshness.status=passed.",
+    "gate:artifact_consistency status=passed with artifact_count=5, inconsistent_artifact_count=0, stale_artifact_details=[], stale_artifact_groups=[], required_actions=[].",
+    "gate:evidence_reuse_freshness status=passed; previous reusable evidence was stale and was not used as fresh.",
+    "Issue #265 behavior is covered in src/story-manager.js and src/story-html.js: story status/report/diagnose include journey_context, render Markdown/HTML Journey Context, distinguish missing, machine-derived, curated, and not_required states, and emit next actions only when required.",
+    "INV-SJD-1..4 are covered by focused tests in test/vibepro-cli.test.js; INV-SJD-5 is preserved because src/pr-manager.js is unchanged and full suite status records pr_gate_journey_contract_regression=true.",
+    "Verification evidence is current-bound: npm run typecheck status=pass; focused story diagnose status=pass with 4/4 passing and current_head_verification=true.",
+    "Full Journey Map + VibePro CLI suite status=pass with 352/352 passing and current_head_verification=true; Design SSOT reconcile status=passed."
+  ]
+}

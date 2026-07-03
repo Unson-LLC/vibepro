@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "summary": "Current-head gate evidence is fresh for 8ba3388013a471c542ef74123edd126932069efd; prior reusable/review evidence is correctly marked stale and was not treated as fresh.",
+  "inspection_summary": "Inspected the base..HEAD diff, Story/Journey source paths, CLI call sites, PR prepare and gate DAG artifacts, verification evidence, lifecycle/review artifacts, and reran the focused Story diagnose test path.",
+  "inspection_evidence": "Focused rerun passed: node --test --test-name-pattern 'story diagnose' test/vibepro-cli.test.js (4/4). Existing verification evidence records typecheck/unit/e2e/integration pass on clean current HEAD.",
+  "inspection_inputs": [
+    "git rev-parse HEAD => 8ba3388013a471c542ef74123edd126932069efd",
+    "git status --short => clean",
+    "git diff $(git merge-base HEAD origin/main)..HEAD -- src/story-manager.js src/story-html.js test/vibepro-cli.test.js",
+    "src/story-manager.js",
+    "src/story-html.js",
+    "src/journey-map.js",
+    "src/cli.js",
+    "test/vibepro-cli.test.js",
+    "test/journey-map.test.js",
+    "docs/specs/story-vibepro-story-journey-diagnose.md",
+    "docs/architecture/vibepro-story-journey-diagnose.md",
+    ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-story-journey-diagnose/gate-dag.json",
+    ".vibepro/pr/story-vibepro-story-journey-diagnose/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-story-journey-diagnose/verification-evidence.json",
+    ".vibepro/manual-verification/story-vibepro-story-journey-diagnose/cli-and-journey-tests.status.json",
+    ".vibepro/manual-verification/story-vibepro-story-journey-diagnose/full-cli-journey-tests.status.json",
+    ".vibepro/manual-verification/story-vibepro-story-journey-diagnose/typecheck.status.json",
+    ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/review-result-gate_evidence.json"
+  ],
+  "judgment_delta": [
+    "Initial concern: replacement was needed because the recorded gate_evidence review was bound to 1d898c835b65, not current HEAD -> final pass because verification evidence, pr prepare, and evidence reuse inputs are bound to 8ba3388013a471c542ef74123edd126932069efd, while the old review artifact remains the expected item this replacement supersedes.",
+    "Initial concern: path/surface coverage might only prove the happy path -> final pass because tests and artifacts cover CLI status output via diagnose, Markdown report, HTML report, missing Journey, machine-derived Journey, curated Journey, backend not_required, and unchanged PR Gate Journey behavior.",
+    "Initial concern: regression guard might rely only on new Story behavior -> final pass because recorded full CLI/Journey regression evidence passed 352/352 on clean HEAD and the focused Story diagnose rerun passed 4/4 during inspection."
+  ],
+  "findings": []
+}

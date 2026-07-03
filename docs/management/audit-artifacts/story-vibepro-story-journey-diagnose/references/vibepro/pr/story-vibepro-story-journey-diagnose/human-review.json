@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-journey-diagnose",
+  "created_at": "2026-07-03T20:17:45.251Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-story-journey-diagnose/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-story-journey-diagnose/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-story-journey-diagnose/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-story-journey-diagnose/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-story-journey-diagnose/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-story-journey-diagnose.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-story-journey-diagnose.md)"
+    },
+    "decision_records": {
+      "total": 9,
+      "open": 0,
+      "by_type": {
+        "waiver": 6,
+        "needs_review": 3
+      },
+      "by_status": {
+        "accepted": 9
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+          "expected_root": null,
+          "expected_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+          "current_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783103935108-58f17c3e",
+        "story_id": "story-vibepro-story-journey-diagnose",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:judgment_axis_public_contract",
+        "source_status": "block",
+        "summary": "public_contract compatible additive Story Journey output on clean HEAD",
+        "reason": "contract_doc: docs/specs/story-vibepro-story-journey-diagnose.md defines the journey_context output fields, statuses, artifact kinds, and next actions. alternatives_considered: keep Journey only in PR Gate, add a separate command, or add read-only Journey Context to existing Story status/report/diagnose; selected additive Story output. compatibility_impact: existing Story fields, commands, PR Gate DAG Journey behavior, and Journey curation authority remain unchanged; focused and full regression evidence passed on clean HEAD. rollback_plan: revert src/story-manager.js, src/story-html.js, test/vibepro-cli.test.js, Story/spec docs, and design-ssot links in one scoped commit. boundary: Story diagnosis/reporting reads existing Journey status only; no change to pr-manager Journey gate ownership, Journey derivation, persistence, auth, or network behavior. accepted_followups: none.",
+        "reviewer": "codex",
+        "artifact": "docs/specs/story-vibepro-story-journey-diagnose.md",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "1d898c835b65a48a16cb347f435584abb6265f63",
+          "current_branch": "codex/issue-265-story-journey-diagnose",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-03T18:38:55.107Z"
+        },
+        "recorded_at": "2026-07-03T18:38:55.108Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-03T20:17:43.902Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8ba3388013a471c542ef74123edd126932069efd",
+      "branch": "codex/issue-265-story-journey-diagnose",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

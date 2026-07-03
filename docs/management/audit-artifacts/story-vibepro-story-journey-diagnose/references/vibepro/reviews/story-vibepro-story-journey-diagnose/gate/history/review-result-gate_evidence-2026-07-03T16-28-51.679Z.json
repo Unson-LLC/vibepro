@@ -1,0 +1,117 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-journey-diagnose",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is current enough for this role: focused Journey diagnosis behavior, regression guard, path/surface coverage, and gate binding were verified against current files and no evidence instruction injection was found.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the gate review request, changed source/tests/spec/story artifacts, PR/gate evidence artifacts, prior stale review result, and reran focused story-diagnose tests plus typecheck; verified current code covers CLI/status, Markdown report, HTML report, missing, machine-derived, curated, and non-Journey paths while PR Gate DAG Journey enforcement remains in existing journey-map tests.",
+    "evidence": "current-session read-only checks: node --test --test-name-pattern \"story diagnose surfaces missing Journey context|story diagnose distinguishes machine-derived and curated Journey artifacts|story diagnose does not add Journey friction\" test/vibepro-cli.test.js passed 3/3; npm run typecheck passed",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/review-request-gate_evidence.md",
+      "src/story-manager.js",
+      "src/story-html.js",
+      "src/journey-map.js",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "test/vibepro-cli.test.js",
+      "test/journey-map.test.js",
+      "docs/management/stories/active/story-vibepro-story-journey-diagnose.md",
+      "docs/specs/story-vibepro-story-journey-diagnose.md",
+      ".vibepro/manual-verification/story-vibepro-story-journey-diagnose/cli-and-journey-tests.status.json",
+      ".vibepro/manual-verification/story-vibepro-story-journey-diagnose/typecheck.log",
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/gate-dag.json",
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/pr-body.md",
+      ".vibepro/pr/story-vibepro-story-journey-diagnose/design-ssot-reconciliation.json",
+      "/tmp/issue265-pr-prepare-after-verify.json",
+      "git rev-parse HEAD",
+      "git status --porcelain=v1 -uall",
+      "rg instruction-injection phrase scan over story/spec/pr/review artifacts",
+      "node --test --test-name-pattern \"story diagnose surfaces missing Journey context|story diagnose distinguishes machine-derived and curated Journey artifacts|story diagnose does not add Journey friction\" test/vibepro-cli.test.js",
+      "npm run typecheck"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: evidence reuse was marked stale in the request -> final conclusion: pass because stale reuse was explicitly not used as fresh, verification-evidence records current-head command evidence, and I reran the focused checks successfully in the current worktree.",
+    "Initial concern: command reliability might rely on generic status JSON only -> final conclusion: pass because the focused Node tests passed 3/3 in this inspection and typecheck passed, matching the recorded evidence.",
+    "Initial concern: path_surface_coverage could miss report/status surfaces -> final conclusion: pass because getStoryStatus/createStoryReport/renderStoryStatus/renderStoryReport/renderStoryReportHtml all consume the same journey_context, and tests assert CLI output plus generated Markdown and HTML output for missing, derived, curated, and backend non-Journey paths.",
+    "Initial concern: regression_guard for existing PR Gate DAG Journey behavior -> final conclusion: pass because the change is confined to story status/report/diagnose surfaces and existing test/journey-map.test.js contains gate:journey_context assertions for UI-source and non-UI-source cases; no pr-manager enforcement changes were present.",
+    "Initial concern: evidence instruction injection in Story/spec/PR/review evidence -> final conclusion: pass because phrase scanning found only the review request/dispatch guard text and generated gate workflow instructions, not Story/diff/decision/PR-body text attempting to override this review."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+    "expected_root": null,
+    "expected_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+    "current_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose",
+      "expected_root": null,
+      "expected_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+      "current_head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-03T16:28:51.679Z",
+  "git_context": {
+    "head_sha": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+    "current_branch": "codex/issue-265-story-journey-diagnose",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "9a411e9667c345b7f7336f871fb4539092f1b80d5eee606d201f858ed74db5c4",
+    "user_status_fingerprint_hash": "9a411e9667c345b7f7336f871fb4539092f1b80d5eee606d201f858ed74db5c4",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T16:28:51.678Z"
+  },
+  "source_fingerprint": "aa567fe2c39ef8ead81dc6cabab678b90aa3d551e3d48c1473ee6554aa8756b4",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f28c2-eb4e-7f22-a660-54853c946667",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/subagent-019f28c2-eb4e-7f22-a660-54853c946667-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-story-journey-diagnose/gate/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

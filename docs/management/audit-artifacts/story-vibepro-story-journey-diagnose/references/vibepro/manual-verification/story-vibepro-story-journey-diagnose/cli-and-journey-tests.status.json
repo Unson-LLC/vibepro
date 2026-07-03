@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test --test-name-pattern 'story diagnose' test/vibepro-cli.test.js",
+  "head": "8ba3388013a471c542ef74123edd126932069efd",
+  "updated_at": "2026-07-03T19:05:25.565Z"
+}

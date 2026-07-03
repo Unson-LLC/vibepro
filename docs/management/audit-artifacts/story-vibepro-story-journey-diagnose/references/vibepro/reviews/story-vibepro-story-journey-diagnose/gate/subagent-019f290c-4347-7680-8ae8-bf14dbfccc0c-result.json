@@ -1,0 +1,20 @@
+{
+  "status": "needs_changes",
+  "findings": [
+    {
+      "severity": "blocking",
+      "area": "VibePro gate artifacts",
+      "detail": "Current pr-prepare and gate-dag artifacts were not bound to clean HEAD 1d898c835b65a48a16cb347f435584abb6265f63; they still reflected the pre-commit dirty HEAD."
+    }
+  ],
+  "summary": "Implementation behavior reviewed cleanly. Story status/report/diagnose/HTML surface journey_context, missing vs machine-derived vs curated vs backend not_required behavior is represented, INV-SJD-1 through INV-SJD-5 are covered, and src/pr-manager.js is not modified. The review could not pass until PR Gate DAG/pr-prepare artifacts were regenerated for clean HEAD.",
+  "evidence": [
+    "origin/main df25e940e9975c95a4f4deb7b7623c8363b36395; clean branch HEAD 1d898c835b65a48a16cb347f435584abb6265f63.",
+    "Diff against origin/main touches design-ssot.json, story/spec docs, src/story-manager.js, src/story-html.js, and test/vibepro-cli.test.js; src/pr-manager.js has no diff.",
+    "Fresh npm run typecheck exited 0.",
+    "Fresh focused story diagnose test exited 0 with 4/4 tests passing.",
+    "Fresh full journey-map/vibepro-cli suite exited 0 with 352/352 tests passing.",
+    "verification-evidence.json records current clean-head command records.",
+    "pr-prepare.json was stale and needed regeneration for clean HEAD."
+  ]
+}

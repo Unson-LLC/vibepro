@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-journey-diagnose",
+  "created_at": "2026-07-03T20:17:45.251Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-story-journey-diagnose.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-story-journey-diagnose.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-story-journey-diagnose/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-story-journey-diagnose/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-story-journey-diagnose.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-story-journey-diagnose.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-03T20:17:43.902Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-265-story-journey-diagnose/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8ba3388013a471c542ef74123edd126932069efd",
+      "branch": "codex/issue-265-story-journey-diagnose",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "df25e940e9975c95a4f4deb7b7623c8363b36395",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
