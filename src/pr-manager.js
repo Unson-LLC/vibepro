@@ -6504,7 +6504,10 @@ function classifySeniorAxisEvidence({
   ];
   const add = (kind, ref, extra = {}) => {
     if (!matched.some((item) => item.kind === kind && item.ref === ref)) {
-      matched.push(buildEvidenceItem(kind, ref, extra));
+      matched.push(buildEvidenceItem(kind, ref, {
+        ...extra,
+        kind
+      }));
     }
   };
 
@@ -6929,6 +6932,7 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
     surfaceProfile.surface === 'docs_only' ? buildMinimumStrengthMap(docsRequirement) : currentRealityMinimums
   );
   const failureModesMissing = missingEvidenceKindsWithStrength(failureModesRequirement, evidenceMatches.failure_modes, failureModesMinimums);
+  const failureModesAcceptedCanonicalTerms = acceptedCanonicalEvidenceTermsForModes(failureModesMissing);
   const doneEvidenceMissing = missingEvidenceKindsWithStrength(doneEvidenceRequirement, evidenceMatches.done_evidence, doneEvidenceMinimums);
   return [
     {
@@ -7018,8 +7022,16 @@ function buildCommonJudgmentSpineSubchecks(engineeringJudgment, {
       missing_evidence: (!highRisk || failureModesMissing.length === 0)
         ? []
         : failureModesMissing,
+      accepted_canonical_terms: (!highRisk || failureModesMissing.length === 0)
+        ? []
+        : failureModesAcceptedCanonicalTerms,
       reason: highRisk
-        ? `${surfaceProfile.surface} changes need failure-mode evidence matching ${failureModesRequirement.join('|')}`
+        ? [
+          `${surfaceProfile.surface} changes need failure-mode evidence matching ${failureModesRequirement.join('|')}`,
+          failureModesAcceptedCanonicalTerms.length > 0
+            ? `Accepted canonical evidence terms: ${failureModesAcceptedCanonicalTerms.join('; ')}`
+            : null
+        ].filter(Boolean).join('. ')
         : 'Light route does not require additional failure-mode evidence'
     },
     {
@@ -7200,7 +7212,7 @@ function classifyCodeTopologyImpactEvidence(codeTopologyContext) {
 }
 
 function classifyVerificationEvidenceItem(item) {
-  const text = buildVerificationCommandSearchText(item).toLowerCase();
+  const text = buildCanonicalVerificationCommandSearchText(item);
   const command = String(item.command ?? '').trim();
   const generic = isGenericVerificationCommand(command);
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
@@ -7235,6 +7247,7 @@ function isGenericVerificationCommand(command) {
 
 function explicitEvidenceKindsFromVerificationText(text) {
   const explicitKinds = [
+    ...CANONICAL_EVIDENCE_TOKEN_KINDS,
     'migration_plan',
     'rollback_plan',
     'idempotency_test',
@@ -7259,6 +7272,31 @@ function explicitEvidenceKindsFromVerificationText(text) {
     'observability_evidence'
   ];
   return explicitKinds.filter((kind) => evidenceKindPattern(kind).test(text));
+}
+
+const CANONICAL_EVIDENCE_TOKEN_KINDS = Object.freeze([
+  'negative_path',
+  'boundary_condition',
+  'parse_failure',
+  'auth_denied',
+  'permission_denied'
+]);
+
+function canonicalEvidenceTokenKindsFromText(text) {
+  const source = String(text ?? '');
+  if (!source.trim()) return [];
+  return CANONICAL_EVIDENCE_TOKEN_KINDS.filter((kind) => evidenceKindPattern(kind).test(source));
+}
+
+function appendCanonicalEvidenceTokens(text) {
+  const source = String(text ?? '');
+  const canonicalKinds = canonicalEvidenceTokenKindsFromText(source);
+  if (canonicalKinds.length === 0) return source;
+  return [source, ...canonicalKinds].join('\n');
+}
+
+function buildCanonicalVerificationCommandSearchText(command) {
+  return appendCanonicalEvidenceTokens(buildVerificationCommandSearchText(command).toLowerCase());
 }
 
 function evidenceKindPattern(kind) {
@@ -9341,6 +9379,7 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
   });
   const missing = coveredModes.filter((mode) => mode.status === 'missing_coverage');
   const status = missing.length === 0 ? 'passed' : 'missing_coverage';
+  const acceptedCanonicalTerms = acceptedCanonicalEvidenceTermsForModes(missing.map((mode) => mode.id));
   return {
     id: 'gate:failure_mode_coverage',
     type: 'failure_mode_coverage_gate',
@@ -9352,17 +9391,35 @@ function buildFailureModeCoverageGate({ storySource = null, fileGroups = null, c
     missing_count: missing.length,
     modes: coveredModes,
     missing_modes: missing.map((mode) => mode.id),
+    accepted_canonical_terms: acceptedCanonicalTerms,
     required_actions: missing.length === 0 ? [] : [
       `Record current-bound verification evidence for failure modes: ${missing.map((mode) => mode.id).join(', ')}`,
+      acceptedCanonicalTerms.length > 0
+        ? `Accepted canonical evidence terms: ${acceptedCanonicalTerms.join('; ')}`
+        : null,
       'Use executable Unit/Integration/E2E/Flow evidence; source markers or static mentions alone do not satisfy failure-mode coverage',
       'If a mode is genuinely not applicable, record a decision with the non-applicability reason before PR creation'
-    ],
+    ].filter(Boolean),
     reason: missing.length === 0
       ? coveredModes.length === 0
         ? 'No route-specific failure mode candidates were detected'
         : `${coveredModes.length} failure mode candidate(s) are covered or not critical for this route profile`
       : `${missing.length} high-risk failure mode candidate(s) lack current verification evidence`
   };
+}
+
+function acceptedCanonicalEvidenceTermsForModes(modeIds) {
+  return (modeIds ?? [])
+    .filter((modeId) => CANONICAL_EVIDENCE_TOKEN_KINDS.includes(modeId))
+    .map((modeId) => `${modeId} (${canonicalEvidenceTokenExamples(modeId).join(', ')})`);
+}
+
+function canonicalEvidenceTokenExamples(kind) {
+  return [
+    kind,
+    kind.replaceAll('_', '-'),
+    kind.replaceAll('_', ' ')
+  ];
 }
 
 function deriveFailureModeCandidates({ storySource = null, fileGroups = null, changeClassification = null, inferredSpec = null } = {}) {
@@ -9432,7 +9489,7 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 function findFailureModeEvidenceCommand(mode, currentEvidence) {
   let bestMatch = null;
   for (const command of currentEvidence ?? []) {
-    const evidenceText = buildVerificationCommandSearchText(command).toLowerCase();
+    const evidenceText = buildCanonicalVerificationCommandSearchText(command);
     const score = scoreFailureModeEvidence(mode, evidenceText);
     if (score > (bestMatch?.score ?? 0)) {
       bestMatch = { command, score };
@@ -9447,16 +9504,17 @@ function failureModeCoveredByEvidence(mode, evidenceText) {
 
 function scoreFailureModeEvidence(mode, evidenceText) {
   if (!evidenceText) return 0;
+  const normalizedText = appendCanonicalEvidenceTokens(String(evidenceText ?? '').toLowerCase());
   const modeId = String(mode?.id ?? '').toLowerCase();
-  if (modeId && evidenceText.includes(modeId)) return 100;
+  if (modeId && normalizedText.includes(modeId)) return 100;
   const keywords = (mode?.keywords ?? [])
     .map((keyword) => String(keyword).toLowerCase())
     .filter(Boolean);
   if (modeId === 'parse_failure') {
     const strongParseKeywords = keywords.filter((keyword) => keyword !== 'json');
-    return strongParseKeywords.some((keyword) => evidenceText.includes(keyword)) ? 80 : 0;
+    return strongParseKeywords.some((keyword) => normalizedText.includes(keyword)) ? 80 : 0;
   }
-  const matchCount = keywords.filter((keyword) => evidenceText.includes(keyword)).length;
+  const matchCount = keywords.filter((keyword) => normalizedText.includes(keyword)).length;
   return matchCount > 0 ? 10 + matchCount : 0;
 }
 
