@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-scoped-evidence-invalidation",
   "source": "execute_merge",
-  "generated_at": "2026-07-03T01:37:58.162Z",
+  "generated_at": "2026-07-03T01:38:02.195Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -119,13 +119,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2917,
+      "compressed_bytes": 2920,
       "expanded_bytes": 12439,
       "expanded_line_count": 334,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 10022,
-    "raw_source_artifact_code_ratio": 16.349,
+    "raw_source_artifact_lines": 10112,
+    "raw_source_artifact_code_ratio": 16.496,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -241,7 +241,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-scoped-evidence-invalidation",
-    "generated_at": "2026-07-03T01:37:58.162Z",
+    "generated_at": "2026-07-03T01:38:02.195Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -346,10 +346,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-scoped-evidence-invalidation/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:aa1026c70ba99864cac791580380a1f6817a4b285d02ea7d98df4cdf945219a8",
-    "compressed_hash": "sha256:1ba6c01a8f673b750eea82e2a366c50c1007dcb1643cd4eff1119fd8716b1062",
+    "content_hash": "sha256:1953bb6ab74bd4b4535a6c810e23167843f76efe06b6c2b351bbb3debdb43af7",
+    "compressed_hash": "sha256:d1c21cb077afbb75eb44e26ddf41740d3496ea4eb538d3d2cc45906456ad1d80",
     "expanded_bytes": 12439,
-    "compressed_bytes": 2917,
+    "compressed_bytes": 2920,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -368,7 +368,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-scoped-evidence-invalidation",
     "cost": {
-      "compressed_bytes": 2917,
+      "compressed_bytes": 2920,
       "expanded_bytes": 12439,
       "expanded_line_count": 334,
       "persisted_line_count": 1
