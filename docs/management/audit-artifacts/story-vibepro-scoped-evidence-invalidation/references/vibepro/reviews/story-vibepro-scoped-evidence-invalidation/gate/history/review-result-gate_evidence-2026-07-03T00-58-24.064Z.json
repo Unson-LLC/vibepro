@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scoped-evidence-invalidation",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Gate evidence artifacts were stale after latest verification; rerun pr prepare before pass review.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-binding-stale-pr-prepare-artifacts",
+      "detail": "pr-prepare evidence-reuse and gate-dag were generated before latest verification evidence; rerun pr prepare so gate artifacts bind to current verification timestamps"
+    },
+    {
+      "severity": "medium",
+      "id": "command-reliability-artifact-crosscheck-weak",
+      "detail": "TAP artifacts are recorded but not machine-cross-checked by VibePro; rely on current-head observed pass evidence"
+    },
+    {
+      "severity": "low",
+      "id": "inspection-incomplete-user-stopped",
+      "detail": "broader path surface inspection was stopped before exhaustive confirmation"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current HEAD/status, review request, story/diff, verification-evidence, evidence-reuse, pr-prepare, gate-dag, source/test changes, TAP artifacts, and a focused read-only regression command.",
+    "evidence": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/verification-evidence.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-scoped-evidence-invalidation/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/gate-dag.json",
+      ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/npm-test.tap",
+      ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/focused-regression.tap"
+    ]
+  },
+  "judgment_delta": [
+    "stale evidence reuse concern -> needs_changes because latest verification evidence was newer than generated pr/gate artifacts",
+    "command reliability concern -> observed current-head pass evidence exists, but TAP artifact cross-check is unrecognized by VibePro"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+    "expected_root": null,
+    "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "expected_root": null,
+      "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-03T00:58:24.064Z",
+  "git_context": {
+    "head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "current_branch": "codex/issue-268-scoped-evidence-invalidation",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T00:58:24.063Z"
+  },
+  "source_fingerprint": "dea46888f4a3ae8d32abea2c218e9dee70d80bbc7da6744c036bbc591a2467aa",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2570-49b5-78a3-9b03-aa9aa211920e",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "multi_agent:019f2570-49b5-78a3-9b03-aa9aa211920e",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scoped-evidence-invalidation/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent:019f2570-49b5-78a3-9b03-aa9aa211920e",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

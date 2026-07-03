@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scoped-evidence-invalidation",
+  "created_at": "2026-07-03T01:37:42.034Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-scoped-evidence-invalidation.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-scoped-evidence-invalidation.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-scoped-evidence-invalidation.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-scoped-evidence-invalidation.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-03T01:37:40.701Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "branch": "codex/issue-268-scoped-evidence-invalidation",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "19315c201ca1ffccacd787e7bad03a0b31094cfe",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

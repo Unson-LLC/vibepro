@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "tests": 19,
+    "failed": 0,
+    "flow_replay": true,
+    "artifact_replay": true,
+    "scenario_clause_e2e": true,
+    "current_head_verification": true,
+    "source_tap": ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/focused-regression.tap"
+  }
+}

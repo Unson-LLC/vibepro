@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: 2ファイル合計30行ちょうどの小差分は_reuse対象になる
+ok 1 - 2ファイル合計30行ちょうどの小差分は_reuse対象になる
+  ---
+  duration_ms: 2.745833
+  type: 'test'
+  ...
+# Subtest: 合計31行の差分は_reuse対象にならない
+ok 2 - 合計31行の差分は_reuse対象にならない
+  ---
+  duration_ms: 0.114625
+  type: 'test'
+  ...
+# Subtest: sourceファイルが3つの場合は_行数が少なくてもreuse対象にならない
+ok 3 - sourceファイルが3つの場合は_行数が少なくてもreuse対象にならない
+  ---
+  duration_ms: 0.134834
+  type: 'test'
+  ...
+# Subtest: risk surfaceに該当するsource変更は_小差分でもreuse対象にならない
+ok 4 - risk surfaceに該当するsource変更は_小差分でもreuse対象にならない
+  ---
+  duration_ms: 0.096542
+  type: 'test'
+  ...
+# Subtest: 行数不明のsourceファイルが含まれる場合は_reuse対象にならない
+ok 5 - 行数不明のsourceファイルが含まれる場合は_reuse対象にならない
+  ---
+  duration_ms: 0.125708
+  type: 'test'
+  ...
+# Subtest: regression hotspotに該当する小差分は_reuse対象にならない
+ok 6 - regression hotspotに該当する小差分は_reuse対象にならない
+  ---
+  duration_ms: 0.148333
+  type: 'test'
+  ...
+# Subtest: 小差分sourceとStory_Spec_test変更の混在は_reuse対象になる
+ok 7 - 小差分sourceとStory_Spec_test変更の混在は_reuse対象になる
+  ---
+  duration_ms: 0.132959
+  type: 'test'
+  ...
+# Subtest: repo_controlファイルが混在する小差分は_reuse対象にならない
+ok 8 - repo_controlファイルが混在する小差分は_reuse対象にならない
+  ---
+  duration_ms: 0.156792
+  type: 'test'
+  ...
+# Subtest: docs_specs_testsのみの変更は_従来のpath_scoped_low_risk_reuseのまま
+ok 9 - docs_specs_testsのみの変更は_従来のpath_scoped_low_risk_reuseのまま
+  ---
+  duration_ms: 0.658792
+  type: 'test'
+  ...
+# Subtest: pr prepare projects responsibility authority into Gate DAG before Requirement Gate
+ok 10 - pr prepare projects responsibility authority into Gate DAG before Requirement Gate
+  ---
+  duration_ms: 2030.311625
+  type: 'test'
+  ...
+# Subtest: change classifier marks Story Spec and test marker edits as low-risk evidence changes
+ok 11 - change classifier marks Story Spec and test marker edits as low-risk evidence changes
+  ---
+  duration_ms: 1.426542
+  type: 'test'
+  ...
+# Subtest: pr prepare reuses same-head passing verification for low-risk evidence changes only
+ok 12 - pr prepare reuses same-head passing verification for low-risk evidence changes only
+  ---
+  duration_ms: 4397.495208
+  type: 'test'
+  ...
+# Subtest: pr prepare invalidates stale E2E evidence when test files changed
+ok 13 - pr prepare invalidates stale E2E evidence when test files changed
+  ---
+  duration_ms: 2687.125084
+  type: 'test'
+  ...
+# Subtest: pr prepare exposes stale verification evidence through artifact consistency gate
+ok 14 - pr prepare exposes stale verification evidence through artifact consistency gate
+  ---
+  duration_ms: 8735.164458
+  type: 'test'
+  ...
+# Subtest: review status reuses review after merge delta outside inspected inputs
+ok 15 - review status reuses review after merge delta outside inspected inputs
+  ---
+  duration_ms: 3475.413916
+  type: 'test'
+  ...
+# Subtest: review status does not reuse merge delta review without inspected file inputs
+ok 16 - review status does not reuse merge delta review without inspected file inputs
+  ---
+  duration_ms: 1968.621375
+  type: 'test'
+  ...
+# Subtest: execute start refuses to reuse an existing worktree on a foreign branch
+ok 17 - execute start refuses to reuse an existing worktree on a foreign branch
+  ---
+  duration_ms: 861.41225
+  type: 'test'
+  ...
+# Subtest: DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts
+ok 18 - DDP-S-001 DDP-S-002 DDP-S-003: pr prepare surfaces downstream threat_model requirements for authority and contract artifacts
+  ---
+  duration_ms: 2170.285959
+  type: 'test'
+  ...
+# Subtest: deploy verification gate is absent without deploy targets or for low-risk changes
+ok 19 - deploy verification gate is absent without deploy targets or for low-risk changes
+  ---
+  duration_ms: 4619.732875
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 21949.450041

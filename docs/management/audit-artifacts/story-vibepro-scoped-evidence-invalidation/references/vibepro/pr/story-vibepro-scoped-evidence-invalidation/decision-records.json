@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-scoped-evidence-invalidation",
+  "updated_at": "2026-07-03T01:25:16.150Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "expected_root": null,
+      "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783041916150-c5fa25a2",
+      "story_id": "story-vibepro-scoped-evidence-invalidation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Scope reviewability accepted for a single PR: the story/spec/architecture docs, responsibility/contract metadata, runtime implementation, and regression tests all support one behavior change: scoped invalidation of stale verification evidence by changed surface.",
+      "reason": "Although the generated split plan separates requirements, runtime, and metadata lanes, splitting would hide the contract needed by this change. design-ssot.json, responsibility-authority.json, and docs/contracts/vibepro-core-responsibilities.json register the same PR-manager/change-risk-classifier responsibility that the runtime code now enforces; they are not unrelated cleanup. The runtime diff is limited to src/change-risk-classifier.js and src/pr-manager.js, with focused regression tests plus full npm test evidence bound to the current head. Agent gate review passed after the final pr prepare artifacts were regenerated.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+          "expected_root": null,
+          "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+          "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+        "current_branch": "codex/issue-268-scoped-evidence-invalidation",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T01:25:16.149Z"
+      },
+      "recorded_at": "2026-07-03T01:25:16.150Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+        "expected_root": null,
+        "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+        "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783041916150-c5fa25a2",
+      "story_id": "story-vibepro-scoped-evidence-invalidation",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Scope reviewability accepted for a single PR: the story/spec/architecture docs, responsibility/contract metadata, runtime implementation, and regression tests all support one behavior change: scoped invalidation of stale verification evidence by changed surface.",
+      "reason": "Although the generated split plan separates requirements, runtime, and metadata lanes, splitting would hide the contract needed by this change. design-ssot.json, responsibility-authority.json, and docs/contracts/vibepro-core-responsibilities.json register the same PR-manager/change-risk-classifier responsibility that the runtime code now enforces; they are not unrelated cleanup. The runtime diff is limited to src/change-risk-classifier.js and src/pr-manager.js, with focused regression tests plus full npm test evidence bound to the current head. Agent gate review passed after the final pr prepare artifacts were regenerated.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+          "expected_root": null,
+          "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+          "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+        "current_branch": "codex/issue-268-scoped-evidence-invalidation",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T01:25:16.149Z"
+      },
+      "recorded_at": "2026-07-03T01:25:16.150Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/decision-records.json"
+}

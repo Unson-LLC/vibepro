@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-scoped-evidence-invalidation",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current generated gate artifacts are coherent after regeneration and bind to latest verification evidence for HEAD 5f6b00be4db8407e4da744168de4bfee2383874d.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "command-reliability-artifact-crosscheck-weak",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/e2e-replay-status.json"
+      ],
+      "reason": ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/e2e-replay-status.json",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-binding-stale-pr-prepare-artifacts",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/pr-prepare.json"
+      ],
+      "reason": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/pr-prepare.json",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "inspection-incomplete-user-stopped",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/gate-dag.json"
+      ],
+      "reason": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/gate-dag.json",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current HEAD/status, review request, verification-evidence, pr-prepare, evidence-reuse, gate-dag, and e2e replay status artifacts; pr-prepare/evidence-reuse/gate-dag were generated after latest verification evidence and fingerprints/timestamps match.",
+    "evidence": ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/pr-prepare.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-scoped-evidence-invalidation/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-scoped-evidence-invalidation/gate-dag.json",
+      ".vibepro/test-artifacts/story-vibepro-scoped-evidence-invalidation/e2e-replay-status.json"
+    ]
+  },
+  "judgment_delta": [
+    "pr-prepare/evidence-reuse/gate-dag might predate latest E2E verification -> resolved because regenerated artifacts carry verification_evidence_updated_at 2026-07-03T01:09:57.812Z and latest command timestamps",
+    "stale evidence might be used as fresh -> resolved because evidence-reuse marks used_as_fresh=false and gate:evidence_reuse_freshness passes",
+    "regression_guard and path_surface_coverage -> satisfied for this gate evidence role by current-head unit/integration/e2e records and passed path/artifact consistency statuses"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+    "expected_root": null,
+    "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-scoped-evidence-invalidation",
+      "expected_root": null,
+      "expected_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "current_head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-03T01:19:13.651Z",
+  "git_context": {
+    "head_sha": "5f6b00be4db8407e4da744168de4bfee2383874d",
+    "current_branch": "codex/issue-268-scoped-evidence-invalidation",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T01:19:13.644Z"
+  },
+  "source_fingerprint": "dea46888f4a3ae8d32abea2c218e9dee70d80bbc7da6744c036bbc591a2467aa",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2587-6210-7640-8269-15acffa2e079",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "multi_agent:019f2587-6210-7640-8269-15acffa2e079",
+    "request_artifact": ".vibepro/reviews/story-vibepro-scoped-evidence-invalidation/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent:019f2587-6210-7640-8269-15acffa2e079",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
