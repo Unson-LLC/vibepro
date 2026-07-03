@@ -17383,6 +17383,127 @@ test('story diagnose runs the local story workflow in one command', async () => 
   assert.equal(manifest.stories['story-alpha'].latest_report, '.vibepro/stories/story-alpha/story-report.md');
 });
 
+test('story diagnose surfaces missing Journey context for UI stories (INV-SJD-1, INV-SJD-2)', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-ui-navigation', '--title', 'Improve onboarding screen navigation', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeJson(path.join(graphDir, 'graph.json'), {
+    nodes: [{ id: 'onboarding-screen' }],
+    edges: []
+  });
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  let output = '';
+
+  const result = await runCli(['story', 'diagnose', repo, '--id', 'story-ui-navigation', '--run-id', 'run-ui-missing-journey'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.status.journey_context.required, true);
+  assert.equal(result.result.status.journey_context.status, 'missing');
+  assert.equal(result.result.status.journey_context.curated, false);
+  assert.match(output, /## Journey Context/);
+  assert.match(output, /Status \| missing/);
+  assert.match(output, /vibepro journey derive \. --id default-product-journey/);
+  assert.match(output, /vibepro journey handoff \. --id default-product-journey/);
+  const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'story-report.md'), 'utf8');
+  assert.match(report, /## Journey Context/);
+  assert.match(report, /Artifact kind \| -/);
+  assert.match(report, /Create curated Journey at \.vibepro\/journeys\/default-product-journey\.json/);
+  const html = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'index.html'), 'utf8');
+  assert.match(html, /<h2>Journey Context<\/h2>/);
+  assert.match(html, /<td>Status<\/td>\s*<td>missing<\/td>/);
+  assert.match(html, /<td>Artifact kind<\/td>\s*<td>-<\/td>/);
+  assert.match(html, /<td>Curated<\/td>\s*<td>no<\/td>/);
+  assert.match(html, /<code>vibepro journey derive \. --id default-product-journey<\/code>/);
+  assert.match(html, /<code>Create curated Journey at \.vibepro\/journeys\/default-product-journey\.json<\/code>/);
+});
+
+test('story diagnose distinguishes machine-derived and curated Journey artifacts (INV-SJD-3)', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-ui-navigation', '--title', 'Improve onboarding screen navigation', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeJson(path.join(graphDir, 'graph.json'), {
+    nodes: [{ id: 'onboarding-screen' }],
+    edges: []
+  });
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  await mkdir(path.join(repo, '.vibepro', 'journey'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'journey', 'latest-journey.json'), {
+    schema_version: '0.1.0',
+    journey_id: 'default-product-journey',
+    artifact_kind: 'journey_context_pack',
+    machine_derived: true,
+    authoritative: false,
+    curation_status: 'needs_curated_journey',
+    generated_at: '2026-07-03T00:00:00.000Z',
+    source_story_ids: ['story-ui-navigation'],
+    handoff: { status: 'ready' },
+    backbone: [],
+    walking_skeleton: { status: 'incomplete' },
+    conflicts: [],
+    open_questions: []
+  });
+
+  const derivedResult = await runCli(['story', 'diagnose', repo, '--id', 'story-ui-navigation', '--run-id', 'run-ui-derived-journey']);
+
+  assert.equal(derivedResult.exitCode, 0);
+  assert.equal(derivedResult.result.status.journey_context.status, 'needs_curated_journey');
+  assert.equal(derivedResult.result.status.journey_context.artifact_kind, 'journey_context_pack');
+  assert.equal(derivedResult.result.status.journey_context.curated, false);
+  assert.equal(derivedResult.result.status.journey_context.handoff_available, true);
+  await mkdir(path.join(repo, '.vibepro', 'journeys'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'journeys', 'default-product-journey.json'), {
+    schema_version: '0.1.0',
+    journey_id: 'default-product-journey',
+    artifact_kind: 'curated_journey',
+    machine_derived: false,
+    authoritative: true,
+    curation_status: 'curated',
+    generated_at: '2026-07-03T00:00:00.000Z',
+    backbone: [],
+    walking_skeleton: { status: 'ready' },
+    conflicts: [],
+    open_questions: []
+  });
+
+  const curatedResult = await runCli(['story', 'diagnose', repo, '--id', 'story-ui-navigation', '--run-id', 'run-ui-curated-journey']);
+
+  assert.equal(curatedResult.exitCode, 0);
+  assert.equal(curatedResult.result.status.journey_context.status, 'available');
+  assert.equal(curatedResult.result.status.journey_context.artifact_kind, 'curated_journey');
+  assert.equal(curatedResult.result.status.journey_context.curated, true);
+  assert.equal(curatedResult.result.status.journey_context.curated_journey_path, '.vibepro/journeys/default-product-journey.json');
+});
+
+test('story diagnose does not add Journey friction for backend stories (INV-SJD-4)', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  await runCli(['story', 'add', repo, '--id', 'story-backend-cache-cleanup', '--title', 'Backend cache cleanup', '--view', 'dev']);
+  const graphDir = path.join(repo, 'graphify-out');
+  await mkdir(graphDir, { recursive: true });
+  await writeJson(path.join(graphDir, 'graph.json'), {
+    nodes: [{ id: 'cache-worker' }],
+    edges: []
+  });
+  await writeFile(path.join(graphDir, 'GRAPH_REPORT.md'), '# Graph Report');
+  let output = '';
+
+  const result = await runCli(['story', 'diagnose', repo, '--id', 'story-backend-cache-cleanup', '--run-id', 'run-backend-no-journey'], {
+    stdout: { write: (text) => { output += text; } }
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.status.journey_context.required, false);
+  assert.equal(result.result.status.journey_context.status, 'not_required');
+  assert.doesNotMatch(output, /vibepro journey derive/);
+  assert.doesNotMatch(output, /vibepro journey handoff/);
+});
+
 test('diagnose preserves plan-derived story tasks and writes run tasks separately', async () => {
   const repo = await makeRepo();
   await runCli(['init', repo]);
