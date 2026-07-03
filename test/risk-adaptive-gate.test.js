@@ -316,6 +316,8 @@ test('change classifier marks Story Spec and test marker edits as low-risk evide
   assert.equal(docsOnly.change_type, 'low_risk_evidence_change');
   assert.equal(docsOnly.evidence_reuse_policy.allowed, true);
   assert.equal(docsOnly.evidence_reuse_policy.docs_only, true);
+  assert.deepEqual(docsOnly.changed_surfaces.sort(), ['spec_docs', 'story_docs']);
+  assert.deepEqual(docsOnly.changed_surface_files.spec_docs, ['docs/specs/story-risk-adaptive.md']);
 
   const markerOnly = classifyChangeRisk({
     fileGroups: {
@@ -328,6 +330,18 @@ test('change classifier marks Story Spec and test marker edits as low-risk evide
   });
   assert.equal(markerOnly.change_type, 'low_risk_evidence_change');
   assert.deepEqual(markerOnly.evidence_reuse_policy.rerun_required_for, ['test/e2e/story-risk-adaptive-main.spec.ts']);
+  assert.deepEqual(markerOnly.changed_surfaces, ['tests']);
+
+  const metadataOnly = classifyChangeRisk({
+    fileGroups: {
+      source: { files: [] },
+      tests: { files: [] },
+      responsibility_authority_metadata: { files: ['responsibility-authority.json'] },
+      contract_metadata: { files: ['docs/contracts/vibepro-core-responsibilities.json'] }
+    }
+  });
+  assert.equal(metadataOnly.change_type, 'low_risk_evidence_change');
+  assert.deepEqual(metadataOnly.changed_surfaces.sort(), ['contract_metadata', 'responsibility_authority_metadata']);
 });
 
 test('pr prepare groups monorepo apps src runtime files as source', async () => {
@@ -490,10 +504,73 @@ title: Risk Adaptive Gate Spec
   assert.equal(headChangedResult.exitCode, 0);
   const headChangedContext = headChangedResult.result.preparation.pr_context;
   assert.equal(headChangedContext.change_classification.change_type, 'low_risk_evidence_change');
-  const staleArtifactGate = headChangedContext.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
-  assert.equal(staleArtifactGate.status, 'stale_evidence');
-  assert.equal(staleArtifactGate.inconsistent_artifacts[0].status, 'stale');
-  assert.match(staleArtifactGate.inconsistent_artifacts[0].reason, /recorded for/);
+  const headChangedE2eGate = headChangedContext.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(headChangedE2eGate.status, 'passed');
+  assert.equal(headChangedE2eGate.evidence.binding.status, 'reused_low_risk');
+  assert.equal(headChangedE2eGate.evidence.binding.scoped_reuse_decision.action, 'reuse');
+  assert.ok(headChangedE2eGate.evidence.binding.scoped_reuse_decision.changed_files.includes('docs/specs/story-risk-adaptive.md'));
+  const headChangedArtifactGate = headChangedContext.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(headChangedArtifactGate.status, 'passed');
+  assert.equal(headChangedArtifactGate.artifacts[0].status, 'reused_low_risk');
+  assert.equal(headChangedArtifactGate.artifacts[0].scoped_reuse_decision.action, 'reuse');
+});
+
+test('pr prepare invalidates stale E2E evidence when test files changed', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Risk Adaptive Gate
+spec_docs:
+  - ../../../specs/story-risk-adaptive.md
+architecture_docs:
+  reason: existing gate policy only
+---
+
+# Risk Adaptive Gate
+
+## 受け入れ基準
+
+- [ ] Test changes invalidate stale E2E evidence.
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Risk Adaptive Gate Spec
+---
+
+# Spec
+
+## Invariants
+
+- INV-001: E2E evidence is bound to the test set.
+`);
+  await git(repo, ['add', 'docs']);
+  await git(repo, ['commit', '-m', 'docs: add risk adaptive sources']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'npm run test:e2e',
+    '--summary', 'E2E passed before test marker edit'
+  ])).exitCode, 0);
+
+  await writeFile(
+    path.join(repo, 'test', 'e2e', 'story-risk-adaptive-main.spec.ts'),
+    'import { test } from "@playwright/test";\ntest("risk adaptive marker", async () => {});\n'
+  );
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'HEAD', '--json']);
+  assert.equal(result.exitCode, 0);
+  const context = result.result.preparation.pr_context;
+  assert.equal(context.change_classification.change_type, 'low_risk_evidence_change');
+  const e2eGate = context.gate_dag.nodes.find((node) => node.id === 'gate:e2e');
+  assert.equal(e2eGate.status, 'needs_evidence');
+  assert.equal(e2eGate.evidence.binding.scoped_reuse_decision.action, 'full_rerun');
+  assert.deepEqual(e2eGate.evidence.binding.scoped_reuse_decision.changed_files, ['test/e2e/story-risk-adaptive-main.spec.ts']);
 });
 
 test('worktree feature stories do not trigger deployment bug physics without deployment evidence', async () => {
