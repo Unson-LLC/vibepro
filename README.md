@@ -255,7 +255,7 @@ The most important PR artifacts are:
 - `pr-create.json`: PR creation or existing-PR refresh lifecycle artifact.
 - `pr-merge.json`: merge lifecycle artifact written by `vibepro execute merge`.
 
-Humans usually start from the concise PR body and cockpit when present. AI agents should receive `pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, `verification-evidence.json`, `pr-body.md`, and any generated Gate DAG, split-plan, PR create, or PR merge JSON artifacts. HTML artifacts are review surfaces, not the source of truth.
+Humans usually start from the concise PR body and cockpit when present. AI agents should receive a bounded view first with `vibepro pr prepare . --story-id <story-id> --summary-json` or `--view readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap`, not the full JSON artifacts by default. Keep full JSON artifacts as durable evidence and drill down only by referenced gate id or artifact path. HTML artifacts are review surfaces, not the source of truth.
 
 ## Common Workflows
 

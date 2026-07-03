@@ -168,6 +168,7 @@ import {
 } from './report-store.js';
 import { createUsageReport, renderUsageReport } from './usage-report.js';
 import {
+  projectPrPrepareForLlm,
   renderCanonicalAuditReplay,
   replayCanonicalAuditBundle
 } from './canonical-audit.js';
@@ -261,6 +262,10 @@ Typical PR-safety flow:
 PR prepare creates evidence-plan, decision-index, concise pr-body, verification
 evidence, and plan-selected gate/review artifacts under .vibepro/pr/<story-id>/
 when initialized.
+For agent handoff, pass a bounded projection first with \`pr prepare --summary-json\`
+or \`pr prepare --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap>\`.
+Keep full JSON artifacts as durable evidence and drill down by referenced gate id
+or artifact path only when needed.
 If required gates are unresolved, next_commands points back to review or
 verification. Only use vibepro pr create for normal PR creation; do not use raw
 gh pr create as the standard path. After PR creation, import CI evidence, rerun
@@ -402,7 +407,7 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -461,7 +466,8 @@ risk-adaptive Gate DAG:
 
 .vibepro/ の意味:
   診断・Story・Gate・レビュー証跡を保存する作業台です。アプリ本体の実装とは分けて扱います。
-  AIエージェントには .vibepro/pr/<story-id>/pr-prepare.json、decision-index.json、evidence-plan.json、verification-evidence.json、pr-body.md と生成済みGate artifactを渡すのが基本です。
+  AIエージェントには full JSON artifact ではなく、まず pr prepare --summary-json または --view <readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap> の限定viewを渡します。
+  full artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downします。
 
 PR作成経路:
   通常のPR作成では vibepro pr create を使ってください。GitHub CLIの直接実行はVibePro Gateとwaiver auditを通らないため、標準経路にしません。
@@ -597,7 +603,7 @@ Usage:
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -2138,7 +2144,9 @@ export async function runCli(argv, io = {}) {
       }
       if (subcommand === 'prepare') {
         const jsonOutput = hasFlag(rest, '--json');
-        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
+        const summaryJsonOutput = hasFlag(rest, '--summary-json');
+        const viewOutput = getOption(rest, '--view') ?? (summaryJsonOutput ? 'canonical-summary' : null);
+        const progressOutput = jsonOutput || summaryJsonOutput || Boolean(viewOutput) || hasFlag(rest, '--progress');
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
@@ -2162,9 +2170,11 @@ export async function runCli(argv, io = {}) {
           language: getOption(rest, '--language'),
           env: io.env ?? process.env
         });
-        write(stdout, jsonOutput
-          ? `${JSON.stringify(result.preparation, null, 2)}\n`
-          : renderPrPrepareSummary(result));
+        write(stdout, viewOutput
+          ? `${JSON.stringify(projectPrPrepareForLlm(result.preparation, viewOutput), null, 2)}\n`
+          : jsonOutput
+            ? `${JSON.stringify(result.preparation, null, 2)}\n`
+            : renderPrPrepareSummary(result));
         await updateExecutionStateFromPrPrepare(repoRoot, result, {
           target: 'pr_create',
           baseRef: getOption(rest, '--base')
@@ -2609,8 +2619,8 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
       '次にやること:',
       '1. README全体を読む前に、まず `vibepro help` の「基本コマンド」を確認する',
       `2. PR前の道標を作る: ${prPrepareCommand} --story-id <story-id>`,
-      '3. 生成された `.vibepro/pr/<story-id>/pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, `pr-body.md` を見る',
-      '4. AIエージェントには主要JSON artifactと、生成済みのGate / split / cockpit artifactを渡す',
+      `3. LLM/agentへ渡す前に bounded view を作る: ${prPrepareCommand} --story-id <story-id> --summary-json`,
+      '4. full JSON artifactは永続正本として保存し、必要なgate id/pathだけを対象にdrill-downする',
       ''
     ].join('\n'),
     en: [
@@ -2623,8 +2633,8 @@ function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
       'Next steps:',
       '1. Start with `vibepro help` before reading the full README.',
       `2. Create the PR guide: ${prPrepareCommand} --story-id <story-id>`,
-      '3. Open `.vibepro/pr/<story-id>/pr-prepare.json`, `decision-index.json`, `evidence-plan.json`, and `pr-body.md`.',
-      '4. Hand the core JSON artifacts plus any generated Gate, split, and cockpit artifacts to the coding agent.',
+      `3. Create a bounded LLM/coding agent view before handoff: ${prPrepareCommand} --story-id <story-id> --summary-json`,
+      '4. Keep full JSON artifacts as durable evidence and drill down only by referenced gate id or path.',
       ''
     ].join('\n')
   });

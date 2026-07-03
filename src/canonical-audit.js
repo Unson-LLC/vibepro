@@ -34,6 +34,368 @@ export function getCanonicalAuditDir(repoRoot, storyId) {
   return path.join(path.resolve(repoRoot), CANONICAL_AUDIT_ROOT, storyId);
 }
 
+export const PR_PREPARE_LLM_VIEWS = [
+  'canonical-summary',
+  'readiness',
+  'blocking-gates',
+  'gate-evidence',
+  'traceability',
+  'design-ssot',
+  'senior-gap'
+];
+
+export function projectPrPrepareForLlm(preparation, view = 'canonical-summary') {
+  const normalizedView = normalizePrPrepareView(view);
+  const context = preparation?.pr_context ?? {};
+  const excluded = [];
+  const storyId = preparation?.story?.story_id ?? preparation?.story_id ?? null;
+  const finalize = (value) => bindStoryPlaceholders(compactObject(value), storyId);
+  const base = {
+    schema_version: '0.1.0',
+    artifact_kind: `pr_prepare_${normalizedView.replace(/-/g, '_')}_llm_view`,
+    view: normalizedView,
+    llm_input_policy: {
+      status: 'bounded_projection',
+      reason: 'Use this projection for agent handoff. Open full artifacts only for targeted drill-down by referenced path or gate id.'
+    },
+    story: preparation?.story,
+    created_at: preparation?.created_at,
+    full_artifact_ref: prPrepareArtifactPath(preparation, 'pr-prepare.json')
+  };
+  const artifactRefs = buildPrPrepareArtifactRefs(preparation, context);
+  if (normalizedView === 'canonical-summary') {
+    return finalize({
+      ...base,
+      data: summarizePrPrepareForLlm(preparation, context),
+      excluded_from_view: [
+        'pr_prepare.diagnostics',
+        'pr_prepare.gate_status.unresolved_gates',
+        'pr_prepare.gate_status.critical_unresolved_gates',
+        'pr_prepare.gate_status.execution_gate.full_blocking_gates',
+        'pr_prepare.pr_context.gate_dag.nodes',
+        'pr_prepare.pr_context.gate_dag.edges',
+        'pr_prepare.pr_context.verbose_evidence_objects',
+        'pr_prepare.pr_context.full_registry_inventory'
+      ]
+    });
+  }
+  if (normalizedView === 'readiness') {
+    return finalize({
+      ...base,
+      gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+      git: scopedGit(preparation?.git),
+      scope: summarizeScopeForLlm(preparation?.scope),
+      lifecycle_artifacts: preparation?.lifecycle_artifacts,
+      next_commands: summarizeStringList(preparation?.next_commands, 8)
+    });
+  }
+  if (normalizedView === 'blocking-gates') {
+    return finalize({
+      ...base,
+      gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+      gate_dag: compactObject({
+        overall_status: context.gate_dag?.overall_status,
+        risk_profile: context.gate_dag?.risk_profile,
+        summary: context.gate_dag?.summary,
+        blocking_nodes: filterBlockingGateNodes(context.gate_dag?.nodes)
+      })
+    });
+  }
+  if (normalizedView === 'gate-evidence') {
+    return finalize({
+      ...base,
+      gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+      gate_dag_summary: summarizeGateDagForLlm(context.gate_dag),
+      excluded_from_view: [...new Set(excluded)]
+    });
+  }
+  if (normalizedView === 'traceability') {
+    return finalize({
+      ...base,
+      story_source: context.story_source,
+      story_source_integrity: context.story_source_integrity,
+      traceability_clause_coverage: context.traceability_clause_coverage,
+      artifact_refs: {
+        traceability: artifactRefs.traceability,
+        pr_body: artifactRefs.pr_body
+      }
+    });
+  }
+  if (normalizedView === 'design-ssot') {
+    return finalize({
+      ...base,
+      design_ssot_reconciliation: scopedDesignSsotReconciliation(context.design_ssot_reconciliation, excluded),
+      artifact_refs: {
+        design_ssot_reconciliation: artifactRefs.design_ssot_reconciliation
+      },
+      excluded_from_view: [...new Set(excluded)]
+    });
+  }
+  return finalize({
+    ...base,
+    senior_gap_judgment: scopedSeniorGapJudgment(context.senior_gap_judgment, excluded),
+    artifact_refs: {
+      senior_gap_judgment: artifactRefs.senior_gap_judgment
+    },
+    excluded_from_view: [...new Set(excluded)]
+  });
+}
+
+function bindStoryPlaceholders(value, storyId) {
+  if (!storyId || storyId === '<story-id>') return value;
+  if (typeof value === 'string') return value.replaceAll('<story-id>', storyId);
+  if (Array.isArray(value)) return value.map((item) => bindStoryPlaceholders(item, storyId));
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nestedValue]) => [key, bindStoryPlaceholders(nestedValue, storyId)])
+  );
+}
+
+function summarizePrPrepareForLlm(preparation, context) {
+  return compactObject({
+    schema_version: preparation?.schema_version,
+    artifact_kind: 'pr_prepare_llm_handoff_summary',
+    audit_scope: 'llm_bounded_handoff_v1',
+    created_at: preparation?.created_at,
+    story: preparation?.story,
+    output: preparation?.output,
+    gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+    git: scopedGit(preparation?.git),
+    scope: summarizeScopeForLlm(preparation?.scope),
+    pr_context: compactObject({
+      story_source: summarizeStorySourceForLlm(context.story_source),
+      story_source_integrity: context.story_source_integrity,
+      pr_route: context.pr_route,
+      engineering_judgment: summarizeEngineeringJudgmentForLlm(context.engineering_judgment),
+      verification_evidence: summarizeVerificationForLlm(context.verification_evidence),
+      decision_records: summarizeCollectionForLlm(context.decision_records),
+      agent_reviews: summarizeCollectionForLlm(context.agent_reviews),
+      evidence_reuse: context.evidence_reuse ? {
+        status: context.evidence_reuse.status,
+        key: context.evidence_reuse.key,
+        stale: context.evidence_reuse.stale,
+        fresh_use_allowed: context.evidence_reuse.fresh_use_allowed,
+        used_as_fresh: context.evidence_reuse.used_as_fresh,
+        artifact: context.evidence_reuse.artifact
+      } : null,
+      gate_dag_summary: summarizeGateDagForLlm(context.gate_dag),
+      traceability_clause_coverage: context.traceability_clause_coverage,
+      senior_gap_judgment: summarizeSeniorGapForLlm(context.senior_gap_judgment)
+    }),
+    artifact_refs: buildPrPrepareArtifactRefs(preparation, context),
+    targeted_views: PR_PREPARE_LLM_VIEWS
+      .filter((name) => name !== 'canonical-summary')
+      .map((name) => `pr prepare --view ${name}`)
+  });
+}
+
+function summarizeGateStatusForLlm(gateStatus) {
+  if (!gateStatus || typeof gateStatus !== 'object') return gateStatus ?? null;
+  const blockingGates = Array.isArray(gateStatus.execution_gate?.blocking_gates)
+    ? gateStatus.execution_gate.blocking_gates
+    : gateStatus.critical_unresolved_gates ?? gateStatus.unresolved_gates ?? [];
+  return compactObject({
+    overall_status: gateStatus.overall_status,
+    ready_for_pr_create: gateStatus.ready_for_pr_create,
+    fast_lane: gateStatus.fast_lane,
+    completion_quality_status: gateStatus.completion_quality_status,
+    unresolved_gate_count: gateStatus.unresolved_gate_count,
+    critical_unresolved_gate_count: gateStatus.critical_unresolved_gate_count,
+    execution_gate: gateStatus.execution_gate ? {
+      status: gateStatus.execution_gate.status,
+      pr_create_allowed: gateStatus.execution_gate.pr_create_allowed,
+      waiver_required: gateStatus.execution_gate.waiver_required,
+      blocking_gate_count: gateStatus.execution_gate.blocking_gate_count,
+      blocking_gates: summarizeGateListForLlm(blockingGates, 10)
+    } : null,
+    next_required_actions: summarizeStringList(gateStatus.next_required_actions, 8),
+    agent_review_dispatch_required: gateStatus.agent_review_dispatch_required,
+    agent_review_user_confirmation_required_by_vibepro: gateStatus.agent_review_user_confirmation_required_by_vibepro
+  });
+}
+
+function summarizeGateDagForLlm(gateDag) {
+  if (!gateDag || typeof gateDag !== 'object') return gateDag ?? null;
+  const nodes = Array.isArray(gateDag.nodes) ? gateDag.nodes : [];
+  const blockingNodes = nodes.filter((node) => isBlockingGateNode(node));
+  return compactObject({
+    schema_version: gateDag.schema_version,
+    artifact_kind: 'pr_prepare_gate_dag_llm_summary',
+    story_id: gateDag.story_id,
+    model: gateDag.model,
+    overall_status: gateDag.overall_status,
+    risk_profile: gateDag.risk_profile,
+    summary: gateDag.summary,
+    node_count: nodes.length,
+    edge_count: Array.isArray(gateDag.edges) ? gateDag.edges.length : undefined,
+    blocking_node_count: blockingNodes.length,
+    blocking_nodes: summarizeGateListForLlm(blockingNodes, 12)
+  });
+}
+
+function summarizeGateListForLlm(gates, limit) {
+  if (!Array.isArray(gates)) return gates ?? [];
+  return gates.slice(0, limit).map((gate) => compactObject({
+    id: gate.id,
+    type: gate.type,
+    label: gate.label,
+    status: gate.status ?? gate.axis_status,
+    required: gate.required,
+    reason: gate.reason,
+    required_actions: summarizeStringList(gate.required_actions, 3),
+    command: gate.command,
+    artifact: gate.artifact
+  }));
+}
+
+function summarizeScopeForLlm(scope) {
+  if (!scope || typeof scope !== 'object') return scope ?? null;
+  return compactObject({
+    status: scope.status,
+    risk: scope.risk,
+    route: scope.route,
+    changed_file_count: scope.changed_file_count,
+    changed_files: summarizeStringList(scope.changed_files, 20),
+    notes: summarizeStringList(scope.notes, 5)
+  });
+}
+
+function summarizeStorySourceForLlm(source) {
+  if (!source || typeof source !== 'object') return source ?? null;
+  return compactObject({
+    status: source.status,
+    kind: source.kind,
+    path: source.path,
+    title: source.title,
+    story_id: source.story_id
+  });
+}
+
+function summarizeEngineeringJudgmentForLlm(judgment) {
+  if (!judgment || typeof judgment !== 'object') return judgment ?? null;
+  return compactObject({
+    status: judgment.status,
+    risk_profile: judgment.risk_profile,
+    active_axis_count: Array.isArray(judgment.axes) ? judgment.axes.length : undefined,
+    blocking_axis_count: Array.isArray(judgment.axes)
+      ? judgment.axes.filter((axis) => !isPassingGateStatus(axis?.status ?? axis?.axis_status)).length
+      : undefined
+  });
+}
+
+function summarizeVerificationForLlm(evidence) {
+  if (!evidence || typeof evidence !== 'object') return evidence ?? null;
+  const commands = Array.isArray(evidence.commands) ? evidence.commands : [];
+  return compactObject({
+    status: evidence.status,
+    command_count: commands.length,
+    pass_count: commands.filter((command) => isPassingGateStatus(command?.status)).length,
+    kinds: [...new Set(commands.map((command) => command?.kind).filter(Boolean))].sort(),
+    latest_commands: commands.slice(-5).map((command) => compactObject({
+      kind: command.kind,
+      status: command.status,
+      command: command.command,
+      summary: command.summary,
+      target: command.target,
+      scenario: command.scenario,
+      artifact: command.artifact
+    }))
+  });
+}
+
+function summarizeCollectionForLlm(value) {
+  if (Array.isArray(value)) {
+    return {
+      count: value.length,
+      latest: value.slice(-5).map((item) => summarizeCollectionItemForLlm(item))
+    };
+  }
+  if (!value || typeof value !== 'object') return value ?? null;
+  const entries = Object.entries(value);
+  return {
+    count: entries.length,
+    keys: entries.slice(0, 20).map(([key]) => key)
+  };
+}
+
+function summarizeCollectionItemForLlm(item) {
+  if (!item || typeof item !== 'object') return item;
+  return compactObject({
+    id: item.id,
+    status: item.status,
+    kind: item.kind,
+    role: item.role,
+    summary: item.summary,
+    artifact: item.artifact
+  });
+}
+
+function summarizeSeniorGapForLlm(judgment) {
+  if (!judgment || typeof judgment !== 'object') return judgment ?? null;
+  return compactObject({
+    status: judgment.decision?.status ?? judgment.status,
+    gap_count: Array.isArray(judgment.gaps) ? judgment.gaps.length : judgment.gap_count,
+    blocking_gap_count: judgment.decision?.blocking_gap_count ?? judgment.blocking_gap_count,
+    residual_risk_count: Array.isArray(judgment.residual_risks) ? judgment.residual_risks.length : judgment.residual_risk_count
+  });
+}
+
+function buildPrPrepareArtifactRefs(preparation, context) {
+  return compactObject({
+    full_pr_prepare: prPrepareArtifactPath(preparation, 'pr-prepare.json'),
+    evidence_reuse: preparation?.evidence_reuse ? prPrepareArtifactPath(preparation, 'evidence-reuse.json') : null,
+    evidence_plan: preparation?.evidence_plan ? prPrepareArtifactPath(preparation, 'evidence-plan.json') : null,
+    decision_index: preparation?.decision_index ? prPrepareArtifactPath(preparation, 'decision-index.json') : null,
+    split_plan: preparation?.split_plan ? prPrepareArtifactPath(preparation, 'split-plan.json') : null,
+    gate_dag: context.gate_dag ? prPrepareArtifactPath(preparation, 'gate-dag.json') : null,
+    traceability: prPrepareArtifactPath(preparation, 'traceability.json'),
+    design_ssot_reconciliation: context.design_ssot_reconciliation ? prPrepareArtifactPath(preparation, 'design-ssot-reconciliation.json') : null,
+    senior_gap_judgment: context.senior_gap_judgment ? prPrepareArtifactPath(preparation, 'senior-gap-judgment.json') : null,
+    pr_body: prPrepareArtifactPath(preparation, 'pr-body.md')
+  });
+}
+
+function prPrepareArtifactPath(preparation, filename) {
+  if (filename === 'pr-prepare.json' && preparation?.artifact) return preparation.artifact;
+  const storyId = preparation?.story?.story_id ?? preparation?.story_id ?? '<story-id>';
+  return `.vibepro/pr/${storyId}/${filename}`;
+}
+
+function summarizeStringList(value, limit) {
+  if (!Array.isArray(value)) return value ?? [];
+  return value.slice(0, limit);
+}
+
+function normalizePrPrepareView(view) {
+  const normalized = String(view ?? 'canonical-summary').trim().toLowerCase();
+  if (normalized === 'summary') return 'canonical-summary';
+  if (PR_PREPARE_LLM_VIEWS.includes(normalized)) return normalized;
+  throw new Error(`Unsupported pr prepare view: ${view}. Expected one of: ${PR_PREPARE_LLM_VIEWS.join(', ')}`);
+}
+
+function filterBlockingGateNodes(nodes) {
+  if (!Array.isArray(nodes)) return nodes ?? [];
+  return nodes
+    .filter((node) => isBlockingGateNode(node))
+    .map(scopedGateNode);
+}
+
+function isBlockingGateNode(node) {
+  if (!node || typeof node !== 'object') return false;
+  if (node.required !== true) return false;
+  return !isNonBlockingGateStatus(node.status ?? node.axis_status);
+}
+
+function isNonBlockingGateStatus(status) {
+  const normalized = String(status ?? '').toLowerCase();
+  return isPassingGateStatus(normalized)
+    || ['present', 'pending', 'not_applicable', 'not-applicable', 'n/a', 'na'].includes(normalized);
+}
+
+function isPassingGateStatus(status) {
+  return ['pass', 'passed', 'ready', 'ready_for_review', 'satisfied', 'ok', 'skipped'].includes(String(status ?? '').toLowerCase());
+}
+
 export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source = 'execute_merge', merge = null, now = null } = {}) {
   if (!storyId) throw new Error('canonical audit promotion requires storyId');
   const root = path.resolve(repoRoot);
