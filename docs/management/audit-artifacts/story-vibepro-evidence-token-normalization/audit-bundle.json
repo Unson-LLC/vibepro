@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-token-normalization",
   "source": "execute_merge",
-  "promoted_at": "2026-07-03T07:19:46.751Z",
+  "promoted_at": "2026-07-03T07:19:51.271Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:8be304ff1cecbbd36155d428000ed9e4548d88d54c8f38b21e9631065a0901a5",
-    "compressed_hash": "sha256:b47ab70e9e03f968bd3ca1dcc04639a8f4334806de5ffa58be1a332725349e6b",
+    "content_hash": "sha256:6ef8ad0e3fc7d872f3808286d42d029eb89a441e81a6dd4b11cf73e04f2566ef",
+    "compressed_hash": "sha256:4ad279b9427e06a0e21ef065db65618177936309f1e590af5a25956110d4f3ad",
     "expanded_bytes": 12443,
-    "compressed_bytes": 2940,
+    "compressed_bytes": 2941,
     "expanded_line_count": 333,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -60,7 +60,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-evidence-token-normalization",
     "cost": {
-      "compressed_bytes": 2940,
+      "compressed_bytes": 2941,
       "expanded_bytes": 12443,
       "expanded_line_count": 333,
       "persisted_line_count": 1
@@ -97,7 +97,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:8be304ff1cecbbd36155d428000ed9e4548d88d54c8f38b21e9631065a0901a5"
+      "content_hash": "sha256:6ef8ad0e3fc7d872f3808286d42d029eb89a441e81a6dd4b11cf73e04f2566ef"
     }
   ],
   "raw_artifact_manifest": [
@@ -189,10 +189,10 @@
       "source": ".vibepro/pr/story-vibepro-evidence-token-normalization/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization/audit-replay-bundle.json.gz",
-      "digest": "sha256:fa3347fe30d02a6e5105ddf85054ef8b23629c352824a65a249011e78c57d5f9",
-      "audit_digest": "sha256:051798dbb6ecf3dedb1c386ab7a1109b1f5569f7d380add1ee22144e3b3298d6",
-      "line_count": 1968,
-      "raw_line_count": 3908,
+      "digest": "sha256:a97d9a96d403d6f85191316b6c4ae617448f7c21d4682e1c4e0c29daee4cd11a",
+      "audit_digest": "sha256:49d9510b227c822bd44aa9eb3b770007d897a04e948762f145cd4254da2bc22c",
+      "line_count": 2058,
+      "raw_line_count": 3998,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",

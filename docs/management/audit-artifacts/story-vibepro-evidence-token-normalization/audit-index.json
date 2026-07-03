@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-evidence-token-normalization",
   "source": "execute_merge",
-  "generated_at": "2026-07-03T07:19:46.751Z",
+  "generated_at": "2026-07-03T07:19:51.271Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -115,13 +115,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2940,
+      "compressed_bytes": 2941,
       "expanded_bytes": 12443,
       "expanded_line_count": 333,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 11360,
-    "raw_source_artifact_code_ratio": 29.054,
+    "raw_source_artifact_lines": 11450,
+    "raw_source_artifact_code_ratio": 29.284,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -237,7 +237,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-evidence-token-normalization",
-    "generated_at": "2026-07-03T07:19:46.751Z",
+    "generated_at": "2026-07-03T07:19:51.271Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -353,10 +353,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-evidence-token-normalization/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:8be304ff1cecbbd36155d428000ed9e4548d88d54c8f38b21e9631065a0901a5",
-    "compressed_hash": "sha256:b47ab70e9e03f968bd3ca1dcc04639a8f4334806de5ffa58be1a332725349e6b",
+    "content_hash": "sha256:6ef8ad0e3fc7d872f3808286d42d029eb89a441e81a6dd4b11cf73e04f2566ef",
+    "compressed_hash": "sha256:4ad279b9427e06a0e21ef065db65618177936309f1e590af5a25956110d4f3ad",
     "expanded_bytes": 12443,
-    "compressed_bytes": 2940,
+    "compressed_bytes": 2941,
     "expanded_line_count": 333,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -375,7 +375,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-evidence-token-normalization",
     "cost": {
-      "compressed_bytes": 2940,
+      "compressed_bytes": 2941,
       "expanded_bytes": 12443,
       "expanded_line_count": 333,
       "persisted_line_count": 1
