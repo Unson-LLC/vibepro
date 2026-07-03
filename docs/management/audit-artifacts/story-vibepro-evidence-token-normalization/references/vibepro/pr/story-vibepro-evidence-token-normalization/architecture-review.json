@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-token-normalization",
+  "created_at": "2026-07-03T07:19:34.480Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-evidence-token-normalization.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-evidence-token-normalization.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-evidence-token-normalization/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-evidence-token-normalization/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-evidence-token-normalization.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-evidence-token-normalization.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-03T07:19:33.041Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+      "branch": "codex/issue-267-evidence-token-normalization",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "6a5d36a2a289229d415a26cd1bcf4feac611fd6b",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

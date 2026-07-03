@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "summary": "gate_evidence passes for current head afff88c; current verification is head-bound and the canonical token normalization path is covered across classifier, failure-mode scoring, and gate feedback.",
+  "inspection_summary": "Inspected the review request, current git head/status, diff, normalization implementation, focused regression test, story/spec/architecture/design SSOT artifacts, verification/pr-prepare/gate artifacts, and reran the focused classifier regression successfully. The only stale gate artifact observed is the prior gate_evidence review result, which this result is expected to replace when recorded.",
+  "inspection_evidence": "node --test --test-name-pattern \"gate evidence classifier normalizes canonical token variants\" test/vibepro-cli.test.js: pass 1 / fail 0 on afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+  "inspection_inputs": [
+    "git rev-parse HEAD -> afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+    "git status --short -> clean",
+    ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/review-request-gate_evidence.md",
+    "git diff origin/main...HEAD -- src/pr-manager.js",
+    "git diff origin/main...HEAD -- test/vibepro-cli.test.js",
+    "src/pr-manager.js classifyVerificationEvidenceItem/buildCanonicalVerificationCommandSearchText/evidenceKindPattern/buildVerificationCommandSearchText/scoreFailureModeEvidence",
+    "test/vibepro-cli.test.js gate evidence classifier normalizes canonical token variants across observation fields",
+    "docs/management/stories/active/story-vibepro-evidence-token-normalization.md",
+    "docs/specs/story-vibepro-evidence-token-normalization.md",
+    "docs/architecture/vibepro-evidence-token-normalization.md",
+    "design-ssot.json",
+    ".vibepro/pr/story-vibepro-evidence-token-normalization/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-evidence-token-normalization/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-evidence-token-normalization/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-evidence-token-normalization/design-ssot-reconciliation.json",
+    ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/lifecycle.json"
+  ],
+  "judgment_delta": [
+    "Initial concern: review request reports stale evidence reuse and prior gate_evidence artifacts were recorded for 9592555 -> final conclusion: current verification-evidence.json key inputs and command git_context are bound to afff88c, and stale prior review artifact is the pre-record state this returned review should replace.",
+    "Initial concern: token normalization might only fix one evidence path -> final conclusion: source inspection shows one canonical search-text path feeds verification classification and failure-mode scoring, and buildVerificationCommandSearchText includes targets, scenarios, observed keys, and observed values.",
+    "Initial concern: tests might be happy-path only -> final conclusion: the focused regression records variant tokens through target/scenario/observed fields, asserts canonical matched evidence for auth_denied/permission_denied/negative_path/boundary_condition, asserts parse_failure coverage, and checks accepted canonical feedback terms; rerun passed on current head.",
+    "Initial concern: regression/path-surface coverage might omit generated gates -> final conclusion: pr-prepare gate DAG shows common judgment spine, security boundary, and failure_mode_coverage pass with current-bound evidence; design SSOT reconciliation status is passed with no coverage gaps."
+  ],
+  "findings": [],
+  "agent": {
+    "id": "019f26ca-d379-7161-868c-5280c6767340",
+    "system": "codex",
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "closed": true
+  }
+}

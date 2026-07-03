@@ -1,0 +1,131 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-evidence-token-normalization",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence passes for current head afff88c; current verification is head-bound and the canonical token normalization path is covered across classifier, failure-mode scoring, and gate feedback.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the review request, current git head/status, diff, normalization implementation, focused regression test, story/spec/architecture/design SSOT artifacts, verification/pr-prepare/gate artifacts, and reran the focused classifier regression successfully. The only stale gate artifact observed is the prior gate_evidence review result, which this result is expected to replace when recorded.",
+    "evidence": ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/subagent-019f26ca-d379-7161-868c-5280c6767340.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-evidence-token-normalization/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-evidence-token-normalization/gate-dag.json",
+      ".vibepro/pr/story-vibepro-evidence-token-normalization/verification-evidence.json",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: review request reports stale evidence reuse and prior gate_evidence artifacts were recorded for 9592555 -> final conclusion: current verification-evidence.json key inputs and command git_context are bound to afff88c, and stale prior review artifact is the pre-record state this returned review should replace.",
+    "Initial concern: token normalization might only fix one evidence path -> final conclusion: source inspection shows one canonical search-text path feeds verification classification and failure-mode scoring, and buildVerificationCommandSearchText includes targets, scenarios, observed keys, and observed values.",
+    "Initial concern: tests might be happy-path only -> final conclusion: the focused regression records variant tokens through target/scenario/observed fields, asserts canonical matched evidence for auth_denied/permission_denied/negative_path/boundary_condition, asserts parse_failure coverage, and checks accepted canonical feedback terms; rerun passed on current head.",
+    "Initial concern: regression/path-surface coverage might omit generated gates -> final conclusion: pr-prepare gate DAG shows common judgment spine, security boundary, and failure_mode_coverage pass with current-bound evidence; design SSOT reconciliation status is passed with no coverage gaps."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+    "expected_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+    "current_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+      "branch": "codex/issue-267-evidence-token-normalization",
+      "actual_branch": "codex/issue-267-evidence-token-normalization",
+      "current_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+      "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+      "expected_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+      "current_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+        "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+        "branch": "codex/issue-267-evidence-token-normalization",
+        "actual_branch": "codex/issue-267-evidence-token-normalization",
+        "current_head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-03T07:12:55.999Z",
+  "git_context": {
+    "head_sha": "afff88cd85f75286c16660cf9ea49e1e8ff2aa9a",
+    "current_branch": "codex/issue-267-evidence-token-normalization",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-03T07:12:55.998Z"
+  },
+  "source_fingerprint": "73b807bf67ceb24a860638d7d20d1051f6243998da7a865a9b0591095ce41097",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f26ca-d379-7161-868c-5280c6767340",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/subagent-019f26ca-d379-7161-868c-5280c6767340.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-evidence-token-normalization/gate/subagent-019f26ca-d379-7161-868c-5280c6767340.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

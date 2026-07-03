@@ -1,0 +1,380 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-evidence-token-normalization",
+  "updated_at": "2026-07-03T06:13:19.419Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+      "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+      "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+      "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+        "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+        "branch": "codex/issue-267-evidence-token-normalization",
+        "actual_branch": "codex/issue-267-evidence-token-normalization",
+        "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783059199419-f612e775",
+      "story_id": "story-vibepro-evidence-token-normalization",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability decision recorded for current gate pass.",
+      "reason": "Current PR remains one cohesive issue #267 change: five committed files, no unrelated runtime/UI/database behavior, single reviewer role gate_evidence, replacement review passed. decision_record evidence is explicit for scope_reviewability.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-evidence-token-normalization/gate-dag.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+            "branch": "codex/issue-267-evidence-token-normalization",
+            "actual_branch": "codex/issue-267-evidence-token-normalization",
+            "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_branch": "codex/issue-267-evidence-token-normalization",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T06:13:19.419Z"
+      },
+      "recorded_at": "2026-07-03T06:13:19.419Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783057158968-c74a8b47",
+      "story_id": "story-vibepro-evidence-token-normalization",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_security_boundary",
+      "source_status": "block",
+      "summary": "Security boundary negative-path evidence accepted for classifier-only token normalization.",
+      "reason": "No runtime auth or permission boundary is expanded; the current-head regression explicitly covers auth_denied, permission_denied, negative_path, negative_path_test, threat_model, and parse_failure classification from target/scenario/observed fields. Threat model is limited to classifier evidence vocabulary normalization.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+            "branch": "codex/issue-267-evidence-token-normalization",
+            "actual_branch": "codex/issue-267-evidence-token-normalization",
+            "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_branch": "codex/issue-267-evidence-token-normalization",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T05:39:18.968Z"
+      },
+      "recorded_at": "2026-07-03T05:39:18.969Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783056780804-c092fc8f",
+      "story_id": "story-vibepro-evidence-token-normalization",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation not applicable to CLI gate-evidence normalization.",
+      "reason": "No UI, design-system, or visual design surface is changed; docs/spec/architecture changes define CLI evidence behavior only.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+            "branch": "codex/issue-267-evidence-token-normalization",
+            "actual_branch": "codex/issue-267-evidence-token-normalization",
+            "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_branch": "codex/issue-267-evidence-token-normalization",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T05:33:00.803Z"
+      },
+      "recorded_at": "2026-07-03T05:33:00.804Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783056780721-39da3603",
+      "story_id": "story-vibepro-evidence-token-normalization",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted for issue #267 evidence-token normalization.",
+      "reason": "Change is five files and one cohesive gate evidence classifier behavior: story/spec/architecture docs, src/pr-manager.js, and focused CLI regression in test/vibepro-cli.test.js. Review owner map is the gate_evidence stage/role and no split is required.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+            "branch": "codex/issue-267-evidence-token-normalization",
+            "actual_branch": "codex/issue-267-evidence-token-normalization",
+            "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_branch": "codex/issue-267-evidence-token-normalization",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T05:33:00.721Z"
+      },
+      "recorded_at": "2026-07-03T05:33:00.721Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+        "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+        "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "branch": "codex/issue-267-evidence-token-normalization",
+          "actual_branch": "codex/issue-267-evidence-token-normalization",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783059199419-f612e775",
+      "story_id": "story-vibepro-evidence-token-normalization",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability decision recorded for current gate pass.",
+      "reason": "Current PR remains one cohesive issue #267 change: five committed files, no unrelated runtime/UI/database behavior, single reviewer role gate_evidence, replacement review passed. decision_record evidence is explicit for scope_reviewability.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-evidence-token-normalization/gate-dag.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+          "expected_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-issue-267-gap/.worktrees/vibepro/story-vibepro-evidence-token-normalization-s3gf9t",
+            "branch": "codex/issue-267-evidence-token-normalization",
+            "actual_branch": "codex/issue-267-evidence-token-normalization",
+            "current_head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "9592555a5d76bfb63d6b394436bd393051fc5c41",
+        "current_branch": "codex/issue-267-evidence-token-normalization",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-03T06:13:19.419Z"
+      },
+      "recorded_at": "2026-07-03T06:13:19.419Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-evidence-token-normalization/decision-records.json"
+}
