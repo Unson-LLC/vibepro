@@ -15516,6 +15516,101 @@ title: Security Boundary Block
   assert.equal(gate.reason.includes('negative_path_test'), true);
 });
 
+test('gate evidence classifier normalizes canonical token variants across observation fields', async () => {
+  const authRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(authRepo, 'src'), { recursive: true });
+  await writeFile(path.join(authRepo, 'src', 'auth-permission.js'), 'export function checkPermission(token) { return token === "ok"; }\n');
+  await git(authRepo, ['add', 'src/auth-permission.js']);
+  await git(authRepo, ['commit', '-m', 'feat: add auth permission token check']);
+
+  const missingAuthPrepare = await runCli(['pr', 'prepare', authRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(missingAuthPrepare.exitCode, 0);
+  const missingAuthSpine = missingAuthPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const missingAuthFailureModes = missingAuthSpine.subchecks.find((check) => check.id === 'failure_modes');
+  assert.equal(
+    missingAuthFailureModes.accepted_canonical_terms.some((term) => term.includes('negative_path (negative_path, negative-path, negative path)')),
+    true
+  );
+  assert.equal(
+    missingAuthFailureModes.reason.includes('permission_denied (permission_denied, permission-denied, permission denied)'),
+    true
+  );
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    authRepo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/auth-permission.test.js',
+    '--summary',
+    'auth boundary variant token suite passed',
+    '--target',
+    'auth-denied boundary-condition path',
+    '--scenario',
+    'permission-denied and negative path are rejected',
+    '--observed',
+    'negative_path=true',
+    '--observed',
+    'boundary_condition=true'
+  ])).exitCode, 0);
+
+  const authPrepare = await runCli(['pr', 'prepare', authRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(authPrepare.exitCode, 0);
+  const authSecurityGate = authPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_security_boundary');
+  assert.equal(authSecurityGate.matched_evidence.some((item) => item.kind === 'negative_path_test'), true);
+  assert.equal(authSecurityGate.missing_evidence.includes('negative_path_test'), false);
+  const authSpine = authPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
+  const authFailureModes = authSpine.subchecks.find((check) => check.id === 'failure_modes');
+  const matchedKinds = authFailureModes.matched_evidence.map((item) => item.kind);
+  assert.equal(matchedKinds.includes('auth_denied'), true);
+  assert.equal(matchedKinds.includes('permission_denied'), true);
+  assert.equal(matchedKinds.includes('negative_path'), true);
+  assert.equal(matchedKinds.includes('boundary_condition'), true);
+
+  const parseRepo = await makeGitRepoWithStory();
+  await mkdir(path.join(parseRepo, 'src'), { recursive: true });
+  await writeFile(
+    path.join(parseRepo, 'src', 'auth-json-parser.js'),
+    'export function parseAuthorizedPayload(token, input) { if (token !== "ok") throw new Error("denied"); return JSON.parse(input); }\n'
+  );
+  await git(parseRepo, ['add', 'src/auth-json-parser.js']);
+  await git(parseRepo, ['commit', '-m', 'feat: add auth json parser']);
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    parseRepo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/json-parser.test.js',
+    '--summary',
+    'malformed payload regression suite passed',
+    '--target',
+    'src/auth-json-parser.js',
+    '--scenario',
+    'parse failure rejects malformed json',
+    '--observed',
+    'parse failure=covered',
+    '--json'
+  ])).exitCode, 0);
+  const coveredPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(coveredPrepare.exitCode, 0);
+  const coveredFailureGate = coveredPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:failure_mode_coverage');
+  const parseMode = coveredFailureGate.modes.find((mode) => mode.id === 'parse_failure');
+  assert.equal(parseMode.status, 'covered');
+});
+
 test('release ops judgment axis blocks operator-facing release changes without owner-visible evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
