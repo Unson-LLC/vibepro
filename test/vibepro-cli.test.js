@@ -7431,6 +7431,96 @@ test('pr prepare json emits progress on stderr and records stage diagnostics', a
   assert.equal(parsed.diagnostics.pr_prepare_stages.some((stage) => stage.name === 'write_pr_prepare_artifacts' && stage.status === 'completed'), true);
 });
 
+test('pr prepare summary-json emits bounded LLM projection instead of full diagnostics', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src.js'), 'export const changed = true;\n');
+  await git(repo, ['add', 'src.js']);
+  await git(repo, ['commit', '-m', 'feat: change source']);
+
+  const result = await runCliWithStdout([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--summary-json'
+  ]);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  assert.match(result.stderr, /\[vibepro pr prepare\] start collect_runtime_info/);
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.view, 'canonical-summary');
+  assert.equal(parsed.llm_input_policy.status, 'bounded_projection');
+  assert.equal(parsed.data.story.story_id, 'story-pr-prepare');
+  assert.equal(parsed.full_artifact_ref, '.vibepro/pr/story-pr-prepare/pr-prepare.json');
+  assert.equal(parsed.data.artifact_refs.full_pr_prepare, '.vibepro/pr/story-pr-prepare/pr-prepare.json');
+  assert.equal(JSON.stringify(parsed).includes('<story-id>'), false);
+  assert.equal(parsed.data.pr_context.gate_dag_summary.artifact_kind, 'pr_prepare_gate_dag_llm_summary');
+  assert.equal(parsed.data.pr_context.gate_dag_summary.nodes, undefined);
+  assert.equal(parsed.data.pr_context.full_gate_dag, undefined);
+  assert.equal(parsed.diagnostics, undefined);
+  assert.equal(parsed.data.diagnostics, undefined);
+});
+
+test('pr prepare view emits focused bounded projection for blocking gates', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src.js'), 'export const changed = true;\n');
+  await git(repo, ['add', 'src.js']);
+  await git(repo, ['commit', '-m', 'feat: change source']);
+
+  const result = await runCliWithStdout([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--view',
+    'blocking-gates'
+  ]);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.view, 'blocking-gates');
+  assert.equal(parsed.llm_input_policy.status, 'bounded_projection');
+  assert.equal(Array.isArray(parsed.gate_dag.blocking_nodes), true);
+  assert.equal(parsed.gate_dag.nodes, undefined);
+  assert.equal(parsed.data, undefined);
+  assert.equal(parsed.diagnostics, undefined);
+});
+
+test('pr prepare gate-evidence view binds refs and excludes informational nodes from blockers', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'src.js'), 'export const changed = true;\n');
+  await git(repo, ['add', 'src.js']);
+  await git(repo, ['commit', '-m', 'feat: change source']);
+
+  const result = await runCliWithStdout([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--view',
+    'gate-evidence'
+  ]);
+
+  assert.equal(result.exitCode, 0, result.stderr);
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.view, 'gate-evidence');
+  assert.equal(parsed.full_artifact_ref, '.vibepro/pr/story-pr-prepare/pr-prepare.json');
+  assert.equal(JSON.stringify(parsed).includes('<story-id>'), false);
+  assert.equal(parsed.gate_dag_summary.nodes, undefined);
+  assert.equal(parsed.gate_dag_summary.edges, undefined);
+  assert.equal(parsed.gate_dag_summary.blocking_nodes.some((node) => node.required !== true), false);
+  assert.equal(parsed.gate_dag_summary.blocking_nodes.some((node) => ['present', 'pending'].includes(node.status)), false);
+});
+
 test('pr prepare fails clearly when a stage exceeds the configured timeout', async () => {
   const repo = await makeRepo();
   await assert.rejects(

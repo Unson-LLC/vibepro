@@ -248,7 +248,7 @@ PR 前に見る主な成果物:
 - `pr-create.json`: PR作成または既存PR refresh のライフサイクル証跡。
 - `pr-merge.json`: `vibepro execute merge` が書く merge ライフサイクル証跡。
 
-人間は短いPR本文と、生成されている場合はcockpitから読み始めます。AI エージェントには `pr-prepare.json`、`decision-index.json`、`evidence-plan.json`、`verification-evidence.json`、`pr-body.md`、生成済みの Gate DAG / split-plan / PR create / PR merge JSON artifact を渡すのが基本です。HTML artifact はレビュー面であり、正本ではありません。
+人間は短いPR本文と、生成されている場合はcockpitから読み始めます。AI エージェントには full JSON artifact ではなく、まず `vibepro pr prepare . --story-id <story-id> --summary-json` または `--view readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap` の限定viewを渡します。full JSON artifact は永続正本として保存し、必要な gate id / artifact path だけを対象に drill-down します。HTML artifact はレビュー面であり、正本ではありません。
 
 ## よく使うワークフロー
 

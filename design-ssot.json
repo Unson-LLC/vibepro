@@ -2062,7 +2062,69 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-bounded-artifact-view",
+      "title": "Bounded Artifact Projection Views",
+      "root_doc": "docs/architecture/vibepro-bounded-artifact-view.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "VibePro PR prepare LLM handoff projections and bounded artifact drill-down policy",
+      "owned_surfaces": [
+        "pr prepare --summary-json",
+        "pr prepare --view <name>",
+        "AI handoff instructions for PR prepare artifacts"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-bounded-artifact-view.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-bounded-artifact-view.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-bounded-artifact-view.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-bounded-artifact-view.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-03T00:14:17.549Z"
+  "updated_at": "2026-07-03T03:20:30.000Z"
 }
