@@ -291,6 +291,8 @@ npx vibepro architecture write /path/to/repo --id <story-id> --final --output do
 
 Use `story diagnose --pre-architecture` as design input before treating Architecture or Spec as settled. It records a `design_input_judgment` in the diagnosis run so workflow-heavy and cross-surface stories can show that Engineering Judgment informed the Architecture/Spec, not only the final PR gate.
 
+After Architecture and Spec exist, rerun `story diagnose --phase pre-implementation` before implementation or PR readiness so the final consistency check is recorded separately from design-input evidence. The intended order is design-input diagnosis -> Architecture / Spec -> pre-implementation diagnosis -> code / PR readiness.
+
 `architecture readiness` records Story, Graphify, Story diagnosis, Architecture check, and pre-implementation Engineering Judgment evidence in `.vibepro/architecture/<story-id>/architecture-readiness.json`. `architecture write --final` fails when that artifact is missing, blocked, or stale for the current git `HEAD`.
 
 ### Verify A User Flow

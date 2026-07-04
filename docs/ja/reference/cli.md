@@ -19,4 +19,6 @@ vibepro verify record [repo] --id <story-id> --command "<command>" --status pass
 vibepro decision status [repo] --id <story-id>
 ```
 
+workflow-heavy や複数surfaceにまたがるStoryでは、Architecture / Spec を確定扱いにする前に `vibepro story diagnose <repo> --id <story-id> --pre-architecture --run-graphify` を実行します。Architecture / Spec が揃った後、実装やPR readinessの前に `vibepro story diagnose <repo> --id <story-id> --phase pre-implementation` を実行し、最終整合性チェックを設計入力の証跡とは分けて残します。
+
 `codebase-memory-mcp` はVibeProコマンドとしては露出しません。binaryが `PATH` 上にある場合、`pr prepare` が自動で呼びます。

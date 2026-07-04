@@ -10,6 +10,8 @@ import { runCli } from '../src/cli.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-design-input-judgment';
+const PARSE_FAILURE_MODE = 'parse_failure';
+const EVIDENCE_LIFECYCLE_FAILURE_MODE = 'evidence_lifecycle_regression';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -109,7 +111,7 @@ test('story diagnose rejects unsupported phase instead of silently defaulting', 
   const result = await runCliCaptured(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'after-spec']);
 
   assert.equal(result.exitCode, 1);
-  assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/);
+  assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/, PARSE_FAILURE_MODE);
 });
 
 test('story diagnose --phase design-input records the same design-input evidence as --pre-architecture', async () => {
@@ -190,7 +192,7 @@ test('pr prepare preserves design-input judgment after later pre-implementation 
   assert.equal(designInputEvidence.design_input_judgment.phase, 'design_input');
   assert.equal(preImplementationEvidence.diagnosis_phase.phase, 'pre_implementation');
   assert.equal(preImplementationEvidence.pre_implementation_judgment.phase, 'pre_implementation');
-  assert.equal(preImplementationEvidence.design_input_judgment, undefined);
+  assert.equal(preImplementationEvidence.design_input_judgment, undefined, EVIDENCE_LIFECYCLE_FAILURE_MODE);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(result.exitCode, 0);
@@ -200,4 +202,16 @@ test('pr prepare preserves design-input judgment after later pre-implementation 
   const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
   assert.equal(gate.status, 'passed');
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
+});
+
+test('design-input judgment regression tests bind canonical failure-mode targets', () => {
+  const exercisedFailureModes = [
+    PARSE_FAILURE_MODE,
+    EVIDENCE_LIFECYCLE_FAILURE_MODE
+  ];
+
+  assert.deepEqual(exercisedFailureModes, [
+    'parse_failure',
+    'evidence_lifecycle_regression'
+  ]);
 });

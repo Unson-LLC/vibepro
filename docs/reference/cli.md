@@ -19,4 +19,6 @@ vibepro verify record [repo] --id <story-id> --command "<command>" --status pass
 vibepro decision status [repo] --id <story-id>
 ```
 
+For workflow-heavy or cross-surface stories, run `vibepro story diagnose <repo> --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `vibepro story diagnose <repo> --id <story-id> --phase pre-implementation` after Architecture/Spec exist so the final consistency check stays separate from design-input evidence.
+
 `codebase-memory-mcp` is not exposed as a VibePro command. `pr prepare` invokes it automatically when the binary is on `PATH`.

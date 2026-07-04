@@ -184,6 +184,16 @@ test('DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate'
   assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'missing', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
   const gate = findGate(prepare.result.preparation, 'gate:design_input_judgment');
   assert.equal(gate.status, 'needs_review', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
+  assert.match(
+    prepare.result.preparation.pr_context.design_input_judgment.required_actions.join('\n'),
+    /Regenerate the missing design-input diagnosis evidence artifact/,
+    `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`
+  );
+  assert.match(
+    gate.required_actions.join('\n'),
+    /vibepro story diagnose \. --id <story-id> --pre-architecture --run-graphify/,
+    `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`
+  );
 });
 
 test('DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
@@ -195,4 +205,21 @@ test('DIJ-SCENARIO-007 documentation explains design-input before Architecture a
   assert.match(readmeJa, /--pre-architecture --run-graphify/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
   assert.match(cliReference, /--phase design-input\|pre-implementation/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
   assert.match(workflowSkill, /Architecture\/Spec前|design-input/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  const readmeDesignInputBeforeArchitecture = readmeJa.indexOf('Architecture / Spec を確定扱いにする前に `story diagnose --pre-architecture`');
+  const readmePreImplementationBeforePr = readmeJa.indexOf('実装やPR readinessの前に `story diagnose --phase pre-implementation`');
+  assert.notEqual(readmeDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(readmePreImplementationBeforePr, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.equal(readmeDesignInputBeforeArchitecture < readmePreImplementationBeforePr, true, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+
+  const cliDesignInputBeforeArchitecture = cliReference.indexOf('before finalizing Architecture/Spec');
+  const cliPreImplementationBeforePr = cliReference.indexOf('Before implementation or PR readiness');
+  assert.notEqual(cliDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(cliPreImplementationBeforePr, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.equal(cliDesignInputBeforeArchitecture < cliPreImplementationBeforePr, true, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+
+  const workflowDesignInputBeforeArchitecture = workflowSkill.indexOf('Before final Architecture/Spec');
+  const workflowPreImplementationBeforePr = workflowSkill.indexOf('Before implementation or PR readiness');
+  assert.notEqual(workflowDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(workflowPreImplementationBeforePr, -1, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.equal(workflowDesignInputBeforeArchitecture < workflowPreImplementationBeforePr, true, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
 });

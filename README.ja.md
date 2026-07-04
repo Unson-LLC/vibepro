@@ -284,6 +284,8 @@ npx vibepro architecture write /path/to/repo --id <story-id> --final --output do
 
 workflow-heavy や複数surfaceにまたがるStoryでは、Architecture / Spec を確定扱いにする前に `story diagnose --pre-architecture` を設計入力として実行します。この診断は `design_input_judgment` を記録し、Engineering Judgment が最終PR Gateだけでなく Architecture / Spec の入力として使われたことを示します。
 
+Architecture / Spec が揃った後は、実装やPR readinessの前に `story diagnose --phase pre-implementation` を再実行し、設計入力の証跡とは別に最終整合性チェックを残します。順序は design-input diagnosis -> Architecture / Spec -> pre-implementation diagnosis -> code / PR readiness です。
+
 `architecture readiness` はStory、Graphify、Story diagnosis、Architecture check、Engineering Judgmentの証跡を `.vibepro/architecture/<story-id>/architecture-readiness.json` に記録します。`architecture write --final` はこのartifactが存在しない、blocked、または現在のgit `HEAD` に対してstaleな場合に失敗します。
 
 ### UI フローを検証する
