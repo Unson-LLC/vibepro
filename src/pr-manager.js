@@ -1565,7 +1565,7 @@ function collectPrReadinessBlockingItems(gateDag) {
 
 function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:e2e') return `Record current-head E2E evidence for ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
-  if (gate.id === 'gate:visual_qa') return `Record Visual QA evidence for UI changes: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:visual_qa') return `Record current-head Visual QA evidence for UI changes with residual artifacts, or \`vibepro verify record --kind e2e --status pass --scenario "visual_qa: screenshots reviewed" --scenario "screenshot: <path>" --artifact <screenshot-or-residual>\`: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:network_contract') return `Resolve Network Contract evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:pr_freshness') {
     return `Refresh PR branch and regenerate VibePro evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
@@ -3401,6 +3401,10 @@ function formatNullableRate(value) {
 }
 
 function buildVisualQaGateReason(visualQa) {
+  if (visualQa.source === 'verification_evidence') {
+    const refs = visualQa.runs.map((run) => run.command ?? run.qa_id).filter(Boolean);
+    return `Visual QA evidence is covered by current-head verification: ${refs.join('; ')}`;
+  }
   const needsReview = visualQa.runs.filter((run) => run.status === 'needs_review');
   if (needsReview.length === 0) {
     return `Visual QA evidence is within ${visualQa.threshold_pct}% residual threshold`;
@@ -3935,7 +3939,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
-  const visualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const visualQaEvidence = artifactVisualQaEvidence ?? buildVisualQaEvidenceFromVerification(boundVerificationEvidence);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const networkContracts = await scanNetworkContracts(repoRoot, {
@@ -3944,7 +3950,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     headRef: git.head_ref === 'HEAD' && git.includes_dirty_in_changed_files ? null : git.head_ref
   });
   const inferredSpec = await readInferredSpec(repoRoot, story.story_id);
-  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
   const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
     inferredSpec,
     verificationEvidence: boundVerificationEvidence
@@ -4488,6 +4493,50 @@ async function readVisualQaEvidence(repoRoot) {
       run.residual_analysis,
       run.latest_residual?.path
     ].filter(Boolean))
+  };
+}
+
+function buildVisualQaEvidenceFromVerification(verificationEvidence) {
+  const currentPassing = Array.isArray(verificationEvidence?.commands)
+    ? verificationEvidence.commands.filter((command) => command.status === 'pass' && command.binding?.status === 'current')
+    : [];
+  const runs = [];
+  for (const command of currentPassing) {
+    const matches = classifyVerificationEvidenceItem(command);
+    const kinds = new Set(matches.map((match) => match.kind));
+    if (!kinds.has('visual_qa') || !kinds.has('screenshot')) continue;
+    const targets = Array.isArray(command.observation?.targets) ? command.observation.targets : [];
+    const artifacts = [
+      command.artifact,
+      ...targets
+    ].filter(Boolean);
+    runs.push({
+      qa_id: `verification:${command.kind ?? 'unknown'}`,
+      source: 'verification_evidence',
+      status: 'ready_for_review',
+      command: command.command ?? null,
+      summary: command.summary ?? null,
+      artifact_refs: [...new Set(artifacts)],
+      matched_kinds: [...kinds].filter((kind) => ['visual_qa', 'screenshot', 'accessibility_evidence'].includes(kind)),
+      updated_at_ms: Date.parse(command.recorded_at ?? '') || 0,
+      residual_analysis: null,
+      semantic_layout_residual_pct: null,
+      latest_residual: null
+    });
+  }
+  if (runs.length === 0) return null;
+  const sortedRuns = runs
+    .sort((a, b) => (b.updated_at_ms ?? 0) - (a.updated_at_ms ?? 0))
+    .slice(0, 5);
+  return {
+    schema_version: '0.1.0',
+    status: 'ready_for_review',
+    source: 'verification_evidence',
+    required_evidence: ['visual_qa', 'screenshot'],
+    optional_evidence: ['accessibility_evidence'],
+    threshold_pct: null,
+    runs: sortedRuns,
+    artifacts: sortedRuns.flatMap((run) => run.artifact_refs ?? [])
   };
 }
 
@@ -7228,6 +7277,9 @@ function classifyVerificationEvidenceItem(item) {
   if (!generic && /\b(flow replay|flow_replay|verify flow|journey|replay)\b/.test(text)) add('flow_replay');
   if (!generic && /\b(artifact replay|artifact_replay|gate-dag|pr-prepare|pr-create|stale artifact|stale readiness)\b/.test(text)) add('artifact_replay');
   if (!generic && item.kind === 'e2e' && (/\b(scenario|acceptance|clause|ac:|story-)\b/.test(text) || /scenario[_ -]?clause[_ -]?e2e/.test(text))) add('scenario_clause_e2e');
+  if (!generic && /\b(visual qa|visual_qa|visual regression|visual check|screenshot|screen shot|playwright screenshot|image diff)\b/.test(text)) add('visual_qa');
+  if (!generic && /\b(screenshot|screen shot|snapshot image|playwright screenshot)\b/.test(text)) add('screenshot');
+  if (!generic && /\b(accessibility|accessibility evidence|a11y|aria|keyboard|focus order|focus visible)\b/.test(text)) add('accessibility_evidence');
   if (!generic && /\b(auth_denied|auth denied|permission denied|forbidden|unauthorized|401|403|拒否|権限)\b/.test(text)) add('auth_denied');
   if (!generic && /\b(permission_denied|permission denied|forbidden|403|権限)\b/.test(text)) add('permission_denied');
   if (!generic && /\b(boundary|edge case|境界|境界条件)\b/.test(text)) add('boundary_condition');
@@ -7258,6 +7310,7 @@ function explicitEvidenceKindsFromVerificationText(text) {
     'security_review',
     'topology_diagram',
     'visual_qa',
+    'screenshot',
     'accessibility_evidence',
     'benchmark_delta',
     'perf_regression_guard',
@@ -11815,7 +11868,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
   return gates
     .map((gate) => {
       if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification, plus Story acceptance coverage in tests/e2e/<story-id>-*.spec.ts.';
-      if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence.';
+      if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence. Use residual artifacts under `.vibepro/qa/<qa-id>/` or record current-head E2E evidence with `--scenario "visual_qa: screenshots reviewed" --scenario "screenshot: <path>"` and attach the screenshot/residual artifact.';
       if (gate.id === 'gate:story_source_integrity') return 'Story Source Integrity Gate requires the selected Story and resolved/changed Story document to match before Requirement and PR body evidence can be trusted.';
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';
