@@ -13716,6 +13716,153 @@ test('pr prepare requires Visual QA evidence when UI source changes', async () =
   assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
 });
 
+test('VQG-S-2 pr prepare accepts current visual verification evidence when residual run is absent', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, 'artifacts', 'visual', 'story-pr-prepare-home.png'), 'fake screenshot\n');
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test test/e2e/story-pr-prepare-visual.spec.ts',
+    '--summary',
+    'VQG-S-2 visual QA screenshot reviewed',
+    '--target',
+    'test/e2e/story-pr-prepare-visual.spec.ts',
+    '--target',
+    'artifacts/visual/story-pr-prepare-home.png',
+    '--scenario',
+    'visual_qa: screenshot reviewed for VQG-S-2',
+    '--scenario',
+    'screenshot: artifacts/visual/story-pr-prepare-home.png',
+    '--artifact',
+    'artifacts/visual/story-pr-prepare-home.png'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.visual_qa.source, 'verification_evidence');
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'ready_for_review');
+  assert.match(visualGate.reason, /current-head verification/);
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), false);
+  assert.equal(result.result.preparation.pr_context.completion_quality.metrics.visual_qa_pass_rate, 1);
+});
+
+test('VQG-S-3 generic verification does not satisfy Visual QA Gate without explicit markers', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npm test',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_evidence');
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+});
+
+test('VQG-S-4 residual Visual QA evidence remains authoritative over verification fallback', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, 'artifacts', 'visual', 'story-pr-prepare-home.png'), 'fake screenshot\n');
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'semantic/layout residual: **34%**\n');
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json'), {
+    meanAbsResidualPct: 13.41
+  });
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test test/e2e/story-pr-prepare-visual.spec.ts',
+    '--scenario',
+    'visual qa screenshot reviewed',
+    '--scenario',
+    'screen shot artifacts/visual/story-pr-prepare-home.png',
+    '--artifact',
+    'artifacts/visual/story-pr-prepare-home.png'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.visual_qa.source ?? null, null);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /MAE 13\.41%/);
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+});
+
+test('VQG-S-5 Visual QA critical gate guidance includes executable evidence markers', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await git(repo, ['add', 'src/components/PrimaryButton.tsx']);
+  await git(repo, ['commit', '-m', 'feat: add ui component']);
+
+  let stderrOutput = '';
+  const result = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    'testing VQG-S-5 guidance',
+    '--json'
+  ], {
+    stderr: { write: (text) => { stderrOutput += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderrOutput, /Visual QA Gate requires ready_for_review visual QA evidence/);
+  assert.match(stderrOutput, /--scenario "visual_qa: screenshots reviewed"/);
+  assert.match(stderrOutput, /--scenario "screenshot: <path>"/);
+});
+
 test('pr prepare blocks new API client calls until network-aware evidence exists even when route exists', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'app', 'detail'), { recursive: true });
