@@ -53,6 +53,7 @@ async function writeCrossSurfaceDesignChange(repo) {
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'app', 'api', 'accounts'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---
 story_id: ${STORY_ID}
 title: Design input judgment
@@ -75,6 +76,18 @@ Workflow-heavy Architecture and Spec should be informed by diagnosis before impl
   await writeFile(path.join(repo, 'docs', 'architecture', 'design-input-judgment.md'), '# Design Input Architecture\n\nThe workflow gate records early judgment evidence.\n');
   await writeFile(path.join(repo, 'docs', 'specs', 'design-input-judgment.md'), '# Design Input Spec\n\n- The diagnosis phase is recorded.\n');
   await writeFile(path.join(repo, 'src', 'workflow.js'), 'export function workflowGate(){ return "design-input"; }\n');
+  await writeFile(path.join(repo, 'src', 'app', 'api', 'accounts', 'route.ts'), `import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+
+export async function GET(request) {
+  const accounts = await prisma.account.findMany({ where: { archived: false } });
+  const authorization = request.headers.get('authorization');
+  if (!authorization) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  return NextResponse.json({ accounts });
+}
+`);
 }
 
 function findGate(prepare, id) {
@@ -89,6 +102,11 @@ async function runCliCaptured(args) {
     stderr: { write: (chunk) => { stderr += chunk; } }
   });
   return { ...result, stdout, stderr };
+}
+
+function assertAuthorizationOrderRiskEvidence(evidence, message) {
+  assert.equal(evidence.code_quality.authorization_order_risks.length, 1, message);
+  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/route.ts', message);
 }
 
 test('DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 story diagnose --pre-architecture records design-input judgment evidence', async () => {
@@ -128,7 +146,7 @@ test('DIJ-CONTRACT-002 DIJ-CONTRACT-003 DIJ-CONTRACT-004 story diagnose --phase 
 test('DIJ-CONTRACT-006 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-002 DIJ-AP-002 workflow_state_regression pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
@@ -145,7 +163,7 @@ test('DIJ-CONTRACT-006 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-002 DIJ-AP-002 
 test('DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-SCENARIO-003 pr prepare passes design-input gate when pre-architecture diagnosis exists', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--pre-architecture']);
 
@@ -161,7 +179,7 @@ test('DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-SCENARIO-003 pr prepare passes desig
 test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when design-input run exists but evidence artifact is missing', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
   const diagnosis = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   await unlink(path.join(repo, diagnosis.result.diagnosis.run.artifacts.evidence));
@@ -178,10 +196,10 @@ test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when
   assert.match(gate.required_actions.join('\n'), /Regenerate the missing design-input diagnosis evidence artifact/);
 });
 
-test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-INV-001 DIJ-AP-001 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
+test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 DIJ-SCENARIO-008 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
   const designInputRun = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   const preImplementationRun = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
@@ -192,14 +210,17 @@ test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-INV-001 DIJ-AP-001 evidence_lifecycl
   const preImplementationEvidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '002-pre-implementation', 'evidence.json'), 'utf8'));
   assert.equal(designInputEvidence.diagnosis_phase.phase, 'design_input');
   assert.equal(designInputEvidence.design_input_judgment.phase, 'design_input');
+  assertAuthorizationOrderRiskEvidence(designInputEvidence, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input evidence');
   assert.equal(preImplementationEvidence.diagnosis_phase.phase, 'pre_implementation');
   assert.equal(preImplementationEvidence.pre_implementation_judgment.phase, 'pre_implementation');
   assert.equal(preImplementationEvidence.design_input_judgment, undefined);
+  assertAuthorizationOrderRiskEvidence(preImplementationEvidence, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in pre-implementation evidence');
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'present');
   assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 keeps the design-input evidence artifact available after pre-implementation diagnosis');
   assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation');
 
   const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
