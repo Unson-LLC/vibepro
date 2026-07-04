@@ -73,6 +73,7 @@ vibepro story diagnose <repo> --id <story-id> [--phase design-input|pre-implemen
 ## Release Operations
 
 - `release_note`: The new `--pre-architecture` alias is additive and documents the preferred Story-start workflow for workflow-heavy or cross-surface stories.
+- `rollout_plan`: Release with CLI reference, README, workflow skill, Story, Architecture, Spec, unit tests, and an executable E2E marker spec in the same PR so the guidance, artifacts, and gates stay traceable.
 - `rollback_instruction`: Reverting this Story returns diagnosis to a single pre-implementation interpretation; no data migration is required.
 - `observability_evidence`: Diagnosis summaries include `diagnosis_phase`, and PR prepare summaries include `design_input_judgment_status`.
 

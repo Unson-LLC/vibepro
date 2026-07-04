@@ -50,6 +50,7 @@ This also does not require Architecture/Spec to exist before diagnosis. In desig
 ## Release Operations
 
 - `release_note`: CLI users can now run `vibepro story diagnose <repo> --id <story-id> --pre-architecture` to record early design-input diagnosis evidence; existing `story diagnose` calls remain pre-implementation diagnosis by default.
+- `rollout_plan`: Ship as an additive CLI/workflow guidance change. Existing diagnosis commands keep the `pre_implementation` default, while new Story-start guidance points workflow-heavy stories to `--pre-architecture` before Architecture/Spec promotion.
 - `rollback_instruction`: Reverting this change removes the design-input phase, `--pre-architecture` alias, PR context split, and warning gate; existing diagnosis evidence without `diagnosis_phase` remains readable as pre-implementation evidence.
 - `observability_evidence`: PR prepare exposes `design_input_judgment_status` in the Gate DAG summary, and diagnosis evidence stores `diagnosis_phase` for audit review.
 
