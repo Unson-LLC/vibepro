@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-gate-efficiency-fast-readiness",
   "source": "execute_merge",
-  "generated_at": "2026-07-04T22:28:25.706Z",
+  "generated_at": "2026-07-04T22:28:29.329Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -118,13 +118,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3000,
+      "compressed_bytes": 3001,
       "expanded_bytes": 12584,
       "expanded_line_count": 334,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9654,
-    "raw_source_artifact_code_ratio": 21.597,
+    "raw_source_artifact_lines": 9744,
+    "raw_source_artifact_code_ratio": 21.799,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -240,7 +240,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-gate-efficiency-fast-readiness",
-    "generated_at": "2026-07-04T22:28:25.706Z",
+    "generated_at": "2026-07-04T22:28:29.329Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -356,10 +356,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:e2e369f9e95e4e6277c38dc3e01936843dc5baf228f1cf3cb3f339a6a2b0e673",
-    "compressed_hash": "sha256:f7afda636236399abeb7594b3c4ec31d181929856a96dce4a7bd12f129004dcf",
+    "content_hash": "sha256:fbd562789aea924eeb6a5484ba510c4c1b15c39da7a8fee70e8761ccf6f854b5",
+    "compressed_hash": "sha256:a57d46adc00b07ebe2740e548c212fd61dff926e002f4a02db8cca0ca533f777",
     "expanded_bytes": 12584,
-    "compressed_bytes": 3000,
+    "compressed_bytes": 3001,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -378,7 +378,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-gate-efficiency-fast-readiness",
     "cost": {
-      "compressed_bytes": 3000,
+      "compressed_bytes": 3001,
       "expanded_bytes": 12584,
       "expanded_line_count": 334,
       "persisted_line_count": 1
