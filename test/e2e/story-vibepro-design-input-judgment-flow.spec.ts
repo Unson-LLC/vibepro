@@ -13,7 +13,7 @@ test('story-vibepro-design-input-judgment flow records design input before Archi
     ['story-vibepro-design-input-judgment ac:1', command],
     ['story-vibepro-design-input-judgment ac:2', '--phase design-input|pre-implementation'],
     [
-      'story-vibepro-design-input-judgment S-001',
+      'story-vibepro-design-input-judgment S-004',
       'Given the VibePro workflow state is Story selected, when an agent runs story diagnose --pre-architecture, then the workflow state transitions to design_input and the manifest run plus evidence file record phase=design_input.'
     ]
   ];
@@ -24,7 +24,7 @@ test('story-vibepro-design-input-judgment flow records design input before Archi
   assert.equal(evidence.design_input_judgment, true);
   assert.deepEqual(evidence.feeds, ['architecture', 'spec', 'implementation_plan']);
   for (const [marker, covered] of acceptanceCoverage) {
-    assert.match(marker, /story-vibepro-design-input-judgment (ac:[12]|S-001)/);
+    assert.match(marker, /story-vibepro-design-input-judgment (ac:[12]|S-004)/);
     assert.equal(String(covered).length > 0, true);
   }
 });
@@ -40,11 +40,11 @@ test('story-vibepro-design-input-judgment flow keeps design input and PR readine
     ['story-vibepro-design-input-judgment ac:5', 'missing early evidence yields gate warning for workflow-heavy Architecture/Spec changes'],
     ['story-vibepro-design-input-judgment ac:6', 'present early evidence yields passed gate:design_input_judgment'],
     [
-      'story-vibepro-design-input-judgment S-002',
+      'story-vibepro-design-input-judgment S-005',
       'Given the VibePro workflow status is Architecture/Spec and implementation files changed without design-input diagnosis, when PR prepare runs, then gate:design_input_judgment is needs_review and required=false.'
     ],
     [
-      'story-vibepro-design-input-judgment S-003',
+      'story-vibepro-design-input-judgment S-006',
       'Given the VibePro workflow state already has design-input diagnosis for the Story, when PR prepare builds the Gate DAG, then gate:design_input_judgment transitions to passed.'
     ]
   ];
@@ -56,7 +56,7 @@ test('story-vibepro-design-input-judgment flow keeps design input and PR readine
   assert.equal(prContext.gate_dag.indexOf('gate:design_input_judgment') > prContext.gate_dag.indexOf('gate:story_source_integrity'), true);
   assert.equal(prContext.gate_dag.indexOf('gate:design_input_judgment') < prContext.gate_dag.indexOf('gate:engineering_judgment_route'), true);
   for (const [marker, covered] of acceptanceCoverage) {
-    assert.match(marker, /story-vibepro-design-input-judgment (ac:[456]|S-00[23])/);
+    assert.match(marker, /story-vibepro-design-input-judgment (ac:[456]|S-00[56])/);
     assert.equal(String(covered).length > 0, true);
   }
 });
