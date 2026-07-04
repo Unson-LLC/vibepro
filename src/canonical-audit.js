@@ -243,6 +243,8 @@ function summarizeGateListForLlm(gates, limit) {
     required: gate.required,
     reason: gate.reason,
     required_actions: summarizeStringList(gate.required_actions, 3),
+    primary_next_command: gate.primary_next_command,
+    next_commands: summarizeStringList(gate.next_commands, 3),
     command: gate.command,
     artifact: gate.artifact
   }));
