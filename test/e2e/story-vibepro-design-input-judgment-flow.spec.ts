@@ -10,6 +10,9 @@ import { runCli } from '../../src/cli.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-vibepro-design-input-judgment';
+const SCENARIO_S004 = 'Given the VibePro workflow state is Story selected, when an agent runs story diagnose --pre-architecture, then the workflow state transitions to design_input and the manifest run plus evidence file record phase=design_input.';
+const SCENARIO_S005 = 'Given the VibePro workflow status is Architecture/Spec and implementation files changed without design-input diagnosis, when PR prepare runs, then gate:design_input_judgment is needs_review and required=false.';
+const SCENARIO_S006 = 'Given the VibePro workflow state already has design-input diagnosis for the Story, when PR prepare builds the Gate DAG, then gate:design_input_judgment transitions to passed.';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -111,12 +114,12 @@ test('DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.diagnosis.run.phase, 'design_input');
+  assert.equal(result.result.diagnosis.run.phase, 'design_input', `${STORY_ID} S-004 ${SCENARIO_S004}`);
   assert.equal(result.result.diagnosis.run.design_input_judgment.phase, 'design_input');
 
   const evidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '001-design-input', 'evidence.json'), 'utf8'));
   assert.equal(evidence.diagnosis_phase.phase, 'design_input');
-  assert.equal(evidence.design_input_judgment.phase, 'design_input');
+  assert.equal(evidence.design_input_judgment.phase, 'design_input', `${STORY_ID} S-004 ${SCENARIO_S004}`);
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
 });
 
@@ -130,8 +133,8 @@ test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates de
   assert.equal(missing.exitCode, 0);
   assert.equal(missing.result.preparation.pr_context.design_input_judgment.status, 'missing');
   const missingGate = findGate(missing.result.preparation, 'gate:design_input_judgment');
-  assert.equal(missingGate.status, 'needs_review');
-  assert.equal(missingGate.required, false);
+  assert.equal(missingGate.status, 'needs_review', `${STORY_ID} S-005 ${SCENARIO_S005}`);
+  assert.equal(missingGate.required, false, `${STORY_ID} S-005 ${SCENARIO_S005}`);
 
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
@@ -143,7 +146,7 @@ test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates de
   assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation');
 
   const passedGate = findGate(prepare.result.preparation, 'gate:design_input_judgment');
-  assert.equal(passedGate.status, 'passed');
+  assert.equal(passedGate.status, 'passed', `${STORY_ID} S-006 ${SCENARIO_S006}`);
   const gateIds = prepare.result.preparation.pr_context.gate_dag.nodes.map((node) => node.id);
   assert.equal(gateIds.indexOf('gate:design_input_judgment') > gateIds.indexOf('gate:story_source_integrity'), true);
   assert.equal(gateIds.indexOf('gate:design_input_judgment') < gateIds.indexOf('gate:engineering_judgment_route'), true);
