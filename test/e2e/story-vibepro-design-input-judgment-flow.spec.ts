@@ -12,7 +12,10 @@ test('story-vibepro-design-input-judgment flow records design input before Archi
   const acceptanceCoverage = [
     ['story-vibepro-design-input-judgment ac:1', command],
     ['story-vibepro-design-input-judgment ac:2', '--phase design-input|pre-implementation'],
-    ['story-vibepro-design-input-judgment S-001', 'manifest run and evidence file record phase=design_input']
+    [
+      'story-vibepro-design-input-judgment S-001',
+      'Given the VibePro workflow state is Story selected, when an agent runs story diagnose --pre-architecture, then the workflow state transitions to design_input and the manifest run plus evidence file record phase=design_input.'
+    ]
   ];
 
   assert.match(command, /--pre-architecture/);
@@ -36,8 +39,14 @@ test('story-vibepro-design-input-judgment flow keeps design input and PR readine
     ['story-vibepro-design-input-judgment ac:4', 'PR prepare artifact exposes two separate judgment surfaces'],
     ['story-vibepro-design-input-judgment ac:5', 'missing early evidence yields gate warning for workflow-heavy Architecture/Spec changes'],
     ['story-vibepro-design-input-judgment ac:6', 'present early evidence yields passed gate:design_input_judgment'],
-    ['story-vibepro-design-input-judgment S-002', 'design_input_judgment and pre_implementation_judgment remain separate PR context surfaces'],
-    ['story-vibepro-design-input-judgment S-003', 'gate:design_input_judgment is passed when design-input diagnosis exists']
+    [
+      'story-vibepro-design-input-judgment S-002',
+      'Given the VibePro workflow status is Architecture/Spec and implementation files changed without design-input diagnosis, when PR prepare runs, then gate:design_input_judgment is needs_review and required=false.'
+    ],
+    [
+      'story-vibepro-design-input-judgment S-003',
+      'Given the VibePro workflow state already has design-input diagnosis for the Story, when PR prepare builds the Gate DAG, then gate:design_input_judgment transitions to passed.'
+    ]
   ];
 
   assert.notDeepEqual(prContext.design_input_judgment, prContext.pre_implementation_judgment);

@@ -58,12 +58,12 @@ vibepro story diagnose <repo> --id <story-id> [--phase design-input|pre-implemen
 
 ## Scenarios
 
-- `DIJ-SCENARIO-001`: Given a selected Story, when an agent runs `story diagnose --pre-architecture`, then the manifest run and evidence file record `phase=design_input`.
-- `DIJ-SCENARIO-002`: Given Architecture/Spec and implementation files change together without design-input diagnosis, when `pr prepare` runs, then `gate:design_input_judgment` is `needs_review` and `required=false`.
-- `DIJ-SCENARIO-003`: Given design-input diagnosis exists for the Story, when `pr prepare` runs, then `gate:design_input_judgment` is `passed`.
-- `DIJ-SCENARIO-004`: Given Story plan or repo status has no prior run, when next commands are shown, then the first diagnosis command includes `--pre-architecture`.
-- `DIJ-SCENARIO-005`: Given a workflow-heavy Story, when Architecture/Spec are prepared, then design-input diagnosis evidence is available before implementation and pre-implementation diagnosis remains a separate final consistency check.
-- `DIJ-SCENARIO-006`: Given diagnosis or PR prepare evidence is replayed, when artifacts are inspected, then `design_input_judgment` and `pre_implementation_judgment` are not collapsed into one generic Engineering Judgment record.
+- `DIJ-SCENARIO-001`: Given the VibePro workflow state is Story selected, when an agent runs `story diagnose --pre-architecture`, then the workflow state transitions to design_input and the manifest run plus evidence file record `phase=design_input`.
+- `DIJ-SCENARIO-002`: Given the VibePro workflow status is Architecture/Spec and implementation files changed without design-input diagnosis, when `pr prepare` runs, then `gate:design_input_judgment` is `needs_review` and `required=false`.
+- `DIJ-SCENARIO-003`: Given the VibePro workflow state already has design-input diagnosis for the Story, when `pr prepare` builds the Gate DAG, then `gate:design_input_judgment` transitions to `passed`.
+- `DIJ-SCENARIO-004`: Given Story plan or repo status has no prior workflow run, when next commands are shown, then the first diagnosis command includes `--pre-architecture`.
+- `DIJ-SCENARIO-005`: Given a workflow-heavy Story, when Architecture/Spec are prepared, then design-input diagnosis evidence is available before implementation and pre-implementation diagnosis remains a separate final workflow consistency check.
+- `DIJ-SCENARIO-006`: Given diagnosis or PR prepare workflow evidence is replayed, when artifacts are inspected, then `design_input_judgment` and `pre_implementation_judgment` are not collapsed into one generic Engineering Judgment record.
 
 ## Failure Modes
 
