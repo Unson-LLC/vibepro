@@ -144,3 +144,21 @@ test('pr prepare passes design-input gate when pre-architecture diagnosis exists
   assert.equal(gate.status, 'passed');
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
 });
+
+test('pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
+  const repo = await makeGitRepo();
+  await writeCrossSurfaceDesignChange(repo);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
+  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
+  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'present');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input');
+
+  const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
+  assert.equal(gate.status, 'passed');
+  assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
+});

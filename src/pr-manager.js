@@ -252,6 +252,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
+  const designInputStoryRun = findLatestStoryRunByPhase(manifest, story.story_id, 'design_input');
   const verificationEvidence = workspace.initialized
     ? await progress.stage('read_verification_evidence', () => readVerificationEvidenceIfExists(root, story.story_id))
     : null;
@@ -271,6 +272,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     fileGroups,
     scope,
     latestStoryRun,
+    designInputStoryRun,
     verificationEvidence,
     decisionRecords,
     managedWorktreeGate,
@@ -4493,7 +4495,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
@@ -4519,6 +4521,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const verificationCommands = buildVerificationCommands(fileGroups, { typecheckCommand, testRunner });
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
+  const designInputEvidence = designInputStoryRun?.run_id === latestStoryRun?.run_id
+    ? latestEvidence
+    : await readRunEvidenceIfExists(repoRoot, designInputStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
   const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot, git);
@@ -4617,8 +4622,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     agentReviews
   });
   const designInputJudgment = buildDesignInputJudgmentContext({
-    latestStoryRun,
-    latestEvidence,
+    latestStoryRun: designInputStoryRun ?? latestStoryRun,
+    latestEvidence: designInputEvidence ?? latestEvidence,
     engineeringJudgment,
     changeClassification,
     fileGroups
@@ -13207,6 +13212,11 @@ function findLatestStoryRun(manifest, storyId) {
   return runs.find((run) => run.run_id === latestRunId)
     ?? runs.find((run) => run.story_id === storyId)
     ?? null;
+}
+
+function findLatestStoryRunByPhase(manifest, storyId, phase) {
+  const runs = Array.isArray(manifest.runs) ? manifest.runs : [];
+  return runs.find((run) => run?.story_id === storyId && run.phase === phase) ?? null;
 }
 
 function buildBranchName(story) {
