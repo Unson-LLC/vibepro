@@ -19834,8 +19834,8 @@ export function middleware() {}
   assert.equal(evidence.database_access.unbounded_find_many.length, 1);
   assert.equal(evidence.database_access.unbounded_find_many[0].file, 'src/app/api/companies/route.ts');
   assert.equal(evidence.database_access.unbounded_find_many[0].gate_effect, 'review');
-  assert.equal(evidence.code_quality.authorization_order_risks.length, 1);
-  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/[id]/route.ts');
+  assert.equal(evidence.code_quality.authorization_order_risks.length, 1, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in diagnosis evidence');
+  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/[id]/route.ts', 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves the authorization_order_risks source file');
   assert.equal(evidence.code_quality.duplicate_query_shapes.length, 1);
   assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-alpha.ts'), true);
   assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-beta.ts'), true);
@@ -20009,7 +20009,7 @@ export function middleware() {}
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
   assert.match(summary, /DB未ページング候補/);
-  assert.match(summary, /認可前bulk DB候補/);
+  assert.match(summary, /認可前bulk DB候補/, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in diagnosis summary');
   assert.match(summary, /重複query形状候補/);
   assert.match(summary, /責務混在候補/);
   assert.match(summary, /リファクタリング機会/);
@@ -20067,7 +20067,7 @@ export function middleware() {}
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
   assert.match(importSummary, /共通スキャン対象/);
   assert.match(importSummary, /## API境界/);
-  assert.match(importSummary, /認可前bulk DB候補/);
+  assert.match(importSummary, /認可前bulk DB候補/, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in Brainbase import summary');
   assert.match(importSummary, /重複query形状候補/);
   assert.match(importSummary, /責務混在候補/);
   assert.match(importSummary, /リファクタリング機会/);
@@ -20089,7 +20089,7 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.route_count, 8);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 4);
-  assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1);
+  assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in Brainbase import state');
   assert.equal(importState.signals.code_quality.duplicate_query_shapes_count, 1);
   assert.equal(importState.signals.code_quality.responsibility_hotspots_count, 1);
   assert.equal(importState.signals.refactoring_opportunities.length, 2);

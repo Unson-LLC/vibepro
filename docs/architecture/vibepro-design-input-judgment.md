@@ -47,6 +47,8 @@ This does not replace Architecture Readiness or Pre-Spec Readiness. Those remain
 
 This also does not require Architecture/Spec to exist before diagnosis. In design-input mode, absent Architecture/Spec is valid because the output is meant to feed them.
 
+The phase split does not change the underlying diagnostic scanners or drop their outputs. Existing `code_quality.authorization_order_risks` findings remain part of diagnosis evidence and Brainbase import state in both design-input and pre-implementation phases.
+
 ## Release Operations
 
 - `release_note`: CLI users can now run `vibepro story diagnose <repo> --id <story-id> --pre-architecture` to record early design-input diagnosis evidence; existing `story diagnose` calls remain pre-implementation diagnosis by default.

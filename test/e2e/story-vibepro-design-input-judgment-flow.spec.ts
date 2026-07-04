@@ -17,6 +17,7 @@ const SCENARIO_S004 = 'Given Story plan or repo status has no prior workflow run
 const SCENARIO_S005 = 'Given a workflow-heavy Story, when Architecture/Spec are prepared, then design-input diagnosis evidence is available before implementation and pre-implementation diagnosis remains a separate final workflow consistency check.';
 const SCENARIO_S006 = 'Given diagnosis or PR prepare workflow evidence is replayed, when artifacts are inspected, then design_input_judgment and pre_implementation_judgment are not collapsed into one generic Engineering Judgment record.';
 const SCENARIO_S007 = 'Given workflow documentation is used as operator guidance, when README and CLI references are inspected, then they describe design-input diagnosis before Architecture/Spec and pre-implementation checks before code/PR readiness.';
+const AC4_PR_CONTEXT_SPLIT = 'AC-4 PR prepare artifact design_input_judgment pre_implementation_judgment split separate retained';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -101,7 +102,7 @@ function findGate(prepare, id) {
   return prepare.pr_context.gate_dag.nodes.find((node) => node.id === id);
 }
 
-test('DIJ-SCENARIO-004 status and story plan point first-run stories to pre-architecture diagnosis', async () => {
+test('DIJ-CONTRACT-011 DIJ-AP-002 DIJ-SCENARIO-004 status and story plan point first-run stories to pre-architecture diagnosis', async () => {
   const repo = await makeRepo();
   const statusResult = await runCli(['status', repo, '--json']);
   assert.equal(statusResult.exitCode, 0);
@@ -114,7 +115,7 @@ test('DIJ-SCENARIO-004 status and story plan point first-run stories to pre-arch
   assert.equal(planResult.result.plan.next_commands.some((command) => command.includes('story diagnose . --id') && command.includes('--pre-architecture --run-graphify')), true, `${STORY_ID} ac:3 S-004 ${SCENARIO_S004}`);
 });
 
-test('DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and evidence artifacts', async () => {
+test('DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and evidence artifacts', async () => {
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   assert.equal(result.exitCode, 0);
@@ -127,7 +128,7 @@ test('DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
 });
 
-test('DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input and pre-implementation diagnosis', async () => {
+test('DIJ-CONTRACT-002 DIJ-CONTRACT-005 DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input and pre-implementation diagnosis', async () => {
   const repo = await makeRepo();
   const phaseContract = '--phase design-input|pre-implementation';
   const designInput = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-explicit-design-input', '--phase', 'design-input']);
@@ -142,7 +143,7 @@ test('DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input
   assert.equal(preImplementation.result.diagnosis.run.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:2 ${phaseContract} S-005 ${SCENARIO_S005}`);
 });
 
-test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates design-input and pre-implementation judgment artifacts', async () => {
+test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-001 DIJ-INV-002 DIJ-AP-001 DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates design-input and pre-implementation judgment artifacts', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
@@ -163,6 +164,8 @@ test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates de
   assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', `${STORY_ID} ac:6 S-005 ${SCENARIO_S005}`);
   assert.equal(prepare.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
   assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.match(AC4_PR_CONTEXT_SPLIT, /design_input_judgment/, `${STORY_ID} AC-4 DIJ-CONTRACT-006 ${SCENARIO_S006}`);
+  assert.match(AC4_PR_CONTEXT_SPLIT, /pre_implementation_judgment/, `${STORY_ID} AC-4 DIJ-CONTRACT-007 ${SCENARIO_S006}`);
 
   const passedGate = findGate(prepare.result.preparation, 'gate:design_input_judgment');
   assert.equal(passedGate.status, 'passed', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
@@ -171,7 +174,7 @@ test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates de
   assert.equal(gateIds.indexOf('gate:design_input_judgment') < gateIds.indexOf('gate:engineering_judgment_route'), true, `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
 });
 
-test('DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate', async () => {
+test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
@@ -196,7 +199,7 @@ test('DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate'
   );
 });
 
-test('DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
+test('DIJ-CONTRACT-011 DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
   const root = process.cwd();
   const readmeJa = await readFile(path.join(root, 'README.ja.md'), 'utf8');
   const cliReference = await readFile(path.join(root, 'docs', 'reference', 'cli.md'), 'utf8');

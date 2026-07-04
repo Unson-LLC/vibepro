@@ -91,7 +91,7 @@ async function runCliCaptured(args) {
   return { ...result, stdout, stderr };
 }
 
-test('story diagnose --pre-architecture records design-input judgment evidence', async () => {
+test('DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 story diagnose --pre-architecture records design-input judgment evidence', async () => {
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--pre-architecture']);
   assert.equal(result.exitCode, 0);
@@ -104,7 +104,7 @@ test('story diagnose --pre-architecture records design-input judgment evidence',
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
 });
 
-test('story diagnose rejects unsupported phase instead of silently defaulting [parse_failure]', async () => {
+test('DIJ-CONTRACT-001 parse_failure story diagnose rejects unsupported phase instead of silently defaulting', async () => {
   const repo = await makeRepo();
   const result = await runCliCaptured(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'after-spec']);
 
@@ -113,7 +113,7 @@ test('story diagnose rejects unsupported phase instead of silently defaulting [p
   assert.doesNotMatch(result.stdout, /"phase"\s*:\s*"design_input"/);
 });
 
-test('story diagnose --phase design-input records the same design-input evidence as --pre-architecture', async () => {
+test('DIJ-CONTRACT-002 DIJ-CONTRACT-003 DIJ-CONTRACT-004 story diagnose --phase design-input records the same design-input evidence as --pre-architecture', async () => {
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'design-input']);
   assert.equal(result.exitCode, 0);
@@ -125,7 +125,7 @@ test('story diagnose --phase design-input records the same design-input evidence
   assert.equal(evidence.design_input_judgment.phase, 'design_input');
 });
 
-test('pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis', async () => {
+test('DIJ-CONTRACT-006 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-002 DIJ-AP-002 workflow_state_regression pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
@@ -142,7 +142,7 @@ test('pr prepare warns on cross-surface Architecture/Spec without design-input d
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'needs_review');
 });
 
-test('pr prepare passes design-input gate when pre-architecture diagnosis exists', async () => {
+test('DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-SCENARIO-003 pr prepare passes design-input gate when pre-architecture diagnosis exists', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
@@ -158,7 +158,7 @@ test('pr prepare passes design-input gate when pre-architecture diagnosis exists
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
 });
 
-test('pr prepare warns when design-input run exists but evidence artifact is missing', async () => {
+test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when design-input run exists but evidence artifact is missing', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
@@ -178,7 +178,7 @@ test('pr prepare warns when design-input run exists but evidence artifact is mis
   assert.match(gate.required_actions.join('\n'), /Regenerate the missing design-input diagnosis evidence artifact/);
 });
 
-test('pr prepare preserves design-input judgment after later pre-implementation diagnosis [evidence_lifecycle_regression]', async () => {
+test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-INV-001 DIJ-AP-001 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
