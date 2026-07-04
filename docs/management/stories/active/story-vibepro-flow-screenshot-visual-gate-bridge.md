@@ -10,6 +10,9 @@ source:
 related_stories:
   - story-vibepro-visual-evidence-gate-ux
   - story-vibepro-verification-observation-artifacts
+parent_design: vibepro-flow-screenshot-visual-gate-bridge
+architecture_docs:
+  - docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md
 spec_docs:
   - docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md
 created_at: 2026-07-05

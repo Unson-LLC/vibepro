@@ -11,6 +11,9 @@ related_stories:
   - story-vibepro-journey-ai-handoff-context
   - story-vibepro-story-journey-diagnose
   - story-vibepro-patton-journey-map
+parent_design: vibepro-journey-curate-command
+architecture_docs:
+  - docs/architecture/vibepro-journey-curate-command.md
 spec_docs:
   - docs/specs/story-vibepro-journey-curate-command.md
 created_at: 2026-07-05

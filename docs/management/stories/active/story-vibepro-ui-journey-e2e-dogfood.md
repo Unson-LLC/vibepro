@@ -13,6 +13,9 @@ related_stories:
   - story-vibepro-visual-residual-local-runner
   - story-vibepro-design-modernize-journey-context
   - story-vibepro-self-dogfood-audit-loop
+parent_design: vibepro-ui-journey-e2e-dogfood
+architecture_docs:
+  - docs/architecture/vibepro-ui-journey-e2e-dogfood.md
 spec_docs:
   - docs/specs/story-vibepro-ui-journey-e2e-dogfood.md
 created_at: 2026-07-05

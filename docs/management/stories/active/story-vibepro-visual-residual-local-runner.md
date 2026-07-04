@@ -10,6 +10,9 @@ source:
 related_stories:
   - story-vibepro-visual-evidence-gate-ux
   - story-vibepro-flow-screenshot-visual-gate-bridge
+parent_design: vibepro-visual-residual-local-runner
+architecture_docs:
+  - docs/architecture/vibepro-visual-residual-local-runner.md
 spec_docs:
   - docs/specs/story-vibepro-visual-residual-local-runner.md
 created_at: 2026-07-05
