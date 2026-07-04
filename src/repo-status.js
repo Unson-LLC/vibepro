@@ -242,7 +242,7 @@ function buildNextCommands(repoRoot, { activeStories, selectedStory, latestRun, 
     return [`vibepro story select ${repoRoot} --id ${activeStories[0].story_id}`];
   }
   if (!latestRun && !selectedStoryLatestRun) {
-    return [`vibepro story diagnose ${repoRoot} --id ${selectedStory.story_id} --run-graphify`];
+    return [`vibepro story diagnose ${repoRoot} --id ${selectedStory.story_id} --pre-architecture --run-graphify`];
   }
   return [
     `vibepro story report ${repoRoot} --id ${selectedStory.story_id}`,

@@ -2012,7 +2012,7 @@ function buildStoryPlanNextCommands(priorityStories) {
     'vibepro story map .',
     'vibepro story plan .',
     firstStory ? `vibepro story select . --id ${firstStory.story_id}` : null,
-    firstStory ? `vibepro story diagnose . --id ${firstStory.story_id} --run-graphify` : null
+    firstStory ? `vibepro story diagnose . --id ${firstStory.story_id} --pre-architecture --run-graphify` : null
   ].filter(Boolean);
 }
 

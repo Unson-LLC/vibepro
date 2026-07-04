@@ -4616,6 +4616,13 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     inferredSpec,
     agentReviews
   });
+  const designInputJudgment = buildDesignInputJudgmentContext({
+    latestStoryRun,
+    latestEvidence,
+    engineeringJudgment,
+    changeClassification,
+    fileGroups
+  });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
   });
@@ -4632,6 +4639,16 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     responsibility_authority: responsibilityAuthority,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
+    design_input_judgment: designInputJudgment,
+    pre_implementation_judgment: {
+      schema_version: '0.1.0',
+      phase: 'pre_implementation',
+      source: 'pr_prepare',
+      route_type: engineeringJudgment.route_type,
+      route_dag: engineeringJudgment.route_dag,
+      active_axes: engineeringJudgment.active_axes,
+      gate_status: null
+    },
     graph_context: graphContext,
     code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
@@ -4690,6 +4707,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    designInputJudgment,
     architectureSources,
     bugPhysicsTriage,
     architectureBlueprint,
@@ -6884,6 +6902,51 @@ function buildEngineeringJudgmentClassification({
   };
 }
 
+function buildDesignInputJudgmentContext({
+  latestStoryRun = null,
+  latestEvidence = null,
+  engineeringJudgment = null,
+  changeClassification = null,
+  fileGroups = {}
+} = {}) {
+  const evidenceJudgment = latestEvidence?.design_input_judgment ?? null;
+  const runJudgment = latestStoryRun?.design_input_judgment ?? null;
+  const phase = latestStoryRun?.phase ?? latestEvidence?.diagnosis_phase?.phase ?? null;
+  const present = phase === 'design_input' || Boolean(evidenceJudgment) || Boolean(runJudgment);
+  return {
+    schema_version: '0.1.0',
+    phase: 'design_input',
+    status: present ? 'present' : 'missing',
+    source: present ? 'story_diagnosis' : 'not_recorded',
+    run_id: present ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
+    gate_status: runJudgment?.gate_status ?? evidenceJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null,
+    finding_count: runJudgment?.finding_count ?? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? null,
+    route_type: engineeringJudgment?.route_type ?? null,
+    route_dag: engineeringJudgment?.route_dag ?? null,
+    active_axes: engineeringJudgment?.active_axes ?? [],
+    expected_before: ['architecture', 'spec'],
+    applies_to: {
+      workflow_heavy: changeClassification?.profile === 'workflow_heavy',
+      architecture_or_spec_changed: ((fileGroups.architecture_docs?.count ?? 0) + (fileGroups.specifications?.count ?? 0)) > 0,
+      cross_surface: isCrossSurfaceDesignStory(fileGroups)
+    },
+    required_actions: present ? [] : [
+      'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+    ]
+  };
+}
+
+function isCrossSurfaceDesignStory(fileGroups = {}) {
+  const contractDocs = (fileGroups.story_docs?.count ?? 0)
+    + (fileGroups.architecture_docs?.count ?? 0)
+    + (fileGroups.specifications?.count ?? 0)
+    + (fileGroups.policy_docs?.count ?? 0);
+  const implementationSurfaces = (fileGroups.source?.count ?? 0)
+    + (fileGroups.tests?.count ?? 0)
+    + (fileGroups.repo_control?.count ?? 0);
+  return contractDocs > 0 && implementationSurfaces > 0;
+}
+
 function isReadOnlyUsageReportingChange(fileGroups = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   if (sourceFiles.length === 0) return false;
@@ -7355,6 +7418,45 @@ function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
       ? `Engineering judgment route selected: ${engineeringJudgment.route_type}; DAG=${engineeringJudgment.route_dag}`
       : 'Engineering judgment route could not be classified'
   };
+}
+
+function buildDesignInputJudgmentGate({
+  designInputJudgment = null,
+  changeClassification = null,
+  fileGroups = {},
+  engineeringJudgment = null
+} = {}) {
+  const applies = shouldExpectDesignInputJudgment({ changeClassification, fileGroups, engineeringJudgment });
+  const present = designInputJudgment?.status === 'present';
+  return {
+    id: 'gate:design_input_judgment',
+    type: 'design_input_judgment_gate',
+    label: 'Design Input Judgment Gate',
+    status: present ? 'passed' : applies ? 'needs_review' : 'not_required',
+    required: false,
+    phase: designInputJudgment?.phase ?? 'design_input',
+    run_id: designInputJudgment?.run_id ?? null,
+    expected_before: designInputJudgment?.expected_before ?? ['architecture', 'spec'],
+    applies_to: designInputJudgment?.applies_to ?? {},
+    reason: present
+      ? `Design-input diagnosis was recorded before PR readiness: ${designInputJudgment.run_id ?? 'unknown run'}`
+      : applies
+        ? 'Workflow-heavy or cross-surface Architecture/Spec work should record design-input diagnosis before Architecture/Spec are treated as settled.'
+        : 'Design-input diagnosis is optional for this change surface.',
+    required_actions: present || !applies
+      ? []
+      : designInputJudgment?.required_actions ?? [
+          'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` and regenerate PR evidence.'
+        ]
+  };
+}
+
+function shouldExpectDesignInputJudgment({ changeClassification = null, fileGroups = {}, engineeringJudgment = null } = {}) {
+  if (changeClassification?.profile === 'workflow_heavy') return true;
+  if (isCrossSurfaceDesignStory(fileGroups)) return true;
+  const hasDesignDocs = ((fileGroups.architecture_docs?.count ?? 0) + (fileGroups.specifications?.count ?? 0)) > 0;
+  const executionAxisActive = (engineeringJudgment?.active_axes ?? []).includes('execution_topology');
+  return hasDesignDocs && (engineeringJudgment?.route_type === 'agent_workflow' || executionAxisActive);
 }
 
 function buildJudgmentAxisGates(engineeringJudgment) {
@@ -8980,6 +9082,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  designInputJudgment = null,
   architectureSources = [],
   bugPhysicsTriage = null,
   architectureBlueprint = null,
@@ -9055,6 +9158,12 @@ function buildGateDag({
   const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
+  const designInputJudgmentGate = buildDesignInputJudgmentGate({
+    designInputJudgment,
+    changeClassification,
+    fileGroups,
+    engineeringJudgment
+  });
   const judgmentAxisGates = buildJudgmentAxisGates(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment, {
     storySource,
@@ -9209,6 +9318,7 @@ function buildGateDag({
   const nodes = [
     storyGate,
     storySourceIntegrityGate,
+    designInputJudgmentGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
@@ -9276,7 +9386,8 @@ function buildGateDag({
 
   const edges = [
     { from: 'story', to: 'gate:story_source_integrity' },
-    { from: 'gate:story_source_integrity', to: 'gate:engineering_judgment_route' },
+    { from: 'gate:story_source_integrity', to: 'gate:design_input_judgment' },
+    { from: 'gate:design_input_judgment', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
     ...(judgmentAxisGates.length > 0
       ? judgmentAxisGates.flatMap((gate) => [
@@ -9404,6 +9515,7 @@ function buildGateDag({
   const requiredGates = [
     storyGate,
     storySourceIntegrityGate,
+    designInputJudgmentGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
@@ -9469,6 +9581,7 @@ function buildGateDag({
       pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
       story_source_integrity_status: storySourceIntegrityGate.status,
+      design_input_judgment_status: designInputJudgmentGate.status,
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
@@ -12645,7 +12758,7 @@ function collectUnresolvedRequiredGates(gateDag) {
 
 function collectReleaseDecisionWarningGates(gateDag) {
   return (gateDag?.nodes ?? [])
-    .filter((node) => node.id === 'gate:managed_worktree')
+    .filter((node) => ['gate:managed_worktree', 'gate:design_input_judgment'].includes(node.id))
     .filter((node) => node.required !== true)
     .filter((node) => isUnresolvedGateStatus(node.status))
     .map((node) => ({

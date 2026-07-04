@@ -25,7 +25,8 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
    - Run Graphify when artifact-level graph context is useful: `vibepro graph <repo> --run-graphify`.
    - Use `vibepro-codebase-memory` when `codebase-memory-mcp` is available and changed-file topology, symbols, routes, call paths, or risk hints would affect implementation, tests, review roles, or split boundaries.
 6. Diagnose and derive the repo context:
-   - `vibepro story diagnose <repo> --id <story-id> --run-graphify`
+   - Before final Architecture/Spec on workflow-heavy or cross-surface stories, use design-input diagnosis: `vibepro story diagnose <repo> --id <story-id> --pre-architecture --run-graphify`
+   - Before implementation or PR readiness, rerun the consistency gates after Architecture/Spec exist.
    - `vibepro story derive <repo> --run-graphify`
    - `vibepro story map <repo>`
 7. When the user asks for a purpose-level check, use diagnosis packages instead of guessing the scanner set:

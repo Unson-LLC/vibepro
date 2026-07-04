@@ -15864,7 +15864,8 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.deepEqual(connectivityGate?.unreachable_nodes, []);
   assert.deepEqual(connectivityGate?.dead_end_nodes, []);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:story_source_integrity'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:engineering_judgment_route'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:design_input_judgment'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:design_input_judgment' && edge.to === 'gate:engineering_judgment_route'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_axis_public_contract'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_axis_public_contract' && edge.to === 'gate:pr_scope_judgment'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_scope_judgment' && edge.to === 'gate:bug_physics_triage'), true);

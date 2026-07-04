@@ -47,6 +47,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
   const root = path.resolve(repoRoot);
   const runId = options.runId ?? new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '');
+  const phase = normalizeDiagnosisPhase(options.phase);
   const runDir = path.join(getWorkspaceDir(root), 'diagnostics', runId);
   await mkdir(runDir, { recursive: true });
 
@@ -58,6 +59,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const manifest = await readManifest(root);
   const toolchain = await collectRuntimeInfo();
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
+  evidence.diagnosis_phase = buildDiagnosisPhaseEvidence(phase);
   evidence.output = { language };
   evidence.toolchain = toolchain;
   evidence.performance_evidence = await summarizeStoryPerformanceEvidence(root, currentStory.story_id);
@@ -78,6 +80,11 @@ export async function runDiagnosis(repoRoot, options = {}) {
   attachFindingGraphContexts(evidence.findings, evidence.action_candidates);
   evidence.finding_review = buildFindingReview({ findings, actionCandidates: evidence.action_candidates });
   evidence.gates = buildGates(findings);
+  if (phase === 'design_input') {
+    evidence.design_input_judgment = buildDesignInputJudgmentEvidence(evidence);
+  } else {
+    evidence.pre_implementation_judgment = buildPreImplementationJudgmentEvidence(evidence);
+  }
   const previousRun = findPreviousStoryRun(manifest, currentStory.story_id, runId);
   evidence.refactoring_delta = buildRefactoringDelta({
     beforeEvidence: await readRunEvidenceIfExists(root, previousRun),
@@ -153,6 +160,13 @@ export async function runDiagnosis(repoRoot, options = {}) {
     run_id: runId,
     story_id: currentStory.story_id,
     story: currentStory,
+    phase,
+    design_input_judgment: evidence.design_input_judgment
+      ? summarizeDiagnosisJudgment(evidence.design_input_judgment)
+      : null,
+    pre_implementation_judgment: evidence.pre_implementation_judgment
+      ? summarizeDiagnosisJudgment(evidence.pre_implementation_judgment)
+      : null,
     created_at: new Date().toISOString(),
     gate_status: gateStatus,
     toolchain,
@@ -182,6 +196,68 @@ export async function runDiagnosis(repoRoot, options = {}) {
   await writeManifest(root, manifest);
 
   return { runDir, run };
+}
+
+function normalizeDiagnosisPhase(phase) {
+  const value = String(phase ?? 'pre_implementation').trim().toLowerCase().replace(/-/g, '_');
+  if (['design_input', 'pre_architecture', 'architecture_input'].includes(value)) return 'design_input';
+  if (['pre_implementation', 'implementation_ready', 'pr_readiness', 'final'].includes(value)) return 'pre_implementation';
+  throw new Error(`Unsupported diagnosis phase: ${phase}`);
+}
+
+function buildDiagnosisPhaseEvidence(phase) {
+  return {
+    schema_version: '0.1.0',
+    phase,
+    purpose: phase === 'design_input'
+      ? 'Use Story, Graphify, and repository diagnosis as input before finalizing Architecture or Spec.'
+      : 'Use Story, Graphify, repository diagnosis, and implementation state as pre-implementation or PR-readiness evidence.',
+    architecture_spec_expectation: phase === 'design_input'
+      ? 'Architecture and Spec may be draft or absent; findings should feed their authoring.'
+      : 'Architecture, Spec, and verification evidence should be checked for consistency before implementation or PR readiness.'
+  };
+}
+
+function buildDesignInputJudgmentEvidence(evidence) {
+  return {
+    schema_version: '0.1.0',
+    phase: 'design_input',
+    story_id: evidence.story_id,
+    graphify: {
+      node_count: evidence.graphify?.node_count ?? 0,
+      edge_count: evidence.graphify?.edge_count ?? 0,
+      ambiguous_edge_count: evidence.graphify?.ambiguous_edges?.length ?? 0
+    },
+    architecture_profile: {
+      app_type: evidence.architecture_profile?.app_type ?? 'unknown',
+      rendering: evidence.architecture_profile?.rendering ?? 'unknown',
+      selected_views: evidence.architecture_profile?.selected_views ?? []
+    },
+    applicable_checks: evidence.check_catalog?.applicable_checks ?? [],
+    finding_count: evidence.findings?.length ?? 0,
+    gate_status: evidence.gates?.[0]?.status ?? 'unknown',
+    feeds: ['architecture', 'spec', 'implementation_plan']
+  };
+}
+
+function buildPreImplementationJudgmentEvidence(evidence) {
+  return {
+    schema_version: '0.1.0',
+    phase: 'pre_implementation',
+    story_id: evidence.story_id,
+    gate_status: evidence.gates?.[0]?.status ?? 'unknown',
+    finding_count: evidence.findings?.length ?? 0,
+    feeds: ['implementation', 'verification', 'pr_readiness']
+  };
+}
+
+function summarizeDiagnosisJudgment(judgment) {
+  return {
+    phase: judgment.phase,
+    gate_status: judgment.gate_status ?? 'unknown',
+    finding_count: judgment.finding_count ?? 0,
+    feeds: judgment.feeds ?? []
+  };
 }
 
 function findPreviousStoryRun(manifest, storyId, currentRunId) {
@@ -1349,6 +1425,7 @@ function renderSummary({ runId, evidence, findings }) {
   const profile = evidence.architecture_profile ?? {};
   const applicableChecks = evidence.check_catalog?.applicable_checks ?? [];
   const runtime = formatRuntimeSummary(evidence.toolchain);
+  const phase = evidence.diagnosis_phase?.phase ?? 'pre_implementation';
   return `# VibePro 診断サマリー
 
 | 項目 | 内容 |
@@ -1356,6 +1433,7 @@ function renderSummary({ runId, evidence, findings }) {
 | Run ID | ${runId} |
 | Story | ${evidence.story.title} |
 | Story ID | ${evidence.story_id} |
+| 診断フェーズ | ${phase} |
 | VibePro Runtime | ${runtime} |
 | 種別 | ${profile.app_type ?? 'unknown'} |
 | 描画方式 | ${profile.rendering ?? '-'} |

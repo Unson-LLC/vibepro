@@ -9,7 +9,7 @@ vibepro doctor [repo]
 vibepro graph [repo] [--from <graphify-out>] [--run-graphify]
 vibepro story list [repo]
 vibepro story derive [repo] [--run-graphify] [--json]
-vibepro story diagnose [repo] --id <story-id> [--run-graphify]
+vibepro story diagnose [repo] --id <story-id> [--run-graphify] [--phase design-input|pre-implementation] [--pre-architecture]
 vibepro check pr-readiness [repo] --story-id <story-id> --base <base-branch>
 vibepro architecture readiness [repo] --id <story-id> --base <base-branch>
 vibepro architecture write [repo] --id <story-id> --draft|--final
