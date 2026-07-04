@@ -1,0 +1,106 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence passes: current-head evidence is bound to the expected HEAD, stale reuse is not used as fresh, focused readiness remains summary-depth, and blocker next-command metadata is preserved across gate and LLM/readiness surfaces.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, HEAD/git state, changed source/tests/spec/story docs, current PR artifacts, verification evidence, and focused readiness behavior. regression_guard: current typecheck/unit/e2e evidence is HEAD-bound to 7e3d67dfe7fb618a9229a00fa44d02c13e01c591 and the gate still blocks PR creation when unresolved gates remain. path_surface_coverage: checked --view readiness, --summary-json bounded projection coverage, full override tests, gate_status/execution_gate/unresolved_gates, LLM projection summarization, and PR evidence artifacts.",
+    "evidence": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/verification-evidence.json; .vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.json; multi_agent_v1:019f2f04-c0a9-7562-b9c6-06c45fede1f1",
+    "inputs": [
+      "src/cli.js",
+      "src/pr-manager.js",
+      "src/canonical-audit.js",
+      "test/evidence-depth-pr-prepare.test.js",
+      "test/pr-readiness-gate-status.test.js",
+      "docs/management/stories/active/story-vibepro-gate-efficiency-fast-readiness.md",
+      "docs/specs/story-vibepro-gate-efficiency-fast-readiness-spec.md",
+      ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/verification-evidence.json",
+      ".vibepro/evidence/story-vibepro-gate-efficiency-fast-readiness/workflow-replay-verified.json",
+      "node bin/vibepro.js pr prepare . --story-id story-vibepro-gate-efficiency-fast-readiness --base origin/main --view readiness"
+    ]
+  },
+  "judgment_delta": [
+    "Evidence reuse was stale and focused views could hide Gate DAG blockers -> pass because stale reuse is not used as fresh, verification commands are current-head bound, and gate_status remains blocked until blockers with next commands are visible.",
+    "Summary-depth could silently drop needed output surfaces -> pass because evidence-plan records the summary override, still writes pr-prepare/evidence-plan/decision-index, and bounded projection preserves primary_next_command/next_commands.",
+    "CLI evidence-depth defaults and next-command enrichment could regress full PR paths -> pass because default/full override tests, focused workflow replay, typecheck, and full npm test passed on expected HEAD."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+    "expected_root": null,
+    "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+    "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "expected_root": null,
+      "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+      "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T21:28:26.662Z",
+  "git_context": {
+    "head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+    "current_branch": "codex/vibepro-gate-efficiency",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T21:28:26.661Z"
+  },
+  "source_fingerprint": "eb873f0da45832c08cc1f677bb750ce5b4f1cc271bd63cc5bb4617a7b5be84db",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2f04-c0a9-7562-b9c6-06c45fede1f1",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1:019f2f04-c0a9-7562-b9c6-06c45fede1f1:completed",
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

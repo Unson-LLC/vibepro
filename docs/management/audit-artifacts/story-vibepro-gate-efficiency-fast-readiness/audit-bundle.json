@@ -1,0 +1,689 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-04T22:28:25.706Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:e2e369f9e95e4e6277c38dc3e01936843dc5baf228f1cf3cb3f339a6a2b0e673",
+    "compressed_hash": "sha256:f7afda636236399abeb7594b3c4ec31d181929856a96dce4a7bd12f129004dcf",
+    "expanded_bytes": 12584,
+    "compressed_bytes": 3000,
+    "expanded_line_count": 334,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-gate-efficiency-fast-readiness",
+    "cost": {
+      "compressed_bytes": 3000,
+      "expanded_bytes": 12584,
+      "expanded_line_count": 334,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/282",
+    "merge_commit_sha": "27669a944f636b83d90f48d605b5b36bc438c8c3",
+    "merged_at": "2026-07-04T22:28:23Z",
+    "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...0c8539d7b1e5cafd3de886844f4c644553417298"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 43,
+    "copied_reference_count": 34,
+    "unresolved_reference_count": 4,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-gate-efficiency-fast-readiness"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:e2e369f9e95e4e6277c38dc3e01936843dc5baf228f1cf3cb3f339a6a2b0e673"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:fb4cf3c510d500abad2411041260279c7b29b6a5c84d6bc9b73599b6c3b9ffc5",
+      "audit_digest": "sha256:fb4cf3c510d500abad2411041260279c7b29b6a5c84d6bc9b73599b6c3b9ffc5",
+      "line_count": 204,
+      "raw_line_count": 204,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:fe9ccea19933fc710df37a0a660b9e4afb2caa5dd9c6736d0adbdd846370cdd3",
+      "audit_digest": "sha256:640db9d61bd47d5a8f212f79aa07e28891ec2534049a1c7396b0b1f5872485f3",
+      "line_count": 3690,
+      "raw_line_count": 20710,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:b454ef3cd96c7a90881f47e6a08797549381c24cbcd25dbdc7402f26e4ababe0",
+      "audit_digest": "sha256:7c7abb47a0decdd9a63bdeef7773d9fdbde7a2411c208bb23329b00c2dcf2b20",
+      "line_count": 1622,
+      "raw_line_count": 3558,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:070ab20e22dab09a191e1e95741b8e5b95a1f94f924a617260358b22be5a8ab7",
+      "audit_digest": "sha256:7290bcbbf42dbdd8cb278c08351a27418adb18baf8abf3aefdf2cb7521fb9ab7",
+      "line_count": 1479,
+      "raw_line_count": 3412,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:d1e3507f72e710038f00f909f7973b61cdf09a9a6b216fd50129d586ea8d61fd",
+      "audit_digest": "sha256:3ed67e3ce438dc6c6dcaf9e13495269bed136acdfe310655cae501274c9a2d8f",
+      "line_count": 21,
+      "raw_line_count": 547,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:620fc5261c62defdb70b38296eb10ca8a7a414cedb00587700b5afd86dc7a4e0",
+      "audit_digest": "sha256:95b7ae37a9b491151b5c4d209b4430ee8efd7f6450d8adf20462171f58ef4a41",
+      "line_count": 1676,
+      "raw_line_count": 3655,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:86f078e189c60797d723fe0c6c429cb661777b0d6a00c9b8c665d7668c5e2794",
+      "audit_digest": "sha256:86f078e189c60797d723fe0c6c429cb661777b0d6a00c9b8c665d7668c5e2794",
+      "line_count": 390,
+      "raw_line_count": 390,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:72e98bcae6ce914030294eac5e4b32429ecb7d255b58f7fa2fc99b9664e7cf4e",
+      "audit_digest": "sha256:5b1e1ec1d1bac6218f233a1d0f43603bdcbc5f9079313e87495118802cb9f91b",
+      "line_count": 74,
+      "raw_line_count": 372,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:53208e0918a0f5674997c9b94393d35e1e21b542ec04dc8827347aec40ffb4dd",
+      "audit_digest": "sha256:53208e0918a0f5674997c9b94393d35e1e21b542ec04dc8827347aec40ffb4dd",
+      "line_count": 59,
+      "raw_line_count": 59,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:3d3e8067b9c12778d3588bd5d361e594b61d8e35928722c8ae08175077174dde",
+      "audit_digest": "sha256:3d3e8067b9c12778d3588bd5d361e594b61d8e35928722c8ae08175077174dde",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:a9ee3200e286aafd080972f301c6185d72c1a741dacdcec1fca2114a5fae3828",
+      "audit_digest": "sha256:a9ee3200e286aafd080972f301c6185d72c1a741dacdcec1fca2114a5fae3828",
+      "line_count": 94,
+      "raw_line_count": 94,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/audit-replay-bundle.json.gz",
+      "digest": "sha256:79e518b236f058b796df927eff720d1f74ba05171a7684ac77967095075d5440",
+      "audit_digest": "sha256:79e518b236f058b796df927eff720d1f74ba05171a7684ac77967095075d5440",
+      "line_count": 210,
+      "raw_line_count": 210,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-gate-efficiency-fast-readiness/workflow-replay-verified.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/evidence/story-vibepro-gate-efficiency-fast-readiness/workflow-replay-verified.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-26.662Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-26.662Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-51.152Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-51.152Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T22-23-28.233Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T22-23-28.233Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/diagnostics/2026-07-04T210748Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-gate-efficiency-fast-readiness/workflow-replay-verified.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/evidence/story-vibepro-gate-efficiency-fast-readiness/workflow-replay-verified.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-26.662Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-26.662Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-51.152Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T21-28-51.152Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T22-23-28.233Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/history/review-result-gate_evidence-2026-07-04T22-23-28.233Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-gate-efficiency-fast-readiness/references/vibepro/stories/story-vibepro-gate-efficiency-fast-readiness/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 4964413
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T210748Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 965540
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4509921
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    }
+  ]
+}

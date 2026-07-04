@@ -1,0 +1,234 @@
+{
+  "schema_version": "0.1.0",
+  "planner_version": "0.1.0",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "created_at": "2026-07-04T22:28:11.905Z",
+  "evidence_depth": "standard",
+  "default_depth": "standard",
+  "manual_override": {
+    "status": "none",
+    "depth": null,
+    "reason": null,
+    "consumer": null
+  },
+  "planner_inputs": {
+    "base_ref": "origin/main",
+    "head_ref": "HEAD",
+    "head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+    "changed_file_count": 9,
+    "scope_status": "reviewable",
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "test_coverage"
+    ],
+    "pr_route": "runtime_change",
+    "engineering_route": "agent_workflow"
+  },
+  "risk_signals": [
+    {
+      "kind": "risk_surface",
+      "value": "gate_orchestration",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "regression_blast_radius",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "test_coverage",
+      "source": "change_classification"
+    },
+    {
+      "kind": "engineering_route",
+      "value": "agent_workflow",
+      "source": "engineering_judgment"
+    }
+  ],
+  "targeted_full_surfaces": [
+    {
+      "surface": "gate_orchestration",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "regression_blast_radius",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment",
+      "gate": null
+    }
+  ],
+  "escalation_reasons": [
+    {
+      "surface": "gate_orchestration",
+      "reason": "risk surface detected",
+      "source": "change_classification"
+    },
+    {
+      "surface": "regression_blast_radius",
+      "reason": "risk surface detected",
+      "source": "change_classification"
+    },
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification"
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment"
+    }
+  ],
+  "artifact_policy": {
+    "write_html_reports": true,
+    "write_full_gate_dag_dump": true,
+    "write_full_review_lifecycle_dump": false,
+    "write_raw_logs": false,
+    "pr_body_token_policy": {
+      "status": "bounded_by_artifact_links",
+      "duplicates_canonical_artifacts": false,
+      "reason": "PR body stays concise and links canonical VibePro artifacts instead of embedding full diagnostics"
+    },
+    "generated_artifacts": [
+      "evidence-reuse.json",
+      "evidence-plan.json",
+      "decision-index.json",
+      "senior-gap-judgment.json",
+      "pr-prepare.json",
+      "pr-body.md",
+      "split-plan.json",
+      "traceability.json",
+      "human-review.json",
+      "architecture-review.json",
+      "decision-records.json",
+      "pr-prepare.html",
+      "review-cockpit.html",
+      "gate-dag.html",
+      "gate-dag.json",
+      "split-plan.html"
+    ],
+    "skipped_artifacts": []
+  },
+  "generated_artifacts": [
+    "evidence-reuse.json",
+    "evidence-plan.json",
+    "decision-index.json",
+    "senior-gap-judgment.json",
+    "pr-prepare.json",
+    "pr-body.md",
+    "split-plan.json",
+    "traceability.json",
+    "human-review.json",
+    "architecture-review.json",
+    "decision-records.json",
+    "pr-prepare.html",
+    "review-cockpit.html",
+    "gate-dag.html",
+    "gate-dag.json",
+    "split-plan.html"
+  ],
+  "skipped_artifacts": [],
+  "consumers": [
+    "evidence-reuse.json",
+    "review-cockpit.html",
+    "gate-dag.html",
+    "split-plan.html",
+    "decision-index.json",
+    "senior-gap-judgment.json"
+  ],
+  "evidence_reuse": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-evidence-summary-reuse-v1",
+    "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+    "evidence_key": "evk_756128166a16a4e8bd89c919d2624362",
+    "status": "stale",
+    "reason": "evidence_key_inputs_changed",
+    "stale_reasons": [
+      {
+        "field": "risk_surface_fingerprint",
+        "previous": "sha256:c30cd2aff17155db9402784a8617396fca681cd7dc66bee54caf107530f286f9",
+        "current": "sha256:4845829faed3df90632c6b2975e1823df3aba21b0fa417e2bbdabf3181dd33a5",
+        "reason": "risk_surface_fingerprint changed"
+      }
+    ],
+    "fresh_use_allowed": false,
+    "used_as_fresh": false,
+    "gate_status": "needs_refresh",
+    "artifact_value_ledger": {
+      "status": "present",
+      "model": "vibepro-artifact-value-ledger-v1",
+      "head_binding_status": "current_head_bound",
+      "artifact_count": 5,
+      "decision_bound_count": 5,
+      "linked_consumer_count": 5,
+      "session_attribution_status": "not_collected_in_pr_prepare",
+      "session_attribution_confidence": "none",
+      "total_token_estimate": 327
+    },
+    "session_attribution_ledger": {
+      "status": "not_collected_in_pr_prepare",
+      "model": "vibepro-session-attribution-ledger-v1",
+      "confidence": "none",
+      "reason": "PR prepare did not receive Codex session attribution; downstream usage mentions must not be treated as clean product-value adoption.",
+      "session_count": 0,
+      "unattributed_count": 0
+    },
+    "verification_summary_fingerprint": "sha256:323ab6ff74e617dc45acc73042e6da8fbe664a1bc5b048fc5496e372ec863195",
+    "verification_evidence_updated_at": "2026-07-04T22:27:58.230Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-04T22:27:58.230Z",
+        "git_recorded_at": "2026-07-04T22:27:58.229Z"
+      },
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-04T22:26:40.848Z",
+        "git_recorded_at": "2026-07-04T22:26:40.848Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-04T22:15:11.605Z",
+        "git_recorded_at": "2026-07-04T22:15:11.603Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-04T22:15:09.540Z",
+        "git_recorded_at": "2026-07-04T22:15:09.539Z"
+      }
+    ],
+    "full_evidence": {
+      "status": "generated",
+      "generation_count": 1,
+      "generation_count_scope": "same_evidence_key",
+      "same_key_generation_count": 1,
+      "cumulative_generation_count": 24,
+      "digest": "sha256:f4b54ae171a28a54e9a43937dfe1d1a76185f6ecbf1aa23918f4ebcd0472678e",
+      "reference": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json"
+    },
+    "summary_artifacts": {
+      "evidence_reuse": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-reuse.json",
+      "evidence_plan": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/evidence-plan.json",
+      "decision_index": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-index.json",
+      "pr_prepare": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/pr-prepare.json",
+      "gate_dag": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/gate-dag.json"
+    }
+  }
+}

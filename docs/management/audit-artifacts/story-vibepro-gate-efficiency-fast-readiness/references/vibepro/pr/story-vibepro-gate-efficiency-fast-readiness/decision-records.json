@@ -1,0 +1,311 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "updated_at": "2026-07-04T22:17:36.542Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "expected_root": null,
+      "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+      "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783203456541-0398bd46",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: this PR is one coherent readiness-projection change across CLI depth selection, PR gate command metadata, bounded projection preservation, focused tests, story/spec/architecture docs, and Design SSOT lineage registration.",
+      "reason": "The runtime changes are localized to src/cli.js, src/pr-manager.js, and src/canonical-audit.js; tests directly bind the lightweight focused-view default, explicit-depth override, primary_next_command/next_commands projection, and overall-status fallback. Splitting would create artificial coupling between CLI output shape and gate metadata preservation.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-gate-efficiency-fast-readiness.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+          "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T22:17:36.541Z"
+      },
+      "recorded_at": "2026-07-04T22:17:36.542Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783200666543-8429eae7",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "Scope reviewability decision: the PR remains a single reviewable story.",
+      "reason": "alternatives_considered: split lightweight evidence-depth defaulting and next-command projection into separate PRs, but rejected because the user-facing problem is one PR readiness handoff loop and both changes are exercised by the same pr prepare surface. compatibility_impact: review surface remains small and localized to src/cli.js, src/pr-manager.js, src/canonical-audit.js, two focused tests, and story/spec docs. rollback_plan: revert the single commit and regenerate pr prepare artifacts if review finds the scope too broad. boundary: one story, one spec, one runtime surface, no unrelated refactor, no new product feature outside focused PR readiness views. accepted_followups: none. decision_record: accepted by codex for PR scope.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T21:31:06.542Z"
+      },
+      "recorded_at": "2026-07-04T21:31:06.543Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783200660362-c510d158",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_execution_topology",
+      "source_status": "needs_review",
+      "summary": "Execution topology decision: no new runtime topology is introduced by the readiness projection change.",
+      "reason": "alternatives_considered: move projection building into a new readiness command, but rejected because existing pr prepare already owns Gate DAG and PR readiness artifacts; keep full-depth evidence for all views, but rejected because it makes machine handoff views unnecessarily heavy. compatibility_impact: existing pr prepare lifecycle remains the same; durable artifacts, verification evidence, review artifacts, and explicit --evidence-depth behavior are unchanged. rollback_plan: revert the three source files and focused tests, then regenerate pr prepare artifacts against the previous behavior. boundary: no new worker, agent, subprocess, network call, persistence store, retry loop, or artifact lifecycle is added; the change only selects summary-depth projection for focused outputs and carries command-shaped hints. accepted_followups: none. topology_diagram: user invokes pr prepare -> CLI resolves focused view -> evidence depth defaults to summary unless explicit -> pr-manager builds Gate DAG and next commands -> canonical audit emits bounded projection -> durable pr-prepare artifact remains available for full drill-down.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T21:31:00.362Z"
+      },
+      "recorded_at": "2026-07-04T21:31:00.362Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783200652474-081903c2",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": "needs_review",
+      "summary": "Public contract architecture decision: focused PR readiness view contract remains additive and backward compatible.",
+      "reason": "alternatives_considered: keep full evidence projection for every pr prepare output, but rejected because focused views exist for machine handoff and do not need full durable evidence by default; add a separate command, but rejected because it would fragment existing pr prepare workflows. compatibility_impact: backward compatible for CLI consumers because explicit --evidence-depth still wins and full durable artifacts remain available from pr-prepare.json; the new next_commands and primary_next_command fields are additive. rollback_plan: revert src/cli.js, src/pr-manager.js, src/canonical-audit.js and the focused tests, then rerun pr prepare evidence. boundary: only bounded pr prepare --summary-json and --view projections receive the lighter default and command metadata; durable Gate DAG evaluation and full-depth override are unchanged. accepted_followups: none.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T21:30:52.473Z"
+      },
+      "recorded_at": "2026-07-04T21:30:52.474Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783200232625-23b22740",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "architecture",
+      "source_status": "needs_review",
+      "summary": "ADR-unnecessary decision: focused PR readiness views stay within existing pr prepare, Gate DAG, and bounded projection architecture.",
+      "reason": "The change only adjusts evidence-depth defaulting for bounded outputs and preserves durable Gate DAG evaluation plus explicit full-depth override; no new component, persistence model, or authority boundary is introduced.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "current_head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e3d67dfe7fb618a9229a00fa44d02c13e01c591",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T21:23:52.625Z"
+      },
+      "recorded_at": "2026-07-04T21:23:52.626Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "open": 0,
+    "by_type": {
+      "needs_review": 5
+    },
+    "by_status": {
+      "accepted": 5
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+        "expected_root": null,
+        "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+        "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783203456541-0398bd46",
+      "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: this PR is one coherent readiness-projection change across CLI depth selection, PR gate command metadata, bounded projection preservation, focused tests, story/spec/architecture docs, and Design SSOT lineage registration.",
+      "reason": "The runtime changes are localized to src/cli.js, src/pr-manager.js, and src/canonical-audit.js; tests directly bind the lightweight focused-view default, explicit-depth override, primary_next_command/next_commands projection, and overall-status fallback. Splitting would create artificial coupling between CLI output shape and gate metadata preservation.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-gate-efficiency-fast-readiness.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+          "expected_root": null,
+          "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+          "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+        "current_branch": "codex/vibepro-gate-efficiency",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T22:17:36.541Z"
+      },
+      "recorded_at": "2026-07-04T22:17:36.542Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-gate-efficiency-fast-readiness/decision-records.json"
+}

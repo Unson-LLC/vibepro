@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate-evidence review passes on current head 0c8539d: focused readiness projections stay lightweight, explicit-depth and full-json compatibility are preserved, AC traceability is complete, and PR creation remains blocked until current review evidence is recorded.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json"
+  ],
+  "inspection": {
+    "summary": "Inspected review request, parallel dispatch, HEAD/git state, changed CLI/projection code, focused tests, story/spec/architecture/Design SSOT docs, readiness/blocking-gates/traceability/summary/full pr prepare surfaces, and focused test replay. No findings.",
+    "evidence": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial risk: focused projections could weaken evidence depth, hide blockers, or treat stale review evidence as fresh -> final judgment: pass because explicit-depth and --json compatibility are tested, readiness/blocking-gates/summary projections expose blocker counts/actions/next commands, traceability maps all 8 ACs including AC-4, and current pr prepare blocks unsafe PR creation until this current review is recorded."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+    "expected_root": null,
+    "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+    "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-efficiency",
+      "expected_root": null,
+      "expected_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+      "current_head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T22:23:28.233Z",
+  "git_context": {
+    "head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+    "current_branch": "codex/vibepro-gate-efficiency",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T22:23:28.232Z"
+  },
+  "source_fingerprint": "ac5b5fd4dd87f2946629abe4b9159ef05d32ca65875b35051bcf035650f58547",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "codex-gate-evidence-0c8539d-20260704T2218Z",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/agent-transcript-gate_evidence-current-0c8539d.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-efficiency-fast-readiness/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent_v1:019f2f36-32aa-78b0-8862-528b1e0d9375:completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

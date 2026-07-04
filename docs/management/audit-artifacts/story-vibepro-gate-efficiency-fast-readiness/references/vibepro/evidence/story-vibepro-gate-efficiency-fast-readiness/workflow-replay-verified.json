@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-efficiency-fast-readiness",
+  "status": "pass",
+  "command": "node --test test/pr-readiness-gate-status.test.js test/evidence-depth-pr-prepare.test.js",
+  "head_sha": "0c8539d7b1e5cafd3de886844f4c644553417298",
+  "created_at": "2026-07-04T22:15:09.074Z",
+  "evidence": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e",
+    "focused_pr_prepare_view",
+    "blocking_gate_next_command_projection",
+    "GEFR-S-4",
+    "GEFR-S-6"
+  ],
+  "tests": {
+    "total": 9,
+    "pass": 9,
+    "fail": 0,
+    "duration_ms": 8307
+  }
+}
