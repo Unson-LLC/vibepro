@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-flow-screenshot-visual-gate-bridge
 title: Flow Screenshot to Visual Gate Bridge Spec
-parent_design: vibepro-flow-screenshot-visual-gate-bridge
+parent_design: vibepro-ui-journey-e2e-producer-contracts
 ---
 
 # Spec
@@ -44,6 +44,13 @@ its artifacts.
 
 A passing flow run that saved zero screenshots MUST NOT emit `visual_qa` or
 `screenshot` markers. Its verification evidence, if any, remains non-visual.
+
+### FSB-CONTRACT-4: Basic Auth compatibility boundary
+
+The bridge MUST preserve the existing `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD`
+runtime branch used by `verify flow`. Basic Auth credentials may be passed to
+the runtime probe, but plaintext usernames or passwords MUST NOT be persisted
+in bridge-created visual evidence, screenshot metadata, or PR artifacts.
 
 ## Scenarios
 

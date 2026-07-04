@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
+import { deflateSync } from 'node:zlib';
 
 import { scanApiBoundary } from '../src/api-boundary-scanner.js';
 import { scanComponentStyle } from '../src/component-style-scanner.js';
@@ -37,6 +38,61 @@ async function readJson(filePath) {
 
 async function writeJson(filePath, value) {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function writePng(filePath, width, height, rgbaPixels, options = {}) {
+  await writeFile(filePath, encodePng(width, height, rgbaPixels, options));
+}
+
+function encodePng(width, height, rgbaPixels, options = {}) {
+  const pixels = Buffer.from(rgbaPixels);
+  assert.equal(pixels.length, width * height * 4);
+  const rows = [];
+  for (let y = 0; y < height; y += 1) {
+    rows.push(Buffer.concat([
+      Buffer.from([0]),
+      pixels.subarray(y * width * 4, (y + 1) * width * 4)
+    ]));
+  }
+  const chunks = [
+    pngChunk('IHDR', Buffer.concat([
+      uint32(width),
+      uint32(height),
+      Buffer.from([8, 6, 0, 0, 0])
+    ]))
+  ];
+  if (options.text) {
+    chunks.push(pngChunk('tEXt', Buffer.from(`comment\0${options.text}`, 'latin1')));
+  }
+  chunks.push(pngChunk('IDAT', deflateSync(Buffer.concat(rows))));
+  chunks.push(pngChunk('IEND', Buffer.alloc(0)));
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    ...chunks
+  ]);
+}
+
+function pngChunk(type, data) {
+  const typeBuffer = Buffer.from(type, 'ascii');
+  const crcInput = Buffer.concat([typeBuffer, data]);
+  return Buffer.concat([uint32(data.length), typeBuffer, data, uint32(crc32(crcInput))]);
+}
+
+function uint32(value) {
+  const buffer = Buffer.alloc(4);
+  buffer.writeUInt32BE(value >>> 0);
+  return buffer;
+}
+
+function crc32(buffer) {
+  let crc = 0xffffffff;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
 }
 
 async function pathExists(filePath) {
@@ -1744,6 +1800,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro performance define \[repo\].*--metric-id <id>/);
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
   assert.match(output, /vibepro performance compare \[repo\].*--id <story-id>/);
+  assert.match(output, /vibepro verify visual \[repo\].*--current-dir <dir>/);
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro review prepare \[repo\].*--stage <stage>/);
   assert.match(output, /vibepro review record \[repo\].*--role <role>/);
@@ -1765,6 +1822,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(englishOutput, /vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>/);
   assert.match(englishOutput, /vibepro execute merge <repo> --story-id <id>/);
   assert.match(englishOutput, /vibepro design-modernize derive-system \[repo\]/);
+  assert.match(englishOutput, /vibepro journey curate \[repo\].*--input <judgments\.json\|yaml>/);
   assert.match(englishOutput, /vibepro design-system init \[repo\]/);
   assert.match(englishOutput, /vibepro design-system derive \[repo\]/);
   assert.match(englishOutput, /vibepro design-system ingest \[repo\]/);
@@ -4658,8 +4716,12 @@ test('verify flow writes Playwright evidence and skips mutating probes by defaul
   const binDir = path.join(repo, 'fake-bin');
   await mkdir(binDir, { recursive: true });
   await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
-const { appendFileSync } = require('node:fs');
+const { appendFileSync, mkdirSync, writeFileSync } = require('node:fs');
+const path = require('node:path');
 appendFileSync(process.env.FAKE_NPX_LOG, process.argv.slice(2).join(' ') + '\\n');
+const screenshotDir = path.join(process.cwd(), '.vibepro', 'verification', 'flow-run-1', 'screenshots');
+mkdirSync(screenshotDir, { recursive: true });
+writeFileSync(path.join(screenshotDir, 'new-registration.png'), 'fake screenshot bytes\\n');
 console.log('fake playwright ok');
 `);
   await chmod(path.join(binDir, 'npx'), 0o755);
@@ -4689,7 +4751,13 @@ console.log('fake playwright ok');
   const runDir = path.join(repo, '.vibepro', 'verification', 'flow-run-1');
   const verification = await readJson(path.join(runDir, 'flow-verification.json'));
   assert.equal(verification.base_url, 'http://127.0.0.1:3000');
+  assert.equal(verification.auto_visual_evidence.status, 'recorded');
+  assert.deepEqual(verification.auto_visual_evidence.screenshot_paths, ['.vibepro/verification/flow-run-1/screenshots/new-registration.png']);
   assert.equal(verification.probes[0].artifacts.screenshot_paths.includes('screenshots/new-registration.png'), true);
+  const autoEvidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(autoEvidence.commands[0].kind, 'e2e');
+  assert.match(autoEvidence.commands[0].observation.scenarios.join('\n'), /visual_qa: Flow Verification flow-run-1 screenshots reviewed/);
+  assert.match(autoEvidence.commands[0].observation.scenarios.join('\n'), /screenshot: \.vibepro\/verification\/flow-run-1\/screenshots\/new-registration\.png/);
   assert.match(verification.git_context.head_sha, /^[a-f0-9]{40}$/);
   assert.match(verification.git_context.status_fingerprint_hash, /^[a-f0-9]{64}$/);
   assert.match(verification.git_context.user_status_fingerprint_hash, /^[a-f0-9]{64}$/);
@@ -4968,6 +5036,11 @@ test('verify flow can fill a value captured from visible page text', async () =>
   const binDir = path.join(repo, 'fake-bin');
   await mkdir(binDir, { recursive: true });
   await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+const fs = require('node:fs');
+const path = require('node:path');
+const screenshotDir = path.join(process.cwd(), '.vibepro', 'verification', 'flow-auto-visual', 'screenshots');
+fs.mkdirSync(screenshotDir, { recursive: true });
+fs.writeFileSync(path.join(screenshotDir, 'story-pr-prepare-home.png'), 'fake screenshot bytes\\n');
 console.log('fake playwright ok');
 `);
   await chmod(path.join(binDir, 'npx'), 0o755);
@@ -13828,6 +13901,313 @@ test('VQG-S-2 pr prepare accepts current visual verification evidence when resid
   assert.equal(result.result.preparation.pr_context.completion_quality.metrics.visual_qa_pass_rate, 1);
 });
 
+test('verify flow auto-records current Visual QA evidence for screenshot probes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { '@playwright/test': '^1.50.0' }
+  }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+const fs = require('node:fs');
+const path = require('node:path');
+const screenshotDir = path.join(process.cwd(), '.vibepro', 'verification', 'flow-auto-visual', 'screenshots');
+fs.mkdirSync(screenshotDir, { recursive: true });
+fs.writeFileSync(path.join(screenshotDir, 'story-pr-prepare-home.png'), 'fake screenshot bytes\\n');
+console.log('fake playwright ok');
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const flow = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-auto-visual',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`
+    }
+  });
+
+  assert.equal(flow.exitCode, 0);
+  assert.equal(flow.result.verification.status, 'pass');
+  assert.equal(flow.result.verification.auto_visual_evidence.status, 'recorded');
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.visual_qa.source, 'verification_evidence');
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'ready_for_review');
+});
+
+test('verify visual writes residual artifacts accepted by Visual QA Gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual-current'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'baseline'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writePng(path.join(repo, 'artifacts', 'visual-current', 'story-pr-prepare-home.png'), 1, 1, [12, 34, 56, 255], { text: 'current capture metadata' });
+  await writePng(path.join(repo, '.vibepro', 'qa', 'baseline', 'story-pr-prepare-home.png'), 1, 1, [12, 34, 56, 255]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+
+  const visual = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual',
+    '--json'
+  ]);
+
+  assert.equal(visual.exitCode, 0);
+  assert.equal(visual.result.report.status, 'pass');
+  assert.equal(visual.result.report.meanAbsResidualPct, 0);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json')), true);
+  assert.match(await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8'), /meanAbsResidualPct/);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'ready_for_review');
+  assert.match(visualGate.reason, /within 5% residual threshold/);
+});
+
+test('verify visual custom threshold is honored by Visual QA Gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual-current'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'baseline'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writePng(path.join(repo, 'artifacts', 'visual-current', 'story-pr-prepare-home.png'), 1, 1, [255, 255, 255, 255]);
+  await writePng(path.join(repo, '.vibepro', 'qa', 'baseline', 'story-pr-prepare-home.png'), 1, 1, [0, 0, 0, 0]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+
+  const visual = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual',
+    '--threshold',
+    '100',
+    '--json'
+  ]);
+
+  assert.equal(visual.exitCode, 0);
+  assert.equal(visual.result.report.status, 'pass');
+  assert.equal(visual.result.report.meanAbsResidualPct, 100);
+  assert.equal(visual.result.report.thresholdPct, 100);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.visual_qa.threshold_pct, 100);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'ready_for_review');
+  assert.match(visualGate.reason, /within 100% residual threshold/);
+  assert.equal(visualGate.runs[0].threshold_pct, 100);
+});
+
+test('verify visual update-baseline writes a baseline and unchanged rerun converges', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual-current'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writePng(path.join(repo, 'artifacts', 'visual-current', 'story-pr-prepare-home.png'), 1, 1, [20, 40, 60, 255]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+
+  const update = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual',
+    '--update-baseline',
+    '--json'
+  ]);
+
+  assert.equal(update.exitCode, 0);
+  assert.equal(update.result.report.status, 'pass');
+  assert.equal(update.result.report.probes[0].status, 'baseline_updated');
+  assert.equal(update.result.report.meanAbsResidualPct, 0);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'qa', 'baseline', 'story-pr-prepare-home.png')), true);
+
+  const rerun = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual-rerun',
+    '--json'
+  ]);
+
+  assert.equal(rerun.exitCode, 0);
+  assert.equal(rerun.result.report.status, 'pass');
+  assert.equal(rerun.result.report.meanAbsResidualPct, 0);
+});
+
+test('verify visual reports baseline_missing and does not pass the Visual QA Gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual-current'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writePng(path.join(repo, 'artifacts', 'visual-current', 'story-pr-prepare-home.png'), 1, 1, [20, 40, 60, 255]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+
+  const visual = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual',
+    '--json'
+  ]);
+
+  assert.equal(visual.exitCode, 0);
+  assert.equal(visual.result.report.status, 'baseline_missing');
+  assert.equal(visual.result.report.meanAbsResidualPct, 100);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /MAE 100%/);
+});
+
+test('Visual QA Gate consumes explicit baseline_missing residual status before numeric residuals', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'semantic/layout residual: **1%**\n');
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json'), {
+    status: 'baseline_missing',
+    meanAbsResidualPct: 0,
+    probes: [
+      { probe_id: 'story-pr-prepare-home', status: 'baseline_missing', meanAbsResidualPct: null }
+    ]
+  });
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /baseline_missing/);
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+});
+
+test('Visual QA Gate rejects stale passing residual artifacts from previous heads', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'semantic/layout residual: **1%**\n');
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json'), {
+    status: 'pass',
+    thresholdPct: 5,
+    meanAbsResidualPct: 0,
+    probes: [
+      { probe_id: 'story-pr-prepare-home', status: 'pass', meanAbsResidualPct: 0 }
+    ],
+    git_context: {
+      head_sha: 'a'.repeat(40),
+      dirty: false,
+      status_fingerprint_hash: await gitFingerprintHash(repo),
+      recorded_at: '2026-05-25T00:00:00.000Z'
+    }
+  });
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /binding stale/);
+  assert.match(visualGate.reason, /verification evidence was recorded for aaaaaaaaaaaa/);
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+});
+
 test('VQG-S-3 generic verification does not satisfy Visual QA Gate without explicit markers', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
@@ -17626,14 +18006,14 @@ test('story diagnose surfaces missing Journey context for UI stories (INV-SJD-1,
   const report = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'story-report.md'), 'utf8');
   assert.match(report, /## Journey Context/);
   assert.match(report, /Artifact kind \| -/);
-  assert.match(report, /Create curated Journey at \.vibepro\/journeys\/default-product-journey\.json/);
+  assert.match(report, /vibepro journey curate \. --id default-product-journey --input <judgments\.json>/);
   const html = await readFile(path.join(repo, '.vibepro', 'stories', 'story-ui-navigation', 'index.html'), 'utf8');
   assert.match(html, /<h2>Journey Context<\/h2>/);
   assert.match(html, /<td>Status<\/td>\s*<td>missing<\/td>/);
   assert.match(html, /<td>Artifact kind<\/td>\s*<td>-<\/td>/);
   assert.match(html, /<td>Curated<\/td>\s*<td>no<\/td>/);
   assert.match(html, /<code>vibepro journey derive \. --id default-product-journey<\/code>/);
-  assert.match(html, /<code>Create curated Journey at \.vibepro\/journeys\/default-product-journey\.json<\/code>/);
+  assert.match(html, /<code>vibepro journey curate \. --id default-product-journey --input &lt;judgments\.json&gt;<\/code>/);
 });
 
 test('story diagnose distinguishes machine-derived and curated Journey artifacts (INV-SJD-3)', async () => {
@@ -17671,6 +18051,10 @@ test('story diagnose distinguishes machine-derived and curated Journey artifacts
   assert.equal(derivedResult.result.status.journey_context.artifact_kind, 'journey_context_pack');
   assert.equal(derivedResult.result.status.journey_context.curated, false);
   assert.equal(derivedResult.result.status.journey_context.handoff_available, true);
+  assert.equal(
+    derivedResult.result.status.journey_context.next_actions.includes('vibepro journey curate . --id default-product-journey --input <judgments.json>'),
+    true
+  );
   await mkdir(path.join(repo, '.vibepro', 'journeys'), { recursive: true });
   await writeJson(path.join(repo, '.vibepro', 'journeys', 'default-product-journey.json'), {
     schema_version: '0.1.0',

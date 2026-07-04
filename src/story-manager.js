@@ -667,13 +667,13 @@ function buildStoryJourneyNextActions(status) {
     return [
       `vibepro journey derive . --id ${journeyId}`,
       `vibepro journey handoff . --id ${journeyId}`,
-      `Create curated Journey at .vibepro/journeys/${journeyId}.json`
+      `vibepro journey curate . --id ${journeyId} --input <judgments.json>`
     ];
   }
   if (status.status === 'needs_curated_journey') {
     const actions = [];
     if (!status.handoff_available) actions.push(`vibepro journey handoff . --id ${journeyId}`);
-    actions.push(`Create curated Journey at .vibepro/journeys/${journeyId}.json`);
+    actions.push(`vibepro journey curate . --id ${journeyId} --input <judgments.json>`);
     return actions;
   }
   return [];

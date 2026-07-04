@@ -75,6 +75,7 @@ import { evaluateContentBinding } from './content-binding.js';
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
 const DEFAULT_PR_PREPARE_STAGE_TIMEOUT_MS = 600000;
+const DEFAULT_VISUAL_QA_THRESHOLD_PCT = 5;
 
 function createPrPrepareProgress(options = {}) {
   const timeoutMs = Number.isFinite(options.stageTimeoutMs) && options.stageTimeoutMs > 0
@@ -748,7 +749,7 @@ function buildHumanReviewReason(preparation) {
   if (preparation.pr_context?.visual_qa) {
     const visualQa = preparation.pr_context.visual_qa;
     const needsReviewCount = visualQa.runs.filter((run) => run.status === 'needs_review').length;
-    reasons.push(`Visual QA is ${visualQa.status}; ${needsReviewCount} run(s) exceed the ${visualQa.threshold_pct}% residual threshold.`);
+    reasons.push(`Visual QA is ${visualQa.status}; ${needsReviewCount} run(s) exceed the ${formatVisualQaThreshold(visualQa)} residual threshold.`);
   }
   return reasons.join(' ');
 }
@@ -3408,13 +3409,16 @@ function renderPrVisualQaEvidence(visualQa) {
       residual != null ? `MAE ${residual}%` : null,
       rms != null ? `RMS ${rms}%` : null,
       semantic != null ? `semantic/layout ${semantic}%` : null,
+      run.latest_residual?.binding?.status && run.latest_residual.binding.status !== 'current'
+        ? `binding: ${run.latest_residual.binding.status}`
+        : null,
       run.residual_analysis ? `analysis: ${run.residual_analysis}` : null,
       run.latest_residual?.path ? `residual: ${run.latest_residual.path}` : null
     ].filter(Boolean).join(' / ');
   });
   return `## Visual QA Evidence
 - status: ${visualQa.status}
-- threshold: residual <= ${visualQa.threshold_pct}%
+- threshold: ${formatVisualQaThreshold(visualQa)}
 ${rows.join('\n') || '- なし'}`;
 }
 
@@ -3447,17 +3451,35 @@ function buildVisualQaGateReason(visualQa) {
   }
   const needsReview = visualQa.runs.filter((run) => run.status === 'needs_review');
   if (needsReview.length === 0) {
-    return `Visual QA evidence is within ${visualQa.threshold_pct}% residual threshold`;
+    return `Visual QA evidence is within ${formatVisualQaThreshold(visualQa)} residual threshold`;
   }
   const summaries = needsReview.map((run) => {
     const residual = run.latest_residual?.meanAbsResidualPct;
     const semantic = run.semantic_layout_residual_pct;
     const parts = [run.qa_id];
+    if (run.latest_residual?.status) parts.push(`status ${run.latest_residual.status}`);
+    for (const probeStatus of run.latest_residual?.probe_statuses ?? []) {
+      if (probeStatus && probeStatus !== run.latest_residual?.status) parts.push(`probe ${probeStatus}`);
+    }
+    if (run.latest_residual?.binding?.status && run.latest_residual.binding.status !== 'current') {
+      parts.push(`binding ${run.latest_residual.binding.status}`);
+      if (run.latest_residual.binding.reason) parts.push(run.latest_residual.binding.reason);
+    }
     if (residual != null) parts.push(`MAE ${residual}%`);
     if (semantic != null) parts.push(`semantic/layout ${semantic}%`);
+    if (run.threshold_pct != null) parts.push(`threshold ${run.threshold_pct}%`);
     return parts.join(' ');
   });
   return `Visual QA needs review: ${summaries.join('; ')}`;
+}
+
+function formatVisualQaThreshold(visualQa) {
+  if (visualQa.threshold_pct != null) return `${visualQa.threshold_pct}%`;
+  const thresholds = [...new Set((visualQa.runs ?? [])
+    .map((run) => run.threshold_pct)
+    .filter((value) => value != null))];
+  if (thresholds.length === 0) return `${DEFAULT_VISUAL_QA_THRESHOLD_PCT}%`;
+  return thresholds.map((value) => `${value}%`).join(', ');
 }
 
 function buildStorySourceIntegrityGate(integrity = null) {
@@ -3980,7 +4002,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
-  const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot);
+  const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot, git);
   const visualQaEvidence = artifactVisualQaEvidence ?? buildVisualQaEvidenceFromVerification(boundVerificationEvidence);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
@@ -4507,7 +4529,7 @@ async function bindFlowVerificationToGit(repoRoot, flowVerification, git) {
   };
 }
 
-async function readVisualQaEvidence(repoRoot) {
+async function readVisualQaEvidence(repoRoot, git = null) {
   const qaRoot = path.join(getWorkspaceDir(repoRoot), 'qa');
   let entries = [];
   try {
@@ -4520,21 +4542,22 @@ async function readVisualQaEvidence(repoRoot) {
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
     const qaDir = path.join(qaRoot, entry.name);
-    const run = await readVisualQaRun(repoRoot, qaDir, entry.name);
+    const run = await readVisualQaRun(repoRoot, qaDir, entry.name, git);
     if (run) runs.push(run);
   }
   if (runs.length === 0) return null;
-  const thresholdPct = 5;
   for (const run of runs) {
-    run.status = resolveVisualQaStatus(run, thresholdPct);
+    run.threshold_pct = run.latest_residual?.thresholdPct ?? DEFAULT_VISUAL_QA_THRESHOLD_PCT;
+    run.status = resolveVisualQaStatus(run, run.threshold_pct);
   }
   const sortedRuns = runs
     .sort((a, b) => (b.updated_at_ms ?? 0) - (a.updated_at_ms ?? 0))
     .slice(0, 5);
+  const thresholds = [...new Set(sortedRuns.map((run) => run.threshold_pct).filter((value) => value != null))];
   return {
     schema_version: '0.1.0',
     status: sortedRuns.some((run) => run.status === 'needs_review') ? 'needs_review' : 'ready_for_review',
-    threshold_pct: thresholdPct,
+    threshold_pct: thresholds.length === 1 ? thresholds[0] : null,
     runs: sortedRuns,
     artifacts: sortedRuns.flatMap((run) => [
       run.residual_analysis,
@@ -5244,7 +5267,7 @@ function isPathInsideRepo(repoRoot, candidate) {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
-async function readVisualQaRun(repoRoot, qaDir, qaId) {
+async function readVisualQaRun(repoRoot, qaDir, qaId, git = null) {
   const files = await walkFiles(qaDir);
   const residualAnalysis = files.find((file) => path.basename(file) === 'residual-analysis.md') ?? null;
   const residualJsonFiles = files.filter((file) => /residual.*\.json$/i.test(path.basename(file)));
@@ -5254,9 +5277,17 @@ async function readVisualQaRun(repoRoot, qaDir, qaId) {
     try {
       const data = JSON.parse(await readFile(file, 'utf8'));
       const fileStat = await stat(file);
+      const binding = git ? resolveVerificationBinding(data.git_context ?? null, git) : null;
       residuals.push({
         path: toWorkspaceRelative(repoRoot, file),
         updated_at_ms: fileStat.mtimeMs,
+        status: normalizeVisualResidualStatus(data.status),
+        binding,
+        git_context: data.git_context ?? null,
+        thresholdPct: normalizeNumber(data.thresholdPct),
+        probe_statuses: Array.isArray(data.probes)
+          ? [...new Set(data.probes.map((probe) => normalizeVisualResidualStatus(probe?.status)).filter(Boolean))]
+          : [],
         meanAbsResidualPct: normalizeNumber(data.meanAbsResidualPct),
         rmsResidualPct: normalizeNumber(data.rmsResidualPct),
         pixelChangedPctOver32: normalizeNumber(data.pixelChangedPctOver32),
@@ -5308,11 +5339,22 @@ async function walkFiles(dir) {
 }
 
 function resolveVisualQaStatus(run, thresholdPct) {
+  const residualStatus = run.latest_residual?.status;
+  const probeStatuses = run.latest_residual?.probe_statuses ?? [];
+  if (residualStatus === 'baseline_missing' || probeStatuses.includes('baseline_missing')) return 'needs_review';
+  if (residualStatus === 'current_missing' || residualStatus === 'needs_evidence' || probeStatuses.includes('current_missing')) return 'needs_review';
+  if (residualStatus === 'needs_review' || probeStatuses.includes('needs_review')) return 'needs_review';
+  if (run.latest_residual?.binding && run.latest_residual.binding.status !== 'current') return 'needs_review';
   const residual = run.latest_residual?.meanAbsResidualPct;
   const semantic = run.semantic_layout_residual_pct;
   if (residual != null && residual > thresholdPct) return 'needs_review';
   if (semantic != null && semantic > thresholdPct) return 'needs_review';
   return 'ready_for_review';
+}
+
+function normalizeVisualResidualStatus(value) {
+  const status = String(value ?? '').trim();
+  return status || null;
 }
 
 function extractSemanticLayoutResidualPct(content) {
@@ -8525,6 +8567,7 @@ function buildGateDag({
       qa_id: run.qa_id,
       status: run.status,
       residual_pct: run.latest_residual?.meanAbsResidualPct ?? null,
+      threshold_pct: run.threshold_pct ?? null,
       semantic_layout_residual_pct: run.semantic_layout_residual_pct
     }))
   } : uiExperienceChange ? {
@@ -9675,9 +9718,9 @@ function scoreFailureModeEvidence(mode, evidenceText) {
 function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decisionRecords = null } = {}) {
   if (!uiExperienceChange) return null;
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:journey_context');
-  const affectedConflicts = journeyMap?.affected_conflicts ?? [];
+  const affectedConflicts = (journeyMap?.affected_conflicts ?? []).filter((conflict) => !isCuratedJourneyItemHandled(conflict));
   const affectedOpenQuestions = journeyMap?.affected_open_questions ?? [];
-  const blockerQuestions = affectedOpenQuestions.filter((question) => question.blocker === true);
+  const blockerQuestions = affectedOpenQuestions.filter((question) => question.blocker === true && !isCuratedJourneyItemHandled(question));
   const affectedWalkingSkeleton = (journeyMap?.affected_release_slices ?? [])
     .some((slice) => slice.kind === 'walking_skeleton' || slice.slice_id === 'walking_skeleton');
   const walkingSkeletonGap = affectedWalkingSkeleton && journeyMap?.walking_skeleton_status === 'needs_evidence';
@@ -9747,6 +9790,11 @@ function buildJourneyContextGate(journeyMap, { uiExperienceChange = false, decis
     ],
     reason: reasons.join('; ')
   };
+}
+
+function isCuratedJourneyItemHandled(item) {
+  const status = String(item?.curation?.status ?? '').toLowerCase();
+  return ['resolved', 'accepted', 'answered', 'deferred'].includes(status);
 }
 
 function buildVerificationCommandSearchText(command) {

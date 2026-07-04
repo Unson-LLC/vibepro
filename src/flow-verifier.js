@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { collectGitContext } from './git-fingerprint.js';
+import { recordVerificationEvidence } from './verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -107,7 +108,8 @@ export async function runFlowVerification(repoRoot, options = {}) {
     warnings,
     git_context: gitContext,
     generated_spec: generatedSpecPath ? toWorkspaceRelative(root, generatedSpecPath) : null,
-    generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null
+    generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null,
+    auto_visual_evidence: null
   };
 
   const jsonPath = path.join(runDir, 'flow-verification.json');
@@ -116,6 +118,16 @@ export async function runFlowVerification(repoRoot, options = {}) {
   await writeFile(jsonPath, `${JSON.stringify(verification, null, 2)}\n`);
   await writeFile(markdownPath, renderFlowVerificationReport(verification));
   if (!commandResult) await writeFile(logPath, `${reason ?? 'Playwright was not executed.'}\n`);
+  const autoVisualEvidence = await recordVisualEvidenceFromFlowRun(root, {
+    verification,
+    jsonPath,
+    command: commandResult?.command
+  });
+  if (autoVisualEvidence) {
+    verification.auto_visual_evidence = autoVisualEvidence;
+    await writeFile(jsonPath, `${JSON.stringify(verification, null, 2)}\n`);
+    await writeFile(markdownPath, renderFlowVerificationReport(verification));
+  }
 
   manifest.latest_flow_verification_run = runId;
   manifest.flow_verification_runs = [
@@ -201,13 +213,13 @@ async function readConfig(root) {
   }
 }
 
-function resolveStory(config, storyId = null) {
+export function resolveStory(config, storyId = null) {
   const stories = config.brainbase?.stories ?? [];
   const id = storyId ?? config.brainbase?.current_story_id ?? null;
   return stories.find((story) => story.story_id === id) ?? stories[0] ?? null;
 }
 
-function resolveFlowProbes({ config, manifest, story, journeyId }) {
+export function resolveFlowProbes({ config, manifest, story, journeyId }) {
   const configured = config.flow_design?.runtime_probes;
   const evidenceProbes = latestFlowDesignProbes(config, manifest);
   const defaults = defaultProbesForProfile(config.flow_design?.profile, story);
@@ -264,6 +276,60 @@ function buildPendingProbeResult(probe, options) {
     reason: null,
     artifacts: { screenshot_paths: screenshotPaths }
   };
+}
+
+async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, command }) {
+  if (!verification?.story_id || verification.status !== 'pass') return null;
+  if ((verification.runtime_contract_failures?.length ?? 0) > 0) return null;
+  const declaredScreenshotTargets = verification.probes
+    .filter((probe) => probe.status === 'pass')
+    .flatMap((probe) => probe.artifacts?.screenshot_paths ?? [])
+    .map((screenshotPath) => path.posix.join('.vibepro', 'verification', verification.run_id, normalizeRelativePath(screenshotPath)))
+    .filter(Boolean);
+  const screenshotTargets = [];
+  for (const screenshotPath of declaredScreenshotTargets) {
+    if (await fileExists(path.join(root, screenshotPath))) screenshotTargets.push(screenshotPath);
+  }
+  if (screenshotTargets.length === 0) return null;
+  const artifact = toWorkspaceRelative(root, jsonPath);
+  const result = await recordVerificationEvidence(root, {
+    storyId: verification.story_id,
+    kind: 'e2e',
+    status: 'pass',
+    command: command ?? `vibepro verify flow . --base-url ${verification.base_url} --id ${verification.story_id}`,
+    summary: `Flow Verification ${verification.run_id} passed with Visual QA screenshots`,
+    artifact,
+    targets: [artifact, ...screenshotTargets],
+    scenarios: [
+      `visual_qa: Flow Verification ${verification.run_id} screenshots reviewed`,
+      ...screenshotTargets.map((screenshotPath) => `screenshot: ${screenshotPath}`)
+    ],
+    observed: [
+      `flow_run_id=${verification.run_id}`,
+      `screenshot_count=${screenshotTargets.length}`
+    ]
+  });
+  return {
+    artifact: result.artifact,
+    command_kind: 'e2e',
+    source: artifact,
+    screenshot_paths: screenshotTargets,
+    status: 'recorded'
+  };
+}
+
+function normalizeRelativePath(value) {
+  return String(value ?? '').split(path.sep).join('/').replace(/^\/+/, '');
+}
+
+async function fileExists(filePath) {
+  try {
+    const info = await stat(filePath);
+    return info.isFile();
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 async function detectPlaywright(root) {
@@ -755,6 +821,7 @@ function renderFlowVerificationReport(verification) {
 - skipped: ${verification.summary.skipped}
 - needs_setup: ${verification.summary.needs_setup}
 - runtime_contract_failures: ${verification.runtime_contract_failures?.length ?? 0}
+- auto_visual_evidence: ${verification.auto_visual_evidence?.status ?? 'not_recorded'}
 
 ## Probes
 

@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-visual-residual-local-runner
 title: Visual Residual Local Runner Spec
-parent_design: vibepro-visual-residual-local-runner
+parent_design: vibepro-ui-journey-e2e-producer-contracts
 ---
 
 # Spec
@@ -51,6 +51,14 @@ required to produce residual artifacts.
 The runner reports meanAbsResidualPct per probe. Semantic layout residual is
 out of scope and remains an external-tool field.
 
+### VRL-CONTRACT-5: Basic Auth compatibility boundary
+
+The runner reuses the same runtime probe configuration as `verify flow`; the
+existing `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD` branch may supply browser
+credentials for protected preview pages. Generated baseline, current screenshot,
+`visual-residual.json`, and `residual-analysis.md` artifacts MUST NOT persist
+plaintext Basic Auth credentials.
+
 ## Scenarios
 
 ### VRL-S-1: Within threshold passes the gate
@@ -77,6 +85,13 @@ the updated probes is near zero.
 
 The generated `visual-residual.json` passes the existing residual format
 validation with no validator changes.
+
+### VRL-S-6: Visual verification workflow state transition
+
+Given configured probes, the visual verification workflow records an explicit
+state transition from `baseline_missing`, `needs_review`, or `pass` into the
+corresponding Visual QA Gate status without leaving stale residual artifacts as
+passing evidence.
 
 ## Anti-patterns
 

@@ -196,6 +196,272 @@ status: active
   assert.equal(parsed.context_pack.artifact_kind, 'journey_context_pack');
 });
 
+test('journey curate rejects partial judgments and writes curated Journey with deferrals', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-curate-'));
+  await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);
+  await writeStory(repo, 'story-product-public-discovery-seo.md', `---
+story_id: story-product-public-discovery-seo
+title: Public discovery
+journey_activity: acquisition
+journey_step: discover
+release_slice: walking_skeleton
+status: active
+---
+# Public discovery
+`);
+  await writeStory(repo, 'story-product-auth-account-access.md', `---
+story_id: story-product-auth-account-access
+title: Account access
+journey_activity: activation
+journey_step: signup
+journey_to: dashboard
+release_slice: walking_skeleton
+status: active
+---
+# Account access
+`);
+  await writeStory(repo, 'story-product-auth-alt-access.md', `---
+story_id: story-product-auth-alt-access
+title: Alternate account access
+journey_activity: activation
+journey_step: signup
+journey_to: onboarding
+release_slice: walking_skeleton
+status: active
+---
+# Alternate account access
+`);
+  await writeStory(repo, 'story-product-first-value.md', `---
+story_id: story-product-first-value
+title: First value
+journey_activity: core_usage
+journey_step: first-value
+release_slice: walking_skeleton
+status: active
+---
+# First value
+`);
+  await writeStory(repo, 'story-product-parking-lot.md', `---
+story_id: story-product-parking-lot
+title: Parking lot
+status: active
+---
+# Parking lot
+`);
+  await captureRunCli(['journey', 'derive', repo]);
+  const latestJourneyPath = path.join(repo, '.vibepro', 'journey', 'latest-journey.json');
+  const latestJourney = JSON.parse(await readFile(latestJourneyPath, 'utf8'));
+  latestJourney.open_questions = [
+    ...(latestJourney.open_questions ?? []),
+    {
+      id: 'decision:pricing-step',
+      kind: 'release_slice_decision',
+      question: 'Decide whether pricing belongs in this Journey slice.',
+      blocker: true,
+      step_id: 'signup'
+    }
+  ];
+  await writeFile(latestJourneyPath, `${JSON.stringify(latestJourney, null, 2)}\n`);
+  const partialInput = path.join(repo, 'judgments-partial.json');
+  await writeFile(partialInput, JSON.stringify({
+    conflicts: [
+      { id: 'journey-conflict:activation:signup', status: 'resolved', reason: 'dashboard is canonical' }
+    ]
+  }, null, 2));
+
+  const partial = await captureRunCli(['journey', 'curate', repo, '--input', partialInput]);
+  assert.equal(partial.exitCode, 1);
+  assert.match(partial.stderr, /Unhandled Journey curation items/);
+  assert.match(partial.stderr, /open_question decision:pricing-step/);
+
+  const completeInput = path.join(repo, 'judgments-complete.json');
+  await writeFile(completeInput, JSON.stringify({
+    conflicts: [
+      { id: 'journey-conflict:activation:signup', status: 'resolved', reason: 'dashboard is canonical' }
+    ],
+    open_questions: [
+      { id: 'decision:pricing-step', status: 'deferred', reason: 'pricing belongs to a later slice' }
+    ],
+    next_slice: 'activation-hardening'
+  }, null, 2));
+  const curated = await captureRunCli(['journey', 'curate', repo, '--input', completeInput, '--json']);
+
+  assert.equal(curated.exitCode, 0, curated.stderr);
+  const parsed = JSON.parse(curated.stdout);
+  assert.equal(parsed.artifact_kind, 'curated_journey');
+  assert.equal(parsed.machine_derived, false);
+  assert.equal(parsed.curation.conflicts['journey-conflict:activation:signup'].status, 'resolved');
+  assert.equal(parsed.curation.open_questions['decision:pricing-step'].status, 'deferred');
+  const status = await captureRunCli(['journey', 'status', repo, '--json']);
+  assert.equal(status.exitCode, 0, status.stderr);
+  assert.equal(JSON.parse(status.stdout).status, 'available');
+});
+
+test('journey curate custom output remains authoritative for downstream status', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-curate-output-'));
+  await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);
+  await writeStory(repo, 'story-product-public-discovery-seo.md', `---
+story_id: story-product-public-discovery-seo
+title: Public discovery
+journey_activity: acquisition
+journey_step: discover
+release_slice: walking_skeleton
+status: active
+---
+# Public discovery
+`);
+  await writeStory(repo, 'story-product-auth-account-access.md', `---
+story_id: story-product-auth-account-access
+title: Account access
+journey_activity: activation
+journey_step: signup
+release_slice: walking_skeleton
+status: active
+---
+# Account access
+`);
+  await writeStory(repo, 'story-product-first-value.md', `---
+story_id: story-product-first-value
+title: First value
+journey_activity: core_usage
+journey_step: first-value
+release_slice: walking_skeleton
+status: active
+---
+# First value
+`);
+  await captureRunCli(['journey', 'derive', repo]);
+  const inputPath = path.join(repo, 'judgments.json');
+  await writeFile(inputPath, `${JSON.stringify({}, null, 2)}\n`);
+  const outputPath = path.join('artifacts', 'journey', 'curated-custom.json');
+
+  const curated = await captureRunCli([
+    'journey',
+    'curate',
+    repo,
+    '--input',
+    inputPath,
+    '--output',
+    outputPath,
+    '--json'
+  ]);
+
+  assert.equal(curated.exitCode, 0, curated.stderr);
+  assert.equal(JSON.parse(curated.stdout).artifact_kind, 'curated_journey');
+  const status = await captureRunCli(['journey', 'status', repo, '--json']);
+  assert.equal(status.exitCode, 0, status.stderr);
+  const parsed = JSON.parse(status.stdout);
+  assert.equal(parsed.status, 'available');
+  assert.equal(parsed.curated, true);
+  assert.equal(parsed.curated_journey_path, outputPath);
+  assert.equal(parsed.artifact_kind, 'curated_journey');
+});
+
+test('UI journey dogfood synthetic route resolves curated Journey and Visual QA gates', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-dogfood-'));
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli(['init', repo, '--story-id', 'story-product-signup-ui', '--title', 'Signup UI']);
+  await writeStory(repo, 'story-product-discovery.md', `---
+story_id: story-product-discovery
+title: Discovery
+journey_activity: acquisition
+journey_step: discover
+release_slice: walking_skeleton
+status: active
+---
+# Discovery
+
+## Acceptance Criteria
+- Users can understand the product value before signup
+`);
+  await writeStory(repo, 'story-product-signup-ui.md', `---
+story_id: story-product-signup-ui
+title: Signup UI
+journey_activity: activation
+journey_step: signup
+release_slice: walking_skeleton
+status: active
+---
+# Signup UI
+
+## Acceptance Criteria
+- Users can move through signup
+`);
+  await writeStory(repo, 'story-product-first-value.md', `---
+story_id: story-product-first-value
+title: First value
+journey_activity: core_usage
+journey_step: first-value
+release_slice: walking_skeleton
+status: active
+---
+# First value
+
+## Acceptance Criteria
+- Users can complete the first useful workflow
+`);
+  await writeFile(path.join(repo, 'src', 'components', 'Signup.tsx'), 'export function Signup() { return <button>Start</button>; }\n');
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: bootstrap signup journey']);
+
+  await captureRunCli(['journey', 'derive', repo]);
+  const judgmentsPath = path.join(repo, 'journey-judgments.json');
+  await writeFile(judgmentsPath, `${JSON.stringify({}, null, 2)}\n`);
+  const curated = await captureRunCli(['journey', 'curate', repo, '--input', judgmentsPath, '--json']);
+  assert.equal(curated.exitCode, 0, curated.stderr);
+  const journeyStatus = await captureRunCli(['journey', 'status', repo, '--json']);
+  assert.equal(JSON.parse(journeyStatus.stdout).status, 'available');
+
+  await git(repo, ['switch', '-c', 'feature/signup-journey-dogfood']);
+  await writeFile(path.join(repo, 'src', 'components', 'Signup.tsx'), 'export function Signup() { return <button>Create account</button>; }\n');
+  await git(repo, ['add', 'src/components/Signup.tsx']);
+  await git(repo, ['commit', '-m', 'feat: update signup journey ui']);
+  await mkdir(path.join(repo, 'artifacts', 'visual'), { recursive: true });
+  await writeFile(path.join(repo, 'artifacts', 'visual', 'signup.png'), 'fake screenshot\n');
+
+  const visualEvidence = await captureRunCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-product-signup-ui',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test test/e2e/signup-journey.spec.ts',
+    '--summary',
+    'Signup Journey screenshot reviewed',
+    '--target',
+    'src/components/Signup.tsx',
+    '--target',
+    'artifacts/visual/signup.png',
+    '--scenario',
+    'visual_qa: signup journey screenshot reviewed',
+    '--scenario',
+    'screenshot: artifacts/visual/signup.png',
+    '--artifact',
+    'artifacts/visual/signup.png'
+  ]);
+  assert.equal(visualEvidence.exitCode, 0, visualEvidence.stderr);
+
+  const prepare = await captureRunCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-product-signup-ui', '--allow-extra-files', '--json']);
+  assert.equal(prepare.exitCode, 0, prepare.stderr);
+  const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-product-signup-ui', 'pr-prepare.json'), 'utf8'));
+  const journeyGate = artifact.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:journey_context');
+  const visualGate = artifact.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(journeyGate.status, 'passed');
+  assert.equal(journeyGate.curated, true);
+  assert.equal(journeyGate.artifact_kind, 'curated_journey');
+  assert.equal(visualGate.status, 'ready_for_review');
+  assert.equal(artifact.gate_status.critical_unresolved_gates.some((item) => item.id === 'gate:journey_context'), false);
+  assert.equal(artifact.gate_status.critical_unresolved_gates.some((item) => item.id === 'gate:visual_qa'), false);
+});
+
 test('journey derive binds spec clauses, graphify surfaces, and gate evidence to steps', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-journey-bindings-'));
   await runCli(['init', repo, '--story-id', 'story-product-auth-account-access', '--title', 'Account access']);

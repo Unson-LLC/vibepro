@@ -120,6 +120,7 @@ import {
   shipPullRequest
 } from './pr-manager.js';
 import { renderFlowVerificationSummary, runFlowVerification } from './flow-verifier.js';
+import { renderVisualVerificationSummary, runVisualVerification } from './visual-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import {
@@ -211,8 +212,10 @@ import {
   showTask
 } from './task-manager.js';
 import {
+  curateJourneyMap,
   deriveJourneyMap,
   getJourneyStatus,
+  renderJourneyCurateSummary,
   renderJourneyHandoff,
   renderJourneyMap,
   renderJourneyStatus
@@ -364,6 +367,7 @@ Usage:
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
@@ -398,6 +402,7 @@ Usage:
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task list [repo] [--id <story-id>]
@@ -574,6 +579,7 @@ Usage:
   vibepro design-modernize plan [repo] --id <story-id> [--product <name>] [--route <path>] [--routes <csv>] [--base-url <url>] [--brief <text>] [--design-system-id <id>] [--design-system-title <name>] [--design-system-bundle <file>] [--scene-id <id>] [--json]
   vibepro design-modernize capture [repo] --id <story-id> --base-url <url> [--route <path>] [--routes <csv>] [--sample-hotel-id <id>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--json]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
@@ -600,6 +606,7 @@ Usage:
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
+  vibepro journey curate [repo] --input <judgments.json|yaml> [--id <journey-id>] [--json]
   vibepro journey map [repo] [--json]
   vibepro journey status [repo] [--json]
   vibepro task create [repo] --from-plan [--id <story-id>] [--task <task-id>] [--limit <n>] [--json]
@@ -1298,6 +1305,37 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.verification, null, 2)}\n`
           : renderFlowVerificationSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'visual') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify visual'
+        });
+        const result = await runVisualVerification(repoRoot, {
+          storyId,
+          baseUrl: getOption(rest, '--base-url'),
+          currentDir: getOption(rest, '--current-dir'),
+          qaId: getOption(rest, '--qa-id'),
+          thresholdPct: parseNumberOption(rest, '--threshold'),
+          runId: getOption(rest, '--run-id'),
+          journeyId: getOption(rest, '--journey'),
+          updateBaseline: hasFlag(rest, '--update-baseline'),
+          allowMutation: hasFlag(rest, '--allow-mutation'),
+          headed: hasFlag(rest, '--headed'),
+          basicAuth: getOption(rest, '--basic-auth'),
+          basicAuthEnv: getOption(rest, '--basic-auth-env'),
+          env: io.env,
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.report?.story_id ?? storyId,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.report, null, 2)}\n`
+          : renderVisualVerificationSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'record') {
@@ -2007,6 +2045,17 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.journey.handoff, null, 2)}\n`
           : renderJourneyHandoff(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'curate') {
+        const result = await curateJourneyMap(repoRoot, {
+          journeyId: getOption(rest, '--id'),
+          inputPath: getOption(rest, '--input'),
+          outputPath: getOption(rest, '--output')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result.journey, null, 2)}\n`
+          : renderJourneyCurateSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'map') {
