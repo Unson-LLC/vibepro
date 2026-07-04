@@ -2147,6 +2147,13 @@ export async function runCli(argv, io = {}) {
         const summaryJsonOutput = hasFlag(rest, '--summary-json');
         const viewOutput = getOption(rest, '--view') ?? (summaryJsonOutput ? 'canonical-summary' : null);
         const progressOutput = jsonOutput || summaryJsonOutput || Boolean(viewOutput) || hasFlag(rest, '--progress');
+        const explicitEvidenceDepth = getOption(rest, '--evidence-depth');
+        const implicitSummaryEvidenceDepth = !explicitEvidenceDepth && (summaryJsonOutput || Boolean(viewOutput));
+        const evidenceDepth = explicitEvidenceDepth ?? (implicitSummaryEvidenceDepth ? 'summary' : null);
+        const evidenceDepthReason = getOption(rest, '--evidence-depth-reason')
+          ?? (implicitSummaryEvidenceDepth ? 'limited pr prepare view requested' : null);
+        const evidenceDepthConsumer = getOption(rest, '--evidence-depth-consumer')
+          ?? (implicitSummaryEvidenceDepth ? 'limited_pr_prepare_view' : null);
         const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr prepare');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
@@ -2160,9 +2167,9 @@ export async function runCli(argv, io = {}) {
           headRef: getOption(rest, '--head'),
           branchName: getOption(rest, '--branch'),
           maxReviewableFiles: parseNumberOption(rest, '--max-files'),
-          evidenceDepth: getOption(rest, '--evidence-depth'),
-          evidenceDepthReason: getOption(rest, '--evidence-depth-reason'),
-          evidenceDepthConsumer: getOption(rest, '--evidence-depth-consumer'),
+          evidenceDepth,
+          evidenceDepthReason,
+          evidenceDepthConsumer,
           stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
           progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
           strict: hasFlag(rest, '--strict'),

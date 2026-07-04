@@ -126,7 +126,7 @@ test('pr prepare summary depth writes plan/index but skips HTML and standalone G
   assert.equal(entry.latest_review_cockpit, null);
 });
 
-test('pr prepare records manual full evidence-depth override', async () => {
+test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async () => {
   const repo = await setupLowRiskRepo();
 
   const result = await runCli([
@@ -143,7 +143,8 @@ test('pr prepare records manual full evidence-depth override', async () => {
     'audit replay requested full evidence',
     '--evidence-depth-consumer',
     'value-audit',
-    '--json'
+    '--view',
+    'readiness'
   ]);
   assert.equal(result.exitCode, 0);
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-low-risk');
@@ -173,4 +174,25 @@ test('pr prepare records targeted full surfaces for high-risk default workflow',
   assert.ok(plan.risk_signals.some((signal) => signal.kind === 'risk_surface' && signal.value === 'auth_boundary'));
   assert.ok(plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
   assert.ok(prepare.evidence_plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
+});
+
+test('pr prepare focused view uses summary depth even for high-risk workflow', async () => {
+  const repo = await setupHighRiskAuthRepo();
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-auth-risk', '--base', 'main', '--view', 'readiness']);
+  assert.equal(result.exitCode, 0);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-auth-risk');
+  const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
+  const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+
+  assert.equal(plan.default_depth, 'standard');
+  assert.equal(plan.evidence_depth, 'summary');
+  assert.equal(plan.manual_override.status, 'requested');
+  assert.equal(plan.manual_override.reason, 'limited pr prepare view requested');
+  assert.equal(plan.manual_override.consumer, 'limited_pr_prepare_view');
+  assert.equal(plan.artifact_policy.write_html_reports, false);
+  assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
+  assert.equal(prepare.evidence_plan.evidence_depth, 'summary');
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 });

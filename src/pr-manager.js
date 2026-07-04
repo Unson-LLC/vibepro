@@ -1546,21 +1546,60 @@ export function buildExecutionGateStatus(gateDag) {
 }
 
 function collectPrReadinessBlockingItems(gateDag) {
-  const unresolvedGates = collectUnresolvedRequiredGates(gateDag);
+  const unresolvedGates = collectUnresolvedRequiredGates(gateDag).map(enrichGateNextCommand);
   const overallStatus = gateDag?.overall_status ?? null;
   if (!gateDag || overallStatus === 'ready_for_review' || unresolvedGates.length > 0) return unresolvedGates;
   return [
-    {
+    enrichGateNextCommand({
       id: 'gate:overall_status',
       type: 'gate_dag_status_gate',
       label: 'Gate DAG Overall Status',
       status: overallStatus,
       reason: 'Gate DAG overall_status is not ready_for_review, but no unresolved required gate details were emitted. Regenerate PR evidence or inspect the Gate DAG status source before PR creation.',
       required_actions: [
-        'Rerun `vibepro pr prepare` after refreshing evidence, or inspect why Gate DAG overall_status is not ready_for_review.'
+        'Rerun `vibepro pr prepare . --view blocking-gates` after refreshing evidence, or inspect why Gate DAG overall_status is not ready_for_review.'
       ]
-    }
+    })
   ];
+}
+
+function enrichGateNextCommand(gate) {
+  const commands = collectGateNextCommands(gate);
+  if (commands.length === 0) return gate;
+  const existingCommands = Array.isArray(gate.next_commands) ? gate.next_commands : [];
+  const nextCommands = [...new Set([...existingCommands, ...commands])];
+  return {
+    ...gate,
+    primary_next_command: gate.primary_next_command ?? nextCommands[0],
+    next_commands: nextCommands
+  };
+}
+
+function collectGateNextCommands(gate) {
+  const commands = [];
+  for (const action of gate?.required_actions ?? []) {
+    commands.push(...extractCommandsFromText(action));
+  }
+  commands.push(...extractCommandsFromText(gate?.command));
+  for (const command of gate?.next_commands ?? []) {
+    commands.push(...extractCommandsFromText(command));
+  }
+  return commands.filter(Boolean);
+}
+
+function extractCommandsFromText(value) {
+  if (typeof value !== 'string') return [];
+  const text = value.trim();
+  if (!text) return [];
+  const tickedCommands = [...text.matchAll(/`([^`]+)`/g)]
+    .map((match) => match[1]?.trim())
+    .filter((command) => isLikelyNextCommand(command));
+  if (tickedCommands.length > 0) return tickedCommands;
+  return isLikelyNextCommand(text) ? [text] : [];
+}
+
+function isLikelyNextCommand(value) {
+  return /^(vibepro|git|gh|node|npm|pnpm|yarn)\b/.test(String(value ?? '').trim());
 }
 
 function formatExecutionGateAction(gate) {
