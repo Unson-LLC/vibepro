@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -16,6 +16,7 @@ const SCENARIO_S003 = 'Given the VibePro workflow state already has design-input
 const SCENARIO_S004 = 'Given Story plan or repo status has no prior workflow run, when next commands are shown, then the first diagnosis command includes --pre-architecture.';
 const SCENARIO_S005 = 'Given a workflow-heavy Story, when Architecture/Spec are prepared, then design-input diagnosis evidence is available before implementation and pre-implementation diagnosis remains a separate final workflow consistency check.';
 const SCENARIO_S006 = 'Given diagnosis or PR prepare workflow evidence is replayed, when artifacts are inspected, then design_input_judgment and pre_implementation_judgment are not collapsed into one generic Engineering Judgment record.';
+const SCENARIO_S007 = 'Given workflow documentation is used as operator guidance, when README and CLI references are inspected, then they describe design-input diagnosis before Architecture/Spec and pre-implementation checks before code/PR readiness.';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -104,26 +105,39 @@ test('DIJ-SCENARIO-004 status and story plan point first-run stories to pre-arch
   const repo = await makeRepo();
   const statusResult = await runCli(['status', repo, '--json']);
   assert.equal(statusResult.exitCode, 0);
-  assert.equal(statusResult.status.next_commands.some((command) => command.includes(`story diagnose ${repo} --id ${STORY_ID} --pre-architecture --run-graphify`)), true, `${STORY_ID} S-004 ${SCENARIO_S004}`);
+  assert.equal(statusResult.status.next_commands.some((command) => command.includes(`story diagnose ${repo} --id ${STORY_ID} --pre-architecture --run-graphify`)), true, `${STORY_ID} ac:3 S-004 ${SCENARIO_S004}`);
 
   await writeStoryPlanGraph(repo);
   await runCli(['story', 'derive', repo]);
   const planResult = await runCli(['story', 'plan', repo, '--limit', '2', '--json']);
   assert.equal(planResult.exitCode, 0);
-  assert.equal(planResult.result.plan.next_commands.some((command) => command.includes('story diagnose . --id') && command.includes('--pre-architecture --run-graphify')), true, `${STORY_ID} S-004 ${SCENARIO_S004}`);
+  assert.equal(planResult.result.plan.next_commands.some((command) => command.includes('story diagnose . --id') && command.includes('--pre-architecture --run-graphify')), true, `${STORY_ID} ac:3 S-004 ${SCENARIO_S004}`);
 });
 
 test('DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and evidence artifacts', async () => {
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.diagnosis.run.phase, 'design_input', `${STORY_ID} S-001 ${SCENARIO_S001}`);
+  assert.equal(result.result.diagnosis.run.phase, 'design_input', `${STORY_ID} ac:1 S-001 ${SCENARIO_S001}`);
   assert.equal(result.result.diagnosis.run.design_input_judgment.phase, 'design_input');
 
   const evidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '001-design-input', 'evidence.json'), 'utf8'));
   assert.equal(evidence.diagnosis_phase.phase, 'design_input');
-  assert.equal(evidence.design_input_judgment.phase, 'design_input', `${STORY_ID} S-001 ${SCENARIO_S001}`);
+  assert.equal(evidence.design_input_judgment.phase, 'design_input', `${STORY_ID} ac:1 S-001 ${SCENARIO_S001}`);
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
+});
+
+test('DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input and pre-implementation diagnosis', async () => {
+  const repo = await makeRepo();
+  const designInput = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-explicit-design-input', '--phase', 'design-input']);
+  assert.equal(designInput.exitCode, 0);
+  assert.equal(designInput.result.diagnosis.run.phase, 'design_input', `${STORY_ID} ac:2 S-001 ${SCENARIO_S001}`);
+  assert.equal(designInput.result.diagnosis.run.design_input_judgment.phase, 'design_input', `${STORY_ID} ac:2 S-001 ${SCENARIO_S001}`);
+
+  const preImplementation = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-explicit-pre-implementation', '--phase', 'pre-implementation']);
+  assert.equal(preImplementation.exitCode, 0);
+  assert.equal(preImplementation.result.diagnosis.run.phase, 'pre_implementation', `${STORY_ID} ac:2 S-005 ${SCENARIO_S005}`);
+  assert.equal(preImplementation.result.diagnosis.run.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:2 S-005 ${SCENARIO_S005}`);
 });
 
 test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates design-input and pre-implementation judgment artifacts', async () => {
@@ -136,21 +150,47 @@ test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates de
   assert.equal(missing.exitCode, 0);
   assert.equal(missing.result.preparation.pr_context.design_input_judgment.status, 'missing');
   const missingGate = findGate(missing.result.preparation, 'gate:design_input_judgment');
-  assert.equal(missingGate.status, 'needs_review', `${STORY_ID} S-002 ${SCENARIO_S002}`);
-  assert.equal(missingGate.required, false, `${STORY_ID} S-002 ${SCENARIO_S002}`);
+  assert.equal(missingGate.status, 'needs_review', `${STORY_ID} ac:5 S-002 ${SCENARIO_S002}`);
+  assert.equal(missingGate.required, false, `${STORY_ID} ac:5 S-002 ${SCENARIO_S002}`);
 
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
   const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(prepare.exitCode, 0);
-  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.status, 'present', `${STORY_ID} S-005 ${SCENARIO_S005}`);
-  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', `${STORY_ID} S-005 ${SCENARIO_S005}`);
-  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', `${STORY_ID} S-006 ${SCENARIO_S006}`);
-  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.status, 'present', `${STORY_ID} ac:4 ac:6 S-005 ${SCENARIO_S005}`);
+  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', `${STORY_ID} ac:6 S-005 ${SCENARIO_S005}`);
+  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
 
   const passedGate = findGate(prepare.result.preparation, 'gate:design_input_judgment');
-  assert.equal(passedGate.status, 'passed', `${STORY_ID} S-003 ${SCENARIO_S003}`);
+  assert.equal(passedGate.status, 'passed', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
   const gateIds = prepare.result.preparation.pr_context.gate_dag.nodes.map((node) => node.id);
-  assert.equal(gateIds.indexOf('gate:design_input_judgment') > gateIds.indexOf('gate:story_source_integrity'), true, `${STORY_ID} S-003 ${SCENARIO_S003}`);
-  assert.equal(gateIds.indexOf('gate:design_input_judgment') < gateIds.indexOf('gate:engineering_judgment_route'), true, `${STORY_ID} S-003 ${SCENARIO_S003}`);
+  assert.equal(gateIds.indexOf('gate:design_input_judgment') > gateIds.indexOf('gate:story_source_integrity'), true, `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
+  assert.equal(gateIds.indexOf('gate:design_input_judgment') < gateIds.indexOf('gate:engineering_judgment_route'), true, `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
+});
+
+test('DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate', async () => {
+  const repo = await makeGitRepo();
+  await writeCrossSurfaceDesignChange(repo);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['commit', '-m', 'feat: add cross-surface manifest-only flow']);
+  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
+  await unlink(path.join(repo, '.vibepro', 'diagnostics', '001-design-input', 'evidence.json'));
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(prepare.exitCode, 0);
+  assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'missing', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
+  const gate = findGate(prepare.result.preparation, 'gate:design_input_judgment');
+  assert.equal(gate.status, 'needs_review', `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
+});
+
+test('DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
+  const root = process.cwd();
+  const readmeJa = await readFile(path.join(root, 'README.ja.md'), 'utf8');
+  const cliReference = await readFile(path.join(root, 'docs', 'reference', 'cli.md'), 'utf8');
+  const workflowSkill = await readFile(path.join(root, 'skills', 'vibepro-workflow', 'SKILL.md'), 'utf8');
+
+  assert.match(readmeJa, /--pre-architecture --run-graphify/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.match(cliReference, /--phase design-input\|pre-implementation/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
+  assert.match(workflowSkill, /Architecture\/Spec前|design-input/, `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`);
 });
