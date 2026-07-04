@@ -387,6 +387,34 @@ export function specReadinessMarker() {
   assert.ok(readiness.engineering_judgment.active_axis_count >= 0);
 });
 
+test('spec readiness missing diagnosis action uses design-input phase', async () => {
+  const repo = await makeSpecRepo();
+  await initGitRepo(repo);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'src/lib/services/billing.ts' }],
+    links: []
+  }));
+
+  const { exitCode, stdout } = await captureRunCli([
+    'spec',
+    'readiness',
+    repo,
+    '--id',
+    STORY_ID,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(exitCode, 2);
+  const readiness = JSON.parse(stdout);
+  assert.equal(readiness.status, 'blocked');
+  assert.equal(
+    readiness.next_actions.some((action) => action.includes(`vibepro story diagnose . --id ${STORY_ID} --pre-architecture --run-graphify`)),
+    true
+  );
+});
+
 test('spec fingerprint resolves the explicit story id instead of falling back to existing STR-001', async () => {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-spec-story-id-'));
   await mkdir(path.join(repo, 'src', 'lib'), { recursive: true });

@@ -211,7 +211,7 @@ function buildNextActions(checks, storyId) {
     actions.push('Run `vibepro graph . --run-graphify`.');
   }
   if (checks.some((check) => check.id === 'story_diagnosis' && check.status !== 'pass')) {
-    actions.push(`Run \`vibepro story diagnose . --id ${storyId} --run-graphify\`.`);
+    actions.push(`Run \`vibepro story diagnose . --id ${storyId} --pre-architecture --run-graphify\`.`);
   }
   if (checks.some((check) => check.id === 'architecture_check' && check.status !== 'pass')) {
     actions.push(`Run \`vibepro check architecture . --story-id ${storyId} --base <base-ref>\`.`);
