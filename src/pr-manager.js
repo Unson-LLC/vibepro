@@ -6915,17 +6915,26 @@ function buildDesignInputJudgmentContext({
   fileGroups = {}
 } = {}) {
   const evidenceJudgment = latestEvidence?.design_input_judgment ?? null;
+  const evidencePhase = latestEvidence?.diagnosis_phase?.phase ?? null;
   const runJudgment = latestStoryRun?.design_input_judgment ?? null;
-  const phase = latestStoryRun?.phase ?? latestEvidence?.diagnosis_phase?.phase ?? null;
-  const present = phase === 'design_input' || Boolean(evidenceJudgment) || Boolean(runJudgment);
+  const runPhase = latestStoryRun?.phase ?? null;
+  const hasDesignInputRun = runPhase === 'design_input';
+  const hasDesignInputEvidenceArtifact = evidencePhase === 'design_input' && Boolean(evidenceJudgment);
+  const present = hasDesignInputRun && hasDesignInputEvidenceArtifact;
+  const runRecordedWithoutEvidence = hasDesignInputRun && !hasDesignInputEvidenceArtifact;
   return {
     schema_version: '0.1.0',
     phase: 'design_input',
     status: present ? 'present' : 'missing',
-    source: present ? 'story_diagnosis' : 'not_recorded',
-    run_id: present ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
-    gate_status: runJudgment?.gate_status ?? evidenceJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null,
-    finding_count: runJudgment?.finding_count ?? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? null,
+    source: present ? 'story_diagnosis' : runRecordedWithoutEvidence ? 'story_diagnosis_artifact_missing' : 'not_recorded',
+    run_id: hasDesignInputRun ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
+    artifact_status: hasDesignInputEvidenceArtifact ? 'present' : hasDesignInputRun ? 'missing' : 'not_recorded',
+    gate_status: present
+      ? evidenceJudgment?.gate_status ?? runJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null
+      : null,
+    finding_count: present
+      ? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? runJudgment?.finding_count ?? null
+      : null,
     route_type: engineeringJudgment?.route_type ?? null,
     route_dag: engineeringJudgment?.route_dag ?? null,
     active_axes: engineeringJudgment?.active_axes ?? [],
@@ -6936,7 +6945,9 @@ function buildDesignInputJudgmentContext({
       cross_surface: isCrossSurfaceDesignStory(fileGroups)
     },
     required_actions: present ? [] : [
-      'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+      runRecordedWithoutEvidence
+        ? 'Regenerate the missing design-input diagnosis evidence artifact with `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+        : 'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
     ]
   };
 }

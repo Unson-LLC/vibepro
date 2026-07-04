@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -112,6 +112,18 @@ test('story diagnose rejects unsupported phase instead of silently defaulting', 
   assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/);
 });
 
+test('story diagnose --phase design-input records the same design-input evidence as --pre-architecture', async () => {
+  const repo = await makeRepo();
+  const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'design-input']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.diagnosis.run.phase, 'design_input');
+  assert.equal(result.result.diagnosis.run.design_input_judgment.phase, 'design_input');
+
+  const evidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', result.result.diagnosis.run.run_id, 'evidence.json'), 'utf8'));
+  assert.equal(evidence.diagnosis_phase.phase, 'design_input');
+  assert.equal(evidence.design_input_judgment.phase, 'design_input');
+});
+
 test('pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
@@ -145,6 +157,26 @@ test('pr prepare passes design-input gate when pre-architecture diagnosis exists
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
 });
 
+test('pr prepare warns when design-input run exists but evidence artifact is missing', async () => {
+  const repo = await makeGitRepo();
+  await writeCrossSurfaceDesignChange(repo);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
+  await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
+  const diagnosis = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
+  await unlink(path.join(repo, diagnosis.result.diagnosis.run.artifacts.evidence));
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'missing');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.source, 'story_diagnosis_artifact_missing');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.artifact_status, 'missing');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input');
+
+  const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
+  assert.equal(gate.status, 'needs_review');
+  assert.match(gate.required_actions.join('\n'), /Regenerate the missing design-input diagnosis evidence artifact/);
+});
+
 test('pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
@@ -152,6 +184,13 @@ test('pr prepare preserves design-input judgment after later pre-implementation 
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
   await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
+  const designInputEvidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '001-design-input', 'evidence.json'), 'utf8'));
+  const preImplementationEvidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '002-pre-implementation', 'evidence.json'), 'utf8'));
+  assert.equal(designInputEvidence.diagnosis_phase.phase, 'design_input');
+  assert.equal(designInputEvidence.design_input_judgment.phase, 'design_input');
+  assert.equal(preImplementationEvidence.diagnosis_phase.phase, 'pre_implementation');
+  assert.equal(preImplementationEvidence.pre_implementation_judgment.phase, 'pre_implementation');
+  assert.equal(preImplementationEvidence.design_input_judgment, undefined);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(result.exitCode, 0);

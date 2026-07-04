@@ -54,7 +54,8 @@ vibepro story diagnose <repo> --id <story-id> [--phase design-input|pre-implemen
 - `DIJ-CONTRACT-007`: PR prepare MUST expose `pr_context.pre_implementation_judgment`.
 - `DIJ-CONTRACT-008`: Gate DAG MUST include `gate:design_input_judgment`.
 - `DIJ-CONTRACT-009`: `gate:design_input_judgment` MUST warn when workflow-heavy or cross-surface Architecture/Spec changes have no design-input diagnosis evidence.
-- `DIJ-CONTRACT-010`: workflow guidance and next commands MUST recommend design-input diagnosis before final Architecture/Spec on workflow-heavy or cross-surface stories.
+- `DIJ-CONTRACT-010`: `gate:design_input_judgment` MUST require a readable design-input evidence artifact; a manifest run summary alone is not sufficient.
+- `DIJ-CONTRACT-011`: workflow guidance and next commands MUST recommend design-input diagnosis before final Architecture/Spec on workflow-heavy or cross-surface stories.
 
 ## Scenarios
 
@@ -64,20 +65,23 @@ vibepro story diagnose <repo> --id <story-id> [--phase design-input|pre-implemen
 - `DIJ-SCENARIO-004`: Given Story plan or repo status has no prior workflow run, when next commands are shown, then the first diagnosis command includes `--pre-architecture`.
 - `DIJ-SCENARIO-005`: Given a workflow-heavy Story, when Architecture/Spec are prepared, then design-input diagnosis evidence is available before implementation and pre-implementation diagnosis remains a separate final workflow consistency check.
 - `DIJ-SCENARIO-006`: Given diagnosis or PR prepare workflow evidence is replayed, when artifacts are inspected, then `design_input_judgment` and `pre_implementation_judgment` are not collapsed into one generic Engineering Judgment record.
+- `DIJ-SCENARIO-007`: Given a design-input manifest run exists but its evidence artifact is missing, when `pr prepare` runs, then `gate:design_input_judgment` remains `needs_review` with artifact regeneration guidance.
 
 ## Failure Modes
 
 - `evidence_lifecycle_regression`: A later pre-implementation diagnosis must not overwrite or masquerade as the earlier design-input evidence.
 - `workflow_state_regression`: The next-command workflow must not lead agents through Architecture/Spec before the first lightweight diagnosis.
+- `manifest_only_false_pass`: A design-input run summary without its evidence artifact must not pass PR readiness.
 
 ## Release Operations
 
 - `release_note`: The new `--pre-architecture` alias is additive and documents the preferred Story-start workflow for workflow-heavy or cross-surface stories.
-- `rollout_plan`: Release with CLI reference, README, workflow skill, Story, Architecture, Spec, unit tests, and an executable E2E marker spec in the same PR so the guidance, artifacts, and gates stay traceable.
+- `rollout_plan`: Release with CLI reference, README, workflow skill, Story, Architecture, Spec, unit tests, and executable E2E CLI replay coverage in the same PR so the guidance, artifacts, and gates stay traceable.
 - `rollback_instruction`: Reverting this Story returns diagnosis to a single pre-implementation interpretation; no data migration is required.
 - `observability_evidence`: Diagnosis summaries include `diagnosis_phase`, and PR prepare summaries include `design_input_judgment_status`.
 
 ## Verification
 
 - `test/design-input-judgment.test.js` covers diagnosis phase evidence and PR Gate DAG behavior.
+- `test/e2e/story-vibepro-design-input-judgment-flow.spec.ts` replays status, story plan, diagnosis, and PR prepare surfaces through `runCli`.
 - Existing Architecture/PR readiness tests cover that the new warning node does not regress final readiness gates.
