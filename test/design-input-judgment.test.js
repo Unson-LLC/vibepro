@@ -196,7 +196,7 @@ test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when
   assert.match(gate.required_actions.join('\n'), /Regenerate the missing design-input diagnosis evidence artifact/);
 });
 
-test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 DIJ-SCENARIO-008 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
+test('ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 DIJ-SCENARIO-008 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
@@ -218,10 +218,10 @@ test('DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'present');
-  assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input');
-  assert.equal(result.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 keeps the design-input evidence artifact available after pre-implementation diagnosis');
-  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'present', 'ac:4 keeps design_input_judgment in PR prepare context');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', 'ac:4 keeps design_input_judgment bound to the design-input run');
+  assert.equal(result.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', 'ac:4 DIJ-CONTRACT-012 DIJ-SCENARIO-008 keeps the design-input evidence artifact available after pre-implementation diagnosis');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', 'ac:4 keeps pre_implementation_judgment separate in PR prepare context');
 
   const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
   assert.equal(gate.status, 'passed');
