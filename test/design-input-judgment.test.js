@@ -81,6 +81,16 @@ function findGate(prepare, id) {
   return prepare.pr_context.gate_dag.nodes.find((node) => node.id === id);
 }
 
+async function runCliCaptured(args) {
+  let stdout = '';
+  let stderr = '';
+  const result = await runCli(args, {
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: (chunk) => { stderr += chunk; } }
+  });
+  return { ...result, stdout, stderr };
+}
+
 test('story diagnose --pre-architecture records design-input judgment evidence', async () => {
   const repo = await makeRepo();
   const result = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--pre-architecture']);
@@ -92,6 +102,14 @@ test('story diagnose --pre-architecture records design-input judgment evidence',
   assert.equal(evidence.diagnosis_phase.phase, 'design_input');
   assert.equal(evidence.design_input_judgment.phase, 'design_input');
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
+});
+
+test('story diagnose rejects unsupported phase instead of silently defaulting', async () => {
+  const repo = await makeRepo();
+  const result = await runCliCaptured(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'after-spec']);
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/);
 });
 
 test('pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis', async () => {
