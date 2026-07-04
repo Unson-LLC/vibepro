@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-visual-evidence-gate-ux",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is sufficient: Visual QA verification fallback is explicit, current-head bound, residual-authoritative, and regression covered.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected VibePro review request, PR evidence artifacts, implementation, spec, architecture, story docs, and focused Visual QA tests; no blocking gaps found.",
+    "evidence": ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/verification-evidence.json: pass evidence bound to head b432266582cc07a99a286d7047571a874881159b covers VQG-S-1..VQG-S-5",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-visual-evidence-gate-ux/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/gate-dag.json",
+      ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/verification-evidence.json",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js",
+      "docs/specs/story-vibepro-visual-evidence-gate-ux.md",
+      "docs/architecture/vibepro-visual-evidence-gate-ux.md",
+      "docs/management/stories/active/story-vibepro-visual-evidence-gate-ux.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: verification fallback could weaken Visual QA into a no-op -> final judgment: fallback is bounded by current pass plus explicit visual_qa and screenshot markers, and generic evidence is rejected by tests.",
+    "Initial concern: residual QA artifacts could be bypassed -> final judgment: residual evidence remains authoritative and VQG-S-4 covers above-threshold residuals.",
+    "Initial concern: spec gate could be implicit -> final judgment: explicit docs/specs/story-vibepro-visual-evidence-gate-ux.md is present and traced."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux",
+    "expected_root": null,
+    "expected_head_sha": "b432266582cc07a99a286d7047571a874881159b",
+    "current_head_sha": "b432266582cc07a99a286d7047571a874881159b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux",
+      "expected_root": null,
+      "expected_head_sha": "b432266582cc07a99a286d7047571a874881159b",
+      "current_head_sha": "b432266582cc07a99a286d7047571a874881159b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T19:55:04.467Z",
+  "git_context": {
+    "head_sha": "b432266582cc07a99a286d7047571a874881159b",
+    "current_branch": "codex/visual-evidence-gate-ux",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T19:55:04.465Z"
+  },
+  "source_fingerprint": "b3fc93773cce50c9e53bb8c9b54331903c616c39c45bcc5bac41ccf13bbaf3f6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2eae-5193-7f10-971f-92406aa72889",
+    "agent_role": null,
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-visual-evidence-gate-ux/gate/gate_evidence-subagent-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-visual-evidence-gate-ux/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-visual-evidence-gate-ux/gate/gate_evidence-subagent-result.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

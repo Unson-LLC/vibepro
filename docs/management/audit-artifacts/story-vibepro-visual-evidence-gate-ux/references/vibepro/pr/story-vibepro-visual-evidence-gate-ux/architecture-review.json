@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-visual-evidence-gate-ux",
+  "created_at": "2026-07-04T20:21:41.317Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-visual-evidence-gate-ux.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-visual-evidence-gate-ux.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-visual-evidence-gate-ux/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-visual-evidence-gate-ux.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-visual-evidence-gate-ux.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-04T20:21:40.126Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-visual-evidence-gate-ux/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "560b35468609a8a0f7192dd6dd9393b9a92d75b0",
+      "branch": "codex/visual-evidence-gate-ux",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f2c66632b93db98fa8a54bb6d5b050298c27e632",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test --test-name-pattern \"VQG-S|pr prepare requires Visual QA\" test/vibepro-cli.test.js",
+  "head_sha": "560b35468609a8a0f7192dd6dd9393b9a92d75b0",
+  "story_id": "story-vibepro-visual-evidence-gate-ux",
+  "observed": {
+    "tests": "5",
+    "failures": "0",
+    "visual_qa_fallback": "current verification evidence accepted only with visual_qa and screenshot markers",
+    "residual_gate": "existing residual QA remains authoritative before verification fallback",
+    "stale_binding": "stale or dirty verification evidence is rejected",
+    "marker_classification": "visual_qa screenshot accessibility_evidence markers are classified explicitly"
+  },
+  "markers": [
+    "flow_replay",
+    "artifact_replay",
+    "scenario_clause_e2e",
+    "visual_qa",
+    "screenshot",
+    "accessibility_evidence",
+    "negative_path",
+    "pr_lifecycle_regression",
+    "agent_review_lifecycle_regression",
+    "evidence_lifecycle_regression",
+    "integration_runtime_path"
+  ],
+  "scenarios": [
+    "VQG-S-1: missing Visual QA evidence blocks pr prepare",
+    "VQG-S-2: current explicit visual_qa and screenshot verification evidence satisfies Visual QA gate",
+    "VQG-S-3: stale verification evidence does not satisfy Visual QA gate",
+    "VQG-S-4: residual QA evidence remains authoritative before verification fallback",
+    "VQG-S-5: visual_qa, screenshot, and accessibility_evidence markers are classified"
+  ],
+  "clauses": [
+    "VIBE-RAR-001",
+    "VIBE-RAR-002",
+    "VIBE-CORE-PR-001",
+    "VIBE-CORE-AR-001",
+    "VIBE-CORE-EV-001",
+    "VIBE-CORE-COST-001",
+    "VIBE-CORE-STORY-001",
+    "VIBE-CORE-JUDGE-001",
+    "VIBE-CORE-WT-001"
+  ]
+}
