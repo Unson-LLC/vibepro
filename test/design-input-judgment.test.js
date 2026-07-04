@@ -10,8 +10,6 @@ import { runCli } from '../src/cli.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-design-input-judgment';
-const PARSE_FAILURE_MODE = 'parse_failure';
-const EVIDENCE_LIFECYCLE_FAILURE_MODE = 'evidence_lifecycle_regression';
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -106,12 +104,13 @@ test('story diagnose --pre-architecture records design-input judgment evidence',
   assert.deepEqual(evidence.design_input_judgment.feeds, ['architecture', 'spec', 'implementation_plan']);
 });
 
-test('story diagnose rejects unsupported phase instead of silently defaulting', async () => {
+test('story diagnose rejects unsupported phase instead of silently defaulting [parse_failure]', async () => {
   const repo = await makeRepo();
   const result = await runCliCaptured(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--phase', 'after-spec']);
 
   assert.equal(result.exitCode, 1);
-  assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/, PARSE_FAILURE_MODE);
+  assert.match(result.stderr, /Unsupported diagnosis phase: after-spec/);
+  assert.doesNotMatch(result.stdout, /"phase"\s*:\s*"design_input"/);
 });
 
 test('story diagnose --phase design-input records the same design-input evidence as --pre-architecture', async () => {
@@ -179,39 +178,31 @@ test('pr prepare warns when design-input run exists but evidence artifact is mis
   assert.match(gate.required_actions.join('\n'), /Regenerate the missing design-input diagnosis evidence artifact/);
 });
 
-test('pr prepare preserves design-input judgment after later pre-implementation diagnosis', async () => {
+test('pr prepare preserves design-input judgment after later pre-implementation diagnosis [evidence_lifecycle_regression]', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
   await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js']);
   await git(repo, ['commit', '-m', 'feat: add cross-surface design change']);
-  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
-  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
+  const designInputRun = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
+  const preImplementationRun = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-pre-implementation']);
+  assert.equal(designInputRun.result.diagnosis.run.phase, 'design_input');
+  assert.equal(preImplementationRun.result.diagnosis.run.phase, 'pre_implementation');
+
   const designInputEvidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '001-design-input', 'evidence.json'), 'utf8'));
   const preImplementationEvidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'diagnostics', '002-pre-implementation', 'evidence.json'), 'utf8'));
   assert.equal(designInputEvidence.diagnosis_phase.phase, 'design_input');
   assert.equal(designInputEvidence.design_input_judgment.phase, 'design_input');
   assert.equal(preImplementationEvidence.diagnosis_phase.phase, 'pre_implementation');
   assert.equal(preImplementationEvidence.pre_implementation_judgment.phase, 'pre_implementation');
-  assert.equal(preImplementationEvidence.design_input_judgment, undefined, EVIDENCE_LIFECYCLE_FAILURE_MODE);
+  assert.equal(preImplementationEvidence.design_input_judgment, undefined);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.pr_context.design_input_judgment.status, 'present');
   assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation');
 
   const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
   assert.equal(gate.status, 'passed');
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
-});
-
-test('design-input judgment regression tests bind canonical failure-mode targets', () => {
-  const exercisedFailureModes = [
-    PARSE_FAILURE_MODE,
-    EVIDENCE_LIFECYCLE_FAILURE_MODE
-  ];
-
-  assert.deepEqual(exercisedFailureModes, [
-    'parse_failure',
-    'evidence_lifecycle_regression'
-  ]);
 });
