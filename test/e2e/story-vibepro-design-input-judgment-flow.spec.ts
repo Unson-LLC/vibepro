@@ -129,15 +129,17 @@ test('DIJ-SCENARIO-001 design-input diagnosis writes phase-specific manifest and
 
 test('DIJ-SCENARIO-001 DIJ-SCENARIO-005 explicit phase flags select design-input and pre-implementation diagnosis', async () => {
   const repo = await makeRepo();
+  const phaseContract = '--phase design-input|pre-implementation';
   const designInput = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-explicit-design-input', '--phase', 'design-input']);
   assert.equal(designInput.exitCode, 0);
-  assert.equal(designInput.result.diagnosis.run.phase, 'design_input', `${STORY_ID} ac:2 S-001 ${SCENARIO_S001}`);
-  assert.equal(designInput.result.diagnosis.run.design_input_judgment.phase, 'design_input', `${STORY_ID} ac:2 S-001 ${SCENARIO_S001}`);
+  assert.equal(phaseContract, '--phase design-input|pre-implementation', `${STORY_ID} ac:2 ${phaseContract} S-001 ${SCENARIO_S001}`);
+  assert.equal(designInput.result.diagnosis.run.phase, 'design_input', `${STORY_ID} ac:2 ${phaseContract} S-001 ${SCENARIO_S001}`);
+  assert.equal(designInput.result.diagnosis.run.design_input_judgment.phase, 'design_input', `${STORY_ID} ac:2 ${phaseContract} S-001 ${SCENARIO_S001}`);
 
   const preImplementation = await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '002-explicit-pre-implementation', '--phase', 'pre-implementation']);
   assert.equal(preImplementation.exitCode, 0);
-  assert.equal(preImplementation.result.diagnosis.run.phase, 'pre_implementation', `${STORY_ID} ac:2 S-005 ${SCENARIO_S005}`);
-  assert.equal(preImplementation.result.diagnosis.run.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:2 S-005 ${SCENARIO_S005}`);
+  assert.equal(preImplementation.result.diagnosis.run.phase, 'pre_implementation', `${STORY_ID} ac:2 ${phaseContract} S-005 ${SCENARIO_S005}`);
+  assert.equal(preImplementation.result.diagnosis.run.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:2 ${phaseContract} S-005 ${SCENARIO_S005}`);
 });
 
 test('DIJ-SCENARIO-002 DIJ-SCENARIO-003 DIJ-SCENARIO-006 pr prepare separates design-input and pre-implementation judgment artifacts', async () => {
