@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-design-input-judgment
 title: Design Input Judgment Architecture
+parent_design: vibepro-design-input-judgment
 ---
 
 # Architecture
@@ -45,6 +46,12 @@ Gate DAG adds `gate:design_input_judgment` between Story Source Integrity and En
 This does not replace Architecture Readiness or Pre-Spec Readiness. Those remain the final promotion gates. Design Input Judgment records whether the judgment happened early enough to be useful as input.
 
 This also does not require Architecture/Spec to exist before diagnosis. In design-input mode, absent Architecture/Spec is valid because the output is meant to feed them.
+
+## Release Operations
+
+- `release_note`: CLI users can now run `vibepro story diagnose <repo> --id <story-id> --pre-architecture` to record early design-input diagnosis evidence; existing `story diagnose` calls remain pre-implementation diagnosis by default.
+- `rollback_instruction`: Reverting this change removes the design-input phase, `--pre-architecture` alias, PR context split, and warning gate; existing diagnosis evidence without `diagnosis_phase` remains readable as pre-implementation evidence.
+- `observability_evidence`: PR prepare exposes `design_input_judgment_status` in the Gate DAG summary, and diagnosis evidence stores `diagnosis_phase` for audit review.
 
 ## Tradeoffs
 
