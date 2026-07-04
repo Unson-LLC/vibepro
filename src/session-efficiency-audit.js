@@ -17,6 +17,79 @@ const DEFAULT_SESSION_LOOKBACK_DAYS = 14;
 const ARTIFACT_TEXT_EXTENSIONS = new Set([
   '.json', '.md', '.txt', '.log', '.tap', '.html', '.xml', '.yaml', '.yml'
 ]);
+const SESSION_EXPOSURE_BUCKETS = [
+  {
+    id: 'audit_evidence',
+    label: '監査証跡 / canonical audit artifacts / gate-review-verification evidence'
+  },
+  {
+    id: 'story_spec_architecture_docs',
+    label: 'story/spec/architecture docs'
+  },
+  {
+    id: 'src_code',
+    label: 'src/ コード本体'
+  },
+  {
+    id: 'test',
+    label: 'test/'
+  },
+  {
+    id: 'unattributed',
+    label: 'unattributed Codex development in daily window'
+  }
+];
+const SESSION_EXPOSURE_BUCKET_BY_ID = Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, bucket]));
+const SESSION_EXPOSURE_SIGNALS = [
+  {
+    bucketId: 'audit_evidence',
+    patterns: [
+      /\.vibepro\/pr\//,
+      /\.vibepro\/reviews\//,
+      /\.vibepro\/artifacts\//,
+      /\.vibepro\/checks\//,
+      /docs\/management\/audit-artifacts\//,
+      /\bpr-prepare(?:-current)?\.json\b/,
+      /\bverification-evidence\.json\b/,
+      /\bgate-dag\.json\b/,
+      /\bgate-review\b/,
+      /\bdecision-summary\b/,
+      /\baudit-bundle\b/,
+      /\bsenior-gap-judgment\.json\b/,
+      /\bdesign-ssot-reconciliation\.json\b/
+    ]
+  },
+  {
+    bucketId: 'story_spec_architecture_docs',
+    patterns: [
+      /docs\/specs\//,
+      /docs\/architecture\//,
+      /docs\/management\/stories\//,
+      /\.vibepro\.json\b/,
+      /\bstory[-_]spec\b/,
+      /\barchitecture[-_]notes?\b/
+    ]
+  },
+  {
+    bucketId: 'src_code',
+    patterns: [
+      /(?:^|[\s"'`])src\//,
+      /(?:^|[\s"'`])lib\//,
+      /(?:^|[\s"'`])app\//,
+      /(?:^|[\s"'`])packages\/[^/\s"'`]+\/src\//
+    ]
+  },
+  {
+    bucketId: 'test',
+    patterns: [
+      /(?:^|[\s"'`])test\//,
+      /(?:^|[\s"'`])tests\//,
+      /\b(?:test|spec)\.[cm]?[jt]sx?\b/,
+      /\bnode --test\b/,
+      /\bnpm (?:run )?test\b/
+    ]
+  }
+];
 
 export async function collectSessionEfficiencyAudit(repoRoot, {
   storyId,
@@ -58,7 +131,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
   const session = selectedSessionId && sessionFiles.length > 0
-    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
+    ? await parseCodexSessionJsonlFiles(sessionFiles, { sessionId: selectedSessionId, storyId, windowStart: effectiveWindowStart, windowEnd: effectiveWindowEnd })
     : missingSessionAccounting(selectedSessionId, effectiveWindowStart, effectiveWindowEnd);
   const observedRoot = processMetadata?.cwd
     ? path.resolve(processMetadata.cwd)
@@ -120,21 +193,30 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
 
 export function renderSessionEfficiencyAudit(result) {
   const token = result.session.token_accounting;
+  const exposure = result.session.artifact_token_accounting;
   const elapsed = result.session.elapsed_time_accounting;
   const lines = [
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
     `- observed_worktree: ${result.observed_worktree} (${result.observed_worktree_source})`,
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
+    `- artifact_token_accounting: ${exposure.status} audit_evidence_tokens=${exposure.buckets?.audit_evidence?.estimated_tokens ?? '未確認'} session_ratio=${formatRatio(exposure.buckets?.audit_evidence?.ratio_of_session_tokens)} source=${exposure.source ?? '-'}`,
     `- elapsed_ms: ${elapsed.status} ${elapsed.elapsed_ms ?? '未確認'} source=${elapsed.source ?? '-'}`,
     `- changed_lines: ${result.git.changed_lines.total_changed_lines} status=${result.git.changed_lines.status}`,
     `- story_artifact_lines: ${result.story_artifacts.total_lines} files=${result.story_artifacts.file_count}`,
     `- story_artifact_lineage: ${result.story_artifacts.lineage?.status ?? 'unknown'} source=${result.story_artifacts.lineage?.effective_source ?? '-'}`,
     '',
-    '| 区分 | changed lines | tokens 推定 | 比率 |',
-    '| --- | ---: | ---: | ---: |',
+    '| token区分 | estimated tokens | classified比率 | session比率 | events |',
+    '| --- | ---: | ---: | ---: | ---: |',
+    ...SESSION_EXPOSURE_BUCKETS.map((bucket) => {
+      const value = exposure.buckets?.[bucket.id] ?? null;
+      return `| ${bucket.label} | ${value?.estimated_tokens ?? 0} | ${formatRatio(value?.ratio_of_classified_exposure)} | ${formatRatio(value?.ratio_of_session_tokens)} | ${value?.event_count ?? 0} |`;
+    }),
+    '',
+    '| changed-line参考区分 | changed lines |',
+    '| --- | ---: |',
     ...result.cost_breakdown.buckets.map((bucket) => (
-      `| ${bucket.label} | ${bucket.changed_lines} | ${bucket.estimated_tokens ?? '未確認'} | ${bucket.ratio === null ? '未確認' : `${bucket.ratio}%`} |`
+      `| ${bucket.label} | ${bucket.changed_lines} |`
     )),
     ''
   ];
@@ -701,13 +783,14 @@ function resolveUserPath(value) {
   return path.resolve(value);
 }
 
-async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, windowEnd } = {}) {
+async function parseCodexSessionJsonlFiles(filePaths, { sessionId, storyId, windowStart, windowEnd } = {}) {
   const entries = await readCodexSessionEntries(filePaths);
   const startMs = normalizeTimeMs(windowStart);
   const endMs = normalizeTimeMs(windowEnd);
   const tokenEvents = [];
   const taskStartedEvents = [];
   const finalAnswerEvents = [];
+  const exposureEvents = [];
   const inWindowEventTimestamps = [];
   let cwd = null;
   let firstEventAt = null;
@@ -724,6 +807,13 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, 
     }
     if (!isInsideWindow(eventAt, startMs, endMs)) continue;
     if (eventAt !== null) inWindowEventTimestamps.push(eventAt);
+    const exposure = summarizeSessionExposureEntry(entry, {
+      storyId,
+      sourcePath,
+      line,
+      timestampMs: eventAt
+    });
+    if (exposure) exposureEvents.push(exposure);
     if (entry.type === 'event_msg' && entry.payload?.type === 'token_count') {
       const usage = entry.payload?.info?.total_token_usage;
       if (usage) tokenEvents.push({ line, source_path: sourcePath, timestamp_ms: eventAt, usage });
@@ -749,6 +839,12 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, 
   const tokenDelta = firstToken && lastToken
     ? subtractUsage(lastToken.usage, firstToken.usage)
     : null;
+  const artifactTokenAccounting = buildArtifactTokenAccounting(exposureEvents, tokenDelta, {
+    sessionId,
+    filePaths,
+    windowStart,
+    windowEnd
+  });
 
   return {
     status: 'available',
@@ -795,6 +891,7 @@ async function parseCodexSessionJsonlFiles(filePaths, { sessionId, windowStart, 
       window: { session_id: sessionId, source_path: filePaths[0] ?? null, source_paths: filePaths },
       reason: 'no token_count events were found in the selected session window'
     },
+    artifact_token_accounting: artifactTokenAccounting,
     elapsed_time_accounting: windowStartedAt !== null && windowFinishedAt !== null ? {
       status: finalAnswerEvents.length > 0 || windowEnd ? 'available' : 'partial',
       elapsed_ms: Math.max(0, windowFinishedAt - windowStartedAt),
@@ -846,6 +943,176 @@ async function readCodexSessionEntries(filePaths) {
   return entries;
 }
 
+function summarizeSessionExposureEntry(entry, { storyId, sourcePath, line, timestampMs }) {
+  const textParts = extractSessionTranscriptText(entry);
+  if (textParts.length === 0) return null;
+  const text = textParts.join('\n').trim();
+  if (!text) return null;
+  const estimatedTokens = estimateTextTokens(text);
+  const classification = classifySessionExposureText(text, { storyId });
+  return {
+    matched: Boolean(classification),
+    bucket_id: classification?.bucket_id ?? 'unattributed',
+    bucket_label: classification?.bucket_id ? SESSION_EXPOSURE_BUCKET_BY_ID[classification.bucket_id]?.label ?? classification.bucket_id : SESSION_EXPOSURE_BUCKET_BY_ID.unattributed.label,
+    estimated_tokens: estimatedTokens,
+    char_count: text.length,
+    matched_signals: classification?.matched_signals ?? [],
+    timestamp: timestampMs === null ? null : new Date(timestampMs).toISOString(),
+    source_path: sourcePath,
+    line,
+    entry_type: entry.type ?? null,
+    payload_type: entry.payload?.type ?? null,
+    sample: text.slice(0, 280)
+  };
+}
+
+function extractSessionTranscriptText(entry) {
+  const out = [];
+  const payload = entry?.payload;
+  if (!payload || typeof payload !== 'object') return out;
+  collectSessionTextFields(payload, out);
+  return out;
+}
+
+function collectSessionTextFields(value, out) {
+  if (!value || typeof value !== 'object') return;
+  if (Array.isArray(value)) {
+    for (const item of value) collectSessionTextFields(item, out);
+    return;
+  }
+  for (const [key, item] of Object.entries(value)) {
+    if (key === 'encrypted_content') continue;
+    if (typeof item === 'string' && isTranscriptTextField(key)) {
+      out.push(item);
+      continue;
+    }
+    if (item && typeof item === 'object') collectSessionTextFields(item, out);
+  }
+}
+
+function isTranscriptTextField(key) {
+  return [
+    'text',
+    'output',
+    'arguments',
+    'summary',
+    'content',
+    'cmd',
+    'command'
+  ].includes(key);
+}
+
+function classifySessionExposureText(text, { storyId } = {}) {
+  const normalized = text.replace(/\\/g, '/');
+  const matched = [];
+  for (const { bucketId, patterns } of SESSION_EXPOSURE_SIGNALS) {
+    const signals = [];
+    for (const pattern of patterns) {
+      if (pattern.test(normalized)) signals.push(pattern.source);
+    }
+    if (storyId && bucketId === 'audit_evidence' && normalized.includes(storyId) && normalized.includes('.vibepro/')) {
+      signals.push(`story:${storyId}+.vibepro`);
+    }
+    if (signals.length > 0) matched.push({ bucket_id: bucketId, matched_signals: uniqueStrings(signals) });
+  }
+  return matched[0] ?? null;
+}
+
+function estimateTextTokens(text) {
+  return Math.max(1, Math.ceil(String(text).length / 4));
+}
+
+function buildArtifactTokenAccounting(exposureEvents, tokenAccounting, {
+  sessionId,
+  filePaths,
+  windowStart,
+  windowEnd
+} = {}) {
+  const matchedEvents = exposureEvents.filter((event) => event.matched);
+  const unmatchedEvents = exposureEvents.filter((event) => !event.matched);
+  const classifiedEstimatedTokens = sumTokens(matchedEvents);
+  const totalSessionTokens = tokenAccounting?.total_tokens ?? null;
+  const buckets = emptyExposureBuckets(totalSessionTokens);
+  for (const bucket of Object.values(buckets)) {
+    bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0 ? 0 : null;
+  }
+  for (const event of matchedEvents) {
+    const bucket = buckets[event.bucket_id] ?? buckets.unattributed;
+    bucket.estimated_tokens += event.estimated_tokens;
+    bucket.event_count += 1;
+    bucket.matched_signals = uniqueStrings([...bucket.matched_signals, ...event.matched_signals]).slice(0, 12);
+  }
+  for (const bucket of Object.values(buckets)) {
+    bucket.ratio_of_classified_exposure = classifiedEstimatedTokens > 0
+      ? ratio(bucket.estimated_tokens, classifiedEstimatedTokens)
+      : null;
+    bucket.ratio_of_session_tokens = totalSessionTokens !== null && totalSessionTokens > 0
+      ? ratio(bucket.estimated_tokens, totalSessionTokens)
+      : null;
+  }
+
+  return {
+    status: 'available',
+    estimated_total_tokens: classifiedEstimatedTokens,
+    classified_estimated_tokens: classifiedEstimatedTokens,
+    total_session_tokens: totalSessionTokens,
+    source: 'codex-session-jsonl-text-estimate',
+    estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
+    coverage: 'signal-matched transcript entries only',
+    buckets,
+    top_exposures: matchedEvents
+      .sort((a, b) => b.estimated_tokens - a.estimated_tokens || a.source_path.localeCompare(b.source_path) || a.line - b.line)
+      .slice(0, 10)
+      .map((event) => ({
+        bucket_id: event.bucket_id,
+        bucket_label: event.bucket_label,
+        estimated_tokens: event.estimated_tokens,
+        matched_signals: event.matched_signals.slice(0, 8),
+        timestamp: event.timestamp,
+        source_path: event.source_path,
+        line: event.line,
+        entry_type: event.entry_type,
+        payload_type: event.payload_type,
+        sample: event.sample
+      })),
+    unmatched_event_count: unmatchedEvents.length,
+    unmatched_estimated_tokens: sumTokens(unmatchedEvents),
+    window: {
+      session_id: sessionId,
+      source_path: filePaths?.[0] ?? null,
+      source_paths: filePaths ?? [],
+      requested_start: windowStart ?? null,
+      requested_end: windowEnd ?? null,
+      scope: windowStart || windowEnd ? 'bounded' : 'full_session'
+    },
+    reason: matchedEvents.length > 0 ? null : 'no signal-matched artifact/code/doc transcript entries were found in the selected session window'
+  };
+}
+
+function emptyExposureBuckets(totalSessionTokens) {
+  return Object.fromEntries(SESSION_EXPOSURE_BUCKETS.map((bucket) => [bucket.id, {
+    id: bucket.id,
+    label: bucket.label,
+    estimated_tokens: 0,
+    event_count: 0,
+    ratio_of_classified_exposure: null,
+    ratio_of_session_tokens: totalSessionTokens !== null && totalSessionTokens > 0 ? 0 : null,
+    matched_signals: []
+  }]));
+}
+
+function sumTokens(events) {
+  return events.reduce((sum, event) => sum + (event.estimated_tokens ?? 0), 0);
+}
+
+function ratio(part, total) {
+  return Number(((part / total) * 100).toFixed(1));
+}
+
+function formatRatio(value) {
+  return value === null || value === undefined ? '未確認' : `${value}%`;
+}
+
 function missingSessionAccounting(sessionId, windowStart, windowEnd) {
   return {
     status: 'unavailable',
@@ -875,6 +1142,21 @@ function missingSessionAccounting(sessionId, windowStart, windowEnd) {
       started_at: null,
       finished_at: null,
       source: 'codex-session-jsonl',
+      window: { session_id: sessionId },
+      reason: 'codex session jsonl was not found'
+    },
+    artifact_token_accounting: {
+      status: 'unavailable',
+      estimated_total_tokens: null,
+      classified_estimated_tokens: null,
+      total_session_tokens: null,
+      source: 'codex-session-jsonl-text-estimate',
+      estimate_method: 'ceil(text.length / 4) for in-window transcript entries with artifact/code/doc path signals',
+      coverage: 'signal-matched transcript entries only',
+      buckets: emptyExposureBuckets(null),
+      top_exposures: [],
+      unmatched_event_count: 0,
+      unmatched_estimated_tokens: 0,
       window: { session_id: sessionId },
       reason: 'codex session jsonl was not found'
     }

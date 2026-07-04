@@ -203,6 +203,103 @@ test('session efficiency audit uses process-manager worktree and Codex token_cou
   assert.equal(result.cost_breakdown.total_tokens, 250);
 });
 
+test('session efficiency audit estimates audit artifact token exposure from Codex transcript entries', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  const artifactPath = path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json');
+  const lines = [
+    {
+      timestamp: '2026-06-27T13:00:00.000Z',
+      type: 'session_meta',
+      payload: { session_id: sessionId, id: sessionId, cwd: root }
+    },
+    {
+      timestamp: '2026-06-27T13:00:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: {
+            input_tokens: 100,
+            output_tokens: 20,
+            total_tokens: 120
+          }
+        }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:00:20.000Z',
+      type: 'response_item',
+      payload: {
+        type: 'function_call_output',
+        output: [
+          `Command: cat ${artifactPath}`,
+          'Output:',
+          JSON.stringify({
+            story: { story_id: storyId },
+            gate_status: {
+              overall_status: 'needs_verification',
+              critical_unresolved_gates: ['gate:agent_review']
+            },
+            decision_summary: 'This gate evidence explains why PR creation is blocked until review evidence is refreshed.'
+          })
+        ].join('\n')
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:00:30.000Z',
+      type: 'response_item',
+      payload: {
+        type: 'function_call_output',
+        output: [
+          'Command: sed -n 1,40p docs/specs/str-126.md',
+          'Output:',
+          '# STR-126',
+          'Architecture and story handoff notes.'
+        ].join('\n')
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:10.000Z',
+      type: 'event_msg',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: {
+            input_tokens: 300,
+            output_tokens: 70,
+            total_tokens: 370
+          }
+        }
+      }
+    },
+    {
+      timestamp: '2026-06-27T13:02:20.000Z',
+      type: 'event_msg',
+      payload: { type: 'final_answer' }
+    }
+  ];
+  await writeFile(sessionPath, `${lines.map((line) => JSON.stringify(line)).join('\n')}\n`);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  const accounting = result.session.artifact_token_accounting;
+  assert.equal(accounting.status, 'available');
+  assert.equal(accounting.source, 'codex-session-jsonl-text-estimate');
+  assert.equal(accounting.total_session_tokens, 250);
+  assert.equal(accounting.buckets.audit_evidence.event_count, 1);
+  assert.equal(accounting.buckets.audit_evidence.estimated_tokens > 0, true);
+  assert.equal(accounting.buckets.audit_evidence.ratio_of_session_tokens > 0, true);
+  assert.equal(accounting.buckets.story_spec_architecture_docs.event_count, 1);
+  assert.equal(accounting.top_exposures[0].bucket_id, 'audit_evidence');
+  assert.match(accounting.top_exposures[0].sample, /pr-prepare\.json/);
+});
+
 test('session efficiency audit infers the matching Codex session from repo cwd and window', async () => {
   const { root, codexHome, storyId, sessionId } = await createFixture();
   const result = await collectSessionEfficiencyAudit(root, {
