@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-evidence-autopilot",
+  "created_at": "2026-07-05T12:16:12.353Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-pr-evidence-autopilot.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-evidence-autopilot/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-evidence-autopilot/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-pr-evidence-autopilot.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-pr-evidence-autopilot.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T12:16:11.185Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ab5c2369bd6827964bf3c1f98b6ced1e1af5785a",
+      "branch": "codex/pr-evidence-autopilot",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,440 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-evidence-autopilot",
+  "updated_at": "2026-07-05T09:50:36.660Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+      "expected_root": null,
+      "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+      "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783245036660-539711cb",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Accepted follow-up for scope_reviewability: scope_reviewed as one reviewer-owned CLI orchestration PR; bounded artifact docs/architecture/vibepro-pr-evidence-autopilot.md records why command wiring, orchestration, tests, Story, Spec, and design registry are one review unit.",
+      "reason": "This decision explicitly closes the decision_record evidence for the scope_reviewability axis; splitting would detach safety tests and public contract docs from the new pr autopilot command.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-evidence-autopilot.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md\n M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-pr-evidence-autopilot.md\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM design-ssot.json",
+        "recorded_at": "2026-07-05T09:50:36.659Z"
+      },
+      "recorded_at": "2026-07-05T09:50:36.660Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244438246-b93cf34a",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Architecture followup accepted for scope reviewability: CLI wiring, orchestration code, tests, Story, and Spec are one review unit.",
+      "reason": "The bundled scope is smaller than the behavior boundary: removing tests/spec from the PR would make the new command harder to review safely.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:38.245Z"
+      },
+      "recorded_at": "2026-07-05T09:40:38.246Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244437787-c426f542",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": "accepted",
+      "summary": "Architecture followup accepted for public contract: new subcommand only, existing CLI/API defaults unchanged; compatibility, rollback, boundary, and deferred followups are recorded in the Story architecture decision.",
+      "reason": "The implementation adds help text and a new pr autopilot branch without changing existing pr prepare, verify record, import-ci, review, pr create, or merge semantics.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:37.787Z"
+      },
+      "recorded_at": "2026-07-05T09:40:37.788Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244437321-7a7d89c8",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "architecture",
+      "source_status": "accepted",
+      "summary": "ADR unnecessary: autopilot is a thin orchestration command inside existing PR lifecycle, verification evidence, and agent review boundaries, with CLI compatibility, rollback, boundary, alternatives, and followups recorded in the Story.",
+      "reason": "No new storage model or gate semantics are introduced. Existing commands remain supported and the new subcommand can be reverted independently.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:37.321Z"
+      },
+      "recorded_at": "2026-07-05T09:40:37.322Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244436861-94f1ae6e",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "accepted",
+      "summary": "Design SSOT action accepted: the changed Story is a story-local implementation contract, not a new design root; the spec file now carries the durable contract.",
+      "reason": "No design root or child architecture doc changes are required. The Story and Spec are tied through frontmatter and acceptance criteria, and the architecture decision is recorded in the Story.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:36.861Z"
+      },
+      "recorded_at": "2026-07-05T09:40:36.861Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244436401-c593ab02",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:path_surface_matrix",
+      "source_status": "accepted",
+      "summary": "Review surface evidence accepted: pr autopilot summary, review prepare dispatch, verification artifacts, and blocking stop output are covered by focused CLI tests and live VibePro artifacts.",
+      "reason": "The changed surface is gate/report/review output, not an end-user UI. The recorded unit evidence binds review_surface plus EAP-S scenarios to src/pr-manager.js, src/cli.js, tests, and spec.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-evidence-autopilot/autopilot/unit-verification.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:36.400Z"
+      },
+      "recorded_at": "2026-07-05T09:40:36.401Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244435929-90880e24",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "accepted",
+      "summary": "PR scope is reviewable as one story-bound runtime CLI change with colocated regression coverage.",
+      "reason": "The public command, orchestration implementation, and tests must be reviewed together to verify that autopilot automates evidence gathering but not waiver, split, or review verdict decisions.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:35.928Z"
+      },
+      "recorded_at": "2026-07-05T09:40:35.929Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783244435467-2e9cab47",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "accepted",
+      "summary": "Bundle scope accepted: this PR contains one coherent autopilot story across CLI entrypoint, PR manager orchestration, focused tests, story, and spec; splitting would separate command wiring from its safety tests and reduce reviewability.",
+      "reason": "Changed files are src/cli.js, src/pr-manager.js, test/vibepro-cli.test.js, the active Story, and its Spec. They all implement or verify the same pr autopilot contract.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "recorded_at": "2026-07-05T09:40:35.467Z"
+      },
+      "recorded_at": "2026-07-05T09:40:35.468Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "needs_review": 8
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+        "expected_root": null,
+        "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783245036660-539711cb",
+      "story_id": "story-vibepro-pr-evidence-autopilot",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "accepted",
+      "summary": "Accepted follow-up for scope_reviewability: scope_reviewed as one reviewer-owned CLI orchestration PR; bounded artifact docs/architecture/vibepro-pr-evidence-autopilot.md records why command wiring, orchestration, tests, Story, Spec, and design registry are one review unit.",
+      "reason": "This decision explicitly closes the decision_record evidence for the scope_reviewability axis; splitting would detach safety tests and public contract docs from the new pr autopilot command.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-evidence-autopilot.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+          "expected_root": null,
+          "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+        "current_branch": "codex/pr-evidence-autopilot",
+        "dirty": true,
+        "status_fingerprint": " M docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md\n M src/cli.js\n M src/pr-manager.js\n M test/vibepro-cli.test.js\n?? docs/architecture/vibepro-pr-evidence-autopilot.md\n?? docs/specs/story-vibepro-pr-evidence-autopilot.md\nM design-ssot.json",
+        "recorded_at": "2026-07-05T09:50:36.659Z"
+      },
+      "recorded_at": "2026-07-05T09:50:36.660Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-evidence-autopilot/decision-records.json"
+}

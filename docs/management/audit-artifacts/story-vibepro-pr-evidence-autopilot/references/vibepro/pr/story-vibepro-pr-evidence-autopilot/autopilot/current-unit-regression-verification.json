@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "head_sha": "ab5c2369bd6827964bf3c1f98b6ced1e1af5785a",
+  "command": "node --test --test-name-pattern 'ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index|summary artifact references omit explicitly skipped full artifacts|pr prepare removes stale skipped full artifacts|pr autopilot' test/evidence-summary-reuse.test.js test/vibepro-cli.test.js",
+  "executed_at": "2026-07-05T11:58:55.638Z",
+  "tests": {
+    "pass": 9,
+    "fail": 0,
+    "total": 9
+  },
+  "observations": {
+    "autopilot_command": "available",
+    "passing_verification_recorded": "pass",
+    "failing_verification_stops": "pass",
+    "dry_run_no_record": "pass",
+    "human_judgment_stops": "pass",
+    "existing_current_evidence_skipped": "pass",
+    "stale_passing_evidence_rerun": "pass",
+    "summary_depth_skipped_artifacts_removed": "pass",
+    "skipped_full_artifact_references_omitted": "pass"
+  },
+  "kind": "unit"
+}

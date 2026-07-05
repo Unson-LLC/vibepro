@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-evidence-autopilot",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence replacement review passed: stale pass reuse now requires current git/content binding before skip, stale records rerun, and regenerated gate-dag.json is current and consistent with pr-prepare responsibility/traceability evidence.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-dag-stale-after-current-evidence",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-pr-evidence-autopilot/gate-dag.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-stale-design-ssot-artifact",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/design-ssot/vibepro-pr-evidence-autopilot/reconciliation.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "gate-evidence-stale-pass-skip",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/pr-manager.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Replacement reviewer inspected implementation, CLI path, tests, story/spec/architecture docs, verification evidence, design SSOT reconciliation, gate DAG, pr prepare artifacts, and prior needs_changes reviews.",
+    "evidence": ".vibepro/reviews/story-vibepro-pr-evidence-autopilot/gate/gate_evidence-agent-review-019f31c6.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-pr-evidence-autopilot/gate/parallel-dispatch.md"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes -> pass after stale pass reuse requires current binding, stale-head regression coverage exists, design SSOT artifacts are reconciled, and gate-dag.json was regenerated current with responsibility/traceability passed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+    "expected_root": null,
+    "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+    "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-pr-evidence-autopilot",
+      "expected_root": null,
+      "expected_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+      "current_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T10:19:32.946Z",
+  "git_context": {
+    "head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+    "current_branch": "codex/pr-evidence-autopilot",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "e8d99d812334e9c08ea3b77c24e7f57308de9d94ef2eba782b11ca3b63a7f89f",
+    "user_status_fingerprint_hash": "e8d99d812334e9c08ea3b77c24e7f57308de9d94ef2eba782b11ca3b63a7f89f",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T10:19:32.939Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "unbound",
+    "reason": "no content surface file could be derived from evidence targets, artifacts, or inspection inputs",
+    "recorded_head_sha": "677d607d72f600d0ebec2b8d77c403bc390a3041",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "0270e25867268a8a1bf529d7d3aeb5bed4ed1ba31e6fd655af4ae9b33516c30a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f31c6-76b0-7531-bfa6-63c9f5c59820",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "019f31c6-76b0-7531-bfa6-63c9f5c59820",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-evidence-autopilot/gate/gate_evidence-agent-review-019f31c6.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-evidence-autopilot/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-pr-evidence-autopilot/gate/gate_evidence-agent-review-019f31c6.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

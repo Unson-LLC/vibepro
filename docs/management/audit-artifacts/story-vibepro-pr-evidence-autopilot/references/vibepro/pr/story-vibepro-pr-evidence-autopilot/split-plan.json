@@ -1,0 +1,310 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-pr-evidence-autopilot",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 5 changed files が一致し、96 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 3726,
+    "edge_count": 8358,
+    "matched_file_count": 5,
+    "related_file_count": 96,
+    "investigation_files": [
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/codex-manager.js",
+      "src/content-binding.js",
+      "src/decision-records.js",
+      "src/design-modernize.js",
+      "src/design-ssot.js",
+      "src/design-system.js",
+      "src/diagnostic-engine.js",
+      "src/diagram-requirement-resolver.js",
+      "src/doctor.js",
+      "src/environment-graph.js",
+      "src/evidence-depth-planner.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/explore-evidence.js",
+      "src/flow-verifier.js",
+      "src/git-fingerprint.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_getoption",
+          "src_cli_defaultsessionid",
+          "src_cli_renderhelp",
+          "src_cli_rendercheckpointlist",
+          "src_cli_renderinitsummary",
+          "src_cli_detectbasebranch"
+        ],
+        "related_files": [
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/architecture-store.js",
+          "src/brainbase-importer.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/codex-manager.js",
+          "src/decision-records.js"
+        ]
+      },
+      {
+        "file": "src/evidence-reuse.js",
+        "matched_nodes": [
+          "src_evidence_reuse_js",
+          "src_evidence_reuse_readevidencereuseifexists",
+          "src_evidence_reuse_getevidencereusepath",
+          "src_evidence_reuse_buildevidencereuse",
+          "src_evidence_reuse_summarizeevidencereuse",
+          "src_evidence_reuse_buildartifactvalueledger",
+          "src_evidence_reuse_buildsessionattributionledger",
+          "src_evidence_reuse_buildevidencereusegate"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate",
+          "src_pr_manager_recommendhumandecision"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/authorization-scoring.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js",
+          "src/content-binding.js",
+          "src/decision-records.js",
+          "src/design-ssot.js"
+        ]
+      },
+      {
+        "file": "test/evidence-summary-reuse.test.js",
+        "matched_nodes": [
+          "test_evidence_summary_reuse_test_js",
+          "test_evidence_summary_reuse_test_git",
+          "test_evidence_summary_reuse_test_readjson",
+          "test_evidence_summary_reuse_test_setupreuserepo",
+          "test_evidence_summary_reuse_test_writespec"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng",
+          "test_vibepro_cli_test_encodepng",
+          "test_vibepro_cli_test_pngchunk",
+          "test_vibepro_cli_test_uint32"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "same_pr_allowed",
+      "files": [
+        "docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md",
+        "docs/specs/story-vibepro-pr-evidence-autopilot.md",
+        "docs/architecture/vibepro-pr-evidence-autopilot.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-pr-evidence-autopilot-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/cli.js",
+        "src/evidence-reuse.js",
+        "src/pr-manager.js",
+        "test/evidence-summary-reuse.test.js",
+        "test/vibepro-cli.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 5,
+      "graph_investigation_files": [
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/architecture-store.js",
+        "src/authorization-scoring.js",
+        "src/brainbase-importer.js",
+        "src/canonical-audit.js",
+        "src/change-risk-classifier.js",
+        "src/check-packs.js",
+        "src/checkpoint-manager.js",
+        "src/ci-evidence.js"
+      ],
+      "suggested_branch": "feat/vibepro-pr-evidence-autopilot-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-pr-evidence-autopilot-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-name-pattern 'ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index|summary artifact references omit explicitly skipped full artifacts|pr prepare removes stale skipped full artifacts|pr autopilot' test/evidence-summary-reuse.test.js test/vibepro-cli.test.js",
+          "gh pr checks 288 --watch --interval 10"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test --test-name-pattern 'ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index|summary artifact references omit explicitly skipped full artifacts|pr prepare removes stale skipped full artifacts|pr autopilot' test/evidence-summary-reuse.test.js test/vibepro-cli.test.js",
+        "gh pr checks 288 --watch --interval 10"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-pr-evidence-autopilot-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-pr-evidence-autopilot-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-pr-evidence-autopilot.md docs/specs/story-vibepro-pr-evidence-autopilot.md docs/architecture/vibepro-pr-evidence-autopilot.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-pr-evidence-autopilot-runtime-behavior with 5 files",
+      "command": "git switch -c feat/vibepro-pr-evidence-autopilot-runtime-behavior <base> && git add src/cli.js src/evidence-reuse.js src/pr-manager.js test/evidence-summary-reuse.test.js test/vibepro-cli.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-pr-evidence-autopilot-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-pr-evidence-autopilot-misc-follow-up <base> && git add design-ssot.json"
+    }
+  ]
+}

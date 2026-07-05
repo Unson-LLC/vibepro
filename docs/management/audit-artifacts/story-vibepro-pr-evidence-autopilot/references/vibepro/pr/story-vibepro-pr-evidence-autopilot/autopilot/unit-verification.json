@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-evidence-autopilot",
+  "kind": "unit",
+  "command": "node --test --test-name-pattern 'pr autopilot' test/vibepro-cli.test.js",
+  "status": "pass",
+  "exit_code": 0,
+  "stdout": "TAP version 13\n# tests 6\n# suites 0\n# pass 6\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 30437.551959\n",
+  "stderr": "",
+  "started_at": "2026-07-05T10:01:53Z",
+  "finished_at": "2026-07-05T10:02:24Z",
+  "head_sha": "f206b1e262ee78188cc1871478db107b4b8a32e8"
+}
