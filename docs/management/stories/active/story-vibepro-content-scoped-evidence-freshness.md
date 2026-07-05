@@ -2,6 +2,7 @@
 story_id: story-vibepro-content-scoped-evidence-freshness
 title: "証跡の鮮度を HEAD 束縛からコンテンツ束縛に変え、無関係コミットでの失効をなくす"
 status: active
+parent_design: vibepro-content-scoped-evidence-freshness
 view: dev
 period: 2026-07
 source:

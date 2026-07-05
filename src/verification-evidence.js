@@ -5,6 +5,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext } from './git-fingerprint.js';
+import { buildContentBinding } from './content-binding.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -39,6 +40,12 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   await mkdir(prDir, { recursive: true });
   const evidencePath = path.join(prDir, 'verification-evidence.json');
   const gitContext = await collectGitContext(root);
+  const contentBinding = await buildContentBinding(root, {
+    gitContext,
+    strictHead: options.strictHeadBinding === true,
+    targets: observation.targets,
+    artifacts: [options.artifact].filter(Boolean)
+  });
   const evidence = await withEvidenceLock(evidencePath, async () => {
     const existing = await readEvidence(root, evidencePath, storyId);
     const managedWorktreeWarning = normalizeWarning(options.managedWorktreeWarning);
@@ -60,6 +67,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       observation_check: observationCheck,
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
+      content_binding: contentBinding,
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: [managedWorktreeWarning, observationWarning].filter(Boolean)
     };

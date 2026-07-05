@@ -1,0 +1,87 @@
+---
+story_id: story-vibepro-content-scoped-evidence-freshness
+title: Content Scoped Evidence Freshness Spec
+parent_design: vibepro-content-scoped-evidence-freshness
+diagrams:
+  - kind: freshness_model
+    mermaid: |
+      flowchart LR
+        Evidence["Recorded evidence"] --> Binding["content_binding"]
+        Binding --> Surface["bound surface files"]
+        Surface --> CurrentHash["current surface hash"]
+        Binding --> RecordedHash["recorded surface hash"]
+        CurrentHash --> Compare["compare"]
+        RecordedHash --> Compare
+        Compare -->|match| Current["current"]
+        Compare -->|changed or missing| Stale["stale with changed_files / missing_files"]
+        Binding -->|strict_head| LegacyHead["legacy HEAD freshness"]
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Actor["VibePro operator or agent"] --> Record["verify/review record"]
+        Record --> Binding["content_binding surface"]
+        Binding --> Asset["PR freshness and review gate decision"]
+        Threat["Stale or over-broad evidence reuse"] --> Binding
+        Binding --> Control["content hash comparison plus strict HEAD fallback"]
+---
+
+# Spec
+
+## Contracts
+
+### CEF-CONTRACT-001: Content binding is persisted with evidence
+
+`verify record` and `review record` MUST persist a `content_binding` block when
+the evidence can be tied to explicit targets, inspection inputs, or artifact
+paths. The block MUST include the binding model, mode, recorded HEAD, normalized
+surface files, missing files, and a deterministic surface hash.
+
+### CEF-CONTRACT-002: Surface hash freshness
+
+`pr prepare` MUST evaluate content-bound verification and review evidence by
+rehashing the recorded surface. If the hash matches, the evidence is current even
+when the repository HEAD changed after recording.
+
+### CEF-CONTRACT-003: Bound surface changes invalidate evidence
+
+If any bound surface file changes or disappears, `pr prepare` MUST mark the
+evidence stale and include the changed or missing file paths in the binding
+details.
+
+### CEF-CONTRACT-004: Strict HEAD binding remains available
+
+When evidence is recorded with strict HEAD binding, `pr prepare` MUST use the
+legacy HEAD freshness model so any later commit invalidates the evidence.
+
+### CEF-CONTRACT-005: Gate visibility
+
+`gate:pr_freshness` MUST expose content binding details for verification and
+review evidence, including the binding surface, stale reason, changed files,
+missing files, recorded/current heads, and surface hashes.
+
+## Scenarios
+
+- `CEF-S-1`: Given verification evidence bound to a source file, when a later
+  commit changes only docs, then `pr prepare` treats that evidence as current.
+- `CEF-S-2`: Given verification evidence bound to a source file, when a later
+  commit changes that source file, then `pr prepare` treats that evidence as
+  stale and reports the changed file.
+- `CEF-S-3`: Given review evidence bound to an inspected input, when only files
+  outside that input change, then review status and PR readiness keep the review
+  evidence current.
+- `CEF-S-4`: Given evidence recorded with strict HEAD binding, when any later
+  commit changes HEAD, then the evidence is stale.
+- `CEF-S-5`: Given current or stale content-bound evidence, when
+  `gate:pr_freshness` is emitted, then the gate details show the bound surface
+  and freshness reason.
+
+## Verification
+
+- Unit/CLI coverage records verification evidence, commits docs-only changes,
+  and asserts the artifact consistency and PR freshness gates keep it current.
+- Unit/CLI coverage changes a bound surface file and asserts stale status plus
+  changed file diagnostics.
+- Review coverage records `--inspection-input` evidence and asserts the same
+  surface hash behavior.
+- Strict HEAD coverage records `--strict-head-binding` evidence and asserts the
+  legacy HEAD mismatch behavior.
