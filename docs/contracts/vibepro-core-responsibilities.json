@@ -135,6 +135,30 @@
       ]
     },
     {
+      "id": "VIBE-CORE-STATUS-001",
+      "statement": "Repository status guidance must present the next VibePro workflow command from the selected Story and latest run state without changing repository contents, dispatching background work, or bypassing Story/Spec gates.",
+      "applies_to": {
+        "responsibility": "vibepro.repo_status.guidance",
+        "paths": [
+          "src/repo-status.js"
+        ],
+        "symbols": [
+          "buildNextCommands",
+          "story diagnose",
+          "--pre-architecture",
+          "polling_retry"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "gate_orchestration"
+        ]
+      },
+      "evidence_requirements": [
+        "unit_regression",
+        "typecheck"
+      ]
+    },
+    {
       "id": "VIBE-CORE-JUDGE-001",
       "statement": "Engineering Judgment route and axes must expose risk reasoning without converting weak or unrelated signals into blocking authority or false readiness.",
       "applies_to": {
