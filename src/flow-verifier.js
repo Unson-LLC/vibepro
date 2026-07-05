@@ -5,7 +5,6 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { collectGitContext } from './git-fingerprint.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -307,37 +306,23 @@ async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, c
     return buildAutoVisualEvidenceNotRecorded('screenshots_missing', 'no screenshot files were saved for this flow run');
   }
   const artifact = toWorkspaceRelative(root, jsonPath);
-  const result = await recordVerificationEvidence(root, {
-    storyId: verification.story_id,
-    kind: 'e2e',
-    status: 'pass',
-    command: command ?? `vibepro verify flow . --base-url ${verification.base_url} --id ${verification.story_id}`,
-    summary: `Flow Verification ${verification.run_id} passed with Visual QA screenshots`,
-    artifact,
-    targets: [artifact, ...screenshotTargets],
-    scenarios: [
-      `visual_qa: Flow Verification ${verification.run_id} screenshots reviewed`,
-      ...screenshotTargets.map((screenshotPath) => `screenshot: ${screenshotPath}`)
-    ],
-    observed: [
-      `flow_run_id=${verification.run_id}`,
-      `screenshot_count=${screenshotTargets.length}`
-    ]
-  });
-  return {
-    artifact: result.artifact,
-    command_kind: 'e2e',
-    source: artifact,
-    screenshot_paths: screenshotTargets,
-    status: 'recorded'
-  };
+  return buildAutoVisualEvidenceNotRecorded(
+    'visual_residual_required',
+    `flow saved ${screenshotTargets.length} screenshot(s); run vibepro verify visual to produce residual artifacts before Visual QA Gate can pass`,
+    {
+      source: artifact,
+      screenshot_paths: screenshotTargets,
+      command: command ?? `vibepro verify flow . --base-url ${verification.base_url} --id ${verification.story_id}`
+    }
+  );
 }
 
-function buildAutoVisualEvidenceNotRecorded(reason, detail) {
+function buildAutoVisualEvidenceNotRecorded(reason, detail, extra = {}) {
   return {
     status: 'not_recorded',
     reason,
-    detail
+    detail,
+    ...extra
   };
 }
 

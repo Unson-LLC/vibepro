@@ -1801,6 +1801,7 @@ test('help command prints discoverable usage', async () => {
   assert.match(output, /vibepro performance record \[repo\].*--label <before\|after>/);
   assert.match(output, /vibepro performance compare \[repo\].*--id <story-id>/);
   assert.match(output, /vibepro verify visual \[repo\].*--current-dir <dir>/);
+  assert.match(output, /vibepro verify visual \[repo\].*--basic-auth-env <env>/);
   assert.match(output, /vibepro verify record \[repo\].*--kind <unit\|integration\|e2e\|typecheck\|build>/);
   assert.match(output, /vibepro review prepare \[repo\].*--stage <stage>/);
   assert.match(output, /vibepro review record \[repo\].*--role <role>/);
@@ -4751,13 +4752,11 @@ console.log('fake playwright ok');
   const runDir = path.join(repo, '.vibepro', 'verification', 'flow-run-1');
   const verification = await readJson(path.join(runDir, 'flow-verification.json'));
   assert.equal(verification.base_url, 'http://127.0.0.1:3000');
-  assert.equal(verification.auto_visual_evidence.status, 'recorded');
+  assert.equal(verification.auto_visual_evidence.status, 'not_recorded');
+  assert.equal(verification.auto_visual_evidence.reason, 'visual_residual_required');
   assert.deepEqual(verification.auto_visual_evidence.screenshot_paths, ['.vibepro/verification/flow-run-1/screenshots/new-registration.png']);
   assert.equal(verification.probes[0].artifacts.screenshot_paths.includes('screenshots/new-registration.png'), true);
-  const autoEvidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
-  assert.equal(autoEvidence.commands[0].kind, 'e2e');
-  assert.match(autoEvidence.commands[0].observation.scenarios.join('\n'), /visual_qa: Flow Verification flow-run-1 screenshots reviewed/);
-  assert.match(autoEvidence.commands[0].observation.scenarios.join('\n'), /screenshot: \.vibepro\/verification\/flow-run-1\/screenshots\/new-registration\.png/);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json')), false);
   assert.match(verification.git_context.head_sha, /^[a-f0-9]{40}$/);
   assert.match(verification.git_context.status_fingerprint_hash, /^[a-f0-9]{64}$/);
   assert.match(verification.git_context.user_status_fingerprint_hash, /^[a-f0-9]{64}$/);
@@ -13921,7 +13920,7 @@ test('VQG-S-2 pr prepare accepts current visual verification evidence when resid
   assert.equal(result.result.preparation.pr_context.completion_quality.metrics.visual_qa_pass_rate, 1);
 });
 
-test('verify flow auto-records current Visual QA evidence for screenshot probes', async () => {
+test('verify flow requires residual Visual QA evidence for screenshot probes', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
@@ -13972,12 +13971,17 @@ console.log('fake playwright ok');
 
   assert.equal(flow.exitCode, 0);
   assert.equal(flow.result.verification.status, 'pass');
-  assert.equal(flow.result.verification.auto_visual_evidence.status, 'recorded');
+  assert.equal(flow.result.verification.auto_visual_evidence.status, 'not_recorded');
+  assert.equal(flow.result.verification.auto_visual_evidence.reason, 'visual_residual_required');
+  assert.deepEqual(flow.result.verification.auto_visual_evidence.screenshot_paths, [
+    '.vibepro/verification/flow-auto-visual/screenshots/story-pr-prepare-home.png'
+  ]);
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
-  assert.equal(result.result.preparation.pr_context.visual_qa.source, 'verification_evidence');
+  assert.notEqual(result.result.preparation.pr_context.visual_qa?.source, 'verification_evidence');
   const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
-  assert.equal(visualGate.status, 'ready_for_review');
+  assert.equal(visualGate.status, 'needs_evidence');
+  assert.match(visualGate.reason, /Visual QA evidence was not recorded/);
 });
 
 test('verify flow reports not_recorded reason when screenshots are missing', async () => {
@@ -14123,8 +14127,8 @@ test('verify visual custom threshold is honored by Visual QA Gate', async () => 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.preparation.pr_context.visual_qa.threshold_pct, 100);
   const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
-  assert.equal(visualGate.status, 'ready_for_review');
-  assert.match(visualGate.reason, /within 100% residual threshold/);
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /threshold 100%/);
   assert.equal(visualGate.runs[0].threshold_pct, 100);
 });
 
@@ -14166,6 +14170,11 @@ test('verify visual update-baseline writes a baseline and unchanged rerun conver
   assert.equal(update.result.report.probes[0].status, 'baseline_updated');
   assert.equal(update.result.report.meanAbsResidualPct, 0);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'qa', 'baseline', 'story-pr-prepare-home.png')), true);
+  const updatedGateResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(updatedGateResult.exitCode, 0);
+  const updatedGate = updatedGateResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(updatedGate.status, 'needs_review');
+  assert.match(updatedGate.reason, /baseline_updated/);
 
   const rerun = await runCli([
     'verify',
@@ -14176,13 +14185,17 @@ test('verify visual update-baseline writes a baseline and unchanged rerun conver
     '--current-dir',
     'artifacts/visual-current',
     '--qa-id',
-    'story-pr-prepare-visual-rerun',
+    'story-pr-prepare-visual',
     '--json'
   ]);
 
   assert.equal(rerun.exitCode, 0);
   assert.equal(rerun.result.report.status, 'pass');
   assert.equal(rerun.result.report.meanAbsResidualPct, 0);
+  const rerunGateResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(rerunGateResult.exitCode, 0);
+  const rerunGate = rerunGateResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(rerunGate.status, 'ready_for_review');
 });
 
 test('verify visual reports baseline_missing and does not pass the Visual QA Gate', async () => {
@@ -14399,7 +14412,7 @@ test('VQG-S-4 residual Visual QA evidence remains authoritative over verificatio
   assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
 });
 
-test('VQG-S-5 Visual QA critical gate guidance includes executable evidence markers', async () => {
+test('VQG-S-5 Visual QA critical gate guidance points to residual artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
@@ -14424,9 +14437,10 @@ test('VQG-S-5 Visual QA critical gate guidance includes executable evidence mark
   });
 
   assert.equal(result.exitCode, 1);
-  assert.match(stderrOutput, /Visual QA Gate requires ready_for_review visual QA evidence/);
-  assert.match(stderrOutput, /--scenario "visual_qa: screenshots reviewed"/);
-  assert.match(stderrOutput, /--scenario "screenshot: <path>"/);
+  assert.match(stderrOutput, /Visual QA Gate requires ready_for_review visual residual evidence/);
+  assert.match(stderrOutput, /vibepro verify visual \. --id <story-id> --base-url <preview-url>/);
+  assert.match(stderrOutput, /vibepro verify visual \. --id <story-id> --current-dir <dir>/);
+  assert.match(stderrOutput, /\.vibepro\/qa\/<qa-id>\/visual-residual\.json/);
 });
 
 test('pr prepare blocks new API client calls until network-aware evidence exists even when route exists', async () => {

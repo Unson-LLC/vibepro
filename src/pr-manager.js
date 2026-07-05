@@ -1606,7 +1606,7 @@ function isLikelyNextCommand(value) {
 
 function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:e2e') return `Record current-head E2E evidence for ${gate.label ?? gate.id}: ${gate.reason ?? gate.status}`;
-  if (gate.id === 'gate:visual_qa') return `Record current-head Visual QA evidence for UI changes with residual artifacts, or \`vibepro verify record --kind e2e --status pass --scenario "visual_qa: screenshots reviewed" --scenario "screenshot: <path>" --artifact <screenshot-or-residual>\`: ${gate.reason ?? gate.status}`;
+  if (gate.id === 'gate:visual_qa') return `Run \`vibepro verify visual . --id <story-id> --base-url <preview-url>\` or \`vibepro verify visual . --id <story-id> --current-dir <dir>\` to produce residual artifacts, then rerun PR preparation: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:network_contract') return `Resolve Network Contract evidence: ${gate.reason ?? gate.status}`;
   if (gate.id === 'gate:pr_freshness') {
     return `Refresh PR branch and regenerate VibePro evidence: ${(gate.required_actions ?? []).join(' -> ') || gate.reason || gate.status}`;
@@ -3398,7 +3398,7 @@ function renderNetworkContractPrSection(networkContracts) {
 function renderPrVisualQaEvidence(visualQa) {
   if (!visualQa) {
     return `## Visual QA Evidence
-- 未検出: \`.vibepro/qa/<qa-id>/residual-analysis.md\` または \`*residual*.json\` がある場合はPR判断に接続されます`;
+- 未検出: \`vibepro verify visual . --id <story-id> --base-url <preview-url>\` または \`vibepro verify visual . --id <story-id> --current-dir <dir>\` で \`.vibepro/qa/<qa-id>/visual-residual.json\` と \`residual-analysis.md\` を生成してください`;
   }
   const rows = visualQa.runs.map((run) => {
     const residual = run.latest_residual?.meanAbsResidualPct;
@@ -5352,6 +5352,8 @@ async function walkFiles(dir) {
 function resolveVisualQaStatus(run, thresholdPct) {
   const residualStatus = run.latest_residual?.status;
   const probeStatuses = run.latest_residual?.probe_statuses ?? [];
+  if (thresholdPct > DEFAULT_VISUAL_QA_THRESHOLD_PCT) return 'needs_review';
+  if (residualStatus === 'baseline_updated' || probeStatuses.includes('baseline_updated')) return 'needs_review';
   if (residualStatus === 'baseline_missing' || probeStatuses.includes('baseline_missing')) return 'needs_review';
   if (residualStatus === 'current_missing' || residualStatus === 'needs_evidence' || probeStatuses.includes('current_missing')) return 'needs_review';
   if (residualStatus === 'needs_review' || probeStatuses.includes('needs_review')) return 'needs_review';
@@ -12042,7 +12044,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
   return gates
     .map((gate) => {
       if (gate.id === 'gate:e2e') return 'E2E Gate requires passing `vibepro verify record --kind e2e --status pass` evidence or passing flow verification, plus Story acceptance coverage in tests/e2e/<story-id>-*.spec.ts.';
-      if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual QA evidence. Use residual artifacts under `.vibepro/qa/<qa-id>/` or record current-head E2E evidence with `--scenario "visual_qa: screenshots reviewed" --scenario "screenshot: <path>"` and attach the screenshot/residual artifact.';
+      if (gate.id === 'gate:visual_qa') return 'Visual QA Gate requires ready_for_review visual residual evidence. Run `vibepro verify visual . --id <story-id> --base-url <preview-url>` or `vibepro verify visual . --id <story-id> --current-dir <dir>` so `.vibepro/qa/<qa-id>/visual-residual.json` and `residual-analysis.md` are current-head bound.';
       if (gate.id === 'gate:story_source_integrity') return 'Story Source Integrity Gate requires the selected Story and resolved/changed Story document to match before Requirement and PR body evidence can be trusted.';
       if (gate.id === 'architecture') return 'Architecture Gate requires an ADR or explicit ADR-unnecessary decision in the Story.';
       if (gate.id === 'spec') return 'Spec Gate requires present/inferred Spec evidence without high-severity drift.';

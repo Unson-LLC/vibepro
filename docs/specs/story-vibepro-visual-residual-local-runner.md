@@ -27,6 +27,12 @@ Residual threshold configuration keeps its existing meaning. Probes exceeding
 the threshold MUST yield a needs_review residual analysis naming each
 exceeding probe and its residual value.
 
+### VRL-INV-4: Elevated thresholds require review
+
+Thresholds above the default Visual QA threshold MAY be used to generate a
+diagnostic residual report, but MUST NOT make `gate:visual_qa` ready for review
+without explicit review.
+
 ## Contracts
 
 ### VRL-CONTRACT-1: Shared probe configuration
@@ -42,9 +48,9 @@ changes yields near-zero residual for the updated probes.
 
 ### VRL-CONTRACT-3: Bundled comparison only
 
-Residual computation uses Playwright's bundled image comparison
-(pixelmatch family). No external SaaS or additional heavyweight dependency is
-required to produce residual artifacts.
+Residual computation uses VibePro's built-in PNG decoder and mean absolute
+RGBA residual calculation. No external SaaS or additional heavyweight
+dependency is required to produce residual artifacts.
 
 ### VRL-CONTRACT-4: Reported metric
 
@@ -78,8 +84,9 @@ probe and does not silently pass it.
 
 ### VRL-S-4: Baseline update converges
 
-Given `--update-baseline` followed by an unchanged re-run, the residual for
-the updated probes is near zero.
+Given `--update-baseline`, the update run itself requires review as a baseline
+change; followed by an unchanged re-run, the residual for the updated probes is
+near zero.
 
 ### VRL-S-5: Format validation parity
 
@@ -107,7 +114,7 @@ origin.
 
 ## Verification
 
-- Node regression tests cover VRL-S-1 through VRL-S-5 (story acceptance
+- Node regression tests cover VRL-S-1 through VRL-S-6 (story acceptance
   criterion VRL-S-6).
 - `npm run typecheck` validates edited modules.
 - `vibepro pr prepare` emits a Gate DAG for this story with
