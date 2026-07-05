@@ -5426,6 +5426,11 @@ function parseStoryDoc(file, content) {
     solution: extractSectionText(content, ['解決', '解決策', 'Solution', 'Resolution']),
     policy: extractSectionText(content, ['方針', '実装方針', '実装戦略']),
     acceptance_criteria: extractAcceptanceCriteria(content),
+    related_stories: normalizeFrontmatterList(
+      frontmatter.related_stories
+        ?? frontmatter.related_story
+        ?? frontmatter.related_story_ids
+    ),
     architecture_docs: normalizeFrontmatterList(frontmatter.architecture_docs),
     spec_docs: normalizeFrontmatterList(frontmatter.spec_docs),
     architecture_reason: frontmatter.reason
@@ -5605,6 +5610,11 @@ function storyDocMatchesStory(doc, story) {
   if (doc.story_id === story.story_id || doc.vibepro_story_id === story.story_id) return true;
   if (doc.path.includes(story.story_id)) return true;
   const storySlug = canonicalStoryBindingSlug(story.story_id);
+  const relatedStorySlugs = normalizeFrontmatterList(doc.related_stories)
+    .map(canonicalStoryBindingSlug)
+    .filter(Boolean);
+  if (storySlug && relatedStorySlugs.includes(storySlug)) return true;
+  if (normalizeFrontmatterList(doc.related_stories).includes(story.story_id)) return true;
   const docSlugs = [
     doc.story_id,
     doc.vibepro_story_id,
@@ -5633,6 +5643,7 @@ function buildStorySourceIntegrity(story, storySource, changedStoryDocs = []) {
       story_id: doc.story_id ?? null,
       vibepro_story_id: doc.vibepro_story_id ?? null,
       title: doc.title ?? doc.requirement_title ?? null,
+      related_stories: normalizeFrontmatterList(doc.related_stories),
       matches_selected_story: storyDocMatchesStory(doc, story)
     }));
   const mismatchedChangedDocs = changedDocs.filter((doc) => !doc.matches_selected_story);
