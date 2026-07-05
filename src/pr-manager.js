@@ -71,6 +71,7 @@ import {
 } from './senior-gap-judgment.js';
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
+import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -310,6 +311,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
   const splitPlanReportPath = path.join(prDir, 'split-plan.html');
   const traceabilityPath = path.join(prDir, 'traceability.json');
+  const previousPrPrepare = workspace.initialized
+    ? await progress.stage('read_previous_pr_prepare', () => readJsonIfExists(jsonPath))
+    : null;
+  const previousGateDag = workspace.initialized
+    ? await progress.stage('read_previous_gate_dag', () => readJsonIfExists(gateDagJsonPath))
+    : null;
   const traceabilityEvidenceForCoverage = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -426,6 +433,21 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : 'ready_for_review';
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  const gateOutcomeLedger = workspace.initialized
+    ? await progress.stage('record_gate_outcome_ledger', () => recordResolvedGateOutcomes(root, {
+      storyId: story.story_id,
+      previousGateDag,
+      currentGateDag: prContext.gate_dag,
+      previousPrepareCreatedAt: previousPrPrepare?.created_at ?? null,
+      createdAt,
+      git: reviewGit,
+      fileGroups,
+      verificationEvidence,
+      agentReviews: prContext.agent_reviews,
+      decisionRecords,
+      overrideOutcome: options.gateOutcome ?? null
+    }))
+    : null;
   const traceabilityEvidence = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -481,6 +503,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     toolchain,
     task_context: taskContext,
     latest_story_run: latestStoryRun,
+    gate_outcome_ledger: gateOutcomeLedger,
     suggested_branch: suggestedBranch,
     next_commands: nextCommands,
     diagnostics: {

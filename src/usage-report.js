@@ -4,6 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { collectCanonicalAuditArtifacts, mergeArtifactsPreferLocal } from './canonical-audit.js';
+import { readGateOutcomeLedger, summarizeGateOutcomeLedger } from './gate-outcome-ledger.js';
 import { resolveHumanOutputLanguage } from './language.js';
 import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
 
@@ -26,6 +27,8 @@ export async function createUsageReport(repoRoot, options = {}) {
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
   const storyDocs = await collectStoryDocs(root, since);
   const logs = await collectUsageLogs(root, options);
+  const gateOutcomeLedger = await readGateOutcomeLedger(root);
+  const gate_outcomes = summarizeGateOutcomeLedger(gateOutcomeLedger, { since });
   const storyMap = new Map();
   for (const doc of storyDocs) {
     const story = ensureStoryUsage(storyMap, doc.story_id);
@@ -173,6 +176,7 @@ export async function createUsageReport(repoRoot, options = {}) {
     manifest_parse_failures: manifestPrArtifacts.parse_failures,
     stories,
     gate_metrics,
+    gate_outcomes,
     agent_review,
     ...(subagent_roi ? { subagent_roi } : {}),
     evidence_cost,
@@ -194,6 +198,7 @@ export function renderUsageReport(report) {
         `- ${gate.gate_id}: block=${gate.block_count} waiver=${gate.waiver_count} critical_unresolved=${gate.critical_unresolved_count}`
       )).join('\n')
     : '- none';
+  const gateOutcomeRows = renderGateOutcomeRows(report);
   const reviewRows = report.agent_review.by_story.length
     ? report.agent_review.by_story.map((item) => (
         `- ${item.story_id}: required=${item.required_role_count} pass=${item.pass_count} block=${item.block_count} timeout=${item.timeout_count} replaced=${item.replaced_count} stale=${item.stale_count}`
@@ -237,6 +242,10 @@ ${storyRows}
 ## Gates
 
 ${gateRows}
+
+## Gate Outcome ROI
+
+${gateOutcomeRows}
 
 ## Agent Review
 
@@ -288,6 +297,10 @@ ${storyRows}
 ## Gate別
 
 ${gateRows}
+
+## Gate Outcome ROI
+
+${gateOutcomeRows}
 
 ## Agent Review
 
@@ -735,6 +748,42 @@ ${rows}`;
   return `
 - artifact source warning: この checkout には VibePro artifacts がありませんが、同じ git repo の別 worktree には存在します。以下の root で report を再実行してください:
 ${rows}`;
+}
+
+function renderGateOutcomeRows(report) {
+  const outcomes = report.gate_outcomes ?? {};
+  const distributions = outcomes.distributions ?? [];
+  const rows = distributions.length
+    ? distributions.map((gate) => (
+        `- ${gate.gate_id}: total=${gate.total_count} source_fix=${gate.outcomes?.source_fix ?? 0} evidence_added=${gate.outcomes?.evidence_added ?? 0} rewording_only=${gate.outcomes?.rewording_only ?? 0} waiver=${gate.outcomes?.waiver ?? 0} unclassified=${gate.outcomes?.unclassified ?? 0}`
+      )).join('\n')
+    : '- none';
+  const candidates = outcomes.demotion_candidates ?? [];
+  const candidateRows = candidates.length
+    ? candidates.map((candidate) => (
+        `- ${candidate.gate_id}: ${candidate.reason} rewording_only_rate=${formatRate(candidate.rewording_only_rate)} total=${candidate.total_count}`
+      )).join('\n')
+    : '- none';
+  if (report.output?.language === 'en') {
+    return [
+      `- entries: ${outcomes.entry_count ?? 0}`,
+      '',
+      'Gate distributions:',
+      rows,
+      '',
+      'Demotion candidates:',
+      candidateRows
+    ].join('\n');
+  }
+  return [
+    `- entries: ${outcomes.entry_count ?? 0}`,
+    '',
+    'Gate別分布:',
+    rows,
+    '',
+    '降格候補:',
+    candidateRows
+  ].join('\n');
 }
 
 function renderTraceabilityGaps(report) {

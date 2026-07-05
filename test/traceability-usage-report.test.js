@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import { getGateOutcomeLedgerPath } from '../src/gate-outcome-ledger.js';
 import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 
 function storyDoc(storyId, status = 'active') {
@@ -330,6 +331,20 @@ test('compact canonical audit index resolves merged story and renders evidence c
       { kind: 'compressed_replay_bundle', canonical_path: 'docs/management/audit-artifacts/story-compact-audit/audit-replay-bundle.json.gz' }
     ]
   }, null, 2));
+  const ledgerPath = getGateOutcomeLedgerPath(root);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    entries: [
+      {
+        story_id: 'story-compact-audit',
+        gate_id: 'gate:runtime_cost',
+        outcome: 'evidence_added',
+        resolved_at: '2026-06-23T00:06:00.000Z'
+      }
+    ]
+  }, null, 2));
 
   const report = await createUsageReport(root);
   const story = findStory(report, 'story-compact-audit');
@@ -344,7 +359,11 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.equal(story.senior_gap_judgment.residual_risk_count, 2);
   assert.equal(story.senior_gap_judgment.followup_count, 1);
   assert.equal(report.evidence_cost.budget_exceeded_count, 1);
+  assert.equal(report.evidence_cost.token_accounting_status, 'unavailable');
+  assert.equal(report.evidence_cost.elapsed_time_accounting_status, 'unavailable');
   assert.equal(report.evidence_cost.total_artifact_lines, 2200);
+  assert.equal(report.gate_outcomes.distributions[0].gate_id, 'gate:runtime_cost');
+  assert.equal(report.gate_outcomes.distributions[0].outcomes.evidence_added, 1);
   assert.equal(report.evidence_cost.by_story[0].replay_bundle.compressed_bytes, 512);
   assert.equal(report.evidence_cost.by_story[0].automation_value_audit.status, 'partial');
   assert.equal(report.evidence_cost.by_story[0].automation_value_audit.implementation_changed_lines, 8);
@@ -362,6 +381,7 @@ test('compact canonical audit index resolves merged story and renders evidence c
   assert.match(renderUsageReport(report), /automation_value=partial:impl=8:audit_evidence=40:evidence_to_src=5:findings=session_cost_unavailable,artifact_budget_exceeded,evidence_heavy_relative_to_src/);
   assert.match(renderUsageReport(report), /replay_bundle=gzip:compressed_bytes=512:expanded_lines=120/);
   assert.match(renderUsageReport(report), /tokens=未確認/);
+  assert.match(renderUsageReport(report), /elapsed_ms=未確認/);
 });
 
 test('blocked canonical handoff replay is surfaced as a fake-value signal', async () => {
