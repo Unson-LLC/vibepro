@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "updated_at": "2026-07-05T04:50:43.178Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+      "expected_root": null,
+      "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+      "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783227043178-c951f1aa",
+      "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundle the four Journey/Visual QA pipeline stories in this PR because src/cli.js, src/pr-manager.js, flow verification, journey mapping, visual residual verification, and shared acceptance tests form one cross-story gate/evidence contract; splitting would duplicate reviews and risk inconsistent VibePro readiness behavior.",
+      "reason": "The branch is already a clean worktree rebased on origin/main, with current-head [REDACTED:ef3e51298f09] evidence recorded for all four stories. The only added side-session migration is the artifact-backed Visual QA fallback fix, which directly protects the shared gate contract.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "expected_root": null,
+          "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+        "current_branch": "codex/vibepro-journey-uiux-pipeline-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T04:50:43.177Z"
+      },
+      "recorded_at": "2026-07-05T04:50:43.178Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783224560730-cf3d89d8",
+      "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewed: this implementation PR intentionally bundles the four producer-side journey/UI-UX pipeline stories because their contracts share the same VibePro gate path; review ownership is split by story and stage in Agent Review.",
+      "reason": "The changed files are cohesive around journey curation, flow screenshot visual evidence, local residual verification, and dogfood route evidence. Separate follow-up only remains for real-project dogfood execution.",
+      "reviewer": "codex",
+      "artifact": "docs/reference/vibepro-ui-journey-e2e-dogfood.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "expected_root": null,
+          "expected_head_sha": "b98f8e839418f7c67f5b88291880f95ba394797c",
+          "current_head_sha": "b98f8e839418f7c67f5b88291880f95ba394797c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "b98f8e839418f7c67f5b88291880f95ba394797c",
+        "current_branch": "codex/vibepro-journey-uiux-pipeline-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T04:09:20.729Z"
+      },
+      "recorded_at": "2026-07-05T04:09:20.730Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+        "expected_root": null,
+        "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+        "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783227043178-c951f1aa",
+      "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundle the four Journey/Visual QA pipeline stories in this PR because src/cli.js, src/pr-manager.js, flow verification, journey mapping, visual residual verification, and shared acceptance tests form one cross-story gate/evidence contract; splitting would duplicate reviews and risk inconsistent VibePro readiness behavior.",
+      "reason": "The branch is already a clean worktree rebased on origin/main, with current-head [REDACTED:ef3e51298f09] evidence recorded for all four stories. The only added side-session migration is the artifact-backed Visual QA fallback fix, which directly protects the shared gate contract.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "expected_root": null,
+          "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+        "current_branch": "codex/vibepro-journey-uiux-pipeline-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T04:50:43.177Z"
+      },
+      "recorded_at": "2026-07-05T04:50:43.178Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/decision-records.json"
+}

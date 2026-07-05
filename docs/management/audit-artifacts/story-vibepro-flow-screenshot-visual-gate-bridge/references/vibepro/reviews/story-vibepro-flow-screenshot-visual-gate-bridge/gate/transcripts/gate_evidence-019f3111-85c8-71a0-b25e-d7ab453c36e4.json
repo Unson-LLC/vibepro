@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "codex_parallel_subagent_review_transcript",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "agent_system": "codex",
+  "execution_mode": "parallel_subagent",
+  "agent_id": "019f3111-85c8-71a0-b25e-d7ab453c36e4",
+  "head_sha": "656ecdcc1e1cc870382b61c84bdcfb0c7e03454e",
+  "status": "pass",
+  "findings": [],
+  "summary": "Gate evidence closes the issue: verify flow does not promote screenshot/prose evidence into passing Visual QA, and PR gate logic requires residual-backed or explicit artifact-backed visual evidence. Residual status, stale binding, baseline_missing, baseline_updated, and high/custom residual cases remain review-blocking.",
+  "inspected_inputs": [
+    "src/flow-verifier.js",
+    "src/pr-manager.js",
+    "src/cli.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-flow-screenshot-visual-gate-bridge-main.test.js",
+    "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-*-656ecdc.json",
+    ".vibepro/reviews/story-vibepro-flow-screenshot-visual-gate-bridge/gate/review-request-gate_evidence.md"
+  ],
+  "evidence_refs": [
+    "HEAD verified: 656ecdcc1e1cc870382b61c84bdcfb0c7e03454e on codex/vibepro-journey-uiux-pipeline-impl",
+    "flow-verifier: passing screenshot flow records auto_visual_evidence not_recorded / visual_residual_required, not visual_qa pass evidence",
+    "pr-manager: .vibepro/qa residual evidence is read before verification fallback; fallback requires visual_qa+screenshot markers plus existing png/jpeg/webp or residual artifacts",
+    "pr-manager: baseline_updated, baseline_missing, needs_review, stale binding, residual > threshold, semantic > threshold all resolve to needs_review",
+    "verification-evidence.json: all commands have strict_head binding and recorded_head_sha 656ecdcc1e1cc870382b61c84bdcfb0c7e03454e",
+    "local focused tests passed: node --test test/e2e/story-vibepro-flow-screenshot-visual-gate-bridge-main.test.js => 1/1 pass",
+    "local focused tests passed: node --test --test-name-pattern visual/prose/residual subset test/vibepro-cli.test.js => 12/12 pass",
+    "git status remained clean after inspection/tests"
+  ],
+  "recorded_at": "2026-07-05T07:01:32.845Z"
+}

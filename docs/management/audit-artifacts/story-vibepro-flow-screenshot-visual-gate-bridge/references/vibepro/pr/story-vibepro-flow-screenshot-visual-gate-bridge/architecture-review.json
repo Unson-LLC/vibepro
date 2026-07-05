@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "created_at": "2026-07-05T08:07:52.395Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md, docs/architecture/vibepro-ui-journey-e2e-producer-contracts.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md, docs/architecture/vibepro-ui-journey-e2e-producer-contracts.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md, docs/specs/story-vibepro-journey-curate-command.md, docs/specs/story-vibepro-ui-journey-e2e-dogfood.md, docs/specs/story-vibepro-visual-residual-local-runner.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T08:07:51.171Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+      "branch": "codex/vibepro-journey-uiux-pipeline-impl",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ddf1cf4953a0938da26b1916471c3c081f511246",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

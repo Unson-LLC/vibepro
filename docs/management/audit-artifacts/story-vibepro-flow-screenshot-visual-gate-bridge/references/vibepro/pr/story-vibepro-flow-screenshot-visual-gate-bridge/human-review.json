@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "created_at": "2026-07-05T08:07:52.395Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md, docs/architecture/vibepro-ui-journey-e2e-producer-contracts.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md, docs/specs/story-vibepro-journey-curate-command.md, docs/specs/story-vibepro-ui-journey-e2e-dogfood.md, docs/specs/story-vibepro-visual-residual-local-runner.md)"
+    },
+    "decision_records": {
+      "total": 2,
+      "open": 0,
+      "by_type": {
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 2
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+          "expected_root": null,
+          "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783227043178-c951f1aa",
+        "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "Bundle the four Journey/Visual QA pipeline stories in this PR because src/cli.js, src/pr-manager.js, flow verification, journey mapping, visual residual verification, and shared acceptance tests form one cross-story gate/evidence contract; splitting would duplicate reviews and risk inconsistent VibePro readiness behavior.",
+        "reason": "The branch is already a clean worktree rebased on origin/main, with current-head [REDACTED:ef3e51298f09] evidence recorded for all four stories. The only added side-session migration is the artifact-backed Visual QA fallback fix, which directly protects the shared gate contract.",
+        "reviewer": "codex",
+        "artifact": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": true,
+          "hit_count": 1
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+            "expected_root": null,
+            "expected_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+            "current_head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "da88adf6f33cfd4a918610209b19e37af1a8f8c9",
+          "current_branch": "codex/vibepro-journey-uiux-pipeline-impl",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-05T04:50:43.177Z"
+        },
+        "recorded_at": "2026-07-05T04:50:43.178Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T08:07:51.171Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+      "branch": "codex/vibepro-journey-uiux-pipeline-impl",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ddf1cf4953a0938da26b1916471c3c081f511246",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

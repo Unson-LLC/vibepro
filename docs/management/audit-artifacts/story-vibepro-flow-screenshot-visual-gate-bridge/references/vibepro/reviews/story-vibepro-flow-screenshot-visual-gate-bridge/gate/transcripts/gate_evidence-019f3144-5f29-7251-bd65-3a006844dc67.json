@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1.0",
+  "agent_id": "019f3144-5f29-7251-bd65-3a006844dc67",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "head_sha": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+  "status": "pass",
+  "summary": "Prior documentation/lineage drift is resolved; flow screenshots stay not_recorded, PR fallback is artifact-backed, residual statuses remain needs_review, docs/SSOT align, and evidence is current-head bound.",
+  "findings": [],
+  "evidence_checked": [
+    "src/flow-verifier.js",
+    "src/pr-manager.js",
+    "src/cli.js",
+    "src/visual-verifier.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-flow-screenshot-visual-gate-bridge-main.test.js",
+    "test/e2e/story-vibepro-visual-residual-local-runner-main.test.js",
+    "docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md",
+    "docs/architecture/vibepro-ui-journey-e2e-producer-contracts.md",
+    "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+    "design-ssot.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-typecheck-b367e45.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-build-b367e45.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-e2e-b367e45.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-unit-b367e45.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-integration-b367e45.json",
+    ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/artifacts/current-head-design-ssot-b367e45.json",
+    "/tmp/vibepro-ssot-reconcile-b367e45.json"
+  ]
+}

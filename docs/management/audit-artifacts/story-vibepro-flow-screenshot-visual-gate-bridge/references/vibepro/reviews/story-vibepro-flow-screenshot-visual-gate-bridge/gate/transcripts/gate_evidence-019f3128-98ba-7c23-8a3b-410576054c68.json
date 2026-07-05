@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "agent_id": "019f3128-98ba-7c23-8a3b-410576054c68",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "head_sha": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+  "status": "needs_changes",
+  "summary": "Code behavior was correct but documentation/lineage drift required changes before pass.",
+  "findings": [
+    {
+      "severity": "medium",
+      "file": "docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md",
+      "summary": "Architecture doc still described automatic visual_qa/screenshot recording from flow screenshots."
+    },
+    {
+      "severity": "low",
+      "file": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+      "summary": "Spec parent_design did not match the story/design-ssot root."
+    }
+  ]
+}

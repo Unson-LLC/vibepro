@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "head_sha": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+  "branch": "codex/vibepro-journey-uiux-pipeline-impl",
+  "recorded_at": "2026-07-05T07:51:24.669Z",
+  "kind": "e2e",
+  "status": "pass",
+  "tests": 4,
+  "pass": 4,
+  "command": "node --test test/e2e/story-vibepro-flow-screenshot-visual-gate-bridge-main.test.js test/e2e/story-vibepro-visual-residual-local-runner-main.test.js test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js test/e2e/story-vibepro-journey-curate-command-main.test.js",
+  "log": "/tmp/vibepro-4story-e2e-b367e45.log",
+  "scenarios": [
+    "flow screenshot visual gate bridge",
+    "visual residual local runner",
+    "UI journey E2E dogfood",
+    "journey curate command"
+  ],
+  "observed": {
+    "visual_qa": "pass",
+    "screenshot_paths": "artifact-backed visual surface evidence without prose-only fallback"
+  }
+}

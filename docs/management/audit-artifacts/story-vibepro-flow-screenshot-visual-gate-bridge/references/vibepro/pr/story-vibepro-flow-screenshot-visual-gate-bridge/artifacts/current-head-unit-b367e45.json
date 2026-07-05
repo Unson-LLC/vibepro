@@ -1,0 +1,16 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "head_sha": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+  "branch": "codex/vibepro-journey-uiux-pipeline-impl",
+  "recorded_at": "2026-07-05T07:51:24.669Z",
+  "kind": "unit",
+  "status": "pass",
+  "tests": 35,
+  "pass": 35,
+  "command": "node --test test/responsibility-authority.test.js test/journey-map.test.js test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js test/review-repair.test.js && node --test --test-name-pattern responsibility_authority_current_head_contracts test/vibepro-cli.test.js",
+  "logs": [
+    "/tmp/vibepro-unit-b367e45-part1.log",
+    "/tmp/vibepro-unit-b367e45-part2.log"
+  ]
+}

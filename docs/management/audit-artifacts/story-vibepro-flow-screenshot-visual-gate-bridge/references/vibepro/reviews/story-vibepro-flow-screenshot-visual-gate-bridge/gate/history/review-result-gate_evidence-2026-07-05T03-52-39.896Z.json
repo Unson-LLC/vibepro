@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "gate_evidence passes at current head: Visual QA evidence is current-bound, path surface coverage is complete, and focused E2E/regression tests passed.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected flow/pr source, gate DAG, verification/evidence-reuse artifacts, and focused tests for current head 05a4bfcfa397.",
+    "evidence": ".vibepro/reviews/story-vibepro-flow-screenshot-visual-gate-bridge/gate/transcripts/gate_evidence-019f3063-9dd2-7861-b629-35ab781267b9.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-flow-screenshot-visual-gate-bridge/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/gate-dag.json",
+      ".vibepro/pr/story-vibepro-flow-screenshot-visual-gate-bridge/verification-evidence.json",
+      "src/flow-verifier.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-flow-screenshot-visual-gate-bridge-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern over stale/synthetic visual evidence -> pass because current-head screenshots and residual gates are verified by focused evidence and tests"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+    "expected_root": null,
+    "expected_head_sha": "05a4bfcfa397c39af16d9a2f3d91a849af626bd9",
+    "current_head_sha": "05a4bfcfa397c39af16d9a2f3d91a849af626bd9",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-journey-uiux-pipeline-impl",
+      "expected_root": null,
+      "expected_head_sha": "05a4bfcfa397c39af16d9a2f3d91a849af626bd9",
+      "current_head_sha": "05a4bfcfa397c39af16d9a2f3d91a849af626bd9",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T03:52:39.896Z",
+  "git_context": {
+    "head_sha": "05a4bfcfa397c39af16d9a2f3d91a849af626bd9",
+    "current_branch": "codex/vibepro-journey-uiux-pipeline-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T03:52:39.895Z"
+  },
+  "source_fingerprint": "ddc1f0b05b9163233261ceb75b7508cf0943a5a5f84de2843b5c22b83d0e5df9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3063-9dd2-7861-b629-35ab781267b9",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-flow-screenshot-visual-gate-bridge/gate/transcripts/gate_evidence-019f3063-9dd2-7861-b629-35ab781267b9.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-flow-screenshot-visual-gate-bridge/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:019f3063-9dd2-7861-b629-35ab781267b9",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

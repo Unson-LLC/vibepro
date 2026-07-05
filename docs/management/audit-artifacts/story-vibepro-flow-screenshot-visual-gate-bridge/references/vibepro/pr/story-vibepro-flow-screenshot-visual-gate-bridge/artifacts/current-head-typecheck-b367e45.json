@@ -1,0 +1,11 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
+  "head_sha": "b367e4551d80f7316a4123739f5f076e6ee25d29",
+  "branch": "codex/vibepro-journey-uiux-pipeline-impl",
+  "recorded_at": "2026-07-05T07:51:24.669Z",
+  "kind": "typecheck",
+  "status": "pass",
+  "command": "npm run typecheck",
+  "log": "/tmp/vibepro-typecheck-b367e45.log"
+}
