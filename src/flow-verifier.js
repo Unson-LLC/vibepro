@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -107,7 +107,8 @@ export async function runFlowVerification(repoRoot, options = {}) {
     warnings,
     git_context: gitContext,
     generated_spec: generatedSpecPath ? toWorkspaceRelative(root, generatedSpecPath) : null,
-    generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null
+    generated_config: generatedConfigPath ? toWorkspaceRelative(root, generatedConfigPath) : null,
+    auto_visual_evidence: null
   };
 
   const jsonPath = path.join(runDir, 'flow-verification.json');
@@ -116,6 +117,16 @@ export async function runFlowVerification(repoRoot, options = {}) {
   await writeFile(jsonPath, `${JSON.stringify(verification, null, 2)}\n`);
   await writeFile(markdownPath, renderFlowVerificationReport(verification));
   if (!commandResult) await writeFile(logPath, `${reason ?? 'Playwright was not executed.'}\n`);
+  const autoVisualEvidence = await recordVisualEvidenceFromFlowRun(root, {
+    verification,
+    jsonPath,
+    command: commandResult?.command
+  });
+  if (autoVisualEvidence) {
+    verification.auto_visual_evidence = autoVisualEvidence;
+    await writeFile(jsonPath, `${JSON.stringify(verification, null, 2)}\n`);
+    await writeFile(markdownPath, renderFlowVerificationReport(verification));
+  }
 
   manifest.latest_flow_verification_run = runId;
   manifest.flow_verification_runs = [
@@ -188,9 +199,16 @@ export function renderFlowVerificationSummary(result) {
     `- skipped: ${result.verification.summary.skipped}`,
     `- needs_setup: ${result.verification.summary.needs_setup}`,
     `- runtime_contract_failures: ${result.verification.runtime_contract_failures?.length ?? 0}`,
+    `- auto_visual_evidence: ${formatAutoVisualEvidenceSummary(result.verification.auto_visual_evidence)}`,
     ...setupLines
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function formatAutoVisualEvidenceSummary(autoVisualEvidence) {
+  if (autoVisualEvidence?.status === 'recorded') return `recorded (${autoVisualEvidence.screenshot_paths?.length ?? 0} screenshot(s))`;
+  if (autoVisualEvidence?.status === 'not_recorded') return `not_recorded (${autoVisualEvidence.reason})`;
+  return 'unknown';
 }
 
 async function readConfig(root) {
@@ -201,13 +219,13 @@ async function readConfig(root) {
   }
 }
 
-function resolveStory(config, storyId = null) {
+export function resolveStory(config, storyId = null) {
   const stories = config.brainbase?.stories ?? [];
   const id = storyId ?? config.brainbase?.current_story_id ?? null;
   return stories.find((story) => story.story_id === id) ?? stories[0] ?? null;
 }
 
-function resolveFlowProbes({ config, manifest, story, journeyId }) {
+export function resolveFlowProbes({ config, manifest, story, journeyId }) {
   const configured = config.flow_design?.runtime_probes;
   const evidenceProbes = latestFlowDesignProbes(config, manifest);
   const defaults = defaultProbesForProfile(config.flow_design?.profile, story);
@@ -264,6 +282,62 @@ function buildPendingProbeResult(probe, options) {
     reason: null,
     artifacts: { screenshot_paths: screenshotPaths }
   };
+}
+
+async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, command }) {
+  if (!verification?.story_id) return buildAutoVisualEvidenceNotRecorded('story_not_bound', 'verify flow did not resolve a story id');
+  if (verification.status !== 'pass') return buildAutoVisualEvidenceNotRecorded('flow_status_not_pass', `flow status was ${verification.status}`);
+  if ((verification.runtime_contract_failures?.length ?? 0) > 0) {
+    return buildAutoVisualEvidenceNotRecorded(
+      'runtime_contract_failures',
+      `${verification.runtime_contract_failures.length} runtime contract failure(s) were recorded`
+    );
+  }
+  const declaredScreenshotTargets = verification.probes
+    .filter((probe) => probe.status === 'pass')
+    .flatMap((probe) => probe.artifacts?.screenshot_paths ?? [])
+    .map((screenshotPath) => path.posix.join('.vibepro', 'verification', verification.run_id, normalizeRelativePath(screenshotPath)))
+    .filter(Boolean);
+  const screenshotTargets = [];
+  for (const screenshotPath of declaredScreenshotTargets) {
+    if (await fileExists(path.join(root, screenshotPath))) screenshotTargets.push(screenshotPath);
+  }
+  if (screenshotTargets.length === 0) {
+    return buildAutoVisualEvidenceNotRecorded('screenshots_missing', 'no screenshot files were saved for this flow run');
+  }
+  const artifact = toWorkspaceRelative(root, jsonPath);
+  return buildAutoVisualEvidenceNotRecorded(
+    'visual_residual_required',
+    `flow saved ${screenshotTargets.length} screenshot(s); run vibepro verify visual to produce residual artifacts before Visual QA Gate can pass`,
+    {
+      source: artifact,
+      screenshot_paths: screenshotTargets,
+      command: command ?? `vibepro verify flow . --base-url ${verification.base_url} --id ${verification.story_id}`
+    }
+  );
+}
+
+function buildAutoVisualEvidenceNotRecorded(reason, detail, extra = {}) {
+  return {
+    status: 'not_recorded',
+    reason,
+    detail,
+    ...extra
+  };
+}
+
+function normalizeRelativePath(value) {
+  return String(value ?? '').split(path.sep).join('/').replace(/^\/+/, '');
+}
+
+async function fileExists(filePath) {
+  try {
+    const info = await stat(filePath);
+    return info.isFile();
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 async function detectPlaywright(root) {
@@ -755,6 +829,7 @@ function renderFlowVerificationReport(verification) {
 - skipped: ${verification.summary.skipped}
 - needs_setup: ${verification.summary.needs_setup}
 - runtime_contract_failures: ${verification.runtime_contract_failures?.length ?? 0}
+- auto_visual_evidence: ${formatAutoVisualEvidenceSummary(verification.auto_visual_evidence)}
 
 ## Probes
 
@@ -767,6 +842,23 @@ ${verification.setup?.next_commands?.length > 0 ? verification.setup.next_comman
 ## Runtime Contract Failures
 
 ${verification.runtime_contract_failures?.length > 0 ? verification.runtime_contract_failures.map((item) => `- ${item.kind}: ${item.detail}`).join('\n') : '- なし'}
+
+## Auto Visual Evidence
+
+${verification.auto_visual_evidence?.status === 'recorded'
+    ? [
+        `- status: recorded`,
+        `- source: ${verification.auto_visual_evidence.source}`,
+        `- flow_run_id: ${verification.run_id}`,
+        ...verification.auto_visual_evidence.screenshot_paths.map((screenshotPath) => `- screenshot: ${screenshotPath}`)
+      ].join('\n')
+    : verification.auto_visual_evidence?.status === 'not_recorded'
+      ? [
+          `- status: not_recorded`,
+          `- reason: ${verification.auto_visual_evidence.reason}`,
+          `- detail: ${verification.auto_visual_evidence.detail}`
+        ].join('\n')
+      : '- なし'}
 
 ## Warnings
 

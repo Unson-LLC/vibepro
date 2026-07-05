@@ -162,13 +162,22 @@ export async function readLatestJourneyMap(repoRoot) {
 
 export async function readCuratedJourneyMap(repoRoot, journeyId = DEFAULT_JOURNEY_ID) {
   const root = path.resolve(repoRoot);
+  const manifest = await readManifest(root);
+  const manifestCuratedPath = manifest.journey?.curated_journey
+    ? path.resolve(root, manifest.journey.curated_journey)
+    : null;
   const candidates = [
+    manifestCuratedPath,
     path.join(getWorkspaceDir(root), 'journeys', `${journeyId}.json`),
     path.join(getWorkspaceDir(root), 'journey', 'curated-journey.json')
-  ];
+  ].filter(Boolean);
+  const seen = new Set();
   for (const candidate of candidates) {
+    if (seen.has(candidate)) continue;
+    seen.add(candidate);
     try {
       const parsed = JSON.parse(await readFile(candidate, 'utf8'));
+      if (parsed.journey_id && parsed.journey_id !== journeyId) continue;
       return {
         ...parsed,
         schema_version: parsed.schema_version ?? JOURNEY_SCHEMA_VERSION,
@@ -185,6 +194,89 @@ export async function readCuratedJourneyMap(repoRoot, journeyId = DEFAULT_JOURNE
     }
   }
   return null;
+}
+
+export async function curateJourneyMap(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  await initWorkspace(root);
+  const contextPack = await readLatestJourneyMap(root);
+  const journeyId = options.journeyId ?? contextPack?.journey_id ?? DEFAULT_JOURNEY_ID;
+  if (!contextPack) {
+    throw new Error(`Journey context pack is missing. Run \`vibepro journey derive . --id ${journeyId}\` before \`vibepro journey curate .\`.`);
+  }
+  if (!options.inputPath) {
+    throw new Error('journey curate requires --input <judgments.json|yaml>');
+  }
+  const inputAbsolutePath = path.resolve(root, options.inputPath);
+  const judgments = parseJudgmentInput(await readFile(inputAbsolutePath, 'utf8'), inputAbsolutePath);
+  const conflictDecisions = normalizeJudgments(judgments.conflicts ?? judgments.conflict_resolutions);
+  const questionDecisions = normalizeJudgments(judgments.open_questions ?? judgments.open_question_resolutions ?? judgments.questions);
+  const missing = collectUnhandledJourneyItems(contextPack, { conflictDecisions, questionDecisions });
+  if (missing.length > 0) {
+    throw new Error([
+      'Unhandled Journey curation items:',
+      ...missing.map((item) => `- ${item}`),
+      'Revise --input and rerun `vibepro journey curate . --input <file>`.'
+    ].join('\n'));
+  }
+
+  const curatedAt = new Date().toISOString();
+  const curated = {
+    ...contextPack,
+    artifact_kind: CURATED_JOURNEY_ARTIFACT_KIND,
+    machine_derived: false,
+    authoritative: true,
+    curation_status: 'curated',
+    curated_at: curatedAt,
+    curation: {
+      input_path: toWorkspaceRelative(root, inputAbsolutePath),
+      next_slice: judgments.next_slice ?? judgments.nextSlice ?? null,
+      notes: judgments.notes ?? null,
+      conflicts: Object.fromEntries(conflictDecisions),
+      open_questions: Object.fromEntries(questionDecisions)
+    },
+    conflicts: (contextPack.conflicts ?? []).map((conflict) => ({
+      ...conflict,
+      curation: conflictDecisions.get(conflict.id) ?? null
+    })),
+    open_questions: (contextPack.open_questions ?? []).map((question) => {
+      const curation = questionDecisions.get(question.id) ?? null;
+      return {
+        ...question,
+        blocker: curation?.status ? false : question.blocker === true,
+        curation
+      };
+    })
+  };
+  curated.handoff = buildJourneyHandoff(curated);
+
+  const curatedDir = path.join(getWorkspaceDir(root), 'journeys');
+  await mkdir(curatedDir, { recursive: true });
+  const curatedPath = options.outputPath
+    ? path.resolve(root, options.outputPath)
+    : path.join(curatedDir, `${journeyId}.json`);
+  await mkdir(path.dirname(curatedPath), { recursive: true });
+  await writeFile(curatedPath, `${JSON.stringify(curated, null, 2)}\n`);
+
+  const manifest = await readManifest(root);
+  manifest.journey = {
+    ...(manifest.journey ?? {}),
+    artifact_kind: CURATED_JOURNEY_ARTIFACT_KIND,
+    curation_status: 'curated',
+    curated_journey: toWorkspaceRelative(root, curatedPath),
+    curated_at: curatedAt,
+    unresolved_conflict_count: countUnresolvedJourneyConflicts(curated),
+    unresolved_open_question_count: countUnresolvedJourneyOpenQuestions(curated)
+  };
+  await writeManifest(root, manifest);
+
+  return {
+    journey: curated,
+    artifacts: {
+      json: toWorkspaceRelative(root, curatedPath)
+    },
+    status: await getJourneyStatus(root, { journeyId })
+  };
 }
 
 export async function getJourneyStatus(repoRoot, options = {}) {
@@ -321,11 +413,123 @@ export function renderJourneyPrSection(summary) {
 }
 
 function resolveJourneyReadinessStatus(journey) {
-  return journey.conflicts?.length > 0
+  return countUnresolvedJourneyConflicts(journey) > 0
     ? 'conflict'
     : journey.walking_skeleton?.status === 'needs_evidence'
       ? 'needs_evidence'
       : 'available';
+}
+
+export function renderJourneyCurateSummary(result) {
+  return `# Journey Curated
+
+- status: ${result.status.status}
+- journey_id: ${result.journey.journey_id}
+- artifact: ${result.artifacts.json}
+- unresolved_conflicts: ${countUnresolvedJourneyConflicts(result.journey)}
+- unresolved_open_questions: ${countUnresolvedJourneyOpenQuestions(result.journey)}
+`;
+}
+
+function parseJudgmentInput(raw, filePath) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    if (!/\.ya?ml$/i.test(filePath)) throw new Error(`journey curate --input must be JSON or YAML: ${toPosix(filePath)}`);
+    return parseSimpleYaml(raw);
+  }
+}
+
+function parseSimpleYaml(raw) {
+  const root = {};
+  let currentKey = null;
+  let currentItem = null;
+  for (const line of raw.split(/\r?\n/)) {
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    const top = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
+    if (top && !line.startsWith(' ')) {
+      currentKey = top[1];
+      const value = top[2];
+      if (value) root[currentKey] = parseScalar(value);
+      else root[currentKey] = [];
+      currentItem = null;
+      continue;
+    }
+    const item = /^\s*-\s*([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
+    if (item && currentKey) {
+      currentItem = { [item[1]]: parseScalar(item[2]) };
+      if (!Array.isArray(root[currentKey])) root[currentKey] = [];
+      root[currentKey].push(currentItem);
+      continue;
+    }
+    const nested = /^\s+([A-Za-z0-9_-]+):\s*(.*)$/.exec(line);
+    if (nested && currentItem) currentItem[nested[1]] = parseScalar(nested[2]);
+  }
+  return root;
+}
+
+function parseScalar(value) {
+  const trimmed = String(value ?? '').trim();
+  if (trimmed === 'true') return true;
+  if (trimmed === 'false') return false;
+  return trimmed.replace(/^['"]|['"]$/g, '');
+}
+
+function normalizeJudgments(value) {
+  const map = new Map();
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (!item?.id) continue;
+      map.set(String(item.id), normalizeJudgment(item));
+    }
+    return map;
+  }
+  if (value && typeof value === 'object') {
+    for (const [id, item] of Object.entries(value)) {
+      map.set(id, normalizeJudgment(typeof item === 'string' ? { status: item } : { id, ...item }));
+    }
+  }
+  return map;
+}
+
+function normalizeJudgment(item) {
+  const status = String(item.status ?? item.resolution ?? item.decision ?? item.answer_status ?? '').toLowerCase();
+  return {
+    id: item.id ?? null,
+    status,
+    reason: item.reason ?? item.rationale ?? item.answer ?? item.deferral_reason ?? null,
+    owner: item.owner ?? null
+  };
+}
+
+function collectUnhandledJourneyItems(journey, { conflictDecisions, questionDecisions }) {
+  const missing = [];
+  for (const conflict of journey.conflicts ?? []) {
+    if (!isHandledDecision(conflictDecisions.get(conflict.id), ['resolved', 'accepted', 'deferred'])) {
+      missing.push(`conflict ${conflict.id}`);
+    }
+  }
+  for (const question of journey.open_questions ?? []) {
+    const decision = questionDecisions.get(question.id);
+    if (!isHandledDecision(decision, ['answered', 'resolved', 'deferred'])) {
+      missing.push(`open_question ${question.id}`);
+      continue;
+    }
+    if (decision.status === 'deferred' && !decision.reason) missing.push(`open_question ${question.id} deferral_reason`);
+  }
+  return missing;
+}
+
+function isHandledDecision(decision, statuses) {
+  return Boolean(decision && statuses.includes(decision.status));
+}
+
+function countUnresolvedJourneyConflicts(journey) {
+  return (journey.conflicts ?? []).filter((conflict) => !isHandledDecision(conflict.curation, ['resolved', 'accepted', 'deferred'])).length;
+}
+
+function countUnresolvedJourneyOpenQuestions(journey) {
+  return (journey.open_questions ?? []).filter((question) => !isHandledDecision(question.curation, ['answered', 'resolved', 'deferred'])).length;
 }
 
 async function readJourneyStoryInputs(root) {
@@ -1043,7 +1247,8 @@ function findAffectedJourneyConflicts(journey, storyId, storyPlacement) {
       step_id: conflict.step_id,
       story_ids: conflict.story_ids ?? [],
       destinations: conflict.destinations ?? [],
-      reason: conflict.reason
+      reason: conflict.reason,
+      curation: conflict.curation ?? null
     }));
 }
 
@@ -1064,7 +1269,8 @@ function findAffectedJourneyOpenQuestions(journey, storyId, storyPlacement) {
       blocker: question.blocker === true,
       story_id: question.story_id ?? null,
       step_id: question.step_id ?? null,
-      question: question.question
+      question: question.question,
+      curation: question.curation ?? null
     }));
 }
 
@@ -1468,6 +1674,10 @@ function renderJourneyCell(activity, slice) {
 
 function escapeMarkdownTableCell(value) {
   return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+}
+
+function toPosix(value) {
+  return String(value).split(path.sep).join('/');
 }
 
 function buildSourceDigest(stories) {

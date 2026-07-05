@@ -3,6 +3,80 @@
   "model": "vibepro-design-ssot-registry-v1",
   "design_roots": [
     {
+      "id": "vibepro-ui-journey-e2e-producer-contracts",
+      "title": "VibePro UI Journey E2E Producer Contracts",
+      "root_doc": "docs/architecture/vibepro-ui-journey-e2e-producer-contracts.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "UI Journey dogfood producer commands and evidence bridge",
+      "owned_surfaces": [
+        "vibepro journey curate",
+        "vibepro verify visual",
+        "verify flow screenshot visual evidence bridge",
+        "UI Journey dogfood route"
+      ],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-journey-curate-command.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-visual-residual-local-runner.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-ui-journey-e2e-dogfood.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-journey-curate-command.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-visual-residual-local-runner.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-ui-journey-e2e-dogfood.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-design-ssot-reconciliation",
       "title": "VibePro Design SSOT Reconciliation",
       "root_doc": "docs/architecture/vibepro-design-ssot-reconciliation.md",
@@ -2399,7 +2473,103 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-flow-screenshot-visual-gate-bridge",
+      "title": "Flow Screenshot to Visual Gate Bridge",
+      "root_doc": "docs/architecture/vibepro-flow-screenshot-visual-gate-bridge.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-visual-residual-local-runner",
+      "title": "Visual Residual Local Runner",
+      "root_doc": "docs/architecture/vibepro-visual-residual-local-runner.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-visual-residual-local-runner.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-visual-residual-local-runner.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-05T03:57:22.583Z"
+  "updated_at": "2026-07-05T07:07:55.923Z"
 }

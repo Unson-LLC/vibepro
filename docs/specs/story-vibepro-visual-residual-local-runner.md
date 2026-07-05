@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-visual-residual-local-runner
 title: Visual Residual Local Runner Spec
-parent_design: vibepro-visual-residual-local-runner
+parent_design: vibepro-ui-journey-e2e-producer-contracts
 ---
 
 # Spec
@@ -27,6 +27,12 @@ Residual threshold configuration keeps its existing meaning. Probes exceeding
 the threshold MUST yield a needs_review residual analysis naming each
 exceeding probe and its residual value.
 
+### VRL-INV-4: Elevated thresholds require review
+
+Thresholds above the default Visual QA threshold MAY be used to generate a
+diagnostic residual report, but MUST NOT make `gate:visual_qa` ready for review
+without explicit review.
+
 ## Contracts
 
 ### VRL-CONTRACT-1: Shared probe configuration
@@ -42,14 +48,22 @@ changes yields near-zero residual for the updated probes.
 
 ### VRL-CONTRACT-3: Bundled comparison only
 
-Residual computation uses Playwright's bundled image comparison
-(pixelmatch family). No external SaaS or additional heavyweight dependency is
-required to produce residual artifacts.
+Residual computation uses VibePro's built-in PNG decoder and mean absolute
+RGBA residual calculation. No external SaaS or additional heavyweight
+dependency is required to produce residual artifacts.
 
 ### VRL-CONTRACT-4: Reported metric
 
 The runner reports meanAbsResidualPct per probe. Semantic layout residual is
 out of scope and remains an external-tool field.
+
+### VRL-CONTRACT-5: Basic Auth compatibility boundary
+
+The runner reuses the same runtime probe configuration as `verify flow`; the
+existing `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD` branch may supply browser
+credentials for protected preview pages. Generated baseline, current screenshot,
+`visual-residual.json`, and `residual-analysis.md` artifacts MUST NOT persist
+plaintext Basic Auth credentials.
 
 ## Scenarios
 
@@ -70,13 +84,21 @@ probe and does not silently pass it.
 
 ### VRL-S-4: Baseline update converges
 
-Given `--update-baseline` followed by an unchanged re-run, the residual for
-the updated probes is near zero.
+Given `--update-baseline`, the update run itself requires review as a baseline
+change; followed by an unchanged re-run, the residual for the updated probes is
+near zero.
 
 ### VRL-S-5: Format validation parity
 
 The generated `visual-residual.json` passes the existing residual format
 validation with no validator changes.
+
+### VRL-S-6: Visual verification workflow state transition
+
+Given configured probes, the visual verification workflow records an explicit
+state transition from `baseline_missing`, `needs_review`, or `pass` into the
+corresponding Visual QA Gate status without leaving stale residual artifacts as
+passing evidence.
 
 ## Anti-patterns
 
@@ -92,7 +114,7 @@ origin.
 
 ## Verification
 
-- Node regression tests cover VRL-S-1 through VRL-S-5 (story acceptance
+- Node regression tests cover VRL-S-1 through VRL-S-6 (story acceptance
   criterion VRL-S-6).
 - `npm run typecheck` validates edited modules.
 - `vibepro pr prepare` emits a Gate DAG for this story with

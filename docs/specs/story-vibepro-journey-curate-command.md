@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-journey-curate-command
 title: Journey Curate Command Spec
-parent_design: vibepro-journey-curate-command
+parent_design: vibepro-ui-journey-e2e-producer-contracts
 ---
 
 # Spec
@@ -52,6 +52,13 @@ writing and name `vibepro journey derive .` as the next command.
 `story diagnose` journey_context output MUST include
 `vibepro journey curate .` among next actions when the Journey state is
 `machine_derived`.
+
+### JCC-CONTRACT-5: Flow verifier compatibility boundary
+
+This story shares the UI/Journey producer branch with `verify flow`; therefore
+the existing `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD` runtime branch remains a
+compatibility boundary. Journey curation MUST NOT serialize Basic Auth
+credentials into curated Journey artifacts, handoff context, or PR evidence.
 
 ## Scenarios
 
