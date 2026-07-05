@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-keyword-gate-structured-migration",
   "source": "execute_merge",
-  "generated_at": "2026-07-05T16:12:19.806Z",
+  "generated_at": "2026-07-05T16:12:23.758Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -117,13 +117,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2942,
+      "compressed_bytes": 2944,
       "expanded_bytes": 12497,
       "expanded_line_count": 335,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 13717,
-    "raw_source_artifact_code_ratio": 14.333,
+    "raw_source_artifact_lines": 13807,
+    "raw_source_artifact_code_ratio": 14.427,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -244,7 +244,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-keyword-gate-structured-migration",
-    "generated_at": "2026-07-05T16:12:19.806Z",
+    "generated_at": "2026-07-05T16:12:23.758Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -349,10 +349,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-keyword-gate-structured-migration/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ff2b0b0709728e9121420e6fc385e4995cb6357b3bdc98f95800b9a8aed992cc",
-    "compressed_hash": "sha256:d457e8f9c2b4691cd200a96f2fba40a23ff15f1369ff78c077bacb944fef8df0",
+    "content_hash": "sha256:90f8ab017d7a7e1ce5c739ab8b5e44da2b2548403298f41b6d1953ae467c0543",
+    "compressed_hash": "sha256:58ef29b8f7bb06f3b9c6509f7d5a0d20bc4d9c0feef1bdec39446e8ae0d4d4ce",
     "expanded_bytes": 12497,
-    "compressed_bytes": 2942,
+    "compressed_bytes": 2944,
     "expanded_line_count": 335,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -371,7 +371,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-keyword-gate-structured-migration",
     "cost": {
-      "compressed_bytes": 2942,
+      "compressed_bytes": 2944,
       "expanded_bytes": 12497,
       "expanded_line_count": 335,
       "persisted_line_count": 1
