@@ -6929,6 +6929,26 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
 `);
   await git(repo, ['add', 'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts']);
   await git(repo, ['commit', '-m', 'test: add story acceptance e2e evidence']);
+  const visualQaHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const visualQaBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
+  const visualQaFingerprints = await collectGitStatusFingerprints(repo);
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'iteration-1', 'pixel-residual.json'), {
+    status: 'pass',
+    thresholdPct: 5,
+    meanAbsResidualPct: 1,
+    rmsResidualPct: 1,
+    pixelChangedPctOver32: 1,
+    git_context: {
+      head_sha: visualQaHeadSha,
+      current_branch: visualQaBranch,
+      dirty: visualQaFingerprints.user_dirty,
+      raw_dirty: visualQaFingerprints.dirty,
+      status_fingerprint_hash: visualQaFingerprints.status_fingerprint_hash,
+      user_status_fingerprint_hash: visualQaFingerprints.user_status_fingerprint_hash,
+      fingerprint_scope: visualQaFingerprints.fingerprint_scope,
+      recorded_at: new Date().toISOString()
+    }
+  });
   assert.equal((await runCli([
     'verify',
     'record',
