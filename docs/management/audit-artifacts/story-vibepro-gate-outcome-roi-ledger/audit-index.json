@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-gate-outcome-roi-ledger",
   "source": "execute_merge",
-  "generated_at": "2026-07-05T09:05:49.990Z",
+  "generated_at": "2026-07-05T09:05:54.429Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -120,13 +120,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3420,
+      "compressed_bytes": 3423,
       "expanded_bytes": 14853,
       "expanded_line_count": 377,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8581,
-    "raw_source_artifact_code_ratio": 8.59,
+    "raw_source_artifact_lines": 8671,
+    "raw_source_artifact_code_ratio": 8.68,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -264,7 +264,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-gate-outcome-roi-ledger",
-    "generated_at": "2026-07-05T09:05:49.990Z",
+    "generated_at": "2026-07-05T09:05:54.429Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -369,10 +369,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-gate-outcome-roi-ledger/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:7f0725e527da7a38717fbf14cf9f183d6aeaa9d6d492472eadecbe830b7b6f18",
-    "compressed_hash": "sha256:d77969b54139b259cdfec264d6f115f78a8d234dbcbd1f80e8abb15422901077",
+    "content_hash": "sha256:f6ab540727d7ed1591ffd24b9f7b06c555518a29522c3d705ab91d4b5f410034",
+    "compressed_hash": "sha256:804a2ccc35920a8559fc1f4ee27b2db946fbc5131111dfa465a78e6d180b19e3",
     "expanded_bytes": 14853,
-    "compressed_bytes": 3420,
+    "compressed_bytes": 3423,
     "expanded_line_count": 377,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -391,7 +391,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-gate-outcome-roi-ledger",
     "cost": {
-      "compressed_bytes": 3420,
+      "compressed_bytes": 3423,
       "expanded_bytes": 14853,
       "expanded_line_count": 377,
       "persisted_line_count": 1
