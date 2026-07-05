@@ -187,6 +187,11 @@ test('ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-008 DIJ-CONTRACT-009 D
   assert.equal(prepare.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', `${STORY_ID} ac:6 S-005 ${SCENARIO_S005}`);
   assert.equal(prepare.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
   assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.status, 'present', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.source, 'story_diagnosis_artifact', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.run_id, '002-pre-implementation', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(prepare.result.preparation.pr_context.pre_implementation_judgment.artifact_status, 'present', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
+  assert.equal(typeof prepare.result.preparation.pr_context.pre_implementation_judgment.finding_count, 'number', `${STORY_ID} ac:4 S-006 ${SCENARIO_S006}`);
   assert.match(AC4_PR_CONTEXT_SPLIT, /design_input_judgment/, `${STORY_ID} ac:4 DIJ-CONTRACT-006 ${SCENARIO_S006}`);
   assert.match(AC4_PR_CONTEXT_SPLIT, /pre_implementation_judgment/, `${STORY_ID} ac:4 DIJ-CONTRACT-007 ${SCENARIO_S006}`);
 

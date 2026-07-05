@@ -253,6 +253,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
   const designInputStoryRun = findLatestStoryRunByPhase(manifest, story.story_id, 'design_input');
+  const preImplementationStoryRun = findLatestStoryRunByPhase(manifest, story.story_id, 'pre_implementation');
   const verificationEvidence = workspace.initialized
     ? await progress.stage('read_verification_evidence', () => readVerificationEvidenceIfExists(root, story.story_id))
     : null;
@@ -273,6 +274,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     scope,
     latestStoryRun,
     designInputStoryRun,
+    preImplementationStoryRun,
     verificationEvidence,
     decisionRecords,
     managedWorktreeGate,
@@ -4569,7 +4571,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, preImplementationStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
@@ -4598,6 +4600,9 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const designInputEvidence = designInputStoryRun?.run_id === latestStoryRun?.run_id
     ? latestEvidence
     : await readRunEvidenceIfExists(repoRoot, designInputStoryRun);
+  const preImplementationEvidence = preImplementationStoryRun?.run_id === latestStoryRun?.run_id
+    ? latestEvidence
+    : await readRunEvidenceIfExists(repoRoot, preImplementationStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
   const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot, git);
@@ -4702,6 +4707,11 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     changeClassification,
     fileGroups
   });
+  const preImplementationJudgment = buildPreImplementationJudgmentContext({
+    latestStoryRun: preImplementationStoryRun,
+    latestEvidence: preImplementationEvidence,
+    engineeringJudgment
+  });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
   });
@@ -4719,15 +4729,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
     design_input_judgment: designInputJudgment,
-    pre_implementation_judgment: {
-      schema_version: '0.1.0',
-      phase: 'pre_implementation',
-      source: 'pr_prepare',
-      route_type: engineeringJudgment.route_type,
-      route_dag: engineeringJudgment.route_dag,
-      active_axes: engineeringJudgment.active_axes,
-      gate_status: null
-    },
+    pre_implementation_judgment: preImplementationJudgment,
     graph_context: graphContext,
     code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
@@ -6096,6 +6098,33 @@ function normalizeFrontmatterList(value) {
   return [];
 }
 
+function compactStorySourceText(text, maxLength = 640) {
+  const compacted = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!compacted || compacted.length <= maxLength) return compacted;
+  const protectedTokenEnd = findProtectedStoryTokenEnd(compacted, maxLength);
+  if (protectedTokenEnd) {
+    return `${compacted.slice(0, protectedTokenEnd).trimEnd()}...`;
+  }
+  const boundary = compacted.lastIndexOf(' ', maxLength);
+  const minimumBoundary = Math.floor(maxLength * 0.75);
+  const cutAt = boundary >= minimumBoundary ? boundary : maxLength;
+  return `${compacted.slice(0, cutAt).trimEnd()}...`;
+}
+
+function findProtectedStoryTokenEnd(text, maxLength) {
+  const nearCutoffStart = Math.max(0, maxLength - 80);
+  const tokenPattern = /\b(?:gate|story|DIJ|AC):[A-Za-z0-9_-]+/g;
+  let match;
+  while ((match = tokenPattern.exec(text))) {
+    let end = match.index + match[0].length;
+    if (text[end] === '`') end += 1;
+    if (match.index >= nearCutoffStart && match.index < maxLength && end > maxLength) {
+      return end;
+    }
+  }
+  return null;
+}
+
 function findMarkdownTitle(content) {
   const match = content.match(/^#\s+(.+)$/m);
   return match?.[1]?.trim() ?? null;
@@ -6111,9 +6140,9 @@ function extractSectionText(content, headings) {
       .map((line) => line.trim())
       .filter((line) => line && !line.startsWith('|') && !line.startsWith('---'))
       .join(' ')
-      .replace(/\s+/g, ' ')
-      .slice(0, 320);
-    if (paragraph) return paragraph;
+      .replace(/\s+/g, ' ');
+    const summary = compactStorySourceText(paragraph);
+    if (summary) return summary;
   }
   return null;
 }
@@ -6133,9 +6162,8 @@ function extractStoryIntro(content) {
       return true;
     })
     .join(' ')
-    .replace(/\s+/g, ' ')
-    .slice(0, 320);
-  return paragraph || null;
+    .replace(/\s+/g, ' ');
+  return compactStorySourceText(paragraph) || null;
 }
 
 function extractTopLevelStorySection(content) {
@@ -7022,6 +7050,44 @@ function buildDesignInputJudgmentContext({
       runRecordedWithoutEvidence
         ? 'Regenerate the missing design-input diagnosis evidence artifact with `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
         : 'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+    ]
+  };
+}
+
+function buildPreImplementationJudgmentContext({
+  latestStoryRun = null,
+  latestEvidence = null,
+  engineeringJudgment = null
+} = {}) {
+  const evidenceJudgment = latestEvidence?.pre_implementation_judgment ?? null;
+  const evidencePhase = latestEvidence?.diagnosis_phase?.phase ?? null;
+  const runJudgment = latestStoryRun?.pre_implementation_judgment ?? null;
+  const runPhase = latestStoryRun?.phase ?? null;
+  const hasPreImplementationRun = runPhase === 'pre_implementation';
+  const hasPreImplementationEvidenceArtifact = evidencePhase === 'pre_implementation' && Boolean(evidenceJudgment);
+  const present = hasPreImplementationRun && hasPreImplementationEvidenceArtifact;
+  const runRecordedWithoutEvidence = hasPreImplementationRun && !hasPreImplementationEvidenceArtifact;
+  return {
+    schema_version: '0.1.0',
+    phase: 'pre_implementation',
+    status: present ? 'present' : 'missing',
+    source: present ? 'story_diagnosis_artifact' : runRecordedWithoutEvidence ? 'story_diagnosis_artifact_missing' : 'not_recorded',
+    run_id: hasPreImplementationRun ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
+    artifact_status: hasPreImplementationEvidenceArtifact ? 'present' : hasPreImplementationRun ? 'missing' : 'not_recorded',
+    gate_status: present
+      ? evidenceJudgment?.gate_status ?? runJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null
+      : null,
+    finding_count: present
+      ? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? runJudgment?.finding_count ?? null
+      : null,
+    route_type: engineeringJudgment?.route_type ?? null,
+    route_dag: engineeringJudgment?.route_dag ?? null,
+    active_axes: engineeringJudgment?.active_axes ?? [],
+    feeds: present ? evidenceJudgment?.feeds ?? runJudgment?.feeds ?? [] : [],
+    required_actions: present ? [] : [
+      runRecordedWithoutEvidence
+        ? 'Regenerate the missing pre-implementation diagnosis evidence artifact with `vibepro story diagnose . --id <story-id> --run-graphify` before treating PR readiness as reviewed.'
+        : 'Run `vibepro story diagnose . --id <story-id> --run-graphify` before treating PR readiness as reviewed.'
     ]
   };
 }

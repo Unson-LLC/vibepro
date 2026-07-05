@@ -90,6 +90,33 @@ export async function GET(request) {
 `);
 }
 
+async function writeLongPolicyStory(repo) {
+  const policyPrefix = 'review boundary '.repeat(19);
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---
+story_id: ${STORY_ID}
+title: Design input judgment
+architecture_docs:
+  - docs/architecture/design-input-judgment.md
+spec_docs:
+  - docs/specs/design-input-judgment.md
+---
+
+# Design input judgment
+
+## Background
+
+Workflow-heavy Architecture and Spec should be informed by diagnosis before implementation.
+
+## 実装方針
+
+${policyPrefix}requires \`gate:design_input_judgment\` to remain a complete PR readiness policy token before route selection and review evidence are treated as finished.
+
+## Acceptance Criteria
+
+- [ ] Design-input diagnosis is visible before Architecture and Spec are treated as settled
+`);
+}
+
 function findGate(prepare, id) {
   return prepare.pr_context.gate_dag.nodes.find((node) => node.id === id);
 }
@@ -222,8 +249,31 @@ test('ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP
   assert.equal(result.result.preparation.pr_context.design_input_judgment.run_id, '001-design-input', 'ac:4 keeps design_input_judgment bound to the design-input run');
   assert.equal(result.result.preparation.pr_context.design_input_judgment.artifact_status, 'present', 'ac:4 DIJ-CONTRACT-012 DIJ-SCENARIO-008 keeps the design-input evidence artifact available after pre-implementation diagnosis');
   assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.phase, 'pre_implementation', 'ac:4 keeps pre_implementation_judgment separate in PR prepare context');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.status, 'present', 'ac:4 keeps pre_implementation_judgment bound to diagnosis evidence');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.source, 'story_diagnosis_artifact', 'ac:4 keeps pre_implementation_judgment sourced from the evidence artifact');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.run_id, '002-pre-implementation', 'ac:4 keeps pre_implementation_judgment bound to the pre-implementation run');
+  assert.equal(result.result.preparation.pr_context.pre_implementation_judgment.artifact_status, 'present', 'ac:4 keeps the pre-implementation evidence artifact available');
+  assert.equal(typeof result.result.preparation.pr_context.pre_implementation_judgment.finding_count, 'number', 'ac:4 exposes pre_implementation_judgment finding count');
 
   const gate = findGate(result.result.preparation, 'gate:design_input_judgment');
   assert.equal(gate.status, 'passed');
   assert.equal(result.result.preparation.pr_context.gate_dag.summary.design_input_judgment_status, 'passed');
+});
+
+test('DIJ-CONTRACT-007 pr prepare preserves complete gate token in story source policy and PR body', async () => {
+  const repo = await makeGitRepo();
+  await writeCrossSurfaceDesignChange(repo);
+  await writeLongPolicyStory(repo);
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture', 'docs/specs', 'src/workflow.js', 'src/app/api/accounts/route.ts']);
+  await git(repo, ['commit', '-m', 'feat: add long policy story']);
+  await runCli(['story', 'diagnose', repo, '--id', STORY_ID, '--from', 'graphify-out', '--run-id', '001-design-input', '--pre-architecture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(result.exitCode, 0);
+  assert.match(result.result.preparation.pr_context.story_source.policy, /gate:design_input_judgment/);
+  assert.doesNotMatch(result.result.preparation.pr_context.story_source.policy, /gate:desi(?!gn_input_judgment)/);
+
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  assert.match(prBody, /gate:design_input_judgment/);
+  assert.doesNotMatch(prBody, /gate:desi(?!gn_input_judgment)/);
 });
