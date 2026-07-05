@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Final gate evidence review passed after fixing strict-head review freshness; content-scoped evidence, strict HEAD fallback, and PR freshness gate details are covered by current tests.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed content-binding implementation, verification/review recording, PR freshness binding, strict-head review stale path, and regression tests.",
+    "evidence": ".vibepro/evidence/content-scoped-evidence-freshness/gate-evidence-review-b69711b.md",
+    "inputs": [
+      "src/content-binding.js",
+      "src/verification-evidence.js",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/vibepro-cli.test.js",
+      "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+      "docs/specs/story-vibepro-content-scoped-evidence-freshness.md"
+    ]
+  },
+  "judgment_delta": [
+    "Validated that strict-head review evidence no longer falls through to merge-delta reuse and that content-bound evidence remains scoped to inspected surfaces."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+    "expected_root": null,
+    "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+    "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness",
+      "expected_root": null,
+      "expected_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+      "current_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T03:54:09.904Z",
+  "git_context": {
+    "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+    "current_branch": "codex/content-scoped-evidence-freshness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T03:54:09.896Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+        "sha256": "8a77c5e8f73fcbfe17bf58c8d09cbcbdbeead796845cce22f7484f338f1bf29f",
+        "size": 2390
+      },
+      {
+        "path": "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+        "sha256": "6b3d65ab18e87e05e3fad69c06e97fdd48c5495c4477ea6321538dab947bb010",
+        "size": 3837
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "83a9b624bb9dffe3fdca033adf15f9e8526efa180807831e0244c1eb75476f3e",
+        "size": 140501
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "cf65d4d4d97043d315a4c457767a71de584d5542418be2e12162d6814fa4b4ff",
+        "size": 148376
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "0f00205dd90a83b8c6ecb1ccf3c1e3abb6c87d20e839fc981086120d042e5e43",
+        "size": 7377
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "d16a283674c8694997f623209cecbf9fa369ca6b3996010e817677c3084951cf",
+        "size": 551618
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "bab6f19c610e0fd0fbe33c9b6ef96c8b18f8212ad4348084a8665de695ed551f",
+        "size": 15315
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "f911f69322044d66fd523967ece2422c8a29d92044469e110360e3bb0916f2f9",
+        "size": 7934
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "5cc56ffd5c11f19eaa5e4bd27e1a4899c8ab24d45ef32a5ebd62342f2c7c922d",
+        "size": 954309
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "9afd74ffb982aaa308374cc7f57be5d69a7d364aaf9674f13679f6ba4dcd4207"
+  },
+  "source_fingerprint": "d3baf00fd2a19ec183aeb74db8da33c816daddf0e720ff6a76fa3f67d748fbe9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3066-d04a-70a2-b50c-1482f33fe270",
+    "agent_role": null,
+    "model": "inherited",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/content-scoped-evidence-freshness/gate-evidence-review-b69711b.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-content-scoped-evidence-freshness/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/evidence/content-scoped-evidence-freshness/gate-evidence-review-b69711b.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

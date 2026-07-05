@@ -1,0 +1,24 @@
+{
+  "status": "accepted",
+  "head_sha": "b69711b51c27574b531e8ad794df90abdfd84b96",
+  "decisions": [
+    {
+      "source": "gate:judgment_axis_scope_reviewability",
+      "decision": "accepted",
+      "summary": "The PR is reviewable as one coherent evidence-freshness change because all changed code paths implement the same content-binding model across record, review, and PR gate consumers.",
+      "rationale": "The blast radius is limited to VibePro evidence freshness plumbing and tests/docs for that story. No unrelated product behavior or independent cleanup is bundled."
+    },
+    {
+      "source": "gate:design_ssot_reconciliation",
+      "decision": "accepted",
+      "summary": "The two changed design docs are new story-specific architecture/spec documents for this implementation and are intentionally carried as story-local design artifacts.",
+      "rationale": "They describe the content-scoped evidence freshness model introduced in this PR; no existing Design SSOT root is contradicted or superseded."
+    },
+    {
+      "source": "gate:senior_gap_judgment",
+      "decision": "accepted",
+      "summary": "Residual senior gaps are covered by current unit, full CLI regression, workflow replay, and final gate_evidence review.",
+      "rationale": "Current-bound evidence includes strict-head negative path, content-bound review reuse/staleness, PR freshness details, artifact consistency diagnostics, and closed subagent review provenance."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "head": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
+  "tests": 47,
+  "pass": 47,
+  "fail": 0,
+  "flow_replay": true,
+  "artifact_replay": true,
+  "scenario_clause_e2e": true,
+  "current_reality": "passed",
+  "failure_modes": "passed",
+  "done_evidence": "passed"
+}

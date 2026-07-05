@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "head": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
+  "ci": true,
+  "checks": [
+    "CodeQL",
+    "analyze",
+    "test (20)",
+    "test (22)"
+  ],
+  "unit_regression": true,
+  "pr_lifecycle_regression": true,
+  "agent_review_lifecycle_regression": true,
+  "evidence_lifecycle_regression": true,
+  "integration_runtime_path": true,
+  "negative_path": true,
+  "story_source_integrity_regression": true,
+  "engineering_judgment_regression": true,
+  "managed_worktree_regression": true
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "created_at": "2026-07-05T04:32:16.375Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-content-scoped-evidence-freshness.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-content-scoped-evidence-freshness.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-content-scoped-evidence-freshness/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-content-scoped-evidence-freshness.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-content-scoped-evidence-freshness.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T04:32:15.241Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-content-scoped-evidence-freshness/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
+      "branch": "codex/content-scoped-evidence-freshness",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "b2f242eedddd4e8537b72772b7bd7179dbf00e72",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

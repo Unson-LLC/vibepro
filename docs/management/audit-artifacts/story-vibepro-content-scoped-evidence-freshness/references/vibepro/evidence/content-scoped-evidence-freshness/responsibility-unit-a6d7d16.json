@@ -1,0 +1,20 @@
+{
+  "story_id": "story-vibepro-content-scoped-evidence-freshness",
+  "head_sha": "a6d7d163c2ac6ffbcead9dbb39a220e44067bc39",
+  "status": "pass",
+  "command": "node --test test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js test/content-scoped-evidence-freshness.test.js test/verification-evidence-artifact-check.test.js test/review-inspection-first.test.js test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js test/risk-adaptive-gate.test.js",
+  "passed": 47,
+  "failed": 0,
+  "responsibility_contracts": [
+    "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-001",
+    "docs/contracts/vibepro-responsibility-authority.json#VIBE-RAR-002",
+    "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-COST-001"
+  ],
+  "evidence_tokens": [
+    "unit_regression",
+    "current_head_verification",
+    "negative_path",
+    "artifact_replay",
+    "scenario_clause_e2e"
+  ]
+}
