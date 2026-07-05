@@ -148,14 +148,22 @@ test('story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact 
     'flow_replay: pre-PR Playwright exercised the workflow transition path',
     '--scenario',
     'scenario_clause_e2e: workflow state scenario clause was asserted',
+    '--scenario',
+    'path_surface:service',
     '--target',
     'tests/e2e/workflow-pre-pr.spec.ts',
+    '--target',
+    'src/app/api/batch-jobs/[id]/generate-samples/route.ts',
     '--target',
     'src/lib/services/workflowService.ts',
     '--observed',
     'flow_replay=true',
     '--observed',
-    'scenario_clause_e2e=true'
+    'scenario_clause_e2e=true',
+    '--observed',
+    'surface=service',
+    '--observed',
+    'api_surface=covered'
   ]);
 
   await runCli([

@@ -14,6 +14,8 @@ related_stories:
   - story-vibepro-path-surface-matrix-gate
 spec_docs:
   - docs/specs/story-vibepro-keyword-gate-structured-migration.md
+reason: >-
+  Existing pr-manager and requirement-consistency boundaries are preserved while resolution input changes from legacy summary keyword matching to structured observations and inherited_behavior declarations. Alternatives considered were adding a new gate engine or new ADR document, but both would widen scope and duplicate gate semantics. Compatibility impact is bounded by keeping legacy keyword compatibility with deprecation notices until at least 2026-08-05; the public CLI contract remains additive through structured evidence guidance. Rollback plan is to revert the matcher changes and tests, restoring legacy keyword behavior without data migration. Accepted followups are legacy keyword removal and broader matcher cleanup in separate Stories.
 created_at: 2026-07-05
 updated_at: 2026-07-05
 ---
@@ -38,12 +40,12 @@ updated_at: 2026-07-05
 
 ## Acceptance Criteria
 
-- [ ] KGM-S-1: キーワード照合を解消条件に含む必須ゲートの一覧と、各々の構造化フィールド対応表が成果物として存在する。
-- [ ] KGM-S-2: 対象ゲートは、summary が bland でも構造化フィールドが充足していれば解消される。
-- [ ] KGM-S-3: 対象ゲートのブロック時フィードバックに、受理される構造化フィールドと記録コマンド形が表示される。
-- [ ] KGM-S-4: 移行期間中、既存のキーワード照合による解消は引き続き機能し、ゲート詳細に deprecation 注記が付く。
-- [ ] KGM-S-5: requirement gate は構造化された inherited-behavior 宣言で REQ-GAP を解消できる。
-- [ ] KGM-S-6: テストで構造化解消 / キーワード互換解消 + 注記 / フィードバック表示の各分岐を固定する。
+- [x] KGM-S-1: キーワード照合を解消条件に含む必須ゲートの一覧と、各々の構造化フィールド対応表が成果物として存在する。
+- [x] KGM-S-2: 対象ゲートは、summary が bland でも構造化フィールドが充足していれば解消される。
+- [x] KGM-S-3: 対象ゲートのブロック時フィードバックに、受理される構造化フィールドと記録コマンド形が表示される。
+- [x] KGM-S-4: 移行期間中、既存のキーワード照合による解消は引き続き機能し、ゲート詳細に deprecation 注記が付く。
+- [x] KGM-S-5: requirement gate は構造化された inherited-behavior 宣言で REQ-GAP を解消できる。
+- [x] KGM-S-6: テストで構造化解消 / キーワード互換解消 + 注記 / フィードバック表示の各分岐を固定する。
 
 ## 既存挙動（inherited behavior）
 
