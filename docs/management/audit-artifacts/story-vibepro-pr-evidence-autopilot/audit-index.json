@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-evidence-autopilot",
   "source": "execute_merge",
-  "generated_at": "2026-07-05T12:17:52.599Z",
+  "generated_at": "2026-07-05T12:17:56.466Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -118,13 +118,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2981,
+      "compressed_bytes": 2984,
       "expanded_bytes": 12451,
       "expanded_line_count": 335,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9766,
-    "raw_source_artifact_code_ratio": 8.311,
+    "raw_source_artifact_lines": 9856,
+    "raw_source_artifact_code_ratio": 8.388,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -245,7 +245,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-pr-evidence-autopilot",
-    "generated_at": "2026-07-05T12:17:52.599Z",
+    "generated_at": "2026-07-05T12:17:56.466Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -350,10 +350,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-evidence-autopilot/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:c763df7ffaae633d6e893dd96ea4510297f6047b186c52e2e24ad66e5eb86ed0",
-    "compressed_hash": "sha256:fdd3a2527a98fdc570a631dd92f998b1ef0801be8806a9852b4f74f6e728b7ad",
+    "content_hash": "sha256:7fdddb34e6c221d71938184efbbd1ef88d40c54a8f577d43874560e7a3648d34",
+    "compressed_hash": "sha256:6963e63aa91e1b8375082d1b034f3b2c27cbd19111399ddba156b48e9a19b17f",
     "expanded_bytes": 12451,
-    "compressed_bytes": 2981,
+    "compressed_bytes": 2984,
     "expanded_line_count": 335,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -372,7 +372,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-evidence-autopilot",
     "cost": {
-      "compressed_bytes": 2981,
+      "compressed_bytes": 2984,
       "expanded_bytes": 12451,
       "expanded_line_count": 335,
       "persisted_line_count": 1
