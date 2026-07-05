@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-keyword-gate-structured-migration",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is current enough for this role at HEAD 2cecbaa; the prior PR-body freshness finding is resolved.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current HEAD, live GitHub PR #289 body/head/checks, PR/evidence artifacts, changed source/tests/spec, and verified the local PR body matches the live PR body modulo GitHub trailing newline rendering.",
+    "evidence": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/manual-evidence/focused-e2e-final-head-status-2.json; multi_agent:019f3306-21c6-7310-b0e5-e9e07e1c8dca",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-keyword-gate-structured-migration/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/pr-prepare-after-final-evidence.json",
+      ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/pr-body.md",
+      "src/pr-manager.js",
+      "src/requirement-consistency.js",
+      "test/vibepro-cli.test.js",
+      "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+      "test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts",
+      "docs/specs/story-vibepro-keyword-gate-structured-migration.md"
+    ]
+  },
+  "judgment_delta": [
+    "PR body might still be stale -> live PR headRefOid is 2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6 and live body matches pr-body.md content, so github-pr-body-stale-current-head is resolved",
+    "Hash substrings could still satisfy persistence -> src/pr-manager.js uses boundary-aware evidenceTextContainsSurfaceTerm and tests assert a head_sha containing db does not cover persistence",
+    "Story/spec migration slug could still trigger persistence surface -> pathImpliesPersistenceSurface excludes story/spec story docs and tests assert structured-migration spec docs do not infer persistence",
+    "Workflow replay might lack structured service surface evidence -> verification-evidence.json records path_surface:service with surface=service and api_surface=covered",
+    "Story-specific E2E coverage might be absent -> test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts exists and verification evidence records KGM-S-1 through KGM-S-6"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+    "expected_root": null,
+    "expected_head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+    "current_head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "expected_root": null,
+      "expected_head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+      "current_head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T16:07:08.046Z",
+  "git_context": {
+    "head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+    "current_branch": "codex/keyword-gate-structured-migration",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T16:07:08.045Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "d785c8ec859a866176b5874b28096b9aced8943b742cdb4635b113d85da33eec",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3306-21c6-7310-b0e5-e9e07e1c8dca",
+    "agent_role": null,
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "multi_agent:019f3306-21c6-7310-b0e5-e9e07e1c8dca",
+    "request_artifact": ".vibepro/reviews/story-vibepro-keyword-gate-structured-migration/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent:019f3306-21c6-7310-b0e5-e9e07e1c8dca pass review",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

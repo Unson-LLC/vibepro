@@ -1,0 +1,343 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-05T14:52:13.958Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:definition_of_done|needs_evidence|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:agent_review|needs_review|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|review:join:gate|needs_review|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|review:record:gate:gate_evidence|needs_review|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|review:gate:gate_evidence|needs_review|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|review:preflight:gate:gate_evidence|failed|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|review:dispatch_batch:gate|failed|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-05T14:49:41.589Z|2026-07-05T14:52:13.953Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T14:49:41.589Z",
+      "resolved_at": "2026-07-05T14:52:13.953Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:e2e|needs_evidence|passed|2026-07-05T13:44:30.626Z|2026-07-05T13:45:22.109Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T13:44:30.626Z",
+      "resolved_at": "2026-07-05T13:45:22.109Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:requirement|needs_review|passed|2026-07-05T13:44:30.626Z|2026-07-05T13:45:22.109Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:requirement",
+      "gate_type": "requirement_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T13:44:30.626Z",
+      "resolved_at": "2026-07-05T13:45:22.109Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:design_diagrams|needs_evidence|satisfied|2026-07-05T13:44:30.626Z|2026-07-05T13:45:22.109Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T13:44:30.626Z",
+      "resolved_at": "2026-07-05T13:45:22.109Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-keyword-gate-structured-migration|gate:story_source_integrity|story_source_mismatch|passed|2026-07-05T13:44:30.626Z|2026-07-05T13:45:22.109Z",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-05T13:44:30.626Z",
+      "resolved_at": "2026-07-05T13:45:22.109Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/story-vibepro-keyword-gate-structured-migration.md"
+        ]
+      }
+    }
+  ]
+}

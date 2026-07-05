@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-keyword-gate-structured-migration",
+  "created_at": "2026-07-05T16:12:03.727Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: >-"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-keyword-gate-structured-migration.md)"
+    },
+    "decision_records": {
+      "total": 9,
+      "open": 0,
+      "by_type": {
+        "waiver": 1,
+        "needs_review": 8
+      },
+      "by_status": {
+        "accepted": 9
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783263266450-019579bb",
+        "story_id": "story-vibepro-keyword-gate-structured-migration",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:senior_gap_judgment",
+        "source_status": "needs_review",
+        "summary": "Accept residual senior gaps as follow-up for PR #289",
+        "reason": "Senior gap major items are the same Design SSOT registration gaps for story/spec docs; implementation, tests, CI, traceability, responsibility authority, path surface, requirement, and agent review gates passed at 0e2260e.",
+        "reviewer": "codex",
+        "artifact": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+            "expected_root": null,
+            "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+            "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "current_branch": "codex/keyword-gate-structured-migration",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-05T14:54:26.449Z"
+        },
+        "recorded_at": "2026-07-05T14:54:26.450Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T16:12:02.630Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+      "branch": "codex/keyword-gate-structured-migration",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

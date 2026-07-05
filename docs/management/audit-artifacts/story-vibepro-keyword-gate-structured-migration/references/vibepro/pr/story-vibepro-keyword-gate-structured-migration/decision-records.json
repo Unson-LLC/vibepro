@@ -1,0 +1,484 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-keyword-gate-structured-migration",
+  "updated_at": "2026-07-05T14:54:26.450Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "expected_root": null,
+      "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+      "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783263266450-019579bb",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:senior_gap_judgment",
+      "source_status": "needs_review",
+      "summary": "Accept residual senior gaps as follow-up for PR #289",
+      "reason": "Senior gap major items are the same Design SSOT registration gaps for story/spec docs; implementation, tests, CI, traceability, responsibility authority, path surface, requirement, and agent review gates passed at 0e2260e.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T14:54:26.449Z"
+      },
+      "recorded_at": "2026-07-05T14:54:26.450Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783258211058-ba63734a",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": null,
+      "summary": "rollback_sensitive bounded by additive matcher migration and legacy compatibility window",
+      "reason": "rollback_plan: revert src/pr-manager.js, src/requirement-consistency.js, tests, Story, and spec docs to restore legacy summary keyword behavior. feature_gate_disabled_behavior: no feature flag or persisted state is introduced; disabling the migration is a code revert while legacy keyword compatibility remains enabled until at least 2026-08-05. upgrade_downgrade_test: focused regression covers structured and legacy evidence paths together, so mixed evidence recorded before and after the migration remains accepted during the compatibility window. accepted_followups: legacy keyword removal is a later Story after deprecation window data is reviewed.",
+      "reviewer": null,
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:30:11.054Z"
+      },
+      "recorded_at": "2026-07-05T13:30:11.058Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256770371-617eeec0",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": "needs_evidence",
+      "summary": "No persisted data migration required",
+      "reason": "The change only alters gate evidence interpretation and emitted audit metadata. Existing verification records remain readable through legacy fallback with deprecation metadata, and rollback is a normal code/spec revert with no database or artifact migration.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:06:10.370Z"
+      },
+      "recorded_at": "2026-07-05T13:06:10.371Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256765100-590592b4",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": "block",
+      "summary": "Structured evidence contract is additive and legacy-compatible",
+      "reason": "The public gate contract now prefers structured observation and inherited_behavior declarations, while legacy keyword matching remains accepted with machine-readable deprecation metadata until at least 2026-08-05. The spec and regression tests cover both structured and legacy paths.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:06:05.099Z"
+      },
+      "recorded_at": "2026-07-05T13:06:05.100Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256758472-85d3851c",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT change is limited to gate contract spec",
+      "reason": "The new spec is story-scoped contract documentation for non-UI gate semantics and does not alter product design lineage. The diagrams are required gate reasoning artifacts, not an external design SSOT fork.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:05:58.472Z"
+      },
+      "recorded_at": "2026-07-05T13:05:58.473Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256703071-0a92006d",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Structured keyword migration is reviewable as one PR",
+      "reason": "The implementation touches one coherent gate behavior: evidence resolution in pr-manager, inherited behavior consistency in requirement-consistency, one spec, and focused regression tests. Splitting would separate contract and enforcement changes that need to be reviewed together.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:05:03.069Z"
+      },
+      "recorded_at": "2026-07-05T13:05:03.072Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256702944-6d48fd3e",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "architecture",
+      "source_status": "needs_review",
+      "summary": "ADR unnecessary for structured keyword gate migration",
+      "reason": "The change stays inside existing PR gate and requirement consistency modules, adds structured evidence contracts with tests, and does not introduce a new architecture boundary.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:05:02.943Z"
+      },
+      "recorded_at": "2026-07-05T13:05:02.944Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256546277-ca7f9ada",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundled scope accepted for one structured-gate migration",
+      "reason": "The changed source files form one reviewable contract: pr-manager resolves verification gate evidence, requirement-consistency resolves inherited behavior declarations, tests assert both paths, and the Spec documents the migration. Splitting would separate producer, consumer, and regression proof for the same gate contract.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:02:26.277Z"
+      },
+      "recorded_at": "2026-07-05T13:02:26.278Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783256538161-3e88a0e3",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "architecture",
+      "source_status": "needs_review",
+      "summary": "ADR unnecessary for structured keyword gate migration",
+      "reason": "The change stays inside existing PR gate and requirement consistency architecture: it changes evidence resolution inputs and audit metadata without adding a new subsystem, persisted schema, or external integration. The committed Spec captures the contract.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-keyword-gate-structured-migration.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/requirement-consistency.js\n M test/vibepro-cli.test.js\n?? docs/specs/story-vibepro-keyword-gate-structured-migration.md\nM docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+        "recorded_at": "2026-07-05T13:02:18.160Z"
+      },
+      "recorded_at": "2026-07-05T13:02:18.161Z"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "open": 0,
+    "by_type": {
+      "waiver": 1,
+      "needs_review": 8
+    },
+    "by_status": {
+      "accepted": 9
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+        "expected_root": null,
+        "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783263266450-019579bb",
+      "story_id": "story-vibepro-keyword-gate-structured-migration",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:senior_gap_judgment",
+      "source_status": "needs_review",
+      "summary": "Accept residual senior gaps as follow-up for PR #289",
+      "reason": "Senior gap major items are the same Design SSOT registration gaps for story/spec docs; implementation, tests, CI, traceability, responsibility authority, path surface, requirement, and agent review gates passed at 0e2260e.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+          "expected_root": null,
+          "expected_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "current_head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0e2260e6bebfbcc200627edda5b23f0910d84260",
+        "current_branch": "codex/keyword-gate-structured-migration",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T14:54:26.449Z"
+      },
+      "recorded_at": "2026-07-05T14:54:26.450Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/decision-records.json"
+}

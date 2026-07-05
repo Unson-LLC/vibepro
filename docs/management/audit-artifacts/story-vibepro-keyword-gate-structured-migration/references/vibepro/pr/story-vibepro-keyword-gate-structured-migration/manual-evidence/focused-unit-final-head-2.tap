@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: pr prepare accepts path surface matrix decision records
+ok 1 - pr prepare accepts path surface matrix decision records
+  ---
+  duration_ms: 3774.042084
+  type: 'test'
+  ...
+# Subtest: pr prepare resolves path surface matrix from structured observation with bland summary
+ok 2 - pr prepare resolves path surface matrix from structured observation with bland summary
+  ---
+  duration_ms: 3656.198542
+  type: 'test'
+  ...
+# Subtest: pr prepare rejects partial structured observation for path surface matrix coverage
+ok 3 - pr prepare rejects partial structured observation for path surface matrix coverage
+  ---
+  duration_ms: 2343.003958
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps path surface legacy keyword compatibility with deprecation notice
+ok 4 - pr prepare keeps path surface legacy keyword compatibility with deprecation notice
+  ---
+  duration_ms: 2388.905209
+  type: 'test'
+  ...
+# Subtest: pr prepare does not cover persistence surface from hash substrings
+ok 5 - pr prepare does not cover persistence surface from hash substrings
+  ---
+  duration_ms: 2357.222791
+  type: 'test'
+  ...
+# Subtest: pr prepare does not infer persistence surface from story spec migration slugs
+ok 6 - pr prepare does not infer persistence surface from story spec migration slugs
+  ---
+  duration_ms: 1905.650292
+  type: 'test'
+  ...
+# Subtest: gate evidence classifier normalizes canonical token variants across observation fields
+ok 7 - gate evidence classifier normalizes canonical token variants across observation fields
+  ---
+  duration_ms: 5987.209875
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22522.916708

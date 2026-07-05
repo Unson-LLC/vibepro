@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-keyword-gate-structured-migration",
+  "created_at": "2026-07-05T16:12:03.727Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: >-",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-keyword-gate-structured-migration.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: >-"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-keyword-gate-structured-migration.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T16:12:02.630Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+      "branch": "codex/keyword-gate-structured-migration",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+  "observed": {
+    "check": "CodeQL",
+    "conclusion": "SUCCESS",
+    "run_url": "https://github.com/Unson-LLC/vibepro/runs/85237629414",
+    "head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6"
+  },
+  "ci_check": {
+    "name": "CodeQL",
+    "status": "COMPLETED",
+    "conclusion": "SUCCESS",
+    "workflow_name": "",
+    "details_url": "https://github.com/Unson-LLC/vibepro/runs/85237629414"
+  }
+}

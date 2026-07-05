@@ -1,0 +1,117 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-keyword-gate-structured-migration",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "block",
+  "summary": "Structured observation freshness and legacy compatibility are evidenced, but gate binding missed contract_doc and rollback_sensitive evidence.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, git status, HEAD, diff, source, tests, spec, pr-prepare, verification-evidence, evidence-reuse, and focused regression; found public_contract contract_doc binding and rollback_sensitive evidence gaps.",
+    "evidence": "multi_agent:019f326f-697f-7890-9150-4292fda21e02",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-keyword-gate-structured-migration/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/verification-evidence.json",
+      "src/pr-manager.js",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial evidence freshness concern -> structured observation and legacy compatibility cleared, but public_contract/rollback binding gaps remained"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+    "expected_root": null,
+    "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+    "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-keyword-gate-structured-migration",
+      "expected_root": null,
+      "expected_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+      "current_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T13:30:11.234Z",
+  "git_context": {
+    "head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+    "current_branch": "codex/keyword-gate-structured-migration",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "5b1532868059b0c54f52f64c55b28d9c3822beca4838d8f7f81f4883909d11bf",
+    "user_status_fingerprint_hash": "5b1532868059b0c54f52f64c55b28d9c3822beca4838d8f7f81f4883909d11bf",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T13:30:11.209Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "8b91e3fce07fa4de21ec5cee647d5ae034ac2e7a",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "711fe50bda3fa491bcf64c47e57a5ecffafae8d05eeba09ddeb6bc2af868f3e8",
+        "size": 581061
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "6b3b7040ea76c1b4801e823d3a3a3c9007bc684a6cae7efc9b68a625dcd1b1f2",
+        "size": 999106
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e355044accb882be0172a6397641638c1c2d785f19089581810db15994d23e5c"
+  },
+  "source_fingerprint": "f5d3f7ab985cf8c91cdab81b286eff951ee7a34bfda1bb64310498bce5a061e5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f326f-697f-7890-9150-4292fda21e02",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "medium",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "multi_agent:019f326f-697f-7890-9150-4292fda21e02",
+    "request_artifact": ".vibepro/reviews/story-vibepro-keyword-gate-structured-migration/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi_agent:019f326f-697f-7890-9150-4292fda21e02 closed after block finding",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

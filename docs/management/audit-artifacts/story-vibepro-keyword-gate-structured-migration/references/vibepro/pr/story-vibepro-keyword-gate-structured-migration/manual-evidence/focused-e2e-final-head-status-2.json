@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "summary": "Focused e2e artifact replay, story-specific AC coverage, and failure-mode coverage passed at final PR HEAD.",
+  "head_sha": "2cecbaaedc7c97a51f7b4b098cce3fbb31ef67c6",
+  "artifacts": [
+    ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/manual-evidence/focused-e2e-final-head-2.tap",
+    ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/manual-evidence/story-specific-e2e-final-head.tap",
+    ".vibepro/pr/story-vibepro-keyword-gate-structured-migration/manual-evidence/workflow-pre-pr-e2e-final-head-2.tap"
+  ],
+  "checks": {
+    "current_reality": "pass",
+    "failure_modes": "pass",
+    "done_evidence": "pass",
+    "flow_replay": "pass",
+    "artifact_replay": "pass",
+    "scenario_clause_e2e": "pass",
+    "story_specific_ac_coverage": "pass",
+    "path_surface_service": "pass"
+  }
+}

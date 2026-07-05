@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact replay
+ok 1 - story-vibepro-workflow-pre-pr-evidence-gate exercises PR prepare artifact replay
+  ---
+  duration_ms: 4211.399333
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4301.43625
