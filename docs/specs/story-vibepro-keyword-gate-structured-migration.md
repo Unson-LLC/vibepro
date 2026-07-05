@@ -21,6 +21,18 @@ diagrams:
         Observation --> DeterministicGate["deterministic gate match"]
         FalsePass -. migration only .-> Deprecation["deprecation notice"]
         DeterministicGate --> Audit["audit artifact"]
+  - kind: state
+    mermaid: |
+      stateDiagram-v2
+        [*] --> EvidenceRecorded
+        EvidenceRecorded --> StructuredPass: target/scenario/observed satisfy gate
+        EvidenceRecorded --> LegacyCompat: summary keyword only
+        LegacyCompat --> DeprecatedPass: compatibility window active
+        LegacyCompat --> Blocked: compatibility window expired
+        StructuredPass --> Ready
+        DeprecatedPass --> Ready
+        Blocked --> EvidenceRecorded: record structured observation
+        Ready --> [*]
 ---
 
 # Spec
@@ -64,6 +76,21 @@ flowchart LR
   Observation --> DeterministicGate["deterministic gate match"]
   FalsePass -. migration only .-> Deprecation["deprecation notice"]
   DeterministicGate --> Audit["audit artifact"]
+```
+
+### state
+
+```mermaid
+stateDiagram-v2
+  [*] --> EvidenceRecorded
+  EvidenceRecorded --> StructuredPass: target/scenario/observed satisfy gate
+  EvidenceRecorded --> LegacyCompat: summary keyword only
+  LegacyCompat --> DeprecatedPass: compatibility window active
+  LegacyCompat --> Blocked: compatibility window expired
+  StructuredPass --> Ready
+  DeprecatedPass --> Ready
+  Blocked --> EvidenceRecorded: record structured observation
+  Ready --> [*]
 ```
 
 ## Keyword Resolution Inventory
