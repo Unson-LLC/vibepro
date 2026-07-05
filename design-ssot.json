@@ -30,13 +30,6 @@
         "spec": [
           {
             "kind": "spec",
-            "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
-            "required": true,
-            "relationship": "implements",
-            "last_reviewed_root_hash": null
-          },
-          {
-            "kind": "spec",
             "path": "docs/specs/story-vibepro-journey-curate-command.md",
             "required": true,
             "relationship": "implements",
@@ -59,13 +52,6 @@
         ]
       },
       "child_links": [
-        {
-          "kind": "spec",
-          "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
-          "required": true,
-          "relationship": "implements",
-          "last_reviewed_root_hash": null
-        },
         {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-journey-curate-command.md",
@@ -2497,7 +2483,9 @@
       "authority_level": "design_root",
       "scope": null,
       "owned_surfaces": [],
-      "required_child_kinds": [],
+      "required_child_kinds": [
+        "spec"
+      ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
         "missing_required_child": "block",
@@ -2506,6 +2494,15 @@
         "accepted_adr_supersession_conflict": "block"
       },
       "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
         "story": [
           {
             "kind": "story",
@@ -2517,6 +2514,13 @@
         ]
       },
       "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-flow-screenshot-visual-gate-bridge.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-flow-screenshot-visual-gate-bridge.md",

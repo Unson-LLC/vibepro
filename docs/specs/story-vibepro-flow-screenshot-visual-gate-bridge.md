@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-flow-screenshot-visual-gate-bridge
 title: Flow Screenshot to Visual Gate Bridge Spec
-parent_design: vibepro-ui-journey-e2e-producer-contracts
+parent_design: vibepro-flow-screenshot-visual-gate-bridge
 ---
 
 # Spec

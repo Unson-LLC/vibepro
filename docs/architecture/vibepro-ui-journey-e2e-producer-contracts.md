@@ -15,9 +15,10 @@ The route depends on three additive public CLI contracts:
 - `vibepro verify visual` writes residual visual QA artifacts under
   `.vibepro/qa/<qa-id>/` from either fixture screenshots or screenshots
   captured by `verify flow`.
-- Passing `vibepro verify flow` runs that captured screenshots record
-  current-head `visual_qa` and `screenshot` verification evidence so the PR
-  Visual QA Gate can consume the run without a manual bridge command.
+- Passing `vibepro verify flow` runs that captured screenshots report
+  `not_recorded: visual_residual_required` and preserve screenshot provenance
+  so `vibepro verify visual` or explicit artifact-backed verification can feed
+  the PR Visual QA Gate.
 
 ```mermaid
 flowchart LR
@@ -25,10 +26,10 @@ flowchart LR
   Curate -->|"validated human judgments"| Journey["curated Journey"]
   Flow["verify flow"] --> Screens["screenshots"]
   Screens --> Visual["verify visual residual"]
-  Flow -->|"pass + screenshots"| AutoEvidence["auto visual_qa evidence"]
+  Flow -->|"pass + screenshots"| VisualRequired["visual_residual_required"]
   Journey --> GateDag["PR Gate DAG"]
   Visual --> GateDag
-  AutoEvidence --> GateDag
+  VisualRequired --> Visual
 ```
 
 ## Decision
@@ -50,6 +51,6 @@ flowchart LR
 
 - Boundary: CLI producer commands, local artifacts, manifest links, and tests.
   No GitHub, CI, or merge behavior is changed by these producers.
-- Rollback: remove `verify visual`, `journey curate`, and the flow auto-record
-  hook; existing manual Journey and manual visual evidence workflows continue
-  to work.
+- Rollback: remove `verify visual`, `journey curate`, and the flow
+  not-recorded metadata hook; existing manual Journey and manual visual
+  evidence workflows continue to work.
