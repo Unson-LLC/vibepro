@@ -10250,6 +10250,7 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 function findFailureModeEvidenceCommand(mode, currentEvidence) {
   let bestMatch = null;
   for (const command of currentEvidence ?? []) {
+    if (command?.observation_check?.status !== 'recorded') continue;
     const evidenceText = appendCanonicalEvidenceTokens(resolveVerificationCommandSearchText(command).text.toLowerCase());
     const score = scoreFailureModeEvidence(mode, evidenceText);
     if (score > (bestMatch?.score ?? 0)) {
@@ -10366,7 +10367,7 @@ function buildVerificationCommandSearchText(command) {
 }
 
 function resolveVerificationCommandSearchText(command) {
-  if (command?.observation_check?.status === 'recorded') {
+  if (['recorded', 'partial'].includes(command?.observation_check?.status)) {
     const observation = command?.observation ?? {};
     const observedValues = observation.values && typeof observation.values === 'object'
       ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
@@ -10379,7 +10380,9 @@ function resolveVerificationCommandSearchText(command) {
     if (structuredText.trim()) {
       return {
         text: structuredText,
-        source: 'structured_observation',
+        source: command?.observation_check?.status === 'recorded'
+          ? 'structured_observation'
+          : 'partial_structured_observation',
         deprecation: null
       };
     }
