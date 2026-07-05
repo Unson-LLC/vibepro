@@ -10415,6 +10415,10 @@ function legacyKeywordResolutionDeprecation() {
   };
 }
 
+function canResolutionSatisfyPathSurfaceCoverage(resolution) {
+  return ['structured_observation', 'legacy_summary_keyword'].includes(resolution?.source);
+}
+
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
   const surfaces = derivePathSurfaceRows({ storySource, fileGroups, changeClassification });
   const currentVerification = (verificationEvidence?.commands ?? []).filter((command) => command.binding?.status === 'current');
@@ -10425,6 +10429,7 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     let verificationResolution = null;
     for (const command of currentVerification) {
       const resolution = resolveVerificationCommandSearchText(command);
+      if (!canResolutionSatisfyPathSurfaceCoverage(resolution)) continue;
       if (pathSurfaceCoveredByEvidence(surface, resolution.text.toLowerCase())) {
         verificationEvidenceItem = command;
         verificationResolution = resolution;

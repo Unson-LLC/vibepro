@@ -2880,6 +2880,51 @@ test('pr prepare resolves path surface matrix from structured observation with b
   assert.deepEqual(afterGate.deprecation_notices, []);
 });
 
+test('pr prepare rejects partial structured observation for path surface matrix coverage', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return "changed"; }\n');
+  await writeFile(path.join(repo, 'test', 'surface.test.js'), 'export const checked = true;\n');
+  await git(repo, ['add', 'src/pr-manager.js', 'test/surface.test.js']);
+  await git(repo, ['commit', '-m', 'feat: update partial gate surface implementation']);
+
+  const record = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/surface.test.js',
+    '--summary',
+    'passed',
+    '--scenario',
+    'path_surface:review_surface',
+    '--observed',
+    'surface=review_surface',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+  const evidence = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'), 'utf8'));
+  const partialCommand = evidence.commands.find((command) => command.command === 'node --test test/surface.test.js');
+  assert.equal(partialCommand.observation_check.status, 'partial');
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const reviewRow = gate.rows.find((row) => row.surface === 'review_surface');
+  assert.equal(gate.status, 'partial_surface');
+  assert.equal(gate.missing_surfaces.includes('review_surface'), true);
+  assert.equal(reviewRow.status, 'missing_surface_evidence');
+  assert.notEqual(reviewRow.resolution_source, 'partial_structured_observation');
+  assert.deepEqual(gate.deprecation_notices, []);
+});
+
 test('pr prepare keeps path surface legacy keyword compatibility with deprecation notice', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
