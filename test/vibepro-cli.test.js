@@ -14030,7 +14030,7 @@ test('pr body final E2E prefers exact e2e evidence over unit workflow summaries'
   assert.doesNotMatch(finalE2eLine, /responsibility-authority-current-head-status\.json/);
 });
 
-test('pr body final E2E prefers current passing e2e evidence over stale or failing e2e evidence', async () => {
+test('pr body final E2E prefers current passing e2e-surface evidence over stale or failing evidence', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'final-e2e-freshness.js'), 'export const finalE2eFreshness = 1;\n');
@@ -14060,7 +14060,7 @@ test('pr body final E2E prefers current passing e2e evidence over stale or faili
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
-    '--kind', 'e2e',
+    '--kind', 'integration',
     '--status', 'fail',
     '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
     '--summary', 'Current HEAD E2E flow failed before the fix',
@@ -14069,7 +14069,7 @@ test('pr body final E2E prefers current passing e2e evidence over stale or faili
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
-    '--kind', 'e2e',
+    '--kind', 'build',
     '--status', 'pass',
     '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
     '--summary', 'Current HEAD E2E flow passed after the fix',
@@ -14078,6 +14078,13 @@ test('pr body final E2E prefers current passing e2e evidence over stale or faili
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  const artifactPaths = evidence.commands.map((command) => command.artifact);
+  assert.deepEqual(new Set(artifactPaths), new Set([
+    '.vibepro/verification/story-pr-prepare/e2e-current-passed-status.json',
+    '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json',
+    '.vibepro/verification/story-pr-prepare/e2e-stale-head-status.json'
+  ]));
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
 
