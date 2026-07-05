@@ -72,7 +72,7 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(firstReuse.status, 'miss');
   assert.equal(firstReuse.full_evidence.status, 'generated');
   assert.equal(firstReuse.artifact_value_ledger.status, 'present');
-  assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 5);
+  assert.equal(firstReuse.artifact_value_ledger.summary.decision_bound_count, 4);
   assert.equal(firstReuse.artifact_value_ledger.session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.session_attribution_ledger.status, 'not_collected_in_pr_prepare');
   assert.equal(firstReuse.full_evidence.generation_count_scope, 'same_evidence_key');
@@ -107,8 +107,8 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.equal(report.evidence_reuse.hit_count, 1);
   assert.equal(report.evidence_reuse.by_story[0].latest_status, 'hit');
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_ledger_status, 'present');
-  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 5);
-  assert.equal(report.evidence_reuse.by_story[0].artifact_value_linked_consumer_count, 5);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_bound_count, 4);
+  assert.equal(report.evidence_reuse.by_story[0].artifact_value_linked_consumer_count, 4);
   assert.equal(report.evidence_reuse.by_story[0].session_attribution_status, 'not_collected_in_pr_prepare');
   assert.equal(report.evidence_reuse.by_story[0].full_evidence_generation_count_scope, 'same_evidence_key');
   assert.equal(report.evidence_reuse.by_story[0].same_key_full_evidence_generation_count, 1);
@@ -280,6 +280,33 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
   assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
   assert.equal(gate.status, 'passed');
   assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:05:00.000Z');
+});
+
+test('summary artifact references omit explicitly skipped full artifacts', () => {
+  const reuse = buildEvidenceReuse({
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' },
+    artifacts: {
+      evidenceReusePath: `/repo/.vibepro/pr/${STORY_ID}/evidence-reuse.json`,
+      evidencePlanPath: `/repo/.vibepro/pr/${STORY_ID}/evidence-plan.json`,
+      decisionIndexPath: `/repo/.vibepro/pr/${STORY_ID}/decision-index.json`,
+      jsonPath: `/repo/.vibepro/pr/${STORY_ID}/pr-prepare.json`,
+      gateDagJsonPath: null
+    }
+  });
+
+  assert.equal(reuse.summary_artifacts.gate_dag, null);
+  assert.equal(reuse.review_input_summary.preferred_order.includes(null), false);
+  assert.equal(
+    reuse.review_input_summary.preferred_order.some((artifact) => artifact.endsWith('/gate-dag.json')),
+    false
+  );
+  assert.equal(
+    reuse.artifact_value_ledger.entries.some((entry) => entry.artifact_key === 'gate_dag'),
+    false
+  );
 });
 
 test('explicit session attribution is preserved in the artifact value ledger', () => {

@@ -36,15 +36,19 @@ updated_at: 2026-07-05
 - `--dry-run` で実行予定のステップ列を表示する。再実行は冪等で、充足済みのゲートをスキップする。
 - 実行サマリーに、自動化されたステップ数と operator に残った判断点の一覧を出す。
 
+## Architecture Decision
+
+ADR不要: 既存の PR lifecycle / verification evidence / agent review modules の中に `pr autopilot` を薄い orchestration command として追加する。代替案として専用 workflow engine を追加する選択肢も検討したが、state machine を二重化すると gate semantics と rollback 境界が広がるため採らない。CLI 互換性への影響は新規 subcommand の追加に限定し、既存の `pr prepare`、`verify record`、`verify import-ci`、`review prepare`、`review record` の public contract と default behavior は変更しない。boundary は `.vibepro/pr/<story>/autopilot/` に保存する実行artifactと既存 evidence record API までで、waiver/split/review verdict の人間判断は自動化しない。rollback plan は `pr autopilot` subcommand とその tests を revert すれば既存手動flowに戻せる構成にする。accepted followups は、検証コマンド自動推定とレビューsubagent自動起動を本Storyでは保留し、必要なら別Storyで扱う。
+
 ## Acceptance Criteria
 
-- [ ] EAP-S-1: 検証コマンドが定義済みの Story で `pr autopilot` を 1 回実行すると、手動の verify record なしで検証系ゲートが解消される。
-- [ ] EAP-S-2: 検証コマンドが fail した場合、fail として記録され、autopilot は該当ゲートを未解消のまま停止点として報告する。
-- [ ] EAP-S-3: waiver または split 判断が必要な状態では、autopilot は判断内容と実行すべきコマンドを提示して停止し、勝手に waiver を記録しない。
-- [ ] EAP-S-4: 既存の passing record が存在する kind に対して、autopilot は上書き実行をしない。
-- [ ] EAP-S-5: `--dry-run` は実際の記録を一切行わず、実行予定ステップ列を表示する。
-- [ ] EAP-S-6: 2 回目の実行は充足済みステップをスキップし、同一の最終状態に収束する。
-- [ ] EAP-S-7: テストで全充足 / fail 停止 / 判断点停止 / dry-run / 冪等の各分岐を固定する。
+- [x] EAP-S-1: 検証コマンドが定義済みの Story で `pr autopilot` を 1 回実行すると、手動の verify record なしで検証系ゲートが解消される。
+- [x] EAP-S-2: 検証コマンドが fail した場合、fail として記録され、autopilot は該当ゲートを未解消のまま停止点として報告する。
+- [x] EAP-S-3: waiver または split 判断が必要な状態では、autopilot は判断内容と実行すべきコマンドを提示して停止し、勝手に waiver を記録しない。
+- [x] EAP-S-4: 既存の passing record が存在する kind に対して、autopilot は上書き実行をしない。
+- [x] EAP-S-5: `--dry-run` は実際の記録を一切行わず、実行予定ステップ列を表示する。
+- [x] EAP-S-6: 2 回目の実行は充足済みステップをスキップし、同一の最終状態に収束する。
+- [x] EAP-S-7: テストで全充足 / fail 停止 / 判断点停止 / dry-run / 冪等の各分岐を固定する。
 
 ## 既存挙動（inherited behavior）
 

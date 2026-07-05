@@ -528,6 +528,7 @@ function buildFullEvidenceReuse({ storyId, evidenceKey, previousReuse, decisionI
 
 function normalizeSummaryArtifacts({ root, artifacts, storyId }) {
   const workspaceArtifact = (key, fallbackName) => {
+    if (Object.prototype.hasOwnProperty.call(artifacts, key) && artifacts[key] == null) return null;
     const value = artifacts[key];
     if (root && value) return toWorkspaceRelative(root, value);
     if (typeof value === 'string') return value;

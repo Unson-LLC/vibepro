@@ -278,6 +278,30 @@ async function makeGitRepoWithStory(options = {}) {
   return repo;
 }
 
+async function makeAutopilotRepo() {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'disabled' };
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'scripts'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'autopilot.js'), 'export const autopilot = true;\n');
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    name: 'autopilot-fixture',
+    type: 'module',
+    scripts: {
+      test: 'node ./scripts/pass.js',
+      typecheck: 'node ./scripts/pass.js'
+    }
+  }, null, 2));
+  await writeFile(path.join(repo, 'scripts', 'pass.js'), 'process.stdout.write("pass\\n");\n');
+  await writeFile(path.join(repo, 'scripts', 'fail.js'), 'process.stderr.write("fail\\n");\nprocess.exit(7);\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: autopilot target']);
+  return repo;
+}
+
 async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepare') {
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', storyId);
@@ -517,6 +541,64 @@ test('managed worktree gate is not applicable when disabled', async () => {
   assert.equal(gate.required, false);
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- 管理worktree: disabled/);
+});
+
+test('pr prepare removes stale skipped full artifacts for summary evidence depth', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'summary-depth-note.md'), 'Summary-depth artifact hygiene fixture.\n');
+  await git(repo, ['add', 'docs/summary-depth-note.md']);
+  await git(repo, ['commit', '-m', 'docs: add summary-depth fixture']);
+
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  const staleArtifacts = [
+    'pr-prepare.html',
+    'review-cockpit.html',
+    'gate-dag.html',
+    'gate-dag.json',
+    'split-plan.html'
+  ];
+  for (const artifact of staleArtifacts) {
+    await writeFile(path.join(prDir, artifact), artifact.endsWith('.json')
+      ? '{"stale":true}\n'
+      : '<!doctype html><title>stale</title>\n');
+  }
+
+  const result = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--evidence-depth',
+    'summary',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  const prepare = result.result.preparation;
+  assert.equal(prepare.evidence_plan.evidence_depth, 'summary');
+  assert.equal(prepare.evidence_plan.artifact_policy.write_full_gate_dag_dump, false);
+  assert.equal(prepare.evidence_plan.artifact_policy.write_html_reports, false);
+  assert.equal(prepare.evidence_plan.skipped_artifacts.includes('gate-dag.json'), true);
+  for (const artifact of staleArtifacts) {
+    assert.equal(await pathExists(path.join(prDir, artifact)), false, `${artifact} should be removed when skipped`);
+  }
+  assert.equal(await pathExists(path.join(prDir, 'pr-prepare.json')), true);
+  assert.equal(await pathExists(path.join(prDir, 'evidence-plan.json')), true);
+  const evidenceReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
+  assert.equal(evidenceReuse.summary_artifacts.gate_dag, null);
+  assert.equal(
+    evidenceReuse.review_input_summary.preferred_order.some((artifact) => artifact.endsWith('/gate-dag.json')),
+    false
+  );
+  assert.equal(
+    evidenceReuse.artifact_value_ledger.entries.some((entry) => entry.artifact_key === 'gate_dag'),
+    false
+  );
 });
 
 test('required managed worktree gate blocks evidence commands outside managed worktree', async () => {
@@ -6829,6 +6911,14 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.pr_context.review_points.some((point) => point.includes('TASK-001')), true);
   const gateDag = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.json'));
   assert.equal(gateDag.model, 'story-acceptance-verification-dag');
+  assert.deepEqual(
+    gateDag.summary.traceability_clause_coverage,
+    prepare.pr_context.gate_dag.summary.traceability_clause_coverage
+  );
+  assert.equal(
+    gateDag.summary.artifact_consistency_status,
+    prepare.pr_context.gate_dag.summary.artifact_consistency_status
+  );
   assert.equal(gateDag.edges.some((edge) => edge.from === 'ac:1' && edge.to === 'gate:e2e'), true);
   const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'gate-dag.html'), 'utf8');
   assert.match(gateDagHtml, /<!doctype html>/);
@@ -7661,6 +7751,191 @@ test('pr prepare fails clearly when a stage exceeds the configured timeout', asy
       return true;
     }
   );
+});
+
+test('pr autopilot records passing verification evidence from a defined command', async () => {
+  const repo = await makeAutopilotRepo();
+
+  const result = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/pass.js',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'executed'), true);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(evidence.commands[0].kind, 'unit');
+  assert.equal(evidence.commands[0].status, 'pass');
+  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+  const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json'));
+  assert.equal(artifact.exit_code, 0);
+  assert.equal(artifact.status, 'pass');
+});
+
+test('pr autopilot records failed verification as fail and stops', async () => {
+  const repo = await makeAutopilotRepo();
+
+  const result = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/fail.js',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.autopilot.stop_reason, 'verification_failed');
+  assert.equal(result.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'failed'), true);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(evidence.commands[0].kind, 'unit');
+  assert.equal(evidence.commands[0].status, 'fail');
+  const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json'));
+  assert.equal(artifact.exit_code, 7);
+  assert.equal(artifact.status, 'fail');
+});
+
+test('pr autopilot dry-run plans verification without recording evidence', async () => {
+  const repo = await makeAutopilotRepo();
+
+  const result = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/pass.js',
+    '--dry-run',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.autopilot.dry_run, true);
+  assert.equal(result.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'planned'), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json')), false);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json')), false);
+});
+
+test('pr autopilot stops at unresolved human judgment points without recording a waiver', async () => {
+  const repo = await makeGitRepoWithStory();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.execution = { managed_worktree: 'disabled' };
+  await writeJson(configPath, config);
+
+  const result = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--json'
+  ]);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.autopilot.status, 'stopped');
+  assert.equal(result.result.autopilot.stop_reason, 'critical_gate_unresolved');
+  assert.equal(result.result.autopilot.human_judgments_required.some((judgment) => judgment.kind === 'critical_gate'), true);
+  assert.equal(result.result.autopilot.next_commands.some((command) => command.includes('vibepro pr prepare . --story-id story-pr-prepare')), true);
+  assert.equal(await pathExists(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json')), false);
+  const decisions = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json'));
+  assert.equal(decisions.decisions.some((decision) => decision.type === 'waiver'), false);
+});
+
+test('pr autopilot skips existing passing records instead of overwriting them', async () => {
+  const repo = await makeAutopilotRepo();
+  const first = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/pass.js',
+    '--json'
+  ]);
+  assert.equal(first.exitCode, 0);
+
+  const second = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/fail.js',
+    '--json'
+  ]);
+
+  assert.equal(second.exitCode, 0);
+  assert.equal(second.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'skipped'), true);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(evidence.commands[0].kind, 'unit');
+  assert.equal(evidence.commands[0].status, 'pass');
+  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+});
+
+test('pr autopilot reruns stale passing records instead of skipping by kind only', async () => {
+  const repo = await makeAutopilotRepo();
+  const first = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/pass.js',
+    '--json'
+  ]);
+  assert.equal(first.exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'autopilot.js'), 'export const autopilot = "changed";\n');
+  await git(repo, ['add', 'src/autopilot.js']);
+  await git(repo, ['commit', '-m', 'feat: change autopilot target']);
+
+  const second = await runCli([
+    'pr',
+    'autopilot',
+    repo,
+    '--base',
+    'main',
+    '--story-id',
+    'story-pr-prepare',
+    '--verify',
+    'unit=node ./scripts/fail.js',
+    '--json'
+  ]);
+
+  assert.equal(second.exitCode, 0);
+  assert.equal(second.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'failed'), true);
+  assert.equal(second.result.autopilot.stop_reason, 'verification_failed');
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  assert.equal(evidence.commands[0].kind, 'unit');
+  assert.equal(evidence.commands[0].status, 'fail');
+  assert.equal(evidence.commands[0].command, 'node ./scripts/fail.js');
 });
 
 test('pr prepare flags empty commit messages in the PR range', async () => {
