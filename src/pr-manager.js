@@ -7200,13 +7200,15 @@ function classifySeniorAxisEvidence({
       artifact_quality: 'story_doc'
     });
   }
-  if ((fileGroups.architecture_docs?.count ?? 0) > 0 || (fileGroups.policy_docs?.count ?? 0) > 0) {
-    add('contract_doc', 'architecture/policy docs in diff', {
+  if ((fileGroups.architecture_docs?.count ?? 0) > 0 || (fileGroups.policy_docs?.count ?? 0) > 0 || (fileGroups.specifications?.count ?? 0) > 0) {
+    add('contract_doc', 'architecture/policy/spec docs in diff', {
       strength: 'supporting',
-      strength_reason: 'architecture/policy docs are present for the changed contract surface',
+      strength_reason: 'architecture/policy/spec docs are present for the changed contract surface',
       binding_status: 'n/a',
-      artifact_quality: 'architecture_doc'
+      artifact_quality: 'contract_doc'
     });
+  }
+  if ((fileGroups.architecture_docs?.count ?? 0) > 0 || (fileGroups.policy_docs?.count ?? 0) > 0) {
     add('topology_diagram', 'architecture docs in diff', {
       strength: 'supporting',
       strength_reason: 'architecture docs describe topology but are not replay proof',
@@ -7893,13 +7895,16 @@ function classifyCodeTopologyImpactEvidence(codeTopologyContext) {
 }
 
 function classifyVerificationEvidenceItem(item) {
-  const text = buildCanonicalVerificationCommandSearchText(item);
+  const searchResolution = resolveVerificationCommandSearchText(item);
+  const text = appendCanonicalEvidenceTokens(searchResolution.text.toLowerCase());
   const command = String(item.command ?? '').trim();
   const generic = isGenericVerificationCommand(command);
   const ref = command || item.summary || item.artifact || item.kind || 'verification';
   const matches = [];
   const add = (kind) => {
-    if (!matches.some((match) => match.kind === kind)) matches.push(buildVerificationEvidenceItem(kind, ref, item, { generic }));
+    if (!matches.some((match) => match.kind === kind)) {
+      matches.push(buildVerificationEvidenceItem(kind, ref, item, { generic, searchResolution }));
+    }
   };
   if (!text) return matches;
   if (!generic && ['unit', 'integration', 'e2e', 'build', 'typecheck'].includes(item.kind)) add('focused_test');
@@ -7961,6 +7966,7 @@ function explicitEvidenceKindsFromVerificationText(text) {
     'benchmark_delta',
     'perf_regression_guard',
     'semantic_invariant_test',
+    'contract_doc',
     'scope_reviewed',
     'split_plan',
     'graph_impact_scope',
@@ -7992,10 +7998,6 @@ function appendCanonicalEvidenceTokens(text) {
   const canonicalKinds = canonicalEvidenceTokenKindsFromText(source);
   if (canonicalKinds.length === 0) return source;
   return [source, ...canonicalKinds].join('\n');
-}
-
-function buildCanonicalVerificationCommandSearchText(command) {
-  return appendCanonicalEvidenceTokens(buildVerificationCommandSearchText(command).toLowerCase());
 }
 
 function evidenceKindPattern(kind) {
@@ -8042,11 +8044,12 @@ function buildEvidenceItem(kind, ref, extra = {}) {
   };
 }
 
-function buildVerificationEvidenceItem(kind, ref, item, { generic = false } = {}) {
+function buildVerificationEvidenceItem(kind, ref, item, { generic = false, searchResolution = null } = {}) {
   const bindingStatus = item?.binding?.status ?? 'unknown';
   const artifactStatus = item?.artifact_check?.status ?? (item?.artifact ? 'recorded' : 'missing');
   const hasDurableArtifact = Boolean(item?.artifact) && artifactStatus === 'verified';
   const strongCandidate = !generic && bindingStatus === 'current' && hasDurableArtifact && item?.observation_check?.status === 'recorded';
+  const resolution = searchResolution ?? resolveVerificationCommandSearchText(item);
   const strength = strongCandidate ? 'strong' : bindingStatus === 'current' ? 'supporting' : 'declared';
   const strengthReason = strongCandidate
     ? 'current-bound focused evidence includes recorded observation plus durable artifact'
@@ -8059,6 +8062,8 @@ function buildVerificationEvidenceItem(kind, ref, item, { generic = false } = {}
     artifact: item?.artifact ?? null,
     binding_status: bindingStatus,
     artifact_quality: item?.artifact ? artifactStatus : 'missing_artifact',
+    resolution_source: resolution.source,
+    ...(resolution.deprecation ? { deprecation: resolution.deprecation } : {}),
     strength,
     strength_reason: strengthReason
   });
@@ -9008,7 +9013,9 @@ function buildGateDag({
     label: 'Requirement Gate',
     status: resolveRequirementGateStatus(requirementConsistency),
     required: fileGroups.source.count > 0 || fileGroups.story_docs.count > 0 || fileGroups.policy_docs.count > 0,
-    reason: buildRequirementGateReason(requirementConsistency)
+    reason: buildRequirementGateReason(requirementConsistency),
+    structured_evidence_guidance: buildRequirementStructuredEvidenceGuidance(requirementConsistency),
+    deprecation_notices: requirementConsistency?.legacy_keyword_resolution_deprecations ?? []
   };
   const designSsotGate = buildDesignSsotGate(designSsotReconciliation, {
     artifact: `.vibepro/pr/${story.story_id}/design-ssot-reconciliation.json`
@@ -10243,7 +10250,7 @@ function deriveFailureModeCandidates({ storySource = null, fileGroups = null, ch
 function findFailureModeEvidenceCommand(mode, currentEvidence) {
   let bestMatch = null;
   for (const command of currentEvidence ?? []) {
-    const evidenceText = buildCanonicalVerificationCommandSearchText(command);
+    const evidenceText = appendCanonicalEvidenceTokens(resolveVerificationCommandSearchText(command).text.toLowerCase());
     const score = scoreFailureModeEvidence(mode, evidenceText);
     if (score > (bestMatch?.score ?? 0)) {
       bestMatch = { command, score };
@@ -10355,16 +10362,54 @@ function isCuratedJourneyItemHandled(item) {
 }
 
 function buildVerificationCommandSearchText(command) {
-  if (command?.observation_check?.status !== 'recorded') return '';
-  const observation = command?.observation ?? {};
-  const observedValues = observation.values && typeof observation.values === 'object'
-    ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
-    : [];
-  return [
-    ...(observation.targets ?? []),
-    ...(observation.scenarios ?? []),
-    ...observedValues
+  return resolveVerificationCommandSearchText(command).text;
+}
+
+function resolveVerificationCommandSearchText(command) {
+  if (command?.observation_check?.status === 'recorded') {
+    const observation = command?.observation ?? {};
+    const observedValues = observation.values && typeof observation.values === 'object'
+      ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
+      : [];
+    const structuredText = [
+      ...(observation.targets ?? []),
+      ...(observation.scenarios ?? []),
+      ...observedValues
+    ].filter(Boolean).join('\n');
+    if (structuredText.trim()) {
+      return {
+        text: structuredText,
+        source: 'structured_observation',
+        deprecation: null
+      };
+    }
+  }
+  const legacyText = [
+    command?.command,
+    command?.summary,
+    command?.artifact
   ].filter(Boolean).join('\n');
+  if (!legacyText.trim()) {
+    return {
+      text: '',
+      source: 'missing',
+      deprecation: null
+    };
+  }
+  return {
+    text: legacyText,
+    source: 'legacy_summary_keyword',
+    deprecation: legacyKeywordResolutionDeprecation()
+  };
+}
+
+function legacyKeywordResolutionDeprecation() {
+  return {
+    status: 'deprecated',
+    replacement: 'verify record --target/--scenario/--observed',
+    removal_not_before: '2026-08-05',
+    reason: 'Keyword matching from free-form command/summary text is migration-only compatibility; record structured observation fields instead.'
+  };
 }
 
 function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, changeClassification = null, verificationEvidence = null, flowVerification = null, decisionRecords = null } = {}) {
@@ -10373,7 +10418,16 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
   const flowEvidenceText = buildFlowVerificationSurfaceSearchText(flowVerification);
   const highRisk = changeClassification?.profile === 'workflow_heavy';
   const rows = surfaces.map((surface) => {
-    const verificationEvidenceItem = currentVerification.find((command) => pathSurfaceCoveredByEvidence(surface, buildVerificationCommandSearchText(command).toLowerCase()));
+    let verificationEvidenceItem = null;
+    let verificationResolution = null;
+    for (const command of currentVerification) {
+      const resolution = resolveVerificationCommandSearchText(command);
+      if (pathSurfaceCoveredByEvidence(surface, resolution.text.toLowerCase())) {
+        verificationEvidenceItem = command;
+        verificationResolution = resolution;
+        break;
+      }
+    }
     const flowEvidence = !verificationEvidenceItem && pathSurfaceCoveredByEvidence(surface, flowEvidenceText);
     const evidence = Boolean(verificationEvidenceItem || flowEvidence);
     const required = highRisk || surface.required;
@@ -10383,10 +10437,20 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
       status: evidence ? 'covered' : required ? 'missing_surface_evidence' : 'not_required',
       evidence: evidence
         ? verificationEvidenceItem?.command ?? 'flow_verification'
-        : null
+        : null,
+      resolution_source: verificationResolution?.source ?? (flowEvidence ? 'flow_verification' : null),
+      ...(verificationResolution?.deprecation ? { deprecation: verificationResolution.deprecation } : {})
     };
   });
   const missing = rows.filter((row) => row.status === 'missing_surface_evidence');
+  const deprecationNotices = rows
+    .filter((row) => row.deprecation)
+    .map((row) => ({
+      surface: row.surface,
+      path_type: row.path_type,
+      resolution_source: row.resolution_source,
+      ...row.deprecation
+    }));
   const acceptedDecision = findAcceptedDecisionForSource(decisionRecords, 'gate:path_surface_matrix');
   const status = missing.length === 0 || acceptedDecision ? 'passed' : 'partial_surface';
   return {
@@ -10405,8 +10469,14 @@ function buildPathSurfaceMatrixGate({ storySource = null, fileGroups = null, cha
     } : null,
     rows,
     missing_surfaces: missing.map((row) => row.surface),
+    deprecation_notices: deprecationNotices,
+    structured_evidence_guidance: {
+      accepted_fields: ['--target <changed path>', '--scenario "path_surface:<surface>"', '--observed "surface=<surface>"'],
+      command_template: 'vibepro verify record . --id <story-id> --kind integration --status pass --command "<focused command>" --target "<changed path>" --scenario "path_surface:<surface>" --observed "surface=<surface>"'
+    },
     required_actions: missing.length === 0 ? [] : [
       `Record current-bound verification evidence for changed surface(s): ${[...new Set(missing.map((row) => row.surface))].join(', ')}`,
+      'Use structured observation fields: --target "<changed path>" --scenario "path_surface:<surface>" --observed "surface=<surface>"',
       'Trace the value/state from input through persistence/API/UI/report/review surface, or mark the surface not applicable with an auditable decision',
       'Rerun `vibepro pr prepare` after the surface evidence is recorded'
     ],
@@ -11966,16 +12036,44 @@ function resolveRequirementGateStatus(requirement) {
 
 function buildRequirementGateReason(requirement) {
   if (!requirement) return 'Requirement Consistencyが未生成';
+  const structuredCount = requirement.summary?.structured_inherited_behavior_declaration_count ?? 0;
+  const legacyCount = requirement.summary?.legacy_keyword_resolution_count ?? 0;
+  const migrationSuffix = [
+    structuredCount > 0 ? `${structuredCount}件の構造化inherited_behavior宣言` : null,
+    legacyCount > 0 ? `${legacyCount}件の旧キーワード互換解決(deprecated)` : null
+  ].filter(Boolean).join(' / ');
+  const suffix = migrationSuffix ? ` (${migrationSuffix})` : '';
   if (requirement.status === 'contradicted') {
-    return `${requirement.summary?.contradiction_count ?? 0}件の要件矛盾候補がある`;
+    return `${requirement.summary?.contradiction_count ?? 0}件の要件矛盾候補がある${suffix}`;
   }
   if (requirement.status === 'needs_review') {
-    return `${requirement.summary?.scenario_gap_count ?? 0}件のStory未明示シナリオがある`;
+    return `${requirement.summary?.scenario_gap_count ?? 0}件のStory未明示シナリオがある${suffix}`;
   }
   if (requirement.status === 'pass') {
-    return 'Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない';
+    return `Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない${suffix}`;
   }
   return 'Story不変条件を抽出できなかったため適用外';
+}
+
+function buildRequirementStructuredEvidenceGuidance(requirement) {
+  const firstGap = requirement?.scenario_gaps?.[0];
+  const condition = firstGap?.evidence?.condition ?? '<branch condition>';
+  const file = firstGap?.file ?? '<changed source path>';
+  return {
+    accepted_fields: [
+      'inferred spec clause inherited_behavior.condition',
+      'inferred spec clause inherited_behavior.classification',
+      'inferred spec clause inherited_behavior.files'
+    ],
+    declaration_shape: {
+      inherited_behavior: {
+        condition,
+        classification: 'existing|unchanged|inherited',
+        files: [file]
+      }
+    },
+    replacement_for_legacy_keywords: 'Do not rely on free-text inherited/existing/unchanged tokens; attach inherited_behavior to the inferred/spec clause that owns the scenario.'
+  };
 }
 
 async function detectPlaywrightCommand(repoRoot, fileGroups = null) {
@@ -12368,8 +12466,8 @@ function renderRequirementPrHint(requirement, language = 'ja') {
   }
   if (requirement.status === 'needs_review') {
     return localizedText(language, {
-      ja: '- 次に見るもの: Story未明示シナリオを確認し、意図した挙動ならStory/Specへ追記、意図しないなら実装かテストを修正してください。',
-      en: '- Review next: scenario gaps. If intended, add them to Story/Spec; otherwise fix implementation or tests.'
+      ja: '- 次に見るもの: Story未明示シナリオを確認し、意図した既存挙動ならSpecの該当clauseへ `inherited_behavior: { condition, classification, files }` を追加、意図しないなら実装かテストを修正してください。',
+      en: '- Review next: scenario gaps. If intended existing behavior, add `inherited_behavior: { condition, classification, files }` to the owning Spec clause; otherwise fix implementation or tests.'
     });
   }
   if (requirement.status === 'contradicted') {
@@ -12582,7 +12680,7 @@ function formatCriticalGateEvidenceInstructions(gates) {
       if (gate.id === 'gate:responsibility_authority') return 'Responsibility Authority Gate requires each matched cross-story responsibility to resolve to registered authority and current-head evidence, or an explicit decision for no_registered_authority.';
       if (gate.id === 'gate:design_ssot_reconciliation') return 'Design SSOT Reconciliation Gate requires root/child design docs to be linked, current enough, and free of deterministic supersession conflicts; review `.vibepro/pr/<story-id>/design-ssot-reconciliation.json`.';
       if (gate.id === 'gate:senior_gap_judgment') return 'Senior Gap Judgment Gate requires ideal/current/gap/decision/residual-risk evidence to be explicit; review `.vibepro/pr/<story-id>/senior-gap-judgment.json`.';
-      if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture.';
+      if (gate.id === 'gate:requirement') return 'Requirement Gate requires scenario gaps/contradictions to be resolved in Story/Spec/Architecture; for intended existing behavior, add structured `inherited_behavior: { condition, classification, files }` to the owning Spec clause instead of relying on free-text inherited/existing keywords.';
       if (gate.id === 'gate:decision_record') return 'Decision Record Gate requires every needs_review, noise classification, waiver, and secret exposure decision to be recorded and closed in `vibepro decision record/status` artifacts.';
       if (gate.id === 'gate:network_contract') return 'Network Contract Gate requires matching Next.js API routes and network-aware E2E evidence for new /api client calls.';
       if (gate.id === 'gate:journey_context') return 'Journey Context Gate requires UI changes to be checked against the latest Journey step, affected conflicts, and blocking open questions.';

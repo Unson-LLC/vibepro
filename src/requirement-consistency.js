@@ -119,13 +119,14 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
     ? extractInvariantsFromInferredSpec(options.inferredSpec, storySource)
     : extractInvariants(storySource, requirementSources);
   const codeScenarios = await collectCodeScenarios(root, codeFiles);
-  const scenarioGaps = buildScenarioGaps({
+  const scenarioGapResult = buildScenarioGaps({
     invariants,
     codeScenarios,
     storySource,
     requirementSources,
     inferredSpec: options.inferredSpec
   });
+  const scenarioGaps = scenarioGapResult.gaps;
   const contradictions = buildContradictions({ invariants, codeScenarios, storySource });
   const status = contradictions.length > 0
     ? 'contradicted'
@@ -153,12 +154,16 @@ export async function buildRequirementConsistency(repoRoot, options = {}) {
       policy_ref_count: policyRefs.length,
       domain_contract_ref_count: requirementSources.filter((source) => source.kind === 'domain_contract').length,
       responsibility_authority_ref_count: responsibilityAuthority.matched_responsibility_count,
-      responsibility_authority_unregistered_count: responsibilityAuthority.unregistered_candidate_count
+      responsibility_authority_unregistered_count: responsibilityAuthority.unregistered_candidate_count,
+      structured_inherited_behavior_declaration_count: scenarioGapResult.structured_declarations.length,
+      legacy_keyword_resolution_count: scenarioGapResult.legacy_deprecations.length
     },
     responsibility_authority: responsibilityAuthority,
     invariants,
     scenario_gaps: scenarioGaps,
     contradictions,
+    structured_inherited_behavior_declarations: scenarioGapResult.structured_declarations,
+    legacy_keyword_resolution_deprecations: scenarioGapResult.legacy_deprecations,
     requirement_sources: requirementSources.map(toRequirementSourceRef),
     policy_refs: policyRefs.map(toRequirementSourceRef),
     code_scenarios: codeScenarios
@@ -183,6 +188,8 @@ export function renderRequirementConsistencyReport(requirement) {
 | Domain Contract Refs | ${requirement.summary?.domain_contract_ref_count ?? 0} |
 | Responsibility Authority Matches | ${requirement.summary?.responsibility_authority_ref_count ?? 0} |
 | Responsibility Authority Unknowns | ${requirement.summary?.responsibility_authority_unregistered_count ?? 0} |
+| Structured Inherited Behavior Declarations | ${requirement.summary?.structured_inherited_behavior_declaration_count ?? 0} |
+| Legacy Keyword Resolutions | ${requirement.summary?.legacy_keyword_resolution_count ?? 0} |
 
 ## Invariants
 
@@ -195,6 +202,14 @@ ${formatItems(requirement.scenario_gaps, (item) => `- ${item.id}: ${item.title} 
 ## Potential Contradictions
 
 ${formatItems(requirement.contradictions, (item) => `- ${item.id}: ${item.title} - ${item.detail}`)}
+
+## Structured Inherited Behavior Declarations
+
+${formatItems(requirement.structured_inherited_behavior_declarations, (item) => `- ${item.clause_id ?? '-'}: ${item.condition} (${item.classification}; files=${item.files?.join(', ') || '-'})`)}
+
+## Legacy Keyword Resolution Deprecations
+
+${formatItems(requirement.legacy_keyword_resolution_deprecations, (item) => `- ${item.file}: ${item.condition} - replace with ${item.replacement}`)}
 
 ## Requirement Sources
 
@@ -213,7 +228,9 @@ export function renderRequirementGateSummary(requirement) {
     `${requirement.summary?.scenario_gap_count ?? 0} scenario gaps`,
     `${requirement.summary?.contradiction_count ?? 0} contradictions`,
     `${requirement.summary?.responsibility_authority_ref_count ?? 0} responsibility matches`,
-    `${requirement.summary?.responsibility_authority_unregistered_count ?? 0} responsibility unknowns`
+    `${requirement.summary?.responsibility_authority_unregistered_count ?? 0} responsibility unknowns`,
+    `${requirement.summary?.structured_inherited_behavior_declaration_count ?? 0} structured inherited behavior declarations`,
+    `${requirement.summary?.legacy_keyword_resolution_count ?? 0} legacy keyword resolutions`
   ].join(', ');
   return `- Requirement Gate: ${requirement.status} - ${detail}`;
 }
@@ -728,9 +745,17 @@ function extractResponseMessages(content) {
 }
 
 function buildScenarioGaps({ invariants, codeScenarios, storySource, requirementSources, inferredSpec = null }) {
-  if (invariants.length === 0) return [];
+  if (invariants.length === 0) {
+    return {
+      gaps: [],
+      legacy_deprecations: [],
+      structured_declarations: []
+    };
+  }
   const gaps = [];
+  const legacyDeprecations = [];
   const inferredSpecContext = buildInferredSpecContext(inferredSpec);
+  const structuredDeclarations = inferredSpecContext.structured_inherited_behavior_declarations ?? [];
   const scopeContext = buildRequirementScopeContext({ storySource, requirementSources, inferredSpecContext });
   const acceptanceText = [
     ...(storySource?.acceptance_criteria ?? []),
@@ -747,13 +772,23 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
       if (!isDomainBranch(condition)) continue;
       if (isImplementationGuardBranch(branch.condition)) continue;
       if (acceptanceText && acceptanceText.includes(condition.slice(0, 24))) continue;
-      if (isBranchCoveredByRequirementScope({ branch, scopeContext })) continue;
-      if (isBranchCoveredByInferredSpec({
+      const requirementScopeCoverage = getBranchCoverageByRequirementScope({ branch, scopeContext });
+      if (requirementScopeCoverage.covered) {
+        legacyDeprecations.push(buildLegacyInheritedBehaviorDeprecation({ branch, scenario, coverage: requirementScopeCoverage }));
+        continue;
+      }
+      const inferredSpecCoverage = getBranchCoverageByInferredSpec({
         branch,
         scenario,
         invariants,
         inferredSpecContext
-      })) continue;
+      });
+      if (inferredSpecCoverage.covered) {
+        if (inferredSpecCoverage.mode === 'legacy_keyword') {
+          legacyDeprecations.push(buildLegacyInheritedBehaviorDeprecation({ branch, scenario, coverage: inferredSpecCoverage }));
+        }
+        continue;
+      }
       gaps.push({
         id: `REQ-GAP-${String(gaps.length + 1).padStart(3, '0')}`,
         title: 'Requirement Sourcesに明示されていない重要分岐がある',
@@ -762,10 +797,20 @@ function buildScenarioGaps({ invariants, codeScenarios, storySource, requirement
         evidence: branch,
         related_invariants: relatedInvariantIds(invariants, branch.condition)
       });
-      if (gaps.length >= 12) return gaps;
+      if (gaps.length >= 12) {
+        return {
+          gaps,
+          legacy_deprecations: legacyDeprecations,
+          structured_declarations: structuredDeclarations
+        };
+      }
     }
   }
-  return gaps;
+  return {
+    gaps,
+    legacy_deprecations: legacyDeprecations,
+    structured_declarations: structuredDeclarations
+  };
 }
 
 function buildRequirementScopeContext({ storySource, requirementSources, inferredSpecContext }) {
@@ -792,16 +837,23 @@ function buildRequirementScopeContext({ storySource, requirementSources, inferre
 }
 
 function isBranchCoveredByRequirementScope({ branch, scopeContext }) {
+  return getBranchCoverageByRequirementScope({ branch, scopeContext }).covered;
+}
+
+function getBranchCoverageByRequirementScope({ branch, scopeContext }) {
   const conditionTokens = meaningfulConditionTokens(branch.condition);
-  if (conditionTokens.length === 0) return false;
-  return scopeContext.texts.some((entry) => (
+  if (conditionTokens.length === 0) return { covered: false };
+  const matched = scopeContext.texts.find((entry) => (
     entry.inherited_behavior && tokensCoveredByText(conditionTokens, entry.normalized)
   ));
+  return matched
+    ? { covered: true, mode: 'legacy_keyword', source: 'requirement_text', raw: matched.raw }
+    : { covered: false };
 }
 
 function buildInferredSpecContext(spec) {
   if (!spec || !Array.isArray(spec.clauses)) {
-    return { clauses: [], texts: [] };
+    return { clauses: [], texts: [], structured_inherited_behavior_declarations: [] };
   }
   const clauses = spec.clauses
     .filter((clause) => clause && typeof clause.statement === 'string')
@@ -829,36 +881,124 @@ function buildInferredSpecContext(spec) {
         statement: clause.statement,
         files,
         fragments,
+        inherited_behavior_declarations: normalizeInheritedBehaviorDeclarations(clause),
         text,
         normalized_text: normalizeComparableText(text)
       };
     });
   return {
     clauses,
-    texts: clauses.map((clause) => clause.text)
+    texts: clauses.map((clause) => clause.text),
+    structured_inherited_behavior_declarations: clauses.flatMap((clause) => clause.inherited_behavior_declarations)
   };
 }
 
 function isBranchCoveredByInferredSpec({ branch, scenario, invariants, inferredSpecContext }) {
-  if (!inferredSpecContext?.clauses?.length) return false;
+  return getBranchCoverageByInferredSpec({ branch, scenario, invariants, inferredSpecContext }).covered;
+}
+
+function getBranchCoverageByInferredSpec({ branch, scenario, invariants, inferredSpecContext }) {
+  if (!inferredSpecContext?.clauses?.length) return { covered: false };
   const inferredInvariants = invariants.filter((invariant) => invariant.source?.kind === 'inferred_spec');
   const relatedIds = new Set(relatedInvariantIds(inferredInvariants, branch.condition));
   const condition = normalizeComparableCode(branch.condition);
   const conditionTokens = meaningfulConditionTokens(branch.condition);
 
   for (const clause of inferredSpecContext.clauses) {
+    const declaration = clause.inherited_behavior_declarations.find((item) => structuredDeclarationCoversBranch(item, branch, scenario));
+    if (declaration) {
+      return {
+        covered: true,
+        mode: 'structured_declaration',
+        source: 'inferred_spec',
+        clause_id: clause.id,
+        declaration
+      };
+    }
     const appliesToFile = clauseAppliesToScenario(clause, scenario.file);
     if (appliesToFile && clause.fragments.some((fragment) => codeFragmentCoversCondition(fragment, condition))) {
-      return true;
+      return { covered: true, mode: 'code_pattern', source: 'inferred_spec', clause_id: clause.id };
     }
     if (tokensCoveredByText(conditionTokens, clause.normalized_text)) {
-      return true;
+      const inherited = /\b(inherited|existing|unchanged|remain|continue|as before|do not change|not changed)\b|既存|維持|変更しない|従来|そのまま/i.test(clause.text);
+      return {
+        covered: true,
+        mode: inherited ? 'legacy_keyword' : 'text_token',
+        source: 'inferred_spec',
+        clause_id: clause.id
+      };
     }
     if (appliesToFile && relatedIds.has(clause.id) && conditionTokens.some((token) => textIncludesToken(clause.normalized_text, token))) {
-      return true;
+      return { covered: true, mode: 'related_invariant', source: 'inferred_spec', clause_id: clause.id };
     }
   }
-  return false;
+  return { covered: false };
+}
+
+function normalizeInheritedBehaviorDeclarations(clause) {
+  const candidates = [
+    clause.inherited_behavior,
+    clause.inherited_behavior_declaration,
+    ...(Array.isArray(clause.inherited_behaviors) ? clause.inherited_behaviors : [])
+  ].filter(Boolean);
+  return candidates
+    .map((candidate) => normalizeInheritedBehaviorDeclaration(candidate, clause))
+    .filter(Boolean);
+}
+
+function normalizeInheritedBehaviorDeclaration(candidate, clause) {
+  if (typeof candidate === 'string') {
+    return {
+      clause_id: clause.id ?? null,
+      condition: candidate,
+      classification: 'existing',
+      files: [],
+      source: 'inferred_spec.inherited_behavior'
+    };
+  }
+  if (!candidate || typeof candidate !== 'object') return null;
+  const condition = String(candidate.condition ?? candidate.branch_condition ?? candidate.when ?? '').trim();
+  if (!condition) return null;
+  const classification = String(candidate.classification ?? candidate.status ?? candidate.kind ?? 'existing').trim().toLowerCase();
+  if (!['existing', 'unchanged', 'inherited'].includes(classification)) return null;
+  const files = [
+    ...(Array.isArray(candidate.files) ? candidate.files : []),
+    candidate.file,
+    candidate.path
+  ].filter(Boolean).map((file) => normalizePath(file));
+  return {
+    clause_id: clause.id ?? null,
+    condition,
+    classification,
+    files,
+    source: 'inferred_spec.inherited_behavior'
+  };
+}
+
+function structuredDeclarationCoversBranch(declaration, branch, scenario) {
+  if (!declaration) return false;
+  if (declaration.files.length > 0 && !declaration.files.some((file) => pathPatternMatches(file, scenario.file))) {
+    return false;
+  }
+  const declaredCondition = normalizeComparableCode(declaration.condition);
+  const branchCondition = normalizeComparableCode(branch.condition);
+  if (declaredCondition && branchCondition && (declaredCondition.includes(branchCondition) || branchCondition.includes(declaredCondition))) {
+    return true;
+  }
+  return tokensCoveredByText(meaningfulConditionTokens(branch.condition), normalizeComparableText(declaration.condition));
+}
+
+function buildLegacyInheritedBehaviorDeprecation({ branch, scenario, coverage }) {
+  return {
+    status: 'deprecated',
+    replacement: 'inferred spec clause inherited_behavior: { condition, classification, files }',
+    removal_not_before: '2026-08-05',
+    file: scenario.file,
+    condition: branch.condition,
+    source: coverage.source ?? null,
+    clause_id: coverage.clause_id ?? null,
+    reason: 'Free-text inherited/existing/unchanged keyword matching is migration-only compatibility; record a structured inherited_behavior declaration instead.'
+  };
 }
 
 function clauseAppliesToScenario(clause, scenarioFile) {

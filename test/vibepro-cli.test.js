@@ -2823,6 +2823,102 @@ title: PR準備
   assert.match(afterGate.reason, /Path\/surface matrix accepted by decision record/);
 });
 
+test('pr prepare resolves path surface matrix from structured observation with bland summary', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return "changed"; }\n');
+  await writeFile(path.join(repo, 'test', 'surface.test.js'), 'export const checked = true;\n');
+  await git(repo, ['add', 'src/pr-manager.js', 'test/surface.test.js']);
+  await git(repo, ['commit', '-m', 'feat: update gate surface implementation']);
+
+  const before = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(before.exitCode, 0);
+  const beforeGate = before.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(beforeGate.status, 'partial_surface');
+  assert.equal(beforeGate.missing_surfaces.includes('review_surface'), true);
+  assert.deepEqual(beforeGate.structured_evidence_guidance.accepted_fields, [
+    '--target <changed path>',
+    '--scenario "path_surface:<surface>"',
+    '--observed "surface=<surface>"'
+  ]);
+  assert.match(beforeGate.structured_evidence_guidance.command_template, /--target "<changed path>"/);
+  assert.match(beforeGate.required_actions.join('\n'), /--observed "surface=<surface>"/);
+
+  const record = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/surface.test.js',
+    '--summary',
+    'passed',
+    '--target',
+    'src/pr-manager.js',
+    '--scenario',
+    'path_surface:review_surface',
+    '--observed',
+    'surface=review_surface',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const after = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(after.exitCode, 0);
+  const afterGate = after.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const reviewRow = afterGate.rows.find((row) => row.surface === 'review_surface');
+  assert.equal(afterGate.status, 'passed');
+  assert.equal(reviewRow.status, 'covered');
+  assert.equal(reviewRow.resolution_source, 'structured_observation');
+  assert.equal(reviewRow.deprecation, undefined);
+  assert.deepEqual(afterGate.deprecation_notices, []);
+});
+
+test('pr prepare keeps path surface legacy keyword compatibility with deprecation notice', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return "changed"; }\n');
+  await writeFile(path.join(repo, 'test', 'surface.test.js'), 'export const checked = true;\n');
+  await git(repo, ['add', 'src/pr-manager.js', 'test/surface.test.js']);
+  await git(repo, ['commit', '-m', 'feat: update legacy gate surface implementation']);
+
+  const record = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/surface.test.js',
+    '--summary',
+    'review artifact surface checked',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const reviewRow = gate.rows.find((row) => row.surface === 'review_surface');
+  assert.equal(gate.status, 'passed');
+  assert.equal(reviewRow.status, 'covered');
+  assert.equal(reviewRow.resolution_source, 'legacy_summary_keyword');
+  assert.equal(reviewRow.deprecation.replacement, 'verify record --target/--scenario/--observed');
+  assert.equal(gate.deprecation_notices[0].resolution_source, 'legacy_summary_keyword');
+  assert.match(gate.deprecation_notices[0].reason, /migration-only compatibility/);
+});
+
 test('pr prepare blocks PR freshness when base advanced after branch creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -15345,8 +15441,66 @@ export function finalizeArchive(session, sessionId) {
   const requirement = result.result.preparation.pr_context.requirement_consistency;
   assert.equal(requirement.status, 'pass');
   assert.equal(requirement.summary.scenario_gap_count, 0);
+  assert.equal(requirement.summary.legacy_keyword_resolution_count > 0, true);
+  assert.equal(requirement.legacy_keyword_resolution_deprecations.length > 0, true);
+  assert.equal(requirement.legacy_keyword_resolution_deprecations[0].replacement, 'inferred spec clause inherited_behavior: { condition, classification, files }');
   const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:requirement');
   assert.equal(gate.status, 'passed');
+  assert.equal(gate.deprecation_notices.length > 0, true);
+  assert.match(gate.reason, /旧キーワード互換解決/);
+});
+
+test('pr prepare resolves requirement REQ-GAP from structured inherited behavior declaration', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'session'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'session', 'billing.js'), `
+export function resolveAccess(customer) {
+  if (customer.subscriptionTier === 'premium') {
+    return 'premium';
+  }
+  return 'standard';
+}
+`);
+  await writeInferredSpec(repo, 'story-pr-prepare', {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    generated_at: '2026-07-05T00:00:00.000Z',
+    clauses: [
+      {
+        id: 'KGM-REQ-001',
+        type: 'invariant',
+        statement: 'Premium subscription tier branch policy is represented by structured metadata.',
+        inherited_behavior: {
+          condition: "customer.subscriptionTier === 'premium'",
+          classification: 'unchanged',
+          files: ['src/session/billing.js']
+        },
+        origin: {},
+        verifiable_by: {}
+      }
+    ]
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add structured billing branch declaration']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const requirement = result.result.preparation.pr_context.requirement_consistency;
+  assert.equal(requirement.status, 'pass');
+  assert.equal(requirement.summary.scenario_gap_count, 0);
+  assert.equal(requirement.summary.structured_inherited_behavior_declaration_count, 1);
+  assert.equal(requirement.summary.legacy_keyword_resolution_count, 0);
+  assert.equal(requirement.structured_inherited_behavior_declarations[0].condition, "customer.subscriptionTier === 'premium'");
+  assert.deepEqual(requirement.structured_inherited_behavior_declarations[0].files, ['src/session/billing.js']);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:requirement');
+  assert.equal(gate.status, 'passed');
+  assert.deepEqual(gate.structured_evidence_guidance.accepted_fields, [
+    'inferred spec clause inherited_behavior.condition',
+    'inferred spec clause inherited_behavior.classification',
+    'inferred spec clause inherited_behavior.files'
+  ]);
+  assert.deepEqual(gate.deprecation_notices, []);
 });
 
 test('pr prepare still flags uncovered product domain branches after generic scope classification', async () => {
@@ -15956,6 +16110,66 @@ test('explicit verification evidence tokens satisfy judgment axis requirements',
   const dataStateGate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_data_state');
   assert.equal(dataStateGate?.status, 'passed');
   assert.equal(dataStateGate.missing_evidence.length, 0);
+  const verificationMatches = dataStateGate.matched_evidence.filter((item) => item.resolution_source);
+  assert.equal(verificationMatches.length > 0, true);
+  assert.equal(verificationMatches.every((item) => item.resolution_source === 'structured_observation'), true);
+  assert.equal(verificationMatches.every((item) => item.deprecation === undefined), true);
+});
+
+test('structured contract_doc evidence satisfies public contract judgment axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public contract structured evidence
+spec_docs:
+  - docs/specs/public-contract.md
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'docs', 'specs', 'public-contract.md'), '# Spec\n\nThe CLI output contract remains additive and backward compatible.\n');
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format additive"; }\n');
+  await writeFile(path.join(repo, 'test', 'formatter-contract.test.js'), 'import assert from "node:assert/strict";\nassert.match("cli output format additive", /additive/);\n');
+  await writeFile(path.join(repo, 'artifacts', 'public-contract.json'), JSON.stringify({ status: 'pass', contract_doc: 'present' }, null, 2));
+  await git(repo, [
+    'add',
+    'docs/management/stories/active/story-pr-prepare.md',
+    'docs/specs/public-contract.md',
+    'src/formatter.js',
+    'test/formatter-contract.test.js',
+    'artifacts/public-contract.json'
+  ]);
+  await git(repo, ['commit', '-m', 'feat: add public contract fixture']);
+
+  await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/formatter-contract.test.js',
+    '--summary', 'contract check passed',
+    '--artifact', 'artifacts/public-contract.json',
+    '--target', 'docs/specs/public-contract.md',
+    '--scenario', 'judgment:contract_doc',
+    '--scenario', 'public_contract: cli output contract remains additive',
+    '--observed', 'contract_doc=present'
+  ]);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  const axis = prepared.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_passed');
+  assert.equal(axis.missing_evidence.includes('contract_doc'), false);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'contract_doc' && item.resolution_source === 'structured_observation'), true);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.missing_evidence.includes('contract_doc'), false);
 });
 
 test('common judgment spine uses optional Graphify impact evidence when available', async () => {
