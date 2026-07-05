@@ -3035,9 +3035,42 @@ function renderFinalE2eConfidence(gateDag, verificationEvidence) {
 
 function selectFinalE2eEvidence(commands = []) {
   const items = Array.isArray(commands) ? commands : [];
-  return items.find((item) => normalizeEvidenceKind(item?.kind) === 'e2e')
-    ?? items.find((item) => normalizeEvidenceKind(item?.kind) === 'flow')
-    ?? items.find((item) => hasExplicitE2eEvidenceSurface(item));
+  return items
+    .map((item, index) => ({ item, index, score: scoreFinalE2eEvidence(item) }))
+    .filter((entry) => entry.score)
+    .sort((a, b) => compareFinalE2eEvidenceScore(a, b))[0]?.item;
+}
+
+function scoreFinalE2eEvidence(item) {
+  const surfaceRank = getFinalE2eSurfaceRank(item);
+  if (surfaceRank === null) return null;
+  return {
+    bindingRank: getFinalE2eBindingRank(item),
+    statusRank: isPassingVerificationStatus(item?.status) ? 0 : 1,
+    surfaceRank
+  };
+}
+
+function compareFinalE2eEvidenceScore(a, b) {
+  return a.score.bindingRank - b.score.bindingRank
+    || a.score.statusRank - b.score.statusRank
+    || a.score.surfaceRank - b.score.surfaceRank
+    || a.index - b.index;
+}
+
+function getFinalE2eSurfaceRank(item) {
+  const kind = normalizeEvidenceKind(item?.kind);
+  if (kind === 'e2e') return 0;
+  if (kind === 'flow') return 1;
+  if (hasExplicitE2eEvidenceSurface(item)) return 2;
+  return null;
+}
+
+function getFinalE2eBindingRank(item) {
+  const status = String(item?.binding?.status ?? '').trim().toLowerCase();
+  if (status === 'current') return 0;
+  if (status === 'stale') return 2;
+  return 1;
 }
 
 function normalizeEvidenceKind(kind) {
