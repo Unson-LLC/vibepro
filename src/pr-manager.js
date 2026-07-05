@@ -3376,8 +3376,10 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const blockers = axis.matched_blockers?.length > 0
         ? ` / blockers=${axis.matched_blockers.map((item) => `${item.id}:${item.criterion}`).join(', ')}`
         : '';
-      const waiver = axis.blocker_waiver?.decision_id
-        ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
+      const waiver = axis.blocker_waiver
+        ? (axis.blocker_waiver.decision_id
+          ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
+          : ` / ignored_blocker_waiver_missing=${summarizeBlockerWaiverMissingFields(axis.blocker_waiver).join('|') || 'required_metadata'}`)
         : '';
       return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${candidates}${activationSignals}${precision}${matched}${optional}${missing}${blockers}${waiver}`;
     })
@@ -7221,7 +7223,7 @@ function buildSeniorJudgmentAxes({
       })
       : [];
     const blockerWaiver = active
-      ? findAcceptedBlockerWaiverForSource(decisionRecords, `gate:judgment_axis_${definition.axis}`)
+      ? findBlockerWaiverForSource(decisionRecords, `gate:judgment_axis_${definition.axis}`)
       : null;
     const status = active
       ? resolveSeniorAxisStatus(definition, evidence, { matchedBlockers, blockerWaiver })
@@ -7254,6 +7256,7 @@ function buildSeniorJudgmentAxes({
         ? {
           decision_id: blockerWaiver.decision_id ?? null,
           source: blockerWaiver.source ?? null,
+          status: blockerWaiver.status ?? null,
           artifact: blockerWaiver.artifact ?? null,
           reason: blockerWaiver.reason ?? null
         }
@@ -7618,29 +7621,34 @@ function shouldExpectDesignInputJudgment({ changeClassification = null, fileGrou
 function buildJudgmentAxisGates(engineeringJudgment) {
   const axes = (engineeringJudgment?.judgment_axes ?? [])
     .filter((axis) => axis.status !== 'inactive');
-  return axes.map((axis) => ({
-    id: `gate:judgment_axis_${axis.axis}`,
-    type: 'judgment_axis_gate',
-    label: `Judgment Axis: ${axis.axis}`,
-    status: axis.status === 'active_blocked' && axis.blocker_waiver
-      ? 'accepted_followup'
-      : mapJudgmentAxisStatusToGateStatus(axis.status),
-    axis_status: axis.status,
-    required: true,
-    axis: axis.axis,
-    confidence: axis.confidence,
-    decision_question: axis.decision_question,
-    required_evidence: axis.required_evidence,
-    blocking_criteria: axis.blocking_criteria,
-    acceptable_followup: axis.acceptable_followup,
-    signals: axis.signals ?? [],
-    matched_evidence: axis.matched_evidence ?? [],
-    optional_evidence: axis.optional_evidence ?? [],
-    missing_evidence: axis.missing_evidence ?? [],
-    matched_blockers: axis.matched_blockers ?? [],
-    blocker_waiver: axis.blocker_waiver ?? null,
-    reason: buildJudgmentAxisGateReason(axis)
-  }));
+  return axes.map((axis) => {
+    const validBlockerWaiver = isAcceptedBlockerWaiver(axis.blocker_waiver);
+    return {
+      id: `gate:judgment_axis_${axis.axis}`,
+      type: 'judgment_axis_gate',
+      label: `Judgment Axis: ${axis.axis}`,
+      status: axis.status === 'active_blocked' && validBlockerWaiver
+        ? 'accepted_followup'
+        : mapJudgmentAxisStatusToGateStatus(axis.status),
+      axis_status: axis.status,
+      required: true,
+      axis: axis.axis,
+      confidence: axis.confidence,
+      decision_question: axis.decision_question,
+      required_evidence: axis.required_evidence,
+      blocking_criteria: axis.blocking_criteria,
+      acceptable_followup: axis.acceptable_followup,
+      signals: axis.signals ?? [],
+      matched_evidence: axis.matched_evidence ?? [],
+      optional_evidence: axis.optional_evidence ?? [],
+      missing_evidence: axis.missing_evidence ?? [],
+      matched_blockers: axis.matched_blockers ?? [],
+      blocker_waiver: axis.blocker_waiver ?? null,
+      blocker_waiver_valid: validBlockerWaiver,
+      blocker_waiver_missing_fields: validBlockerWaiver ? [] : summarizeBlockerWaiverMissingFields(axis.blocker_waiver),
+      reason: buildJudgmentAxisGateReason(axis)
+    };
+  });
 }
 
 function mapJudgmentAxisStatusToGateStatus(status) {
@@ -7666,12 +7674,26 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
   }
   if (axis.status === 'active_blocked') {
-    if (axis.blocker_waiver) {
+    if (isAcceptedBlockerWaiver(axis.blocker_waiver)) {
       return `${prefix} Blocking criteria matched but explicitly waived: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}. Waiver=${axis.blocker_waiver.decision_id ?? axis.blocker_waiver.source ?? 'accepted waiver'} / artifact=${axis.blocker_waiver.artifact ?? 'none'}.`;
+    }
+    if (axis.blocker_waiver) {
+      const missingFields = summarizeBlockerWaiverMissingFields(axis.blocker_waiver);
+      return `${prefix} Blocking criteria matched: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}. Ignored blocker waiver missing ${missingFields.join(', ') || 'required metadata'}.`;
     }
     return `${prefix} Blocking criteria matched: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}`;
   }
   return `${axis.axis}: inactive`;
+}
+
+function isAcceptedBlockerWaiver(waiver) {
+  return Boolean(
+    waiver
+    && waiver.status === 'accepted'
+    && String(waiver.decision_id ?? '').trim()
+    && String(waiver.reason ?? '').trim()
+    && String(waiver.artifact ?? '').trim()
+  );
 }
 
 function isAcceptedAxisFollowupDecision(decision) {
@@ -7679,15 +7701,23 @@ function isAcceptedAxisFollowupDecision(decision) {
   return Boolean(String(decision.reason ?? '').trim() && String(decision.artifact ?? '').trim());
 }
 
-function findAcceptedBlockerWaiverForSource(decisionRecords, source) {
+function findBlockerWaiverForSource(decisionRecords, source) {
   const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
-  return decisions.find((decision) => (
+  const candidates = decisions.filter((decision) => (
     decision.source === source
-    && decision.status === 'accepted'
     && decision.type === 'waiver'
-    && Boolean(String(decision.reason ?? '').trim())
-    && Boolean(String(decision.artifact ?? '').trim())
-  )) ?? null;
+  ));
+  return candidates.find((decision) => isAcceptedBlockerWaiver(decision)) ?? candidates[0] ?? null;
+}
+
+function summarizeBlockerWaiverMissingFields(waiver) {
+  if (!waiver) return [];
+  return [
+    String(waiver.decision_id ?? '').trim() ? null : 'decision_id',
+    String(waiver.reason ?? '').trim() ? null : 'reason',
+    String(waiver.artifact ?? '').trim() ? null : 'artifact',
+    waiver.status === 'accepted' ? null : 'status=accepted'
+  ].filter(Boolean);
 }
 
 function summarizeIgnoredAxisFollowupDecision(decision) {
@@ -7696,10 +7726,11 @@ function summarizeIgnoredAxisFollowupDecision(decision) {
     source: decision.source ?? null,
     status: decision.status ?? null,
     missing_fields: [
+      String(decision.decision_id ?? '').trim() ? null : 'decision_id',
       String(decision.reason ?? '').trim() ? null : 'reason',
       String(decision.artifact ?? '').trim() ? null : 'artifact'
     ].filter(Boolean),
-    reason: 'accepted axis follow-up decisions require both reason and artifact before they can cover missing evidence'
+    reason: 'accepted axis follow-up decisions require decision_id, reason, and artifact before they can cover missing evidence'
   };
 }
 

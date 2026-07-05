@@ -18,6 +18,7 @@ const SCENARIO_S005 = 'Given a workflow-heavy Story, when Architecture/Spec are 
 const SCENARIO_S006 = 'Given diagnosis or PR prepare workflow evidence is replayed, when artifacts are inspected, then design_input_judgment and pre_implementation_judgment are not collapsed into one generic Engineering Judgment record.';
 const SCENARIO_S007 = 'Given workflow documentation is used as operator guidance, when README and CLI references are inspected, then they describe design-input diagnosis before Architecture/Spec and pre-implementation checks before code/PR readiness.';
 const SCENARIO_S008 = 'Given code-quality diagnosis detects authorization_order_risks, when design-input and pre-implementation diagnosis runs execute, then both phase evidence artifacts retain code_quality.authorization_order_risks.';
+const SCENARIO_S009 = 'Given an active_blocked judgment axis has an accepted blocker waiver with decision_id, reason, and artifact, when PR prepare builds Gate DAG and PR artifacts, then the axis remains active_blocked while the gate and UX artifacts show accepted_followup instead of passed.';
 const AC4_PR_CONTEXT_SPLIT = 'AC-4 PR prepare artifact design_input_judgment pre_implementation_judgment split separate retained';
 
 async function git(repo, args) {
@@ -202,6 +203,91 @@ test('ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-008 DIJ-CONTRACT-009 D
   assert.equal(gateIds.indexOf('gate:design_input_judgment') < gateIds.indexOf('gate:engineering_judgment_route'), true, `${STORY_ID} ac:6 S-003 ${SCENARIO_S003}`);
 });
 
+test('DIJ-SCENARIO-009 active blocker waiver stays visible as accepted followup across Gate DAG and PR UX artifacts', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---
+story_id: ${STORY_ID}
+title: Design input judgment blocker waiver
+---
+
+# Design input judgment blocker waiver
+
+## Acceptance Criteria
+
+- [ ] CLI output contract remains compatible when formatter changes.
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: add blocker waiver fixture']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    STORY_ID,
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/e2e/story-vibepro-design-input-judgment-flow.spec.ts'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    STORY_ID,
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    `docs/management/stories/active/${STORY_ID}.md`,
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  assert.equal(Boolean(decision.result.decision.decision_id), true, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+
+  const prepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', STORY_ID, '--json']);
+  assert.equal(prepare.exitCode, 0);
+  const axis = prepare.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked', `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  assert.equal(axis.blocker_waiver.decision_id, decision.result.decision.decision_id, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  const gate = findGate(prepare.result.preparation, 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'accepted_followup', `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  assert.equal(gate.axis_status, 'active_blocked', `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  assert.equal(gate.blocker_waiver_valid, true, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  assert.equal(gate.reason.includes('explicitly waived'), true, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+  assert.equal(gate.reason.includes(decision.result.decision.decision_id), true, `${STORY_ID} DIJ-SCENARIO-009 ${SCENARIO_S009}`);
+
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-body.md'), 'utf8');
+  const gateDagHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'gate-dag.html'), 'utf8');
+  const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.html'), 'utf8');
+  const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'review-cockpit.html'), 'utf8');
+  assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-vibepro-design-input-judgment\/\]\(\.vibepro\/pr\/story-vibepro-design-input-judgment\/\)/);
+  assert.doesNotMatch(prBody, /public_contract: active_blocked/);
+  assert.match(gateDagHtml, /gate:judgment_axis_public_contract[\s\S]{0,700}accepted_followup/);
+  assert.match(gateDagHtml, /explicitly waived/);
+  const publicContractCard = gateDagHtml.match(/<article class="card [^"]+" data-node-id="gate:judgment_axis_public_contract"[\s\S]*?<\/article>/)?.[0] ?? '';
+  assert.match(publicContractCard, /accepted_followup/);
+  assert.doesNotMatch(publicContractCard, />passed</);
+  assert.match(prPrepareHtml, /accepted_followup/);
+  assert.match(reviewCockpitHtml, /accepted_followup/);
+});
+
 test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass DIJ-SCENARIO-003 manifest-only design-input run does not pass the PR gate', async () => {
   const repo = await makeGitRepo();
   await writeCrossSurfaceDesignChange(repo);
@@ -218,39 +304,39 @@ test('DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass DIJ-SCENARIO-003 mani
   assert.match(
     prepare.result.preparation.pr_context.design_input_judgment.required_actions.join('\n'),
     /Regenerate the missing design-input diagnosis evidence artifact/,
-    `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`
+    `${STORY_ID} ac-7 S-007 ${SCENARIO_S007}`
   );
   assert.match(
     gate.required_actions.join('\n'),
     /vibepro story diagnose \. --id <story-id> --pre-architecture --run-graphify/,
-    `${STORY_ID} ac:7 S-007 ${SCENARIO_S007}`
+    `${STORY_ID} ac-7 S-007 ${SCENARIO_S007}`
   );
 });
 
-test('ac:8 DIJ-CONTRACT-011 DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
+test('ac-8 DIJ-CONTRACT-011 DIJ-SCENARIO-007 documentation explains design-input before Architecture and final readiness before PR', async () => {
   const root = process.cwd();
   const readmeJa = await readFile(path.join(root, 'README.ja.md'), 'utf8');
   const cliReference = await readFile(path.join(root, 'docs', 'reference', 'cli.md'), 'utf8');
   const workflowSkill = await readFile(path.join(root, 'skills', 'vibepro-workflow', 'SKILL.md'), 'utf8');
 
-  assert.match(readmeJa, /--pre-architecture --run-graphify/, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.match(cliReference, /--phase design-input\|pre-implementation/, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.match(workflowSkill, /Architecture\/Spec前|design-input/, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
+  assert.match(readmeJa, /--pre-architecture --run-graphify/, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.match(cliReference, /--phase design-input\|pre-implementation/, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.match(workflowSkill, /Architecture\/Spec前|design-input/, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
   const readmeDesignInputBeforeArchitecture = readmeJa.indexOf('Architecture / Spec を確定扱いにする前に `story diagnose --pre-architecture`');
   const readmePreImplementationBeforePr = readmeJa.indexOf('実装やPR readinessの前に `story diagnose --phase pre-implementation`');
-  assert.notEqual(readmeDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.notEqual(readmePreImplementationBeforePr, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.equal(readmeDesignInputBeforeArchitecture < readmePreImplementationBeforePr, true, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(readmeDesignInputBeforeArchitecture, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(readmePreImplementationBeforePr, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.equal(readmeDesignInputBeforeArchitecture < readmePreImplementationBeforePr, true, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
 
   const cliDesignInputBeforeArchitecture = cliReference.indexOf('before finalizing Architecture/Spec');
   const cliPreImplementationBeforePr = cliReference.indexOf('Before implementation or PR readiness');
-  assert.notEqual(cliDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.notEqual(cliPreImplementationBeforePr, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.equal(cliDesignInputBeforeArchitecture < cliPreImplementationBeforePr, true, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(cliDesignInputBeforeArchitecture, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(cliPreImplementationBeforePr, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.equal(cliDesignInputBeforeArchitecture < cliPreImplementationBeforePr, true, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
 
   const workflowDesignInputBeforeArchitecture = workflowSkill.indexOf('Before final Architecture/Spec');
   const workflowPreImplementationBeforePr = workflowSkill.indexOf('Before implementation or PR readiness');
-  assert.notEqual(workflowDesignInputBeforeArchitecture, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.notEqual(workflowPreImplementationBeforePr, -1, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
-  assert.equal(workflowDesignInputBeforeArchitecture < workflowPreImplementationBeforePr, true, `${STORY_ID} ac:8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(workflowDesignInputBeforeArchitecture, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.notEqual(workflowPreImplementationBeforePr, -1, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
+  assert.equal(workflowDesignInputBeforeArchitecture < workflowPreImplementationBeforePr, true, `${STORY_ID} ac-8 S-007 ${SCENARIO_S007}`);
 });

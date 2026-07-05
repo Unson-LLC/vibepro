@@ -17227,6 +17227,155 @@ title: Public Contract Blocker Waiver
   assert.equal(gate.reason.includes('explicitly waived'), true);
 });
 
+test('blocker waiver without decision id does not downgrade a blocking judgment axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Blocker Waiver Missing Decision Id
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format with malformed blocker waiver']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json');
+  const decisionRecords = await readJson(decisionRecordsPath);
+  delete decisionRecords.decisions[0].decision_id;
+  decisionRecords.decisions[0].status = 'open';
+  await writeJson(decisionRecordsPath, decisionRecords);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.blocker_waiver.decision_id, null);
+  assert.equal(axis.blocker_waiver.status, 'open');
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.deepEqual(gate.blocker_waiver_missing_fields, ['decision_id', 'status=accepted']);
+  assert.equal(gate.reason.includes('explicitly waived'), false);
+  assert.equal(gate.reason.includes('Ignored blocker waiver missing decision_id, status=accepted'), true);
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
+});
+
+test('blocker waiver without accepted status does not downgrade a blocking judgment axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Blocker Waiver Missing Status
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format with missing waiver status']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json');
+  const decisionRecords = await readJson(decisionRecordsPath);
+  delete decisionRecords.decisions[0].status;
+  await writeJson(decisionRecordsPath, decisionRecords);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.blocker_waiver.decision_id, decision.result.decision.decision_id);
+  assert.equal(axis.blocker_waiver.status, null);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.deepEqual(gate.blocker_waiver_missing_fields, ['status=accepted']);
+  assert.equal(gate.reason.includes('explicitly waived'), false);
+  assert.equal(gate.reason.includes('Ignored blocker waiver missing status=accepted'), true);
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
+});
+
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
