@@ -14093,6 +14093,52 @@ test('pr body final E2E prefers current passing e2e-surface evidence over stale 
   assert.doesNotMatch(finalE2eLine, /e2e-current-failed-status\.json/);
 });
 
+test('pr body final E2E keeps current failing e2e evidence visible over stale pass', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'final-e2e-current-failure.js'), 'export const currentFailureVisible = true;\n');
+  await git(repo, ['add', 'src/final-e2e-current-failure.js']);
+  await git(repo, ['commit', '-m', 'feat: add current final e2e failure fixture']);
+
+  const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
+  await mkdir(verificationDir, { recursive: true });
+  await writeJson(path.join(verificationDir, 'e2e-stale-passed-status.json'), { status: 'pass' });
+  await writeJson(path.join(verificationDir, 'e2e-current-failed-status.json'), { status: 'fail' });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Previous HEAD E2E flow passed',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-stale-passed-status.json'
+  ])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'final-e2e-current-failure.js'), 'export const currentFailureVisible = false;\n');
+  await git(repo, ['add', 'src/final-e2e-current-failure.js']);
+  await git(repo, ['commit', '-m', 'feat: update current final e2e failure fixture']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'fail',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow failed and must remain visible',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
+
+  assert.match(finalE2eLine, /^- 最終E2E: fail:/);
+  assert.match(finalE2eLine, /e2e-current-failed-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /e2e-stale-passed-status\.json/);
+});
+
 test('pr body renders repo file paths as clickable markdown links', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
