@@ -219,6 +219,38 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.repo_status.guidance",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-STATUS-001"
+      },
+      "supporting_authority": [
+        "docs/architecture/vibepro-design-input-judgment.md",
+        "docs/specs/story-vibepro-design-input-judgment-spec.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/repo-status.js"
+        ],
+        "symbols": [
+          "buildNextCommands",
+          "story diagnose",
+          "--pre-architecture",
+          "polling_retry"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "typecheck",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.engineering_judgment.route_axes",
       "primary_authority": {
         "kind": "domain_contract",
