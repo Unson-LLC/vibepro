@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-outcome-roi-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence review passed: per-gate outcome classification, missing-review filtering, short token filtering, legacy v1/v2 ledger invalidation, measurement-only behavior, and cost telemetry preservation were inspected and accepted.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected src/gate-outcome-ledger.js, src/pr-manager.js, src/usage-report.js, src/cli.js, test/gate-outcome-ledger.test.js, test/traceability-usage-report.test.js, docs/specs/story-vibepro-gate-outcome-roi-ledger.md, docs/architecture/story-vibepro-gate-outcome-roi-ledger.md, current VibePro verification evidence, and pr prepare artifacts.",
+    "evidence": "/tmp/vibepro-gate-roi-verify-e2e-json.json",
+    "inputs": [
+      "src/gate-outcome-ledger.js",
+      "src/pr-manager.js",
+      "src/usage-report.js",
+      "src/cli.js",
+      "test/gate-outcome-ledger.test.js",
+      "test/traceability-usage-report.test.js",
+      "docs/specs/story-vibepro-gate-outcome-roi-ledger.md",
+      "docs/architecture/story-vibepro-gate-outcome-roi-ledger.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial judgment: needs_changes because classification was PR-wide, runtime-cost evidence was overclaimed, spec/integration artifacts were stale, and later stale ledger entries remained -> final judgment: pass because classifier is per-gate, non-passing evidence is ignored, short generic tokens are ignored, legacy v1/v2 ledgers are invalidated, tests/evidence are current, and usage report preserves unavailable token/time states"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+    "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+    "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+      "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+        "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-05T08:56:18.652Z",
+  "git_context": {
+    "head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+    "current_branch": "codex/gate-outcome-roi-ledger",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "9ede0f624feb85a0dbc7ec201c3eb0c472b018b54b687f6ebcfee75024888d98",
+    "user_status_fingerprint_hash": "9ede0f624feb85a0dbc7ec201c3eb0c472b018b54b687f6ebcfee75024888d98",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T08:56:18.638Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 8 file(s)",
+    "recorded_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-gate-outcome-roi-ledger.md",
+        "sha256": "036c6ef317a7a352dbc00f2153a41e899b79744338de57f6147c753b638d98a6",
+        "size": 2427
+      },
+      {
+        "path": "docs/specs/story-vibepro-gate-outcome-roi-ledger.md",
+        "sha256": "be28f48bdae6c6f886e39274e4cbe923fdacef68c3892cf17fbf89ef89d713de",
+        "size": 3380
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "3e1445eb8f5fa7f7c6ff7348fbd7a7ed8853d6c6767169c1149062e41d9099a2",
+        "size": 151552
+      },
+      {
+        "path": "src/gate-outcome-ledger.js",
+        "sha256": "4de50cdbf6a80ad10fe5a373ff9dbeaf57efd27803288b8a07dd72b736a4875c",
+        "size": 14194
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "f133fb84e24c0d01ec89b0b2b0269e649a2eaa9ae7f1ff038f3a3f291f98a91f",
+        "size": 557879
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "897ec74fbc3f50daa7362a0ed2faa3e7673efd50a1e828cec25c0cd04168d6f4",
+        "size": 95403
+      },
+      {
+        "path": "test/gate-outcome-ledger.test.js",
+        "sha256": "fdf13558246a577ea6e000f946ddcd097cac9bc1194fe675dadbd394a6e03e89",
+        "size": 9407
+      },
+      {
+        "path": "test/traceability-usage-report.test.js",
+        "sha256": "098ffb73313c1f4adefc27c890370185882ac2b89b36f600c2435f0e223ba8ce",
+        "size": 28851
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fb1e149a1274ab815146ff5c274aad85236a7f61783c6c7c3250272a0aa12ae8"
+  },
+  "source_fingerprint": "0eb672a7f90c618c63cde4915356edb004d5d12b9d8133584c8c7a31bef19546",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3169-4c79-7031-b1f9-a2561cff5983",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-gate-outcome-roi-ledger/gate/parallel-dispatch.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-gate-outcome-roi-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-gate-outcome-roi-ledger/gate/parallel-dispatch.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

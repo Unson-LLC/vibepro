@@ -1,0 +1,400 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-outcome-roi-ledger",
+  "source": "execute_merge",
+  "generated_at": "2026-07-05T09:05:49.990Z",
+  "evidence_depth": "standard",
+  "budget_status": "within_budget",
+  "cost_summary": {
+    "schema_version": "0.1.0",
+    "evidence_depth": "standard",
+    "risk_profile": "high",
+    "trigger_signals": [
+      "merge_warning",
+      "gate:gate:managed_worktree:needs_review",
+      "gate:gate:traceability_clause_coverage:needs_evidence"
+    ],
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+    "diff_stats_refs": {
+      "base_ref": "origin/main",
+      "head_ref": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+      "base_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "head_sha": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+      "merge_commit_sha": "844f5ce294e4d5a8fe835a17863bd384ccb6f46a"
+    },
+    "diff_stats_collected_at": "2026-07-05T09:05:45.662Z",
+    "diff_stats_reason": null,
+    "artifact_lines": 949,
+    "changed_lines": {
+      "status": "available",
+      "total_changed_lines": 999,
+      "unknown_file_count": 0,
+      "buckets": {
+        "src": {
+          "files": 4,
+          "changed_lines": 489,
+          "unknown_files": 0,
+          "paths": [
+            "src/cli.js",
+            "src/gate-outcome-ledger.js",
+            "src/pr-manager.js",
+            "src/usage-report.js"
+          ]
+        },
+        "test": {
+          "files": 2,
+          "changed_lines": 320,
+          "unknown_files": 0,
+          "paths": [
+            "test/gate-outcome-ledger.test.js",
+            "test/traceability-usage-report.test.js"
+          ]
+        },
+        "story_spec_architecture_docs": {
+          "files": 3,
+          "changed_lines": 130,
+          "unknown_files": 0,
+          "paths": [
+            "docs/architecture/story-vibepro-gate-outcome-roi-ledger.md",
+            "docs/management/stories/active/story-vibepro-gate-outcome-roi-ledger.md",
+            "docs/specs/story-vibepro-gate-outcome-roi-ledger.md"
+          ]
+        },
+        "audit_artifacts": {
+          "files": 0,
+          "changed_lines": 0,
+          "unknown_files": 0,
+          "paths": []
+        },
+        "other": {
+          "files": 1,
+          "changed_lines": 60,
+          "unknown_files": 0,
+          "paths": [
+            "design-ssot.json"
+          ]
+        }
+      },
+      "source": "git diff --numstat origin/main...e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+      "refs": {
+        "base_ref": "origin/main",
+        "head_ref": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+        "base_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "head_sha": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+        "merge_commit_sha": "844f5ce294e4d5a8fe835a17863bd384ccb6f46a"
+      },
+      "collected_at": "2026-07-05T09:05:45.662Z",
+      "reason": null
+    },
+    "product_changed_lines": 999,
+    "product_changed_lines_status": "available",
+    "product_changed_lines_reason": null,
+    "artifact_code_ratio": 0.95,
+    "artifact_code_ratio_reason": null,
+    "budget": {
+      "profile": "high",
+      "canonical_artifact_lines": 1500,
+      "effective_canonical_artifact_lines": 2997,
+      "artifact_code_ratio": 3
+    },
+    "budget_status": "within_budget",
+    "budget_exceeded_reasons": [],
+    "token_accounting": {
+      "status": "unavailable",
+      "total_tokens": null,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cached_input_tokens": null,
+      "source": null,
+      "window": null,
+      "reason": "session token logs were not provided to canonical audit promotion"
+    },
+    "elapsed_time_accounting": {
+      "status": "unavailable",
+      "elapsed_ms": null,
+      "started_at": null,
+      "finished_at": null,
+      "source": null,
+      "window": null,
+      "reason": "elapsed-time logs were not provided to canonical audit promotion"
+    },
+    "replay_bundle": {
+      "compressed_bytes": 3420,
+      "expanded_bytes": 14853,
+      "expanded_line_count": 377,
+      "persisted_line_count": 1
+    },
+    "raw_source_artifact_lines": 8581,
+    "raw_source_artifact_code_ratio": 8.59,
+    "artifact_lines_source": "persisted_canonical_compact"
+  },
+  "pr_prepare": {
+    "present": true,
+    "created_at": "2026-07-05T09:05:30.901Z",
+    "gate_status": {
+      "ready_for_pr_create": true,
+      "overall_status": "ready_for_review",
+      "fast_lane": false,
+      "critical_unresolved_gate_count": 0
+    }
+  },
+  "evidence_reuse": {
+    "present": true,
+    "created_at": "2026-07-05T09:05:30.901Z",
+    "status": "stale",
+    "evidence_key": "evk_5699fbd92ef1fa58e11f6698a7f9d486",
+    "verification_summary_fingerprint": "sha256:f12eee20de9d56517b877aba87f1a1ccae3cfbc35ab62d09c429fb5fc5b630ae",
+    "verification_evidence_updated_at": "2026-07-05T09:05:19.010Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-05T09:05:19.010Z",
+        "git_recorded_at": "2026-07-05T09:05:19.010Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-05T09:01:19.704Z",
+        "git_recorded_at": "2026-07-05T09:01:19.695Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-05T09:01:18.114Z",
+        "git_recorded_at": "2026-07-05T09:01:18.104Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-05T08:53:34.834Z",
+        "git_recorded_at": "2026-07-05T08:53:34.826Z"
+      }
+    ],
+    "stale_reason_count": 3,
+    "full_evidence_status": "generated",
+    "full_evidence_generation_count": 1,
+    "full_evidence_generation_count_scope": "same_evidence_key",
+    "full_evidence_same_key_generation_count": 1,
+    "full_evidence_cumulative_generation_count": 14
+  },
+  "pr_create": {
+    "present": true,
+    "created_at": "2026-07-05T09:02:42.425Z",
+    "status": null,
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/287",
+    "gate_override_allowed": false
+  },
+  "pr_merge": {
+    "present": true,
+    "summary": {
+      "status": "merged",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/287",
+      "merge_commit_sha": "844f5ce294e4d5a8fe835a17863bd384ccb6f46a",
+      "merged_at": "2026-07-05T09:05:47Z",
+      "current_head_sha": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+      "diff_stats_status": "available",
+      "diff_stats_source": "git diff --numstat origin/main...e65fd032390e0537cbcf8815c583d0e826a4e8a1"
+    }
+  },
+  "gate_dag": {
+    "present": true,
+    "overall_status": "ready_for_review",
+    "node_count": 54,
+    "blocking_count": 2
+  },
+  "senior_gap_judgment": {
+    "present": true,
+    "status": null,
+    "gap_count": 3,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 0,
+    "followup_count": 0
+  },
+  "traceability": {
+    "present": true,
+    "lifecycle": "merged",
+    "coverage_summary": {
+      "clause_count": 7,
+      "acceptance_criteria_count": 7,
+      "scenario_clause_count": 0,
+      "mapped_count": 1,
+      "weakly_mapped_count": 6,
+      "unmapped_count": 0,
+      "examples": [
+        {
+          "id": "AC-1",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "GRL-S-1: source 変更を含むコミットで解消されたゲートは source_fix として台帳に記録される。",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        },
+        {
+          "id": "AC-2",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "GRL-S-2: 記述変更のみで解消されたゲートは rewording_only として記録される。",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        },
+        {
+          "id": "AC-3",
+          "type": "acceptance_criterion",
+          "status": "weakly_mapped",
+          "source_text": "GRL-S-3: waiver で解消されたゲートは waiver として記録され、decision record と相互参照できる。",
+          "weak_mapping_reason": "verification or PR evidence exists, but no AC/scenario-specific binding was found"
+        }
+      ]
+    }
+  },
+  "verification": {
+    "present": true,
+    "command_count": 4,
+    "pass_count": 4,
+    "fail_count": 0
+  },
+  "review": {
+    "summary_count": 1,
+    "result_count": 1,
+    "pass_count": 1,
+    "block_count": 0,
+    "stale_count": 0
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay_unresolved_reference_count": 3,
+  "missing_artifacts": [],
+  "raw_artifact_count": 12,
+  "automation_value_audit": {
+    "schema_version": "0.1.0",
+    "artifact_kind": "vibepro_automation_value_audit",
+    "story_id": "story-vibepro-gate-outcome-roi-ledger",
+    "generated_at": "2026-07-05T09:05:49.990Z",
+    "status": "partial",
+    "purpose": "daily_automation_input",
+    "sources": {
+      "canonical_audit": true,
+      "cost_summary": true,
+      "pr_lifecycle": true,
+      "verification": true,
+      "review": true,
+      "senior_gap_judgment": true
+    },
+    "merge_context": {
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/287",
+      "merge_status": "merged",
+      "merge_commit_sha": "844f5ce294e4d5a8fe835a17863bd384ccb6f46a",
+      "merged_at": "2026-07-05T09:05:47Z"
+    },
+    "allocation": {
+      "changed_lines_status": "available",
+      "total_changed_lines": 999,
+      "implementation_changed_lines": 489,
+      "verification_and_docs_changed_lines": 450,
+      "audit_evidence_changed_lines": 450,
+      "buckets": {
+        "src": 489,
+        "test": 320,
+        "story_spec_architecture_docs": 130,
+        "audit_artifacts": 0,
+        "other": 60
+      }
+    },
+    "ratios": {
+      "test_to_src": 0.654,
+      "story_spec_architecture_to_src": 0.266,
+      "audit_artifacts_to_src": 0,
+      "automation_evidence_to_src": 0.92,
+      "artifact_lines_to_product_changed_lines": 0.95
+    },
+    "session_cost": {
+      "token_status": "unavailable",
+      "total_tokens": null,
+      "token_source": null,
+      "token_window": null,
+      "elapsed_status": "unavailable",
+      "elapsed_ms": null,
+      "elapsed_source": null,
+      "elapsed_window": null
+    },
+    "value_signal_inputs": {
+      "budget_status": "within_budget",
+      "budget_exceeded_reasons": [],
+      "evidence_depth": "standard",
+      "verification_pass_count": 4,
+      "verification_fail_count": 0,
+      "review_result_count": 1,
+      "review_pass_count": 1,
+      "review_block_count": 0,
+      "senior_gap_status": null,
+      "senior_gap_residual_risk_count": 0,
+      "evidence_reuse_status": "stale",
+      "evidence_reuse_stale_reason_count": 3,
+      "traceability_lifecycle": "merged",
+      "handoff_replay_status": "blocked",
+      "handoff_replay_unresolved_reference_count": 3,
+      "missing_artifact_count": 0
+    },
+    "cost_controls": {
+      "status": "action_required",
+      "budget_status": "within_budget",
+      "artifact_code_ratio": 0.95,
+      "automation_evidence_to_src": 0.92,
+      "budget_exceeded_reasons": [],
+      "canonical_artifact_lines": 949,
+      "product_changed_lines": 999,
+      "evidence_depth": "standard",
+      "recommended_evidence_depth": "standard",
+      "recommendations": [
+        {
+          "id": "collect_runtime_cost_before_merge",
+          "action": "run execute merge with --session-id <id>|auto and --automation-memory <path>, or set VIBEPRO_SESSION_ID/CODEX_SESSION_ID and VIBEPRO_AUTOMATION_MEMORY",
+          "reason": "daily automation cannot judge time/token efficiency without measured session cost"
+        }
+      ]
+    },
+    "findings": [
+      {
+        "id": "session_cost_unavailable",
+        "severity": "needs_context",
+        "reason": "token or elapsed-time accounting is not available in canonical audit summary",
+        "token_status": "unavailable",
+        "elapsed_status": "unavailable"
+      },
+      {
+        "id": "canonical_handoff_replay_blocked",
+        "severity": "review_needed",
+        "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
+        "unresolved_reference_count": 3
+      }
+    ]
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-gate-outcome-roi-ledger/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:7f0725e527da7a38717fbf14cf9f183d6aeaa9d6d492472eadecbe830b7b6f18",
+    "compressed_hash": "sha256:d77969b54139b259cdfec264d6f115f78a8d234dbcbd1f80e8abb15422901077",
+    "expanded_bytes": 14853,
+    "compressed_bytes": 3420,
+    "expanded_line_count": 377,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-gate-outcome-roi-ledger",
+    "cost": {
+      "compressed_bytes": 3420,
+      "expanded_bytes": 14853,
+      "expanded_line_count": 377,
+      "persisted_line_count": 1
+    }
+  }
+}

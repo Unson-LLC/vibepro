@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-gate-outcome-roi-ledger",
+  "created_at": "2026-07-05T09:05:30.901Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-gate-outcome-roi-ledger.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-gate-outcome-roi-ledger.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-gate-outcome-roi-ledger.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-gate-outcome-roi-ledger.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-05T09:05:29.045Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "e65fd032390e0537cbcf8815c583d0e826a4e8a1",
+      "branch": "codex/gate-outcome-roi-ledger",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

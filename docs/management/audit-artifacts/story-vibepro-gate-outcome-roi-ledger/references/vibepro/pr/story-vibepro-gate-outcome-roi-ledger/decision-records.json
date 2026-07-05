@@ -1,0 +1,321 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-gate-outcome-roi-ledger",
+  "updated_at": "2026-07-05T09:00:13.931Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+      "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+      "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+        "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ]
+        }
+      }
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783242013930-93d3406b",
+      "story_id": "story-vibepro-gate-outcome-roi-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed split_plan decision_record: gate outcome ROI ledger is reviewable as one PR because the source, tests, usage report, CLI override, and SSOT docs implement one measurement-only contract; separate cleanup is deferred to later stories.",
+      "reason": "The changed files form one coherent gate ROI measurement feature. The split plan identifies docs and runtime lanes, but separating them would produce a spec-only PR without useful runtime proof and a runtime PR without its contract. Review ownership is covered by the gate_evidence agent review, and code topology reports zero related-file blast radius.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "current_branch": "codex/gate-outcome-roi-ledger",
+        "dirty": true,
+        "status_fingerprint": " M docs/management/stories/active/story-vibepro-gate-outcome-roi-ledger.md\n M src/cli.js\n M src/pr-manager.js\n M src/usage-report.js\n M test/traceability-usage-report.test.js\n?? docs/architecture/story-vibepro-gate-outcome-roi-ledger.md\n?? docs/specs/story-vibepro-gate-outcome-roi-ledger.md\n?? src/gate-outcome-ledger.js\n?? test/gate-outcome-ledger.test.js\nM design-ssot.json",
+        "recorded_at": "2026-07-05T09:00:13.929Z"
+      },
+      "recorded_at": "2026-07-05T09:00:13.931Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783240281295-e03ff1fe",
+      "story_id": "story-vibepro-gate-outcome-roi-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Split resolution accepted: keep as one PR because the source, CLI, usage report, architecture note, and tests form one reviewable measurement workflow.",
+      "reason": "boundary: one VibePro ROI ledger path from pr prepare recording to usage report aggregation; review_owner_map: VibePro PR lifecycle and reporting owner; accepted followups: none for split; alternative considered: split CLI/report from ledger core, rejected because it would remove end-to-end artifact replay coverage from either PR.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "current_branch": "codex/gate-outcome-roi-ledger",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/usage-report.js\n?? docs/architecture/story-vibepro-gate-outcome-roi-ledger.md\n?? src/gate-outcome-ledger.js\n?? test/gate-outcome-ledger.test.js\nM src/cli.js",
+        "recorded_at": "2026-07-05T08:31:21.295Z"
+      },
+      "recorded_at": "2026-07-05T08:31:21.296Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783240174710-b4b58bd4",
+      "story_id": "story-vibepro-gate-outcome-roi-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Scope reviewed: this PR is a coherent single story for gate outcome ROI measurement across ledger storage, pr prepare recording, usage report output, CLI override, and focused tests.",
+      "reason": "boundary: source files are src/gate-outcome-ledger.js, src/pr-manager.js, src/usage-report.js, src/cli.js plus one focused test file; review_owner_map: VibePro PR lifecycle owner; accepted followups: none for split, because splitting would hide the end-to-end ledger path.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "current_branch": "codex/gate-outcome-roi-ledger",
+        "dirty": true,
+        "status_fingerprint": " M src/pr-manager.js\n M src/usage-report.js\n?? src/gate-outcome-ledger.js\n?? test/gate-outcome-ledger.test.js\nM src/cli.js",
+        "recorded_at": "2026-07-05T08:29:34.709Z"
+      },
+      "recorded_at": "2026-07-05T08:29:34.710Z"
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "open": 0,
+    "by_type": {
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 3
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+        "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+        "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+        "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "managed_worktree": {
+          "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "dirty": false,
+          "dirty_fingerprint": "clean",
+          "raw_dirty": false,
+          "raw_dirty_fingerprint": "clean",
+          "fingerprint_scope": {
+            "user_excludes": [
+              ".vibepro/",
+              ".worktrees/vibepro/"
+            ]
+          }
+        }
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783242013930-93d3406b",
+      "story_id": "story-vibepro-gate-outcome-roi-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed split_plan decision_record: gate outcome ROI ledger is reviewable as one PR because the source, tests, usage report, CLI override, and SSOT docs implement one measurement-only contract; separate cleanup is deferred to later stories.",
+      "reason": "The changed files form one coherent gate ROI measurement feature. The split plan identifies docs and runtime lanes, but separating them would produce a spec-only PR without useful runtime proof and a runtime PR without its contract. Review ownership is covered by the gate_evidence agent review, and code topology reports zero related-file blast radius.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "repo root /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger is not recorded managed worktree /Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+          "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+          "expected_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger",
+            "path": "/Users/ksato/workspace/code/.worktrees/vibepro-gate-outcome-roi-ledger/.worktrees/vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "actual_branch": "vibepro/story-vibepro-gate-outcome-roi-ledger-r69uyf",
+            "current_head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "git_context": {
+        "head_sha": "da31941ca0159624a205bc074101ee4c9c4ac06c",
+        "current_branch": "codex/gate-outcome-roi-ledger",
+        "dirty": true,
+        "status_fingerprint": " M docs/management/stories/active/story-vibepro-gate-outcome-roi-ledger.md\n M src/cli.js\n M src/pr-manager.js\n M src/usage-report.js\n M test/traceability-usage-report.test.js\n?? docs/architecture/story-vibepro-gate-outcome-roi-ledger.md\n?? docs/specs/story-vibepro-gate-outcome-roi-ledger.md\n?? src/gate-outcome-ledger.js\n?? test/gate-outcome-ledger.test.js\nM design-ssot.json",
+        "recorded_at": "2026-07-05T09:00:13.929Z"
+      },
+      "recorded_at": "2026-07-05T09:00:13.931Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-gate-outcome-roi-ledger/decision-records.json"
+}
