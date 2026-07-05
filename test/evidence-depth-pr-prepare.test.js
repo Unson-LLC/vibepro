@@ -126,6 +126,42 @@ test('pr prepare summary depth writes plan/index but skips HTML and standalone G
   assert.equal(entry.latest_review_cockpit, null);
 });
 
+test('pr prepare summary depth removes stale full-surface artifacts from previous runs', async () => {
+  const repo = await setupLowRiskRepo();
+
+  const fullResult = await runCli([
+    'pr',
+    'prepare',
+    repo,
+    '--story-id',
+    'story-low-risk',
+    '--base',
+    'main',
+    '--evidence-depth',
+    'full',
+    '--evidence-depth-reason',
+    'initial full reviewer surface',
+    '--evidence-depth-consumer',
+    'test'
+  ]);
+  assert.equal(fullResult.exitCode, 0);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-low-risk');
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), true);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), true);
+
+  const summaryResult = await runCli(['pr', 'prepare', repo, '--story-id', 'story-low-risk', '--base', 'main', '--json']);
+  assert.equal(summaryResult.exitCode, 0);
+  const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
+
+  assert.equal(plan.evidence_depth, 'summary');
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
+  assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
+  assert.equal(await exists(path.join(prDir, 'pr-prepare.html')), false);
+  assert.equal(await exists(path.join(prDir, 'split-plan.html')), false);
+});
+
 test('GEFR-S-4: explicit evidence-depth wins over focused-view default', async () => {
   const repo = await setupLowRiskRepo();
 

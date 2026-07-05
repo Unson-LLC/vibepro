@@ -534,6 +534,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(designSsotPath, `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`, { signal });
     await writeFile(seniorGapJudgmentPath, `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
+    if (writeGateDagDump) {
+      await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
+    } else {
+      await rm(gateDagJsonPath, { force: true });
+    }
+    if (writeHtmlReports) {
+      await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
+        generatedAt: preparation.created_at,
+        language: outputLanguage
+      }), { signal });
+    } else {
+      await Promise.all([
+        rm(reportPath, { force: true }),
+        rm(reviewCockpitPath, { force: true }),
+        rm(gateDagReportPath, { force: true }),
+        rm(splitPlanReportPath, { force: true })
+      ]);
+    }
     await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
     if (writeHtmlReports) {
       await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
@@ -3008,11 +3026,34 @@ function summarizeFirstAvailable(items = [], fallback) {
 function renderFinalE2eConfidence(gateDag, verificationEvidence) {
   const e2eGate = (gateDag?.nodes ?? []).find((gate) => gate.id === 'gate:e2e')
     ?? (gateDag?.nodes ?? []).find((gate) => /e2e/i.test(`${gate.label ?? ''} ${gate.type ?? ''}`));
-  const e2eEvidence = (verificationEvidence?.commands ?? []).find((item) => /e2e|flow/i.test(`${item.kind ?? ''} ${item.type ?? ''} ${item.summary ?? ''} ${item.command ?? ''}`));
+  const e2eEvidence = selectFinalE2eEvidence(verificationEvidence?.commands);
   const status = e2eEvidence?.status ?? e2eGate?.status ?? '未確認';
   const summary = e2eEvidence?.summary ?? e2eGate?.reason ?? e2eGate?.label ?? '最終E2E証跡が見つかりません。';
   const artifact = e2eEvidence?.artifact ?? e2eGate?.evidence?.artifact ?? null;
   return linkifyRepoPathsInText(`${status}: ${summary}${artifact ? `（${artifact}）` : ''}`);
+}
+
+function selectFinalE2eEvidence(commands = []) {
+  const items = Array.isArray(commands) ? commands : [];
+  return items.find((item) => normalizeEvidenceKind(item?.kind) === 'e2e')
+    ?? items.find((item) => normalizeEvidenceKind(item?.kind) === 'flow')
+    ?? items.find((item) => hasExplicitE2eEvidenceSurface(item));
+}
+
+function normalizeEvidenceKind(kind) {
+  return String(kind ?? '').trim().toLowerCase().replace(/[_-]+/g, '');
+}
+
+function hasExplicitE2eEvidenceSurface(item) {
+  const searchable = [
+    item?.kind,
+    item?.type,
+    item?.command,
+    item?.artifact
+  ].map((value) => String(value ?? '')).join(' ');
+  return /\b(e2e|test:e2e|playwright)\b/i.test(searchable)
+    || /(^|\/)test\/e2e(\/|$)/i.test(searchable)
+    || /flow-verification/i.test(searchable);
 }
 
 function limitItems(items = [], max = 3) {

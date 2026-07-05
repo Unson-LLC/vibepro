@@ -13987,6 +13987,49 @@ test('pr body verification checklist checks exact current evidence even when the
   assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
 });
 
+test('pr body final E2E prefers exact e2e evidence over unit workflow summaries', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'final-e2e-selection.js'), 'export const finalE2eSelection = true;\n');
+  await git(repo, ['add', 'src/final-e2e-selection.js']);
+  await git(repo, ['commit', '-m', 'feat: add final e2e selection fixture']);
+
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'responsibility-authority-current-head-status.json'), {
+    status: 'pass'
+  });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'e2e-current-head-status.json'), {
+    status: 'pass'
+  });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/responsibility-authority.test.js',
+    '--summary', 'Current HEAD unit regression covers responsibility authority workflow evidence lifecycle',
+    '--artifact', '.vibepro/verification/story-pr-prepare/responsibility-authority-current-head-status.json'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow covers the design-input journey',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-head-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
+
+  assert.match(finalE2eLine, /e2e-current-head-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /responsibility-authority-current-head-status\.json/);
+});
+
 test('pr body renders repo file paths as clickable markdown links', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
