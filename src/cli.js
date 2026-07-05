@@ -112,8 +112,10 @@ import {
   evaluateManagedWorktreeCommandContext
 } from './managed-worktree.js';
 import {
+  autopilotPullRequest,
   createPullRequest,
   preparePullRequest,
+  renderPrAutopilotSummary,
   renderPrCreateSummary,
   renderPrPrepareSummary,
   renderPrShipSummary,
@@ -415,6 +417,7 @@ Usage:
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
   vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
+  vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -2237,6 +2240,44 @@ export async function runCli(argv, io = {}) {
           : jsonOutput
             ? `${JSON.stringify(result.preparation, null, 2)}\n`
             : renderPrPrepareSummary(result));
+        await updateExecutionStateFromPrPrepare(repoRoot, result, {
+          target: 'pr_create',
+          baseRef: getOption(rest, '--base')
+        }).catch(() => null);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'autopilot') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const progressOutput = jsonOutput || hasFlag(rest, '--progress');
+        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr autopilot');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'pr autopilot'
+        });
+        const result = await autopilotPullRequest(repoRoot, {
+          storyId,
+          taskId: getOption(rest, '--task'),
+          groupId: getOption(rest, '--group'),
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head-ref'),
+          headBranch: getOption(rest, '--head'),
+          branchName: getOption(rest, '--branch'),
+          maxReviewableFiles: parseNumberOption(rest, '--max-files'),
+          stageTimeoutMs: parseNumberOption(rest, '--stage-timeout-ms'),
+          progressReporter: progressOutput ? (event) => write(stderr, `${renderPrPrepareProgressEvent(event)}\n`) : null,
+          strict: hasFlag(rest, '--strict'),
+          allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
+          language: getOption(rest, '--language'),
+          verifyCommands: getOptions(rest, '--verify'),
+          pr: getOption(rest, '--pr'),
+          importCi: hasFlag(rest, '--import-ci'),
+          ciChecks: getOptions(rest, '--check'),
+          dryRun: hasFlag(rest, '--dry-run'),
+          env: io.env
+        });
+        write(stdout, jsonOutput
+          ? `${JSON.stringify(result.autopilot, null, 2)}\n`
+          : renderPrAutopilotSummary(result));
         await updateExecutionStateFromPrPrepare(repoRoot, result, {
           target: 'pr_create',
           baseRef: getOption(rest, '--base')

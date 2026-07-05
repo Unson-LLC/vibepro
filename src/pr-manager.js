@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -24,15 +24,18 @@ import { readDrift, readInferredSpec } from './spec-store.js';
 import { buildTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import {
   renderPerformancePrSection,
   summarizeStoryPerformanceEvidence
 } from './performance-evidence.js';
 import {
+  prepareAgentReview,
   renderAgentReviewPrSection,
   summarizeAgentReviewsForPr
 } from './agent-review.js';
+import { importCiEvidence } from './ci-evidence.js';
+import { recordVerificationEvidence } from './verification-evidence.js';
 import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
@@ -529,15 +532,6 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(designSsotPath, `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`, { signal });
     await writeFile(seniorGapJudgmentPath, `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
-    if (writeGateDagDump) {
-      await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
-    }
-    if (writeHtmlReports) {
-      await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
-        generatedAt: preparation.created_at,
-        language: outputLanguage
-      }), { signal });
-    }
     await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
     if (writeHtmlReports) {
       await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
@@ -618,6 +612,26 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await progress.stage('write_manifest', ({ signal }) => writeManifest(root, manifest, { signal }));
   }
   preparation.diagnostics.pr_prepare_stages = progress.snapshot();
+  await progress.stage('write_final_gate_dag_artifacts', async ({ signal }) => {
+    if (writeGateDagDump) {
+      await writeFile(gateDagJsonPath, `${JSON.stringify(preparation.pr_context.gate_dag, null, 2)}\n`, { signal });
+    } else {
+      await rm(gateDagJsonPath, { force: true });
+    }
+    if (writeHtmlReports) {
+      await writeFile(gateDagReportPath, renderGateDagHtml(preparation.pr_context.gate_dag, {
+        generatedAt: preparation.created_at,
+        language: outputLanguage
+      }), { signal });
+    } else {
+      await Promise.all([
+        rm(reportPath, { force: true }),
+        rm(reviewCockpitPath, { force: true }),
+        rm(gateDagReportPath, { force: true }),
+        rm(splitPlanReportPath, { force: true })
+      ]);
+    }
+  });
   await writeFileWithTimeout(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, {
     timeoutMs: progress.timeoutMs,
     stage: 'write_pr_prepare_json'
@@ -1065,6 +1079,488 @@ export async function shipPullRequest(repoRoot, options = {}) {
     ...createResult,
     ship
   };
+}
+
+export async function autopilotPullRequest(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const dryRun = options.dryRun === true;
+  const operations = [];
+  const reviewPreparations = [];
+  let prepareResult = await preparePullRequest(root, options);
+  let { preparation } = prepareResult;
+  let gateStatus = preparation.gate_status
+    ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+  operations.push({
+    id: 'pr_prepare_initial',
+    status: 'executed',
+    command: buildShipPrepareCommand(preparation, options),
+    artifact: prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null,
+    reason: 'autopilot starts from the current PR gate state'
+  });
+
+  const configuredCommands = await resolveAutopilotVerificationCommands(root, {
+    rawVerifyCommands: options.verifyCommands,
+    preparation
+  });
+  const existingEvidence = await bindVerificationEvidenceToGit(
+    root,
+    await readVerificationEvidenceIfExists(root, preparation.story.story_id),
+    preparation.git
+  );
+  const passingKinds = new Set((existingEvidence?.commands ?? [])
+    .filter((command) => isPassingVerificationStatus(command.status) && command.binding?.status === 'current')
+    .map((command) => command.kind));
+  const commandsToRun = configuredCommands.filter((command) => !passingKinds.has(command.kind));
+
+  for (const command of configuredCommands.filter((item) => passingKinds.has(item.kind))) {
+    operations.push({
+      id: `verify_${command.kind}`,
+      status: 'skipped',
+      command: command.command,
+      kind: command.kind,
+      reason: 'existing current passing verification record is present; autopilot does not overwrite it'
+    });
+  }
+
+  for (const command of commandsToRun) {
+    if (dryRun) {
+      operations.push({
+        id: `verify_${command.kind}`,
+        status: 'planned',
+        command: command.command,
+        kind: command.kind,
+        reason: 'dry-run: command would execute and record by exit code'
+      });
+      continue;
+    }
+    await initWorkspace(root, { language: options.language });
+    const run = await runAutopilotVerificationCommand(root, preparation.story.story_id, command);
+    const artifact = await writeAutopilotVerificationArtifact(root, preparation.story.story_id, command.kind, run);
+    await recordVerificationEvidence(root, {
+      storyId: preparation.story.story_id,
+      kind: command.kind,
+      status: run.exit_code === 0 ? 'pass' : 'fail',
+      command: command.command,
+      summary: run.exit_code === 0
+        ? `Autopilot verification passed for ${command.kind}`
+        : `Autopilot verification failed for ${command.kind}`,
+      artifact: toWorkspaceRelative(root, artifact),
+      targets: command.targets,
+      scenarios: [`autopilot executed ${command.kind} verification command`],
+      observed: [
+        `exit_code=${run.exit_code}`,
+        `head_sha=${run.head_sha ?? 'unknown'}`
+      ]
+    });
+    operations.push({
+      id: `verify_${command.kind}`,
+      status: run.exit_code === 0 ? 'executed' : 'failed',
+      command: command.command,
+      kind: command.kind,
+      exit_code: run.exit_code,
+      artifact: toWorkspaceRelative(root, artifact),
+      reason: run.exit_code === 0
+        ? 'verification evidence recorded from command exit code'
+        : 'verification failed and was recorded as fail; autopilot stops without promoting it to pass'
+    });
+    prepareResult = await preparePullRequest(root, options);
+    preparation = prepareResult.preparation;
+    gateStatus = preparation.gate_status
+      ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+    operations.push({
+      id: `pr_prepare_after_verify_${command.kind}`,
+      status: 'executed',
+      command: buildShipPrepareCommand(preparation, options),
+      artifact: prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null,
+      reason: 'gate state was re-evaluated after verification evidence changed'
+    });
+    if (run.exit_code !== 0) {
+      return buildAutopilotResult(root, prepareResult, {
+        dryRun,
+        operations,
+        reviewPreparations,
+        stopReason: 'verification_failed',
+        configuredCommands,
+        options
+      });
+    }
+  }
+
+  if ((options.importCi === true || options.pr) && !dryRun) {
+    await initWorkspace(root, { language: options.language });
+    const ci = await importCiEvidence(root, {
+      storyId: preparation.story.story_id,
+      pr: options.pr,
+      checks: options.ciChecks,
+      env: options.env
+    });
+    operations.push({
+      id: 'verify_import_ci',
+      status: ci.failures.length > 0 ? 'failed' : ci.pending.length > 0 ? 'blocked' : 'executed',
+      command: buildAutopilotImportCiCommand(preparation.story.story_id, options),
+      imported: ci.imported.length,
+      pending: ci.pending.length,
+      failures: ci.failures.length,
+      reason: ci.failures.length > 0
+        ? 'CI failures were not imported as pass'
+        : ci.pending.length > 0
+          ? 'CI is not complete yet'
+          : 'CI evidence imported from current PR head'
+    });
+    prepareResult = await preparePullRequest(root, options);
+    preparation = prepareResult.preparation;
+    gateStatus = preparation.gate_status
+      ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+    operations.push({
+      id: 'pr_prepare_after_ci_import',
+      status: 'executed',
+      command: buildShipPrepareCommand(preparation, options),
+      artifact: prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null,
+      reason: 'gate state was re-evaluated after CI evidence import'
+    });
+    if (ci.failures.length > 0 || ci.pending.length > 0) {
+      return buildAutopilotResult(root, prepareResult, {
+        dryRun,
+        operations,
+        reviewPreparations,
+        stopReason: ci.failures.length > 0 ? 'ci_failed' : 'ci_incomplete',
+        configuredCommands,
+        options
+      });
+    }
+  } else if (options.importCi === true || options.pr) {
+    operations.push({
+      id: 'verify_import_ci',
+      status: 'planned',
+      command: buildAutopilotImportCiCommand(preparation.story.story_id, options),
+      reason: 'dry-run: CI evidence would be imported if PR checks are complete and successful'
+    });
+  }
+
+  let agentReviewActions = buildAgentReviewShipActions(gateStatus, preparation.story.story_id);
+  const reviewActionsToPrepare = agentReviewActions.filter((action) => hasConcreteReviewPrepareInputs(action));
+  for (const action of reviewActionsToPrepare) {
+    if (dryRun) {
+      operations.push({
+        id: `review_prepare_${action.stage}`,
+        status: 'planned',
+        command: action.prepare_command,
+        stage: action.stage,
+        roles: action.roles,
+        reason: 'dry-run: review dispatch artifact would be generated'
+      });
+      continue;
+    }
+    await initWorkspace(root, { language: options.language });
+    let review;
+    try {
+      review = await prepareAgentReview(root, {
+        storyId: preparation.story.story_id,
+        stage: action.stage,
+        roles: action.roles,
+        language: options.language
+      });
+    } catch (error) {
+      operations.push({
+        id: `review_prepare_${action.stage}`,
+        status: 'blocked',
+        command: action.prepare_command,
+        stage: action.stage,
+        roles: action.roles,
+        reason: error?.message
+          ? `review dispatch requires coordinator judgment: ${error.message}`
+          : 'review dispatch requires coordinator judgment'
+      });
+      return buildAutopilotResult(root, prepareResult, {
+        dryRun,
+        operations,
+        reviewPreparations,
+        stopReason: 'review_prepare_requires_human_judgment',
+        configuredCommands,
+        agentReviewActions,
+        options
+      });
+    }
+    reviewPreparations.push(review);
+    operations.push({
+      id: `review_prepare_${action.stage}`,
+      status: 'executed',
+      command: action.prepare_command,
+      stage: action.stage,
+      roles: action.roles,
+      artifact: review.artifacts?.parallel_dispatch ?? action.artifact,
+      reason: 'review dispatch instructions generated; verdict recording remains a human/coordinator judgment'
+    });
+  }
+
+  if (reviewActionsToPrepare.length > 0 && !dryRun) {
+    prepareResult = await preparePullRequest(root, options);
+    preparation = prepareResult.preparation;
+    gateStatus = preparation.gate_status
+      ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+    operations.push({
+      id: 'pr_prepare_after_review_prepare',
+      status: 'executed',
+      command: buildShipPrepareCommand(preparation, options),
+      artifact: prepareResult.artifacts?.json ? toWorkspaceRelative(root, prepareResult.artifacts.json) : null,
+      reason: 'gate state was re-evaluated after review dispatch generation'
+    });
+    agentReviewActions = buildAgentReviewShipActions(gateStatus, preparation.story.story_id);
+  }
+
+  return buildAutopilotResult(root, prepareResult, {
+    dryRun,
+    operations,
+    reviewPreparations,
+    stopReason: null,
+    configuredCommands,
+    agentReviewActions,
+    options
+  });
+}
+
+export function renderPrAutopilotSummary(result) {
+  const autopilot = result.autopilot;
+  const gateStatus = autopilot.gate_status ?? {};
+  const operations = autopilot.safe_operations?.length
+    ? autopilot.safe_operations.map((operation) => `- ${operation.id}: ${operation.status} (${operation.command ?? '-'})`).join('\n')
+    : '- none';
+  const judgments = autopilot.human_judgments_required?.length
+    ? autopilot.human_judgments_required.map((item) => `- ${item.kind}: ${item.reason}`).join('\n')
+    : '- none';
+  const nextCommands = autopilot.next_commands?.length
+    ? autopilot.next_commands.map((command) => `- ${command}`).join('\n')
+    : '- none';
+  return `# PR Autopilot
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${autopilot.story_id} |
+| Status | ${autopilot.status} |
+| Stop reason | ${autopilot.stop_reason ?? '-'} |
+| Gate readiness | ${gateStatus.overall_status ?? '-'} |
+| Ready for pr create | ${gateStatus.ready_for_pr_create ? 'yes' : 'no'} |
+| Automated steps | ${autopilot.automated_step_count} |
+| Human judgments | ${autopilot.human_judgment_count} |
+
+## Safe Operations
+
+${operations}
+
+## Human Judgment Required
+
+${judgments}
+
+## Next Commands
+
+${nextCommands}
+`;
+}
+
+async function resolveAutopilotVerificationCommands(repoRoot, { rawVerifyCommands = [], preparation }) {
+  const fromCli = normalizeAutopilotVerificationCommands(rawVerifyCommands, 'cli');
+  const fromConfig = normalizeAutopilotVerificationCommands(await readAutopilotVerificationCommandsFromConfig(repoRoot), 'config');
+  const fromPrepare = normalizeAutopilotVerificationCommands(preparation.pr_context?.verification_commands, 'pr_prepare');
+  const merged = new Map();
+  for (const command of [...fromPrepare, ...fromConfig, ...fromCli]) {
+    if (!command.kind || !command.command) continue;
+    merged.set(command.kind, command);
+  }
+  return [...merged.values()];
+}
+
+async function readAutopilotVerificationCommandsFromConfig(repoRoot) {
+  try {
+    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+    return config.pr_autopilot?.verification_commands
+      ?? config.verification?.commands
+      ?? [];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
+}
+
+function normalizeAutopilotVerificationCommands(values, source) {
+  const entries = Array.isArray(values) ? values : [];
+  return entries.map((entry) => normalizeAutopilotVerificationCommand(entry, source)).filter(Boolean);
+}
+
+function normalizeAutopilotVerificationCommand(entry, source) {
+  if (!entry) return null;
+  if (typeof entry === 'string') {
+    const separator = entry.indexOf('=');
+    const kind = separator > 0 ? entry.slice(0, separator).trim() : '';
+    const command = separator > 0 ? entry.slice(separator + 1).trim() : '';
+    if (!kind || !command) throw new Error(`pr autopilot --verify must be kind=command, got: ${entry}`);
+    return {
+      kind,
+      command,
+      source,
+      targets: []
+    };
+  }
+  const kind = String(entry.kind ?? '').trim();
+  const command = String(entry.command ?? '').trim();
+  if (!kind || !command) return null;
+  return {
+    kind,
+    command,
+    source,
+    targets: Array.isArray(entry.targets) ? entry.targets : []
+  };
+}
+
+async function runAutopilotVerificationCommand(repoRoot, storyId, verificationCommand) {
+  const startedAt = new Date();
+  const shell = process.env.SHELL || '/bin/sh';
+  const headSha = await gitOptionalValue(repoRoot, ['rev-parse', 'HEAD']);
+  try {
+    const { stdout, stderr } = await execFileAsync(shell, ['-lc', verificationCommand.command], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      maxBuffer: 20 * 1024 * 1024
+    });
+    return {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      kind: verificationCommand.kind,
+      command: verificationCommand.command,
+      status: 'pass',
+      exit_code: 0,
+      stdout,
+      stderr,
+      started_at: startedAt.toISOString(),
+      finished_at: new Date().toISOString(),
+      head_sha: headSha || null
+    };
+  } catch (error) {
+    return {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      kind: verificationCommand.kind,
+      command: verificationCommand.command,
+      status: 'fail',
+      exit_code: Number.isInteger(error.code) ? error.code : 1,
+      stdout: error.stdout ?? '',
+      stderr: error.stderr ?? error.message,
+      started_at: startedAt.toISOString(),
+      finished_at: new Date().toISOString(),
+      head_sha: headSha || null
+    };
+  }
+}
+
+async function writeAutopilotVerificationArtifact(repoRoot, storyId, kind, run) {
+  const dir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'autopilot');
+  await mkdir(dir, { recursive: true });
+  const artifactPath = path.join(dir, `${kind}-verification.json`);
+  await writeFile(artifactPath, `${JSON.stringify(run, null, 2)}\n`);
+  return artifactPath;
+}
+
+async function gitOptionalValue(repoRoot, args) {
+  try {
+    const { stdout } = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
+    return stdout.trim();
+  } catch {
+    return '';
+  }
+}
+
+function buildAutopilotImportCiCommand(storyId, options = {}) {
+  const args = ['vibepro verify import-ci .', '--id', shellQuote(storyId)];
+  if (options.pr) args.push('--pr', shellQuote(options.pr));
+  for (const check of options.ciChecks ?? []) args.push('--check', shellQuote(check));
+  return args.join(' ');
+}
+
+function hasConcreteReviewPrepareInputs(action) {
+  return Boolean(action?.stage)
+    && Array.isArray(action.roles)
+    && action.roles.length > 0
+    && action.roles.every((role) => role && !String(role).includes('<'));
+}
+
+function buildAutopilotResult(root, prepareResult, {
+  dryRun,
+  operations,
+  reviewPreparations,
+  stopReason,
+  configuredCommands,
+  agentReviewActions = null,
+  options = {}
+}) {
+  const { preparation } = prepareResult;
+  const gateStatus = preparation.gate_status
+    ?? buildPrPrepareGateStatus(preparation.pr_context?.gate_dag, preparation.pr_context?.completion_quality);
+  const effectiveAgentReviewActions = agentReviewActions ?? buildAgentReviewShipActions(gateStatus, preparation.story.story_id);
+  const humanJudgments = buildShipHumanJudgments(gateStatus);
+  const noConfiguredVerification = configuredCommands.length === 0
+    && gateStatus.unresolved_gates?.some((gate) => isVerificationGate(gate));
+  const nextCommands = buildAutopilotNextCommands({
+    preparation,
+    gateStatus,
+    agentReviewActions: effectiveAgentReviewActions,
+    options
+  });
+  if (noConfiguredVerification) {
+    nextCommands.unshift(
+      `vibepro pr autopilot . --story-id ${shellQuote(preparation.story.story_id)} --verify <kind=command>`
+    );
+  }
+  const ready = gateStatus.ready_for_pr_create === true;
+  const resolvedStopReason = stopReason
+    ?? (ready
+      ? dryRun ? 'ready_for_pr_create_dry_run' : null
+      : noConfiguredVerification
+        ? 'verification_command_undefined'
+        : buildShipStopReason(gateStatus));
+  const autopilot = {
+    schema_version: '0.1.0',
+    story_id: preparation.story.story_id,
+    created_at: new Date().toISOString(),
+    dry_run: dryRun,
+    status: ready
+      ? 'ready_for_pr_create'
+      : dryRun
+        ? 'planned'
+        : 'stopped',
+    stop_reason: resolvedStopReason,
+    safe_operations: operations,
+    automated_step_count: operations.filter((operation) => ['executed', 'skipped'].includes(operation.status)).length,
+    human_judgment_count: humanJudgments.length,
+    human_judgments_required: humanJudgments,
+    required_agent_review: effectiveAgentReviewActions,
+    review_preparations: reviewPreparations,
+    configured_verification_commands: configuredCommands,
+    next_commands: [...new Set(nextCommands)],
+    gate_status: gateStatus,
+    prepare_artifacts: mapArtifactPaths(root, prepareResult.artifacts)
+  };
+  return {
+    story: preparation.story,
+    preparation,
+    autopilot,
+    artifacts: prepareResult.artifacts
+  };
+}
+
+function isVerificationGate(gate) {
+  return String(gate?.id ?? '').startsWith('gate:unit')
+    || String(gate?.id ?? '').startsWith('gate:integration')
+    || String(gate?.id ?? '').startsWith('gate:e2e')
+    || String(gate?.id ?? '').startsWith('gate:typecheck')
+    || String(gate?.id ?? '').startsWith('gate:build')
+    || String(gate?.type ?? '').includes('verification');
+}
+
+function buildAutopilotNextCommands({ preparation, gateStatus, agentReviewActions, options }) {
+  const commands = buildShipNextCommands({ preparation, gateStatus, agentReviewActions, options });
+  if (gateStatus.ready_for_pr_create === true) {
+    commands.unshift(buildShipPrCreateCommand(preparation, options));
+  }
+  return commands;
 }
 
 export function renderPrShipSummary(result) {
@@ -12295,7 +12791,7 @@ function buildPrTitle(preparation) {
 
 function mapArtifactPaths(repoRoot, artifacts) {
   return Object.fromEntries(
-    Object.entries(artifacts).map(([key, value]) => [key, toWorkspaceRelative(repoRoot, value)])
+    Object.entries(artifacts).map(([key, value]) => [key, value ? toWorkspaceRelative(repoRoot, value) : value])
   );
 }
 
