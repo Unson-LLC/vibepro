@@ -26,6 +26,13 @@ Verification evidence recorded by the bridge MUST be bound to the git head at
 which the flow run executed, following the same freshness rules as manual
 `verify record` evidence.
 
+### FSB-INV-4: Visual QA fallback requires real visual artifacts
+
+`pr prepare` MUST NOT satisfy `gate:visual_qa` from prose-only verification
+evidence. The verification fallback requires explicit `visual_qa` plus
+`screenshot` markers tied to an existing screenshot image or residual Visual QA
+artifact.
+
 ## Contracts
 
 ### FSB-CONTRACT-1: Marker vocabulary reuse
@@ -51,6 +58,14 @@ The bridge MUST preserve the existing `BASIC_AUTH_USER && BASIC_AUTH_PASSWORD`
 runtime branch used by `verify flow`. Basic Auth credentials may be passed to
 the runtime probe, but plaintext usernames or passwords MUST NOT be persisted
 in bridge-created visual evidence, screenshot metadata, or PR artifacts.
+
+### FSB-CONTRACT-5: Auto visual not-recorded reasons are explicit
+
+When automatic Visual QA evidence is not recorded, `flow-verification.json`,
+`flow-verification.md`, and the non-JSON CLI summary MUST report
+`not_recorded` with a reason such as `story_not_bound`,
+`flow_status_not_pass`, `runtime_contract_failures`, or
+`screenshots_missing`.
 
 ## Scenarios
 
@@ -81,6 +96,17 @@ Gate.
 Given a `gate:visual_qa` resolved via the bridge, gate details include the flow
 run id and screenshot paths.
 
+### FSB-S-7: Prose-only evidence does not satisfy Visual QA
+
+Given verification evidence that only mentions Visual QA or screenshot absence
+in prose, `pr prepare` keeps `gate:visual_qa` unresolved unless the evidence
+also references an existing screenshot image or residual Visual QA artifact.
+
+### FSB-S-8: Not-recorded reasons are inspectable
+
+Given automatic Visual QA evidence is skipped, the flow verification JSON,
+Markdown report, and CLI summary report `not_recorded` with the reason.
+
 ## Anti-patterns
 
 ### FSB-AP-1: Labeling failure artifacts as proof
@@ -95,7 +121,7 @@ require review.
 
 ## Verification
 
-- Node regression tests cover FSB-S-1 through FSB-S-5 (story acceptance
+- Node regression tests cover FSB-S-1 through FSB-S-8 (story acceptance
   criterion FSB-S-6).
 - `npm run typecheck` validates edited modules.
 - `vibepro pr prepare` emits a Gate DAG for this story with

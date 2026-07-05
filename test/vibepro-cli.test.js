@@ -13960,6 +13960,59 @@ console.log('fake playwright ok');
   assert.equal(visualGate.status, 'ready_for_review');
 });
 
+test('verify flow reports not_recorded reason when screenshots are missing', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    dependencies: { '@playwright/test': '^1.50.0' }
+  }, null, 2));
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+  const binDir = path.join(repo, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  await writeFile(path.join(binDir, 'npx'), `#!/usr/bin/env node
+console.log('fake playwright ok without screenshots');
+`);
+  await chmod(path.join(binDir, 'npx'), 0o755);
+
+  const flow = await runCli([
+    'verify',
+    'flow',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--base-url',
+    'http://127.0.0.1:3000',
+    '--run-id',
+    'flow-missing-screenshot',
+    '--json'
+  ], {
+    env: {
+      ...process.env,
+      PATH: `${binDir}${path.delimiter}${process.env.PATH}`
+    }
+  });
+
+  assert.equal(flow.exitCode, 0);
+  assert.equal(flow.result.verification.status, 'pass');
+  assert.equal(flow.result.verification.auto_visual_evidence.status, 'not_recorded');
+  assert.equal(flow.result.verification.auto_visual_evidence.reason, 'screenshots_missing');
+  const report = await readFile(path.join(repo, '.vibepro', 'verification', 'flow-missing-screenshot', 'flow-verification.md'), 'utf8');
+  assert.match(report, /status: not_recorded/);
+  assert.match(report, /reason: screenshots_missing/);
+});
+
 test('verify visual writes residual artifacts accepted by Visual QA Gate', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
@@ -14234,6 +14287,51 @@ test('VQG-S-3 generic verification does not satisfy Visual QA Gate without expli
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
 
   assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_evidence');
+  assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);
+});
+
+test('VQG-S-6 prose-only Story wrapper evidence does not satisfy Visual QA Gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writeFile(path.join(repo, 'test', 'e2e', 'story-pr-prepare-main.spec.ts'), 'import assert from "node:assert/strict";\nassert.ok(true);\n');
+  await writeJson(path.join(repo, 'artifacts', 'workflow-replay-status.json'), {
+    status: 'pass',
+    observed: { focused_tests: 1 }
+  });
+
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/e2e/story-pr-prepare-main.spec.ts',
+    '--summary',
+    'Story wrapper confirms visual QA and screenshot absence behavior in prose',
+    '--target',
+    'test/e2e/story-pr-prepare-main.spec.ts',
+    '--target',
+    'artifacts/workflow-replay-status.json',
+    '--scenario',
+    'screenshot absence is documented by the Story wrapper',
+    '--artifact',
+    'artifacts/workflow-replay-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.pr_context.visual_qa?.source ?? null, null);
   const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
   assert.equal(visualGate.status, 'needs_evidence');
   assert.equal(result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:visual_qa'), true);

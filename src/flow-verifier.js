@@ -200,9 +200,16 @@ export function renderFlowVerificationSummary(result) {
     `- skipped: ${result.verification.summary.skipped}`,
     `- needs_setup: ${result.verification.summary.needs_setup}`,
     `- runtime_contract_failures: ${result.verification.runtime_contract_failures?.length ?? 0}`,
+    `- auto_visual_evidence: ${formatAutoVisualEvidenceSummary(result.verification.auto_visual_evidence)}`,
     ...setupLines
   ];
   return `${lines.join('\n')}\n`;
+}
+
+function formatAutoVisualEvidenceSummary(autoVisualEvidence) {
+  if (autoVisualEvidence?.status === 'recorded') return `recorded (${autoVisualEvidence.screenshot_paths?.length ?? 0} screenshot(s))`;
+  if (autoVisualEvidence?.status === 'not_recorded') return `not_recorded (${autoVisualEvidence.reason})`;
+  return 'unknown';
 }
 
 async function readConfig(root) {
@@ -279,8 +286,14 @@ function buildPendingProbeResult(probe, options) {
 }
 
 async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, command }) {
-  if (!verification?.story_id || verification.status !== 'pass') return null;
-  if ((verification.runtime_contract_failures?.length ?? 0) > 0) return null;
+  if (!verification?.story_id) return buildAutoVisualEvidenceNotRecorded('story_not_bound', 'verify flow did not resolve a story id');
+  if (verification.status !== 'pass') return buildAutoVisualEvidenceNotRecorded('flow_status_not_pass', `flow status was ${verification.status}`);
+  if ((verification.runtime_contract_failures?.length ?? 0) > 0) {
+    return buildAutoVisualEvidenceNotRecorded(
+      'runtime_contract_failures',
+      `${verification.runtime_contract_failures.length} runtime contract failure(s) were recorded`
+    );
+  }
   const declaredScreenshotTargets = verification.probes
     .filter((probe) => probe.status === 'pass')
     .flatMap((probe) => probe.artifacts?.screenshot_paths ?? [])
@@ -290,7 +303,9 @@ async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, c
   for (const screenshotPath of declaredScreenshotTargets) {
     if (await fileExists(path.join(root, screenshotPath))) screenshotTargets.push(screenshotPath);
   }
-  if (screenshotTargets.length === 0) return null;
+  if (screenshotTargets.length === 0) {
+    return buildAutoVisualEvidenceNotRecorded('screenshots_missing', 'no screenshot files were saved for this flow run');
+  }
   const artifact = toWorkspaceRelative(root, jsonPath);
   const result = await recordVerificationEvidence(root, {
     storyId: verification.story_id,
@@ -315,6 +330,14 @@ async function recordVisualEvidenceFromFlowRun(root, { verification, jsonPath, c
     source: artifact,
     screenshot_paths: screenshotTargets,
     status: 'recorded'
+  };
+}
+
+function buildAutoVisualEvidenceNotRecorded(reason, detail) {
+  return {
+    status: 'not_recorded',
+    reason,
+    detail
   };
 }
 
@@ -821,7 +844,7 @@ function renderFlowVerificationReport(verification) {
 - skipped: ${verification.summary.skipped}
 - needs_setup: ${verification.summary.needs_setup}
 - runtime_contract_failures: ${verification.runtime_contract_failures?.length ?? 0}
-- auto_visual_evidence: ${verification.auto_visual_evidence?.status ?? 'not_recorded'}
+- auto_visual_evidence: ${formatAutoVisualEvidenceSummary(verification.auto_visual_evidence)}
 
 ## Probes
 
@@ -834,6 +857,23 @@ ${verification.setup?.next_commands?.length > 0 ? verification.setup.next_comman
 ## Runtime Contract Failures
 
 ${verification.runtime_contract_failures?.length > 0 ? verification.runtime_contract_failures.map((item) => `- ${item.kind}: ${item.detail}`).join('\n') : '- なし'}
+
+## Auto Visual Evidence
+
+${verification.auto_visual_evidence?.status === 'recorded'
+    ? [
+        `- status: recorded`,
+        `- source: ${verification.auto_visual_evidence.source}`,
+        `- flow_run_id: ${verification.run_id}`,
+        ...verification.auto_visual_evidence.screenshot_paths.map((screenshotPath) => `- screenshot: ${screenshotPath}`)
+      ].join('\n')
+    : verification.auto_visual_evidence?.status === 'not_recorded'
+      ? [
+          `- status: not_recorded`,
+          `- reason: ${verification.auto_visual_evidence.reason}`,
+          `- detail: ${verification.auto_visual_evidence.detail}`
+        ].join('\n')
+      : '- なし'}
 
 ## Warnings
 

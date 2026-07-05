@@ -4003,7 +4003,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
   const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot, git);
-  const visualQaEvidence = artifactVisualQaEvidence ?? buildVisualQaEvidenceFromVerification(boundVerificationEvidence);
+  const visualQaEvidence = artifactVisualQaEvidence ?? buildVisualQaEvidenceFromVerification(repoRoot, boundVerificationEvidence);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
   const performanceEvidence = await summarizeStoryPerformanceEvidence(repoRoot, story.story_id);
   const networkContracts = await scanNetworkContracts(repoRoot, {
@@ -4566,7 +4566,7 @@ async function readVisualQaEvidence(repoRoot, git = null) {
   };
 }
 
-function buildVisualQaEvidenceFromVerification(verificationEvidence) {
+function buildVisualQaEvidenceFromVerification(repoRoot, verificationEvidence) {
   const currentPassing = Array.isArray(verificationEvidence?.commands)
     ? verificationEvidence.commands.filter((command) => command.status === 'pass' && command.binding?.status === 'current')
     : [];
@@ -4580,6 +4580,11 @@ function buildVisualQaEvidenceFromVerification(verificationEvidence) {
       command.artifact,
       ...targets
     ].filter(Boolean);
+    const visualArtifacts = artifacts.filter((artifact) => isVisualQaArtifactRef(artifact));
+    if (visualArtifacts.length === 0) continue;
+    const missingVisualArtifacts = visualArtifacts
+      .filter((artifact) => !existsSync(path.resolve(repoRoot, artifact)));
+    if (missingVisualArtifacts.length > 0) continue;
     runs.push({
       qa_id: `verification:${command.kind ?? 'unknown'}`,
       source: 'verification_evidence',
@@ -4608,6 +4613,12 @@ function buildVisualQaEvidenceFromVerification(verificationEvidence) {
     runs: sortedRuns,
     artifacts: sortedRuns.flatMap((run) => run.artifact_refs ?? [])
   };
+}
+
+function isVisualQaArtifactRef(artifact) {
+  const ref = String(artifact ?? '').trim();
+  return /(^|\/)[^/]+\.(png|jpe?g|webp)$/i.test(ref)
+    || /(^|\/)\.vibepro\/qa\/[^/]+\/(visual-residual\.json|residual-analysis\.md)$/i.test(ref);
 }
 
 async function readDesignQualityEvidence(repoRoot, storyId) {
@@ -5277,7 +5288,7 @@ async function readVisualQaRun(repoRoot, qaDir, qaId, git = null) {
     try {
       const data = JSON.parse(await readFile(file, 'utf8'));
       const fileStat = await stat(file);
-      const binding = git ? resolveVerificationBinding(data.git_context ?? null, git) : null;
+      const binding = git ? await resolveVerificationBinding(repoRoot, data.git_context ?? null, git) : null;
       residuals.push({
         path: toWorkspaceRelative(repoRoot, file),
         updated_at_ms: fileStat.mtimeMs,
@@ -7366,8 +7377,9 @@ function classifyVerificationEvidenceItem(item) {
   if (!generic && /\b(flow replay|flow_replay|verify flow|journey|replay)\b/.test(text)) add('flow_replay');
   if (!generic && /\b(artifact replay|artifact_replay|gate-dag|pr-prepare|pr-create|stale artifact|stale readiness)\b/.test(text)) add('artifact_replay');
   if (!generic && item.kind === 'e2e' && (/\b(scenario|acceptance|clause|ac:|story-)\b/.test(text) || /scenario[_ -]?clause[_ -]?e2e/.test(text))) add('scenario_clause_e2e');
-  if (!generic && /\b(visual qa|visual_qa|visual regression|visual check|screenshot|screen shot|playwright screenshot|image diff)\b/.test(text)) add('visual_qa');
-  if (!generic && /\b(screenshot|screen shot|snapshot image|playwright screenshot)\b/.test(text)) add('screenshot');
+  const visualMarkers = explicitVisualQaMarkersFromVerificationItem(item);
+  if (!generic && visualMarkers.hasVisualQa) add('visual_qa');
+  if (!generic && visualMarkers.hasScreenshot) add('screenshot');
   if (!generic && /\b(accessibility|accessibility evidence|a11y|aria|keyboard|focus order|focus visible)\b/.test(text)) add('accessibility_evidence');
   if (!generic && /\b(auth_denied|auth denied|permission denied|forbidden|unauthorized|401|403|拒否|権限)\b/.test(text)) add('auth_denied');
   if (!generic && /\b(permission_denied|permission denied|forbidden|403|権限)\b/.test(text)) add('permission_denied');
@@ -7375,6 +7387,21 @@ function classifyVerificationEvidenceItem(item) {
   if (!generic && /\b(negative|denied|failure mode|fail path|missing|unknown|null|unavailable|拒否|失敗|未確認)\b/.test(text)) add('negative_path');
   for (const kind of explicitEvidenceKindsFromVerificationText(text)) add(kind);
   return matches;
+}
+
+function explicitVisualQaMarkersFromVerificationItem(item) {
+  const scenarios = Array.isArray(item?.observation?.scenarios) ? item.observation.scenarios : [];
+  const targets = Array.isArray(item?.observation?.targets) ? item.observation.targets : [];
+  const values = item?.observation?.values && typeof item.observation.values === 'object' ? item.observation.values : {};
+  const scenarioText = scenarios.map((scenario) => String(scenario ?? '')).join('\n');
+  const valueKeys = Object.keys(values).join('\n');
+  const hasVisualQa = /(^|[^a-z0-9])visual[_ -]?qa\s*[:=]/i.test(scenarioText)
+    || /(^|[^a-z0-9])visual[_ -]?qa([^a-z0-9]|$)/i.test(valueKeys);
+  const hasScreenshot = /(^|[^a-z0-9])screenshot\s*[:=]/i.test(scenarioText)
+    || /(^|[^a-z0-9])screenshot[_ -]?paths?([^a-z0-9]|$)/i.test(valueKeys)
+    || targets.some((target) => isVisualQaArtifactRef(target))
+    || isVisualQaArtifactRef(item?.artifact);
+  return { hasVisualQa, hasScreenshot };
 }
 
 function isGenericVerificationCommand(command) {
@@ -7398,8 +7425,6 @@ function explicitEvidenceKindsFromVerificationText(text) {
     'threat_model',
     'security_review',
     'topology_diagram',
-    'visual_qa',
-    'screenshot',
     'accessibility_evidence',
     'benchmark_delta',
     'perf_regression_guard',

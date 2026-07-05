@@ -14,29 +14,36 @@ records current-head verification evidence (kind `e2e`) carrying the explicit
 `visual_qa` and `screenshot: <path>` scenario markers that the gate already
 accepts.
 
-The gate consumer is intentionally untouched. Visual QA Gate keeps its existing
-two-source model (residual analysis first, verification fallback second); the
-bridge only makes the flow verifier a first-class producer of the fallback
-evidence that today must be recorded by hand.
+Visual QA Gate keeps its two-source model: residual analysis first,
+verification fallback second. The fallback is tightened so prose-only
+verification evidence cannot satisfy the gate; a current verification claim
+must carry explicit `visual_qa` / `screenshot` markers tied to an existing
+screenshot image or residual Visual QA artifact.
 
 ```mermaid
 flowchart LR
   Flow["verify flow (Playwright)"] --> Shots[".vibepro/verification/<run-id>/screenshots"]
   Flow -->|"pass + screenshots"| Auto["auto verify record (kind e2e)"]
   Auto --> Tokens["visual_qa + screenshot markers + flow provenance"]
-  Tokens --> Gate["gate:visual_qa"]
+  Tokens --> Bound["artifact-bound fallback check"]
+  Bound --> Gate["gate:visual_qa"]
+  Prose["prose-only Story wrapper evidence"] --> Reject["not Visual QA proof"]
+  Reject --> Gate
   Residual[".vibepro/qa residual evidence"] --> Gate
   Gate --> PR["PR Gate DAG"]
 ```
 
 ## Decision
 
-- Change lives in the flow verifier / verification-evidence recording path;
-  `pr-manager` gate evaluation logic is unchanged.
+- Producer-side recording lives in the flow verifier / verification-evidence
+  path. Consumer-side fallback in `pr-manager` requires real visual artifacts
+  before treating verification evidence as Visual QA proof.
 - Reuse the marker vocabulary normalized by
   story-vibepro-visual-evidence-gate-ux; do not introduce new marker tokens.
 - Only passing flow runs with at least one saved screenshot produce visual
   markers; failing runs and screenshot-less runs record nothing visual.
+- Flow runs that do not auto-record Visual QA evidence expose a structured
+  `not_recorded` reason in JSON, Markdown, and CLI output.
 - Auto-recorded evidence embeds provenance (flow run id, screenshot paths) so
   gate details can point back to the originating run.
 - Residual analysis under `.vibepro/qa/<qa-id>/` remains authoritative when
