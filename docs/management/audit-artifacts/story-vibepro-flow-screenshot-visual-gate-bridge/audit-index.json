@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
   "source": "execute_merge",
-  "generated_at": "2026-07-05T08:08:09.073Z",
+  "generated_at": "2026-07-05T08:08:13.524Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -131,13 +131,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3339,
+      "compressed_bytes": 3343,
       "expanded_bytes": 16053,
       "expanded_line_count": 421,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 14016,
-    "raw_source_artifact_code_ratio": 5.261,
+    "raw_source_artifact_lines": 14106,
+    "raw_source_artifact_code_ratio": 5.295,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -258,7 +258,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-flow-screenshot-visual-gate-bridge",
-    "generated_at": "2026-07-05T08:08:09.073Z",
+    "generated_at": "2026-07-05T08:08:13.524Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -363,10 +363,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-flow-screenshot-visual-gate-bridge/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:1cb076995e215ffc73b0aa8a14fb4bb0b152d9b1df397b061e1853b68a5dd72d",
-    "compressed_hash": "sha256:a7bab29af983bc0d2d2f9f9b155025311f1979766db78bf07ce6e8ec71eb7015",
+    "content_hash": "sha256:5eacc2dfaaf7a3e1246eb4248fd6a0e01f476beb7c5f6a7e994026f44f741f63",
+    "compressed_hash": "sha256:5eb074237a4cd37bd36c02568fe74f4b8c718fe3baa3910c827aa27bf8557cd1",
     "expanded_bytes": 16053,
-    "compressed_bytes": 3339,
+    "compressed_bytes": 3343,
     "expanded_line_count": 421,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -385,7 +385,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-flow-screenshot-visual-gate-bridge",
     "cost": {
-      "compressed_bytes": 3339,
+      "compressed_bytes": 3343,
       "expanded_bytes": 16053,
       "expanded_line_count": 421,
       "persisted_line_count": 1
