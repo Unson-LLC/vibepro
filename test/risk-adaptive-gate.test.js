@@ -1335,7 +1335,9 @@ test('story-risk-adaptive unrelated assertion', async () => {
 	  const trailingMarker = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
 	  assert.equal(trailingMarker.exitCode, 0);
 	  assert.equal(trailingMarker.result.preparation.pr_context.acceptance_e2e_coverage.status, 'needs_evidence');
-	  assert.equal(trailingMarker.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'needs_evidence');
+	  const trailingMarkerFlowGate = trailingMarker.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
+	  assert.equal(trailingMarkerFlowGate.status, 'passed');
+	  assert.match(trailingMarkerFlowGate.reason, /explicitly records flow_replay/);
 
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-risk-adaptive-main.spec.ts'), `
 import { expect, test } from '@playwright/test';

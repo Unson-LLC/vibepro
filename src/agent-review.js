@@ -9,6 +9,7 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
 import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
+import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -328,6 +329,14 @@ export async function recordAgentReview(repoRoot, options = {}) {
   const reviewDir = getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectGitContext(root);
+  const inspection = buildInspectionBlock(options);
+  const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
+  const contentBinding = await buildContentBinding(root, {
+    gitContext,
+    strictHead: options.strictHeadBinding === true,
+    inspectionInputs: inspection.inputs,
+    artifacts
+  });
   const sourceFingerprint = buildSourceFingerprint({ storyId, stage, role, gitContext });
   const result = {
     schema_version: '0.1.0',
@@ -341,13 +350,14 @@ export async function recordAgentReview(repoRoot, options = {}) {
       dispositions: options.findingDispositions ?? [],
       resolvedFindings: options.resolvedFindings ?? []
     }),
-    artifacts: (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact)),
-    inspection: buildInspectionBlock(options),
+    artifacts,
+    inspection,
     judgment_delta: normalizeTextList(options.judgmentDeltas),
     managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
     warnings: normalizeWarnings([options.managedWorktreeWarning]),
     recorded_at: new Date().toISOString(),
     git_context: gitContext,
+    content_binding: contentBinding,
     source_fingerprint: sourceFingerprint,
     agent_provenance: buildAgentProvenance(root, {
       ...options,
@@ -2029,6 +2039,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       stale_reason: binding?.reason ?? null,
       binding_status: binding?.status ?? null,
       merge_delta_reuse: binding?.merge_delta_reuse ?? null,
+      content_binding: binding?.content_binding ?? null,
       provenance_status: provenance?.status ?? null,
       provenance_reason: provenance?.reason ?? null,
       agent_provenance: result?.agent_provenance ?? null,
@@ -2190,6 +2201,20 @@ async function bindReviewResult(repoRoot, result, currentGitContext) {
   if (!recorded.head_sha) {
     return { status: 'legacy', reason: 'review result is not bound to a git head' };
   }
+  const contentBinding = await evaluateContentBinding(repoRoot, result.content_binding, currentGitContext);
+  if (contentBinding?.status === 'current') {
+    return contentBinding;
+  }
+  if (contentBinding?.status === 'stale') {
+    return contentBinding;
+  }
+  if (contentBinding?.status === 'strict_head' && currentGitContext.head_sha && recorded.head_sha !== currentGitContext.head_sha) {
+    return {
+      status: 'stale',
+      reason: `strict HEAD review was recorded for ${recorded.head_sha.slice(0, 12)}, current head is ${currentGitContext.head_sha.slice(0, 12)}`,
+      content_binding: contentBinding.content_binding ?? null
+    };
+  }
   if (currentGitContext.head_sha && recorded.head_sha !== currentGitContext.head_sha) {
     const mergeDeltaReuse = await evaluateMergeDeltaReviewReuse(repoRoot, result, recorded, currentGitContext);
     if (mergeDeltaReuse.reusable) {
@@ -2312,17 +2337,7 @@ function extractReviewImpactFiles(result) {
 }
 
 function extractFilePathFromReviewRef(ref) {
-  const text = String(ref ?? '').trim();
-  if (!text || /^https?:\/\//i.test(text)) return null;
-  if (/^(git|npm|node|pnpm|yarn|bun|npx)\s/.test(text)) return null;
-  const first = text.split(/\s+/)[0].replace(/^['"`]|['"`]$/g, '');
-  const normalized = first
-    .replace(/\\/g, '/')
-    .replace(/^\.\//, '')
-    .replace(/:\d+(?::\d+)?$/, '');
-  if (!normalized || normalized.includes('*') || normalized.includes('...')) return null;
-  if (path.isAbsolute(normalized)) return null;
-  return normalized;
+  return normalizeSurfacePath(ref);
 }
 
 function pathsOverlap(left, right) {

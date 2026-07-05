@@ -9026,7 +9026,7 @@ test('review record updates status summary and marks stale after source change',
   assert.match(roleAfter.stale_reason, /dirty worktree fingerprint/);
 });
 
-test('review status reuses review after merge delta outside inspected inputs', async () => {
+test('review status keeps content-bound review current after merge delta outside inspected inputs', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -9084,24 +9084,90 @@ test('review status reuses review after merge delta outside inspected inputs', a
   const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
   assert.equal(role.effective_status, 'pass');
   assert.equal(role.stale, false);
-  assert.equal(role.binding_status, 'reused_merge_delta');
-  assert.equal(role.merge_delta_reuse.recorded_head_sha, recordedHead);
-  assert.equal(role.merge_delta_reuse.current_head_sha, currentHead);
-  assert.deepEqual(role.merge_delta_reuse.impacted_files, []);
-  assert.match(role.stale_reason, /reused/);
+  assert.equal(role.binding_status, 'current');
+  assert.equal(role.merge_delta_reuse, null);
+  assert.deepEqual(role.content_binding.surface_files, ['src/merge-delta-target.js']);
+  assert.deepEqual(role.content_binding.changed_files, []);
+  assert.equal(role.content_binding.recorded_head_sha, recordedHead);
+  assert.equal(role.content_binding.current_head_sha, currentHead);
+  assert.match(role.stale_reason, /content-bound evidence surface is current/);
 
   const prepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(prepare.exitCode, 0);
   const artifactGate = prepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
   assert.equal(artifactGate.status, 'passed');
-  assert.match(artifactGate.reason, /merge-delta reused/);
-  assert.doesNotMatch(artifactGate.reason, /are bound to the current git state/);
+  assert.match(artifactGate.reason, /current/);
   const reviewArtifact = artifactGate.artifacts.find((artifact) => artifact.artifact_type === 'agent_review_result' && artifact.role === 'runtime_contract');
-  assert.equal(reviewArtifact.status, 'reused_merge_delta');
+  assert.equal(reviewArtifact.status, 'current');
   assert.equal(reviewArtifact.recorded_head_sha, recordedHead);
-  assert.equal(reviewArtifact.reuse_policy.recorded_head_sha, recordedHead);
-  assert.equal(reviewArtifact.reuse_policy.current_head_sha, currentHead);
-  assert.match(reviewArtifact.reason, /merge-delta review reuse accepted/);
+  assert.equal(reviewArtifact.reuse_policy, null);
+  assert.deepEqual(reviewArtifact.content_binding.surface_files, ['src/merge-delta-target.js']);
+  assert.deepEqual(reviewArtifact.content_binding.changed_files, []);
+  assert.match(reviewArtifact.reason, /bound to the current git state/);
+});
+
+test('review status keeps strict-head review stale after docs-only commit', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'strict-head-review-target.js'), 'export const value = 1;\n');
+  await git(repo, ['add', 'src/strict-head-review-target.js']);
+  await git(repo, ['commit', '-m', 'feat: add strict head review target']);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--stage',
+    'implementation',
+    '--role',
+    'runtime_contract',
+    '--status',
+    'pass',
+    '--summary',
+    'strict head runtime contract reviewed before docs-only commit',
+    '--inspection-summary',
+    'inspected runtime source with strict head binding',
+    '--inspection-input',
+    'src/strict-head-review-target.js',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-strict-head-review-agent',
+    '--agent-thread-id',
+    'thread-strict-head-review-agent',
+    '--agent-model',
+    'gpt-5.5',
+    '--agent-reasoning-effort',
+    'low',
+    '--agent-cost-tier',
+    'medium',
+    '--strict-head-binding',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
+  const recordedHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  await writeFile(path.join(repo, 'docs', 'strict-head-review-note.md'), 'docs-only change after strict head review\n');
+  await git(repo, ['add', 'docs/strict-head-review-note.md']);
+  await git(repo, ['commit', '-m', 'docs: advance strict head review']);
+  const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
+  assert.equal(status.exitCode, 0);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(role.effective_status, 'stale');
+  assert.equal(role.binding_status, 'stale');
+  assert.equal(role.merge_delta_reuse, null);
+  assert.equal(role.content_binding.mode, 'strict_head');
+  assert.equal(role.content_binding.recorded_head_sha, recordedHead);
+  assert.equal(role.content_binding.current_head_sha, currentHead);
+  assert.match(role.stale_reason, /strict HEAD review was recorded for/);
 });
 
 test('review status keeps stale review after merge delta touches inspected inputs', async () => {
@@ -9159,8 +9225,8 @@ test('review status keeps stale review after merge delta touches inspected input
   const role = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
   assert.equal(role.effective_status, 'stale');
   assert.equal(role.binding_status, 'stale');
-  assert.match(role.stale_reason, /merge delta touched reviewed file/);
-  assert.deepEqual(role.merge_delta_reuse.impacted_files, ['src/merge-delta-touch-target.js']);
+  assert.match(role.stale_reason, /content-bound evidence surface changed/);
+  assert.deepEqual(role.content_binding.changed_files, ['src/merge-delta-touch-target.js']);
 });
 
 test('review status does not reuse merge delta review without inspected file inputs', async () => {
@@ -9257,6 +9323,7 @@ test('review status keeps stale review when merge delta diff cannot be resolved'
     'low',
     '--agent-cost-tier',
     'medium',
+    '--strict-head-binding',
     '--agent-closed'
   ]);
   assert.equal(recordResult.exitCode, 0, JSON.stringify(recordResult));
@@ -9272,6 +9339,7 @@ test('review status keeps stale review when merge delta diff cannot be resolved'
   const reviewResult = await readJson(reviewPath);
   const missingHead = 'f'.repeat(40);
   reviewResult.git_context.head_sha = missingHead;
+  delete reviewResult.content_binding;
   await writeJson(reviewPath, reviewResult);
 
   await writeFile(path.join(repo, 'docs', 'base-sync-missing-head.md'), 'unrelated base sync note\n');

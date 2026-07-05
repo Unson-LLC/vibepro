@@ -70,6 +70,7 @@ import {
   buildSeniorGapJudgmentGate
 } from './senior-gap-judgment.js';
 import { buildCodeTopologyContext } from './code-topology-provider.js';
+import { evaluateContentBinding } from './content-binding.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -3978,7 +3979,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
-  const boundVerificationEvidence = bindVerificationEvidenceToGit(verificationEvidence, git);
+  const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
   const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot);
   const visualQaEvidence = artifactVisualQaEvidence ?? buildVisualQaEvidenceFromVerification(boundVerificationEvidence);
   const designQualityEvidence = await readDesignQualityEvidence(repoRoot, story.story_id);
@@ -4380,10 +4381,10 @@ async function readVerificationEvidenceIfExists(repoRoot, storyId) {
   }
 }
 
-function bindVerificationEvidenceToGit(verificationEvidence, git) {
+async function bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git) {
   if (!verificationEvidence) return null;
   const commands = Array.isArray(verificationEvidence.commands)
-    ? verificationEvidence.commands.map((command) => bindVerificationCommandToGit(command, git))
+    ? await Promise.all(verificationEvidence.commands.map((command) => bindVerificationCommandToGit(repoRoot, command, git)))
     : [];
   return {
     ...verificationEvidence,
@@ -4398,9 +4399,9 @@ function bindVerificationEvidenceToGit(verificationEvidence, git) {
   };
 }
 
-function bindVerificationCommandToGit(command, git) {
+async function bindVerificationCommandToGit(repoRoot, command, git) {
   const context = command?.git_context ?? null;
-  const binding = resolveVerificationBinding(context, git);
+  const binding = await resolveVerificationBinding(repoRoot, context, git, command?.content_binding);
   return {
     ...command,
     binding,
@@ -4408,12 +4409,19 @@ function bindVerificationCommandToGit(command, git) {
   };
 }
 
-function resolveVerificationBinding(context, git) {
+async function resolveVerificationBinding(repoRoot, context, git, contentBinding = null) {
   if (!context?.head_sha) {
     return {
       status: 'legacy',
       reason: 'legacy verification evidence is not bound to a git head'
     };
+  }
+  const contentFreshness = await evaluateContentBinding(repoRoot, contentBinding, git);
+  if (contentFreshness?.status === 'current') {
+    return contentFreshness;
+  }
+  if (contentFreshness?.status === 'stale') {
+    return contentFreshness;
   }
   if (git.head_sha && context.head_sha !== git.head_sha) {
     return {
@@ -4447,11 +4455,11 @@ async function readLatestFlowVerification(repoRoot, storyId, git = null) {
   const runs = Array.isArray(manifest.flow_verification_runs) ? manifest.flow_verification_runs : [];
   const matching = selectLatestFlowVerificationRun(runs, storyId, manifest.latest_flow_verification_run);
   const artifact = matching?.artifacts?.flow_verification_json;
-  if (!artifact) return bindFlowVerificationToGit(matching, git);
+  if (!artifact) return bindFlowVerificationToGit(repoRoot, matching, git);
   try {
     const verification = JSON.parse(await readFile(path.resolve(repoRoot, artifact), 'utf8'));
     const storyMismatch = verification?.story_id && verification.story_id !== storyId;
-    return bindFlowVerificationToGit({
+    return bindFlowVerificationToGit(repoRoot, {
       ...matching,
       verification,
       artifact,
@@ -4481,10 +4489,10 @@ function selectLatestFlowVerificationRun(runs, storyId, latestRunId = null) {
     .sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')))[0] ?? null;
 }
 
-function bindFlowVerificationToGit(flowVerification, git) {
+async function bindFlowVerificationToGit(repoRoot, flowVerification, git) {
   if (!flowVerification || !git) return flowVerification;
   const context = flowVerification.verification?.git_context ?? flowVerification.git_context ?? null;
-  const binding = resolveVerificationBinding(context, git);
+  const binding = await resolveVerificationBinding(repoRoot, context, git);
   return {
     ...flowVerification,
     binding,
@@ -8482,7 +8490,7 @@ function buildGateDag({
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
-  const prFreshnessGate = buildPrFreshnessGate(git);
+  const prFreshnessGate = buildPrFreshnessGate(git, { verificationEvidence, agentReviews });
   const artifactConsistencyGate = buildArtifactConsistencyGate({
     git,
     verificationEvidence,
@@ -9153,9 +9161,10 @@ function buildChangeClassificationGate(changeClassification) {
   };
 }
 
-function buildPrFreshnessGate(git) {
+function buildPrFreshnessGate(git, options = {}) {
   const freshness = git?.pr_freshness ?? null;
   const status = freshness?.status === 'passed' ? 'passed' : freshness?.status ?? 'needs_evidence';
+  const evidenceBindings = collectPrFreshnessEvidenceBindings(options);
   return {
     id: 'gate:pr_freshness',
     type: 'pr_freshness_gate',
@@ -9175,8 +9184,58 @@ function buildPrFreshnessGate(git) {
       'rerun verification evidence',
       'rerun vibepro pr prepare'
     ],
+    content_binding_details: {
+      model: 'vibepro-content-scoped-evidence-freshness-v1',
+      evidence_count: evidenceBindings.length,
+      stale_evidence_count: evidenceBindings.filter((binding) => binding.status === 'stale').length,
+      bindings: evidenceBindings
+    },
     reason: freshness?.reason ?? 'PR freshness could not be proven'
   };
+}
+
+function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agentReviews = null } = {}) {
+  const bindings = [];
+  for (const command of verificationEvidence?.commands ?? []) {
+    const contentBinding = command.binding?.content_binding ?? command.content_binding ?? null;
+    if (!contentBinding) continue;
+    bindings.push({
+      artifact_type: 'verification_command',
+      kind: command.kind ?? null,
+      status: command.binding?.status ?? null,
+      reason: command.binding?.reason ?? null,
+      binding_mode: contentBinding.mode ?? null,
+      surface_files: contentBinding.surface_files ?? [],
+      changed_files: contentBinding.changed_files ?? [],
+      missing_files: contentBinding.missing_files ?? [],
+      recorded_surface_hash: contentBinding.recorded_surface_hash ?? contentBinding.surface_hash ?? null,
+      current_surface_hash: contentBinding.current_surface_hash ?? null,
+      recorded_head_sha: contentBinding.recorded_head_sha ?? command.git_context?.head_sha ?? null,
+      current_head_sha: contentBinding.current_head_sha ?? null
+    });
+  }
+  for (const stage of agentReviews?.stages ?? []) {
+    for (const role of stage.roles ?? []) {
+      const contentBinding = role.content_binding ?? null;
+      if (!contentBinding) continue;
+      bindings.push({
+        artifact_type: 'agent_review_result',
+        stage: stage.stage ?? null,
+        role: role.role ?? null,
+        status: role.binding_status ?? null,
+        reason: role.stale_reason ?? null,
+        binding_mode: contentBinding.mode ?? null,
+        surface_files: contentBinding.surface_files ?? [],
+        changed_files: contentBinding.changed_files ?? [],
+        missing_files: contentBinding.missing_files ?? [],
+        recorded_surface_hash: contentBinding.recorded_surface_hash ?? contentBinding.surface_hash ?? null,
+        current_surface_hash: contentBinding.current_surface_hash ?? null,
+        recorded_head_sha: contentBinding.recorded_head_sha ?? role.git_context?.head_sha ?? null,
+        current_head_sha: contentBinding.current_head_sha ?? null
+      });
+    }
+  }
+  return bindings;
 }
 
 function buildArtifactConsistencyGate({ git = null, verificationEvidence = null, agentReviews = null, managedWorktreeContext = null, changeClassification = null, storyId = null } = {}) {
@@ -9260,6 +9319,7 @@ function buildStaleArtifactDetail(artifact, { git = null, storyId = null } = {})
     current_head_sha: git?.head_sha ?? null,
     recorded_status_fingerprint_hash: artifact.recorded_status_fingerprint_hash ?? null,
     current_status_fingerprint_hash: fullFingerprintHashForContext(git),
+    content_binding: artifact.content_binding ?? null,
     dependency_chain: [
       {
         step: 'current_git_state',
@@ -9390,6 +9450,7 @@ function collectVerificationArtifactBindings(verificationEvidence = null, change
       recorded_status_fingerprint_hash: fullFingerprintHashForContext(command.git_context),
       recorded_user_status_fingerprint_hash: command.git_context?.user_status_fingerprint_hash ?? null,
       status,
+      content_binding: command.binding?.content_binding ?? command.content_binding ?? null,
       reuse_policy: reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
       scoped_reuse_decision: reuseDecision,
       reason: reusableLowRisk
@@ -9442,6 +9503,7 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         recorded_status_fingerprint_hash: fullFingerprintHashForContext(role.git_context ?? role.source_git_context),
         recorded_user_status_fingerprint_hash: (role.git_context ?? role.source_git_context)?.user_status_fingerprint_hash ?? null,
         status,
+        content_binding: role.content_binding ?? null,
         reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
         reason: current
           ? 'agent review result is bound to the current git state; review outcome is handled by Agent Review Gate'

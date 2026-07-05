@@ -95,11 +95,11 @@ test('story-vibepro-issues-189-204-gate-friction replays merge-delta review bind
   const reused = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
   assert.equal(reused.exitCode, 0);
   const reusedRole = reused.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
-  const ac1 = 'Merge-delta review reuse remains visible as `binding_status=reused_merge_delta` when current HEAD changes only files outside recorded `inspection.inputs`.';
+  const ac1 = 'Content-bound review evidence remains current when current HEAD changes only files outside recorded `inspection.inputs`.';
   const ac1Marker = `${STORY_ID} ac:1`;
-  const scenario1 = 'Given a passing review inspected src/runtime.js, when current HEAD only adds docs/base-sync.md, then the role remains passing with binding_status=reused_merge_delta.';
+  const scenario1 = 'Given a passing review inspected src/runtime.js, when current HEAD only adds docs/base-sync.md, then the role remains passing with binding_status=current.';
   const scenario1Marker = `${STORY_ID} scenario:1`;
-  assert.equal(reusedRole.binding_status, 'reused_merge_delta', `${ac1Marker} ${ac1} ${scenario1Marker} ${scenario1}`);
+  assert.equal(reusedRole.binding_status, 'current', `${ac1Marker} ${ac1} ${scenario1Marker} ${scenario1}`);
   assert.equal(reusedRole.effective_status, 'pass', `${scenario1Marker} ${scenario1}`);
 
   await writeFile(path.join(repo, 'src', 'merge-delta-target.js'), 'export const value = 2;\n');
@@ -109,13 +109,13 @@ test('story-vibepro-issues-189-204-gate-friction replays merge-delta review bind
   const stale = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'implementation', '--json']);
   assert.equal(stale.exitCode, 0);
   const staleRole = stale.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
-  const ac2 = 'Review evidence remains stale when the merge delta touches a recorded inspected file or when no concrete inspected file input exists.';
+  const ac2 = 'Review evidence remains stale when content binding detects a recorded inspected file changed.';
   const ac2Marker = `${STORY_ID} ac:2`;
   const scenario2 = 'Given the same review, when current HEAD changes src/runtime.js, then the role remains stale and names the touched reviewed file.';
   const scenario2Marker = `${STORY_ID} scenario:2`;
   assert.equal(staleRole.binding_status, 'stale', `${ac2Marker} ${ac2} ${scenario2Marker} ${scenario2}`);
-  assert.match(staleRole.stale_reason, /merge delta touched reviewed file/, `${ac2Marker} ${ac2}`);
-  assert.deepEqual(staleRole.merge_delta_reuse.impacted_files, ['src/merge-delta-target.js'], `${scenario2Marker} ${scenario2}`);
+  assert.match(staleRole.stale_reason, /content-bound evidence surface changed/, `${ac2Marker} ${ac2}`);
+  assert.deepEqual(staleRole.content_binding.changed_files, ['src/merge-delta-target.js'], `${scenario2Marker} ${scenario2}`);
 });
 
 test('story-vibepro-issues-189-204-gate-friction replays AC diagnostics and multiline local binding coverage', async () => {
