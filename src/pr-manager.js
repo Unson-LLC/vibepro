@@ -10533,7 +10533,7 @@ function derivePathSurfaceRows({ storySource = null, fileGroups = null, changeCl
     if (normalized.includes('pr-manager') || normalized.includes('report') || normalized.includes('html-report')) {
       add('review_surface', 'gate_or_report_surface', `Gate/report artifact code changed: ${file}`, true);
     }
-    if (normalized.includes('schema') || normalized.includes('prisma') || normalized.includes('migration') || normalized.includes('database')) {
+    if (pathImpliesPersistenceSurface(normalized)) {
       add('persistence', 'state_surface', `Persistence/schema file changed: ${file}`, true);
     }
   }
@@ -10549,6 +10549,13 @@ function derivePathSurfaceRows({ storySource = null, fileGroups = null, changeCl
   return rows;
 }
 
+function pathImpliesPersistenceSurface(normalizedPath) {
+  const normalized = String(normalizedPath ?? '').toLowerCase();
+  if (!normalized) return false;
+  if (/^docs\/(management\/stories|stories|specs)\/story-/.test(normalized)) return false;
+  return /(^|[\/._-])(database|db|prisma|schema|migrations?)(?=$|[\/._-])/.test(normalized);
+}
+
 function pathSurfaceCoveredByEvidence(surface, evidenceText) {
   if (!evidenceText) return false;
   const terms = {
@@ -10559,7 +10566,18 @@ function pathSurfaceCoveredByEvidence(surface, evidenceText) {
     review_surface: ['gate', 'report', 'pr body', 'artifact', 'review'],
     persistence: ['database', 'db', 'schema', 'persist', 'storage']
   }[surface.surface] ?? [surface.surface];
-  return terms.some((term) => evidenceText.includes(term));
+  return terms.some((term) => evidenceTextContainsSurfaceTerm(evidenceText, term));
+}
+
+function evidenceTextContainsSurfaceTerm(evidenceText, term) {
+  const normalizedTerm = String(term ?? '').trim().toLowerCase();
+  if (!normalizedTerm) return false;
+  const pattern = normalizedTerm.split(/\s+/).map(escapeRegExpLiteral).join('\\s+');
+  return new RegExp(`(^|[^a-z0-9])${pattern}(?=$|[^a-z0-9])`, 'i').test(evidenceText);
+}
+
+function escapeRegExpLiteral(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function buildFlowVerificationSurfaceSearchText(flowVerification) {

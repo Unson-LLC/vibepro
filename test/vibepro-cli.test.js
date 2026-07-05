@@ -2964,6 +2964,66 @@ test('pr prepare keeps path surface legacy keyword compatibility with deprecatio
   assert.match(gate.deprecation_notices[0].reason, /migration-only compatibility/);
 });
 
+test('pr prepare does not cover persistence surface from hash substrings', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'schema.js'), 'export const shape = { version: 2 };\n');
+  await git(repo, ['add', 'src/schema.js']);
+  await git(repo, ['commit', '-m', 'feat: update schema shape']);
+
+  const record = await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'build',
+    '--status',
+    'pass',
+    '--command',
+    'CI CodeQL: https://github.com/example/actions/runs/123',
+    '--summary',
+    'imported current CI result',
+    '--target',
+    'CodeQL',
+    '--scenario',
+    'current_head_ci',
+    '--observed',
+    'head_sha=aaaaaaaaaaaaaaaaaaaaaaaadbaaaaaaaaaaaa',
+    '--observed',
+    'status=pass',
+    '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const persistenceRow = gate.rows.find((row) => row.surface === 'persistence');
+  assert.equal(gate.status, 'partial_surface');
+  assert.equal(gate.missing_surfaces.includes('persistence'), true);
+  assert.equal(persistenceRow.status, 'missing_surface_evidence');
+  assert.notEqual(persistenceRow.evidence, 'CI CodeQL: https://github.com/example/actions/runs/123');
+});
+
+test('pr prepare does not infer persistence surface from story spec migration slugs', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'specs', 'story-keyword-gate-structured-migration.md'), `# Keyword Gate Structured Migration
+
+This spec documents a gate evidence migration and does not change database state.
+`);
+  await git(repo, ['add', 'docs/specs/story-keyword-gate-structured-migration.md']);
+  await git(repo, ['commit', '-m', 'docs: add structured migration spec']);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(gate.rows.some((row) => row.surface === 'persistence'), false);
+  assert.equal(gate.missing_surfaces.includes('persistence'), false);
+});
+
 test('pr prepare blocks PR freshness when base advanced after branch creation', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
