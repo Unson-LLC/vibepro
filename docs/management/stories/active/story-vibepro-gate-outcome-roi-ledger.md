@@ -14,6 +14,7 @@ related_stories:
   - story-vibepro-ci-evidence-fast-lane
 spec_docs:
   - docs/specs/story-vibepro-gate-outcome-roi-ledger.md
+parent_design: vibepro-gate-outcome-roi-ledger
 created_at: 2026-07-05
 updated_at: 2026-07-05
 ---
