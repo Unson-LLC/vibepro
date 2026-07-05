@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-content-scoped-evidence-freshness",
   "source": "execute_merge",
-  "generated_at": "2026-07-05T04:32:28.074Z",
+  "generated_at": "2026-07-05T04:32:31.855Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -127,8 +127,8 @@
       "expanded_line_count": 335,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 10004,
-    "raw_source_artifact_code_ratio": 10.933,
+    "raw_source_artifact_lines": 10094,
+    "raw_source_artifact_code_ratio": 11.032,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -249,7 +249,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-content-scoped-evidence-freshness",
-    "generated_at": "2026-07-05T04:32:28.074Z",
+    "generated_at": "2026-07-05T04:32:31.855Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -354,8 +354,8 @@
     "path": "docs/management/audit-artifacts/story-vibepro-content-scoped-evidence-freshness/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:6235748698e7dcc2beeff828108d2a2e964071ea272482485cb616300efaca81",
-    "compressed_hash": "sha256:93c4266f6044f7beee9adaef520f0d6d460c97780567e375bad4419adfe8bcd8",
+    "content_hash": "sha256:9d240c40a2ea78f8bf6071385ae6e74d43a7fe868b1e481acc0b1b3da37de738",
+    "compressed_hash": "sha256:a8a54786639b369cae94492931d2520daee05901bc037fb227c98c63c548e883",
     "expanded_bytes": 12565,
     "compressed_bytes": 2967,
     "expanded_line_count": 335,
