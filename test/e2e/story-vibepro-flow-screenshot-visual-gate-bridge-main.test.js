@@ -36,12 +36,12 @@ test('story-vibepro-flow-screenshot-visual-gate-bridge acceptance route is execu
   assert.match(cliTest, /verify flow auto-records current Visual QA evidence/, `${STORY_ID} ac:6 passing branch regression is executable`);
   assert.match(cliTest, /residual Visual QA evidence remains authoritative/, `${STORY_ID} ac:6 residual branch regression is executable`);
 
-  assert.match(story, /FSB-S-7/, `${STORY_ID} ac:7 prose-only visual evidence is covered`);
+  assert.match(spec, /FSB-S-7/, `${STORY_ID} ac:7 prose-only visual evidence is covered`);
   assert.match(prManager, /isVisualQaArtifactRef/, `${STORY_ID} ac:7 fallback requires visual artifacts`);
   assert.match(prManager, /visualArtifacts\.length === 0/, `${STORY_ID} ac:7 prose-only evidence is rejected`);
   assert.match(cliTest, /prose-only Story wrapper evidence does not satisfy Visual QA Gate/, `${STORY_ID} ac:7 regression test exists`);
 
-  assert.match(story, /FSB-S-8/, `${STORY_ID} ac:8 not-recorded reasons are covered`);
+  assert.match(spec, /FSB-S-8/, `${STORY_ID} ac:8 not-recorded reasons are covered`);
   assert.match(flowVerifier, /buildAutoVisualEvidenceNotRecorded/, `${STORY_ID} ac:8 skipped auto evidence has a reason`);
   assert.match(flowVerifier, /formatAutoVisualEvidenceSummary/, `${STORY_ID} ac:8 summary renders the reason`);
   assert.match(cliTest, /reason: screenshots_missing/, `${STORY_ID} ac:8 regression test checks report output`);

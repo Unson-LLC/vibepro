@@ -35,8 +35,6 @@ updated_at: 2026-07-05
 - 自動記録される scenario マーカーは story-vibepro-visual-evidence-gate-ux で正規化済みの語彙（`visual_qa` / `screenshot`）のみを使う。
 - flow run が失敗（fail / エラー検出）した場合は visual 証跡を記録しない。
 - `pr prepare` は自動記録された flow 由来の証跡で `gate:visual_qa` を ready for review にできる。
-- `pr prepare` は `visual_qa` / `screenshot` という語が summary や Story wrapper の prose に含まれるだけの証跡を Visual QA proof として扱わない。
-- 自動 Visual QA 証跡を記録しなかった flow run は、JSON / Markdown / CLI summary に `not_recorded` と理由を残す。
 
 ## Acceptance Criteria
 
@@ -46,8 +44,6 @@ updated_at: 2026-07-05
 - [ ] FSB-S-4: `.vibepro/qa/<qa-id>/` の residual artifacts が存在する場合、flow 由来の証跡より residual analysis が引き続き優先される。
 - [ ] FSB-S-5: 自動記録された証跡には provenance（flow run id、screenshot paths）が含まれ、`gate:visual_qa` のゲート詳細から参照できる。
 - [ ] FSB-S-6: テストで passing+screenshots / failing / screenshots なし / residual 優先の各分岐を固定する。
-- [ ] FSB-S-7: Story wrapper や prose-only evidence に `visual QA` / `screenshot absence` と書かれていても、実在する screenshot / residual artifact がなければ `gate:visual_qa` は ready for review にならない。
-- [ ] FSB-S-8: 自動 Visual QA 証跡を記録しなかった flow run は、失敗・runtime contract failure・screenshot なし・Story 未束縛を区別できる `not_recorded` 理由を表示する。
 
 ## 既存挙動（inherited behavior）
 
