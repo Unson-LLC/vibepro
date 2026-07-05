@@ -20135,6 +20135,46 @@ export function middleware() {}
     manifest.runs[0].artifacts.refactoring_delta,
     '.vibepro/diagnostics/2026-04-28T140000Z/refactoring-delta.md'
   );
+
+  const designInputResult = await runCli([
+    'story',
+    'diagnose',
+    repo,
+    '--id',
+    'story-vibepro-diagnosis-commercialization-roadmap',
+    '--phase',
+    'design-input',
+    '--run-id',
+    '2026-04-28T141500Z'
+  ]);
+  assert.equal(designInputResult.exitCode, 0);
+  const designInputRunDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T141500Z');
+  const designInputEvidence = await readJson(path.join(designInputRunDir, 'evidence.json'));
+  assert.equal(
+    designInputEvidence.code_quality.authorization_order_risks.length,
+    1,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input diagnosis evidence'
+  );
+  const designInputSummary = await readFile(path.join(designInputRunDir, 'summary.md'), 'utf8');
+  assert.match(
+    designInputSummary,
+    /認可前bulk DB候補/,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input summary'
+  );
+  await runCli(['brainbase', repo]);
+  const designInputImportSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
+  assert.match(
+    designInputImportSummary,
+    /認可前bulk DB候補/,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input Brainbase import summary'
+  );
+  const designInputImportState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(designInputImportState.latest_run.run_id, '2026-04-28T141500Z');
+  assert.equal(
+    designInputImportState.signals.code_quality.authorization_order_risks_count,
+    1,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input Brainbase import state'
+  );
 });
 
 test('diagnose records refactoring delta against the previous story run', async () => {
