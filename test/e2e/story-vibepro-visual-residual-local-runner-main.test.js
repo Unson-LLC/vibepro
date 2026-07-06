@@ -21,6 +21,8 @@ test('story-vibepro-visual-residual-local-runner acceptance route is executable'
   assert.match(story, /VRL-S-2/, `${STORY_ID} ac:2 threshold exceedance acceptance exists`);
   assert.match(visualVerifier, /needs_review/, `${STORY_ID} ac:2 threshold exceedance maps to needs_review`);
   assert.match(prManager, /Visual QA evidence is within/, `${STORY_ID} ac:2 visual gate reason consumes residual evidence`);
+  assert.match(cliTest, /verify visual over-threshold residual yields needs_review and lists exceeding probes/, `${STORY_ID} ac:2 over-threshold regression exists`);
+  assert.match(visualVerifier, /Threshold Exceedances/, `${STORY_ID} ac:2 exceeding probes are named in residual-analysis.md`);
 
   assert.match(story, /VRL-S-3/, `${STORY_ID} ac:3 missing baseline acceptance exists`);
   assert.match(visualVerifier, /baseline_missing/, `${STORY_ID} ac:3 baseline_missing is surfaced`);

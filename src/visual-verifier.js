@@ -359,6 +359,7 @@ function paethPredictor(left, up, upLeft) {
 }
 
 function renderResidualMarkdown(report) {
+  const exceedingProbes = report.probes.filter((probe) => typeof probe.meanAbsResidualPct === 'number' && probe.meanAbsResidualPct > report.thresholdPct);
   return `# Visual Residual Analysis
 
 | 項目 | 内容 |
@@ -372,6 +373,10 @@ function renderResidualMarkdown(report) {
 ## Probes
 
 ${report.probes.length === 0 ? '- なし' : report.probes.map((probe) => `- ${probe.probe_id}: ${probe.status}, meanAbsResidualPct=${formatPct(probe.meanAbsResidualPct)}%, current=${probe.current_screenshot ?? '-'}, baseline=${probe.baseline_screenshot ?? '-'}`).join('\n')}
+
+## Threshold Exceedances
+
+${exceedingProbes.length === 0 ? '- なし' : exceedingProbes.map((probe) => `- ${probe.probe_id}: meanAbsResidualPct=${formatPct(probe.meanAbsResidualPct)}% > threshold=${formatPct(report.thresholdPct)}%`).join('\n')}
 `;
 }
 
