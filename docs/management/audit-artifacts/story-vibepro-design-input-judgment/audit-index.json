@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-design-input-judgment",
   "source": "execute_merge",
-  "generated_at": "2026-07-06T01:36:50.049Z",
+  "generated_at": "2026-07-06T01:36:55.997Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -135,13 +135,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 5772,
+      "compressed_bytes": 5773,
       "expanded_bytes": 35077,
       "expanded_line_count": 884,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 26310,
-    "raw_source_artifact_code_ratio": 13.116,
+    "raw_source_artifact_lines": 26400,
+    "raw_source_artifact_code_ratio": 13.161,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -257,7 +257,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-design-input-judgment",
-    "generated_at": "2026-07-06T01:36:50.049Z",
+    "generated_at": "2026-07-06T01:36:55.997Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -362,10 +362,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:2e04047c21c7a652d5125e705b7285f6c342eb16961f5e9c04b34dc41567c034",
-    "compressed_hash": "sha256:37ae35025ac4e606f4a9d073ff77ef1884e70d88879053d24145e5c5b1b45ce8",
+    "content_hash": "sha256:0c72353deb372419f87091e453f262f076fb7f4baae359c0d499349f3c2e84ae",
+    "compressed_hash": "sha256:7409a57fe8bad76d600ed1b7fbca15de60544ad467872bfdc17963d582362ffd",
     "expanded_bytes": 35077,
-    "compressed_bytes": 5772,
+    "compressed_bytes": 5773,
     "expanded_line_count": 884,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -384,7 +384,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-design-input-judgment",
     "cost": {
-      "compressed_bytes": 5772,
+      "compressed_bytes": 5773,
       "expanded_bytes": 35077,
       "expanded_line_count": 884,
       "persisted_line_count": 1
