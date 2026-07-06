@@ -11,6 +11,7 @@ related_stories:
   - story-vibepro-visual-evidence-gate-ux
   - story-vibepro-flow-screenshot-visual-gate-bridge
 parent_design: vibepro-visual-residual-local-runner
+architecture_reason: "既存 visual-verifier 境界内の追加的なレポート詳細のみ。新規モジュール・依存・スキーマ変更なし。正本は docs/architecture/vibepro-visual-residual-local-runner.md"
 architecture_docs:
   - docs/architecture/vibepro-visual-residual-local-runner.md
 spec_docs:
