@@ -10,8 +10,12 @@ source:
 related_stories:
   - story-vibepro-pr-evidence-autopilot
   - story-vibepro-workflow-pre-pr-evidence-gate
+parent_design: vibepro-ci-gate-check-mode
+architecture_docs:
+  - docs/architecture/vibepro-ci-gate-check-mode.md
 spec_docs:
   - docs/specs/story-vibepro-ci-gate-check-mode.md
+reason: "alternatives considered: keep external CI scorers vs expose the real gate computation read-only; selected read-only gate check. compatibility impact: additive CLI command; checkpoint, pr prepare, and gate evaluation semantics are unchanged. rollback plan: remove the gate check wiring and evaluateGateReadiness export in one revert; no operator state or data migration. boundary and scope: read-only evaluation over existing pr-manager gate computation; snapshot/restore keeps .vibepro byte-identical. accepted followups: brainbase scorer replacement happens in the brainbase repo, not this PR."
 created_at: 2026-07-06
 updated_at: 2026-07-06
 ---
