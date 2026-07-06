@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -681,6 +681,138 @@ export async function preparePullRequest(repoRoot, options = {}) {
       split_plan_report: writeHtmlReports ? splitPlanReportPath : null
     }
   };
+}
+
+/**
+ * Read-only Gate DAG evaluation for CI enforcement (`vibepro gate check`).
+ *
+ * `preparePullRequest` is the single source of truth for gate computation.
+ * It is not a pure function: whenever the workspace is initialized it
+ * unconditionally persists PR-lifecycle artifacts under
+ * `.vibepro/pr/<story-id>/` (pr-prepare.json, gate-dag.json, evidence-plan.json,
+ * human-review.json, pr-body.md, html reports, ...) and, via
+ * `recordResolvedGateOutcomes`, appends to `.vibepro/gate-outcomes/ledger.json`.
+ * `gate check` must be safe to run in CI with zero net filesystem effects, so
+ * this wrapper snapshots exactly those two subpaths - `.vibepro/pr/<story-id>/`
+ * and `.vibepro/gate-outcomes/` - before delegating to the real
+ * `preparePullRequest`, and restores both to their exact prior byte-for-byte
+ * state (or removes them again if they did not exist before) in a `finally`
+ * block. No gate logic is reimplemented here; this only isolates the existing
+ * computation's filesystem effects to the two subpaths it is known to write.
+ *
+ * Knowing the story id *before* calling `preparePullRequest` (so the correct
+ * `.vibepro/pr/<story-id>/` path can be snapshotted first) requires mirroring
+ * the same story resolution `preparePullRequest` performs internally:
+ * `readWorkspaceState` (a pure read of `.vibepro/config.json`) followed by
+ * `resolveStory` (a pure read of config + story docs, no filesystem writes).
+ * Both are exported from this module specifically so this wrapper can call
+ * them directly without duplicating story-resolution business logic.
+ */
+export async function evaluateGateReadiness(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const generatedAt = () => new Date().toISOString();
+
+  let storyId;
+  try {
+    const workspace = await readWorkspaceState(root);
+    const story = await resolveStory(root, workspace.config, options.storyId, {
+      allowTransient: !workspace.initialized
+    });
+    storyId = story.story_id;
+  } catch (error) {
+    return {
+      schema_version: '0.1.0',
+      story_id: options.storyId ?? null,
+      status: 'error',
+      overall_status: 'error',
+      ready_for_pr_create: false,
+      gates: [],
+      unresolved_gate_count: null,
+      critical_unresolved_gate_count: null,
+      error: error instanceof Error ? error.message : String(error),
+      generated_at: generatedAt()
+    };
+  }
+
+  const workspaceDir = getWorkspaceDir(root);
+  const prDir = path.join(workspaceDir, 'pr', storyId);
+  const gateOutcomesDir = path.join(workspaceDir, 'gate-outcomes');
+  const snapshotRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gate-check-snapshot-'));
+  const snapshots = [
+    { targetPath: prDir, snapshotPath: path.join(snapshotRoot, 'pr'), existedBefore: existsSync(prDir) },
+    { targetPath: gateOutcomesDir, snapshotPath: path.join(snapshotRoot, 'gate-outcomes'), existedBefore: existsSync(gateOutcomesDir) }
+  ];
+
+  try {
+    for (const entry of snapshots) {
+      if (entry.existedBefore) {
+        await cp(entry.targetPath, entry.snapshotPath, { recursive: true, preserveTimestamps: true });
+      }
+    }
+
+    let preparation;
+    try {
+      const prepareResult = await preparePullRequest(root, {
+        storyId: options.storyId,
+        baseRef: options.baseRef,
+        headRef: options.headRef,
+        language: options.language,
+        env: options.env
+      });
+      preparation = prepareResult.preparation;
+    } catch (error) {
+      return {
+        schema_version: '0.1.0',
+        story_id: storyId,
+        status: 'error',
+        overall_status: 'error',
+        ready_for_pr_create: false,
+        gates: [],
+        unresolved_gate_count: null,
+        critical_unresolved_gate_count: null,
+        error: error instanceof Error ? error.message : String(error),
+        generated_at: generatedAt()
+      };
+    }
+
+    const gateDag = preparation.pr_context?.gate_dag ?? null;
+    const gateStatus = preparation.gate_status ?? null;
+    const unresolvedIds = new Set((gateStatus?.unresolved_gates ?? []).map((gate) => gate.id));
+    const criticalIds = new Set((gateStatus?.critical_unresolved_gates ?? []).map((gate) => gate.id));
+    const reasonById = new Map((gateStatus?.unresolved_gates ?? []).map((gate) => [gate.id, gate.reason ?? null]));
+    const gates = (gateDag?.nodes ?? []).map((node) => ({
+      id: node.id,
+      status: node.status,
+      blocking: unresolvedIds.has(node.id),
+      reason: reasonById.get(node.id) ?? node.reason ?? null,
+      label: node.label ?? node.id,
+      required: node.required !== false,
+      critical: criticalIds.has(node.id)
+    }));
+
+    return {
+      schema_version: '0.1.0',
+      story_id: preparation.story?.story_id ?? storyId,
+      overall_status: gateDag?.overall_status ?? 'unknown',
+      ready_for_pr_create: gateStatus?.ready_for_pr_create === true,
+      gates,
+      unresolved_gate_count: gateStatus?.unresolved_gate_count ?? null,
+      critical_unresolved_gate_count: gateStatus?.critical_unresolved_gate_count ?? null,
+      status: gateStatus?.ready_for_pr_create ? 'passed' : 'blocked',
+      unresolved_gates: gateStatus?.unresolved_gates ?? [],
+      critical_unresolved_gates: gateStatus?.critical_unresolved_gates ?? [],
+      generated_at: generatedAt()
+    };
+  } finally {
+    for (const entry of snapshots) {
+      await rm(entry.targetPath, { recursive: true, force: true });
+      if (entry.existedBefore) {
+        await mkdir(path.dirname(entry.targetPath), { recursive: true });
+        await cp(entry.snapshotPath, entry.targetPath, { recursive: true, preserveTimestamps: true });
+      }
+    }
+    await rm(snapshotRoot, { recursive: true, force: true });
+  }
 }
 
 function buildArchitectureReviewTemplate({ preparation, reviewCockpitPath, gateDagPath, existingReview = null }) {
@@ -2269,7 +2401,7 @@ ${warnings}
 `;
 }
 
-async function readWorkspaceState(repoRoot) {
+export async function readWorkspaceState(repoRoot) {
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
     return {
@@ -13346,7 +13478,7 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-async function resolveStory(repoRoot, config, storyId, options = {}) {
+export async function resolveStory(repoRoot, config, storyId, options = {}) {
   const stories = normalizeActiveStories(config.brainbase?.stories);
   const targetStoryId = storyId ?? config.brainbase?.current_story_id ?? null;
   const story = targetStoryId

@@ -114,6 +114,7 @@ import {
 import {
   autopilotPullRequest,
   createPullRequest,
+  evaluateGateReadiness,
   preparePullRequest,
   renderPrAutopilotSummary,
   renderPrCreateSummary,
@@ -383,6 +384,7 @@ Usage:
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
+  vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
   vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
@@ -598,6 +600,7 @@ Usage:
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <start|status|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--target pr_create] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
+  vibepro gate check [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--ci] [--json]
   vibepro explore prepare [repo] --id <story-id> [--topic <text>] [--role <role>] [--json]
   vibepro explore record [repo] --id <story-id> --role <role> --status <pass|needs_review|block> --summary <text> [--finding <severity:id:detail>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code --execution-mode parallel_subagent --agent-id <id>] [--agent-model <name>] [--agent-transcript <path>] [--json]
   vibepro explore status [repo] --id <story-id> [--json]
@@ -636,7 +639,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
-  'decision', 'verify', 'review', 'checkpoint', 'spec', 'report',
+  'decision', 'verify', 'review', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'explore', 'performance',
   'nocodb', 'repo-status'
 ];
@@ -1669,6 +1672,39 @@ export async function runCli(argv, io = {}) {
         ? `${JSON.stringify(result, null, 2)}\n`
         : renderCheckpointSummary(result));
       return { exitCode: result.status === 'passed' ? 0 : 2, command, subcommand: stage, result };
+    }
+
+    if (command === 'gate') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'check') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const ciMode = hasFlag(rest, '--ci');
+        const result = await evaluateGateReadiness(repoRoot, {
+          storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+          baseRef: getOption(rest, '--base'),
+          headRef: getOption(rest, '--head'),
+          language: getOption(rest, '--language'),
+          env: io.env ?? process.env
+        });
+        result.ci = ciMode;
+        if (result.status === 'error') {
+          write(stderr, jsonOutput
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : `# VibePro Gate Check\n\n- status: error\n- error: ${result.error}\n`);
+          return { exitCode: 1, command, subcommand, result };
+        }
+        write(stdout, jsonOutput
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderGateCheckSummary(result, { ciMode }));
+        return { exitCode: result.ready_for_pr_create ? 0 : 1, command, subcommand, result };
+      }
+      write(stderr, `Unknown gate command: ${subcommand}\n\n${renderHelp()}`);
+      return { exitCode: 1, command };
     }
 
     if (command === 'execute') {
@@ -2719,6 +2755,34 @@ function renderCheckpointList(result) {
     ]),
     ''
   ].join('\n');
+}
+
+function renderGateCheckSummary(result, { ciMode = false } = {}) {
+  if (result.status === 'error') {
+    return `# VibePro Gate Check\n\n- status: error\n- error: ${result.error}\n`;
+  }
+  const lines = [
+    '# VibePro Gate Check',
+    '',
+    `- story: ${result.story_id ?? '-'}`,
+    `- status: ${result.status}`,
+    `- overall_status: ${result.overall_status}`,
+    `- ready_for_pr_create: ${result.ready_for_pr_create ? 'yes' : 'no'}`,
+    `- unresolved gates: ${result.unresolved_gate_count ?? 0}`,
+    `- critical unresolved gates: ${result.critical_unresolved_gate_count ?? 0}`,
+    ''
+  ];
+  if (!ciMode) {
+    lines.splice(2, 0, '- note: run with --ci for the CI-blessed invocation (same evaluation, exit-code contract intended for CI enforcement)');
+  }
+  if ((result.unresolved_gates ?? []).length > 0) {
+    lines.push('## Blocking Gates', '');
+    for (const gate of result.unresolved_gates) {
+      lines.push(`- ${gate.id}: ${gate.status} - ${gate.reason ?? 'unresolved'}`);
+    }
+    lines.push('');
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 function renderInitSummary({ language, workspaceDir, repoRoot, baseBranch }) {
