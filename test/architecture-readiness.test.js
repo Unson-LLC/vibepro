@@ -257,6 +257,34 @@ export function architectureReadinessMarker() {
   assert.equal(typeof readiness.engineering_judgment.route_type, 'string');
 });
 
+test('architecture readiness missing diagnosis action uses design-input phase', async () => {
+  const repo = await makeArchitectureRepo();
+  await initGitRepo(repo);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
+    nodes: [{ id: 'src/workflow/gate.js' }],
+    links: []
+  }));
+
+  const { exitCode, stdout } = await captureRunCli([
+    'architecture',
+    'readiness',
+    repo,
+    '--id',
+    STORY_ID,
+    '--base',
+    'main',
+    '--json'
+  ]);
+  assert.equal(exitCode, 2);
+  const readiness = JSON.parse(stdout);
+  assert.equal(readiness.status, 'blocked');
+  assert.equal(
+    readiness.next_actions.some((action) => action.includes(`vibepro story diagnose . --id ${STORY_ID} --pre-architecture --run-graphify`)),
+    true
+  );
+});
+
 test('architecture write final stores the final Architecture after ready evidence', async () => {
   const repo = await makeArchitectureRepo();
   const write = await captureRunCli(

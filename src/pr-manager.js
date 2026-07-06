@@ -252,6 +252,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
+  const designInputStoryRun = findLatestStoryRunByPhase(manifest, story.story_id, 'design_input');
+  const preImplementationStoryRun = findLatestStoryRunByPhase(manifest, story.story_id, 'pre_implementation');
   const verificationEvidence = workspace.initialized
     ? await progress.stage('read_verification_evidence', () => readVerificationEvidenceIfExists(root, story.story_id))
     : null;
@@ -271,6 +273,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     fileGroups,
     scope,
     latestStoryRun,
+    designInputStoryRun,
+    preImplementationStoryRun,
     verificationEvidence,
     decisionRecords,
     managedWorktreeGate,
@@ -532,6 +536,24 @@ export async function preparePullRequest(repoRoot, options = {}) {
     await writeFile(designSsotPath, `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`, { signal });
     await writeFile(seniorGapJudgmentPath, `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`, { signal });
     await writeFile(bodyPath, prBody, { signal });
+    if (writeGateDagDump) {
+      await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
+    } else {
+      await rm(gateDagJsonPath, { force: true });
+    }
+    if (writeHtmlReports) {
+      await writeFile(gateDagReportPath, renderGateDagHtml(prContext.gate_dag, {
+        generatedAt: preparation.created_at,
+        language: outputLanguage
+      }), { signal });
+    } else {
+      await Promise.all([
+        rm(reportPath, { force: true }),
+        rm(reviewCockpitPath, { force: true }),
+        rm(gateDagReportPath, { force: true }),
+        rm(splitPlanReportPath, { force: true })
+      ]);
+    }
     await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
     if (writeHtmlReports) {
       await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
@@ -3006,11 +3028,67 @@ function summarizeFirstAvailable(items = [], fallback) {
 function renderFinalE2eConfidence(gateDag, verificationEvidence) {
   const e2eGate = (gateDag?.nodes ?? []).find((gate) => gate.id === 'gate:e2e')
     ?? (gateDag?.nodes ?? []).find((gate) => /e2e/i.test(`${gate.label ?? ''} ${gate.type ?? ''}`));
-  const e2eEvidence = (verificationEvidence?.commands ?? []).find((item) => /e2e|flow/i.test(`${item.kind ?? ''} ${item.type ?? ''} ${item.summary ?? ''} ${item.command ?? ''}`));
+  const e2eEvidence = selectFinalE2eEvidence(verificationEvidence?.commands);
   const status = e2eEvidence?.status ?? e2eGate?.status ?? '未確認';
   const summary = e2eEvidence?.summary ?? e2eGate?.reason ?? e2eGate?.label ?? '最終E2E証跡が見つかりません。';
   const artifact = e2eEvidence?.artifact ?? e2eGate?.evidence?.artifact ?? null;
   return linkifyRepoPathsInText(`${status}: ${summary}${artifact ? `（${artifact}）` : ''}`);
+}
+
+function selectFinalE2eEvidence(commands = []) {
+  const items = Array.isArray(commands) ? commands : [];
+  return items
+    .map((item, index) => ({ item, index, score: scoreFinalE2eEvidence(item) }))
+    .filter((entry) => entry.score)
+    .sort((a, b) => compareFinalE2eEvidenceScore(a, b))[0]?.item;
+}
+
+function scoreFinalE2eEvidence(item) {
+  const surfaceRank = getFinalE2eSurfaceRank(item);
+  if (surfaceRank === null) return null;
+  return {
+    bindingRank: getFinalE2eBindingRank(item),
+    statusRank: isPassingVerificationStatus(item?.status) ? 0 : 1,
+    surfaceRank
+  };
+}
+
+function compareFinalE2eEvidenceScore(a, b) {
+  return a.score.bindingRank - b.score.bindingRank
+    || a.score.statusRank - b.score.statusRank
+    || a.score.surfaceRank - b.score.surfaceRank
+    || a.index - b.index;
+}
+
+function getFinalE2eSurfaceRank(item) {
+  const kind = normalizeEvidenceKind(item?.kind);
+  if (kind === 'e2e') return 0;
+  if (kind === 'flow') return 1;
+  if (hasExplicitE2eEvidenceSurface(item)) return 2;
+  return null;
+}
+
+function getFinalE2eBindingRank(item) {
+  const status = String(item?.binding?.status ?? '').trim().toLowerCase();
+  if (status === 'current') return 0;
+  if (status === 'stale') return 2;
+  return 1;
+}
+
+function normalizeEvidenceKind(kind) {
+  return String(kind ?? '').trim().toLowerCase().replace(/[_-]+/g, '');
+}
+
+function hasExplicitE2eEvidenceSurface(item) {
+  const searchable = [
+    item?.kind,
+    item?.type,
+    item?.command,
+    item?.artifact
+  ].map((value) => String(value ?? '')).join(' ');
+  return /\b(e2e|test:e2e|playwright)\b/i.test(searchable)
+    || /(^|\/)test\/e2e(\/|$)/i.test(searchable)
+    || /flow-verification/i.test(searchable);
 }
 
 function limitItems(items = [], max = 3) {
@@ -3298,8 +3376,10 @@ function buildJudgmentAxisReasoning(engineeringJudgment) {
       const blockers = axis.matched_blockers?.length > 0
         ? ` / blockers=${axis.matched_blockers.map((item) => `${item.id}:${item.criterion}`).join(', ')}`
         : '';
-      const waiver = axis.blocker_waiver?.decision_id
-        ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
+      const waiver = axis.blocker_waiver
+        ? (axis.blocker_waiver.decision_id
+          ? ` / blocker_waiver=${axis.blocker_waiver.decision_id}`
+          : ` / ignored_blocker_waiver_missing=${summarizeBlockerWaiverMissingFields(axis.blocker_waiver).join('|') || 'required_metadata'}`)
         : '';
       return `- ${axis.axis}: ${axis.status} / confidence=${Math.round((axis.confidence ?? 0) * 100)}% / question=${axis.decision_question} / required=${required}${candidates}${activationSignals}${precision}${matched}${optional}${missing}${blockers}${waiver}`;
     })
@@ -4493,7 +4573,7 @@ function normalizeGraphPath(filePath) {
   return String(filePath).replace(/\\/g, '/').replace(/^\.\//, '');
 }
 
-async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
+async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, scope = null, latestStoryRun, designInputStoryRun = null, preImplementationStoryRun = null, verificationEvidence = null, decisionRecords = null, managedWorktreeGate = null, env = process.env }) {
   const storyDocs = await readStoryDocs(repoRoot, fileGroups.story_docs.files);
   let primaryStory = pickPrimaryStory(storyDocs, story);
   if (!storyDocMatchesStory(primaryStory, story)) {
@@ -4519,6 +4599,12 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const verificationCommands = buildVerificationCommands(fileGroups, { typecheckCommand, testRunner });
   const e2eCommand = await detectPlaywrightCommand(repoRoot, fileGroups);
   const latestEvidence = await readRunEvidenceIfExists(repoRoot, latestStoryRun);
+  const designInputEvidence = designInputStoryRun?.run_id === latestStoryRun?.run_id
+    ? latestEvidence
+    : await readRunEvidenceIfExists(repoRoot, designInputStoryRun);
+  const preImplementationEvidence = preImplementationStoryRun?.run_id === latestStoryRun?.run_id
+    ? latestEvidence
+    : await readRunEvidenceIfExists(repoRoot, preImplementationStoryRun);
   const latestFlowVerification = await readLatestFlowVerification(repoRoot, story.story_id, git);
   const boundVerificationEvidence = await bindVerificationEvidenceToGit(repoRoot, verificationEvidence, git);
   const artifactVisualQaEvidence = await readVisualQaEvidence(repoRoot, git);
@@ -4616,6 +4702,18 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     inferredSpec,
     agentReviews
   });
+  const designInputJudgment = buildDesignInputJudgmentContext({
+    latestStoryRun: designInputStoryRun ?? latestStoryRun,
+    latestEvidence: designInputEvidence ?? latestEvidence,
+    engineeringJudgment,
+    changeClassification,
+    fileGroups
+  });
+  const preImplementationJudgment = buildPreImplementationJudgmentContext({
+    latestStoryRun: preImplementationStoryRun,
+    latestEvidence: preImplementationEvidence,
+    engineeringJudgment
+  });
   const exploreEvidence = await summarizeExploreEvidenceForPr(repoRoot, {
     storyId: story.story_id
   });
@@ -4632,6 +4730,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     responsibility_authority: responsibilityAuthority,
     pr_route: prRoute,
     engineering_judgment: engineeringJudgment,
+    design_input_judgment: designInputJudgment,
+    pre_implementation_judgment: preImplementationJudgment,
     graph_context: graphContext,
     code_topology_context: codeTopologyContext,
     bug_physics_triage: bugPhysicsTriage,
@@ -4690,6 +4790,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     specDrift,
     changeClassification,
     engineeringJudgment,
+    designInputJudgment,
     architectureSources,
     bugPhysicsTriage,
     architectureBlueprint,
@@ -5999,6 +6100,33 @@ function normalizeFrontmatterList(value) {
   return [];
 }
 
+function compactStorySourceText(text, maxLength = 640) {
+  const compacted = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (!compacted || compacted.length <= maxLength) return compacted;
+  const protectedTokenEnd = findProtectedStoryTokenEnd(compacted, maxLength);
+  if (protectedTokenEnd) {
+    return `${compacted.slice(0, protectedTokenEnd).trimEnd()}...`;
+  }
+  const boundary = compacted.lastIndexOf(' ', maxLength);
+  const minimumBoundary = Math.floor(maxLength * 0.75);
+  const cutAt = boundary >= minimumBoundary ? boundary : maxLength;
+  return `${compacted.slice(0, cutAt).trimEnd()}...`;
+}
+
+function findProtectedStoryTokenEnd(text, maxLength) {
+  const nearCutoffStart = Math.max(0, maxLength - 80);
+  const tokenPattern = /\b(?:gate|story|DIJ|AC):[A-Za-z0-9_-]+/g;
+  let match;
+  while ((match = tokenPattern.exec(text))) {
+    let end = match.index + match[0].length;
+    if (text[end] === '`') end += 1;
+    if (match.index >= nearCutoffStart && match.index < maxLength && end > maxLength) {
+      return end;
+    }
+  }
+  return null;
+}
+
 function findMarkdownTitle(content) {
   const match = content.match(/^#\s+(.+)$/m);
   return match?.[1]?.trim() ?? null;
@@ -6014,9 +6142,9 @@ function extractSectionText(content, headings) {
       .map((line) => line.trim())
       .filter((line) => line && !line.startsWith('|') && !line.startsWith('---'))
       .join(' ')
-      .replace(/\s+/g, ' ')
-      .slice(0, 320);
-    if (paragraph) return paragraph;
+      .replace(/\s+/g, ' ');
+    const summary = compactStorySourceText(paragraph);
+    if (summary) return summary;
   }
   return null;
 }
@@ -6036,9 +6164,8 @@ function extractStoryIntro(content) {
       return true;
     })
     .join(' ')
-    .replace(/\s+/g, ' ')
-    .slice(0, 320);
-  return paragraph || null;
+    .replace(/\s+/g, ' ');
+  return compactStorySourceText(paragraph) || null;
 }
 
 function extractTopLevelStorySection(content) {
@@ -6884,6 +7011,100 @@ function buildEngineeringJudgmentClassification({
   };
 }
 
+function buildDesignInputJudgmentContext({
+  latestStoryRun = null,
+  latestEvidence = null,
+  engineeringJudgment = null,
+  changeClassification = null,
+  fileGroups = {}
+} = {}) {
+  const evidenceJudgment = latestEvidence?.design_input_judgment ?? null;
+  const evidencePhase = latestEvidence?.diagnosis_phase?.phase ?? null;
+  const runJudgment = latestStoryRun?.design_input_judgment ?? null;
+  const runPhase = latestStoryRun?.phase ?? null;
+  const hasDesignInputRun = runPhase === 'design_input';
+  const hasDesignInputEvidenceArtifact = evidencePhase === 'design_input' && Boolean(evidenceJudgment);
+  const present = hasDesignInputRun && hasDesignInputEvidenceArtifact;
+  const runRecordedWithoutEvidence = hasDesignInputRun && !hasDesignInputEvidenceArtifact;
+  return {
+    schema_version: '0.1.0',
+    phase: 'design_input',
+    status: present ? 'present' : 'missing',
+    source: present ? 'story_diagnosis' : runRecordedWithoutEvidence ? 'story_diagnosis_artifact_missing' : 'not_recorded',
+    run_id: hasDesignInputRun ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
+    artifact_status: hasDesignInputEvidenceArtifact ? 'present' : hasDesignInputRun ? 'missing' : 'not_recorded',
+    gate_status: present
+      ? evidenceJudgment?.gate_status ?? runJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null
+      : null,
+    finding_count: present
+      ? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? runJudgment?.finding_count ?? null
+      : null,
+    route_type: engineeringJudgment?.route_type ?? null,
+    route_dag: engineeringJudgment?.route_dag ?? null,
+    active_axes: engineeringJudgment?.active_axes ?? [],
+    expected_before: ['architecture', 'spec'],
+    applies_to: {
+      workflow_heavy: changeClassification?.profile === 'workflow_heavy',
+      architecture_or_spec_changed: ((fileGroups.architecture_docs?.count ?? 0) + (fileGroups.specifications?.count ?? 0)) > 0,
+      cross_surface: isCrossSurfaceDesignStory(fileGroups)
+    },
+    required_actions: present ? [] : [
+      runRecordedWithoutEvidence
+        ? 'Regenerate the missing design-input diagnosis evidence artifact with `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+        : 'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` before finalizing Architecture or Spec.'
+    ]
+  };
+}
+
+function buildPreImplementationJudgmentContext({
+  latestStoryRun = null,
+  latestEvidence = null,
+  engineeringJudgment = null
+} = {}) {
+  const evidenceJudgment = latestEvidence?.pre_implementation_judgment ?? null;
+  const evidencePhase = latestEvidence?.diagnosis_phase?.phase ?? null;
+  const runJudgment = latestStoryRun?.pre_implementation_judgment ?? null;
+  const runPhase = latestStoryRun?.phase ?? null;
+  const hasPreImplementationRun = runPhase === 'pre_implementation';
+  const hasPreImplementationEvidenceArtifact = evidencePhase === 'pre_implementation' && Boolean(evidenceJudgment);
+  const present = hasPreImplementationRun && hasPreImplementationEvidenceArtifact;
+  const runRecordedWithoutEvidence = hasPreImplementationRun && !hasPreImplementationEvidenceArtifact;
+  return {
+    schema_version: '0.1.0',
+    phase: 'pre_implementation',
+    status: present ? 'present' : 'missing',
+    source: present ? 'story_diagnosis_artifact' : runRecordedWithoutEvidence ? 'story_diagnosis_artifact_missing' : 'not_recorded',
+    run_id: hasPreImplementationRun ? latestStoryRun?.run_id ?? latestEvidence?.run_id ?? null : null,
+    artifact_status: hasPreImplementationEvidenceArtifact ? 'present' : hasPreImplementationRun ? 'missing' : 'not_recorded',
+    gate_status: present
+      ? evidenceJudgment?.gate_status ?? runJudgment?.gate_status ?? latestStoryRun?.gate_status ?? null
+      : null,
+    finding_count: present
+      ? evidenceJudgment?.finding_count ?? latestEvidence?.findings?.length ?? runJudgment?.finding_count ?? null
+      : null,
+    route_type: engineeringJudgment?.route_type ?? null,
+    route_dag: engineeringJudgment?.route_dag ?? null,
+    active_axes: engineeringJudgment?.active_axes ?? [],
+    feeds: present ? evidenceJudgment?.feeds ?? runJudgment?.feeds ?? [] : [],
+    required_actions: present ? [] : [
+      runRecordedWithoutEvidence
+        ? 'Regenerate the missing pre-implementation diagnosis evidence artifact with `vibepro story diagnose . --id <story-id> --run-graphify` before treating PR readiness as reviewed.'
+        : 'Run `vibepro story diagnose . --id <story-id> --run-graphify` before treating PR readiness as reviewed.'
+    ]
+  };
+}
+
+function isCrossSurfaceDesignStory(fileGroups = {}) {
+  const contractDocs = (fileGroups.story_docs?.count ?? 0)
+    + (fileGroups.architecture_docs?.count ?? 0)
+    + (fileGroups.specifications?.count ?? 0)
+    + (fileGroups.policy_docs?.count ?? 0);
+  const implementationSurfaces = (fileGroups.source?.count ?? 0)
+    + (fileGroups.tests?.count ?? 0)
+    + (fileGroups.repo_control?.count ?? 0);
+  return contractDocs > 0 && implementationSurfaces > 0;
+}
+
 function isReadOnlyUsageReportingChange(fileGroups = {}) {
   const sourceFiles = fileGroups.source?.files ?? [];
   if (sourceFiles.length === 0) return false;
@@ -7002,7 +7223,7 @@ function buildSeniorJudgmentAxes({
       })
       : [];
     const blockerWaiver = active
-      ? findAcceptedBlockerWaiverForSource(decisionRecords, `gate:judgment_axis_${definition.axis}`)
+      ? findBlockerWaiverForSource(decisionRecords, `gate:judgment_axis_${definition.axis}`)
       : null;
     const status = active
       ? resolveSeniorAxisStatus(definition, evidence, { matchedBlockers, blockerWaiver })
@@ -7035,6 +7256,7 @@ function buildSeniorJudgmentAxes({
         ? {
           decision_id: blockerWaiver.decision_id ?? null,
           source: blockerWaiver.source ?? null,
+          status: blockerWaiver.status ?? null,
           artifact: blockerWaiver.artifact ?? null,
           reason: blockerWaiver.reason ?? null
         }
@@ -7357,32 +7579,76 @@ function buildEngineeringJudgmentRouteGate(engineeringJudgment) {
   };
 }
 
+function buildDesignInputJudgmentGate({
+  designInputJudgment = null,
+  changeClassification = null,
+  fileGroups = {},
+  engineeringJudgment = null
+} = {}) {
+  const applies = shouldExpectDesignInputJudgment({ changeClassification, fileGroups, engineeringJudgment });
+  const present = designInputJudgment?.status === 'present';
+  return {
+    id: 'gate:design_input_judgment',
+    type: 'design_input_judgment_gate',
+    label: 'Design Input Judgment Gate',
+    status: present ? 'passed' : applies ? 'needs_review' : 'not_required',
+    required: false,
+    phase: designInputJudgment?.phase ?? 'design_input',
+    run_id: designInputJudgment?.run_id ?? null,
+    expected_before: designInputJudgment?.expected_before ?? ['architecture', 'spec'],
+    applies_to: designInputJudgment?.applies_to ?? {},
+    reason: present
+      ? `Design-input diagnosis was recorded before PR readiness: ${designInputJudgment.run_id ?? 'unknown run'}`
+      : applies
+        ? 'Workflow-heavy or cross-surface Architecture/Spec work should record design-input diagnosis before Architecture/Spec are treated as settled.'
+        : 'Design-input diagnosis is optional for this change surface.',
+    required_actions: present || !applies
+      ? []
+      : designInputJudgment?.required_actions ?? [
+          'Run `vibepro story diagnose . --id <story-id> --pre-architecture --run-graphify` and regenerate PR evidence.'
+        ]
+  };
+}
+
+function shouldExpectDesignInputJudgment({ changeClassification = null, fileGroups = {}, engineeringJudgment = null } = {}) {
+  if (changeClassification?.profile === 'workflow_heavy') return true;
+  if (isCrossSurfaceDesignStory(fileGroups)) return true;
+  const hasDesignDocs = ((fileGroups.architecture_docs?.count ?? 0) + (fileGroups.specifications?.count ?? 0)) > 0;
+  const executionAxisActive = (engineeringJudgment?.active_axes ?? []).includes('execution_topology');
+  return hasDesignDocs && (engineeringJudgment?.route_type === 'agent_workflow' || executionAxisActive);
+}
+
 function buildJudgmentAxisGates(engineeringJudgment) {
   const axes = (engineeringJudgment?.judgment_axes ?? [])
     .filter((axis) => axis.status !== 'inactive');
-  return axes.map((axis) => ({
-    id: `gate:judgment_axis_${axis.axis}`,
-    type: 'judgment_axis_gate',
-    label: `Judgment Axis: ${axis.axis}`,
-    status: axis.status === 'active_blocked' && axis.blocker_waiver
-      ? 'accepted_followup'
-      : mapJudgmentAxisStatusToGateStatus(axis.status),
-    axis_status: axis.status,
-    required: true,
-    axis: axis.axis,
-    confidence: axis.confidence,
-    decision_question: axis.decision_question,
-    required_evidence: axis.required_evidence,
-    blocking_criteria: axis.blocking_criteria,
-    acceptable_followup: axis.acceptable_followup,
-    signals: axis.signals ?? [],
-    matched_evidence: axis.matched_evidence ?? [],
-    optional_evidence: axis.optional_evidence ?? [],
-    missing_evidence: axis.missing_evidence ?? [],
-    matched_blockers: axis.matched_blockers ?? [],
-    blocker_waiver: axis.blocker_waiver ?? null,
-    reason: buildJudgmentAxisGateReason(axis)
-  }));
+  return axes.map((axis) => {
+    const validBlockerWaiver = isAcceptedBlockerWaiver(axis.blocker_waiver);
+    return {
+      id: `gate:judgment_axis_${axis.axis}`,
+      type: 'judgment_axis_gate',
+      label: `Judgment Axis: ${axis.axis}`,
+      status: axis.status === 'active_blocked' && validBlockerWaiver
+        ? 'accepted_followup'
+        : mapJudgmentAxisStatusToGateStatus(axis.status),
+      axis_status: axis.status,
+      required: true,
+      axis: axis.axis,
+      confidence: axis.confidence,
+      decision_question: axis.decision_question,
+      required_evidence: axis.required_evidence,
+      blocking_criteria: axis.blocking_criteria,
+      acceptable_followup: axis.acceptable_followup,
+      signals: axis.signals ?? [],
+      matched_evidence: axis.matched_evidence ?? [],
+      optional_evidence: axis.optional_evidence ?? [],
+      missing_evidence: axis.missing_evidence ?? [],
+      matched_blockers: axis.matched_blockers ?? [],
+      blocker_waiver: axis.blocker_waiver ?? null,
+      blocker_waiver_valid: validBlockerWaiver,
+      blocker_waiver_missing_fields: validBlockerWaiver ? [] : summarizeBlockerWaiverMissingFields(axis.blocker_waiver),
+      reason: buildJudgmentAxisGateReason(axis)
+    };
+  });
 }
 
 function mapJudgmentAxisStatusToGateStatus(status) {
@@ -7408,12 +7674,26 @@ function buildJudgmentAxisGateReason(axis) {
     return `${prefix} Missing evidence: ${(axis.missing_evidence ?? []).join(', ') || axis.required_evidence.join(', ')}.`;
   }
   if (axis.status === 'active_blocked') {
-    if (axis.blocker_waiver) {
+    if (isAcceptedBlockerWaiver(axis.blocker_waiver)) {
       return `${prefix} Blocking criteria matched but explicitly waived: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}. Waiver=${axis.blocker_waiver.decision_id ?? axis.blocker_waiver.source ?? 'accepted waiver'} / artifact=${axis.blocker_waiver.artifact ?? 'none'}.`;
+    }
+    if (axis.blocker_waiver) {
+      const missingFields = summarizeBlockerWaiverMissingFields(axis.blocker_waiver);
+      return `${prefix} Blocking criteria matched: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}. Ignored blocker waiver missing ${missingFields.join(', ') || 'required metadata'}.`;
     }
     return `${prefix} Blocking criteria matched: ${blockerSummary || (axis.blocking_criteria ?? []).join('; ')}`;
   }
   return `${axis.axis}: inactive`;
+}
+
+function isAcceptedBlockerWaiver(waiver) {
+  return Boolean(
+    waiver
+    && waiver.status === 'accepted'
+    && String(waiver.decision_id ?? '').trim()
+    && String(waiver.reason ?? '').trim()
+    && String(waiver.artifact ?? '').trim()
+  );
 }
 
 function isAcceptedAxisFollowupDecision(decision) {
@@ -7421,15 +7701,23 @@ function isAcceptedAxisFollowupDecision(decision) {
   return Boolean(String(decision.reason ?? '').trim() && String(decision.artifact ?? '').trim());
 }
 
-function findAcceptedBlockerWaiverForSource(decisionRecords, source) {
+function findBlockerWaiverForSource(decisionRecords, source) {
   const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
-  return decisions.find((decision) => (
+  const candidates = decisions.filter((decision) => (
     decision.source === source
-    && decision.status === 'accepted'
     && decision.type === 'waiver'
-    && Boolean(String(decision.reason ?? '').trim())
-    && Boolean(String(decision.artifact ?? '').trim())
-  )) ?? null;
+  ));
+  return candidates.find((decision) => isAcceptedBlockerWaiver(decision)) ?? candidates[0] ?? null;
+}
+
+function summarizeBlockerWaiverMissingFields(waiver) {
+  if (!waiver) return [];
+  return [
+    String(waiver.decision_id ?? '').trim() ? null : 'decision_id',
+    String(waiver.reason ?? '').trim() ? null : 'reason',
+    String(waiver.artifact ?? '').trim() ? null : 'artifact',
+    waiver.status === 'accepted' ? null : 'status=accepted'
+  ].filter(Boolean);
 }
 
 function summarizeIgnoredAxisFollowupDecision(decision) {
@@ -7438,10 +7726,11 @@ function summarizeIgnoredAxisFollowupDecision(decision) {
     source: decision.source ?? null,
     status: decision.status ?? null,
     missing_fields: [
+      String(decision.decision_id ?? '').trim() ? null : 'decision_id',
       String(decision.reason ?? '').trim() ? null : 'reason',
       String(decision.artifact ?? '').trim() ? null : 'artifact'
     ].filter(Boolean),
-    reason: 'accepted axis follow-up decisions require both reason and artifact before they can cover missing evidence'
+    reason: 'accepted axis follow-up decisions require decision_id, reason, and artifact before they can cover missing evidence'
   };
 }
 
@@ -8980,6 +9269,7 @@ function buildGateDag({
   specDrift = null,
   changeClassification = null,
   engineeringJudgment = null,
+  designInputJudgment = null,
   architectureSources = [],
   bugPhysicsTriage = null,
   architectureBlueprint = null,
@@ -9055,6 +9345,12 @@ function buildGateDag({
   const architectureBlueprintGate = buildArchitectureBlueprintGate(architectureBlueprint, decisionRecords);
   const routeGate = buildPrRouteGate(prRoute);
   const engineeringJudgmentGate = buildEngineeringJudgmentRouteGate(engineeringJudgment);
+  const designInputJudgmentGate = buildDesignInputJudgmentGate({
+    designInputJudgment,
+    changeClassification,
+    fileGroups,
+    engineeringJudgment
+  });
   const judgmentAxisGates = buildJudgmentAxisGates(engineeringJudgment);
   const commonJudgmentSpineGate = buildCommonJudgmentSpineGate(engineeringJudgment, {
     storySource,
@@ -9209,6 +9505,7 @@ function buildGateDag({
   const nodes = [
     storyGate,
     storySourceIntegrityGate,
+    designInputJudgmentGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
@@ -9276,7 +9573,8 @@ function buildGateDag({
 
   const edges = [
     { from: 'story', to: 'gate:story_source_integrity' },
-    { from: 'gate:story_source_integrity', to: 'gate:engineering_judgment_route' },
+    { from: 'gate:story_source_integrity', to: 'gate:design_input_judgment' },
+    { from: 'gate:design_input_judgment', to: 'gate:engineering_judgment_route' },
     { from: 'gate:engineering_judgment_route', to: 'gate:common_judgment_spine' },
     ...(judgmentAxisGates.length > 0
       ? judgmentAxisGates.flatMap((gate) => [
@@ -9404,6 +9702,7 @@ function buildGateDag({
   const requiredGates = [
     storyGate,
     storySourceIntegrityGate,
+    designInputJudgmentGate,
     engineeringJudgmentGate,
     commonJudgmentSpineGate,
     ...judgmentAxisGates,
@@ -9469,6 +9768,7 @@ function buildGateDag({
       pr_body_template: prRoute?.body_template ?? null,
       story_status: storyGate.status,
       story_source_integrity_status: storySourceIntegrityGate.status,
+      design_input_judgment_status: designInputJudgmentGate.status,
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
@@ -12645,7 +12945,7 @@ function collectUnresolvedRequiredGates(gateDag) {
 
 function collectReleaseDecisionWarningGates(gateDag) {
   return (gateDag?.nodes ?? [])
-    .filter((node) => node.id === 'gate:managed_worktree')
+    .filter((node) => ['gate:managed_worktree', 'gate:design_input_judgment'].includes(node.id))
     .filter((node) => node.required !== true)
     .filter((node) => isUnresolvedGateStatus(node.status))
     .map((node) => ({
@@ -13094,6 +13394,11 @@ function findLatestStoryRun(manifest, storyId) {
   return runs.find((run) => run.run_id === latestRunId)
     ?? runs.find((run) => run.story_id === storyId)
     ?? null;
+}
+
+function findLatestStoryRunByPhase(manifest, storyId, phase) {
+  const runs = Array.isArray(manifest.runs) ? manifest.runs : [];
+  return runs.find((run) => run?.story_id === storyId && run.phase === phase) ?? null;
 }
 
 function buildBranchName(story) {

@@ -157,10 +157,10 @@ npx vibepro init /path/to/repo \
   --language ja
 ```
 
-Story 診断を実行します。
+Story 診断を設計入力として実行します。
 
 ```bash
-npx vibepro story diagnose /path/to/repo --id story-internal-beta --run-graphify
+npx vibepro story diagnose /path/to/repo --id story-internal-beta --pre-architecture --run-graphify
 ```
 
 final Specへ昇格する前にPre-Spec Readinessを記録します。
@@ -275,12 +275,16 @@ npx vibepro check pr-readiness /path/to/repo --story-id <story-id> --base <base-
 
 ```bash
 npx vibepro graph /path/to/repo --run-graphify
-npx vibepro story diagnose /path/to/repo --id <story-id> --run-graphify
+npx vibepro story diagnose /path/to/repo --id <story-id> --pre-architecture --run-graphify
 npx vibepro check architecture /path/to/repo --story-id <story-id> --base <base-branch>
 npx vibepro architecture readiness /path/to/repo --id <story-id> --base <base-branch>
 npx vibepro architecture write /path/to/repo --id <story-id> --draft < architecture.md
 npx vibepro architecture write /path/to/repo --id <story-id> --final --output docs/architecture/<topic>.md < architecture.md
 ```
+
+workflow-heavy や複数surfaceにまたがるStoryでは、Architecture / Spec を確定扱いにする前に `story diagnose --pre-architecture` を設計入力として実行します。この診断は `design_input_judgment` を記録し、Engineering Judgment が最終PR Gateだけでなく Architecture / Spec の入力として使われたことを示します。
+
+Architecture / Spec が揃った後は、実装やPR readinessの前に `story diagnose --phase pre-implementation` を再実行し、設計入力の証跡とは別に最終整合性チェックを残します。順序は design-input diagnosis -> Architecture / Spec -> pre-implementation diagnosis -> code / PR readiness です。
 
 `architecture readiness` はStory、Graphify、Story diagnosis、Architecture check、Engineering Judgmentの証跡を `.vibepro/architecture/<story-id>/architecture-readiness.json` に記録します。`architecture write --final` はこのartifactが存在しない、blocked、または現在のgit `HEAD` に対してstaleな場合に失敗します。
 

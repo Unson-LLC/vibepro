@@ -312,6 +312,12 @@ test('root registry resolves VibePro core responsibility authorities with contra
       clause: 'VIBE-CORE-STORY-001'
     },
     {
+      id: 'vibepro.repo_status.guidance',
+      changedPath: 'src/repo-status.js',
+      evidence: ['unit_regression', 'typecheck'],
+      clause: 'VIBE-CORE-STATUS-001'
+    },
+    {
       id: 'vibepro.engineering_judgment.route_axes',
       changedPath: 'src/change-risk-classifier.js',
       evidence: 'engineering_judgment_regression',
@@ -326,6 +332,8 @@ test('root registry resolves VibePro core responsibility authorities with contra
   ];
 
   for (const item of cases) {
+    const evidenceTokens = Array.isArray(item.evidence) ? item.evidence : [item.evidence];
+    const evidenceSummary = evidenceTokens.join(' ');
     const result = await resolveResponsibilityAuthority(REPO_ROOT, {
       git: { changed_files: [item.changedPath] },
       fileGroups: { source: { files: [item.changedPath] } },
@@ -339,12 +347,12 @@ test('root registry resolves VibePro core responsibility authorities with contra
           {
             kind: 'unit',
             status: 'pass',
-            command: `node --test test/responsibility-authority.test.js -- ${item.evidence}`,
-            summary: `${item.evidence} covers ${item.clause}`,
+            command: `node --test test/responsibility-authority.test.js -- ${evidenceSummary}`,
+            summary: `${evidenceSummary} covers ${item.clause}`,
             binding: { status: 'current' },
             observation: {
               targets: [item.changedPath, item.clause],
-              scenarios: [item.evidence]
+              scenarios: evidenceTokens
             }
           }
         ]
@@ -356,7 +364,9 @@ test('root registry resolves VibePro core responsibility authorities with contra
     assert.equal(matched.evidence_status, 'passed');
     assert.deepEqual(matched.missing_evidence, []);
     assert.equal(matched.contract_clauses.some((clause) => clause.ref.endsWith(`#${item.clause}`)), true);
-    assert.equal(matched.matched_evidence.some((evidence) => evidence.evidence === item.evidence), true);
+    for (const evidenceToken of evidenceTokens) {
+      assert.equal(matched.matched_evidence.some((evidence) => evidence.evidence === evidenceToken), true);
+    }
   }
 });
 

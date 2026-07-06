@@ -274,6 +274,48 @@ test('SGJ-S-003 senior gap judgment keeps accepted followups as residual gaps', 
   assert.equal(judgment.followups.some((followup) => followup.source === 'gate:judgment_axis_public_contract'), true);
 });
 
+test('SGJ-S-003b senior gap judgment treats accepted blocker waivers as residual followups', () => {
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-waived-blocker', title: 'Accepted blocker waiver senior gap judgment' },
+    prContext: {
+      story_source: { story_id: 'story-sgj-waived-blocker', acceptance_criteria: [] },
+      engineering_judgment: {
+        judgment_axes: [{
+          axis: 'release_ops',
+          status: 'active_blocked',
+          confidence: 'high',
+          decision_question: 'Is release operations evidence complete?',
+          acceptable_followup: 'No operator action is required and release operations are documented.',
+          missing_evidence: ['release_note', 'rollback_instruction'],
+          blocker_waiver: {
+            decision_id: 'decision-sgj-waived-release-ops',
+            reason: 'Release operations are documented and no operator action is required.',
+            artifact: 'docs/specs/story-sgj-waived-blocker-spec.md'
+          },
+          matched_evidence: [{ artifact: 'docs/specs/story-sgj-waived-blocker-spec.md' }]
+        }]
+      },
+      gate_dag: { nodes: [] }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
+    evidenceReuse: { status: 'hit', evidence_key: 'evk_waived_blocker' }
+  });
+
+  const waivedGap = judgment.gaps.find((gap) => gap.id === 'gap:judgment_axis:release_ops');
+  assert.ok(waivedGap);
+  assert.equal(waivedGap.safe_to_defer, true);
+  assert.equal(waivedGap.severity, 'minor');
+  assert.equal(waivedGap.decision_effect, 'accepted_followup');
+  assert.equal(judgment.decision.status, 'passed_with_residual_risk');
+  assert.equal(judgment.decision.blocking_gap_count, 0);
+  assert.equal(judgment.followups.some((followup) => followup.source === 'gate:judgment_axis_release_ops'), true);
+  assert.equal(buildSeniorGapJudgmentGate(judgment).status, 'passed');
+});
+
 test('SGJ-S-004 pr prepare writes senior gap judgment artifact and gate', async () => {
   const repo = await makeRepo();
   await git(repo, ['add', '-A']);

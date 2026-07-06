@@ -399,7 +399,7 @@ Usage:
   vibepro story runs [repo] [--id <id>]
   vibepro story status [repo] [--id <id>]
   vibepro story report [repo] [--id <id>]
-  vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
+  vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
@@ -606,7 +606,7 @@ Usage:
   vibepro performance define [repo] --id <story-id> --metric-id <id> --user-story <text> --start-condition <text> --completion-condition <text> [--intermediate-marker <id>] [--timeout-ms <ms>] [--failure-classification <class>] [--evidence-source <server_log|browser_e2e|api_log|client_marker|manual_observation>] [--readiness-kind <server_side|user_perceived|external_dependency|system_internal>] [--comparison-policy <json|name>] [--json]
   vibepro performance record [repo] --id <story-id> --metric-id <id> --label <before|after> --status <completed|blocked|needs_review|timeout|auth_required|resource_unavailable|unknown> [--duration-ms <ms>] [--marker <id=ms>] [--evidence-source <type:ref:summary>] [--completion-condition <text>] [--run-id <id>] [--json]
   vibepro performance compare [repo] --id <story-id> [--metric-id <id>] [--before-label <label>] [--after-label <label>] [--json]
-  vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>]
+  vibepro story diagnose [repo] --id <id> [--run-graphify] [--run-id <id>] [--phase design-input|pre-implementation] [--pre-architecture]
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
@@ -948,7 +948,11 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[0] ?? process.cwd();
       const runId = getOption(rest, '--run-id');
       const language = await resolveHumanOutputLanguage(repoRoot, { language: getOption(rest, '--language') });
-      const result = await runDiagnosis(repoRoot, { runId, language });
+      const result = await runDiagnosis(repoRoot, {
+        runId,
+        language,
+        phase: resolveDiagnosisPhaseOption(rest)
+      });
       write(stdout, localizedText(language, {
         ja: `診断を作成しました: ${result.runDir}\n`,
         en: `diagnosis created: ${result.runDir}\n`
@@ -1958,7 +1962,10 @@ export async function runCli(argv, io = {}) {
           env: io.env
         });
         write(stdout, `graphify artifacts imported: ${graph.graphifyDir}\n`);
-        const diagnosis = await runDiagnosis(repoRoot, { runId: getOption(rest, '--run-id') });
+        const diagnosis = await runDiagnosis(repoRoot, {
+          runId: getOption(rest, '--run-id'),
+          phase: resolveDiagnosisPhaseOption(rest)
+        });
         write(stdout, `diagnosis created: ${diagnosis.runDir}\n`);
         const report = await createStoryReport(repoRoot, story.story_id);
         write(stdout, `Story report created: ${report.reportPath}\n`);
@@ -2678,6 +2685,11 @@ export async function runCli(argv, io = {}) {
     write(stderr, `${error.message}\n`);
     return { exitCode: 1, command };
   }
+}
+
+function resolveDiagnosisPhaseOption(args) {
+  if (hasFlag(args, '--pre-architecture')) return 'design-input';
+  return getOption(args, '--phase');
 }
 
 function getOption(args, name) {

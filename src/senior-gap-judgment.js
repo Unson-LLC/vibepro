@@ -312,16 +312,18 @@ function gapsFromJudgmentAxes(engineeringJudgment) {
     .map((axis) => {
       const blocked = axis.status === 'active_blocked';
       const acceptedFollowup = axis.status === 'active_accepted_followup';
+      const acceptedBlockerWaiver = blocked && isAcceptedBlockerWaiver(axis.blocker_waiver);
+      const deferrableFollowup = acceptedFollowup || acceptedBlockerWaiver;
       return {
         id: `gap:judgment_axis:${axis.axis}`,
-        kind: acceptedFollowup ? 'accepted_followup' : 'judgment_axis_gap',
+        kind: deferrableFollowup ? 'accepted_followup' : 'judgment_axis_gap',
         surface: axis.axis,
-        severity: blocked ? 'critical' : acceptedFollowup ? 'minor' : 'major',
+        severity: blocked && !acceptedBlockerWaiver ? 'critical' : deferrableFollowup ? 'minor' : 'major',
         confidence: axis.confidence ?? 'medium',
-        safe_to_defer: acceptedFollowup,
-        decision_effect: acceptedFollowup ? 'accepted_followup' : blocked ? 'blocks_pr' : 'requires_evidence_before_pr',
+        safe_to_defer: deferrableFollowup,
+        decision_effect: deferrableFollowup ? 'accepted_followup' : blocked ? 'blocks_pr' : 'requires_evidence_before_pr',
         evidence_refs: axis.matched_evidence?.map((item) => item.artifact ?? item.ref).filter(Boolean) ?? [],
-        summary: acceptedFollowup
+        summary: deferrableFollowup
           ? `${axis.axis} missing evidence is explicitly accepted as bounded follow-up`
           : `${axis.axis} judgment axis is ${axis.status}`,
         details: {
@@ -333,6 +335,14 @@ function gapsFromJudgmentAxes(engineeringJudgment) {
         }
       };
     });
+}
+
+function isAcceptedBlockerWaiver(waiver) {
+  return (waiver?.status == null || waiver.status === 'accepted')
+    && Boolean(waiver?.decision_id)
+    && typeof waiver.reason === 'string'
+    && waiver.reason.trim().length > 0
+    && Boolean(waiver.artifact);
 }
 
 function gapsFromEvidenceReuse(evidenceReuse) {
@@ -549,7 +559,7 @@ function buildSubagentReviewBudget({
 
 function buildFollowups({ prContext, gaps }) {
   const axisFollowups = (prContext?.engineering_judgment?.judgment_axes ?? [])
-    .filter((axis) => axis.status === 'active_accepted_followup')
+    .filter((axis) => axis.status === 'active_accepted_followup' || isAcceptedBlockerWaiver(axis.blocker_waiver))
     .map((axis) => ({
       source: `gate:judgment_axis_${axis.axis}`,
       status: 'accepted',

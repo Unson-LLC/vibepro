@@ -13987,6 +13987,158 @@ test('pr body verification checklist checks exact current evidence even when the
   assert.doesNotMatch(prBody, /- \[x\] `npm run typecheck`.*risk-adaptive-artifact\.json/);
 });
 
+test('pr body final E2E prefers exact e2e evidence over unit workflow summaries', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'final-e2e-selection.js'), 'export const finalE2eSelection = true;\n');
+  await git(repo, ['add', 'src/final-e2e-selection.js']);
+  await git(repo, ['commit', '-m', 'feat: add final e2e selection fixture']);
+
+  await mkdir(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'responsibility-authority-current-head-status.json'), {
+    status: 'pass'
+  });
+  await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'e2e-current-head-status.json'), {
+    status: 'pass'
+  });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/responsibility-authority.test.js',
+    '--summary', 'Current HEAD unit regression covers responsibility authority workflow evidence lifecycle',
+    '--artifact', '.vibepro/verification/story-pr-prepare/responsibility-authority-current-head-status.json'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow covers the design-input journey',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-head-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
+
+  assert.match(finalE2eLine, /e2e-current-head-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /responsibility-authority-current-head-status\.json/);
+});
+
+test('pr body final E2E prefers current passing e2e-surface evidence over stale or failing evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'final-e2e-freshness.js'), 'export const finalE2eFreshness = 1;\n');
+  await git(repo, ['add', 'src/final-e2e-freshness.js']);
+  await git(repo, ['commit', '-m', 'feat: add stale final e2e fixture']);
+
+  const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
+  await mkdir(verificationDir, { recursive: true });
+  await writeJson(path.join(verificationDir, 'e2e-stale-head-status.json'), { status: 'pass' });
+  await writeJson(path.join(verificationDir, 'e2e-current-failed-status.json'), { status: 'fail' });
+  await writeJson(path.join(verificationDir, 'e2e-current-passed-status.json'), { status: 'pass' });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Previous HEAD E2E flow passed',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-stale-head-status.json'
+  ])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'final-e2e-freshness.js'), 'export const finalE2eFreshness = 2;\n');
+  await git(repo, ['add', 'src/final-e2e-freshness.js']);
+  await git(repo, ['commit', '-m', 'feat: update final e2e fixture']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'integration',
+    '--status', 'fail',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow failed before the fix',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'build',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow passed after the fix',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-passed-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
+  const artifactPaths = evidence.commands.map((command) => command.artifact);
+  assert.deepEqual(new Set(artifactPaths), new Set([
+    '.vibepro/verification/story-pr-prepare/e2e-current-passed-status.json',
+    '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json',
+    '.vibepro/verification/story-pr-prepare/e2e-stale-head-status.json'
+  ]));
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
+
+  assert.match(finalE2eLine, /e2e-current-passed-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /e2e-stale-head-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /e2e-current-failed-status\.json/);
+});
+
+test('pr body final E2E keeps current failing e2e evidence visible over stale pass', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'final-e2e-current-failure.js'), 'export const currentFailureVisible = true;\n');
+  await git(repo, ['add', 'src/final-e2e-current-failure.js']);
+  await git(repo, ['commit', '-m', 'feat: add current final e2e failure fixture']);
+
+  const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
+  await mkdir(verificationDir, { recursive: true });
+  await writeJson(path.join(verificationDir, 'e2e-stale-passed-status.json'), { status: 'pass' });
+  await writeJson(path.join(verificationDir, 'e2e-current-failed-status.json'), { status: 'fail' });
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'pass',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Previous HEAD E2E flow passed',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-stale-passed-status.json'
+  ])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'final-e2e-current-failure.js'), 'export const currentFailureVisible = false;\n');
+  await git(repo, ['add', 'src/final-e2e-current-failure.js']);
+  await git(repo, ['commit', '-m', 'feat: update current final e2e failure fixture']);
+
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'e2e',
+    '--status', 'fail',
+    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--summary', 'Current HEAD E2E flow failed and must remain visible',
+    '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json'
+  ])).exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  const finalE2eLine = prBody.split('\n').find((line) => line.startsWith('- 最終E2E:'));
+
+  assert.match(finalE2eLine, /^- 最終E2E: fail:/);
+  assert.match(finalE2eLine, /e2e-current-failed-status\.json/);
+  assert.doesNotMatch(finalE2eLine, /e2e-stale-passed-status\.json/);
+});
+
 test('pr body renders repo file paths as clickable markdown links', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -15864,7 +16016,8 @@ test('pr prepare emits Engineering Judgment route, route-specific gates, and DAG
   assert.deepEqual(connectivityGate?.unreachable_nodes, []);
   assert.deepEqual(connectivityGate?.dead_end_nodes, []);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'story' && edge.to === 'gate:story_source_integrity'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:engineering_judgment_route'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:story_source_integrity' && edge.to === 'gate:design_input_judgment'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:design_input_judgment' && edge.to === 'gate:engineering_judgment_route'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:common_judgment_spine' && edge.to === 'gate:judgment_axis_public_contract'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:judgment_axis_public_contract' && edge.to === 'gate:pr_scope_judgment'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:pr_scope_judgment' && edge.to === 'gate:bug_physics_triage'), true);
@@ -17072,6 +17225,155 @@ title: Public Contract Blocker Waiver
   assert.equal(gate.status, 'accepted_followup');
   assert.equal(gate.axis_status, 'active_blocked');
   assert.equal(gate.reason.includes('explicitly waived'), true);
+});
+
+test('blocker waiver without decision id does not downgrade a blocking judgment axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Blocker Waiver Missing Decision Id
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format with malformed blocker waiver']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json');
+  const decisionRecords = await readJson(decisionRecordsPath);
+  delete decisionRecords.decisions[0].decision_id;
+  decisionRecords.decisions[0].status = 'open';
+  await writeJson(decisionRecordsPath, decisionRecords);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.blocker_waiver.decision_id, null);
+  assert.equal(axis.blocker_waiver.status, 'open');
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.deepEqual(gate.blocker_waiver_missing_fields, ['decision_id', 'status=accepted']);
+  assert.equal(gate.reason.includes('explicitly waived'), false);
+  assert.equal(gate.reason.includes('Ignored blocker waiver missing decision_id, status=accepted'), true);
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
+});
+
+test('blocker waiver without accepted status does not downgrade a blocking judgment axis', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Public Contract Blocker Waiver Missing Status
+---
+
+# Story
+
+- [ ] CLI output contract remains compatible when formatter changes
+`);
+  await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
+  await git(repo, ['commit', '-m', 'feat: change cli output format with missing waiver status']);
+  await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'unit',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/vibepro-cli.test.js',
+    '--summary',
+    'broad regression suite passed',
+    '--target',
+    'test/vibepro-cli.test.js'
+  ]);
+  const decision = await runCli([
+    'decision',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--type',
+    'waiver',
+    '--summary',
+    'public contract blocker is temporarily waived with owner signoff',
+    '--source',
+    'gate:judgment_axis_public_contract',
+    '--reason',
+    'temporary operator-controlled rollout with linked follow-up',
+    '--artifact',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--status',
+    'accepted',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'decision-records.json');
+  const decisionRecords = await readJson(decisionRecordsPath);
+  delete decisionRecords.decisions[0].status;
+  await writeJson(decisionRecordsPath, decisionRecords);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const axis = result.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'public_contract');
+  assert.equal(axis.status, 'active_blocked');
+  assert.equal(axis.blocker_waiver.decision_id, decision.result.decision.decision_id);
+  assert.equal(axis.blocker_waiver.status, null);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:judgment_axis_public_contract');
+  assert.equal(gate.status, 'block');
+  assert.equal(gate.axis_status, 'active_blocked');
+  assert.deepEqual(gate.blocker_waiver_missing_fields, ['status=accepted']);
+  assert.equal(gate.reason.includes('explicitly waived'), false);
+  assert.equal(gate.reason.includes('Ignored blocker waiver missing status=accepted'), true);
+  assert.equal(result.result.preparation.gate_status.execution_gate.pr_create_allowed, false);
 });
 
 test('pr prepare treats missing required design diagrams as critical unresolved readiness gates', async () => {
@@ -19833,8 +20135,8 @@ export function middleware() {}
   assert.equal(evidence.database_access.unbounded_find_many.length, 1);
   assert.equal(evidence.database_access.unbounded_find_many[0].file, 'src/app/api/companies/route.ts');
   assert.equal(evidence.database_access.unbounded_find_many[0].gate_effect, 'review');
-  assert.equal(evidence.code_quality.authorization_order_risks.length, 1);
-  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/[id]/route.ts');
+  assert.equal(evidence.code_quality.authorization_order_risks.length, 1, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in diagnosis evidence');
+  assert.equal(evidence.code_quality.authorization_order_risks[0].file, 'src/app/api/accounts/[id]/route.ts', 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves the authorization_order_risks source file');
   assert.equal(evidence.code_quality.duplicate_query_shapes.length, 1);
   assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-alpha.ts'), true);
   assert.equal(evidence.code_quality.duplicate_query_shapes[0].files.includes('src/lib/services/company-beta.ts'), true);
@@ -20008,7 +20310,7 @@ export function middleware() {}
   assert.doesNotMatch(summary, /静的サイト scanned files/);
   assert.match(summary, /共通スキャン対象/);
   assert.match(summary, /DB未ページング候補/);
-  assert.match(summary, /認可前bulk DB候補/);
+  assert.match(summary, /認可前bulk DB候補/, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in diagnosis summary');
   assert.match(summary, /重複query形状候補/);
   assert.match(summary, /責務混在候補/);
   assert.match(summary, /リファクタリング機会/);
@@ -20066,7 +20368,7 @@ export function middleware() {}
   assert.doesNotMatch(importSummary, /静的サイト走査ファイル/);
   assert.match(importSummary, /共通スキャン対象/);
   assert.match(importSummary, /## API境界/);
-  assert.match(importSummary, /認可前bulk DB候補/);
+  assert.match(importSummary, /認可前bulk DB候補/, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in Brainbase import summary');
   assert.match(importSummary, /重複query形状候補/);
   assert.match(importSummary, /責務混在候補/);
   assert.match(importSummary, /リファクタリング機会/);
@@ -20088,7 +20390,7 @@ export function middleware() {}
   assert.equal(importState.signals.api_boundary.route_count, 8);
   assert.equal(importState.signals.api_boundary.summary.debug, 1);
   assert.equal(importState.signals.api_boundary.protection_summary.excluded_by_middleware, 4);
-  assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1);
+  assert.equal(importState.signals.code_quality.authorization_order_risks_count, 1, 'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in Brainbase import state');
   assert.equal(importState.signals.code_quality.duplicate_query_shapes_count, 1);
   assert.equal(importState.signals.code_quality.responsibility_hotspots_count, 1);
   assert.equal(importState.signals.refactoring_opportunities.length, 2);
@@ -20133,6 +20435,46 @@ export function middleware() {}
   assert.equal(
     manifest.runs[0].artifacts.refactoring_delta,
     '.vibepro/diagnostics/2026-04-28T140000Z/refactoring-delta.md'
+  );
+
+  const designInputResult = await runCli([
+    'story',
+    'diagnose',
+    repo,
+    '--id',
+    'story-vibepro-diagnosis-commercialization-roadmap',
+    '--phase',
+    'design-input',
+    '--run-id',
+    '2026-04-28T141500Z'
+  ]);
+  assert.equal(designInputResult.exitCode, 0);
+  const designInputRunDir = path.join(repo, '.vibepro', 'diagnostics', '2026-04-28T141500Z');
+  const designInputEvidence = await readJson(path.join(designInputRunDir, 'evidence.json'));
+  assert.equal(
+    designInputEvidence.code_quality.authorization_order_risks.length,
+    1,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input diagnosis evidence'
+  );
+  const designInputSummary = await readFile(path.join(designInputRunDir, 'summary.md'), 'utf8');
+  assert.match(
+    designInputSummary,
+    /認可前bulk DB候補/,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input summary'
+  );
+  await runCli(['brainbase', repo]);
+  const designInputImportSummary = await readFile(path.join(repo, '.vibepro', 'brainbase', 'import-summary.md'), 'utf8');
+  assert.match(
+    designInputImportSummary,
+    /認可前bulk DB候補/,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input Brainbase import summary'
+  );
+  const designInputImportState = await readJson(path.join(repo, '.vibepro', 'brainbase', 'import-state.json'));
+  assert.equal(designInputImportState.latest_run.run_id, '2026-04-28T141500Z');
+  assert.equal(
+    designInputImportState.signals.code_quality.authorization_order_risks_count,
+    1,
+    'DIJ-CONTRACT-012 DIJ-SCENARIO-008 preserves authorization_order_risks in design-input Brainbase import state'
   );
 });
 
