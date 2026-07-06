@@ -14734,7 +14734,9 @@ test('verify visual writes residual artifacts accepted by Visual QA Gate', async
   assert.equal(visual.result.report.status, 'pass');
   assert.equal(visual.result.report.meanAbsResidualPct, 0);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json')), true);
-  assert.match(await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8'), /meanAbsResidualPct/);
+  const passingAnalysis = await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8');
+  assert.match(passingAnalysis, /meanAbsResidualPct/);
+  assert.match(passingAnalysis, /## Threshold Exceedances\n\n- なし/);
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
   const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
@@ -14789,6 +14791,54 @@ test('verify visual custom threshold is honored by Visual QA Gate', async () => 
   assert.equal(visualGate.status, 'needs_review');
   assert.match(visualGate.reason, /threshold 100%/);
   assert.equal(visualGate.runs[0].threshold_pct, 100);
+});
+
+test('verify visual over-threshold residual yields needs_review and lists exceeding probes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src', 'components'), { recursive: true });
+  await mkdir(path.join(repo, 'artifacts', 'visual-current'), { recursive: true });
+  await mkdir(path.join(repo, '.vibepro', 'qa', 'baseline'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
+  await writePng(path.join(repo, 'artifacts', 'visual-current', 'story-pr-prepare-home.png'), 1, 1, [255, 255, 255, 255]);
+  await writePng(path.join(repo, '.vibepro', 'qa', 'baseline', 'story-pr-prepare-home.png'), 1, 1, [0, 0, 0, 255]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.flow_design = {
+    runtime_probes: [{
+      id: 'story-pr-prepare-home',
+      title: 'PR prepare UI',
+      path: '/',
+      mutates: false,
+      steps: [{ action: 'screenshot', name: 'story-pr-prepare-home' }]
+    }]
+  };
+  await writeJson(configPath, config);
+
+  const visual = await runCli([
+    'verify',
+    'visual',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--current-dir',
+    'artifacts/visual-current',
+    '--qa-id',
+    'story-pr-prepare-visual',
+    '--json'
+  ]);
+
+  assert.equal(visual.exitCode, 0);
+  assert.equal(visual.result.report.status, 'needs_review');
+  assert.equal(visual.result.report.meanAbsResidualPct, 75);
+  assert.equal(visual.result.report.thresholdPct, 5);
+  const analysis = await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8');
+  assert.match(analysis, /## Threshold Exceedances/);
+  assert.match(analysis, /- story-pr-prepare-home: meanAbsResidualPct=75% > threshold=5%/);
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
+  assert.equal(visualGate.status, 'needs_review');
+  assert.match(visualGate.reason, /MAE 75%/);
 });
 
 test('verify visual update-baseline writes a baseline and unchanged rerun converges', async () => {
