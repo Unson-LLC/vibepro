@@ -69,6 +69,7 @@ const SMOKE = {
   verify: { setup: 'story', args: (r) => ['verify', r] },
   review: { setup: 'story', args: (r) => ['review', 'status', r, '--id', 'story-x'] },
   checkpoint: { setup: 'story', args: (r) => ['checkpoint', r] },
+  gate: { setup: 'story', args: (r) => ['gate', 'check', r, '--story-id', 'story-x'] },
   spec: { setup: 'story', args: (r) => ['spec', r] },
   report: { setup: 'story', args: (r) => ['report', r] },
   audit: { setup: 'story', args: (r) => ['audit', 'replay', r, '--story-id', 'story-x', '--json'] },
