@@ -1,0 +1,393 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-04T19:37:26.694Z",
+  "story": {
+    "story_id": "story-vibepro-design-input-judgment",
+    "title": "Engineering JudgmentをArchitecture/Spec前の設計入力として記録する",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "started_at": null,
+    "due_at": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-04T193725Z",
+    "gate_status": "needs_review"
+  },
+  "tasks": [
+    {
+      "id": "VP-TASK-ARCH-001",
+      "source_type": "action_candidate",
+      "source_id": "VP-ACTION-ARCH-001",
+      "finding_id": "VP-ARCH-001",
+      "title": "responsibility split campaignをStory化する",
+      "priority": "medium",
+      "status": "todo",
+      "order": 70,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 1,
+      "target_files": [
+        "src/session-efficiency-audit.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/session-efficiency-audit.js",
+          "reason": "リファクタリングcampaign VP-CAMPAIGN-REF-001 の対象ファイル"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/evidence-cost-budget.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/merge-manager.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "split-runtime-boundaries",
+        "reason": "責務混在候補は重複削減より先に、認可、DB、検証、外部I/Oの境界を固定する価値が高い。"
+      },
+      "implementation_steps": [
+        {
+          "id": "inventory-current-behavior",
+          "title": "現在の挙動を棚卸しする",
+          "detail": "対象ファイルごとにquery条件、返却shape、fallback、例外処理、呼び出し元期待値を確認する。Graphifyの関連ファイルがある場合は先に呼び出し方向と共有hubを確認する。"
+        },
+        {
+          "id": "decide-abstraction-boundary",
+          "title": "共通境界を決める",
+          "detail": "同じ用途なら共通service/helper/repositoryへ集約する。複数communityに跨る場合は、共通化前にflow単位の責務差分をStory内で分ける。"
+        },
+        {
+          "id": "replace-call-sites",
+          "title": "呼び出し元を置き換える",
+          "detail": "既存の返却shapeを保ったまま、対象箇所を共通境界へ接続する。"
+        },
+        {
+          "id": "rerun-diagnosis",
+          "title": "診断を再実行する",
+          "detail": "型検査・関連テスト・VibePro診断で対象機会が減ったこと、Graphify上の影響範囲外を不用意に変更していないことを確認する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "campaign内の機会がStory単位として実装順に並んでいる。",
+        "最初に直す機会と後続に回す機会の判断根拠がscore/reasonで説明できる。",
+        "修正後のVibePro診断で対象findingまたはopportunityの件数差分を確認できる。",
+        "混在していた責務が読み取れる単位へ分離されている。",
+        "既存テストまたは型検査で入出力互換性が確認されている。",
+        "VibePro診断で責務混在候補の根拠が減っている。"
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 1,
+        "matched_file_count": 1,
+        "matched_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 79,
+        "affected_communities": [
+          {
+            "id": 14,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 79,
+            "edge_count": 179
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_session_efficiency_audit_js",
+            "label": "session-efficiency-audit.js",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 78
+          },
+          {
+            "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+            "label": "collectSessionEfficiencyAudit()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 14
+          },
+          {
+            "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+            "label": "collectStoryArtifactInventory()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 10
+          },
+          {
+            "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+            "label": "parseCodexSessionJsonlFiles()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 9
+          },
+          {
+            "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
+            "label": "collectDetachedArtifactCandidates()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 14,
+            "degree": 8
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/evidence-cost-budget.js",
+          "src/merge-manager.js"
+        ],
+        "related_edge_count": 179,
+        "impact_score": 0.022,
+        "community_span": 1,
+        "cross_community": false
+      },
+      "pre_fix_briefing": {
+        "opportunity": {
+          "id": "VP-OPP-ARCH-018",
+          "source": "responsibility_hotspot",
+          "refactoring_intent": "responsibility_split",
+          "rank": 1,
+          "score": {
+            "total": 51,
+            "components": {
+              "security_proximity": 25,
+              "blast_radius": 6,
+              "confidence": 10,
+              "story_fit": 5,
+              "source": 5
+            },
+            "reasons": [
+              "security_proximity:auth_or_identity",
+              "confidence:medium"
+            ]
+          },
+          "suggested_abstraction": {
+            "id": "split-runtime-responsibilities",
+            "label": "runtime責務を境界ごとに分離する",
+            "target_shape": "route/action/service/helpers"
+          },
+          "evidence_refs": {
+            "file": "src/session-efficiency-audit.js",
+            "line_count": 1657,
+            "signals": [
+              "auth",
+              "validation",
+              "environment"
+            ],
+            "examples": []
+          }
+        },
+        "campaign": {
+          "id": "VP-CAMPAIGN-REF-001",
+          "rank": 1,
+          "title": "responsibility split campaignをStory化する",
+          "opportunity_ids": [
+            "VP-OPP-ARCH-018"
+          ],
+          "expected_diagnostic_delta": {
+            "duplicate_query_shapes": 0,
+            "responsibility_hotspots": 1
+          }
+        },
+        "target_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "graph_context": {
+          "matched_route_count": 0,
+          "target_file_count": 1,
+          "matched_file_count": 1,
+          "matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "unmatched_files": [],
+          "matched_node_count": 79,
+          "affected_communities": [
+            {
+              "id": 14,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 79,
+              "edge_count": 179
+            }
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 78
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 14
+            },
+            {
+              "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+              "label": "collectStoryArtifactInventory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 9
+            },
+            {
+              "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
+              "label": "collectDetachedArtifactCandidates()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 8
+            }
+          ],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "related_edge_count": 179,
+          "impact_score": 0.022,
+          "community_span": 1,
+          "cross_community": false
+        },
+        "investigation_scope": {
+          "target_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "read_first_files": [
+            "src/session-efficiency-audit.js",
+            "src/cli.js",
+            "src/workspace.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "graph_matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "graph_unmatched_files": [],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 78
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 14
+            },
+            {
+              "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+              "label": "collectStoryArtifactInventory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 9
+            },
+            {
+              "id": "src_session_efficiency_audit_collectdetachedartifactcandidates",
+              "label": "collectDetachedArtifactCandidates()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 14,
+              "degree": 8
+            }
+          ],
+          "affected_communities": [
+            {
+              "id": 14,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 79,
+              "edge_count": 179
+            }
+          ],
+          "community_span": 1,
+          "cross_community": false,
+          "guidance": "同一community内の影響が中心のため、hub/related fileを先に読んで共有境界を決める。"
+        },
+        "invariants": [
+          "APIまたはUIから見える入出力を変えない。",
+          "認可順序とエラーハンドリングを分離前後で維持する。",
+          "副作用を呼び出すタイミングを変えない。"
+        ],
+        "evidence_examples": [],
+        "strategy_options": [
+          {
+            "id": "split-runtime-boundaries",
+            "label": "方針A: runtime責務をroute/action/service/helperへ分離する",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "認可、DB、検証、外部I/Oの責務境界を読みやすくできる",
+              "副作用の順序をレビューしやすくなる"
+            ],
+            "cautions": [
+              "入出力と副作用タイミングを先に固定する必要がある"
+            ]
+          },
+          {
+            "id": "extract-side-effect-boundary",
+            "label": "方針B: 外部I/Oや通知など副作用境界から切り出す",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "大きなファイルを段階的に小さくできる",
+              "テストしづらい副作用を隔離できる"
+            ],
+            "cautions": [
+              "DB更新やレスポンス整形との順序を変えない確認が必要"
+            ]
+          }
+        ],
+        "recommended_strategy": {
+          "id": "split-runtime-boundaries",
+          "reason": "責務混在候補は重複削減より先に、認可、DB、検証、外部I/Oの境界を固定する価値が高い。"
+        }
+      }
+    }
+  ]
+}

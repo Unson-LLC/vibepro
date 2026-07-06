@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Runtime contract requires complete accepted blocker waiver metadata and keeps invalid waivers blocking but visible.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-runtime_contract.md"
+  ],
+  "inspection": {
+    "summary": "Inspected current HEAD 8aab12a, waiver ingestion and gate construction in src/pr-manager.js, current PR artifacts, and focused runtime tests for accepted and malformed waivers.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-runtime_contract.md"
+    ]
+  },
+  "judgment_delta": [
+    "runtime contract concern -> pass because status=open or missing status cannot waive blockers, while invalid waiver metadata remains surfaced through blocker_waiver_missing_fields and ignored-waiver reasoning."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+    "current_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+      "current_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T23:59:39.757Z",
+  "git_context": {
+    "head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T23:59:39.753Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "570dbb6f3f974f44ad48119e01efc179961d300b78908da1bcf3086fb0c5217c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f34b0-5b2c-7190-b68d-f6c60656cec6",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

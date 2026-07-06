@@ -1,0 +1,49 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "status": "pass",
+  "head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+  "commands": [
+    {
+      "command": "node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js test/senior-gap-judgment.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+      "tests": {
+        "total": 35,
+        "pass": 35,
+        "fail": 0
+      }
+    },
+    {
+      "command": "node --test test/design-input-judgment.test.js test/vibepro-cli.test.js test/senior-gap-judgment.test.js",
+      "tests": {
+        "total": 390,
+        "pass": 390,
+        "fail": 0
+      }
+    }
+  ],
+  "evidence_tokens": [
+    "unit_regression",
+    "pr_lifecycle_regression",
+    "agent_review_lifecycle_regression",
+    "evidence_lifecycle_regression",
+    "integration_runtime_path",
+    "negative_path",
+    "story_source_integrity_regression",
+    "managed_worktree_regression",
+    "engineering_judgment_regression",
+    "current_head_verification"
+  ],
+  "contract_clauses": [
+    "VIBE-RAR-001",
+    "VIBE-RAR-002",
+    "VIBE-CORE-PR-001",
+    "VIBE-CORE-AR-001",
+    "VIBE-CORE-EV-001",
+    "VIBE-CORE-COST-001",
+    "VIBE-CORE-STORY-001",
+    "VIBE-CORE-WT-001",
+    "VIBE-CORE-STATUS-001",
+    "VIBE-CORE-JUDGE-001"
+  ],
+  "summary": "Combined current-head regression evidence passed: Responsibility Authority core regression passed 35/35 and Design Input Judgment CLI regression passed 390/390. Covers unit_regression, pr_lifecycle_regression, agent_review_lifecycle_regression, evidence_lifecycle_regression, integration_runtime_path, negative_path, story_source_integrity_regression, managed_worktree_regression, engineering_judgment_regression, and current_head_verification."
+}

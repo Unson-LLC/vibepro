@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+  "head": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+  "observed": {
+    "success": true,
+    "e2e_tests": 7,
+    "flow_replay": true,
+    "artifact_replay": true,
+    "scenario_clause_e2e": true,
+    "ac:7": "covered",
+    "ac:8": "covered",
+    "parse_failure": "covered",
+    "persistence_failure": "covered"
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Current-head architecture_spec regression_risk review passed; no blocking or actionable regression risk found for non-design-input paths, gate artifact surfaces, fallback/report behavior, or design-input lifecycle handling.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md"
+  ],
+  "inspection": {
+    "summary": "Read-only regression_risk review inspected current HEAD ecac25bd30cd3ea57b93483f2eb40495be2d4cf6, diff scope, src/pr-manager.js, src/diagnostic-engine.js, src/cli.js, design-input and evidence-depth tests, E2E review files, and focused current-head behavior.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: adding design-input phase and gate could silently block or regress existing PR paths. Final judgment: pass for current HEAD because the replacement subagent inspected changed implementation and tests, found the gate non-required and informational, and found coverage for missing/design-input/manifest artifact lifecycle behavior."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "current_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+      "current_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T10:01:03.856Z",
+  "git_context": {
+    "head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T10:01:03.855Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "6022ea3319c65c5a25512cdc0eebda8844eb415f846f25bd5cbee851ae293312",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f31b7-1d5e-7642-9fc8-67be92a9b1ef",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

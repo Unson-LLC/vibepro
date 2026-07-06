@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current HEAD gate_evidence is PR-final ready; the prior machine-readable artifact blocker is resolved by strict-head JSON artifacts and verified artifact bindings at 434b11b.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-artifact-capture",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/verification/story-vibepro-design-input-judgment/unit-current-head-434b11b.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-role-binding",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected gate/pr artifacts, strict current-head verification JSON, pr-manager design-input/pre-implementation binding code, focused tests, and the design-input unit/E2E tests rerun by the reviewer passed 14/14.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+      ".vibepro/reviews/story-vibepro-design-input-judgment/gate/parallel-dispatch.md",
+      ".vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-design-input-judgment/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-design-input-judgment/evidence-reuse.json",
+      "src/pr-manager.js",
+      "test/design-input-judgment.test.js",
+      "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: prior gate_evidence result was stale and previous blocker was missing machine-readable command artifacts -> Final: pass because unit/integration/typecheck/workflow-e2e JSON artifacts now exist, all record head 434b11b5470b794658c5669dae7614592e43aa9c, pass status, replayable commands, and verification-evidence.json artifact_check=verified.",
+    "Initial concern: tests might only prove happy path -> Final: pass because inspected tests cover parse_failure, manifest-only false pass, missing design-input warning, design-input/pre-implementation separation, PR context/gate DAG surfaces, PR body token preservation, docs/CLI guidance, and artifact replay.",
+    "Initial concern: pr-prepare still blocks PR readiness -> Final: not a code/evidence blocker for this role; remaining critical blockers are stale gate_evidence review/provenance records that this current-head review replaces."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T18:43:05.110Z",
+  "git_context": {
+    "head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T18:43:05.096Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "62584fd35c25cc01edcaff73724bb32300639f8b5f31b4ebacbab137b9d5373e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3382-b7fe-75e3-8641-7ab4a7edff10",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

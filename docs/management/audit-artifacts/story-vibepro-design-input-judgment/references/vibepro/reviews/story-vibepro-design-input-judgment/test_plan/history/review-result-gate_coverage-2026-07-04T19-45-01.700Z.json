@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "needs_changes",
+  "summary": "Gate coverage still needs fresh evidence and behavior-bound failure-mode tests.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "evidence-handling-stale-risk-surface",
+      "detail": "Current gate coverage request still reports stale evidence reuse without fresh validated reuse evidence."
+    },
+    {
+      "severity": "medium",
+      "id": "coverage-gap-failure-mode-regression-targets",
+      "detail": "Failure-mode regression coverage should exercise parse_failure and evidence_lifecycle_regression behavior, not only assert labels."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed current review request, diagnostic/PR gate code, and focused test suites; evidence reuse is still stale in the request and failure-mode coverage is partially metadata-only.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-gate_coverage.json",
+      "test/design-input-judgment.test.js",
+      "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+      "src/cli.js",
+      "src/diagnostic-engine.js",
+      "src/pr-manager.js"
+    ]
+  },
+  "judgment_delta": [
+    "stale evidence and weak failure-mode targets -> needs_changes because request still reports stale reuse and one regression target is constant-only"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "current_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+      "current_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T19:45:01.700Z",
+  "git_context": {
+    "head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T19:45:01.698Z"
+  },
+  "source_fingerprint": "af86402c6df92cd2ca14488c96c42b70fab796f650da8f125181d15f3d057026",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2ea7-8416-7ce0-a732-93c80312b62c",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

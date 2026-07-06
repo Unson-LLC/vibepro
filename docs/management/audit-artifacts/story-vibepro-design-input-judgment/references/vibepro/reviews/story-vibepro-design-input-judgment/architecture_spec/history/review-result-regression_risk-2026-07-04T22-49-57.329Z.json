@@ -1,0 +1,97 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Current HEADのDIJ-CONTRACT-012/DIJ-SCENARIO-008回帰リスクにblockerなし。",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, Story/Architecture/Spec DIJ clauses, design-input unit/e2e lifecycle coverage, and targeted authorization_order_risks assertions after the current HEAD added cross-phase evidence checks.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md",
+      "docs/management/stories/active/story-vibepro-design-input-judgment.md",
+      "docs/architecture/vibepro-design-input-judgment.md",
+      "docs/specs/story-vibepro-design-input-judgment-spec.md",
+      "test/design-input-judgment.test.js",
+      "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+      "test/vibepro-cli.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes on prior HEAD for missing DIJ-CONTRACT-012/DIJ-SCENARIO-008 lifecycle coverage -> pass on current HEAD because design-input and pre-implementation evidence now assert code_quality.authorization_order_risks and PR context keeps the design-input artifact present"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "b8103d8c1d9b11dea5afcc74fd7cb935a971a658",
+    "current_head_sha": "b8103d8c1d9b11dea5afcc74fd7cb935a971a658",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "b8103d8c1d9b11dea5afcc74fd7cb935a971a658",
+      "current_head_sha": "b8103d8c1d9b11dea5afcc74fd7cb935a971a658",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T22:49:57.329Z",
+  "git_context": {
+    "head_sha": "b8103d8c1d9b11dea5afcc74fd7cb935a971a658",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T22:49:57.329Z"
+  },
+  "source_fingerprint": "016788fda1d0b5b2bde3f4143cc38ecf5edaf78befc2c0e21a7ab3936562143c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2f41-c991-7860-adce-dca55f1f27c3",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

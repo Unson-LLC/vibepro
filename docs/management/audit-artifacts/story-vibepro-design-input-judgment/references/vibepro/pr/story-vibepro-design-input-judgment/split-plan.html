@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VibePro PR Split Plan</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --fg: #14171f;
+      --muted: #667085;
+      --panel: #ffffff;
+      --panel-2: #f0f3f8;
+      --border: #d7dee8;
+      --good: #0f766e;
+      --warn: #a16207;
+      --danger: #b42318;
+      --info: #1d4ed8;
+      --neutral: #475467;
+      --code: #eef2f7;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220;
+        --fg: #e8edf5;
+        --muted: #9aa8bc;
+        --panel: #101827;
+        --panel-2: #172235;
+        --border: #2d3a4f;
+        --code: #1d2939;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(1220px, calc(100% - 24px)); margin: 16px auto 40px; }
+    .topbar, section, article.card, .lane, .timeline-item {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .topbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 20px; margin-bottom: 12px; }
+    .brand { font-weight: 700; color: var(--info); }
+    section { padding: 18px; margin: 12px 0; }
+    h1, h2, h3 { margin: 0 0 10px; line-height: 1.25; letter-spacing: 0; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
+    .meta, .muted, .eyebrow { color: var(--muted); }
+    .meta, .eyebrow { margin: 0; font-size: 12px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.08em; }
+    .hero { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+    .hero h2 { font-size: 22px; margin: 4px 0; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; background: transparent; border: 0; padding: 0; }
+    .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 92px; }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin: 6px 0; font-size: 20px; overflow-wrap: anywhere; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; background: transparent; border: 0; padding: 0; }
+    .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .flow-step { position: relative; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; min-height: 110px; overflow-wrap: anywhere; }
+    .flow-step:not(:last-child)::after { content: "->"; position: absolute; right: -12px; top: 44px; color: var(--muted); }
+    .cards, .node-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .card { padding: 14px; overflow-wrap: anywhere; }
+    .card p { margin: 6px 0 0; }
+    .lane-board { display: grid; grid-template-columns: repeat(4, minmax(240px, 1fr)); gap: 10px; overflow-x: auto; }
+    .lane { padding: 14px; min-width: 240px; }
+    .lane ul, .card ul { padding-left: 18px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; overflow-wrap: anywhere; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top; }
+    th { background: var(--panel-2); }
+    code, pre { background: var(--code); border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    code { padding: 0.1rem 0.3rem; }
+    pre { padding: 10px; overflow: auto; white-space: pre-wrap; }
+    .timeline { display: grid; gap: 10px; }
+    .timeline-item { padding: 12px; }
+    .status { display: inline-block; border-radius: 999px; padding: 4px 10px; font-weight: 700; font-size: 12px; border: 1px solid currentColor; }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+    .info { color: var(--info); }
+    .neutral { color: var(--neutral); }
+    .dag-svg { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+    .dag-node { fill: var(--panel); stroke: var(--border); }
+    .dag-text { fill: var(--fg); font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .dag-edge { stroke: var(--muted); stroke-width: 1.5; marker-end: url(#arrow); }
+    @media (max-width: 860px) {
+      .metrics, .grid-2, .flow, .cards, .node-grid { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { display: none; }
+      .hero, .topbar { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main data-vibepro-report="split-plan">
+    <header class="topbar">
+      <div>
+        <h1>VibePro PR Split Plan</h1>
+        <p class="meta">Generated by VibePro at 2026-07-06T01:36:30.219Z</p>
+      </div>
+      <span class="brand">VibePro</span>
+    </header>
+
+      <section class="hero" data-split-status="split_recommended">
+        <div>
+          <p class="eyebrow">Review lane board</p>
+          <h2>story-vibepro-design-input-judgment</h2>
+          <p class="muted">split_by_lane_then_prepare</p>
+        </div>
+        <span class="status warn">split_recommended</span>
+      </section>
+      <section class="metrics">
+        <article class="metric"><span>Lanes</span><strong>3</strong><span>review lanes</span></article>
+        <article class="metric"><span>Graphify</span><strong>available</strong><span>112 related</span></article>
+        <article class="metric"><span>Cumulative Gates</span><strong>0</strong><span>lanes</span></article>
+        <article class="metric"><span>Final Validation</span><strong>not required</strong><span>各PRのisolated checksで十分</span></article>
+      </section>
+      <section>
+        <h2>PR Lanes</h2>
+        <div class="lane-board">
+    <article class="lane" data-lane-id="requirements-ssot">
+      <h3>Story / Spec / Architecture / Policy SSOT</h3>
+      <p><span class="status warn">separate_pr</span></p>
+      <p class="muted">requirements / 5 files</p>
+      <h3>Review Focus</h3>
+      <ul><li>Story / Spec / Architecture / Policy の正本が互いに矛盾していないか</li><li>実装差分が要求の範囲を超えていないか</li><li>Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか</li></ul>
+      <h3>Files</h3>
+      <ul><li>docs/management/stories/active/story-vibepro-design-input-judgment.md</li><li>docs/specs/story-vibepro-design-input-judgment-spec.md</li><li>docs/architecture/vibepro-design-input-judgment.md</li><li>README.ja.md</li><li>README.md</li></ul>
+
+      <h3>Gate Mode</h3><p><span class="status neutral">isolated_pr</span></p><p>requirements-ssot は単体PRとしてレビュー可能。</p>
+    </article>
+
+    <article class="lane" data-lane-id="runtime-behavior">
+      <h3>Runtime behavior and unit coverage</h3>
+      <p><span class="status good">primary_pr</span></p>
+      <p class="muted">implementation / 16 files</p>
+      <h3>Review Focus</h3>
+      <ul><li>受け入れ基準と実装分岐が対応しているか</li><li>Graphifyで隣接するファイルまで影響確認されているか</li></ul>
+      <h3>Files</h3>
+      <ul><li>src/architecture-readiness.js</li><li>src/cli.js</li><li>src/diagnostic-engine.js</li><li>src/pr-manager.js</li><li>src/pre-spec-readiness.js</li><li>src/repo-status.js</li><li>src/senior-gap-judgment.js</li><li>src/story-manager.js</li></ul>
+      <h3>Graphify Related</h3><ul><li>src/agent-harness-map.js</li><li>src/agent-harness-scanner.js</li><li>src/agent-review.js</li><li>src/api-boundary-scanner.js</li><li>src/architecture-profiler.js</li><li>src/architecture-store.js</li><li>src/authorization-scoring.js</li><li>src/brainbase-importer.js</li><li>src/canonical-audit.js</li><li>src/change-risk-classifier.js</li><li>src/check-packs.js</li><li>src/checkpoint-manager.js</li></ul>
+      <h3>Gate Mode</h3><p><span class="status neutral">isolated_pr</span></p><p>runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。</p>
+    </article>
+
+    <article class="lane" data-lane-id="misc-follow-up">
+      <h3>Miscellaneous follow-up</h3>
+      <p><span class="status warn">separate_pr</span></p>
+      <p class="muted">other / 6 files</p>
+      <h3>Review Focus</h3>
+      <ul><li>Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する</li></ul>
+      <h3>Files</h3>
+      <ul><li>design-ssot.json</li><li>docs/ja/reference/cli.md</li><li>docs/reference/cli.md</li><li>skills/vibepro-workflow/SKILL.md</li><li>responsibility-authority.json</li><li>docs/contracts/vibepro-core-responsibilities.json</li></ul>
+
+      <h3>Gate Mode</h3><p><span class="status neutral">isolated_pr</span></p><p>misc-follow-up は単体PRとしてレビュー可能。</p>
+    </article>
+  </div>
+      </section>
+      <section class="grid-2">
+        <div>
+          <h2>Merge Order</h2>
+          <ol><li>requirements-ssot</li><li>runtime-behavior</li><li>misc-follow-up</li></ol>
+        </div>
+        <div>
+          <h2>Rationale</h2>
+          <ul><li>baseからのcommitが 28 件あり、Story外の変更混入を確認する必要がある</li><li>3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる</li><li>Graphifyで 16 changed files が一致し、112 related files を影響調査候補にした</li></ul>
+        </div>
+      </section>
+      <section>
+        <h2>Graphify Investigation Scope</h2>
+
+    <table>
+      <thead><tr><th>変更ファイル</th><th>一致したgraph node</th><th>確認する関連ファイル</th></tr></thead>
+      <tbody>
+        <tr><td>src/architecture-readiness.js</td><td>src_architecture_readiness_js<br>src_architecture_readiness_recordarchitecturereadiness<br>src_architecture_readiness_assertarchitecturereadinessforfinal<br>src_architecture_readiness_renderarchitecturereadinesssummary<br>src_architecture_readiness_buildarchitecturereadiness<br>src_architecture_readiness_buildstorycheck<br>src_architecture_readiness_buildgraphifycheck<br>src_architecture_readiness_builddiagnosischeck</td><td>src/architecture-store.js<br>src/cli.js<br>src/pr-manager.js<br>src/workspace.js</td></tr><tr><td>src/cli.js</td><td>src_cli_js<br>src_cli_runcli<br>src_cli_resolvediagnosisphaseoption<br>src_cli_getoption<br>src_cli_defaultsessionid<br>src_cli_renderhelp<br>src_cli_rendercheckpointlist<br>src_cli_renderinitsummary</td><td>src/agent-harness-map.js<br>src/agent-harness-scanner.js<br>src/agent-review.js<br>src/architecture-readiness.js<br>src/architecture-store.js<br>src/brainbase-importer.js<br>src/canonical-audit.js<br>src/check-packs.js<br>src/checkpoint-manager.js<br>src/ci-evidence.js<br>src/codex-manager.js<br>src/decision-records.js</td></tr><tr><td>src/diagnostic-engine.js</td><td>src_diagnostic_engine_js<br>src_diagnostic_engine_rundiagnosis<br>src_diagnostic_engine_normalizediagnosisphase<br>src_diagnostic_engine_builddiagnosisphaseevidence<br>src_diagnostic_engine_builddesigninputjudgmentevidence<br>src_diagnostic_engine_buildpreimplementationjudgmentevidence<br>src_diagnostic_engine_summarizediagnosisjudgment<br>src_diagnostic_engine_findpreviousstoryrun</td><td>src/api-boundary-scanner.js<br>src/architecture-profiler.js<br>src/cli.js<br>src/code-quality-scanner.js<br>src/component-style-scanner.js<br>src/database-access-scanner.js<br>src/flow-design-scanner.js<br>src/gesture-interaction-scanner.js<br>src/graph-context.js<br>src/language.js<br>src/local-dev-scanner.js<br>src/network-contract-scanner.js</td></tr><tr><td>src/pr-manager.js</td><td>src_pr_manager_js<br>src_pr_manager_createprprepareprogress<br>src_pr_manager_writefilewithtimeout<br>src_pr_manager_preparepullrequest<br>src_pr_manager_buildarchitecturereviewtemplate<br>src_pr_manager_buildhumanreviewtemplate<br>src_pr_manager_summarizereviewgate<br>src_pr_manager_recommendhumandecision</td><td>src/agent-review.js<br>src/architecture-readiness.js<br>src/authorization-scoring.js<br>src/change-risk-classifier.js<br>src/check-packs.js<br>src/checkpoint-manager.js<br>src/cli.js<br>src/code-topology-provider.js<br>src/decision-records.js<br>src/design-ssot.js<br>src/diagram-requirement-resolver.js<br>src/environment-graph.js</td></tr><tr><td>src/pre-spec-readiness.js</td><td>src_pre_spec_readiness_js<br>src_pre_spec_readiness_recordprespecreadiness<br>src_pre_spec_readiness_assertprespecreadinessforfinalspec<br>src_pre_spec_readiness_renderprespecreadinesssummary<br>src_pre_spec_readiness_buildprespecreadiness<br>src_pre_spec_readiness_buildstorycheck<br>src_pre_spec_readiness_buildgraphifycheck<br>src_pre_spec_readiness_builddiagnosischeck</td><td>src/cli.js<br>src/pr-manager.js<br>src/spec-store.js<br>src/workspace.js</td></tr><tr><td>src/repo-status.js</td><td>src_repo_status_js<br>src_repo_status_getrepostatus<br>src_repo_status_renderrepostatus<br>src_repo_status_exists<br>src_repo_status_readjsonwithstatus<br>src_repo_status_toworkspacepath<br>src_repo_status_findrun<br>src_repo_status_prioritizestory</td><td>src/cli.js<br>src/doctor.js<br>src/workspace.js</td></tr><tr><td>src/senior-gap-judgment.js</td><td>src_senior_gap_judgment_js<br>src_senior_gap_judgment_buildseniorgapjudgment<br>src_senior_gap_judgment_buildseniorgapjudgmentgate<br>src_senior_gap_judgment_renderseniorgapjudgmentsummary<br>src_senior_gap_judgment_buildidealstate<br>src_senior_gap_judgment_buildcurrentstate<br>src_senior_gap_judgment_buildgaps<br>src_senior_gap_judgment_gapsfromgatestatus</td><td>src/evidence-cost-budget.js<br>src/pr-manager.js</td></tr><tr><td>src/story-manager.js</td><td>src_story_manager_js<br>src_story_manager_addstory<br>src_story_manager_liststories<br>src_story_manager_selectstory<br>src_story_manager_archivestory<br>src_story_manager_getstoryruns<br>src_story_manager_getstorystatus<br>src_story_manager_createstoryreport</td><td>src/brainbase-importer.js<br>src/cli.js<br>src/diagnostic-engine.js<br>src/graph-context.js<br>src/journey-map.js<br>src/performance-evidence.js<br>src/playbook-exporter.js<br>src/pr-manager.js<br>src/story-catalog-generator.js<br>src/story-html.js<br>src/story-task-generator.js<br>src/task-manager.js</td></tr><tr><td>test/architecture-readiness.test.js</td><td>test_architecture_readiness_test_js<br>test_architecture_readiness_test_makearchitecturerepo<br>test_architecture_readiness_test_writereadyarchitectureevidence<br>test_architecture_readiness_test_initgitrepo<br>test_architecture_readiness_test_commitall<br>test_architecture_readiness_test_writeminimalreadinessprerequisites<br>test_architecture_readiness_test_readablefrom<br>test_architecture_readiness_test_captureruncli</td><td>src/architecture-store.js<br>src/cli.js</td></tr><tr><td>test/design-input-judgment.test.js</td><td>test_design_input_judgment_test_js<br>test_design_input_judgment_test_git<br>test_design_input_judgment_test_makerepo<br>test_design_input_judgment_test_makegitrepo<br>test_design_input_judgment_test_writegraphifyout<br>test_design_input_judgment_test_writecrosssurfacedesignchange<br>test_design_input_judgment_test_findgate<br>test_design_input_judgment_test_runclicaptured</td><td>src/cli.js</td></tr><tr><td>test/e2e/story-vibepro-design-input-judgment-flow.spec.ts</td><td>test_e2e_story_vibepro_design_input_judgment_flow_spec_ts<br>e2e_story_vibepro_design_input_judgment_flow_spec_git<br>e2e_story_vibepro_design_input_judgment_flow_spec_makerepo<br>e2e_story_vibepro_design_input_judgment_flow_spec_makegitrepo<br>e2e_story_vibepro_design_input_judgment_flow_spec_writegraphifyout<br>e2e_story_vibepro_design_input_judgment_flow_spec_writestoryplangraph<br>e2e_story_vibepro_design_input_judgment_flow_spec_writecrosssurfacedesignchange<br>e2e_story_vibepro_design_input_judgment_flow_spec_findgate</td><td>src/cli.js</td></tr><tr><td>test/evidence-depth-pr-prepare.test.js</td><td>test_evidence_depth_pr_prepare_test_js<br>test_evidence_depth_pr_prepare_test_git<br>test_evidence_depth_pr_prepare_test_readjson<br>test_evidence_depth_pr_prepare_test_exists<br>test_evidence_depth_pr_prepare_test_setuplowriskrepo<br>test_evidence_depth_pr_prepare_test_setuphighriskauthrepo</td><td>src/cli.js</td></tr><tr><td>test/responsibility-authority.test.js</td><td>test_responsibility_authority_test_js<br>test_responsibility_authority_test_makefixturerepo<br>test_responsibility_authority_test_writestorydocs<br>test_responsibility_authority_test_writeresponsibilityfixture<br>test_responsibility_authority_test_writereadonlyreportingresponsibilityfixture<br>test_responsibility_authority_test_git</td><td>-</td></tr><tr><td>test/senior-gap-judgment.test.js</td><td>test_senior_gap_judgment_test_js<br>test_senior_gap_judgment_test_makerepo<br>test_senior_gap_judgment_test_writeseniorgapfixture<br>test_senior_gap_judgment_test_git</td><td>-</td></tr><tr><td>test/spec-pipeline.test.js</td><td>test_spec_pipeline_test_js<br>test_spec_pipeline_test_makespecrepo<br>test_spec_pipeline_test_writereadyprespecevidence<br>test_spec_pipeline_test_initgitrepo<br>test_spec_pipeline_test_commitall<br>test_spec_pipeline_test_writeminimalreadinessprerequisites<br>test_spec_pipeline_test_readablefrom<br>test_spec_pipeline_test_captureruncli</td><td>src/cli.js<br>src/spec-store.js</td></tr><tr><td>test/vibepro-cli.test.js</td><td>test_vibepro_cli_test_js<br>test_vibepro_cli_test_makerepo<br>test_vibepro_cli_test_readjson<br>test_vibepro_cli_test_writejson<br>test_vibepro_cli_test_pathexists<br>test_vibepro_cli_test_git<br>test_vibepro_cli_test_runcliwithstdout<br>test_vibepro_cli_test_makefakegh</td><td>src/cli.js</td></tr>
+      </tbody>
+    </table>
+
+      </section>
+      <section>
+        <h2>Next Actions</h2>
+        <div><p><code>git switch -c feat/vibepro-design-input-judgment-requirements-ssot &lt;base&gt; &amp;&amp; git add docs/management/stories/active/story-vibepro-design-input-judgment.md docs/specs/story-vibepro-design-input-judgment-spec.md docs/architecture/vibepro-design-input-judgment.md README.ja.md README.md</code></p><p><code>git switch -c feat/vibepro-design-input-judgment-runtime-behavior &lt;base&gt; &amp;&amp; git add src/architecture-readiness.js src/cli.js src/diagnostic-engine.js src/pr-manager.js src/pre-spec-readiness.js src/repo-status.js src/senior-gap-judgment.js src/story-manager.js test/architecture-readiness.test.js test/design-input-judgment.test.js test/e2e/story-vibepro-design-input-judgment-flow.spec.ts test/evidence-depth-pr-prepare.test.js test/responsibility-authority.test.js test/senior-gap-judgment.test.js test/spec-pipeline.test.js test/vibepro-cli.test.js</code></p><p><code>git switch -c feat/vibepro-design-input-judgment-misc-follow-up &lt;base&gt; &amp;&amp; git add design-ssot.json docs/ja/reference/cli.md docs/reference/cli.md skills/vibepro-workflow/SKILL.md responsibility-authority.json docs/contracts/vibepro-core-responsibilities.json</code></p></div>
+      </section>
+
+  </main>
+</body>
+</html>

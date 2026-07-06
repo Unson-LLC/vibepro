@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "needs_changes",
+  "summary": "Current-head gate_coverage review found one medium coverage gap: final E2E selection should prefer current-bound passing evidence to avoid stale or failed evidence in PR readout.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "e2e-final-surface-noncurrent-selection",
+      "detail": "renderFinalE2eConfidence/selectFinalE2eEvidence can choose stale or failed E2E evidence because selection checks E2E signals but not current binding or pass ordering."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md"
+  ],
+  "inspection": {
+    "summary": "Inspected src/pr-manager.js final-E2E selection, changed tests, existing gate_coverage artifacts, focused behavior tests, and current review metadata at HEAD ecac25bd30cd3ea57b93483f2eb40495be2d4cf6.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: stale gate_coverage review needed current HEAD validation. Final judgment: needs_changes because selectFinalE2eEvidence does not enforce current binding or pass ordering, so final PR readout may surface stale or failed E2E evidence."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "current_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+      "current_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T10:33:57.413Z",
+  "git_context": {
+    "head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T10:33:57.412Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ecac25bd30cd3ea57b93483f2eb40495be2d4cf6",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "cf8cbe735c0e37b30673176c4e61d4dfd18ddf394ec2dc7bfba13df47b343f1e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f31c5-e890-7723-a8ff-ce745d9635c4",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

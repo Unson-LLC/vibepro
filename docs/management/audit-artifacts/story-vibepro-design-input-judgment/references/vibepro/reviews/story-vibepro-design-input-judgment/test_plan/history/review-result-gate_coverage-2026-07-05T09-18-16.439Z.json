@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "Current-head gate coverage review passed; gate and evidence coverage is sufficient for common_judgment_spine, agent review lifecycle, artifact consistency, exact E2E evidence selection, summary-depth pruning, and failure modes.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md"
+  ],
+  "inspection": {
+    "summary": "Read-only gate_coverage review inspected current HEAD f5e05c654a592ab7df641b67c241864a222a983c, PR manager gate expansion, diagnostic evidence separation, lifecycle gates, summary-depth pruning tests, E2E flow tests, spec, SSOT, and current evidence artifacts.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial state: stale/unknown because the review request fingerprint changed after rebase. Final judgment: pass because current source, spec, artifacts, and focused tests show gate/evidence coverage is sufficient."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+    "current_head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+      "current_head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T09:18:16.439Z",
+  "git_context": {
+    "head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T09:18:16.438Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "f5e05c654a592ab7df641b67c241864a222a983c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "b827f8de2393cce7933020edf86e4ad2bc972b0905055d75385b6885e4a4e239",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3185-1a1a-7243-9c71-45b68cb87d3d",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "Gate/test coverage now covers the prior final-E2E stale-pass/current-fail failure mode and exposes current-head evidence and unresolved gate state in PR artifacts.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified HEAD/worktree, read the gate_coverage request, inspected the added regression test, final-E2E selection implementation, concise PR body contract, current PR prepare/body/evidence artifacts, prior stale gate_coverage result, and ran the focused regression.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: prior gate_coverage result reported final E2E selection could choose stale or failed evidence without current binding/pass ordering. Final conclusion: resolved because src/pr-manager.js ranks binding before status and the added regression creates a stale passing E2E record followed by a current failing E2E record, then asserts the PR body shows the current failure and excludes the stale pass.",
+    "Initial concern: CPB-INV-003 could be satisfied only by a happy path current pass. Final conclusion: covered because the new regression specifically asserts failed current evidence remains visible over stale passing evidence, while the existing current-pass regression still covers pass preference when current pass exists.",
+    "Initial concern: PR prepare/gate surface might hide freshness or unresolved-state problems. Final conclusion: acceptable because pr-body shows the selected final E2E artifact, verification evidence records current HEAD a266bbee commands, and pr-prepare gate_status still exposes unresolved blockers rather than silently passing them."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+    "current_head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+      "current_head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T15:05:29.164Z",
+  "git_context": {
+    "head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T15:05:29.159Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "a266bbee592ebd0c1a375c50b6d0855cdf4db75c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "c4f328009537ceddd0c51351009d9ff8714865ec3400ac415552bbad2a1464b9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f32c5-295e-7430-898e-4a191e563ed3",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

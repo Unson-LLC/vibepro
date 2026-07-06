@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Gate evidence needed materialized verification artifacts and finalized role binding before PR-final approval.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "gate-evidence-artifact-capture",
+      "detail": "verification evidence needed attached command artifacts for audit replay"
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-role-binding",
+      "detail": "gate review output was not finalized when inspected"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Subagent inspected current gate request, review summary, verification evidence, senior-gap judgment, and targeted DIJ tests; the role remained needs_changes because the review result was not yet finalized and command output artifacts were not attached to verification evidence.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-design-input-judgment/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "assumed passing tests were enough -> needs_changes because gate evidence lacked materialized command artifacts and finalized role output"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "f394ebdf1e52a32681c376a105081878ac747719",
+    "current_head_sha": "f394ebdf1e52a32681c376a105081878ac747719",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "f394ebdf1e52a32681c376a105081878ac747719",
+      "current_head_sha": "f394ebdf1e52a32681c376a105081878ac747719",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T23:27:26.391Z",
+  "git_context": {
+    "head_sha": "f394ebdf1e52a32681c376a105081878ac747719",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T23:27:26.387Z"
+  },
+  "source_fingerprint": "d393b5faab133ae5b01dbbd765f692a7b68f14e1048ddd2a26dd4aa65064ee7c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2f68-025e-7272-8cc0-3c61e1ad6926",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

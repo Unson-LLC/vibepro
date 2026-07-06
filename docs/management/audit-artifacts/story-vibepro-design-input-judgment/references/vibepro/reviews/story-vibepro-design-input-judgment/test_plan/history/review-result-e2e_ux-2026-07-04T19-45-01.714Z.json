@@ -1,0 +1,100 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "Prior e2e_ux findings are resolved at current HEAD.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, docs, current e2e/unit tests, and relevant CLI/story/pr paths; focused tests verified missing design-input evidence guidance and strict docs ordering.",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-e2e_ux.md",
+      "README.ja.md",
+      "docs/reference/cli.md",
+      "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+      "test/design-input-judgment.test.js",
+      "src/diagnostic-engine.js",
+      "src/story-manager.js",
+      "src/pr-manager.js",
+      "src/architecture-readiness.js",
+      "src/pre-spec-readiness.js"
+    ]
+  },
+  "judgment_delta": [
+    "stale needs_changes on AC7/docs sequencing -> pass because current HEAD asserts missing design-input regeneration guidance and strict documentation order; focused tests are green"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "current_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+      "current_head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-04T19:45:01.714Z",
+  "git_context": {
+    "head_sha": "27db3decddbb574ec94ecaf6a40eabb523272c85",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-04T19:45:01.714Z"
+  },
+  "source_fingerprint": "56e110d5e38be08c001ddae0598a69de7f3f716d4fa313ad78010c6c63b95a26",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f2ea7-6ff5-7593-9327-43221f20b29b",
+    "agent_role": null,
+    "model": "gpt-5.3-codex-spark",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

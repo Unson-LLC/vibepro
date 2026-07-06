@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "created_at": "2026-07-06T01:36:30.219Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-design-input-judgment.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-design-input-judgment.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-design-input-judgment/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-design-input-judgment/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-design-input-judgment.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-design-input-judgment-spec.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-06T01:36:28.442Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-issue245-impl"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-issue245-impl/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-issue245-impl/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+      "branch": "codex/issue245-design-input-judgment",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "5e10a65d4e27adbce7d8b468669f4a8feac20f78",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

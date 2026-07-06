@@ -1,0 +1,2519 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-06T01:36:50.049Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-design-input-judgment",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:2e04047c21c7a652d5125e705b7285f6c342eb16961f5e9c04b34dc41567c034",
+    "compressed_hash": "sha256:37ae35025ac4e606f4a9d073ff77ef1884e70d88879053d24145e5c5b1b45ce8",
+    "expanded_bytes": 35077,
+    "compressed_bytes": 5772,
+    "expanded_line_count": 884,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-design-input-judgment",
+    "cost": {
+      "compressed_bytes": 5772,
+      "expanded_bytes": 35077,
+      "expanded_line_count": 884,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/290",
+    "merge_commit_sha": "2e576bea0320d16d10eb586cc6b84c3ce26d72d6",
+    "merged_at": "2026-07-06T01:36:48Z",
+    "current_head_sha": "8aab12a565ec4875446c96a90d3f4cb8336c12fd",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...8aab12a565ec4875446c96a90d3f4cb8336c12fd"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 197,
+    "copied_reference_count": 170,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-design-input-judgment"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:2e04047c21c7a652d5125e705b7285f6c342eb16961f5e9c04b34dc41567c034"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:64154ae4aa052cf72a7c255ea13bfd6eea18de35ce6d2f724796e0d30ddc875d",
+      "audit_digest": "sha256:64154ae4aa052cf72a7c255ea13bfd6eea18de35ce6d2f724796e0d30ddc875d",
+      "line_count": 204,
+      "raw_line_count": 204,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2e40dead584738d00aea9cc30ce77a0db86f7d9494bc6e36e591b2019f921e9d",
+      "audit_digest": "sha256:1f79147ec1387acf78dae0b338e1e098cb920d0bd4a0c270b4776d21f7b9a4e8",
+      "line_count": 8988,
+      "raw_line_count": 30329,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:7315e565abfeb94691da64226402b70519e80c9faa9d759f9b51190977111a56",
+      "audit_digest": "sha256:9a32693650f1fa0f2d34194986b3392153c1b411366404ac85e55d6dc67e785e",
+      "line_count": 2323,
+      "raw_line_count": 4966,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2c39786be99a42fcb936a2b81526cbad872a674fcae809973f8853dc3b81ee52",
+      "audit_digest": "sha256:fa3a2736430e33f7ce0992143c66e3f17b92b0d0dcddfc0593d4aea6babd9f44",
+      "line_count": 2180,
+      "raw_line_count": 4820,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:b6c3be3231a8b797edd2685701c25ebbe735d8a08ded2a896e98d985a2ad658b",
+      "audit_digest": "sha256:2514125a183fc8cfeeed7964dedbe7e9c6c20601c7ccd6ff3f0a56fdf400c5b1",
+      "line_count": 89,
+      "raw_line_count": 1062,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:9d7412d8348eebb25230f2ec651e4a445d567dd6b245e18d3c0551692337442d",
+      "audit_digest": "sha256:8954c255adeacbfd4367659d91cc78775ee72a6501102902334a8f8e2cba0941",
+      "line_count": 2364,
+      "raw_line_count": 5124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:9ef2b75a87d730ff87d612f14e3d32654d996c3a83fcdf91b0ef3dcec22a33a4",
+      "audit_digest": "sha256:9ef2b75a87d730ff87d612f14e3d32654d996c3a83fcdf91b0ef3dcec22a33a4",
+      "line_count": 518,
+      "raw_line_count": 518,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:e1fd62a756b8bbc7ae030eb80234417ad30d045038c360cdf7a2cf4b53bec212",
+      "audit_digest": "sha256:4830a553623af85e7e291d1b7bb2621f12c6db2a26e555cffc5ee0a2da3ceb9a",
+      "line_count": 75,
+      "raw_line_count": 447,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:8555d3f6b92b9f89fdfa1892e6f9eceb82ddd9a66a7bce449efe6ad093ce44ac",
+      "audit_digest": "sha256:8555d3f6b92b9f89fdfa1892e6f9eceb82ddd9a66a7bce449efe6ad093ce44ac",
+      "line_count": 884,
+      "raw_line_count": 884,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:a4f9c0acd3695c5f0d71c82ea315878619b4176d0f518a3a9bb9d7512b576052",
+      "audit_digest": "sha256:a4f9c0acd3695c5f0d71c82ea315878619b4176d0f518a3a9bb9d7512b576052",
+      "line_count": 131,
+      "raw_line_count": 131,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:e8b07731b5459f06cc394f635614da4a702edba4559d2978ecaaaeeb6e62dc41",
+      "audit_digest": "sha256:e8b07731b5459f06cc394f635614da4a702edba4559d2978ecaaaeeb6e62dc41",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:1fa6f0a71bd42e743dd269549d8a2e0ef824be8f353610ecbfa291274789509d",
+      "audit_digest": "sha256:1fa6f0a71bd42e743dd269549d8a2e0ef824be8f353610ecbfa291274789509d",
+      "line_count": 1152,
+      "raw_line_count": 1152,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:98480e163a164a441e04749162795fbe571edb977c8703d8adae5a708d17fd42",
+      "audit_digest": "sha256:98480e163a164a441e04749162795fbe571edb977c8703d8adae5a708d17fd42",
+      "line_count": 259,
+      "raw_line_count": 259,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:e8bc010f038ecdbe7f177d17f1918a042af2cdfe641faca1de54b6d61d080e06",
+      "audit_digest": "sha256:e8bc010f038ecdbe7f177d17f1918a042af2cdfe641faca1de54b6d61d080e06",
+      "line_count": 131,
+      "raw_line_count": 131,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:274572117ffa130fff299885aa24b66a69807db94f33364dfea1a898bc271aa4",
+      "audit_digest": "sha256:274572117ffa130fff299885aa24b66a69807db94f33364dfea1a898bc271aa4",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:eab92428c18daa95a8fb8418bbc7da4f0b1e6350c75aad94f570c847ef455cac",
+      "audit_digest": "sha256:eab92428c18daa95a8fb8418bbc7da4f0b1e6350c75aad94f570c847ef455cac",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:55cc2c7faa3f112ba94eae0246ba7fbd1ef314cf678f6b5880cfa38b23c951f0",
+      "audit_digest": "sha256:55cc2c7faa3f112ba94eae0246ba7fbd1ef314cf678f6b5880cfa38b23c951f0",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2724f9e824737a5bcd6ac00d41a3e19c698455cad12cdace7adcf0c6684b324e",
+      "audit_digest": "sha256:2724f9e824737a5bcd6ac00d41a3e19c698455cad12cdace7adcf0c6684b324e",
+      "line_count": 542,
+      "raw_line_count": 542,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:d56f140fd3b33fb6b73b0b851d4a14f031cabd9d697820281e3d7e0eec78fbec",
+      "audit_digest": "sha256:d56f140fd3b33fb6b73b0b851d4a14f031cabd9d697820281e3d7e0eec78fbec",
+      "line_count": 159,
+      "raw_line_count": 159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:da7de5e43523944ff6e950ae965516e1feac60c96a55cecae0ed815349aed433",
+      "audit_digest": "sha256:da7de5e43523944ff6e950ae965516e1feac60c96a55cecae0ed815349aed433",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:645ce4fc0a6ed8cfcb25e25ead483e63b7cd79d0d9a5a64f3a1fb019ef91d550",
+      "audit_digest": "sha256:645ce4fc0a6ed8cfcb25e25ead483e63b7cd79d0d9a5a64f3a1fb019ef91d550",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:9cea257de100eb42556cb54ecf8fae4dc4c366936b6dace714d62cc97e825939",
+      "audit_digest": "sha256:9cea257de100eb42556cb54ecf8fae4dc4c366936b6dace714d62cc97e825939",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:b85e003ae083407ba17cbbba2144feea88e5a5679f42642af76be36f4c18b45f",
+      "audit_digest": "sha256:b85e003ae083407ba17cbbba2144feea88e5a5679f42642af76be36f4c18b45f",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2fbbab848d2aec851e64a097fc22ccac318d458ecb7330a03b89f1de2adf0608",
+      "audit_digest": "sha256:2fbbab848d2aec851e64a097fc22ccac318d458ecb7330a03b89f1de2adf0608",
+      "line_count": 430,
+      "raw_line_count": 430,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:7b3d8b838d9969d6dd3ddb4399abdbec7394c71fad68f1c811f6a30be624334c",
+      "audit_digest": "sha256:7b3d8b838d9969d6dd3ddb4399abdbec7394c71fad68f1c811f6a30be624334c",
+      "line_count": 84,
+      "raw_line_count": 84,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:b56f54cf1355caca7e46ccc620a97f8f002854efbd1339b9853956a850665914",
+      "audit_digest": "sha256:b56f54cf1355caca7e46ccc620a97f8f002854efbd1339b9853956a850665914",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/review-request-product_requirement.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2408c360cb7c883bbd2a23d3b9578700a4a12d29952d9e17483d61dbb6f698b1",
+      "audit_digest": "sha256:2408c360cb7c883bbd2a23d3b9578700a4a12d29952d9e17483d61dbb6f698b1",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/review-request-spec_consistency.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:008c7876aff7a653118122e7c3bf02321ae8319d88bae082303b96c9075348c4",
+      "audit_digest": "sha256:008c7876aff7a653118122e7c3bf02321ae8319d88bae082303b96c9075348c4",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:6085792c39fb67e32d6d1245e034c1f4e22b8958ded9b40b020197fddb484f3d",
+      "audit_digest": "sha256:6085792c39fb67e32d6d1245e034c1f4e22b8958ded9b40b020197fddb484f3d",
+      "line_count": 325,
+      "raw_line_count": 325,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:bd015af7b26ad7038f6fb27f7b3064665486f8e832eca456b587dd1ba027c3d5",
+      "audit_digest": "sha256:bd015af7b26ad7038f6fb27f7b3064665486f8e832eca456b587dd1ba027c3d5",
+      "line_count": 134,
+      "raw_line_count": 134,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:8b844b58d9c663d77d5164bbd1f336e0ff7677734098179e21560e99d1283ae1",
+      "audit_digest": "sha256:8b844b58d9c663d77d5164bbd1f336e0ff7677734098179e21560e99d1283ae1",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-request-network_runtime.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:f98cb9daf5c9178ffd3cfdd58a303a615936aed989b0a137c92d3cbde4da0cf4",
+      "audit_digest": "sha256:f98cb9daf5c9178ffd3cfdd58a303a615936aed989b0a137c92d3cbde4da0cf4",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:6d365ae08371c8e6a5b241912faf995f3f8c94bdb177e4e2e7c7497bebfee3cf",
+      "audit_digest": "sha256:6d365ae08371c8e6a5b241912faf995f3f8c94bdb177e4e2e7c7497bebfee3cf",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-result-network_runtime.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:fcdce7b943a282fcca110472d5e7eeed9b340b915f01f33122e11487defabf26",
+      "audit_digest": "sha256:fcdce7b943a282fcca110472d5e7eeed9b340b915f01f33122e11487defabf26",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:29487d328d0db416b3e74f2215681f3e3be6d535d723129b3b78091da5040a34",
+      "audit_digest": "sha256:29487d328d0db416b3e74f2215681f3e3be6d535d723129b3b78091da5040a34",
+      "line_count": 400,
+      "raw_line_count": 400,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:a1810179022653d7dd30a01e1aebfc651b569322fe366ec5156ddc17abc525fe",
+      "audit_digest": "sha256:a1810179022653d7dd30a01e1aebfc651b569322fe366ec5156ddc17abc525fe",
+      "line_count": 909,
+      "raw_line_count": 909,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-e2e_ux.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:01dda0f6666a0401e4be35c298db9458a02ed7e1a1552faff0c0321f3261e727",
+      "audit_digest": "sha256:01dda0f6666a0401e4be35c298db9458a02ed7e1a1552faff0c0321f3261e727",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:2790b959dc612b43c17c4561e8c731ce19e50cee62f9dfdbe773fd76b1a38dc2",
+      "audit_digest": "sha256:2790b959dc612b43c17c4561e8c731ce19e50cee62f9dfdbe773fd76b1a38dc2",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-unit_integration.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:d137caab27c0b431d44169e64c3e70be788a3944bce6f9ca69670abe1b308b62",
+      "audit_digest": "sha256:d137caab27c0b431d44169e64c3e70be788a3944bce6f9ca69670abe1b308b62",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-e2e_ux.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fdb3bd947d6ea729661ae8d4f58a07cbc06d1c803b6c1ce38bdc34d2447a97f",
+      "audit_digest": "sha256:5fdb3bd947d6ea729661ae8d4f58a07cbc06d1c803b6c1ce38bdc34d2447a97f",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-gate_coverage.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:f0ac6a7d2216d2c0fe85e81ab241f38c737bb0413254699057d2f83356b20a54",
+      "audit_digest": "sha256:f0ac6a7d2216d2c0fe85e81ab241f38c737bb0413254699057d2f83356b20a54",
+      "line_count": 105,
+      "raw_line_count": 105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-unit_integration.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:0ac693fffd4a4efb344c2fd56c6f8009b7f27076023569bfa9f7665c1739dcfa",
+      "audit_digest": "sha256:0ac693fffd4a4efb344c2fd56c6f8009b7f27076023569bfa9f7665c1739dcfa",
+      "line_count": 95,
+      "raw_line_count": 95,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/audit-replay-bundle.json.gz",
+      "digest": "sha256:b59204df9f5398b74155877d7896b11e8291020c7571f5f334c873e95e9d605c",
+      "audit_digest": "sha256:b59204df9f5398b74155877d7896b11e8291020c7571f5f334c873e95e9d605c",
+      "line_count": 1510,
+      "raw_line_count": 1510,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/e2e-evidence-8aab12a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/e2e-evidence-8aab12a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/test-artifacts/combined-current-head-regression.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/test-artifacts/combined-current-head-regression.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-32-20.027Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-32-20.027Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-57-04.612Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-57-04.612Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T14-49-26.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T14-49-26.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T15-59-41.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T15-59-41.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T18-12-07.547Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T18-12-07.547Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-07-10.893Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-07-10.893Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-40-22.958Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-40-22.958Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T22-49-57.329Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T22-49-57.329Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T02-19-17.087Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T02-19-17.087Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T03-38-22.979Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T03-38-22.979Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T08-56-55.480Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T08-56-55.480Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T10-01-03.856Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T10-01-03.856Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T11-16-15.759Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T11-16-15.759Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T12-28-42.184Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T12-28-42.184Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T14-45-23.267Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T14-45-23.267Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T17-05-36.505Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T17-05-36.505Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T20-02-37.327Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T20-02-37.327Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T21-38-49.006Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T21-38-49.006Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T22-08-54.007Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T22-08-54.007Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T23-25-31.980Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T23-25-31.980Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-request-regression_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/architecture_spec/review-request-regression_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/architecture_spec/review-result-regression_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d2e-48b2-7530-86d8-33f136495f14.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d2e-48b2-7530-86d8-33f136495f14.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d54-a1a5-7b21-be7b-9b862be1b056.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d54-a1a5-7b21-be7b-9b862be1b056.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d92-a53d-7ed0-82be-7134d554f2de.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d92-a53d-7ed0-82be-7134d554f2de.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2dd3-093e-7c50-a471-65fcca416fc3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2dd3-093e-7c50-a471-65fcca416fc3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2deb-60d8-73e2-9286-ab52035f0651.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2deb-60d8-73e2-9286-ab52035f0651.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e27-755c-7331-afe5-ec5e605e600d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e27-755c-7331-afe5-ec5e605e600d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e42-5a29-7c60-b22f-61875ec08f57.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e42-5a29-7c60-b22f-61875ec08f57.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e84-1e32-7d72-bc20-a5af9cb78afa.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e84-1e32-7d72-bc20-a5af9cb78afa.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2ea4-313b-7f31-8a4a-9bef7ea0cf90.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2ea4-313b-7f31-8a4a-9bef7ea0cf90.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f2f-7605-7541-a485-045eb8f95993.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f2f-7605-7541-a485-045eb8f95993.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3005-bc55-7773-b928-30cdabd0baed.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3005-bc55-7773-b928-30cdabd0baed.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3053-29b8-7263-a8a5-0abaf2301673.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3053-29b8-7263-a8a5-0abaf2301673.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f30c8-4a08-7c30-a70f-cc8e77e6fa24.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f30c8-4a08-7c30-a70f-cc8e77e6fa24.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f316e-9fc5-74d0-9003-90a6805d379b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f316e-9fc5-74d0-9003-90a6805d379b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31eb-e32e-7522-a8f8-ec96537a9f8d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31eb-e32e-7522-a8f8-ec96537a9f8d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3231-c261-7f40-834b-3059356a25dd.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3231-c261-7f40-834b-3059356a25dd.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f32b7-1963-7070-b797-164dde49d737.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f32b7-1963-7070-b797-164dde49d737.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f332d-3559-7883-bd43-16499817e749.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f332d-3559-7883-bd43-16499817e749.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f33de-cc81-7e91-b1e3-15c12466bfc0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f33de-cc81-7e91-b1e3-15c12466bfc0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f342f-9875-7711-9ccc-556a5b0a4408.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f342f-9875-7711-9ccc-556a5b0a4408.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f344e-8107-7a52-8e7f-ee454f51b623.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f344e-8107-7a52-8e7f-ee454f51b623.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f345d-baa4-71d3-9fde-a59a6d35418d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f345d-baa4-71d3-9fde-a59a6d35418d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f348c-3c20-7741-9965-d92646b3d67c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f348c-3c20-7741-9965-d92646b3d67c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-04T23-27-26.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-04T23-27-26.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-05T18-43-05.110Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-05T18-43-05.110Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-06T00-46-59.921Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-06T00-46-59.921Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-04T23-27-26.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-04T23-27-26.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-05T18-16-18.786Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-05T18-16-18.786Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-06T00-34-57.858Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-06T00-34-57.858Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-8d6e-7323-9254-ea50b6797e88.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-8d6e-7323-9254-ea50b6797e88.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f33bb-eb92-7e13-8e44-5963f02eb0ac.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f33bb-eb92-7e13-8e44-5963f02eb0ac.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-2a4a-7583-b3bd-93f2a8b467ea.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-2a4a-7583-b3bd-93f2a8b467ea.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-40ae-7632-a7b9-0155d20b43d3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-40ae-7632-a7b9-0155d20b43d3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34e2-9a2a-7893-a53f-eb4caa3d34c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34e2-9a2a-7893-a53f-eb4caa3d34c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T15-35-09.731Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T15-35-09.731Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T17-36-54.690Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T17-36-54.690Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T23-59-39.757Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T23-59-39.757Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T15-35-25.742Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T15-35-25.742Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T17-36-54.735Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T17-36-54.735Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T23-59-39.759Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T23-59-39.759Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-request-ux_completion.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/implementation/review-request-ux_completion.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/implementation/review-result-ux_completion.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-0a54-7ea0-b7ce-a1283ddb21a8.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-0a54-7ea0-b7ce-a1283ddb21a8.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-4c7f-7d93-b7b5-ae967adee245.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-4c7f-7d93-b7b5-ae967adee245.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-bc47-7be1-b7f4-f5b9139bb688.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-bc47-7be1-b7f4-f5b9139bb688.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-eccd-73f3-9b48-6658eb624626.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-eccd-73f3-9b48-6658eb624626.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-85c7-7d83-a3af-9a38ecbd5cee.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-85c7-7d83-a3af-9a38ecbd5cee.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-05T17-58-30.984Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-05T17-58-30.984Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-06T00-10-11.044Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-06T00-10-11.044Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-05T17-58-30.974Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-05T17-58-30.974Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-06T00-10-11.043Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-06T00-10-11.043Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-request-human_usability.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/preview/review-request-human_usability.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-request-network_runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/preview/review-request-network_runtime.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/preview/review-result-human_usability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-result-network_runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/preview/review-result-network_runtime.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-2d0e-7350-8b37-25a6878ec49a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-2d0e-7350-8b37-25a6878ec49a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-9f57-7c93-bf1b-952150ee0cef.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-9f57-7c93-bf1b-952150ee0cef.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-ca05-74f0-a9ab-d17367baf6ac.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-ca05-74f0-a9ab-d17367baf6ac.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T15-16-59.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T15-16-59.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-09-19.599Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-09-19.599Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-45-01.714Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-45-01.714Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T20-26-54.802Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T20-26-54.802Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T09-15-45.746Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T09-15-45.746Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T10-33-57.382Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T10-33-57.382Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T15-05-29.173Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T15-05-29.173Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T17-24-33.608Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T17-24-33.608Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T23-39-47.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T23-39-47.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T15-16-59.826Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T15-16-59.826Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-09-19.602Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-09-19.602Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-45-01.700Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-45-01.700Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-27-22.459Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-27-22.459Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-36-56.062Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-36-56.062Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T09-18-16.439Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T09-18-16.439Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T10-33-57.413Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T10-33-57.413Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T15-05-29.164Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T15-05-29.164Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T17-24-34.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T17-24-34.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T23-39-47.945Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T23-39-47.945Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T19-45-01.707Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T19-45-01.707Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T20-26-40.548Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T20-26-40.548Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-e2e_ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-request-e2e_ux.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-request-gate_coverage.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-unit_integration.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-request-unit_integration.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-e2e_ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-result-e2e_ux.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-gate_coverage.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-result-gate_coverage.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-result-unit_integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/reviews/test_plan/review-result-unit_integration.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-1461-7af0-a1d4-1f89a484ec8e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-1461-7af0-a1d4-1f89a484ec8e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-28de-7a70-8d02-4b91d3f12789.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-28de-7a70-8d02-4b91d3f12789.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-4123-7bd1-8d49-b7d2ab9af296.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-4123-7bd1-8d49-b7d2ab9af296.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-8314-7530-b110-3c1ee5ba55c6.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-8314-7530-b110-3c1ee5ba55c6.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-5be5-7bc3-9ec2-6fb0dcbc91e9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-5be5-7bc3-9ec2-6fb0dcbc91e9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-1f52-7770-90a4-f19e8fc238bb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-1f52-7770-90a4-f19e8fc238bb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-3514-7b73-9117-008308367286.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-3514-7b73-9117-008308367286.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-49c2-76c1-b98d-4673bcd48cd0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-49c2-76c1-b98d-4673bcd48cd0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-5740-7b10-a035-322e29113b0c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-5740-7b10-a035-322e29113b0c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-a885-7650-a79d-38fbdd91b8ae.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-a885-7650-a79d-38fbdd91b8ae.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-b209-7df2-8f45-90918eab36c7.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-b209-7df2-8f45-90918eab36c7.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-f784-7e40-b989-d82a118cb38e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-f784-7e40-b989-d82a118cb38e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-d5ad-7683-ab49-154d9bc50b6a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-d5ad-7683-ab49-154d9bc50b6a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-ea2b-7da1-811b-ecf20b550167.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-ea2b-7da1-811b-ecf20b550167.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-fe5b-7703-83b5-1000a85bf400.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-fe5b-7703-83b5-1000a85bf400.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-05ae-76d1-b2eb-9cc4b51fa2ca.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-05ae-76d1-b2eb-9cc4b51fa2ca.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-a221-78d3-a449-cf90d848bad0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-a221-78d3-a449-cf90d848bad0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-a60b-7821-9c2a-c874dfc1aeab.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-a60b-7821-9c2a-c874dfc1aeab.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-cf13-7e02-b8da-d6eddd082950.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-cf13-7e02-b8da-d6eddd082950.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c4-de07-7943-bfb0-3399504fb65a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c4-de07-7943-bfb0-3399504fb65a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-a3ca-7f93-a323-fb0d9a283976.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-a3ca-7f93-a323-fb0d9a283976.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-58c3-7470-8a95-190ef0d6638d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-58c3-7470-8a95-190ef0d6638d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-6d47-71a3-afa0-ed982a1b675e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-6d47-71a3-afa0-ed982a1b675e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-72b5-7450-a6e2-203f638a8cf3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-72b5-7450-a6e2-203f638a8cf3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-a107-7fd1-8bee-a1df5128ec24.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-a107-7fd1-8bee-a1df5128ec24.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3454-0487-7750-aff7-e8d2f21558d2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3454-0487-7750-aff7-e8d2f21558d2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-91e7-7da1-848f-daadb1bbd400.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-91e7-7da1-848f-daadb1bbd400.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-bd29-7da0-aa0a-4603e21df7ab.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-bd29-7da0-aa0a-4603e21df7ab.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/diagnostics/2026-07-04T193725Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/e2e-evidence-8aab12a.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/e2e-evidence-8aab12a.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-design-input-judgment/test-artifacts/combined-current-head-regression.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/pr/story-vibepro-design-input-judgment/test-artifacts/combined-current-head-regression.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-32-20.027Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-32-20.027Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-57-04.612Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T13-57-04.612Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T14-49-26.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T14-49-26.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T15-59-41.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T15-59-41.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T18-12-07.547Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T18-12-07.547Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-07-10.893Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-07-10.893Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-40-22.958Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T19-40-22.958Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T22-49-57.329Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-04T22-49-57.329Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T02-19-17.087Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T02-19-17.087Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T03-38-22.979Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T03-38-22.979Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T08-56-55.480Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T08-56-55.480Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T10-01-03.856Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T10-01-03.856Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T11-16-15.759Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T11-16-15.759Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T12-28-42.184Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T12-28-42.184Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T14-45-23.267Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T14-45-23.267Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T17-05-36.505Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T17-05-36.505Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T20-02-37.327Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T20-02-37.327Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T21-38-49.006Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T21-38-49.006Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T22-08-54.007Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T22-08-54.007Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T23-25-31.980Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/history/review-result-regression_risk-2026-07-05T23-25-31.980Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d2e-48b2-7530-86d8-33f136495f14.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d2e-48b2-7530-86d8-33f136495f14.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d54-a1a5-7b21-be7b-9b862be1b056.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d54-a1a5-7b21-be7b-9b862be1b056.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d92-a53d-7ed0-82be-7134d554f2de.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2d92-a53d-7ed0-82be-7134d554f2de.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2dd3-093e-7c50-a471-65fcca416fc3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2dd3-093e-7c50-a471-65fcca416fc3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2deb-60d8-73e2-9286-ab52035f0651.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2deb-60d8-73e2-9286-ab52035f0651.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e27-755c-7331-afe5-ec5e605e600d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e27-755c-7331-afe5-ec5e605e600d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e42-5a29-7c60-b22f-61875ec08f57.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e42-5a29-7c60-b22f-61875ec08f57.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e84-1e32-7d72-bc20-a5af9cb78afa.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2e84-1e32-7d72-bc20-a5af9cb78afa.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2ea4-313b-7f31-8a4a-9bef7ea0cf90.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2ea4-313b-7f31-8a4a-9bef7ea0cf90.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f2f-7605-7541-a485-045eb8f95993.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f2f-7605-7541-a485-045eb8f95993.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f2f41-c991-7860-adce-dca55f1f27c3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3005-bc55-7773-b928-30cdabd0baed.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3005-bc55-7773-b928-30cdabd0baed.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3053-29b8-7263-a8a5-0abaf2301673.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3053-29b8-7263-a8a5-0abaf2301673.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f30c8-4a08-7c30-a70f-cc8e77e6fa24.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f30c8-4a08-7c30-a70f-cc8e77e6fa24.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f316e-9fc5-74d0-9003-90a6805d379b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f316e-9fc5-74d0-9003-90a6805d379b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31b7-1d5e-7642-9fc8-67be92a9b1ef.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31eb-e32e-7522-a8f8-ec96537a9f8d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f31eb-e32e-7522-a8f8-ec96537a9f8d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3231-c261-7f40-834b-3059356a25dd.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f3231-c261-7f40-834b-3059356a25dd.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f32b7-1963-7070-b797-164dde49d737.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f32b7-1963-7070-b797-164dde49d737.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f332d-3559-7883-bd43-16499817e749.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f332d-3559-7883-bd43-16499817e749.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f33de-cc81-7e91-b1e3-15c12466bfc0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f33de-cc81-7e91-b1e3-15c12466bfc0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f342f-9875-7711-9ccc-556a5b0a4408.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f342f-9875-7711-9ccc-556a5b0a4408.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f344e-8107-7a52-8e7f-ee454f51b623.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f344e-8107-7a52-8e7f-ee454f51b623.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f345d-baa4-71d3-9fde-a59a6d35418d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f345d-baa4-71d3-9fde-a59a6d35418d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f348c-3c20-7741-9965-d92646b3d67c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f348c-3c20-7741-9965-d92646b3d67c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-04T23-27-26.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-04T23-27-26.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-05T18-43-05.110Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-05T18-43-05.110Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-06T00-46-59.921Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-gate_evidence-2026-07-06T00-46-59.921Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-04T23-27-26.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-04T23-27-26.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-05T18-16-18.786Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-05T18-16-18.786Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-06T00-34-57.858Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/history/review-result-release_risk-2026-07-06T00-34-57.858Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-025e-7272-8cc0-3c61e1ad6926.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-8d6e-7323-9254-ea50b6797e88.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f2f68-8d6e-7323-9254-ea50b6797e88.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f3382-b7fe-75e3-8641-7ab4a7edff10.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f33bb-eb92-7e13-8e44-5963f02eb0ac.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f33bb-eb92-7e13-8e44-5963f02eb0ac.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-2a4a-7583-b3bd-93f2a8b467ea.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-2a4a-7583-b3bd-93f2a8b467ea.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-40ae-7632-a7b9-0155d20b43d3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34c5-40ae-7632-a7b9-0155d20b43d3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34e2-9a2a-7893-a53f-eb4caa3d34c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/gate/transcripts/019f34e2-9a2a-7893-a53f-eb4caa3d34c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T15-35-09.731Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T15-35-09.731Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T17-36-54.690Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T17-36-54.690Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T23-59-39.757Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-runtime_contract-2026-07-05T23-59-39.757Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T15-35-25.742Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T15-35-25.742Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T17-36-54.735Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T17-36-54.735Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T23-59-39.759Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/history/review-result-ux_completion-2026-07-05T23-59-39.759Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-0a54-7ea0-b7ce-a1283ddb21a8.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-0a54-7ea0-b7ce-a1283ddb21a8.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-4c7f-7d93-b7b5-ae967adee245.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f32da-4c7f-7d93-b7b5-ae967adee245.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-bc47-7be1-b7f4-f5b9139bb688.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-bc47-7be1-b7f4-f5b9139bb688.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-eccd-73f3-9b48-6658eb624626.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f3352-eccd-73f3-9b48-6658eb624626.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-5b2c-7190-b68d-f6c60656cec6.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-85c7-7d83-a3af-9a38ecbd5cee.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/implementation/transcripts/019f34b0-85c7-7d83-a3af-9a38ecbd5cee.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/planning_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-05T17-58-30.984Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-05T17-58-30.984Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-06T00-10-11.044Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-human_usability-2026-07-06T00-10-11.044Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-05T17-58-30.974Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-05T17-58-30.974Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-06T00-10-11.043Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/history/review-result-network_runtime-2026-07-06T00-10-11.043Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-2d0e-7350-8b37-25a6878ec49a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-2d0e-7350-8b37-25a6878ec49a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-9f57-7c93-bf1b-952150ee0cef.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-9f57-7c93-bf1b-952150ee0cef.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-ca05-74f0-a9ab-d17367baf6ac.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f34b9-ca05-74f0-a9ab-d17367baf6ac.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T15-16-59.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T15-16-59.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-09-19.599Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-09-19.599Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-45-01.714Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T19-45-01.714Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T20-26-54.802Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-04T20-26-54.802Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T09-15-45.746Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T09-15-45.746Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T10-33-57.382Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T10-33-57.382Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T15-05-29.173Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T15-05-29.173Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T17-24-33.608Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T17-24-33.608Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T23-39-47.940Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-e2e_ux-2026-07-05T23-39-47.940Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T15-16-59.826Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T15-16-59.826Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-09-19.602Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-09-19.602Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-45-01.700Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T19-45-01.700Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-27-22.459Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-27-22.459Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-36-56.062Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-04T20-36-56.062Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T09-18-16.439Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T09-18-16.439Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T10-33-57.413Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T10-33-57.413Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T15-05-29.164Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T15-05-29.164Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T17-24-34.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T17-24-34.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T23-39-47.945Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-gate_coverage-2026-07-05T23-39-47.945Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T19-45-01.707Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T19-45-01.707Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T20-26-40.548Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/history/review-result-unit_integration-2026-07-04T20-26-40.548Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-1461-7af0-a1d4-1f89a484ec8e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-1461-7af0-a1d4-1f89a484ec8e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-28de-7a70-8d02-4b91d3f12789.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2d9c-28de-7a70-8d02-4b91d3f12789.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-4123-7bd1-8d49-b7d2ab9af296.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-4123-7bd1-8d49-b7d2ab9af296.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-8314-7530-b110-3c1ee5ba55c6.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2e87-8314-7530-b110-3c1ee5ba55c6.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-5be5-7bc3-9ec2-6fb0dcbc91e9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-5be5-7bc3-9ec2-6fb0dcbc91e9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-6ff5-7593-9327-43221f20b29b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ea7-8416-7ce0-a732-93c80312b62c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-1f52-7770-90a4-f19e8fc238bb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-1f52-7770-90a4-f19e8fc238bb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-3514-7b73-9117-008308367286.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-3514-7b73-9117-008308367286.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-49c2-76c1-b98d-4673bcd48cd0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f2ec1-49c2-76c1-b98d-4673bcd48cd0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-5740-7b10-a035-322e29113b0c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-5740-7b10-a035-322e29113b0c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-a885-7650-a79d-38fbdd91b8ae.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3013-a885-7650-a79d-38fbdd91b8ae.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-b209-7df2-8f45-90918eab36c7.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-b209-7df2-8f45-90918eab36c7.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-f784-7e40-b989-d82a118cb38e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f305b-f784-7e40-b989-d82a118cb38e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-d5ad-7683-ab49-154d9bc50b6a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-d5ad-7683-ab49-154d9bc50b6a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-ea2b-7da1-811b-ecf20b550167.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-ea2b-7da1-811b-ecf20b550167.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-fe5b-7703-83b5-1000a85bf400.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f309b-fe5b-7703-83b5-1000a85bf400.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-05ae-76d1-b2eb-9cc4b51fa2ca.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-05ae-76d1-b2eb-9cc4b51fa2ca.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3185-1a1a-7243-9c71-45b68cb87d3d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-a221-78d3-a449-cf90d848bad0.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-a221-78d3-a449-cf90d848bad0.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f31c5-e890-7723-a8ff-ce745d9635c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-a60b-7821-9c2a-c874dfc1aeab.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-a60b-7821-9c2a-c874dfc1aeab.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-cf13-7e02-b8da-d6eddd082950.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3207-cf13-7e02-b8da-d6eddd082950.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c4-de07-7943-bfb0-3399504fb65a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c4-de07-7943-bfb0-3399504fb65a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f32c5-295e-7430-898e-4a191e563ed3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-a3ca-7f93-a323-fb0d9a283976.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-a3ca-7f93-a323-fb0d9a283976.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-58c3-7470-8a95-190ef0d6638d.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-58c3-7470-8a95-190ef0d6638d.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-6d47-71a3-afa0-ed982a1b675e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f33e0-6d47-71a3-afa0-ed982a1b675e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-72b5-7450-a6e2-203f638a8cf3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-72b5-7450-a6e2-203f638a8cf3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-a107-7fd1-8bee-a1df5128ec24.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3438-a107-7fd1-8bee-a1df5128ec24.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3454-0487-7750-aff7-e8d2f21558d2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f3454-0487-7750-aff7-e8d2f21558d2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-91e7-7da1-848f-daadb1bbd400.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-91e7-7da1-848f-daadb1bbd400.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-bd29-7da0-aa0a-4603e21df7ab.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f349c-bd29-7da0-aa0a-4603e21df7ab.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-design-input-judgment/references/vibepro/stories/story-vibepro-design-input-judgment/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 4999242
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-04T193725Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 965500
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4534073
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-design-input-judgment/architecture_spec/transcripts/019f327f-98c8-7520-80b7-a2e6009c14d0.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

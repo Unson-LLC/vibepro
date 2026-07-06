@@ -1,0 +1,527 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-design-input-judgment",
+  "updated_at": "2026-07-05T00:34:52.104Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+      "current_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783211692104-6e2ddaa6",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed review_owner_map: Issue #245 remains one reviewable VibePro workflow slice.",
+      "reason": "scope_reviewed: changed files are one design-input judgment workflow spanning CLI/story diagnose/pr prepare evidence and docs/tests. review_owner_map: planning/spec, test-plan, implementation, preview, and gate roles cover the same workflow surface; no unrelated product feature is bundled. related_file_blast_radius is recorded by graphify and split-plan recommends split only because of file count, not unrelated decisions.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "current_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T00:34:52.104Z"
+      },
+      "recorded_at": "2026-07-05T00:34:52.104Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783211680057-25853363",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "active_blocked",
+      "summary": "Release operations are documented for issue #245; no operator action, migration, or feature flag is required.",
+      "reason": "docs/specs/story-vibepro-design-input-judgment-spec.md and docs/architecture/vibepro-design-input-judgment.md define release note, rollout, rollback, and observability. This is a CLI behavior/evidence change with no migration; rollback is reverting the PR.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/story-vibepro-design-input-judgment-spec.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "current_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T00:34:40.056Z"
+      },
+      "recorded_at": "2026-07-05T00:34:40.057Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783175833593-52f67069",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operations are documented and additive",
+      "reason": "release_note, rollout_plan, rollback_instruction, and observability_evidence are documented in docs/architecture/vibepro-design-input-judgment.md and docs/specs/vibepro-design-input-judgment.md. No migration or operator action is required because existing story diagnose calls remain pre_implementation by default; rollback is a code revert.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-design-input-judgment.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "current_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T14:37:13.592Z"
+      },
+      "recorded_at": "2026-07-04T14:37:13.593Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783175833091-a37df1b1",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_review",
+      "summary": "Issue #245 changes remain within VibePro CLI control-plane authority",
+      "reason": "The final change updates CLI diagnosis phase parsing, PR Gate DAG wiring, docs, and focused tests. It does not add a worker, retry loop, permission path, billing path, network path, or production side effect. Authority is covered by the VibePro CLI workflow/control-plane contracts and current tests.",
+      "reviewer": "codex",
+      "artifact": "src/pr-manager.js",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "current_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T14:37:13.091Z"
+      },
+      "recorded_at": "2026-07-04T14:37:13.091Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783175832584-55725a5c",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted for bundled issue #245 implementation",
+      "reason": "scope_reviewed=true; review_owner_map=single reviewer can review CLI diagnosis phase, PR gate wiring, docs, and focused regression tests as one workflow-control change; decision_record=accepted because splitting would separate the design-input contract from the gate and evidence lifecycle that enforce it.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "current_head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "9e958581052d545324facb5fc772109b55845c4d",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T14:37:12.583Z"
+      },
+      "recorded_at": "2026-07-04T14:37:12.584Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783169612104-6af6e262",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted for bundled issue #245 implementation",
+      "reason": "scope_reviewed=true; review_owner_map=single reviewer can review CLI diagnosis phase, PR gate wiring, docs, and focused regression tests as one workflow-control change; decision_record=accepted because splitting would separate the contract from the gate that enforces it.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "5c562d56bdb13fb70b152ee52039492bba90bca1",
+          "current_head_sha": "5c562d56bdb13fb70b152ee52039492bba90bca1",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5c562d56bdb13fb70b152ee52039492bba90bca1",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T12:53:32.104Z"
+      },
+      "recorded_at": "2026-07-04T12:53:32.104Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783168979581-aeb14235",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operations are documented and additive",
+      "reason": "release_note, rollout_plan, rollback_instruction, and observability_evidence are documented in docs/architecture/vibepro-design-input-judgment.md and docs/specs/vibepro-design-input-judgment.md. No migration or operator action is required because existing story diagnose calls remain pre_implementation by default; rollback is a code revert.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-design-input-judgment.md",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "current_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T12:42:59.580Z"
+      },
+      "recorded_at": "2026-07-04T12:42:59.581Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783168979134-d5f89b36",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "No split required after explicit bundled-scope review",
+      "reason": "This PR does not combine unrelated product behaviors. Documentation and tests are supporting evidence for the same issue #245 workflow order contract, so a single PR is the auditable unit.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "current_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T12:42:59.133Z"
+      },
+      "recorded_at": "2026-07-04T12:42:59.134Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783168978693-7762bcd1",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundle scope is intentional for issue #245",
+      "reason": "The changed files form one coherent CLI control-plane story: diagnose phase parsing, PR context and Gate DAG exposure, workflow guidance, Story, Architecture, Spec, and focused tests. Splitting supporting docs or tests from runtime changes would remove the audit evidence required by VibePro and make the PR less reviewable.",
+      "reviewer": "codex",
+      "artifact": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "current_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T12:42:58.692Z"
+      },
+      "recorded_at": "2026-07-04T12:42:58.693Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783168355814-c46b3367",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": "needs_review",
+      "summary": "repo-status next command change has existing CLI workflow authority",
+      "reason": "The only unregistered candidate is src/repo-status.js polling_retry, but the actual change only updates the displayed next command to include story diagnose --pre-architecture --run-graphify. It does not add a worker, retry loop, permission path, billing path, or side effect. Authority is covered by the VibePro CLI workflow/control-plane contracts and current tests.",
+      "reviewer": "codex",
+      "artifact": "src/repo-status.js",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "current_head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c3369f46f7e47086abf5308cc1a9e1497f37a413",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-04T12:32:35.813Z"
+      },
+      "recorded_at": "2026-07-04T12:32:35.814Z"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "open": 0,
+    "by_type": {
+      "needs_review": 5,
+      "waiver": 5
+    },
+    "by_status": {
+      "accepted": 10
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-issue245-impl",
+        "actual_root": "/private/tmp/vibepro-issue245-impl",
+        "expected_root": null,
+        "expected_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+        "current_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783211692104-6e2ddaa6",
+      "story_id": "story-vibepro-design-input-judgment",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewed review_owner_map: Issue #245 remains one reviewable VibePro workflow slice.",
+      "reason": "scope_reviewed: changed files are one design-input judgment workflow spanning CLI/story diagnose/pr prepare evidence and docs/tests. review_owner_map: planning/spec, test-plan, implementation, preview, and gate roles cover the same workflow surface; no unrelated product feature is bundled. related_file_blast_radius is recorded by graphify and split-plan recommends split only because of file count, not unrelated decisions.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-design-input-judgment/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue245-impl",
+          "actual_root": "/private/tmp/vibepro-issue245-impl",
+          "expected_root": null,
+          "expected_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "current_head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "e68ce856f0420f0c21afdfa21ba97e21cf239d6a",
+        "current_branch": "codex/issue245-design-input-judgment",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-05T00:34:52.104Z"
+      },
+      "recorded_at": "2026-07-05T00:34:52.104Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-design-input-judgment/decision-records.json"
+}

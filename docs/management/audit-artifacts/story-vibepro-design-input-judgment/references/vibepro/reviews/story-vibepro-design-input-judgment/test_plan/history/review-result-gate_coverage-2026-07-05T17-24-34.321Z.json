@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "test_plan",
+  "role": "gate_coverage",
+  "status": "pass",
+  "summary": "gate_coverage は pass。pre_implementation_judgment のpr_prepare合成化への逆戻りと gate:design_input_judgment のstory_source/PR報告面での途中切断は、現在のテストで失敗検知できる。",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "current HEADで、design_input/pre_implementation診断成果物の分離、Gate DAG上のgate:design_input_judgment、protected token圧縮、PR prepare/body、focused regression 19/19 passとtypecheck passを確認。",
+    "evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md"
+    ]
+  },
+  "judgment_delta": [
+    "pre-fix: pre_implementation_judgmentを合成またはlatest runに潰す挙動なら、run_id/source/artifact_status期待が失敗する",
+    "pre-fix: design_input manifest記録だけでartifact不在をpassedにする挙動なら、missing artifact testが失敗する",
+    "pre-fix: story_source/report面で gate:design_input_judgment を切断する挙動なら、完全token期待と切断形拒否で失敗する"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T17:24:34.321Z",
+  "git_context": {
+    "head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T17:24:34.320Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "e3d0ad12d851e6b43585437c0faf26222e89a601b28c1333d68b714c18649cb7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f333e-b854-7c60-ab61-e6ce1d0278c3",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/review-request-gate_coverage.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/test_plan/transcripts/019f333e-b854-7c60-ab61-e6ce1d0278c3.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

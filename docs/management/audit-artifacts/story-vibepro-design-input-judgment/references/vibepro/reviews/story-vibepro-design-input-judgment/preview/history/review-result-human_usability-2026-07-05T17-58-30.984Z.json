@@ -1,0 +1,100 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-design-input-judgment",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "pass",
+  "summary": "Human-usability review passes; judgment phase binding, complete gate token, and current evidence are understandable.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed HEAD 434b11b with clean user worktree. Inspected source, tests, E2E, PR artifacts, spec, and architecture docs. Design-input and pre-implementation judgments remain separate, the complete gate token gate:design_input_judgment is preserved, and remaining PR readiness blockers are explicit rather than hidden. UI preview is non-applicable because no visual UI surface changed.",
+    "evidence": "src/pr-manager.js:197-282",
+    "inputs": []
+  },
+  "judgment_delta": [
+    "Initial concern that PR artifacts might remain hard to interpret resolved because PR body and pr-prepare expose needs_verification/blocked state and the source/tests/spec preserve the complete design-input judgment semantics."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue245-impl",
+    "actual_root": "/private/tmp/vibepro-issue245-impl",
+    "expected_root": null,
+    "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue245-impl",
+      "actual_root": "/private/tmp/vibepro-issue245-impl",
+      "expected_root": null,
+      "expected_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "current_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-05T17:58:30.984Z",
+  "git_context": {
+    "head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "current_branch": "codex/issue245-design-input-judgment",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-05T17:58:30.983Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "434b11b5470b794658c5669dae7614592e43aa9c",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "3847d77c3f8cfc2a0795014a7201cb0af30dd71f191928d84edb789099ddc89a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f335b-5ef4-7de1-ae5b-ed33abea8ee3",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-design-input-judgment/preview/transcripts/019f335b-5ef4-7de1-ae5b-ed33abea8ee3.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}
