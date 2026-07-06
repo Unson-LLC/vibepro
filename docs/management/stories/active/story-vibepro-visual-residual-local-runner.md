@@ -11,7 +11,7 @@ related_stories:
   - story-vibepro-visual-evidence-gate-ux
   - story-vibepro-flow-screenshot-visual-gate-bridge
 parent_design: vibepro-visual-residual-local-runner
-architecture_reason: "既存 visual-verifier 境界内の追加的なレポート詳細のみ。新規モジュール・依存・スキーマ変更なし。正本は docs/architecture/vibepro-visual-residual-local-runner.md"
+reason: "alternatives considered: new ADR vs additive detail inside the existing visual-verifier boundary; selected additive detail. compatibility impact: residual-analysis.md gains an always-present Threshold Exceedances section; visual-residual.json fields, threshold semantics, and gate:visual_qa consumption are unchanged. rollback plan: revert src/visual-verifier.js, test/vibepro-cli.test.js, the story/spec binding commits in one revert. boundary and scope: reporting detail only within docs/architecture/vibepro-visual-residual-local-runner.md; no new module, dependency, or schema change. accepted followups: none for this PR."
 architecture_docs:
   - docs/architecture/vibepro-visual-residual-local-runner.md
 spec_docs:
