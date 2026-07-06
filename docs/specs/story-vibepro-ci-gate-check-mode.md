@@ -132,3 +132,29 @@ agent review subagents as part of evaluating gate readiness.
   resolution path, and the clean error path for an unresolvable story id.
 - `npm run typecheck` and the full `npm test` suite must pass with no new
   failures introduced by this change.
+
+## Diagrams
+
+### threat_model
+
+CI environments hand this command untrusted repository state and a CI token.
+The command is read-only by contract, so the threat surface is bounded to
+information disclosure and evaluation integrity.
+
+```mermaid
+flowchart LR
+  Repo["untrusted repo state (PR branch)"] --> Check["vibepro gate check (read-only)"]
+  Token["CI token (GITHUB_TOKEN)"] -. "never read by gate check" .-> Check
+  Check --> Snapshot["snapshot/restore .vibepro/pr + gate-outcomes"]
+  Snapshot --> Guarantee["byte-identical restore (no persisted mutation)"]
+  Check --> Out["--json report + exit code only"]
+  Out --> CI["CI job log (no secrets echoed)"]
+  Evil["malicious story/diff text"] -->|"evaluated as data, not instructions"| Check
+```
+
+- Secrets: `gate check` reads no env credentials and echoes no secret values;
+  report fields are gate ids, statuses, and reasons only.
+- Mutation: snapshot/restore keeps `.vibepro/` byte-identical, so a hostile PR
+  cannot use the CI run to poison recorded evidence.
+- Injection: story/diff text is evaluated as evidence by existing gate logic;
+  `gate check` adds no new instruction-following surface.
