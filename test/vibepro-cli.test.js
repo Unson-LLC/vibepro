@@ -14734,7 +14734,9 @@ test('verify visual writes residual artifacts accepted by Visual QA Gate', async
   assert.equal(visual.result.report.status, 'pass');
   assert.equal(visual.result.report.meanAbsResidualPct, 0);
   assert.equal(await pathExists(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json')), true);
-  assert.match(await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8'), /meanAbsResidualPct/);
+  const passingAnalysis = await readFile(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'residual-analysis.md'), 'utf8');
+  assert.match(passingAnalysis, /meanAbsResidualPct/);
+  assert.match(passingAnalysis, /## Threshold Exceedances\n\n- なし/);
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
   const visualGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:visual_qa');
