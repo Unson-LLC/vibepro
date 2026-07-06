@@ -75,7 +75,12 @@ artifacts lead `pr prepare` to a passing `gate:visual_qa` evaluation.
 ### VRL-S-2: Exceeding threshold needs review
 
 Given at least one probe over threshold, the residual analysis is
-needs_review and `residual-analysis.md` lists the probe and its value.
+needs_review and `residual-analysis.md` lists the probe and its value in an
+explicit `## Threshold Exceedances` section, one line per exceeding probe with
+its meanAbsResidualPct value. The section is additive: it appears only when at
+least one probe exceeds the threshold, and all other `residual-analysis.md`
+sections, `visual-residual.json` fields, and `gate:visual_qa` consumption are
+unchanged.
 
 ### VRL-S-3: Baseline missing is surfaced
 

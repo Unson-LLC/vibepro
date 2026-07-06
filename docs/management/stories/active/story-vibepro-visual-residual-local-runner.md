@@ -39,7 +39,7 @@ updated_at: 2026-07-05
 ## Acceptance Criteria
 
 - [ ] VRL-S-1: baseline が存在し差分が閾値内のとき、生成された residual artifacts により `pr prepare` の `gate:visual_qa` が pass 側の判定になる。
-- [ ] VRL-S-2: 差分が閾値を超えた probe があるとき、residual analysis は needs_review となり、対象 probe と差分値が residual-analysis.md に記載される。
+- [x] VRL-S-2: 差分が閾値を超えた probe があるとき、residual analysis は needs_review となり、対象 probe と差分値が residual-analysis.md に記載される。（residual-analysis.md の Threshold Exceedances セクションに超過 probe ごとの meanAbsResidualPct を列挙。回帰テストは pre-fix 実装で fail することを親コミット比較で確認済み）
 - [ ] VRL-S-3: baseline が存在しない probe は `baseline_missing` として報告され、silent pass にならない。
 - [ ] VRL-S-4: `--update-baseline` 実行直後は baseline 更新として review が必要になり、その後の再実行では当該 probe の差分が 0 近傍になる。
 - [ ] VRL-S-5: 生成される visual-residual.json は既存の residual フォーマット検証を追加変更なしで通過する（外部ツール import 由来の artifacts と同一スキーマ）。
