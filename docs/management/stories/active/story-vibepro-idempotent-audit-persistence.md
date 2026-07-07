@@ -17,7 +17,7 @@ architecture_docs:
 spec_docs:
   - docs/specs/story-vibepro-idempotent-audit-persistence.md
 created_at: 2026-07-07
-updated_at: 2026-07-07
+updated_at: 2026-07-08
 reason: "alternatives considered: remove the second persistence call (loses final merge artifacts from the canonical bundle), squash the two commits via force-push (rewrites shared base history), or make bundle generation deterministic so the existing already_present check works; selected deterministic bundle generation with logical-content comparison. compatibility impact: canonical bundle schema keeps all fields; promoted_at semantics change from generation time to first-promotion time when logical content is unchanged; audit replay and existing consumers keep working. rollback plan: revert src/merge-manager.js and the bundle generation changes, this Story, the spec, and design-ssot links in one commit. boundary and scope: only the execute-merge canonical audit promotion/persistence path changes; pr prepare artifact generation and gate semantics are untouched. accepted followups: none for this PR."
 ---
 
@@ -42,12 +42,12 @@ reason: "alternatives considered: remove the second persistence call (loses fina
 
 ## Acceptance Criteria
 
-- [ ] IAP-S-1: 1 回の `execute merge` で base に積まれる `docs: persist VibePro audit artifacts` コミットは最大 1 本である。
-- [ ] IAP-S-2: 論理内容が既存 canonical bundle と同一の場合、persistence は `already_present` で終わり、新規コミットを作らない。
-- [ ] IAP-S-3: 同一入力からの bundle 生成（gzip 含む）は同一バイト列を生成する。
-- [ ] IAP-S-4: 最終 merge artifact の追加で論理内容が変わった場合は、その差分を含む 1 本のコミットが積まれる（情報の欠落なし）。
-- [ ] IAP-S-5: 既存の `vibepro audit replay` は決定化後の bundle からも成功する。
-- [ ] IAP-S-6: テストが「再生成でバイト同一」「二重 persist で 1 コミット」「内容変化時は正しく再コミット」の各経路を固定する。
+- [x] IAP-S-1: 1 回の `execute merge` で base に積まれる `docs: persist VibePro audit artifacts` コミットは最大 1 本である。
+- [x] IAP-S-2: 論理内容が既存 canonical bundle と同一の場合、persistence は `already_present` で終わり、新規コミットを作らない。
+- [x] IAP-S-3: 同一入力からの bundle 生成（gzip 含む）は同一バイト列を生成する。
+- [x] IAP-S-4: 最終 merge artifact の追加で論理内容が変わった場合は、その差分を含む 1 本のコミットが積まれる（情報の欠落なし）。
+- [x] IAP-S-5: 既存の `vibepro audit replay` は決定化後の bundle からも成功する。
+- [x] IAP-S-6: テストが「再生成でバイト同一」「二重 persist で 1 コミット」「内容変化時は正しく再コミット」の各経路を固定する。
 
 ## 既存挙動（inherited behavior）
 
