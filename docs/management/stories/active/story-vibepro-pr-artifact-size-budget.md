@@ -17,7 +17,7 @@ architecture_docs:
 spec_docs:
   - docs/specs/story-vibepro-pr-artifact-size-budget.md
 created_at: 2026-07-07
-updated_at: 2026-07-07
+updated_at: 2026-07-08
 reason: "alternatives considered: shrink the full-fidelity artifacts themselves (loses machine-readable SSOT detail), hard-fail pr prepare on oversized artifacts (blocks existing repos retroactively), or generate bounded summary siblings and route LLM handoff surfaces through them while keeping full artifacts on disk; selected bounded summary siblings. compatibility impact: all existing artifacts keep their full content and paths; new .summary.json siblings and an artifact_budget report section are additive; handoff documents change which path they reference by default. rollback plan: revert src/pr-manager.js summary generation and handoff reference changes, this Story, the spec, and design-ssot links in one commit. boundary and scope: only pr prepare artifact emission and handoff-surface references change; gate evaluation reads full artifacts as before. accepted followups: none for this PR."
 ---
 
@@ -43,13 +43,13 @@ full-fidelity な JSON は機械可読の正本として維持しつつ、サイ
 
 ## Acceptance Criteria
 
-- [ ] PAB-S-1: 予算超過の JSON artifact に `<name>.summary.json` が生成され、結論・主要件数・full 版パスを含む。
-- [ ] PAB-S-2: 予算内の artifact には summary が生成されず、handoff 参照も従来どおり full 版を指す。
-- [ ] PAB-S-3: `pr-prepare.json` の `artifact_budget` が予算値・超過一覧・summary パスを機械可読で報告する。
-- [ ] PAB-S-4: `parallel-dispatch.md` の読込指示が、summary 存在時に summary パスを指し full 版の inline 読込を指示しない。
-- [ ] PAB-S-5: gate 評価は従来どおり full artifact を読み、gate の判定結果は本 Story の前後で変化しない。
-- [ ] PAB-S-6: 予算は `.vibepro/config.json` で設定でき、未設定時の既定値が文書化されている。
-- [ ] PAB-S-7: テストが超過/非超過/設定上書き/dispatch 参照切替の各経路を固定する。
+- [x] PAB-S-1: 予算超過の JSON artifact に `<name>.summary.json` が生成され、結論・主要件数・full 版パスを含む。
+- [x] PAB-S-2: 予算内の artifact には summary が生成されず、handoff 参照も従来どおり full 版を指す。
+- [x] PAB-S-3: `pr-prepare.json` の `artifact_budget` が予算値・超過一覧・summary パスを機械可読で報告する。
+- [x] PAB-S-4: `parallel-dispatch.md` の読込指示が、summary 存在時に summary パスを指し full 版の inline 読込を指示しない。
+- [x] PAB-S-5: gate 評価は従来どおり full artifact を読み、gate の判定結果は本 Story の前後で変化しない。
+- [x] PAB-S-6: 予算は `.vibepro/config.json` で設定でき、未設定時の既定値が文書化されている。
+- [x] PAB-S-7: テストが超過/非超過/設定上書き/dispatch 参照切替の各経路を固定する。
 
 ## 既存挙動（inherited behavior）
 
