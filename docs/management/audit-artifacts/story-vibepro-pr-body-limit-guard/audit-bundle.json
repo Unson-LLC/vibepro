@@ -1,0 +1,727 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-07T07:09:14.918Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:b09c604f0ecfa712e9695e653805933e3e15084ce4cf5c9bd326a9de23896af9",
+    "compressed_hash": "sha256:85b6b8f581239dd564df252a141ab8f9a2cd5cb5a84720628065b741ad616a15",
+    "expanded_bytes": 12355,
+    "compressed_bytes": 2963,
+    "expanded_line_count": 334,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-body-limit-guard",
+    "cost": {
+      "compressed_bytes": 2963,
+      "expanded_bytes": 12355,
+      "expanded_line_count": 334,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/294",
+    "merge_commit_sha": "0c5dbd70e4cef148987d8b01cb080bbe56b0b007",
+    "merged_at": "2026-07-07T07:09:13Z",
+    "current_head_sha": "ff802e16e10defb6c1771468f42c435865e68f7a",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...ff802e16e10defb6c1771468f42c435865e68f7a"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 46,
+    "copied_reference_count": 37,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-body-limit-guard"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:b09c604f0ecfa712e9695e653805933e3e15084ce4cf5c9bd326a9de23896af9"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:d62eec212a9f7c252d2a57e4eecb3203bb20bbb5769a9e4582cc6ddb8fe4c3bc",
+      "audit_digest": "sha256:d62eec212a9f7c252d2a57e4eecb3203bb20bbb5769a9e4582cc6ddb8fe4c3bc",
+      "line_count": 204,
+      "raw_line_count": 204,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fe2b125f70e6aa3004db0622c5f96c8febf54995ce7c675988bf09182e40b8f",
+      "audit_digest": "sha256:d120c80391ceadd34e94b0d71fb69136be8af6bb2742fed803cd00774ff05314",
+      "line_count": 3366,
+      "raw_line_count": 20823,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:e4d7e04cf4b3378aefb442e33d99e55a16ef1a92088895c998f188782bf90d2b",
+      "audit_digest": "sha256:fc0e597c24bee63b1999056342dcb5aba6ec142bd42111f07c65763b48b18508",
+      "line_count": 1346,
+      "raw_line_count": 3181,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:68d79257f33b9bb3f1e0acba53df660e7e67c2fea85dd655c5db1c39ca37d01e",
+      "audit_digest": "sha256:bc2aba81d321003f6304f7f1752f970294675daeb609b7160bde98ecb1c70011",
+      "line_count": 1203,
+      "raw_line_count": 3017,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:b9a9a9c8e54c229bbe5efa64cc5eeff621f6386b063ac3e17cdbce3535af7098",
+      "audit_digest": "sha256:a1d1a06d5d5e65b6344e12ac5838926445427899af87aeabb816e39274c02dbe",
+      "line_count": 21,
+      "raw_line_count": 520,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:d9708eeb259d96fd05e36f0f2b9f88a5fa2e1688a0b65ed6aa139fe423086948",
+      "audit_digest": "sha256:ab54de25e9c20b9e060e3ee4cfa52ff2df24804a9e42c138ab6d8cd95e87e38c",
+      "line_count": 1387,
+      "raw_line_count": 3237,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:aa10d66a5c284c5b06b6a7bb6a46d7bfc81d4fe877a166cfb09cb11f1792829c",
+      "audit_digest": "sha256:aa10d66a5c284c5b06b6a7bb6a46d7bfc81d4fe877a166cfb09cb11f1792829c",
+      "line_count": 316,
+      "raw_line_count": 316,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:8410f598b78a5b3115b6f00868a50b6288e40cc4b3b970716c47d97d09a4b323",
+      "audit_digest": "sha256:4217985732e54f11d4a69cd6d3b0b34dbaa843e05fc4435f4d002a895cbb8acc",
+      "line_count": 76,
+      "raw_line_count": 429,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:bc0a6091e4736258126f49c1ea1071d815a25cac9fdc787f44e780f90c75e3e4",
+      "audit_digest": "sha256:bc0a6091e4736258126f49c1ea1071d815a25cac9fdc787f44e780f90c75e3e4",
+      "line_count": 184,
+      "raw_line_count": 184,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:24dedc568b81ca63f83a7569a5e22449a8ea9dfcfdf62d061888fe2ccd620655",
+      "audit_digest": "sha256:24dedc568b81ca63f83a7569a5e22449a8ea9dfcfdf62d061888fe2ccd620655",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:409600a266d94df57fd42ad900925dc8c5ab4cf2918738d2bc5df7be6b7cee86",
+      "audit_digest": "sha256:409600a266d94df57fd42ad900925dc8c5ab4cf2918738d2bc5df7be6b7cee86",
+      "line_count": 125,
+      "raw_line_count": 125,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:a01753ad81431e1e58f00ba119dfd4ad6e19ae12abbe8da9d60b64d90fcf1164",
+      "audit_digest": "sha256:a01753ad81431e1e58f00ba119dfd4ad6e19ae12abbe8da9d60b64d90fcf1164",
+      "line_count": 373,
+      "raw_line_count": 373,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/test-artifacts/combined-current-head-regression.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/test-artifacts/combined-current-head-regression.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3ad3-c4c6-78b2-83b1-1be3dfbc980d-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3ad3-c4c6-78b2-83b1-1be3dfbc980d-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b62-a826-7923-98f4-bd2b1ed11f83-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b62-a826-7923-98f4-bd2b1ed11f83-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T04-37-22.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T04-37-22.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T06-09-22.222Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T06-09-22.222Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T07-05-10.586Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T07-05-10.586Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-pr-body-limit-guard/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/spec/story-vibepro-pr-body-limit-guard/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/diagnostics/2026-07-07T032224Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-pr-body-limit-guard/test-artifacts/combined-current-head-regression.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/pr/story-vibepro-pr-body-limit-guard/test-artifacts/combined-current-head-regression.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3ad3-c4c6-78b2-83b1-1be3dfbc980d-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3ad3-c4c6-78b2-83b1-1be3dfbc980d-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b62-a826-7923-98f4-bd2b1ed11f83-result.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b62-a826-7923-98f4-bd2b1ed11f83-result.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T04-37-22.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T04-37-22.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T06-09-22.222Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T06-09-22.222Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T07-05-10.586Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/history/review-result-gate_evidence-2026-07-07T07-05-10.586Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-pr-body-limit-guard/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/spec/story-vibepro-pr-body-limit-guard/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/references/vibepro/stories/story-vibepro-pr-body-limit-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5152232
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-07T032224Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 967290
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4742028
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-pr-prepare/pr-body.md",
+      "reason": "source_missing"
+    }
+  ]
+}

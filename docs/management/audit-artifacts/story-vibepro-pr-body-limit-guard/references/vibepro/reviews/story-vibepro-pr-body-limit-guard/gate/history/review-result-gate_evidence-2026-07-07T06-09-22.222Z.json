@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence review passed at current head af6781c38d7de0d5ddb5188405a7f94ce5e451db after refreshing workflow-spine evidence and forced fallback coverage.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "evidence-reuse-stale-001",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "path-surface-forcebound-001",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/vibepro-cli.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current-head verification evidence, pr prepare artifact, combined regression artifact, src/pr-manager.js, and test/vibepro-cli.test.js.",
+    "evidence": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/parallel-dispatch.md"
+    ]
+  },
+  "judgment_delta": [
+    "Prior needs_changes changed to pass because evidence reuse was refreshed at current head and forced_artifact_reference_fallback is now covered by full CLI regression with durable artifact evidence."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+    "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+    "expected_root": null,
+    "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+    "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+      "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+      "expected_root": null,
+      "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+      "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-07T06:09:22.222Z",
+  "git_context": {
+    "head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+    "current_branch": "codex/vibepro-pr-body-limit-guard",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-07T06:09:22.216Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "de7dc33d4004f8822315be8ca2eeda8e92b49048938d3a308addbc84fa2e59f7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f3b2c-fe18-72a1-ab23-ec3213592787",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/agent-019f3b2c-fe18-72a1-ab23-ec3213592787-result.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

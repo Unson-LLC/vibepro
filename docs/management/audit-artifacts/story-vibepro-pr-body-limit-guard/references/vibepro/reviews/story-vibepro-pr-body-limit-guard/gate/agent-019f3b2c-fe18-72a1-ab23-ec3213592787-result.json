@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "summary": "HEAD matches af6781c38d7de0d5ddb5188405a7f94ce5e451db; verification-evidence and pr-prepare records are bound to that same current head; test/vibepro-cli.test.js covers forced_artifact_reference_fallback; combined-current-head-regression.json records 375/375 pass.",
+  "resolved_findings": [
+    "HEAD is af6781c38d7de0d5ddb5188405a7f94ce5e451db.",
+    "verification-evidence.json records expected_head_sha and current_head_sha as the same current head, with strict_head binding and no stale mismatch.",
+    "test/vibepro-cli.test.js includes forced_artifact_reference_fallback coverage.",
+    "combined-current-head-regression.json records 375 tests passed out of 375."
+  ],
+  "findings": []
+}

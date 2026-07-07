@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "created_at": "2026-07-07T07:08:59.695Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-body-limit-guard/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-pr-body-limit-guard/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-pr-body-limit-guard/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-body-limit-guard/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-pr-body-limit-guard/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-pr-body-limit-guard.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-pr-body-limit-guard-spec.md)"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783404225029-9352d26b",
+        "story_id": "story-vibepro-pr-body-limit-guard",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:design_ssot_reconciliation",
+        "source_status": "needs_review",
+        "summary": "Design SSOT reconciliation re-reviewed at current head: the three changed design-like docs are issue-specific story/spec/architecture artifacts for the PR body limit guard, not a reusable design root.",
+        "reason": "The current reconciliation artifact reports only coverage_gap_count=3 for the changed PR-local docs and zero changed design roots, missing required children, stale children, frontmatter gaps, or contradictions. The docs are bound to story-vibepro-pr-body-limit-guard and referenced by VibePro PR evidence, so this is accepted as PR-local design evidence without widening the Design SSOT registry.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+            "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+            "expected_root": null,
+            "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+            "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "current_branch": "codex/vibepro-pr-body-limit-guard",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-07T06:03:45.028Z"
+        },
+        "recorded_at": "2026-07-07T06:03:45.029Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-07T07:08:58.596Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-issue227-body-limit-guard"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-issue227-body-limit-guard/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-issue227-body-limit-guard/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ff802e16e10defb6c1771468f42c435865e68f7a",
+      "branch": "codex/vibepro-pr-body-limit-guard",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "74c0ad6b75796fe6999254789676e0c30c878732",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

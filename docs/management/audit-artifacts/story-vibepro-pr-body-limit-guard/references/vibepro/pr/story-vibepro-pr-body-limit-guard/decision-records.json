@@ -1,0 +1,354 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "updated_at": "2026-07-07T06:03:45.029Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+      "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+      "expected_root": null,
+      "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+      "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783404225029-9352d26b",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation re-reviewed at current head: the three changed design-like docs are issue-specific story/spec/architecture artifacts for the PR body limit guard, not a reusable design root.",
+      "reason": "The current reconciliation artifact reports only coverage_gap_count=3 for the changed PR-local docs and zero changed design roots, missing required children, stale children, frontmatter gaps, or contradictions. The docs are bound to story-vibepro-pr-body-limit-guard and referenced by VibePro PR evidence, so this is accepted as PR-local design evidence without widening the Design SSOT registry.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T06:03:45.028Z"
+      },
+      "recorded_at": "2026-07-07T06:03:45.029Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783396806203-50be382b",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:traceability_clause_coverage",
+      "source_status": "needs_evidence",
+      "summary": "Traceability AC-5 reviewed: verification evidence now explicitly binds PBL-CONTRACT-003 to pr-create.json pr_body_limit metadata fields including status, original size, posted size, generated body file, posting body file, strategy, reason, and notice flag.",
+      "reason": "AC-5 was weakly mapped because the previous evidence did not mention the AC/scenario token. The current verification evidence includes scenario 'AC-5 PBL-CONTRACT-003' against test/vibepro-cli.test.js and src/pr-manager.js at the current head.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "current_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T04:00:06.202Z"
+      },
+      "recorded_at": "2026-07-07T04:00:06.203Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783396796690-6550f504",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewability accepted: this PR has one cohesive decision boundary, the GitHub PR body size guard, with docs, source, and tests all tied to src/pr-manager.js createPullRequest behavior; review owner is VibePro PR lifecycle maintainer/reviewer and no split is required.",
+      "reason": "Changed files are one story, one architecture note, one spec, src/pr-manager.js, and one CLI regression test. Graphify reported a bounded blast radius, and pr prepare classified scope.status=reviewable. This supplies review_owner_map and decision_record evidence.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/senior-gap-judgment.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "current_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T03:59:56.689Z"
+      },
+      "recorded_at": "2026-07-07T03:59:56.690Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783396474281-15c8f519",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation reviewed: the three changed design-like docs are story-specific implementation evidence for the PR body limit guard, not a reusable product design root; they are intentionally linked through story/spec/architecture frontmatter and VibePro story id for this PR.",
+      "reason": "design-ssot-reconciliation.json reports only unregistered changed docs and no contradiction, missing required child, stale child, or frontmatter gap. For this issue-specific CLI runtime change, PR-local story/spec/architecture artifacts are the appropriate SSOT and are referenced from the PR evidence.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "current_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T03:54:34.280Z"
+      },
+      "recorded_at": "2026-07-07T03:54:34.281Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783396458287-ddc5249b",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:common_judgment_spine",
+      "source_status": "needs_evidence",
+      "summary": "Common judgment spine reviewed for issue #227 PR body limit guard: current reality is a GitHub 65,536 character PR body limit that can reject oversized VibePro generated bodies, failure modes are over-limit gh pr create/edit failure and silent loss of audit context, and done evidence is current full CLI regression plus typecheck bound to c7b18589.",
+      "reason": "current_reality, failure_modes, and done_evidence are explicitly documented in story/spec/architecture and verified by strict-head evidence records; no remaining source change is needed for this gate.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "current_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T03:54:18.287Z"
+      },
+      "recorded_at": "2026-07-07T03:54:18.288Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783395821599-1041533f",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "spec:drift",
+      "source_status": "drift_detected",
+      "summary": "Spec drift check reports spec_pr_drift because this PR intentionally changes src/pr-manager.js, which is the code anchor for the newly registered PR body limit spec.",
+      "reason": "spec_code_drift=0, spec_test_drift=0, and code_test_drift=0 after spec write; remaining spec_pr_drift is expected for a PR that implements the spec-referenced code.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/spec/story-vibepro-pr-body-limit-guard/spec.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "current_head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "c7b1858927ac5686a7249e9472f35f3c17537582",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T03:43:41.598Z"
+      },
+      "recorded_at": "2026-07-07T03:43:41.599Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+        "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+        "expected_root": null,
+        "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+        "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783404225029-9352d26b",
+      "story_id": "story-vibepro-pr-body-limit-guard",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT reconciliation re-reviewed at current head: the three changed design-like docs are issue-specific story/spec/architecture artifacts for the PR body limit guard, not a reusable design root.",
+      "reason": "The current reconciliation artifact reports only coverage_gap_count=3 for the changed PR-local docs and zero changed design roots, missing required children, stale children, frontmatter gaps, or contradictions. The docs are bound to story-vibepro-pr-body-limit-guard and referenced by VibePro PR evidence, so this is accepted as PR-local design evidence without widening the Design SSOT registry.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/design-ssot-reconciliation.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "actual_root": "/private/tmp/vibepro-issue227-body-limit-guard",
+          "expected_root": null,
+          "expected_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "current_head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "af6781c38d7de0d5ddb5188405a7f94ce5e451db",
+        "current_branch": "codex/vibepro-pr-body-limit-guard",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T06:03:45.028Z"
+      },
+      "recorded_at": "2026-07-07T06:03:45.029Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-body-limit-guard/decision-records.json"
+}

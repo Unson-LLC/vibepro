@@ -1,0 +1,67 @@
+{
+  "schema_version": "0.1.0",
+  "artifact_kind": "combined_current_head_regression",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "recorded_at": "2026-07-07T06:49:06.564Z",
+  "git_context": {
+    "head_sha": "ff802e16e10defb6c1771468f42c435865e68f7a",
+    "strict_head_binding": true
+  },
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "status": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pass"
+    },
+    {
+      "command": "node --test --test-reporter tap test/vibepro-cli.test.js",
+      "status": "pass",
+      "tests": 375,
+      "pass": 375,
+      "fail": 0,
+      "duration_ms": 825737.854542
+    }
+  ],
+  "responsibility_authority_coverage": {
+    "unit_regression": [
+      "VIBE-RAR-001",
+      "VIBE-RAR-002",
+      "VIBE-CORE-COST-001",
+      "VIBE-CORE-STATUS-001"
+    ],
+    "pr_lifecycle_regression": [
+      "VIBE-CORE-PR-001"
+    ],
+    "agent_review_lifecycle_regression": [
+      "VIBE-CORE-AR-001"
+    ],
+    "evidence_lifecycle_regression": [
+      "VIBE-CORE-EV-001"
+    ],
+    "story_source_integrity_regression": [
+      "VIBE-CORE-STORY-001"
+    ],
+    "engineering_judgment_regression": [
+      "VIBE-CORE-JUDGE-001"
+    ],
+    "managed_worktree_regression": [
+      "VIBE-CORE-WT-001"
+    ]
+  },
+  "github_ci": {
+    "pr": 294,
+    "head_sha": "ff802e16e10defb6c1771468f42c435865e68f7a",
+    "status": "pass",
+    "checks": [
+      "test (20)",
+      "test (22)",
+      "analyze",
+      "CodeQL"
+    ]
+  },
+  "status": "pass",
+  "outcome": "pass"
+}

@@ -1,0 +1,29 @@
+{
+  "status": "needs_changes",
+  "summary": "Proof of gate-evidence readiness is not sufficiently current, and oversized-PR-body fallback-path coverage is incomplete for the force-bound branch.",
+  "inspection_summary": "Inspected review request constraints, verification evidence, PR prepare artifact, source PR body-limit implementation in src/pr-manager.js, and the related regression tests in test/vibepro-cli.test.js; checked HEAD binding and command records for freshness, gate readiness, and path coverage.",
+  "inspection_evidence": "/tmp/vibepro-issue227-body-limit-guard/.vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+  "inspection_inputs": [
+    "/tmp/vibepro-issue227-body-limit-guard/.vibepro/reviews/story-vibepro-pr-body-limit-guard/gate/review-request-gate_evidence.md",
+    "/tmp/vibepro-issue227-body-limit-guard/.vibepro/pr/story-vibepro-pr-body-limit-guard/verification-evidence.json",
+    "/tmp/vibepro-issue227-body-limit-guard/.vibepro/pr/story-vibepro-pr-body-limit-guard/pr-prepare.json",
+    "/tmp/vibepro-issue227-body-limit-guard/src/pr-manager.js",
+    "/tmp/vibepro-issue227-body-limit-guard/test/vibepro-cli.test.js"
+  ],
+  "judgment_delta": [
+    "Initial assumption of PASS from passing unit/typecheck commands -> downgraded to needs_changes because verification inputs are marked stale and one body-limit fallback strategy is not covered by tests.",
+    "Initial assumption of PASS from test coverage -> downgraded to needs_changes because only artifact_reference_fallback is validated for oversized body; forced fallback path is untested."
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "evidence-reuse-stale-001",
+      "detail": "Evidence inputs are currently stale yet treated as the basis for this gate context: both verification-evidence.json and pr-prepare.json report evidence_reuse.status stale, fresh_use_allowed false, and gate_status needs_refresh because risk_surface_fingerprint changed; this weakens command/evidence freshness binding for a gate_evidence review."
+    },
+    {
+      "severity": "medium",
+      "id": "path-surface-forcebound-001",
+      "detail": "Regression/path-surface coverage misses the forced fallback branch of PR body limit handling: resolvePrBodyForGithub can return strategy forced_artifact_reference_fallback via forceBoundPrBody(...) in src/pr-manager.js, but test/vibepro-cli.test.js only asserts successful use of artifact_reference_fallback for oversized body and does not prove the forced branch or its user-facing warning/evidence trail is covered."
+    }
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-body-limit-guard",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "VibePro must measure the generated PR body before invoking gh pr create or gh pr edit and use a 65,536 character GitHub body limit.",
+      "rationale": "Story acceptance criteria require pre-posting measurement and a GitHub limit guard.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "文字数とbyte数を計測"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/vibepro-pr-body-limit-guard.md",
+            "section": "Decision",
+            "text_snippet": "GitHub size guard in pr create"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "GITHUB_PR_BODY_CHARACTER_LIMIT = 65536"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "PBL-SCENARIO-001"
+          }
+        ]
+      },
+      "confidence": 0.92,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "GITHUB_PR_BODY_CHARACTER_LIMIT = 65536"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_cover": "PBL-SCENARIO-001"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T03:28:35.347Z",
+      "last_revised_at": "2026-07-07T03:42:41.913Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "When the generated PR body is within the GitHub limit, pr create must keep posting the canonical pr-body.md and record within_limit metadata in pr-create.json.",
+      "rationale": "The size guard must not change the normal PR body path for small bodies.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "従来の pr-body.md をそのまま投稿"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "generated_pr_body_within_github_limit"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "generated_pr_body_within_github_limit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T03:28:35.347Z",
+      "last_revised_at": "2026-07-07T03:42:41.913Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "When the generated PR body exceeds 65,536 characters, pr create must write pr-body.github.md and pass that file to both gh pr create and gh pr edit flows.",
+      "rationale": "Issue 227 is caused by oversized generated PR bodies being passed directly to GitHub.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "投稿用の pr-body.github.md を生成"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/vibepro-pr-body-limit-guard.md",
+            "section": "Flow",
+            "text_snippet": "oversized body"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "pr-body.github.md"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "PBL-SCENARIO-001"
+          }
+        ]
+      },
+      "confidence": 0.95,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "pr-body.github.md"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_cover": "PBL-SCENARIO-001"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T03:28:35.347Z",
+      "last_revised_at": "2026-07-07T03:42:41.913Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "The compressed GitHub PR body must preserve auditability by linking to pr-body.md, pr-prepare.json, decision-index.json, and gate-dag.json artifacts instead of expanding the full audit log inline.",
+      "rationale": "GitHub body compression is acceptable only if the canonical VibePro artifacts remain discoverable.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "artifact参照を含む"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "decision-index.json"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "gate-dag.json"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "pr-body.md"
+          }
+        ]
+      },
+      "confidence": 0.9,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "decision-index.json"
+          },
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "gate-dag.json"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_cover": ".vibepro/pr/story-pr-prepare/pr-body.md"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T03:28:35.347Z",
+      "last_revised_at": "2026-07-07T03:42:41.913Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "pr-create.json must record whether compression happened, the strategy, the limit, original and posted sizes, and generated versus posted body files.",
+      "rationale": "The failure mode must be auditable after the PR operation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "圧縮有無、元本文サイズ、投稿本文サイズ"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "pr_body_limit"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/vibepro-cli.test.js",
+            "case": "pr_body_limit"
+          }
+        ]
+      },
+      "confidence": 0.94,
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "pr_body_limit"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_cover": "pr_body_limit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-07T03:28:35.347Z",
+      "last_revised_at": "2026-07-07T03:42:41.913Z"
+    }
+  ],
+  "diagrams": [],
+  "open_questions": [],
+  "generated_at": "2026-07-07T03:42:41.912Z",
+  "previous_spec_id": "2026-07-07T03:28:35.343Z"
+}
