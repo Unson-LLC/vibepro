@@ -317,6 +317,38 @@
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.pr_autopilot.recipe_preflight",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/vibepro-recipe-preflight-autopilot.md"
+      },
+      "supporting_authority": [
+        "docs/specs/story-vibepro-recipe-preflight-autopilot.md",
+        "docs/management/stories/active/story-vibepro-recipe-preflight-autopilot.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/recipe-preflight.js",
+          "test/recipe-preflight.test.js",
+          "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js"
+        ],
+        "symbols": [
+          "recipe_preflight",
+          "pr autopilot preflight",
+          "recipe registry"
+        ],
+        "risk_surfaces": [
+          "gate_orchestration",
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
     }
   ]
 }

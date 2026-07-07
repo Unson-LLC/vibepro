@@ -16,6 +16,18 @@ diagrams:
         Suggest --> Report
         Skip --> Report
         Report --> Phases["existing autopilot phases (unchanged)"]
+  - kind: threat_model
+    mermaid: |
+      flowchart LR
+        Autopilot["pr autopilot"] --> Preflight["preflight phase"]
+        Preflight --> Registry["recipe registry (detect only reads on-disk state)"]
+        Registry -. must not call .-> Network["network / remote APIs"]
+        Registry -. must not call .-> LLM["LLM / subagent dispatch"]
+        Registry -. must not mutate .-> Verdicts["gate results / waivers / review lifecycles (RPA-CONTRACT-001)"]
+        Registry -- auto_fix --> Fix["writes artifacts operators already produce by hand"]
+        Fix -. must stay within .-> Boundary[".vibepro/ + declared spec/story paths only"]
+        Registry -- detection failure --> Isolate["action_taken: failed, run continues (RPA-CONTRACT-005)"]
+        Fix --> CleanStory["clean story: byte-identical no-op (RPA-CONTRACT-004)"]
 ---
 
 # Spec
