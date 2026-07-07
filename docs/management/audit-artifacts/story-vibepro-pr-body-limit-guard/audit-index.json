@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-body-limit-guard",
   "source": "execute_merge",
-  "generated_at": "2026-07-07T07:09:14.918Z",
+  "generated_at": "2026-07-07T07:09:19.198Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -114,13 +114,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 2963,
+      "compressed_bytes": 2962,
       "expanded_bytes": 12355,
       "expanded_line_count": 334,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 8738,
-    "raw_source_artifact_code_ratio": 16.934,
+    "raw_source_artifact_lines": 8828,
+    "raw_source_artifact_code_ratio": 17.109,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -236,7 +236,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-pr-body-limit-guard",
-    "generated_at": "2026-07-07T07:09:14.918Z",
+    "generated_at": "2026-07-07T07:09:19.198Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -341,10 +341,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-body-limit-guard/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:b09c604f0ecfa712e9695e653805933e3e15084ce4cf5c9bd326a9de23896af9",
-    "compressed_hash": "sha256:85b6b8f581239dd564df252a141ab8f9a2cd5cb5a84720628065b741ad616a15",
+    "content_hash": "sha256:50c493c4e144995b27c72298ce8053e4f245423e40c8ed265acefde7318812df",
+    "compressed_hash": "sha256:b1567cdaaf583ac51453cdce473ed404f4139bfadd17b74ed76eb5289494f86c",
     "expanded_bytes": 12355,
-    "compressed_bytes": 2963,
+    "compressed_bytes": 2962,
     "expanded_line_count": 334,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -363,7 +363,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-body-limit-guard",
     "cost": {
-      "compressed_bytes": 2963,
+      "compressed_bytes": 2962,
       "expanded_bytes": 12355,
       "expanded_line_count": 334,
       "persisted_line_count": 1
