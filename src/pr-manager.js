@@ -945,6 +945,165 @@ function buildHumanReviewReason(preparation) {
   return reasons.join(' ');
 }
 
+const GITHUB_PR_BODY_CHARACTER_LIMIT = 65536;
+
+async function resolvePrBodyForGithub(repoRoot, prepareResult, preparation) {
+  const generatedBodyFile = prepareResult.artifacts.pr_body;
+  const generatedBody = await readFile(generatedBodyFile, 'utf8');
+  const originalStats = measurePrBody(generatedBody);
+  if (originalStats.characters <= GITHUB_PR_BODY_CHARACTER_LIMIT) {
+    return {
+      body_file: generatedBodyFile,
+      metadata: buildPrBodyLimitMetadata(repoRoot, {
+        status: 'within_limit',
+        strategy: 'original_body',
+        reason: 'generated_pr_body_within_github_limit',
+        originalBody: generatedBody,
+        postedBody: generatedBody,
+        generatedBodyFile,
+        postedBodyFile: generatedBodyFile,
+        omittedSections: []
+      })
+    };
+  }
+
+  const postedBodyFile = path.join(path.dirname(generatedBodyFile), 'pr-body.github.md');
+  const auditOmitted = stripPrBodyAuditLog(generatedBody);
+  const candidates = auditOmitted.omitted
+    ? [{
+        body: appendPrBodyLimitNotice(auditOmitted.body, preparation.story.story_id),
+        strategy: 'omit_audit_log_section',
+        omittedSections: auditOmitted.omitted_sections
+      }]
+    : [];
+  candidates.push({
+    body: buildMinimalGithubPrBody(preparation, generatedBody),
+    strategy: 'artifact_reference_fallback',
+    omittedSections: auditOmitted.omitted_sections
+  });
+
+  let selected = candidates.find((candidate) => measurePrBody(candidate.body).characters <= GITHUB_PR_BODY_CHARACTER_LIMIT);
+  if (!selected) {
+    selected = {
+      body: forceBoundPrBody(buildMinimalGithubPrBody(preparation, generatedBody)),
+      strategy: 'forced_artifact_reference_fallback',
+      omittedSections: auditOmitted.omitted_sections
+    };
+  }
+  const postedBody = selected.body.endsWith('\n') ? selected.body : `${selected.body}\n`;
+  await writeFile(postedBodyFile, postedBody);
+  return {
+    body_file: postedBodyFile,
+    metadata: buildPrBodyLimitMetadata(repoRoot, {
+      status: 'truncated',
+      strategy: selected.strategy,
+      reason: 'generated_pr_body_exceeded_github_limit',
+      originalBody: generatedBody,
+      postedBody,
+      generatedBodyFile,
+      postedBodyFile,
+      omittedSections: selected.omittedSections
+    })
+  };
+}
+
+function measurePrBody(body) {
+  return {
+    characters: Array.from(body ?? '').length,
+    bytes: Buffer.byteLength(body ?? '', 'utf8')
+  };
+}
+
+function buildPrBodyLimitMetadata(repoRoot, {
+  status,
+  strategy,
+  reason,
+  originalBody,
+  postedBody,
+  generatedBodyFile,
+  postedBodyFile,
+  omittedSections
+}) {
+  const original = measurePrBody(originalBody);
+  const posted = measurePrBody(postedBody);
+  return {
+    status,
+    strategy,
+    reason,
+    limit_characters: GITHUB_PR_BODY_CHARACTER_LIMIT,
+    original: {
+      characters: original.characters,
+      bytes: original.bytes,
+      body_file: toWorkspaceRelative(repoRoot, generatedBodyFile)
+    },
+    posted: {
+      characters: posted.characters,
+      bytes: posted.bytes,
+      body_file: toWorkspaceRelative(repoRoot, postedBodyFile)
+    },
+    omitted_sections: omittedSections
+  };
+}
+
+function stripPrBodyAuditLog(body) {
+  const match = body.match(/^##\s+(監査ログ|Audit Log)\s*$/m);
+  if (!match) {
+    return {
+      body,
+      omitted: false,
+      omitted_sections: []
+    };
+  }
+  return {
+    body: body.slice(0, match.index).trimEnd(),
+    omitted: true,
+    omitted_sections: [match[1] === 'Audit Log' ? '## Audit Log' : '## 監査ログ']
+  };
+}
+
+function appendPrBodyLimitNotice(body, storyId) {
+  return `${body.trimEnd()}
+
+## 詳細
+- GitHub本文の65,536文字制限を超えたため、監査ログ詳細はartifact参照に集約しました。
+- 生成本文: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-body.md`)}
+- PR準備: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-prepare.json`)}
+`;
+}
+
+function buildMinimalGithubPrBody(preparation, generatedBody) {
+  const story = preparation.story;
+  const evidenceDir = `.vibepro/pr/${story.story_id}`;
+  const gateStatus = preparation.pr_context?.gate_dag?.overall_status ?? '-';
+  const executionStatus = preparation.pr_context?.execution_gate?.status ?? '-';
+  const sourcePath = preparation.pr_context?.story_source?.path ?? null;
+  const changedCount = Array.isArray(preparation.git?.changed_files) ? preparation.git.changed_files.length : 0;
+  const generatedStats = measurePrBody(generatedBody);
+  return `## 判断
+- Story: ${story.title ?? story.story_id} (${story.story_id})
+- 正本: ${sourcePath ? formatRepoPathLink(sourcePath) : 'Story未検出'}
+- 変更範囲: ${changedCount} files
+- GitHub本文の65,536文字制限を超えたため、投稿本文はartifact参照版に圧縮しました。
+
+## 確認
+- Gate: ${gateStatus}
+- 実行状態: ${executionStatus}
+
+## 詳細
+- 生成本文: ${formatRepoPathLink(`${evidenceDir}/pr-body.md`)}
+- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}
+- 判断索引: ${formatRepoPathLink(`${evidenceDir}/decision-index.json`)}
+- Gate DAG: ${formatRepoPathLink(`${evidenceDir}/gate-dag.json`)}
+- 生成本文サイズ: ${generatedStats.characters} characters / ${generatedStats.bytes} bytes
+`;
+}
+
+function forceBoundPrBody(body) {
+  const suffix = '\n\n詳細は `.vibepro/pr/` artifacts を確認してください。\n';
+  const maxBodyCharacters = GITHUB_PR_BODY_CHARACTER_LIMIT - Array.from(suffix).length;
+  return `${Array.from(body).slice(0, Math.max(0, maxBodyCharacters)).join('')}${suffix}`;
+}
+
 export async function createPullRequest(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const prepareResult = await preparePullRequest(root, options);
@@ -998,7 +1157,7 @@ export async function createPullRequest(repoRoot, options = {}) {
   const baseBranch = stripRemote(options.prBase ?? preparation.git.base_ref);
   const headBranch = options.headBranch ?? currentBranch;
   const title = options.title ?? buildPrTitle(preparation);
-  const bodyFile = prepareResult.artifacts.pr_body;
+  const generatedBodyFile = prepareResult.artifacts.pr_body;
   const warnings = [];
   const gateOverride = buildGateOverride(gateDag, options, {
     completionQuality: preparation.pr_context?.completion_quality ?? null,
@@ -1007,13 +1166,22 @@ export async function createPullRequest(repoRoot, options = {}) {
   if (gateOverride?.allowed) {
     warnings.push(`Gate override used: ${gateOverride.reason}`);
     warnings.push(`Unresolved gates: ${formatUnresolvedGateList(gateOverride.unresolved_gates)}`);
-    await appendGateOverrideToPrBody(bodyFile, gateOverride);
+    await appendGateOverrideToPrBody(generatedBodyFile, gateOverride);
   }
   if (headBranch === baseBranch) {
     warnings.push(`head branch equals base branch: ${headBranch}`);
     if (!options.dryRun) {
       throw new Error(`Cannot create PR because head branch equals base branch: ${headBranch}. Switch to a feature branch or specify --head.`);
     }
+  }
+  const prBodyForGithub = await resolvePrBodyForGithub(root, prepareResult, preparation);
+  const bodyFile = prBodyForGithub.body_file;
+  if (prBodyForGithub.metadata.status === 'truncated') {
+    warnings.push(
+      `GitHub PR body limit guard compressed generated body from ` +
+      `${prBodyForGithub.metadata.original.characters} to ${prBodyForGithub.metadata.posted.characters} characters ` +
+      `using ${prBodyForGithub.metadata.strategy}.`
+    );
   }
   const pushCommand = ['git', ['push', '-u', 'origin', headBranch]];
   const ghCommand = ['gh', [
@@ -1063,6 +1231,8 @@ export async function createPullRequest(repoRoot, options = {}) {
     head: headBranch,
     title,
     body_file: toWorkspaceRelative(root, bodyFile),
+    generated_body_file: toWorkspaceRelative(root, generatedBodyFile),
+    pr_body_limit: prBodyForGithub.metadata,
     prepare_artifacts: mapArtifactPaths(root, prepareResult.artifacts),
     warnings,
     commands: [

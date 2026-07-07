@@ -7236,7 +7236,7 @@ Weighted semantic/layout residual: **1%**
   await mkdir(path.join(repo, 'tests', 'e2e'), { recursive: true });
   await writeFile(path.join(repo, 'tests', 'e2e', 'story-pr-prepare-pr-artifacts.spec.ts'), `
 import { expect, test } from '@playwright/test';
-test('story-pr-prepare PR artifacts acceptance coverage', async () => {
+test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async () => {
   // story-pr-prepare ac:1
   // PR本文に背景が入る
   // story-pr-prepare ac:2
@@ -7407,6 +7407,182 @@ test('story-pr-prepare PR artifacts acceptance coverage', async () => {
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_review_cockpit, '.vibepro/pr/story-pr-prepare/review-cockpit.html');
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_human_review, '.vibepro/pr/story-pr-prepare/human-review.json');
   assert.equal(manifest.pr_preparations['story-pr-prepare'].latest_architecture_review, '.vibepro/pr/story-pr-prepare/architecture-review.json');
+
+  const longWaiverReason = `PBL-SCENARIO-001 ${'body-limit-waiver '.repeat(4200)}`;
+  const longBodyCreateResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    longWaiverReason
+  ]);
+  assert.equal(longBodyCreateResult.exitCode, 0);
+  assert.equal(longBodyCreateResult.result.execution.pr_body_limit.status, 'truncated');
+  assert.equal(longBodyCreateResult.result.execution.pr_body_limit.reason, 'generated_pr_body_exceeded_github_limit');
+  assert.equal(longBodyCreateResult.result.execution.pr_body_limit.limit_characters, 65536);
+  assert.equal(longBodyCreateResult.result.execution.pr_body_limit.original.characters > 65536, true);
+  assert.equal(longBodyCreateResult.result.execution.pr_body_limit.posted.characters <= 65536, true);
+  assert.equal(longBodyCreateResult.result.execution.generated_body_file, '.vibepro/pr/story-pr-prepare/pr-body.md');
+  assert.equal(longBodyCreateResult.result.execution.body_file, '.vibepro/pr/story-pr-prepare/pr-body.github.md');
+  assert.equal(longBodyCreateResult.result.execution.commands.some((command) => command.includes('pr-body.github.md')), true);
+  assert.equal(longBodyCreateResult.result.execution.warnings.some((warning) => warning.includes('GitHub PR body limit guard compressed generated body')), true);
+  const longBodyPrCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(longBodyPrCreate.pr_body_limit.status, 'truncated');
+  assert.equal(longBodyPrCreate.pr_body_limit.strategy, 'artifact_reference_fallback');
+  assert.equal(longBodyPrCreate.pr_body_limit.original.body_file, '.vibepro/pr/story-pr-prepare/pr-body.md');
+  assert.equal(longBodyPrCreate.pr_body_limit.posted.body_file, '.vibepro/pr/story-pr-prepare/pr-body.github.md');
+  const postedGithubBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.github.md'), 'utf8');
+  assert.match(postedGithubBody, /GitHub本文の65,536文字制限/);
+  assert.match(postedGithubBody, /\.vibepro\/pr\/story-pr-prepare\/pr-body\.md/);
+  assert.equal(Array.from(postedGithubBody).length <= 65536, true);
+
+  const hugeStoryTitle = `PR準備 ${'forced-fallback-title '.repeat(3600)}`;
+  const forcedFallbackConfigPath = path.join(repo, '.vibepro', 'config.json');
+  const forcedFallbackConfig = await readJson(forcedFallbackConfigPath);
+  forcedFallbackConfig.brainbase.stories = forcedFallbackConfig.brainbase.stories.map((story) => (
+    story.story_id === 'story-pr-prepare'
+      ? { ...story, title: hugeStoryTitle }
+      : story
+  ));
+  await writeJson(forcedFallbackConfigPath, forcedFallbackConfig);
+  const forcedFallbackTasksPath = path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'tasks.json');
+  const forcedFallbackTasks = await readJson(forcedFallbackTasksPath);
+  forcedFallbackTasks.story = {
+    ...(forcedFallbackTasks.story ?? {}),
+    story_id: 'story-pr-prepare',
+    title: hugeStoryTitle
+  };
+  await writeJson(forcedFallbackTasksPath, forcedFallbackTasks);
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: ${JSON.stringify(hugeStoryTitle)}
+requirement_id: BUG-001
+---
+# ${hugeStoryTitle}
+
+## 背景
+PR本文がファイル数だけではレビュー判断に足りない。
+
+## Acceptance Criteria
+- PR本文に背景が入る
+- PR本文にADR判断が入る
+- PR本文に検証候補が入る
+`);
+  await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md']);
+  await git(repo, ['commit', '-m', 'test: force oversized story title for pr body limit']);
+  const forcedFallbackHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const forcedFallbackBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
+  const forcedFallbackFingerprints = await collectGitStatusFingerprints(repo);
+  await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'iteration-1', 'pixel-residual.json'), {
+    status: 'pass',
+    thresholdPct: 5,
+    meanAbsResidualPct: 1,
+    rmsResidualPct: 1,
+    pixelChangedPctOver32: 1,
+    git_context: {
+      head_sha: forcedFallbackHeadSha,
+      current_branch: forcedFallbackBranch,
+      dirty: forcedFallbackFingerprints.user_dirty,
+      raw_dirty: forcedFallbackFingerprints.dirty,
+      status_fingerprint_hash: forcedFallbackFingerprints.status_fingerprint_hash,
+      user_status_fingerprint_hash: forcedFallbackFingerprints.user_status_fingerprint_hash,
+      fingerprint_scope: forcedFallbackFingerprints.fingerprint_scope,
+      recorded_at: new Date().toISOString()
+    }
+  });
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'e2e',
+    '--status',
+    'pass',
+    '--command',
+    'npx playwright test tests/e2e/story-pr-prepare-pr-artifacts.spec.ts',
+    '--summary',
+    'Story acceptance E2E coverage passed with flow_replay, artifact_replay, and scenario_clause_e2e coverage for forced PR body fallback',
+    '--target',
+    'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts',
+    '--target',
+    '.vibepro/pr/story-pr-prepare/pr-body.md',
+    '--target',
+    '.vibepro/pr/story-pr-prepare/gate-dag.json',
+    '--scenario',
+    'flow_replay: PR prepare regenerates the PR artifact pipeline before forced fallback create',
+    '--scenario',
+    'artifact_replay: PR body and Gate DAG artifacts are replayed from current forced fallback evidence',
+    '--scenario',
+    'scenario_clause_e2e: Story acceptance clauses remain represented for the forced fallback fixture',
+    '--observed',
+    'flow_replay=true',
+    '--observed',
+    'artifact_replay=true',
+    '--observed',
+    'scenario_clause_e2e=true'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify',
+    'record',
+    repo,
+    '--id',
+    'story-pr-prepare',
+    '--kind',
+    'integration',
+    '--status',
+    'pass',
+    '--command',
+    'node --test test/integration/story-pr-prepare-runtime-path.test.js',
+    '--summary',
+    'Integration runtime path evidence passed for forced PR body fallback artifact creation',
+    '--target',
+    'src/feature/pr-prepare.js',
+    '--target',
+    'test/integration/story-pr-prepare-runtime-path.test.js',
+    '--scenario',
+    'runtime_path_evidence: forced PR body fallback artifact creation exercised through integration path',
+    '--observed',
+    'integration_runtime_path=true'
+  ])).exitCode, 0);
+  await recordRequiredAgentReviews(repo, 'story-pr-prepare');
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+  let forcedFallbackStderr = '';
+  const forcedFallbackCreateResult = await runCli([
+    'pr',
+    'create',
+    repo,
+    '--base',
+    'main',
+    '--task',
+    'TASK-001',
+    '--dry-run',
+    '--allow-needs-verification',
+    '--verification-waiver',
+    longWaiverReason
+  ], {
+    stderr: { write: (text) => { forcedFallbackStderr += text; } }
+  });
+  assert.equal(forcedFallbackCreateResult.exitCode, 0, forcedFallbackStderr);
+  assert.equal(forcedFallbackCreateResult.result.execution.pr_body_limit.status, 'truncated');
+  assert.equal(forcedFallbackCreateResult.result.execution.pr_body_limit.strategy, 'forced_artifact_reference_fallback');
+  assert.equal(forcedFallbackCreateResult.result.execution.pr_body_limit.posted.characters <= 65536, true);
+  assert.equal(forcedFallbackCreateResult.result.execution.body_file, '.vibepro/pr/story-pr-prepare/pr-body.github.md');
+  assert.equal(forcedFallbackCreateResult.result.execution.commands.some((command) => command.includes('pr-body.github.md')), true);
+  assert.equal(forcedFallbackCreateResult.result.execution.warnings.some((warning) => warning.includes('forced_artifact_reference_fallback')), true);
+  const forcedFallbackPrCreate = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-create.json'));
+  assert.equal(forcedFallbackPrCreate.pr_body_limit.strategy, 'forced_artifact_reference_fallback');
+  assert.equal(forcedFallbackPrCreate.pr_body_limit.posted.characters <= 65536, true);
+  const forcedFallbackGithubBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.github.md'), 'utf8');
+  assert.equal(Array.from(forcedFallbackGithubBody).length <= 65536, true);
+  assert.match(forcedFallbackGithubBody, /詳細は `\.vibepro\/pr\/` artifacts を確認してください。/);
 
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-remote-'));
   await git(remote, ['init', '--bare']);
