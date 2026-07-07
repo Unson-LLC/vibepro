@@ -12670,9 +12670,13 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'pr-merge.json')), true);
   assert.equal(await pathExists(path.join(auditDir, 'pr', 'gate-dag.json')), true);
   const canonicalPrMergeArtifact = await readJson(path.join(auditDir, 'pr', 'pr-merge.json'));
-  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.status, 'pushed');
-  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.pushed, true);
-  assert.match(canonicalPrMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
+  // story-vibepro-idempotent-audit-persistence: the self-referential canonical_audit
+  // persistence bookkeeping is excluded from the promoted view (it is absent on the
+  // first pass and volatile on the second, which defeated idempotent persistence).
+  // The merge evidence itself is still carried in the promoted view.
+  assert.equal(canonicalPrMergeArtifact.canonical_audit, undefined);
+  assert.equal(canonicalPrMergeArtifact.merge_commit_sha, headSha);
+  assert.equal(canonicalPrMergeArtifact.status, 'merged');
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
@@ -12696,19 +12700,20 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     'show',
     'main:docs/management/audit-artifacts/story-pr-prepare/pr/pr-merge.json'
   ])).stdout);
-  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.status, 'pushed');
-  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit.persistence.pushed, true);
+  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit, undefined);
   assert.equal(remoteCanonicalPrMergeArtifact.cost_accounting.token_accounting.total_tokens, 4321);
-  assert.equal(
-    remoteCanonicalPrMergeArtifact.canonical_audit.persistence.commit_sha,
-    result.result.merge.canonical_audit.persistence.commit_sha
-  );
+
+  // story-vibepro-idempotent-audit-persistence IAP-S-1/IAP-S-2: one execute merge
+  // lands at most one audit-persistence commit. The second persistence pass now
+  // regenerates byte-identical content and reports already_present, so base HEAD is
+  // the single persistence commit whose parent is the merge commit.
+  assert.equal(result.result.merge.canonical_audit.final_persistence.status, 'already_present');
+  assert.equal(result.result.merge.canonical_audit.final_persistence.pushed, false);
   const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
   const remoteMainParent = (await git(remote, ['rev-parse', 'main^'])).stdout.trim();
   const persistenceCommit = result.result.merge.canonical_audit.persistence.commit_sha;
-  assert.notEqual(remoteMain, persistenceCommit);
-  assert.equal(remoteMainParent, persistenceCommit);
-  assert.equal((await git(remote, ['rev-parse', `${persistenceCommit}^`])).stdout.trim(), headSha);
+  assert.equal(remoteMain, persistenceCommit);
+  assert.equal(remoteMainParent, headSha);
 });
 
 test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts when merge commit evidence is missing', async () => {
@@ -12810,8 +12815,12 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     'pr',
     'pr-merge.json'
   ));
-  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.status, 'failed');
-  assert.equal(canonicalPrMergeArtifact.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
+  // story-vibepro-idempotent-audit-persistence: canonical_audit persistence
+  // bookkeeping is excluded from the promoted view; the failure is still recorded on
+  // the merge result and the local .vibepro/pr artifact (asserted above).
+  assert.equal(canonicalPrMergeArtifact.canonical_audit, undefined);
+  assert.equal(canonicalPrMergeArtifact.status, 'failed');
+  assert.equal(canonicalPrMergeArtifact.stop_reason, 'canonical_audit_persistence_failed');
 
   const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
   assert.equal(remoteMain, headSha);
@@ -12822,7 +12831,7 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
   );
 });
 
-test('CAA-VERIFY-001 execute merge fails when final canonical audit artifact persistence is rejected', async () => {
+test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -12912,28 +12921,33 @@ exit 0
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
   });
 
-  assert.equal(result.exitCode, 1);
-  assert.equal(result.result.merge.status, 'failed');
-  assert.equal(result.result.merge.stop_reason, 'canonical_audit_final_persistence_failed');
+  // story-vibepro-idempotent-audit-persistence IAP-S-1: the base-side pre-receive hook
+  // would reject a SECOND push to main. Because the second promotion pass now
+  // regenerates byte-identical content, the final persistence is already_present and
+  // never pushes, so the merge succeeds with exactly one audit-persistence commit.
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.stop_reason, null);
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.canonical_audit.persistence.status, 'pushed');
-  assert.equal(result.result.merge.canonical_audit.final_persistence.status, 'failed');
-  assert.equal(result.result.merge.canonical_audit.final_persistence.reason, 'canonical_audit_push_failed');
+  assert.equal(result.result.merge.canonical_audit.final_persistence.status, 'already_present');
+  assert.equal(result.result.merge.canonical_audit.final_persistence.pushed, false);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
-  assert.equal(prMergeArtifact.status, 'failed');
-  assert.equal(prMergeArtifact.stop_reason, 'canonical_audit_final_persistence_failed');
+  assert.equal(prMergeArtifact.status, 'merged');
   assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
-  assert.equal(prMergeArtifact.canonical_audit.final_persistence.status, 'failed');
-  assert.equal(prMergeArtifact.canonical_audit.final_persistence.reason, 'canonical_audit_push_failed');
+  // The local pr-merge artifact is written after the first persistence but before the
+  // (already_present) final pass, so it carries persistence but not final_persistence.
 
   const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
-  assert.equal(remoteMain, result.result.merge.canonical_audit.persistence.commit_sha);
+  const persistenceCommit = result.result.merge.canonical_audit.persistence.commit_sha;
+  assert.equal(remoteMain, persistenceCommit);
+  assert.equal((await git(remote, ['rev-parse', 'main^'])).stdout.trim(), headSha);
   const remoteCanonicalPrMergeArtifact = JSON.parse((await git(remote, [
     'show',
     'main:docs/management/audit-artifacts/story-pr-prepare/pr/pr-merge.json'
   ])).stdout);
-  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit?.persistence, undefined);
+  assert.equal(remoteCanonicalPrMergeArtifact.canonical_audit, undefined);
 });
 
 test('execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out', async () => {
