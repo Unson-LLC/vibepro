@@ -100,7 +100,13 @@ list every registered recipe exactly once per run, in registry order.
 ## Verification
 
 - Focused tests cover each recipe's detection and action on synthetic
-  repositories, the clean-story no-op, failure isolation, and registry
-  extension.
+  repositories, the clean-story no-op, failure isolation (including
+  corrupt-JSON parse failures and unexpected evidence schema shapes), and
+  registry extension: `test/recipe-preflight.test.js`.
+- The autopilot workflow replay (preflight section shape and unchanged
+  downstream phases) is covered by the `pr autopilot` cases in
+  `test/vibepro-cli.test.js`.
+- The registry implementation lives in `src/recipe-preflight.js`; the single
+  wiring point is `autopilotPullRequest` in `src/pr-manager.js`.
 - `npm run typecheck` and the full `npm test` suite pass with no new
   failures.

@@ -8900,6 +8900,16 @@ test('pr autopilot records passing verification evidence from a defined command'
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.autopilot.safe_operations.some((operation) => operation.id === 'verify_unit' && operation.status === 'executed'), true);
+  // RPA-S-5: autopilot report carries a machine-readable preflight section listing every recipe
+  const preflight = result.result.autopilot.preflight;
+  assert.equal(preflight.schema_version, '0.1.0');
+  assert.ok(Array.isArray(preflight.results) && preflight.results.length >= 6);
+  for (const item of preflight.results) {
+    assert.ok(Object.prototype.hasOwnProperty.call(item, 'recipe_id'));
+    assert.ok(Object.prototype.hasOwnProperty.call(item, 'detected'));
+    assert.ok(Object.prototype.hasOwnProperty.call(item, 'action_taken'));
+    assert.ok(Object.prototype.hasOwnProperty.call(item, 'next_command'));
+  }
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
