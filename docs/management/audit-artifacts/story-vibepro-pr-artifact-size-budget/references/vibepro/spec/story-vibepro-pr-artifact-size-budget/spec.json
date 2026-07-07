@@ -1,0 +1,232 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "gate 評価は従来どおり full artifact を読み"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/vibepro-pr-artifact-size-budget.md",
+            "section": "Boundaries",
+            "text_snippet": "Gate evaluation inputs never switch to summaries"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "artifact_budget"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-S-3/S-5/S-7"
+          }
+        ]
+      },
+      "statement": "The budget pass never modifies, truncates, renames, or omits any full-fidelity artifact, and gate evaluation reads full artifacts so gate verdicts are unchanged (PAB-CONTRACT-001).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "結論・主要件数・full 版パスを含む"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-artifact-budget.js",
+            "anchor": "buildArtifactSummaryContent"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-S-1/PAB-CONTRACT-002"
+          }
+        ]
+      },
+      "statement": "Each generated summary includes schema_version, kind artifact_summary, source_artifact, source_bytes, source_content_hash, conclusion, over_budget_reason, full_artifact_path, and is at most 10% of the source bytes (PAB-CONTRACT-002).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "artifact_budget が予算値・超過一覧・summary パスを機械可読で報告"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "artifactBudgetReport"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-S-3"
+          }
+        ]
+      },
+      "statement": "pr-prepare.json includes artifact_budget with budget_bytes and over_budget entries listing each over-budget artifact with its summary_path and summary_status (PAB-CONTRACT-003).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "parallel-dispatch.md の読込指示が summary パスを指し"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-artifact-budget.js",
+            "anchor": "resolveHandoffArtifact"
+          },
+          {
+            "file": "src/canonical-audit.js",
+            "anchor": "findBudgetSummaryPath"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-S-4"
+          }
+        ]
+      },
+      "statement": "When a summary exists, pr-body.md and parallel-dispatch.md reference the summary path and keep a deep-dive pointer to the full artifact; the bounded artifact view default resolution routes to the summary (PAB-CONTRACT-004).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "超過/非超過/設定上書き/dispatch 参照切替の各経路を固定"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-artifact-budget.js",
+            "anchor": "summary_status"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-CONTRACT-005"
+          }
+        ]
+      },
+      "statement": "Given a summary generation failure, when pr prepare completes, then summary_status is failed and handoff references the full path, never a nonexistent file (PAB-CONTRACT-005).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "full 版への相対パスを自動生成"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-artifact-budget.js",
+            "anchor": "source_content_hash"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "PAB-S-1/PAB-CONTRACT-002"
+          }
+        ]
+      },
+      "statement": "The summary embeds the source artifact content hash so a mismatch between summary and regenerated full artifact is detectable (PAB-CONTRACT-006).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "予算は .vibepro/config.json で設定でき、未設定時の既定値が文書化"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-artifact-budget.js",
+            "anchor": "DEFAULT_PR_ARTIFACT_BYTES"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/pr-artifact-size-budget.test.js",
+            "case": "resolvePrArtifactBudgetBytes falls back to the documented default"
+          }
+        ]
+      },
+      "statement": "The per-artifact byte budget is configurable via .vibepro/config.json budgets.pr_artifact_bytes and defaults to 16384 when unset (PAB-S-5, PAB-S-6).",
+      "first_seen_at": "2026-07-07T10:17:31.294Z",
+      "last_revised_at": "2026-07-07T10:17:31.294Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "PR artifact size budget pass",
+      "mermaid": "flowchart LR\n  Prepare[\"pr prepare emits full artifacts\"] --> Stat[\"budget pass: stat each JSON artifact\"]\n  Stat -- within budget --> Full[\"handoff references full path\"]\n  Stat -- over budget --> Summary[\"write <name>.summary.json\"]\n  Summary --> Handoff[\"pr-body / parallel-dispatch reference summary\"]\n  Summary --> Budget[\"artifact_budget in pr-prepare.json\"]\n  FullArtifacts[\"full artifacts\"] --> Gates[\"gate evaluation (always full)\"]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "Handoff dangling and staleness threats",
+      "mermaid": "flowchart LR\n  Source[\"full artifact\"] --> Budget[\"budget pass\"]\n  Budget -->|generation fails| Fallback[\"summary_status failed -> handoff falls back to full path\"]\n  Budget -->|over budget| SummaryOut[\"summary with source_content_hash\"]\n  SummaryOut -->|hash mismatch| StaleDetect[\"staleness detectable\"]\n  Fallback --> NoDangle[\"handoff never points at a nonexistent file\"]\n  Gate[\"gate evaluation\"] --> FullOnly[\"reads full artifact only, verdict unchanged\"]"
+    }
+  ],
+  "open_questions": [],
+  "generated_at": "2026-07-07T10:17:31.287Z",
+  "previous_spec_id": null
+}

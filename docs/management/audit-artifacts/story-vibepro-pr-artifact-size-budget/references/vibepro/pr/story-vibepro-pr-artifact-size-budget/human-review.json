@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "created_at": "2026-07-07T15:34:04.498Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-pr-artifact-size-budget.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-pr-artifact-size-budget.md)"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783438303248-3d069598",
+        "story_id": "story-vibepro-pr-artifact-size-budget",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": null,
+        "summary": "Split resolution: keep current PR as one unit; split-plan recommends keep_current_pr and the pr_split_scope agent review confirmed the 8-file diff reads as a single coherent judgment",
+        "reason": "All commits serve the single story intent (feature, doc finalization, lineage registration); no mixed-story or repo-control contamination is present in the diff",
+        "reviewer": "claude_code",
+        "artifact": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/split-plan.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-pab",
+            "actual_root": "/private/tmp/vibepro-pab",
+            "expected_root": null,
+            "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+            "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "current_branch": "claude/pr-artifact-size-budget",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-07T15:31:43.241Z"
+        },
+        "recorded_at": "2026-07-07T15:31:43.250Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-07T15:33:52.762Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-pab"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-pab/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-pab/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+      "branch": "claude/pr-artifact-size-budget",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "7c11d45fd296771133fb0a4b0bbfb7ac6b8d3b04",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

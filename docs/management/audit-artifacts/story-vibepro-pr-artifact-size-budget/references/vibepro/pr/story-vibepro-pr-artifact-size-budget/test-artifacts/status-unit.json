@@ -1,0 +1,1 @@
+{"status":"pass","exit_code":0,"command":"node --test test/pr-artifact-size-budget.test.js","head_sha":"73219fb8ed42c7af9d0474ec726ebbd097dd6968"}

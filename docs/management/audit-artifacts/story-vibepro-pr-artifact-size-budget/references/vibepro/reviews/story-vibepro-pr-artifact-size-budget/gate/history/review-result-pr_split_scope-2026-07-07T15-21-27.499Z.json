@@ -1,0 +1,146 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "6-file diff is a single coherent PR for the artifact size budget story; split-plan correctly recommends keep_current_pr; no unrelated changes; full suite log confirms 851/851 pass",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected review request, story doc, split-plan.json, full source diff vs origin/main, pr-artifact-budget.js, test file, and coordinator full-suite log /tmp/vibepro-pab-fulltest.log",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-request-pr_split_scope.md",
+      "docs/management/stories/active/story-vibepro-pr-artifact-size-budget.md",
+      ".vibepro/pr/story-vibepro-pr-artifact-size-budget/split-plan.json",
+      "src/pr-artifact-budget.js",
+      "src/pr-manager.js",
+      "src/canonical-audit.js",
+      "src/agent-review.js",
+      "src/workspace.js",
+      "test/pr-artifact-size-budget.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial: verify single-intent scope -> final: pass because all 6 changed files serve the one budget story and split-plan recommends keep_current_pr"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-pab",
+    "actual_root": "/private/tmp/vibepro-pab",
+    "expected_root": null,
+    "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-pab",
+      "actual_root": "/private/tmp/vibepro-pab",
+      "expected_root": null,
+      "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+      "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-07T15:21:27.499Z",
+  "git_context": {
+    "head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "current_branch": "claude/pr-artifact-size-budget",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-07T15:21:27.392Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-pr-artifact-size-budget.md",
+        "sha256": "142a26def2c7c2eb9c7dab9fa71a981d2d63d82ea636aa5289074484ef64254e",
+        "size": 6105
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "d30bf2d92d1f29ba120cff14bd21dfa46fe1d275faf030b326b9ec850ac8e2e3",
+        "size": 143090
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "8447e36ec973747159519e0b28b4c39da8e6d7b97931eca15a68f4e96ef616ca",
+        "size": 99887
+      },
+      {
+        "path": "src/pr-artifact-budget.js",
+        "sha256": "ed110560eca9763a3144df0ce4b9af5e1962cd15e625571588c8f8f38cb17c25",
+        "size": 9981
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "92603fb3cc062eca80d054173d779ca7dc7c25045b9c792f29016ea9f06ce367",
+        "size": 611044
+      },
+      {
+        "path": "src/workspace.js",
+        "sha256": "206d8421edaa8de3621121f560aea446e7664aea2d599f73123e647291ae4ee7",
+        "size": 4238
+      },
+      {
+        "path": "test/pr-artifact-size-budget.test.js",
+        "sha256": "c9121a712df18e9eb04ae612cc48fd3e8636ddbfeb7d908efe41aaaa4f4070a9",
+        "size": 13148
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6056ae695e508658d5e534c8569e01a233ec519b137a8849b20da6a927e3d07c"
+  },
+  "source_fingerprint": "3aaf4f0e626cb5440bcf1be2bb8b218f700edf35e4414fcb698b3d085d2b10a7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a15f229459a53e30d",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a15f229459a53e30d",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro--claude-worktrees-festive-proskuriakova-fbf353/668c5454-826e-4d87-a655-08eb9663bc74/subagents/agent-a15f229459a53e30d.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

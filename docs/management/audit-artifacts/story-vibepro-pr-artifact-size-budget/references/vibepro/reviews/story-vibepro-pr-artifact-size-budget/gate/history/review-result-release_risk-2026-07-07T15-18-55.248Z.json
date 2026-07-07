@@ -1,0 +1,149 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Per-artifact budget pass is safe to ship: byte-measured strings are the exact bytes written, gates read full in-memory artifacts (verdicts unchanged), and every failure/within-budget path degrades to full-artifact references without dangling",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "handoff-full-path-not-workspace-relative",
+      "detail": "buildBoundedArtifactHandoff sets full_artifact_path to the bare filename while read_path is workspace-relative; cosmetic inconsistency in advisory reviewer handoff text, not a dangling reference"
+    },
+    {
+      "severity": "low",
+      "id": "gatedag-orphan-summary-on-toggle",
+      "detail": "stale-summary cleanup only iterates scannedArtifactFilenames, so when writeGateDagDump toggles true->false a pre-existing gate-dag.summary.json is left as a harmless orphan not referenced by the fresh artifact_budget report or handoff"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read pr-artifact-budget.js, the pr-manager.js budget wiring (measure/write/cleanup and pr-body handoff), agent-review.js and canonical-audit.js handoff/ref changes, workspace.js config default, and the PAB test suite; confirmed byte-measured strings equal written bytes, gate verdicts unaffected, failure paths degrade to full paths, cleanup only removes known .summary.json siblings; full suite 851/851 pass per coordinator log",
+    "evidence": null,
+    "inputs": [
+      "src/pr-artifact-budget.js",
+      "src/pr-manager.js",
+      "src/agent-review.js",
+      "src/canonical-audit.js",
+      "src/workspace.js",
+      "test/pr-artifact-size-budget.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that budget measurement could diverge from written files, drift gate verdicts, or dangle handoff references -> pass because the same serialized strings are measured and written, gateStatus is computed independent of the budget pass with verdict identity asserted (PAB-S-7), and every failure branch resolves to the always-written full artifact; residuals are low-severity cosmetic/orphan-file only"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-pab",
+    "actual_root": "/private/tmp/vibepro-pab",
+    "expected_root": null,
+    "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-pab",
+      "actual_root": "/private/tmp/vibepro-pab",
+      "expected_root": null,
+      "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+      "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-07T15:18:55.248Z",
+  "git_context": {
+    "head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "current_branch": "claude/pr-artifact-size-budget",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-07T15:18:55.191Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "d30bf2d92d1f29ba120cff14bd21dfa46fe1d275faf030b326b9ec850ac8e2e3",
+        "size": 143090
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "8447e36ec973747159519e0b28b4c39da8e6d7b97931eca15a68f4e96ef616ca",
+        "size": 99887
+      },
+      {
+        "path": "src/pr-artifact-budget.js",
+        "sha256": "ed110560eca9763a3144df0ce4b9af5e1962cd15e625571588c8f8f38cb17c25",
+        "size": 9981
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "92603fb3cc062eca80d054173d779ca7dc7c25045b9c792f29016ea9f06ce367",
+        "size": 611044
+      },
+      {
+        "path": "src/workspace.js",
+        "sha256": "206d8421edaa8de3621121f560aea446e7664aea2d599f73123e647291ae4ee7",
+        "size": 4238
+      },
+      {
+        "path": "test/pr-artifact-size-budget.test.js",
+        "sha256": "c9121a712df18e9eb04ae612cc48fd3e8636ddbfeb7d908efe41aaaa4f4070a9",
+        "size": 13148
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d4a5048d893f7dbb1b211ef3ac85373d5f1275ea6c0a4a343dd584a50793648f"
+  },
+  "source_fingerprint": "b3b58ccaad03bb40c930b2d4500a270ad639223863efef676e9e7570144831e2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a3fe60f4c7f08e2e0",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,354 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "updated_at": "2026-07-07T15:31:43.250Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-pab",
+      "actual_root": "/private/tmp/vibepro-pab",
+      "expected_root": null,
+      "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+      "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438303248-3d069598",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Split resolution: keep current PR as one unit; split-plan recommends keep_current_pr and the pr_split_scope agent review confirmed the 8-file diff reads as a single coherent judgment",
+      "reason": "All commits serve the single story intent (feature, doc finalization, lineage registration); no mixed-story or repo-control contamination is present in the diff",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:31:43.241Z"
+      },
+      "recorded_at": "2026-07-07T15:31:43.250Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438301817-387542cb",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope justified: 3 commits from base are all story-scoped for the artifact size budget (implementation+tests, story/architecture doc finalization, design SSOT lineage registration); 8 changed files remain one coherent reviewer pass and pr_split_scope agent review passed with zero findings",
+      "reason": "The branch contains only this story's work; needs_clean_branch was triggered by commit count alone, not by unrelated changes. Splitting the docs/lineage commits from the implementation would break story-doc traceability required by the judgment axes",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-result-pr_split_scope.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:31:41.806Z"
+      },
+      "recorded_at": "2026-07-07T15:31:41.819Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438094714-608ddbc2",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope reviewability confirmed: 8-file single-intent diff (1 new module, focused wiring, 1 test file, story/architecture doc updates) reviewed as one coherent PR by the pr_split_scope agent review; split-plan recommends keep_current_pr",
+      "reason": "scope.status=reviewable and the pr_split_scope subagent review passed with zero findings; remaining reviewer-map granularity work is a bounded follow-up and does not require splitting this PR",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-result-pr_split_scope.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "5820e2cd5f88fc1d2679adc4c961aeb76e84f3f3",
+          "current_head_sha": "5820e2cd5f88fc1d2679adc4c961aeb76e84f3f3",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5820e2cd5f88fc1d2679adc4c961aeb76e84f3f3",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:28:14.704Z"
+      },
+      "recorded_at": "2026-07-07T15:28:14.716Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783437561425-e1bb67d7",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "finding:gatedag-orphan-summary-on-toggle",
+      "source_status": null,
+      "summary": "Accepted bounded followup: a pre-existing gate-dag.summary.json can remain as an orphan when writeGateDagDump toggles off; the fresh artifact_budget report and handoff never reference it",
+      "reason": "Harmless leftover file with no reference from any fresh handoff surface; cleanup-set extension deferred as bounded follow-up",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-result-release_risk.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:19:21.415Z"
+      },
+      "recorded_at": "2026-07-07T15:19:21.427Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783437558622-5e8f052a",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "finding:handoff-full-path-not-workspace-relative",
+      "source_status": null,
+      "summary": "Accepted bounded followup: full_artifact_path in bounded_artifact_handoff is a bare filename while read_path is workspace-relative; cosmetic advisory-text inconsistency only, both live in the same evidence directory",
+      "reason": "No dangling reference risk: reviewers resolve paths inside the story evidence dir; normalization is a cosmetic follow-up not blocking release",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-result-release_risk.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:19:18.604Z"
+      },
+      "recorded_at": "2026-07-07T15:19:18.623Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783437467280-a7da1351",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "finding:budget-scan-set-excludes-traceability-and-pr-prepare",
+      "source_status": null,
+      "summary": "Accepted bounded followup: traceability.json and pr-prepare.json stay outside the pr_artifact_bytes budget scan set in this PR (PAB-CONTRACT-003 lists exactly the emitted scanned artifacts); extending the scan set is deferred to a follow-up story and is not a regression",
+      "reason": "The budget scan set intentionally covers the measured LLM handoff offenders (design-ssot-reconciliation.json, decision-index.json and siblings); pr-prepare.json already has bounded --view/--summary-json projections as the sanctioned handoff path, so shipping now is safe",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/reviews/story-vibepro-pr-artifact-size-budget/gate/review-result-gate_evidence.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "current_head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ce69fd781574d8e6cc19b9752bbdee97543fc858",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:17:47.273Z"
+      },
+      "recorded_at": "2026-07-07T15:17:47.281Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/private/tmp/vibepro-pab",
+        "actual_root": "/private/tmp/vibepro-pab",
+        "expected_root": null,
+        "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+        "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783438303248-3d069598",
+      "story_id": "story-vibepro-pr-artifact-size-budget",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Split resolution: keep current PR as one unit; split-plan recommends keep_current_pr and the pr_split_scope agent review confirmed the 8-file diff reads as a single coherent judgment",
+      "reason": "All commits serve the single story intent (feature, doc finalization, lineage registration); no mixed-story or repo-control contamination is present in the diff",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-pab",
+          "actual_root": "/private/tmp/vibepro-pab",
+          "expected_root": null,
+          "expected_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "current_head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+        "current_branch": "claude/pr-artifact-size-budget",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-07T15:31:43.241Z"
+      },
+      "recorded_at": "2026-07-07T15:31:43.250Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/decision-records.json"
+}

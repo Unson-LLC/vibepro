@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-artifact-size-budget",
+  "created_at": "2026-07-07T15:34:04.498Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-pr-artifact-size-budget.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-pr-artifact-size-budget.md",
+    "review_cockpit": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/review-cockpit.html",
+    "gate_dag": ".vibepro/pr/story-vibepro-pr-artifact-size-budget/gate-dag.json"
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-pr-artifact-size-budget.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-pr-artifact-size-budget.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-07T15:33:52.762Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/private/tmp/vibepro-pab"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-pab/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-pab/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "73219fb8ed42c7af9d0474ec726ebbd097dd6968",
+      "branch": "claude/pr-artifact-size-budget",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "7c11d45fd296771133fb0a4b0bbfb7ac6b8d3b04",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
