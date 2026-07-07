@@ -9,6 +9,7 @@ import {
   shouldUseCompactCanonicalEvidence
 } from './evidence-cost-budget.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { findBudgetSummaryPath } from './pr-artifact-budget.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
@@ -343,18 +344,35 @@ function summarizeSeniorGapForLlm(judgment) {
 }
 
 function buildPrPrepareArtifactRefs(preparation, context) {
-  return compactObject({
+  // Default resolution routes over-budget artifacts to their bounded summary; a
+  // full-path pointer is preserved under full_artifact_refs for deep dives.
+  const budget = preparation?.artifact_budget ?? null;
+  const fullRefs = {};
+  const resolve = (filename, key) => {
+    const fullPath = prPrepareArtifactPath(preparation, filename);
+    const summaryPath = findBudgetSummaryPath(budget, filename);
+    if (summaryPath) {
+      fullRefs[key] = fullPath;
+      return summaryPath;
+    }
+    return fullPath;
+  };
+  const refs = compactObject({
     full_pr_prepare: prPrepareArtifactPath(preparation, 'pr-prepare.json'),
-    evidence_reuse: preparation?.evidence_reuse ? prPrepareArtifactPath(preparation, 'evidence-reuse.json') : null,
-    evidence_plan: preparation?.evidence_plan ? prPrepareArtifactPath(preparation, 'evidence-plan.json') : null,
-    decision_index: preparation?.decision_index ? prPrepareArtifactPath(preparation, 'decision-index.json') : null,
-    split_plan: preparation?.split_plan ? prPrepareArtifactPath(preparation, 'split-plan.json') : null,
-    gate_dag: context.gate_dag ? prPrepareArtifactPath(preparation, 'gate-dag.json') : null,
+    evidence_reuse: preparation?.evidence_reuse ? resolve('evidence-reuse.json', 'evidence_reuse') : null,
+    evidence_plan: preparation?.evidence_plan ? resolve('evidence-plan.json', 'evidence_plan') : null,
+    decision_index: preparation?.decision_index ? resolve('decision-index.json', 'decision_index') : null,
+    split_plan: preparation?.split_plan ? resolve('split-plan.json', 'split_plan') : null,
+    gate_dag: context.gate_dag ? resolve('gate-dag.json', 'gate_dag') : null,
     traceability: prPrepareArtifactPath(preparation, 'traceability.json'),
-    design_ssot_reconciliation: context.design_ssot_reconciliation ? prPrepareArtifactPath(preparation, 'design-ssot-reconciliation.json') : null,
-    senior_gap_judgment: context.senior_gap_judgment ? prPrepareArtifactPath(preparation, 'senior-gap-judgment.json') : null,
+    design_ssot_reconciliation: context.design_ssot_reconciliation ? resolve('design-ssot-reconciliation.json', 'design_ssot_reconciliation') : null,
+    senior_gap_judgment: context.senior_gap_judgment ? resolve('senior-gap-judgment.json', 'senior_gap_judgment') : null,
     pr_body: prPrepareArtifactPath(preparation, 'pr-body.md')
   });
+  if (Object.keys(fullRefs).length > 0) {
+    refs.full_artifact_refs = fullRefs;
+  }
+  return refs;
 }
 
 function prPrepareArtifactPath(preparation, filename) {

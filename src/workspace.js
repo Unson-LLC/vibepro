@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { DEFAULT_PR_ARTIFACT_BYTES } from './pr-artifact-budget.js';
+
 export const SCHEMA_VERSION = '0.1.0';
 export const WORKSPACE_DIR = '.vibepro';
 export const MANIFEST_FILE = 'vibepro-manifest.json';
@@ -35,6 +37,12 @@ export async function initWorkspace(repoRoot, options = {}) {
     },
     execution: {
       managed_worktree: 'preferred'
+    },
+    budgets: {
+      // Per-artifact byte budget for `pr prepare`. Emitted JSON artifacts larger
+      // than this get a bounded `<name>.summary.json` sibling that LLM handoff
+      // surfaces reference by default; gate evaluation always reads full artifacts.
+      pr_artifact_bytes: DEFAULT_PR_ARTIFACT_BYTES
     },
     brainbase: {
       stories: DEFAULT_BRAINBASE_STORIES

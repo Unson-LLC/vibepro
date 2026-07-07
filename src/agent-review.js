@@ -221,6 +221,8 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     gitContext,
     verificationEvidence
   });
+  const prPrepareArtifact = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json'));
+  const boundedArtifactHandoff = buildBoundedArtifactHandoff(prPrepareArtifact?.artifact_budget);
   const plan = {
     schema_version: '0.1.0',
     story_id: storyId,
@@ -230,6 +232,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
     output: { language },
     git_context: gitContext,
     evidence_reuse: evidenceReuse,
+    bounded_artifact_handoff: boundedArtifactHandoff,
     review_policy: summarizeReviewPolicyForStage(reviewPolicy, stage, roles),
     source_fingerprint: buildSourceFingerprint({ storyId, stage, role: null, gitContext }),
     instructions: buildCoordinatorInstructions(language),
@@ -1569,6 +1572,52 @@ function formatModelPolicyCommandArgs(modelPolicy) {
   return args.length > 0 ? ` ${args.join(' ')}` : '';
 }
 
+function buildBoundedArtifactHandoff(artifactBudget) {
+  const overBudget = Array.isArray(artifactBudget?.over_budget) ? artifactBudget.over_budget : [];
+  const items = overBudget.map((entry) => ({
+    artifact: entry.artifact,
+    bytes: entry.bytes ?? null,
+    summary_status: entry.summary_status ?? null,
+    read_path: entry.summary_status === 'generated' && entry.summary_path ? entry.summary_path : entry.artifact,
+    full_artifact_path: entry.artifact,
+    bounded: entry.summary_status === 'generated' && Boolean(entry.summary_path)
+  }));
+  return {
+    budget_bytes: artifactBudget?.budget_bytes ?? null,
+    over_budget_count: items.length,
+    items
+  };
+}
+
+function renderBoundedArtifactHandoff(handoff, language = 'ja') {
+  const items = Array.isArray(handoff?.items) ? handoff.items : [];
+  if (items.length === 0) return '';
+  const rows = items.map((item) => {
+    if (item.bounded) {
+      return language === 'en'
+        ? `- \`${item.read_path}\` (bounded summary; read this first). Open the full artifact \`${item.full_artifact_path}\` only for targeted deep dives.`
+        : `- \`${item.read_path}\`（bounded summary。まずこれを読む）。full artifact \`${item.full_artifact_path}\` は必要な深掘り時のみ開く。`;
+    }
+    return language === 'en'
+      ? `- \`${item.full_artifact_path}\` (no bounded summary available; read the full artifact).`
+      : `- \`${item.full_artifact_path}\`（bounded summaryなし。full artifactを読む）。`;
+  }).join('\n');
+  if (language === 'en') {
+    return `
+## Bounded Artifact Handoff
+
+These artifacts exceeded the per-file size budget (${handoff.budget_bytes} bytes). Read the bounded summary path first and open the full artifact only for targeted drill-down; do not read full over-budget artifacts inline.
+${rows}
+`;
+  }
+  return `
+## Bounded Artifact Handoff
+
+以下のartifactはper-fileサイズ予算（${handoff.budget_bytes} bytes）を超過しています。まずbounded summaryを読み、full artifactは狙いを定めた深掘り時のみ開いてください。over-budgetのfull artifactをinlineで読み込まないでください。
+${rows}
+`;
+}
+
 function renderEvidenceReuseReviewInput(plan, language = 'ja') {
   const reuse = plan?.evidence_reuse;
   if (!reuse) return '';
@@ -1767,6 +1816,7 @@ function renderParallelDispatchMarkdown({ storyId, stage, roles, plan, language 
   const mandatoryLenses = renderMandatoryReviewLenses(plan.mandatory_review_lenses ?? MANDATORY_REVIEW_LENSES);
   const agentSkillDiscipline = localizedAgentSkillDisciplineBlock(language);
   const evidenceReuseInput = renderEvidenceReuseReviewInput(plan, language);
+  const boundedArtifactHandoff = renderBoundedArtifactHandoff(plan.bounded_artifact_handoff, language);
   const items = roles.map((role, index) => {
     const request = plan.requests.find((item) => item.role === role)?.artifact ?? `review-request-${role}.md`;
     const command = buildReviewRecordCommand({ storyId, stage, role });
@@ -1858,7 +1908,7 @@ If your coordinator runtime supports subagents, start them as part of this gate 
 
 ## Evidence Handling
 ${EVIDENCE_HANDLING_BLOCK}
-
+${boundedArtifactHandoff}
 ## Mandatory Review Lenses
 ${mandatoryLenses}
 
@@ -1895,7 +1945,7 @@ coordinator runtimeがsubagentを使える場合は、このgate workflowの一�
 
 ## 証跡の扱い
 ${localizedEvidenceHandlingBlock(language)}
-
+${boundedArtifactHandoff}
 ## 必須レビューlens
 ${mandatoryLenses}
 

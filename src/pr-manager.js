@@ -53,6 +53,7 @@ import { evaluateManagedWorktreeCommandContext } from './managed-worktree.js';
 import { buildManagedWorktreeGate as buildManagedWorktreePolicyGate, formatManagedWorktreePrStatus } from './managed-worktree-gate.js';
 import { collectGitStatusFingerprints, compareFingerprintContexts, fullFingerprintHashForContext } from './git-fingerprint.js';
 import { buildEvidenceDecisionIndex, buildEvidencePlan } from './evidence-depth-planner.js';
+import { planArtifactBudget, resolveHandoffArtifact, resolvePrArtifactBudgetBytes } from './pr-artifact-budget.js';
 import {
   buildEvidenceReuse,
   buildEvidenceReuseGate,
@@ -473,6 +474,41 @@ export async function preparePullRequest(repoRoot, options = {}) {
     groupId: taskContext?.group?.id ?? options.groupId ?? null,
     gateStatus
   });
+  // Per-artifact size budget pass: serialize the emitted content artifacts once,
+  // reuse the exact strings when writing so the measured bytes match the files,
+  // and route LLM handoff surfaces through bounded summaries for over-budget ones.
+  const artifactBudgetBytes = resolvePrArtifactBudgetBytes(workspace.config);
+  const evidenceReuseJson = `${JSON.stringify(evidenceReuse, null, 2)}\n`;
+  const evidencePlanJson = `${JSON.stringify(evidencePlan, null, 2)}\n`;
+  const decisionIndexJson = `${JSON.stringify(decisionIndex, null, 2)}\n`;
+  const designSsotJson = `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`;
+  const seniorGapJudgmentJson = `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`;
+  const splitPlanJson = `${JSON.stringify(splitPlan, null, 2)}\n`;
+  const decisionRecordsJson = `${JSON.stringify(prContext.decision_records, null, 2)}\n`;
+  const gateDagJson = writeGateDagDump ? `${JSON.stringify(prContext.gate_dag, null, 2)}\n` : null;
+  const artifactBudgetInputs = [
+    { filename: 'evidence-reuse.json', content: evidenceReuseJson },
+    { filename: 'evidence-plan.json', content: evidencePlanJson },
+    { filename: 'decision-index.json', content: decisionIndexJson },
+    { filename: 'design-ssot-reconciliation.json', content: designSsotJson },
+    { filename: 'senior-gap-judgment.json', content: seniorGapJudgmentJson },
+    { filename: 'split-plan.json', content: splitPlanJson },
+    { filename: 'decision-records.json', content: decisionRecordsJson },
+    ...(gateDagJson !== null ? [{ filename: 'gate-dag.json', content: gateDagJson }] : [])
+  ];
+  const artifactBudgetPlan = planArtifactBudget({ artifacts: artifactBudgetInputs, budgetBytes: artifactBudgetBytes });
+  const artifactBudgetReport = {
+    budget_bytes: artifactBudgetPlan.budget_bytes,
+    over_budget: artifactBudgetPlan.over_budget.map((entry) => ({
+      artifact: entry.artifact,
+      bytes: entry.bytes,
+      summary_path: entry.summary_filename
+        ? toWorkspaceRelative(root, path.join(prDir, entry.summary_filename))
+        : null,
+      summary_status: entry.summary_status
+    }))
+  };
+  const scannedArtifactFilenames = artifactBudgetInputs.map((input) => input.filename);
   const prBodyNarrative = await progress.stage('read_pr_body_narrative', () => readNarrative(root, story.story_id, 'pr-body'));
   const prBody = await progress.stage('render_pr_body', () => renderPrBody({
     story,
@@ -484,6 +520,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     prContext,
     splitPlan,
     narrative: prBodyNarrative,
+    artifactBudget: artifactBudgetPlan,
     language: outputLanguage
   }));
   const preparation = {
@@ -496,6 +533,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     evidence_plan: evidencePlan,
     decision_index: decisionIndex,
     evidence_reuse: evidenceReuse,
+    artifact_budget: artifactBudgetReport,
     gate_status: gateStatus,
     authorization_scoring: authorizationScoring,
     workspace: {
@@ -530,14 +568,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     });
   preparation.lifecycle_artifacts = lifecycleArtifacts;
   await progress.stage('write_pr_prepare_artifacts', async ({ signal }) => {
-    await writeFile(evidenceReusePath, `${JSON.stringify(evidenceReuse, null, 2)}\n`, { signal });
-    await writeFile(evidencePlanPath, `${JSON.stringify(evidencePlan, null, 2)}\n`, { signal });
-    await writeFile(decisionIndexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`, { signal });
-    await writeFile(designSsotPath, `${JSON.stringify(prContext.design_ssot_reconciliation ?? null, null, 2)}\n`, { signal });
-    await writeFile(seniorGapJudgmentPath, `${JSON.stringify(prContext.senior_gap_judgment ?? null, null, 2)}\n`, { signal });
+    await writeFile(evidenceReusePath, evidenceReuseJson, { signal });
+    await writeFile(evidencePlanPath, evidencePlanJson, { signal });
+    await writeFile(decisionIndexPath, decisionIndexJson, { signal });
+    await writeFile(designSsotPath, designSsotJson, { signal });
+    await writeFile(seniorGapJudgmentPath, seniorGapJudgmentJson, { signal });
     await writeFile(bodyPath, prBody, { signal });
     if (writeGateDagDump) {
-      await writeFile(gateDagJsonPath, `${JSON.stringify(prContext.gate_dag, null, 2)}\n`, { signal });
+      await writeFile(gateDagJsonPath, gateDagJson, { signal });
     } else {
       await rm(gateDagJsonPath, { force: true });
     }
@@ -554,7 +592,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
         rm(splitPlanReportPath, { force: true })
       ]);
     }
-    await writeFile(splitPlanJsonPath, `${JSON.stringify(splitPlan, null, 2)}\n`, { signal });
+    await writeFile(splitPlanJsonPath, splitPlanJson, { signal });
     if (writeHtmlReports) {
       await writeFile(splitPlanReportPath, renderSplitPlanHtml(splitPlan, {
         generatedAt: preparation.created_at,
@@ -588,7 +626,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
       gateDagPath: writeGateDagDump ? toWorkspaceRelative(root, gateDagJsonPath) : null,
       existingReview: existingArchitectureReview
     }), null, 2)}\n`, { signal });
-    await writeFile(decisionRecordsPath, `${JSON.stringify(preparation.pr_context.decision_records, null, 2)}\n`, { signal });
+    await writeFile(decisionRecordsPath, decisionRecordsJson, { signal });
     await writeFile(humanReviewPath, `${JSON.stringify(buildHumanReviewTemplate({
       preparation,
       reviewCockpitPath: writeHtmlReports ? toWorkspaceRelative(root, reviewCockpitPath) : null,
@@ -601,6 +639,18 @@ export async function preparePullRequest(repoRoot, options = {}) {
     }), null, 2)}\n`, { signal });
     if (workspace.initialized) {
       await annotatePrLifecycleArtifacts(root, story.story_id, lifecycleArtifacts, { signal });
+    }
+    // Bounded summaries for over-budget artifacts, and stale-summary cleanup so
+    // within-budget artifacts never leave a sibling behind (PAB invariant).
+    const generatedSummaryFilenames = new Set(artifactBudgetPlan.summaries.map((summary) => summary.filename));
+    for (const summary of artifactBudgetPlan.summaries) {
+      await writeFile(path.join(prDir, summary.filename), summary.content, { signal });
+    }
+    for (const filename of scannedArtifactFilenames) {
+      const summaryFilename = filename.replace(/\.json$/i, '') + '.summary.json';
+      if (!generatedSummaryFilenames.has(summaryFilename)) {
+        await rm(path.join(prDir, summaryFilename), { force: true });
+      }
     }
   });
   preparation.diagnostics.pr_prepare_stages = progress.snapshot();
@@ -636,7 +686,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
   preparation.diagnostics.pr_prepare_stages = progress.snapshot();
   await progress.stage('write_final_gate_dag_artifacts', async ({ signal }) => {
     if (writeGateDagDump) {
-      await writeFile(gateDagJsonPath, `${JSON.stringify(preparation.pr_context.gate_dag, null, 2)}\n`, { signal });
+      await writeFile(gateDagJsonPath, gateDagJson, { signal });
     } else {
       await rm(gateDagJsonPath, { force: true });
     }
@@ -3223,7 +3273,7 @@ function linkifyRepoPathsInText(value) {
     .join('');
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, language = 'ja' }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, artifactBudget = null, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
   const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   const source = prContext.story_source;
@@ -3274,10 +3324,14 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
     ?? source.policy
     ?? summarizeFirstAvailable(prContext.change_summary, '差分要約から解決方針を抽出できませんでした。'));
   const finalE2e = renderFinalE2eConfidence(prContext.gate_dag, prContext.verification_evidence);
+  const decisionIndexHandoff = resolveHandoffArtifact(artifactBudget, 'decision-index.json', evidenceDir);
+  const decisionIndexLine = decisionIndexHandoff.is_summary
+    ? `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatRepoPathLink(decisionIndexHandoff.full_path)}）`
+    : `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.full_path)}`;
   const details = [
     `- 証跡: ${formatRepoPathLink(`${evidenceDir}/`)}`,
     `- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}`,
-    `- 判断索引: ${formatRepoPathLink(`${evidenceDir}/decision-index.json`)}`,
+    decisionIndexLine,
     `- Gate: ${gateStatus}`,
     `- 実行状態: ${executionStatus}`,
     `- Scope: ${scope.status} / ${scope.recommended_strategy}`,
