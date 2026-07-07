@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-artifact-size-budget",
   "source": "execute_merge",
-  "generated_at": "2026-07-07T15:40:28.848Z",
+  "generated_at": "2026-07-07T15:40:35.954Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -118,13 +118,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 4150,
+      "compressed_bytes": 4155,
       "expanded_bytes": 18276,
       "expanded_line_count": 449,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 10540,
-    "raw_source_artifact_code_ratio": 13.513,
+    "raw_source_artifact_lines": 10630,
+    "raw_source_artifact_code_ratio": 13.628,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -262,7 +262,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-pr-artifact-size-budget",
-    "generated_at": "2026-07-07T15:40:28.848Z",
+    "generated_at": "2026-07-07T15:40:35.954Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -367,10 +367,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-artifact-size-budget/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:d6519ae82aa30b8ef4a9ddd0983857b45003b1d15d2630d178f680f5132a5fb6",
-    "compressed_hash": "sha256:4bb63a9a848dca003052f630bee81ea8919fe9a49ee03dbc19726ae7a8df9bfd",
+    "content_hash": "sha256:df85524169f34691fd5fb2696524fdddbe3be348d4ea9831a27fba763388340b",
+    "compressed_hash": "sha256:a303915dead604eeaa57e3c7f4c5c753a13e1b7d101de62eefdfc18102c1da1d",
     "expanded_bytes": 18276,
-    "compressed_bytes": 4150,
+    "compressed_bytes": 4155,
     "expanded_line_count": 449,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -389,7 +389,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-artifact-size-budget",
     "cost": {
-      "compressed_bytes": 4150,
+      "compressed_bytes": 4155,
       "expanded_bytes": 18276,
       "expanded_line_count": 449,
       "persisted_line_count": 1
