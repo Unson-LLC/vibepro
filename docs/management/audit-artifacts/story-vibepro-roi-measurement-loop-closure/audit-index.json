@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-roi-measurement-loop-closure",
   "source": "execute_merge",
-  "generated_at": "2026-07-08T01:31:56.729Z",
+  "generated_at": "2026-07-08T01:32:01.177Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -121,13 +121,13 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 3484,
+      "compressed_bytes": 3487,
       "expanded_bytes": 13732,
       "expanded_line_count": 351,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 9774,
-    "raw_source_artifact_code_ratio": 12.595,
+    "raw_source_artifact_lines": 9864,
+    "raw_source_artifact_code_ratio": 12.711,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -256,7 +256,7 @@
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-roi-measurement-loop-closure",
-    "generated_at": "2026-07-08T01:31:56.729Z",
+    "generated_at": "2026-07-08T01:32:01.177Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -361,10 +361,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-roi-measurement-loop-closure/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ec608d555f1538281e4e4642fc529c0f8e79d5c9e030c8f8094dbfac8ad8515a",
-    "compressed_hash": "sha256:5ad88b07a8aeae77f51d1dcab02f0deb203c982a06f44bd84fe103f9f1cad2c4",
+    "content_hash": "sha256:bb2eaf57581563e107f3e414068a97623127e58572877b056193d95cfc745c0d",
+    "compressed_hash": "sha256:a9289cb8b2c6b25d2bbcaffdcfa32104af537705060886360831591deb256f7f",
     "expanded_bytes": 13732,
-    "compressed_bytes": 3484,
+    "compressed_bytes": 3487,
     "expanded_line_count": 351,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -383,7 +383,7 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-roi-measurement-loop-closure",
     "cost": {
-      "compressed_bytes": 3484,
+      "compressed_bytes": 3487,
       "expanded_bytes": 13732,
       "expanded_line_count": 351,
       "persisted_line_count": 1
