@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>story-vibepro-uiux-one-command-cockpit UI/UX Cockpit</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; color: #17202a; background: #f7f8fa; }
+    main { max-width: 1120px; margin: 0 auto; padding: 32px 20px 48px; }
+    header { margin-bottom: 24px; }
+    h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; letter-spacing: 0; }
+    h2 { margin: 28px 0 12px; font-size: 18px; line-height: 1.3; letter-spacing: 0; }
+    p { margin: 0; color: #5d6673; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #d9dee7; }
+    th, td { padding: 12px; border-bottom: 1px solid #e5e9f0; text-align: left; vertical-align: top; }
+    th { width: 220px; color: #374151; background: #fbfcfe; }
+    code { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin: 6px 0; }
+    a { color: #0f6cbd; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
+    .metric { background: #fff; border: 1px solid #d9dee7; padding: 14px; border-radius: 8px; }
+    .metric span { display: block; color: #5d6673; font-size: 12px; }
+    .metric strong { display: block; margin-top: 6px; font-size: 16px; }
+    .status { display: inline-block; min-width: 92px; padding: 3px 8px; border-radius: 999px; background: #eef2f7; color: #374151; font-size: 12px; text-align: center; }
+    .ready, .pass { background: #e7f5ec; color: #166534; }
+    .blocked, .needs_evidence, .needs_intake, .needs_journey, .needs_design_system, .missing, .needs_review { background: #fff4d6; color: #92400e; }
+    .artifact-list span { display: inline-block; min-width: 210px; color: #374151; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>story-vibepro-uiux-one-command-cockpit UI/UX Cockpit</h1>
+      <p>This cockpit links to source artifacts. It is not the source of truth.</p>
+    </header>
+    <section class="summary" aria-label="readiness summary">
+      <div class="metric"><span>Status</span><strong>blocked</strong></div>
+      <div class="metric"><span>Design system</span><strong>story-vibepro-uiux-one-command-cockpit</strong></div>
+      <div class="metric"><span>Blocking gates</span><strong>10</strong></div>
+      <div class="metric"><span>Git dirty</span><strong>no</strong></div>
+    </section>
+    <h2>Reasons</h2>
+    <ul><li>10 blocking PR gate(s) remain unresolved.</li></ul>
+    <h2>Readiness Sections</h2>
+    <table>
+      <tbody>
+<tr><th>intake_coverage</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-intake-coverage.json<br>coverage_status=ready_for_design<br>explicit=18<br>inferred=0<br>missing=0</td></tr>
+<tr><th>ia_flow_map</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json<br>map_status=ready_for_design_flow<br>flow_archetype=marketing_landing_page<br>flow_structure=landing_page_block_sequence<br>route_evidence=available</td></tr>
+<tr><th>design_system</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/design-system.json<br>coverage_artifact=.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/evidence-coverage.json<br>validation_artifact=.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/validation/story-vibepro-uiux-one-command-cockpit.json<br>design_system_id=story-vibepro-uiux-one-command-cockpit<br>authority=vibepro_native_design_system</td></tr>
+<tr><th>style_preset</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/style-preset.json<br>selected_preset=operator_developer_cockpit<br>confidence=0.78<br>authority=product_archetype_style_guidance</td></tr>
+<tr><th>journey</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/journey-context.json<br>curation_status=curated<br>curated=true<br>handoff_available=true</td></tr>
+<tr><th>responsive_a11y_matrix</th><td><span class="status ready">ready</span></td><td>artifact=.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/responsive-a11y-matrix.json<br>matrix_status=ready<br>viewport_count=2<br>accessibility_check_count=4<br>missing_evidence_count=0</td></tr>
+<tr><th>visual_hypotheses</th><td><span class="status ready">ready</span></td><td>hypothesis_artifact=.vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/visual-hypothesis-prompts.md<br>visual_qa_artifact=.vibepro/qa/uiux-cockpit-static/visual-residual.json<br>visual_qa_status=pass<br>prompt_available=true</td></tr>
+<tr><th>verification_evidence</th><td><span class="status ready">ready</span></td><td>flow_artifact=.vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json<br>flow_status=pass<br>flow_source=verification_evidence<br>visual_artifact=.vibepro/qa/uiux-cockpit-static/visual-residual.json<br>visual_status=pass</td></tr>
+<tr><th>source_story</th><td><span class="status ready">ready</span></td><td>artifact=docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md<br>title=UI/UX one-command preparation and cockpit</td></tr>
+      </tbody>
+    </table>
+    <h2>Artifact Links</h2>
+    <ul class="artifact-list">
+<li><span>story</span> <a href="../../../docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md">docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md</a> <span class="status available">available</span></li>
+<li><span>intake_coverage</span> <a href="uiux-intake-coverage.json">.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-intake-coverage.json</a> <span class="status available">available</span></li>
+<li><span>ia_flow_map</span> <a href="ia-flow-map.json">.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json</a> <span class="status available">available</span></li>
+<li><span>journey_context</span> <a href="../../design-modernize/story-vibepro-uiux-one-command-cockpit/journey-context.json">.vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/journey-context.json</a> <span class="status available">available</span></li>
+<li><span>design_system</span> <a href="../../design-system/story-vibepro-uiux-one-command-cockpit/design-system.json">.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/design-system.json</a> <span class="status available">available</span></li>
+<li><span>design_system_validation</span> <a href="../../design-system/story-vibepro-uiux-one-command-cockpit/validation/story-vibepro-uiux-one-command-cockpit.json">.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/validation/story-vibepro-uiux-one-command-cockpit.json</a> <span class="status available">available</span></li>
+<li><span>style_preset</span> <a href="../../design-system/story-vibepro-uiux-one-command-cockpit/style-preset.json">.vibepro/design-system/story-vibepro-uiux-one-command-cockpit/style-preset.json</a> <span class="status available">available</span></li>
+<li><span>responsive_a11y_matrix</span> <a href="responsive-a11y-matrix.json">.vibepro/uiux/story-vibepro-uiux-one-command-cockpit/responsive-a11y-matrix.json</a> <span class="status available">available</span></li>
+<li><span>visual_hypotheses</span> <a href="../../design-modernize/story-vibepro-uiux-one-command-cockpit/visual-hypothesis-prompts.md">.vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/visual-hypothesis-prompts.md</a> <span class="status available">available</span></li>
+<li><span>flow_verification</span> <a href="../../pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json">.vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json</a> <span class="status available">available</span></li>
+<li><span>verification_evidence</span> <a href="../../pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json">.vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json</a> <span class="status available">available</span></li>
+<li><span>visual_qa</span> <a href="../../qa/uiux-cockpit-static/visual-residual.json">.vibepro/qa/uiux-cockpit-static/visual-residual.json</a> <span class="status available">available</span></li>
+<li><span>gate_dag</span> <a href="../../pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json">.vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json</a> <span class="status available">available</span></li>
+<li><span>pr_prepare</span> <a href="../../pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json">.vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json</a> <span class="status available">available</span></li>
+    </ul>
+    <h2>Blocking Gates</h2>
+    <ul><li><strong>Design Input Judgment Gate</strong>: needs_review - Workflow-heavy or cross-surface Architecture/Spec work should record design-input diagnosis before Architecture/Spec are treated as settled.</li>
+<li><strong>Evidence Lifecycle Gate</strong>: needs_evidence - Agent workflow route requires a current-bound recorded agent review with no unmet/stale/timed-out/blocked results, or an explicit waiver decision recorded against gate:judgment_agent_workflow_evidence_lifecycle, before PR creation</li>
+<li><strong>Managed Worktree Gate</strong>: needs_review - VibePro managed worktree execution state is missing</li>
+<li><strong>Review Dispatch Batch: gate</strong>: failed - Do not dispatch gate review batch until preflight blockers are resolved: gate_evidence:git_stability</li>
+<li><strong>Review Dispatch Preflight: gate_evidence</strong>: failed - strict HEAD review was recorded for e6fda6a10fcd, current head is bfcbfddfbcb2</li>
+<li><strong>Review Record: gate_evidence</strong>: needs_review - strict HEAD review was recorded for e6fda6a10fcd, current head is bfcbfddfbcb2</li>
+<li><strong>Review Stage Join: gate</strong>: needs_review - Wait for all parallel gate reviews to close and record before dispatching the next review stage: gate_evidence</li>
+<li><strong>Agent Review Gate</strong>: needs_review - 1 PR-final and 0 checkpoint agent review role(s) are missing, stale, or blocking; run the listed checkpoint/review commands and record their provenance.</li>
+<li><strong>Definition of Done Gate</strong>: needs_evidence - Definition of Done is incomplete: Required Agent Review closed or not required</li>
+<li><strong>Senior Gap Judgment Gate</strong>: block - 2 critical gap(s) must be resolved before PR creation or merge.</li></ul>
+    <h2>Next Commands</h2>
+    <ul><li><code>vibepro pr prepare . --story-id story-vibepro-uiux-one-command-cockpit --base origin/main --view blocking-gates --json</code></li></ul>
+  </main>
+</body>
+</html>

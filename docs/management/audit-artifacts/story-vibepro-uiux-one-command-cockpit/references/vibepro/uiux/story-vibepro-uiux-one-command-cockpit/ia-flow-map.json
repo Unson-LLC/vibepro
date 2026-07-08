@@ -1,0 +1,85 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "uiux-ia-flow-map",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "generated_at": "2026-07-08T09:45:43.167Z",
+  "generated_head_sha": "0aec82cf5ab9335510ff0535720a1b232ed2ba7b",
+  "generated_git_context": {
+    "head_sha": "0aec82cf5ab9335510ff0535720a1b232ed2ba7b",
+    "status": "recorded"
+  },
+  "status": "ready_for_design_flow",
+  "flow_archetype": "marketing_landing_page",
+  "flow_structure": "landing_page_block_sequence",
+  "source_evidence": {
+    "story": "docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md",
+    "uiux_intake": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-intake.json",
+    "journey_context": null
+  },
+  "route_evidence": {
+    "status": "available",
+    "source": "explicit_or_discovered_routes",
+    "missing_sources": [],
+    "routes": [
+      {
+        "route": "/cli/uiux-prepare",
+        "evidence_status": "confirmed"
+      }
+    ]
+  },
+  "current_ia": {
+    "status": "confirmed_from_route_evidence",
+    "routes": [
+      {
+        "route": "/cli/uiux-prepare",
+        "evidence_status": "confirmed"
+      }
+    ],
+    "note": "Current IA is limited to routes that have explicit or discovered evidence."
+  },
+  "target_ia": {
+    "status": "proposed_from_story_and_intake",
+    "evidence_status": "proposed",
+    "flow_structure": "landing_page_block_sequence",
+    "sequence": [
+      {
+        "route": "/cli/uiux-prepare",
+        "order": 1,
+        "role": "landing_information_block",
+        "evidence_status": "proposed",
+        "reason": "Target IA is a planning hypothesis until implementation or runtime evidence confirms it."
+      }
+    ],
+    "target_only_claim_policy": "target-only claims are proposed until backed by route, runtime, or implementation evidence"
+  },
+  "unknown_flow": [
+    "Journey context artifact is missing or not readable; cross-screen continuity is not confirmed."
+  ],
+  "non_goals": [],
+  "screens": [
+    {
+      "route": "/cli/uiux-prepare",
+      "evidence_status": "confirmed",
+      "purpose": "landing information block",
+      "primary_user_decision": "whether_to_continue_to_conversion",
+      "primary_cta": {
+        "label": "continue_to_conversion",
+        "evidence_status": "proposed"
+      },
+      "secondary_cta": {
+        "label": "learn_more",
+        "evidence_status": "proposed"
+      },
+      "required_data": [
+        "offer_content",
+        "trust_or_proof_points"
+      ],
+      "states": {
+        "loading": "required_unknown_until_screen_evidence",
+        "empty": "required_unknown_until_screen_evidence",
+        "error": "required_unknown_until_screen_evidence"
+      },
+      "next_screen": null
+    }
+  ]
+}

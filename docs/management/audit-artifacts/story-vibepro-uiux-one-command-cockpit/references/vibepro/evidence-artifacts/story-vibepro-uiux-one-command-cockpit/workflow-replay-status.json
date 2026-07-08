@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "exit_code": 0,
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "workflow": "uiux-prepare-workflow-replay",
+  "observed": {
+    "flow_replay": "pass",
+    "artifact_replay": "pass",
+    "scenario_clause_e2e": "pass",
+    "current_reality": "pass",
+    "failure_modes": "pass",
+    "done_evidence": "pass",
+    "readiness_status": "blocked_pending_agent_review",
+    "cockpit_links_resolve": "pass",
+    "flow_verification_link_source": "verification_evidence",
+    "gate_dag_link_source": "pr_prepare_embedded_gate_dag",
+    "visual_qa_status": "pass",
+    "design_quality_capture_status": "needs_setup"
+  },
+  "artifacts": [
+    ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+    ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+    ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json",
+    ".vibepro/qa/uiux-cockpit-static/visual-residual.json"
+  ]
+}

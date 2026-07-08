@@ -1,0 +1,115 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "現行HEAD 9ef502c1 のgate_evidenceとして旧stale・screen-capture needs_setup・gate DAG/flow verification fallback懸念は解消または明示記録済み",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "subagent 019f413f-2a19-7442-98de-9d3cea5cba2a が git clean/HEAD、fallback実装、CLI配線、canonical audit refs、focused tests、pr-prepare/verification/readiness/cockpit/visual/screen-capture証跡を確認し、findingsなしでpassと判断した",
+    "evidence": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-request-gate_evidence.md",
+      "src/uiux-prepare.js",
+      "src/cli.js",
+      "src/canonical-audit.js",
+      "test/vibepro-cli.test.js",
+      ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+      ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+      ".vibepro/evidence-artifacts/story-vibepro-uiux-one-command-cockpit/workflow-replay-status.json",
+      ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json"
+    ]
+  },
+  "judgment_delta": [
+    "旧gate_evidence reviewはe6fda6aでstaleだったが、現行HEAD 9ef502c1 のsubagent reviewとstrict-head verification/pr-prepare証跡に置き換えた",
+    "gate_dagはmissing gate-dag.jsonではなくpr-prepare.json embedded gate_dagへ、flow_verificationはverification-evidence.jsonへfallbackしているため、artifact link懸念は解消",
+    "design-modernize captureのneeds_setupはCLI/static cockpit storyでは明示記録として扱い、static visual residual passと合わせてgate_evidence上のblockerではない"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit",
+    "expected_head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "current_head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit",
+      "branch": "codex/vibepro-uiux-one-command-cockpit",
+      "actual_branch": "codex/vibepro-uiux-one-command-cockpit",
+      "current_head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-08T10:27:52.310Z",
+  "git_context": {
+    "head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "current_branch": "codex/vibepro-uiux-one-command-cockpit",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-08T10:27:52.309Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "cf9278a26f191b54cd933bfa0370e6694b6b3f9ae0d2dc35fba9f924392a3f6e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f413f-2a19-7442-98de-9d3cea5cba2a",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong"
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,805 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-08T10:41:57.613Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:2610d3b3508a94de51799c277d28fcfc1ea1f071ae50b1806fa78f45be2ed6a7",
+    "compressed_hash": "sha256:d36da6042ca0feb724138d34c415bfb3cbcb510225ec2918707835ea161811bd",
+    "expanded_bytes": 12481,
+    "compressed_bytes": 3072,
+    "expanded_line_count": 337,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "gate_dag",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-uiux-one-command-cockpit",
+    "cost": {
+      "compressed_bytes": 3072,
+      "expanded_bytes": 12481,
+      "expanded_line_count": 337,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/302",
+    "merge_commit_sha": "fae418a192ad9d78218b596e47bb6544c7c77d43",
+    "merged_at": "2026-07-08T10:41:56Z",
+    "current_head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...9ef502c16e9343a9c7eac5eaafbe7a0fa091c513"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 54,
+    "copied_reference_count": 45,
+    "unresolved_reference_count": 5,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-uiux-one-command-cockpit"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:2610d3b3508a94de51799c277d28fcfc1ea1f071ae50b1806fa78f45be2ed6a7"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:ba073d4ce1aba9d108b87c20aeb5a3787f1e05d09b3f5273d816f0058ae61679",
+      "audit_digest": "sha256:ba073d4ce1aba9d108b87c20aeb5a3787f1e05d09b3f5273d816f0058ae61679",
+      "line_count": 206,
+      "raw_line_count": 206,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:7e2c4800d5cfb35acd78ae9077d943ef2593f807d468cc34c6e1c7f76c5298b0",
+      "audit_digest": "sha256:f8b9b7e9fcd24845995ea7bed0759b3c28b50fcc527bb3d9eb2e6c01efd86547",
+      "line_count": 3331,
+      "raw_line_count": 23848,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:f8ca340cac1296220e9bcb7ca47dd2c7de5cb1c58e6bb3bd88877086d7a2c88c",
+      "audit_digest": "sha256:cb3d489e94a69e756ca9c4f8400620232d22341aba90e67b96e591da74fdf36c",
+      "line_count": 1543,
+      "raw_line_count": 3635,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:e1e3e131da9756fab2884e0b3fbfe9011bb80314ef8922073f059fed9abf7542",
+      "audit_digest": "sha256:cf5091908b64120404b3b65534f2221739c38974f95bf4da68ebcbb04881c8d9",
+      "line_count": 1400,
+      "raw_line_count": 3471,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:b274bc69b8122629bd9b5ca3f259128bd776bdbf5050c060da50fa4eb972181e",
+      "audit_digest": "sha256:f2cab6b82a6fa2c12cd73667683630afd3ee0f8d9f0755c98092baad160d7a34",
+      "line_count": 14,
+      "raw_line_count": 472,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:0bb18496b82c0fe4b01cbe663cbf00525f7785926be77d82c0eb06f522cc6751",
+      "audit_digest": "sha256:d36940c56bec35352752b6275d9cfa046e93006f8faac289521542cf491fa970",
+      "line_count": 1584,
+      "raw_line_count": 3703,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:b877707cf9b29b51853bb515ffbd4bda6d40c3bf6606fe48b7bc5cbe582da70f",
+      "audit_digest": "sha256:b877707cf9b29b51853bb515ffbd4bda6d40c3bf6606fe48b7bc5cbe582da70f",
+      "line_count": 369,
+      "raw_line_count": 369,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:273b294fb6b19d05e6977d1bcdc8616f18205f67c5d254dcbb1395ab20b66672",
+      "audit_digest": "sha256:a215b4b3c8fd709701f75721c0c94e09920184a95dca34dab8110cbcdff4985e",
+      "line_count": 52,
+      "raw_line_count": 480,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:fa414c20aeed71beae448909b406132148662acef4485ef5b1b0ad9abb458256",
+      "audit_digest": "sha256:fa414c20aeed71beae448909b406132148662acef4485ef5b1b0ad9abb458256",
+      "line_count": 84,
+      "raw_line_count": 84,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:71aead86e605a95dddb9c97c2025150912d477383be2e128348c6f0989cff5e6",
+      "audit_digest": "sha256:71aead86e605a95dddb9c97c2025150912d477383be2e128348c6f0989cff5e6",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:c6a0f79c9089ab7fff7f67b08675a6a42514acea5bbed2e4185fa9311332b209",
+      "audit_digest": "sha256:c6a0f79c9089ab7fff7f67b08675a6a42514acea5bbed2e4185fa9311332b209",
+      "line_count": 116,
+      "raw_line_count": 116,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/audit-replay-bundle.json.gz",
+      "digest": "sha256:bb03c5eecbc3de2bcfbd69eedf4f59566b7f8ee66c7e6b83580f1651849f3857",
+      "audit_digest": "sha256:bb03c5eecbc3de2bcfbd69eedf4f59566b7f8ee66c7e6b83580f1651849f3857",
+      "line_count": 251,
+      "raw_line_count": 251,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/design-modernize.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/design-modernize.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence-artifacts/story-vibepro-uiux-one-command-cockpit/workflow-replay-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/evidence-artifacts/story-vibepro-uiux-one-command-cockpit/workflow-replay-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/journeys/story-vibepro-uiux-one-command-cockpit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/journeys/story-vibepro-uiux-one-command-cockpit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/gate-dag.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/uiux-cockpit-static/residual-analysis.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/qa/uiux-cockpit-static/residual-analysis.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f4122-cde3-7420-beb0-b3f55c31f995.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f4122-cde3-7420-beb0-b3f55c31f995.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T09-58-18.062Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T09-58-18.062Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T10-27-52.310Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T10-27-52.310Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/design-modernize.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/design-modernize.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/screen-capture.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/diagnostics/2026-07-08T101747Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence-artifacts/story-vibepro-uiux-one-command-cockpit/workflow-replay-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/evidence-artifacts/story-vibepro-uiux-one-command-cockpit/workflow-replay-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/journeys/story-vibepro-uiux-one-command-cockpit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/journeys/story-vibepro-uiux-one-command-cockpit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/review-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/review-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/uiux-cockpit-static/residual-analysis.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/qa/uiux-cockpit-static/residual-analysis.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f4122-cde3-7420-beb0-b3f55c31f995.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f4122-cde3-7420-beb0-b3f55c31f995.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/gate-evidence-subagent-019f413f-2a19-7442-98de-9d3cea5cba2a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T09-58-18.062Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T09-58-18.062Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T10-27-52.310Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/history/review-result-gate_evidence-2026-07-08T10-27-52.310Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/reviews/story-vibepro-uiux-one-command-cockpit/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/stories/story-vibepro-uiux-one-command-cockpit/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-cockpit.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-one-command-cockpit/references/vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-readiness.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5310367
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-08T101747Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 964402
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 4924801
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/",
+      "reason": "source_missing"
+    }
+  ]
+}

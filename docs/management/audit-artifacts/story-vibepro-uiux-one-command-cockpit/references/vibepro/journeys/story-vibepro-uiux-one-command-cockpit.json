@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "journey_id": "story-vibepro-uiux-one-command-cockpit",
+  "status": "curated",
+  "curated": true,
+  "scope": "single_command_uiux_preparation_flow",
+  "steps": [
+    {
+      "id": "collect",
+      "label": "Collect story-scoped UI/UX artifacts",
+      "evidence": ".vibepro/uiux/<story-id>/uiux-intake-coverage.json"
+    },
+    {
+      "id": "summarize",
+      "label": "Summarize readiness sections and blocking gates",
+      "evidence": ".vibepro/uiux/<story-id>/uiux-readiness.json"
+    },
+    {
+      "id": "navigate",
+      "label": "Open cockpit links for source evidence review",
+      "evidence": ".vibepro/uiux/<story-id>/uiux-cockpit.html"
+    },
+    {
+      "id": "prepare-pr",
+      "label": "Use PR prepare design-ssot view with cockpit refs",
+      "evidence": ".vibepro/pr/<story-id>/pr-prepare.json"
+    }
+  ],
+  "authority": "curated_by_story_scope",
+  "source_artifacts": [
+    "docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md",
+    "docs/specs/story-vibepro-uiux-one-command-cockpit.md",
+    "docs/architecture/story-vibepro-uiux-one-command-cockpit.md"
+  ]
+}

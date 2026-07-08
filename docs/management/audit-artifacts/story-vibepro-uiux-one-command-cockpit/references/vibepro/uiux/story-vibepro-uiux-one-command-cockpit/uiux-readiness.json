@@ -1,0 +1,253 @@
+{
+  "schema_version": "0.1.0",
+  "workflow": "uiux-one-command-readiness",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "design_system_id": "story-vibepro-uiux-one-command-cockpit",
+  "generated_at": "2026-07-08T10:16:43.787Z",
+  "status": "blocked",
+  "allowed_statuses": [
+    "ready",
+    "needs_evidence",
+    "needs_intake",
+    "needs_journey",
+    "needs_design_system",
+    "blocked"
+  ],
+  "base_ref": "origin/main",
+  "source_policy": {
+    "cockpit": "human_navigation_surface_only",
+    "source_of_truth": "Story, Spec, Architecture, current code, design-system artifacts, and VibePro gate artifacts remain authoritative"
+  },
+  "git": {
+    "head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+    "dirty": false,
+    "dirty_file_count": 0,
+    "dirty_files_sample": []
+  },
+  "sections": {
+    "intake_coverage": {
+      "status": "ready",
+      "artifact": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-intake-coverage.json",
+      "coverage_status": "ready_for_design",
+      "explicit": 18,
+      "inferred": 0,
+      "missing": 0,
+      "not_applicable": 0,
+      "missing_required_fields": [],
+      "style_preset": "operator_developer_cockpit"
+    },
+    "ia_flow_map": {
+      "status": "ready",
+      "artifact": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "map_status": "ready_for_design_flow",
+      "flow_archetype": "marketing_landing_page",
+      "flow_structure": "landing_page_block_sequence",
+      "route_evidence": "available",
+      "screen_count": 1
+    },
+    "design_system": {
+      "status": "ready",
+      "artifact": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/design-system.json",
+      "coverage_artifact": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/evidence-coverage.json",
+      "validation_artifact": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/validation/story-vibepro-uiux-one-command-cockpit.json",
+      "design_system_id": "story-vibepro-uiux-one-command-cockpit",
+      "authority": "vibepro_native_design_system",
+      "validation_status": "pass",
+      "token_count": 10
+    },
+    "style_preset": {
+      "status": "ready",
+      "artifact": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/style-preset.json",
+      "selected_preset": "operator_developer_cockpit",
+      "confidence": 0.78,
+      "authority": "product_archetype_style_guidance"
+    },
+    "journey": {
+      "status": "ready",
+      "artifact": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/journey-context.json",
+      "curation_status": "curated",
+      "curated": true,
+      "handoff_available": true
+    },
+    "responsive_a11y_matrix": {
+      "status": "ready",
+      "artifact": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/responsive-a11y-matrix.json",
+      "matrix_status": "ready",
+      "viewport_count": 2,
+      "accessibility_check_count": 4,
+      "missing_evidence_count": 0
+    },
+    "visual_hypotheses": {
+      "status": "ready",
+      "hypothesis_artifact": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/visual-hypothesis-prompts.md",
+      "visual_qa_artifact": ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "visual_qa_status": "pass",
+      "prompt_available": true
+    },
+    "verification_evidence": {
+      "status": "ready",
+      "flow_artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      "flow_status": "pass",
+      "flow_source": "verification_evidence",
+      "visual_artifact": ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "visual_status": "pass"
+    },
+    "source_story": {
+      "status": "ready",
+      "artifact": "docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md",
+      "title": "UI/UX one-command preparation and cockpit"
+    }
+  },
+  "blocking_gates": {
+    "status": "blocked",
+    "count": 10,
+    "artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+    "overall_status": "needs_verification",
+    "gates": [
+      {
+        "id": "gate:design_input_judgment",
+        "label": "Design Input Judgment Gate",
+        "status": "needs_review",
+        "required": false,
+        "reason": "Workflow-heavy or cross-surface Architecture/Spec work should record design-input diagnosis before Architecture/Spec are treated as settled.",
+        "command": null
+      },
+      {
+        "id": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "label": "Evidence Lifecycle Gate",
+        "status": "needs_evidence",
+        "required": true,
+        "reason": "Agent workflow route requires a current-bound recorded agent review with no unmet/stale/timed-out/blocked results, or an explicit waiver decision recorded against gate:judgment_agent_workflow_evidence_lifecycle, before PR creation",
+        "command": null
+      },
+      {
+        "id": "gate:managed_worktree",
+        "label": "Managed Worktree Gate",
+        "status": "needs_review",
+        "required": false,
+        "reason": "VibePro managed worktree execution state is missing",
+        "command": null
+      },
+      {
+        "id": "review:dispatch_batch:gate",
+        "label": "Review Dispatch Batch: gate",
+        "status": "failed",
+        "required": true,
+        "reason": "Do not dispatch gate review batch until preflight blockers are resolved: gate_evidence:git_stability",
+        "command": null
+      },
+      {
+        "id": "review:preflight:gate:gate_evidence",
+        "label": "Review Dispatch Preflight: gate_evidence",
+        "status": "failed",
+        "required": true,
+        "reason": "strict HEAD review was recorded for e6fda6a10fcd, current head is bfcbfddfbcb2",
+        "command": null
+      },
+      {
+        "id": "review:record:gate:gate_evidence",
+        "label": "Review Record: gate_evidence",
+        "status": "needs_review",
+        "required": true,
+        "reason": "strict HEAD review was recorded for e6fda6a10fcd, current head is bfcbfddfbcb2",
+        "command": null
+      },
+      {
+        "id": "review:join:gate",
+        "label": "Review Stage Join: gate",
+        "status": "needs_review",
+        "required": true,
+        "reason": "Wait for all parallel gate reviews to close and record before dispatching the next review stage: gate_evidence",
+        "command": null
+      },
+      {
+        "id": "gate:agent_review",
+        "label": "Agent Review Gate",
+        "status": "needs_review",
+        "required": true,
+        "reason": "1 PR-final and 0 checkpoint agent review role(s) are missing, stale, or blocking; run the listed checkpoint/review commands and record their provenance.",
+        "command": null
+      },
+      {
+        "id": "gate:definition_of_done",
+        "label": "Definition of Done Gate",
+        "status": "needs_evidence",
+        "required": true,
+        "reason": "Definition of Done is incomplete: Required Agent Review closed or not required",
+        "command": null
+      },
+      {
+        "id": "gate:senior_gap_judgment",
+        "label": "Senior Gap Judgment Gate",
+        "status": "block",
+        "required": true,
+        "reason": "2 critical gap(s) must be resolved before PR creation or merge.",
+        "command": null
+      }
+    ]
+  },
+  "reasons": [
+    "10 blocking PR gate(s) remain unresolved."
+  ],
+  "artifact_links": {
+    "story": {
+      "ref": "docs/management/stories/active/story-vibepro-uiux-one-command-cockpit.md",
+      "status": "available"
+    },
+    "intake_coverage": {
+      "ref": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/uiux-intake-coverage.json",
+      "status": "available"
+    },
+    "ia_flow_map": {
+      "ref": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/ia-flow-map.json",
+      "status": "available"
+    },
+    "journey_context": {
+      "ref": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/journey-context.json",
+      "status": "available"
+    },
+    "design_system": {
+      "ref": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/design-system.json",
+      "status": "available"
+    },
+    "design_system_validation": {
+      "ref": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/validation/story-vibepro-uiux-one-command-cockpit.json",
+      "status": "available"
+    },
+    "style_preset": {
+      "ref": ".vibepro/design-system/story-vibepro-uiux-one-command-cockpit/style-preset.json",
+      "status": "available"
+    },
+    "responsive_a11y_matrix": {
+      "ref": ".vibepro/uiux/story-vibepro-uiux-one-command-cockpit/responsive-a11y-matrix.json",
+      "status": "available"
+    },
+    "visual_hypotheses": {
+      "ref": ".vibepro/design-modernize/story-vibepro-uiux-one-command-cockpit/visual-hypothesis-prompts.md",
+      "status": "available"
+    },
+    "flow_verification": {
+      "ref": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      "status": "available"
+    },
+    "verification_evidence": {
+      "ref": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/verification-evidence.json",
+      "status": "available"
+    },
+    "visual_qa": {
+      "ref": ".vibepro/qa/uiux-cockpit-static/visual-residual.json",
+      "status": "available"
+    },
+    "gate_dag": {
+      "ref": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+      "status": "available"
+    },
+    "pr_prepare": {
+      "ref": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-prepare.json",
+      "status": "available"
+    }
+  },
+  "next_commands": [
+    "vibepro pr prepare . --story-id story-vibepro-uiux-one-command-cockpit --base origin/main --view blocking-gates --json"
+  ]
+}

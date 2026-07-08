@@ -1,0 +1,119 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "created_at": "2026-07-08T10:41:41.770Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr. Visual QA is ready_for_review; 0 run(s) exceed the 5% residual threshold.",
+  "source_artifacts": {
+    "review_cockpit": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/review-cockpit.html",
+    "architecture_review": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/pr-body.md",
+    "gate_dag": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/gate-dag.json",
+    "split_plan": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json",
+    "visual_qa": [
+      ".vibepro/qa/uiux-cockpit-static/residual-analysis.md",
+      ".vibepro/qa/uiux-cockpit-static/visual-residual.json"
+    ]
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-uiux-one-command-cockpit.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-uiux-one-command-cockpit.md, docs/specs/story-vibepro-uiux-one-command-cockpit.spec.json)"
+    },
+    "decision_records": {
+      "total": 1,
+      "open": 0,
+      "by_type": {
+        "needs_review": 1
+      },
+      "by_status": {
+        "accepted": 1
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1783506916309-3b1e3728",
+        "story_id": "story-vibepro-uiux-one-command-cockpit",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": "needs_evidence",
+        "summary": "UI/UX preparation cockpit is reviewable as one vertical slice",
+        "reason": "Changed source files form one reviewer-coherent UI/UX preparation path: cli dispatch, uiux readiness/cockpit generation, design-ssot projection, and focused regression coverage. The split-plan recommends lanes, but requirements docs, runtime behavior, and design-ssot lineage are all for the same story acceptance path; separating design-ssot.json would hide the required lineage update rather than reduce review risk.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+          "current_branch": "codex/vibepro-uiux-one-command-cockpit",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-08T10:35:16.309Z"
+        },
+        "recorded_at": "2026-07-08T10:35:16.310Z"
+      }
+    },
+    "visual_qa": {
+      "status": "ready_for_review",
+      "threshold_pct": 5,
+      "checked_runs": 1,
+      "needs_review_count": 0
+    },
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": 1,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-08T10:41:39.962Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.1.0-beta.0",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-uiux-one-command-cockpit/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+      "branch": "codex/vibepro-uiux-one-command-cockpit",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "0aec82cf5ab9335510ff0535720a1b232ed2ba7b",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

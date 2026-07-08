@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-one-command-cockpit",
+  "updated_at": "2026-07-08T10:35:16.310Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783506916309-3b1e3728",
+      "story_id": "story-vibepro-uiux-one-command-cockpit",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "UI/UX preparation cockpit is reviewable as one vertical slice",
+      "reason": "Changed source files form one reviewer-coherent UI/UX preparation path: cli dispatch, uiux readiness/cockpit generation, design-ssot projection, and focused regression coverage. The split-plan recommends lanes, but requirements docs, runtime behavior, and design-ssot lineage are all for the same story acceptance path; separating design-ssot.json would hide the required lineage update rather than reduce review risk.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+        "current_branch": "codex/vibepro-uiux-one-command-cockpit",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T10:35:16.309Z"
+      },
+      "recorded_at": "2026-07-08T10:35:16.310Z"
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "open": 0,
+    "by_type": {
+      "needs_review": 1
+    },
+    "by_status": {
+      "accepted": 1
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1783506916309-3b1e3728",
+      "story_id": "story-vibepro-uiux-one-command-cockpit",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "UI/UX preparation cockpit is reviewable as one vertical slice",
+      "reason": "Changed source files form one reviewer-coherent UI/UX preparation path: cli dispatch, uiux readiness/cockpit generation, design-ssot projection, and focused regression coverage. The split-plan recommends lanes, but requirements docs, runtime behavior, and design-ssot lineage are all for the same story acceptance path; separating design-ssot.json would hide the required lineage update rather than reduce review risk.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/split-plan.json",
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "9ef502c16e9343a9c7eac5eaafbe7a0fa091c513",
+        "current_branch": "codex/vibepro-uiux-one-command-cockpit",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-08T10:35:16.309Z"
+      },
+      "recorded_at": "2026-07-08T10:35:16.310Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-one-command-cockpit/decision-records.json"
+}
