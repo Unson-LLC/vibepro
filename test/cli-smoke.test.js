@@ -76,6 +76,7 @@ const SMOKE = {
   'design-modernize': { setup: 'story', args: (r) => ['design-modernize', r] },
   'design-system': { setup: 'story', args: (r) => ['design-system', r] },
   'design-ssot': { setup: 'story', args: (r) => ['design-ssot', 'status', r] },
+  uiux: { setup: 'story', args: (r) => ['uiux', 'intake', 'template', r, '--id', 'story-x'] },
   explore: { setup: 'story', args: (r) => ['explore', r] },
   performance: { setup: 'story', args: (r) => ['performance', r] },
   nocodb: { setup: 'none', args: () => ['nocodb'] },
