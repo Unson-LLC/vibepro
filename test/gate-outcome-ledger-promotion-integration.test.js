@@ -51,6 +51,9 @@ async function commitCanonicalAuditAndLedgerPromotion(remote, {
   const worktreeParent = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-integration-worktree-'));
   const worktree = path.join(worktreeParent, 'repo');
   await git(process.cwd(), ['clone', remote, worktree]);
+  // CI runners have no global git identity; the commit below needs one.
+  await git(worktree, ['config', 'user.email', 'vibepro@example.com']);
+  await git(worktree, ['config', 'user.name', 'VibePro Test']);
 
   const auditDestination = path.join(worktree, auditRelativeDir);
   await mkdir(auditDestination, { recursive: true });
